@@ -95,6 +95,14 @@ via its "Verifies task" field.
 | 2 | =unity-collisions=: =catalogue_body= in the two refdata registrars. | =refdata_routes.cpp=, =classification_routes.cpp= | Accepted | Two different catalogues with one generic name. They are =resource_catalogue_body= and =list_catalogue_body=. |
 | 3 | =unity-collisions=: =point_of= in two marketdata service sources, from main. | =fx_vol_surface_calibration_plan.cpp= | Accepted | Two different concepts. The reader's builds a published curve point; the calibration plan's builds the key that names a pillar, so it is =pillar_key_of=. |
 | 4 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 5 | PR #4572 review: a correction or reorder that leaves a member out blanks it on the row. | =classification_routes.hpp= | No change | The BFF does the same: its schemas default a missing name or description to empty and its write turns a missing order into zero. The screen sends full rows. Merging with the stored row would change behaviour against the BFF. |
+| 6 | PR #4572 review: a page that outgrows its limit loses rows or labels in silence. | template, =classification_routes.cpp= | Accepted | The limits are the BFF's. The list read and the three label reads now log a warning when the reply's total exceeds the page. |
+| 7 | PR #4572 review: the catalogue counts 28 lists one after another. | =classification_routes.cpp= | No change | The BFF does the same; its comment measured concurrent requests on the session client as slower. |
+| 8 | PR #4572 review: the editable guard's comment reads wrongly for an editable list. | template | Accepted | The comment states both cases. |
+| 9 | PR #4572 review: summaries read "Add a asset-class-code row". | template | Accepted | They say "one row". |
+| 10 | PR #4572 review: =classification_routes.cpp= relies on indirect includes. | =classification_routes.cpp= | Accepted | It includes =<map>=, =<optional>=, =<string>= and =<utility>=. |
+| 11 | PR #4572 review: the screen cannot tell absent labels from unset ones. | template | No change | The BFF serves the rows unlabelled in the same way; a flag is a change to the screen's contract. |
+| 12 | PR #4572 review: the row order, the row the screen reads and the write are pure logic with no tests. | =classification_routes_tests.cpp= | Accepted | Four test cases cover them. |
 
 * Result
 

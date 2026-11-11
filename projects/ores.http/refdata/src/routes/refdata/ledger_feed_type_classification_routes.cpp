@@ -49,6 +49,12 @@ namespace cr = ores::http::net::classification_routes;
 
 namespace {
 
+auto& ledger_feed_type_classification_routes_lg() {
+    static auto instance =
+        make_logger("ores.http.routes.refdata.ledger_feed_type_classification_routes");
+    return instance;
+}
+
 /// One page reads any classification list whole; the lists are short.
 constexpr std::uint32_t ledger_feed_type_classification_page_size = 1000;
 
@@ -61,10 +67,15 @@ ledger_feed_type_classification_rows(const http_request& req, nats_client& sessi
     msg.order.descending = false;
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
+    if (reply.total > reply.types.size())
+        BOOST_LOG_SEV(ledger_feed_type_classification_routes_lg(), warn)
+            << "The ledger-feed-type list holds " << reply.total << " rows; one page read "
+            << reply.types.size();
     return std::move(reply.types);
 }
 
-/// Refuse a write to a list of spellings an ORE document must write exactly.
+/// Refuse a write when the list holds spellings an ORE document must write exactly; an editable
+/// list refuses nothing.
 void ledger_feed_type_classification_require_editable() {}
 
 }
@@ -287,7 +298,7 @@ void ledger_feed_type_classification_routes::register_routes(
 
     auto create_route =
         router->post("/api/classifications/ledger-feed-type/rows")
-            .summary("Add a ledger-feed-type row")
+            .summary("Add one ledger-feed-type row")
             .description("A code already in the list is refused rather than replaced.")
             .tags({"refdata"})
             .auth_required()
@@ -298,7 +309,7 @@ void ledger_feed_type_classification_routes::register_routes(
 
     auto update_route =
         router->put("/api/classifications/ledger-feed-type/rows/{code}")
-            .summary("Correct a ledger-feed-type row")
+            .summary("Correct one ledger-feed-type row")
             .description("A correction of the version read.")
             .tags({"refdata"})
             .auth_required()
@@ -320,7 +331,7 @@ void ledger_feed_type_classification_routes::register_routes(
 
     auto delete_route =
         router->delete_("/api/classifications/ledger-feed-type/rows/{code}")
-            .summary("Remove a ledger-feed-type row")
+            .summary("Remove one ledger-feed-type row")
             .description("Its versions stay in the history.")
             .tags({"refdata"})
             .auth_required()
@@ -331,7 +342,7 @@ void ledger_feed_type_classification_routes::register_routes(
 
     auto label_route =
         router->put("/api/classifications/ledger-feed-type/rows/{code}/label")
-            .summary("Label a ledger-feed-type row")
+            .summary("Label one ledger-feed-type row")
             .description("Maps the row's code to a badge, or removes the mapping.")
             .tags({"refdata"})
             .auth_required()

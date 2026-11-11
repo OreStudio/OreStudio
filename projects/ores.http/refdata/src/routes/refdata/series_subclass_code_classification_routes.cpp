@@ -49,6 +49,12 @@ namespace cr = ores::http::net::classification_routes;
 
 namespace {
 
+auto& series_subclass_code_classification_routes_lg() {
+    static auto instance =
+        make_logger("ores.http.routes.refdata.series_subclass_code_classification_routes");
+    return instance;
+}
+
 /// One page reads any classification list whole; the lists are short.
 constexpr std::uint32_t series_subclass_code_classification_page_size = 1000;
 
@@ -61,10 +67,15 @@ series_subclass_code_classification_rows(const http_request& req, nats_client& s
     msg.order.descending = false;
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
+    if (reply.total > reply.series_subclasses.size())
+        BOOST_LOG_SEV(series_subclass_code_classification_routes_lg(), warn)
+            << "The series-subclass-code list holds " << reply.total << " rows; one page read "
+            << reply.series_subclasses.size();
     return std::move(reply.series_subclasses);
 }
 
-/// Refuse a write to a list of spellings an ORE document must write exactly.
+/// Refuse a write when the list holds spellings an ORE document must write exactly; an editable
+/// list refuses nothing.
 void series_subclass_code_classification_require_editable() {}
 
 }
@@ -289,7 +300,7 @@ void series_subclass_code_classification_routes::register_routes(
 
     auto create_route =
         router->post("/api/classifications/series-subclass-code/rows")
-            .summary("Add a series-subclass-code row")
+            .summary("Add one series-subclass-code row")
             .description("A code already in the list is refused rather than replaced.")
             .tags({"refdata"})
             .auth_required()
@@ -300,7 +311,7 @@ void series_subclass_code_classification_routes::register_routes(
 
     auto update_route =
         router->put("/api/classifications/series-subclass-code/rows/{code}")
-            .summary("Correct a series-subclass-code row")
+            .summary("Correct one series-subclass-code row")
             .description("A correction of the version read.")
             .tags({"refdata"})
             .auth_required()
@@ -322,7 +333,7 @@ void series_subclass_code_classification_routes::register_routes(
 
     auto delete_route =
         router->delete_("/api/classifications/series-subclass-code/rows/{code}")
-            .summary("Remove a series-subclass-code row")
+            .summary("Remove one series-subclass-code row")
             .description("Its versions stay in the history.")
             .tags({"refdata"})
             .auth_required()
@@ -333,7 +344,7 @@ void series_subclass_code_classification_routes::register_routes(
 
     auto label_route =
         router->put("/api/classifications/series-subclass-code/rows/{code}/label")
-            .summary("Label a series-subclass-code row")
+            .summary("Label one series-subclass-code row")
             .description("Maps the row's code to a badge, or removes the mapping.")
             .tags({"refdata"})
             .auth_required()

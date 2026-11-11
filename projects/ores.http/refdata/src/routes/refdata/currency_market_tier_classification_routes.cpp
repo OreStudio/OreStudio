@@ -49,6 +49,12 @@ namespace cr = ores::http::net::classification_routes;
 
 namespace {
 
+auto& currency_market_tier_classification_routes_lg() {
+    static auto instance =
+        make_logger("ores.http.routes.refdata.currency_market_tier_classification_routes");
+    return instance;
+}
+
 /// One page reads any classification list whole; the lists are short.
 constexpr std::uint32_t currency_market_tier_classification_page_size = 1000;
 
@@ -61,10 +67,15 @@ currency_market_tier_classification_rows(const http_request& req, nats_client& s
     msg.order.descending = false;
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
+    if (reply.total > reply.types.size())
+        BOOST_LOG_SEV(currency_market_tier_classification_routes_lg(), warn)
+            << "The currency-market-tier list holds " << reply.total << " rows; one page read "
+            << reply.types.size();
     return std::move(reply.types);
 }
 
-/// Refuse a write to a list of spellings an ORE document must write exactly.
+/// Refuse a write when the list holds spellings an ORE document must write exactly; an editable
+/// list refuses nothing.
 void currency_market_tier_classification_require_editable() {}
 
 }
@@ -289,7 +300,7 @@ void currency_market_tier_classification_routes::register_routes(
 
     auto create_route =
         router->post("/api/classifications/currency-market-tier/rows")
-            .summary("Add a currency-market-tier row")
+            .summary("Add one currency-market-tier row")
             .description("A code already in the list is refused rather than replaced.")
             .tags({"refdata"})
             .auth_required()
@@ -300,7 +311,7 @@ void currency_market_tier_classification_routes::register_routes(
 
     auto update_route =
         router->put("/api/classifications/currency-market-tier/rows/{code}")
-            .summary("Correct a currency-market-tier row")
+            .summary("Correct one currency-market-tier row")
             .description("A correction of the version read.")
             .tags({"refdata"})
             .auth_required()
@@ -322,7 +333,7 @@ void currency_market_tier_classification_routes::register_routes(
 
     auto delete_route =
         router->delete_("/api/classifications/currency-market-tier/rows/{code}")
-            .summary("Remove a currency-market-tier row")
+            .summary("Remove one currency-market-tier row")
             .description("Its versions stay in the history.")
             .tags({"refdata"})
             .auth_required()
@@ -333,7 +344,7 @@ void currency_market_tier_classification_routes::register_routes(
 
     auto label_route =
         router->put("/api/classifications/currency-market-tier/rows/{code}/label")
-            .summary("Label a currency-market-tier row")
+            .summary("Label one currency-market-tier row")
             .description("Maps the row's code to a badge, or removes the mapping.")
             .tags({"refdata"})
             .auth_required()

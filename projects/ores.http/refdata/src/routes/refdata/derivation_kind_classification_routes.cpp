@@ -49,6 +49,12 @@ namespace cr = ores::http::net::classification_routes;
 
 namespace {
 
+auto& derivation_kind_classification_routes_lg() {
+    static auto instance =
+        make_logger("ores.http.routes.refdata.derivation_kind_classification_routes");
+    return instance;
+}
+
 /// One page reads any classification list whole; the lists are short.
 constexpr std::uint32_t derivation_kind_classification_page_size = 1000;
 
@@ -61,10 +67,15 @@ derivation_kind_classification_rows(const http_request& req, nats_client& sessio
     msg.order.descending = false;
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
+    if (reply.total > reply.kinds.size())
+        BOOST_LOG_SEV(derivation_kind_classification_routes_lg(), warn)
+            << "The derivation-kind list holds " << reply.total << " rows; one page read "
+            << reply.kinds.size();
     return std::move(reply.kinds);
 }
 
-/// Refuse a write to a list of spellings an ORE document must write exactly.
+/// Refuse a write when the list holds spellings an ORE document must write exactly; an editable
+/// list refuses nothing.
 void derivation_kind_classification_require_editable() {}
 
 }
@@ -285,7 +296,7 @@ void derivation_kind_classification_routes::register_routes(
 
     auto create_route =
         router->post("/api/classifications/derivation-kind/rows")
-            .summary("Add a derivation-kind row")
+            .summary("Add one derivation-kind row")
             .description("A code already in the list is refused rather than replaced.")
             .tags({"refdata"})
             .auth_required()
@@ -296,7 +307,7 @@ void derivation_kind_classification_routes::register_routes(
 
     auto update_route =
         router->put("/api/classifications/derivation-kind/rows/{code}")
-            .summary("Correct a derivation-kind row")
+            .summary("Correct one derivation-kind row")
             .description("A correction of the version read.")
             .tags({"refdata"})
             .auth_required()
@@ -318,7 +329,7 @@ void derivation_kind_classification_routes::register_routes(
 
     auto delete_route =
         router->delete_("/api/classifications/derivation-kind/rows/{code}")
-            .summary("Remove a derivation-kind row")
+            .summary("Remove one derivation-kind row")
             .description("Its versions stay in the history.")
             .tags({"refdata"})
             .auth_required()
@@ -329,7 +340,7 @@ void derivation_kind_classification_routes::register_routes(
 
     auto label_route =
         router->put("/api/classifications/derivation-kind/rows/{code}/label")
-            .summary("Label a derivation-kind row")
+            .summary("Label one derivation-kind row")
             .description("Maps the row's code to a badge, or removes the mapping.")
             .tags({"refdata"})
             .auth_required()

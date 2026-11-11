@@ -49,6 +49,12 @@ namespace cr = ores::http::net::classification_routes;
 
 namespace {
 
+auto& tenor_resolution_algorithm_classification_routes_lg() {
+    static auto instance =
+        make_logger("ores.http.routes.refdata.tenor_resolution_algorithm_classification_routes");
+    return instance;
+}
+
 /// One page reads any classification list whole; the lists are short.
 constexpr std::uint32_t tenor_resolution_algorithm_classification_page_size = 1000;
 
@@ -61,10 +67,15 @@ tenor_resolution_algorithm_classification_rows(const http_request& req, nats_cli
     msg.order.descending = false;
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
+    if (reply.total > reply.algorithms.size())
+        BOOST_LOG_SEV(tenor_resolution_algorithm_classification_routes_lg(), warn)
+            << "The tenor-resolution-algorithm list holds " << reply.total
+            << " rows; one page read " << reply.algorithms.size();
     return std::move(reply.algorithms);
 }
 
-/// Refuse a write to a list of spellings an ORE document must write exactly.
+/// Refuse a write when the list holds spellings an ORE document must write exactly; an editable
+/// list refuses nothing.
 void tenor_resolution_algorithm_classification_require_editable() {}
 
 }
@@ -289,7 +300,7 @@ void tenor_resolution_algorithm_classification_routes::register_routes(
 
     auto create_route =
         router->post("/api/classifications/tenor-resolution-algorithm/rows")
-            .summary("Add a tenor-resolution-algorithm row")
+            .summary("Add one tenor-resolution-algorithm row")
             .description("A code already in the list is refused rather than replaced.")
             .tags({"refdata"})
             .auth_required()
@@ -300,7 +311,7 @@ void tenor_resolution_algorithm_classification_routes::register_routes(
 
     auto update_route =
         router->put("/api/classifications/tenor-resolution-algorithm/rows/{code}")
-            .summary("Correct a tenor-resolution-algorithm row")
+            .summary("Correct one tenor-resolution-algorithm row")
             .description("A correction of the version read.")
             .tags({"refdata"})
             .auth_required()
@@ -322,7 +333,7 @@ void tenor_resolution_algorithm_classification_routes::register_routes(
 
     auto delete_route =
         router->delete_("/api/classifications/tenor-resolution-algorithm/rows/{code}")
-            .summary("Remove a tenor-resolution-algorithm row")
+            .summary("Remove one tenor-resolution-algorithm row")
             .description("Its versions stay in the history.")
             .tags({"refdata"})
             .auth_required()
@@ -333,7 +344,7 @@ void tenor_resolution_algorithm_classification_routes::register_routes(
 
     auto label_route =
         router->put("/api/classifications/tenor-resolution-algorithm/rows/{code}/label")
-            .summary("Label a tenor-resolution-algorithm row")
+            .summary("Label one tenor-resolution-algorithm row")
             .description("Maps the row's code to a badge, or removes the mapping.")
             .tags({"refdata"})
             .auth_required()

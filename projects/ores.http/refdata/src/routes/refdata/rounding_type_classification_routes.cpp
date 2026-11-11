@@ -49,6 +49,12 @@ namespace cr = ores::http::net::classification_routes;
 
 namespace {
 
+auto& rounding_type_classification_routes_lg() {
+    static auto instance =
+        make_logger("ores.http.routes.refdata.rounding_type_classification_routes");
+    return instance;
+}
+
 /// One page reads any classification list whole; the lists are short.
 constexpr std::uint32_t rounding_type_classification_page_size = 1000;
 
@@ -61,10 +67,15 @@ rounding_type_classification_rows(const http_request& req, nats_client& session)
     msg.order.descending = false;
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
+    if (reply.total > reply.types.size())
+        BOOST_LOG_SEV(rounding_type_classification_routes_lg(), warn)
+            << "The rounding-type list holds " << reply.total << " rows; one page read "
+            << reply.types.size();
     return std::move(reply.types);
 }
 
-/// Refuse a write to a list of spellings an ORE document must write exactly.
+/// Refuse a write when the list holds spellings an ORE document must write exactly; an editable
+/// list refuses nothing.
 void rounding_type_classification_require_editable() {}
 
 }
@@ -282,7 +293,7 @@ void rounding_type_classification_routes::register_routes(
 
     auto create_route =
         router->post("/api/classifications/rounding-type/rows")
-            .summary("Add a rounding-type row")
+            .summary("Add one rounding-type row")
             .description("A code already in the list is refused rather than replaced.")
             .tags({"refdata"})
             .auth_required()
@@ -293,7 +304,7 @@ void rounding_type_classification_routes::register_routes(
 
     auto update_route =
         router->put("/api/classifications/rounding-type/rows/{code}")
-            .summary("Correct a rounding-type row")
+            .summary("Correct one rounding-type row")
             .description("A correction of the version read.")
             .tags({"refdata"})
             .auth_required()
@@ -315,7 +326,7 @@ void rounding_type_classification_routes::register_routes(
 
     auto delete_route =
         router->delete_("/api/classifications/rounding-type/rows/{code}")
-            .summary("Remove a rounding-type row")
+            .summary("Remove one rounding-type row")
             .description("Its versions stay in the history.")
             .tags({"refdata"})
             .auth_required()
@@ -326,7 +337,7 @@ void rounding_type_classification_routes::register_routes(
 
     auto label_route =
         router->put("/api/classifications/rounding-type/rows/{code}/label")
-            .summary("Label a rounding-type row")
+            .summary("Label one rounding-type row")
             .description("Maps the row's code to a badge, or removes the mapping.")
             .tags({"refdata"})
             .auth_required()

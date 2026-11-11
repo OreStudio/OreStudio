@@ -49,6 +49,12 @@ namespace cr = ores::http::net::classification_routes;
 
 namespace {
 
+auto& diary_entry_type_classification_routes_lg() {
+    static auto instance =
+        make_logger("ores.http.routes.refdata.diary_entry_type_classification_routes");
+    return instance;
+}
+
 /// One page reads any classification list whole; the lists are short.
 constexpr std::uint32_t diary_entry_type_classification_page_size = 1000;
 
@@ -61,10 +67,15 @@ diary_entry_type_classification_rows(const http_request& req, nats_client& sessi
     msg.order.descending = false;
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
+    if (reply.total > reply.entry_types.size())
+        BOOST_LOG_SEV(diary_entry_type_classification_routes_lg(), warn)
+            << "The diary-entry-type list holds " << reply.total << " rows; one page read "
+            << reply.entry_types.size();
     return std::move(reply.entry_types);
 }
 
-/// Refuse a write to a list of spellings an ORE document must write exactly.
+/// Refuse a write when the list holds spellings an ORE document must write exactly; an editable
+/// list refuses nothing.
 void diary_entry_type_classification_require_editable() {}
 
 }
@@ -287,7 +298,7 @@ void diary_entry_type_classification_routes::register_routes(
 
     auto create_route =
         router->post("/api/classifications/diary-entry-type/rows")
-            .summary("Add a diary-entry-type row")
+            .summary("Add one diary-entry-type row")
             .description("A code already in the list is refused rather than replaced.")
             .tags({"refdata"})
             .auth_required()
@@ -298,7 +309,7 @@ void diary_entry_type_classification_routes::register_routes(
 
     auto update_route =
         router->put("/api/classifications/diary-entry-type/rows/{code}")
-            .summary("Correct a diary-entry-type row")
+            .summary("Correct one diary-entry-type row")
             .description("A correction of the version read.")
             .tags({"refdata"})
             .auth_required()
@@ -320,7 +331,7 @@ void diary_entry_type_classification_routes::register_routes(
 
     auto delete_route =
         router->delete_("/api/classifications/diary-entry-type/rows/{code}")
-            .summary("Remove a diary-entry-type row")
+            .summary("Remove one diary-entry-type row")
             .description("Its versions stay in the history.")
             .tags({"refdata"})
             .auth_required()
@@ -331,7 +342,7 @@ void diary_entry_type_classification_routes::register_routes(
 
     auto label_route =
         router->put("/api/classifications/diary-entry-type/rows/{code}/label")
-            .summary("Label a diary-entry-type row")
+            .summary("Label one diary-entry-type row")
             .description("Maps the row's code to a badge, or removes the mapping.")
             .tags({"refdata"})
             .auth_required()

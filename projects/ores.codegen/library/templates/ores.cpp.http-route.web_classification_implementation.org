@@ -72,6 +72,11 @@ namespace cr = ores::http::net::classification_routes;
 
 namespace {
 
+auto& {{unit}}_routes_lg() {
+    static auto instance = make_logger("ores.http.routes.{{component}}.{{unit}}_routes");
+    return instance;
+}
+
 /// One page reads any classification list whole; the lists are short.
 constexpr std::uint32_t {{unit}}_page_size = 1000;
 
@@ -84,10 +89,13 @@ std::vector<ores::{{component}}::domain::{{entity_singular}}>
     msg.order.descending = false;
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
+    if (reply.total > reply.{{rows_member}}.size())
+        BOOST_LOG_SEV({{unit}}_routes_lg(), warn) << "The {{key}} list holds " << reply.total
+                                                    << " rows; one page read " << reply.{{rows_member}}.size();
     return std::move(reply.{{rows_member}});
 }
 
-/// Refuse a write to a list of spellings an ORE document must write exactly.
+/// Refuse a write when the list holds spellings an ORE document must write exactly; an editable list refuses nothing.
 void {{unit}}_require_editable() {
 {{^editable}}
     rr::refuse(http_status::forbidden, "forbidden",
@@ -306,7 +314,7 @@ void {{unit}}_routes::register_routes(
     registry->register_route(list_built);
 
     auto create_route = router->post("{{base}}/rows")
-                            .summary("Add a {{key}} row")
+                            .summary("Add one {{key}} row")
                             .description("A code already in the list is refused rather than replaced.")
                             .tags({"{{component}}"})
                             .auth_required()
@@ -316,7 +324,7 @@ void {{unit}}_routes::register_routes(
     registry->register_route(create_built);
 
     auto update_route = router->put("{{base}}/rows/{code}")
-                            .summary("Correct a {{key}} row")
+                            .summary("Correct one {{key}} row")
                             .description("A correction of the version read.")
                             .tags({"{{component}}"})
                             .auth_required()
@@ -336,7 +344,7 @@ void {{unit}}_routes::register_routes(
     registry->register_route(order_built);
 
     auto delete_route = router->delete_("{{base}}/rows/{code}")
-                            .summary("Remove a {{key}} row")
+                            .summary("Remove one {{key}} row")
                             .description("Its versions stay in the history.")
                             .tags({"{{component}}"})
                             .auth_required()
@@ -346,7 +354,7 @@ void {{unit}}_routes::register_routes(
     registry->register_route(delete_built);
 
     auto label_route = router->put("{{base}}/rows/{code}/label")
-                           .summary("Label a {{key}} row")
+                           .summary("Label one {{key}} row")
                            .description("Maps the row's code to a badge, or removes the mapping.")
                            .tags({"{{component}}"})
                            .auth_required()

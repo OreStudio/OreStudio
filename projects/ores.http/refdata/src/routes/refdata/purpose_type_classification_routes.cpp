@@ -49,6 +49,12 @@ namespace cr = ores::http::net::classification_routes;
 
 namespace {
 
+auto& purpose_type_classification_routes_lg() {
+    static auto instance =
+        make_logger("ores.http.routes.refdata.purpose_type_classification_routes");
+    return instance;
+}
+
 /// One page reads any classification list whole; the lists are short.
 constexpr std::uint32_t purpose_type_classification_page_size = 1000;
 
@@ -61,10 +67,15 @@ purpose_type_classification_rows(const http_request& req, nats_client& session) 
     msg.order.descending = false;
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
+    if (reply.total > reply.types.size())
+        BOOST_LOG_SEV(purpose_type_classification_routes_lg(), warn)
+            << "The purpose-type list holds " << reply.total << " rows; one page read "
+            << reply.types.size();
     return std::move(reply.types);
 }
 
-/// Refuse a write to a list of spellings an ORE document must write exactly.
+/// Refuse a write when the list holds spellings an ORE document must write exactly; an editable
+/// list refuses nothing.
 void purpose_type_classification_require_editable() {}
 
 }
@@ -282,7 +293,7 @@ void purpose_type_classification_routes::register_routes(
 
     auto create_route =
         router->post("/api/classifications/purpose-type/rows")
-            .summary("Add a purpose-type row")
+            .summary("Add one purpose-type row")
             .description("A code already in the list is refused rather than replaced.")
             .tags({"refdata"})
             .auth_required()
@@ -293,7 +304,7 @@ void purpose_type_classification_routes::register_routes(
 
     auto update_route =
         router->put("/api/classifications/purpose-type/rows/{code}")
-            .summary("Correct a purpose-type row")
+            .summary("Correct one purpose-type row")
             .description("A correction of the version read.")
             .tags({"refdata"})
             .auth_required()
@@ -315,7 +326,7 @@ void purpose_type_classification_routes::register_routes(
 
     auto delete_route =
         router->delete_("/api/classifications/purpose-type/rows/{code}")
-            .summary("Remove a purpose-type row")
+            .summary("Remove one purpose-type row")
             .description("Its versions stay in the history.")
             .tags({"refdata"})
             .auth_required()
@@ -326,7 +337,7 @@ void purpose_type_classification_routes::register_routes(
 
     auto label_route =
         router->put("/api/classifications/purpose-type/rows/{code}/label")
-            .summary("Label a purpose-type row")
+            .summary("Label one purpose-type row")
             .description("Maps the row's code to a badge, or removes the mapping.")
             .tags({"refdata"})
             .auth_required()

@@ -49,6 +49,12 @@ namespace cr = ores::http::net::classification_routes;
 
 namespace {
 
+auto& calendar_type_classification_routes_lg() {
+    static auto instance =
+        make_logger("ores.http.routes.refdata.calendar_type_classification_routes");
+    return instance;
+}
+
 /// One page reads any classification list whole; the lists are short.
 constexpr std::uint32_t calendar_type_classification_page_size = 1000;
 
@@ -61,10 +67,15 @@ calendar_type_classification_rows(const http_request& req, nats_client& session)
     msg.order.descending = false;
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
+    if (reply.total > reply.types.size())
+        BOOST_LOG_SEV(calendar_type_classification_routes_lg(), warn)
+            << "The calendar-type list holds " << reply.total << " rows; one page read "
+            << reply.types.size();
     return std::move(reply.types);
 }
 
-/// Refuse a write to a list of spellings an ORE document must write exactly.
+/// Refuse a write when the list holds spellings an ORE document must write exactly; an editable
+/// list refuses nothing.
 void calendar_type_classification_require_editable() {}
 
 }
@@ -282,7 +293,7 @@ void calendar_type_classification_routes::register_routes(
 
     auto create_route =
         router->post("/api/classifications/calendar-type/rows")
-            .summary("Add a calendar-type row")
+            .summary("Add one calendar-type row")
             .description("A code already in the list is refused rather than replaced.")
             .tags({"refdata"})
             .auth_required()
@@ -293,7 +304,7 @@ void calendar_type_classification_routes::register_routes(
 
     auto update_route =
         router->put("/api/classifications/calendar-type/rows/{code}")
-            .summary("Correct a calendar-type row")
+            .summary("Correct one calendar-type row")
             .description("A correction of the version read.")
             .tags({"refdata"})
             .auth_required()
@@ -315,7 +326,7 @@ void calendar_type_classification_routes::register_routes(
 
     auto delete_route =
         router->delete_("/api/classifications/calendar-type/rows/{code}")
-            .summary("Remove a calendar-type row")
+            .summary("Remove one calendar-type row")
             .description("Its versions stay in the history.")
             .tags({"refdata"})
             .auth_required()
@@ -326,7 +337,7 @@ void calendar_type_classification_routes::register_routes(
 
     auto label_route =
         router->put("/api/classifications/calendar-type/rows/{code}/label")
-            .summary("Label a calendar-type row")
+            .summary("Label one calendar-type row")
             .description("Maps the row's code to a badge, or removes the mapping.")
             .tags({"refdata"})
             .auth_required()

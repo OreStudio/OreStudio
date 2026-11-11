@@ -59,6 +59,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <exception>
+#include <map>
+#include <optional>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace ores::http::routes::refdata {
@@ -79,8 +83,14 @@ auto& lg() {
     return instance;
 }
 
-/// The label catalogue holds fewer mappings than this, so one page reads them all.
+/// One page reads the label catalogue, as it did in the BFF.
 constexpr std::uint32_t mapping_page = 2000;
+
+/// A page that did not hold every row is logged, so a catalogue that outgrew its page is seen.
+void warn_if_short(std::string_view what, std::uint64_t total, std::size_t read) {
+    if (total > read)
+        BOOST_LOG_SEV(lg(), warn) << "One page read " << read << " of " << total << " " << what;
+}
 
 /// One list as the catalogue lists it: its entry, and how its rows are counted.
 struct catalogue_list final {
@@ -186,6 +196,7 @@ std::vector<ores::dq::domain::badge_mapping> all_mappings(const http_request& re
     msg.order.descending = false;
     auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
+    warn_if_short("badge mappings", reply.total, reply.badge_mappings.size());
     return std::move(reply.badge_mappings);
 }
 
@@ -201,6 +212,7 @@ std::string labels_body(const http_request& req, nats_client& session) {
     definitions_msg.order.descending = false;
     const auto definitions = ores::http::forwarding::forward(req, session, definitions_msg);
     rr::require_ok(definitions.result);
+    warn_if_short("badge definitions", definitions.total, definitions.definitions.size());
     const auto mappings = all_mappings(req, session);
 
     std::string out = "{\"labels\":[";
@@ -265,6 +277,7 @@ std::map<std::string, std::string> classification_routes::labels_of(const http_r
     msg.order.descending = false;
     const auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
+    warn_if_short("badge mappings of a code domain", reply.total, reply.badge_mappings.size());
     std::map<std::string, std::string> labels;
     for (const auto& mapping : reply.badge_mappings)
         labels[mapping.entity_code] = mapping.badge_code;

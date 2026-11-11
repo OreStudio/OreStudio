@@ -54,7 +54,7 @@ The helpers the access units share, a refusal, a guarded forward and the length
 of a text in characters, move into one header, =access_screen_answers=, rather
 than one copy per unit.
 
-The last nine routes move to [[id:0BD277CC-A6E2-4C34-BECD-8A81E8FD672C][Serve the access profiles, contacts and reporting tree]].
+The last nine routes move to [[id:0BD277CC-A6E2-4C34-BECD-8A81E8FD672C][Serve the access profiles and contact records]].
 
 * Measurements
 

@@ -208,6 +208,64 @@ struct permission_changes_body final {
                       field{"note", &permission_changes_body::note}};
 }
 
+
+/**
+ * @brief A profile as the screen writes it; a field it leaves out is empty.
+ */
+struct profile_body final {
+    std::optional<std::string> fullName;
+    std::optional<std::string> jobTitle;
+    std::optional<std::string> imageId;
+    std::optional<std::string> reasonCode;
+    std::optional<std::string> commentary;
+    std::optional<std::string> expectedVersion;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<profile_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"fullName", &profile_body::fullName},
+                      field{"jobTitle", &profile_body::jobTitle},
+                      field{"imageId", &profile_body::imageId},
+                      field{"reasonCode", &profile_body::reasonCode},
+                      field{"commentary", &profile_body::commentary},
+                      field{"expectedVersion", &profile_body::expectedVersion}};
+}
+
+/**
+ * @brief A contact record as the screen writes it, with the version an
+ * administrator's panel read, or none; a field it leaves out is empty.
+ */
+struct contact_body final {
+    std::optional<std::string> streetLine1;
+    std::optional<std::string> streetLine2;
+    std::optional<std::string> city;
+    std::optional<std::string> state;
+    std::optional<std::string> countryCode;
+    std::optional<std::string> postalCode;
+    std::optional<std::string> phone;
+    std::optional<std::string> email;
+    std::optional<std::string> webPage;
+    std::optional<std::string> reasonCode;
+    std::optional<std::string> commentary;
+    std::optional<std::int64_t> version;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<contact_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"streetLine1", &contact_body::streetLine1},
+                      field{"streetLine2", &contact_body::streetLine2},
+                      field{"city", &contact_body::city},
+                      field{"state", &contact_body::state},
+                      field{"countryCode", &contact_body::countryCode},
+                      field{"postalCode", &contact_body::postalCode},
+                      field{"phone", &contact_body::phone},
+                      field{"email", &contact_body::email},
+                      field{"webPage", &contact_body::webPage},
+                      field{"reasonCode", &contact_body::reasonCode},
+                      field{"commentary", &contact_body::commentary},
+                      field{"version", &contact_body::version}};
+}
+
 }
 
 #endif

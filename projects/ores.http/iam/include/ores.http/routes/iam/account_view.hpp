@@ -21,6 +21,7 @@
 #define ORES_HTTP_ROUTES_IAM_ACCOUNT_VIEW_HPP
 
 #include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.api/domain/account_contact_information.hpp"
 #include <optional>
 #include <string>
 
@@ -44,6 +45,17 @@ namespace ores::http::routes::iam::account_view {
  * @brief One account, or null when there is none.
  */
 [[nodiscard]] std::string json_of(const std::optional<ores::iam::domain::account>& account);
+
+/**
+ * @brief One account's contact record, as a JSON object in camelCase.
+ */
+[[nodiscard]] std::string json_of(const ores::iam::domain::account_contact_information& contact);
+
+/**
+ * @brief One contact record, or null when there is none.
+ */
+[[nodiscard]] std::string
+json_of(const std::optional<ores::iam::domain::account_contact_information>& contact);
 
 }
 

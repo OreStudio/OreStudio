@@ -70,4 +70,30 @@ std::string json_of(const std::optional<ores::iam::domain::account>& account) {
     return account ? json_of(*account) : std::string("null");
 }
 
+
+std::string json_of(const ores::iam::domain::account_contact_information& c) {
+    std::string out = "{\"version\":" + std::to_string(c.version);
+    out += ",\"id\":" + json::write(boost::uuids::to_string(c.id));
+    out += ",\"accountId\":" + json::write(boost::uuids::to_string(c.account_id));
+    out += ",\"streetLine1\":" + json::write(c.street_line_1);
+    out += ",\"streetLine2\":" + json::write(c.street_line_2);
+    out += ",\"city\":" + json::write(c.city);
+    out += ",\"state\":" + json::write(c.state);
+    out += ",\"countryCode\":" + json::write(c.country_code);
+    out += ",\"postalCode\":" + json::write(c.postal_code);
+    out += ",\"phone\":" + json::write(c.phone);
+    out += ",\"email\":" + json::write(c.email);
+    out += ",\"webPage\":" + json::write(c.web_page);
+    out += ",\"modifiedBy\":" + json::write(c.modified_by);
+    out += ",\"changeReasonCode\":" + json::write(c.change_reason_code);
+    out += ",\"changeCommentary\":" + json::write(c.change_commentary);
+    out += ",\"performedBy\":" + json::write(c.performed_by);
+    out += ",\"recordedAt\":" + json::write(c.recorded_at);
+    return out + "}";
+}
+
+std::string json_of(const std::optional<ores::iam::domain::account_contact_information>& contact) {
+    return contact ? json_of(*contact) : std::string("null");
+}
+
 }

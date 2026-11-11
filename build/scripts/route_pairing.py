@@ -26,15 +26,17 @@ PAIRS = {
     # access
     ("GET", "/api/accounts"): ("GET", "/api/accounts"),
     ("GET", "/api/accounts/:username"): ("GET", "/api/accounts/{username}"),
-    ("GET", "/api/accounts/:accountId/contact-information"):
-        ("GET", f"{ACCESS}/account_contact_informations/by-account-id/{{account_id}}"),
-    ("PUT", "/api/accounts/:accountId/contact-information"):
-        ("PUT", f"{ACCESS}/account_contact_informations"),
     ("POST", "/api/accounts/:accountId/lock"): ("POST", "/api/accounts/{accountId}/lock"),
     ("POST", "/api/accounts/:accountId/unlock"): ("POST", "/api/accounts/{accountId}/unlock"),
     ("POST", "/api/me/default-party"): ("POST", "/api/me/default-party"),
     ("PUT", "/api/roles/:roleId"): ("PUT", "/api/roles/{roleId}"),
     ("POST", "/api/roles/:roleId/permissions/changes"): ("POST", "/api/roles/{roleId}/permissions/changes"),
+    ("PUT", "/api/me/profile"): ("PUT", "/api/me/profile"),
+    ("PUT", "/api/accounts/:username/profile"): ("PUT", "/api/accounts/{username}/profile"),
+    ("GET", "/api/me/contact-information"): ("GET", "/api/me/contact-information"),
+    ("PUT", "/api/me/contact-information"): ("PUT", "/api/me/contact-information"),
+    ("GET", "/api/accounts/:accountId/contact-information"): ("GET", "/api/accounts/{accountId}/contact-information"),
+    ("PUT", "/api/accounts/:accountId/contact-information"): ("PUT", "/api/accounts/{accountId}/contact-information"),
     ("GET", "/api/me/access"): ("GET", "/api/me/access"),
     ("GET", "/api/me/permissions"): ("GET", "/api/me/permissions"),
     ("GET", "/api/accounts/:accountId/permissions"): ("GET", "/api/accounts/{accountId}/permissions"),

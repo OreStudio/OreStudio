@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/export-a-published-surface-to-ore
-#+pr: 4577
+#+pr: 4596
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -88,6 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4596][#4596]] | [refdata] Curate a surface blueprint for every quoted pair through DQ |
 | [[https://github.com/OreStudio/OreStudio/pull/4577][#4577]] | [marketdata] Export a published surface as ORE option quotes |
 
 * Review

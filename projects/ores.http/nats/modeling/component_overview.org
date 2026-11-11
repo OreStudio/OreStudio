@@ -9,7 +9,7 @@
 #+filetags: :http:rest:nats:component:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+name: nats
+#+name: http.nats
 #+full_name: ores.http.nats
 #+brief: HTTP gateway forwarding over NATS
 
@@ -81,11 +81,7 @@ hand-authored, and codegen writes only the two =component_files.cmake= lists.
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.http.api.lib
-        ores.nats.lib
-        ores.logging.lib
-    PRIVATE
-        ores.utility.lib)
+        ores.logging.lib)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

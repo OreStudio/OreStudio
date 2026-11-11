@@ -164,6 +164,11 @@ via its "Verifies task" field.
 | 22 | PR #4618: run the write and a composite page against a live service. | All | Declined | The dev database is in bootstrap mode with no accounts; the switch task tests ores.web end to end. |
 | 23 | Local review: the tenor and conventions writes each built the precondition and the answer. | =record_routes.hpp=, =forwarding.hpp= | Accepted | One =rr::versioned_write=, =forwarding::put_at_version= and =rr::result_with=; the conventions unit uses them. |
 | 24 | Local review: a resolution's horizon and spot are typed dates. | =tenor_screen_routes.cpp= | Accepted | A malformed date is refused with 400 before forwarding; the BFF passed the text to the service, which refused it. |
+| 25 | PR #4619: the tenor and convention writes do not check the row's own code. | =tenor_screen_routes.cpp= | Declined | The BFF passed the row to the service, which checks it and names the field it refuses. |
+| 26 | PR #4619: every question requires a calendar code. | =tenor_screen_routes.cpp= | Declined | The BFF required a code of 1 to 100 characters on all three, and the screen always sends one. |
+| 27 | PR #4619: =decltype(Put{}.change.write)= in =put_at_version=. | =forwarding.hpp= | Declined | Every put request is default constructible, and the protocols name no write type alias. |
+| 28 | PR #4619: the membership write and removal answer only the result. | =tenor_screen_routes.cpp= | Declined | The BFF answered only the result, and the screen reads only that. |
+| 29 | PR #4619: =question_sentence= has a static initialiser. | =tenor_screen_routes.cpp= | Accepted | It is a =constexpr std::string_view=. |
 
 * Result
 
@@ -176,6 +181,6 @@ row below records a group that has merged; the task closes when all five have.
 | Conventions: families, page and write | #4618 | 3 | Merged |
 | Conventions: document and terms | | 2 | Waits for the reporting part |
 | Curve configurations | | 3 | Open |
-| Tenors | | 8 | Open |
+| Tenors | #4619 | 8 | Merged |
 | Tenor catalogue view | | 1 | Moved to the tenor catalogue view task |
 | Records, calendars and ORE currency | | 10 | Open |

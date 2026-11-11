@@ -33,6 +33,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 
@@ -66,7 +67,7 @@ struct removal_body final {
 
 }
 
-const std::string question_sentence =
+constexpr std::string_view question_sentence =
     "A resolution names its codes in 1 to 100 characters, and its horizon and spot as dates.";
 
 /// A question read as its own request, or a refusal when it is malformed.
@@ -74,8 +75,8 @@ template <typename Request>
 Request question_of(const http_request& req) {
     auto question = rr::read_body<Request>(req.body);
     if (!question)
-        rr::invalid(question_sentence);
-    question->calendar_code = rr::code(question->calendar_code, question_sentence);
+        rr::invalid(std::string(question_sentence));
+    question->calendar_code = rr::code(question->calendar_code, std::string(question_sentence));
     return std::move(*question);
 }
 
@@ -130,9 +131,10 @@ void tenor_screen_routes::register_routes(
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::resolve_tenor_request>([&] {
                     auto question = question_of<messaging::resolve_tenor_request>(req);
-                    question.tenor_code = rr::code(question.tenor_code, question_sentence);
+                    question.tenor_code =
+                        rr::code(question.tenor_code, std::string(question_sentence));
                     question.convention_code =
-                        rr::code(question.convention_code, question_sentence);
+                        rr::code(question.convention_code, std::string(question_sentence));
                     return http_response::json(
                         json::write(forwarding::forward(req, session, question)));
                 });
@@ -144,7 +146,7 @@ void tenor_screen_routes::register_routes(
                 co_return guarded<messaging::resolve_convention_request>([&] {
                     auto question = question_of<messaging::resolve_convention_request>(req);
                     question.convention_code =
-                        rr::code(question.convention_code, question_sentence);
+                        rr::code(question.convention_code, std::string(question_sentence));
                     return http_response::json(
                         json::write(forwarding::forward(req, session, question)));
                 });

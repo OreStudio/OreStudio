@@ -35,9 +35,9 @@ struct probe {
 };
 
 inline const auto probe_fields =
-    std::make_tuple(ores::utility::codec::field{"id", &probe::id},
-                    ores::utility::codec::field{"label", &probe::label},
-                    ores::utility::codec::field{"when", &probe::when});
+    ores::utility::codec::field_list{ores::utility::codec::field{"id", &probe::id},
+                                     ores::utility::codec::field{"label", &probe::label},
+                                     ores::utility::codec::field{"when", &probe::when}};
 
 }
 

@@ -367,7 +367,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gmm_component_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &gmm_component_key::id},
     };
 }
@@ -381,7 +381,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gmm_component_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &gmm_component_write::id},
         utility::codec::field{"fx_spot_config_id", &gmm_component_write::fx_spot_config_id},
         utility::codec::field{"component_index", &gmm_component_write::component_index},
@@ -401,7 +401,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gmm_component_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &gmm_component_change::write},
         utility::codec::field{"precondition", &gmm_component_change::precondition},
     };
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gmm_component_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &gmm_component_removal::key},
         utility::codec::field{"precondition", &gmm_component_removal::precondition},
     };
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gmm_component_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &gmm_component_lookup::key},
         utility::codec::field{"gmm_component", &gmm_component_lookup::gmm_component},
     };
@@ -446,7 +446,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gmm_components_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"fx_spot_config_id", &gmm_components_filter::fx_spot_config_id},
         utility::codec::field{"id_one_of", &gmm_components_filter::id_one_of},
         utility::codec::field{"fx_spot_config_id_one_of",
@@ -463,7 +463,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gmm_component_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &gmm_component_event::event_id},
         utility::codec::field{"key", &gmm_component_event::key},
         utility::codec::field{"action", &gmm_component_event::action},
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gmm_component_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"gmm_component", &gmm_component_version_key::gmm_component},
         utility::codec::field{"version", &gmm_component_version_key::version},
     };
@@ -497,7 +497,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<gmm_component_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &gmm_component_versions_filter::version},
         utility::codec::field{"from_version", &gmm_component_versions_filter::from_version},
         utility::codec::field{"to_version", &gmm_component_versions_filter::to_version},
@@ -513,7 +513,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_gmm_components_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_gmm_components_request::offset},
         utility::codec::field{"limit", &list_gmm_components_request::limit},
         utility::codec::field{"order", &list_gmm_components_request::order},
@@ -531,7 +531,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_gmm_components_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_gmm_components_response::result},
         utility::codec::field{"gmm_components", &list_gmm_components_response::gmm_components},
         utility::codec::field{"total", &list_gmm_components_response::total},
@@ -547,7 +547,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_gmm_component_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_gmm_component_request::key},
     };
 }
@@ -561,7 +561,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_gmm_component_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_gmm_component_response::result},
         utility::codec::field{"gmm_component", &get_gmm_component_response::gmm_component},
     };
@@ -576,7 +576,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_gmm_components_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_gmm_components_request::keys},
     };
 }
@@ -590,7 +590,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_gmm_components_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_gmm_components_response::result},
         utility::codec::field{"entries", &get_many_gmm_components_response::entries},
     };
@@ -605,7 +605,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_gmm_component_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_gmm_component_request::change},
         utility::codec::field{"intent", &put_gmm_component_request::intent},
     };
@@ -620,7 +620,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_gmm_component_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_gmm_component_response::result},
         utility::codec::field{"gmm_component", &put_gmm_component_response::gmm_component},
     };
@@ -635,7 +635,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_gmm_components_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_gmm_components_request::changes},
         utility::codec::field{"intent", &put_many_gmm_components_request::intent},
     };
@@ -650,7 +650,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_gmm_components_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_gmm_components_response::result},
         utility::codec::field{"gmm_components", &put_many_gmm_components_response::gmm_components},
     };
@@ -665,7 +665,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_gmm_component_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_gmm_component_request::removal},
         utility::codec::field{"intent", &delete_gmm_component_request::intent},
     };
@@ -680,7 +680,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_gmm_component_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_gmm_component_response::result},
     };
 }
@@ -694,7 +694,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_gmm_components_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_gmm_components_request::removals},
         utility::codec::field{"intent", &delete_many_gmm_components_request::intent},
     };
@@ -709,7 +709,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_gmm_components_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_gmm_components_response::result},
     };
 }
@@ -723,7 +723,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_gmm_component_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_gmm_component_versions_request::key},
         utility::codec::field{"offset", &list_gmm_component_versions_request::offset},
         utility::codec::field{"limit", &list_gmm_component_versions_request::limit},
@@ -741,7 +741,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_gmm_component_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_gmm_component_versions_response::result},
         utility::codec::field{"versions", &list_gmm_component_versions_response::versions},
         utility::codec::field{"total", &list_gmm_component_versions_response::total},
@@ -757,7 +757,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_gmm_component_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_gmm_component_version_request::key},
     };
 }
@@ -771,7 +771,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.gmm_components.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_gmm_component_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_gmm_component_version_response::result},
         utility::codec::field{"version", &get_gmm_component_version_response::version},
     };

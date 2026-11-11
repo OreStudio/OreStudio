@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_topology_config_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"name", &crm_topology_config_key::name},
     };
 }
@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_topology_config_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &crm_topology_config_write::id},
         utility::codec::field{"party_id", &crm_topology_config_write::party_id},
         utility::codec::field{"name", &crm_topology_config_write::name},
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_topology_config_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &crm_topology_config_change::write},
         utility::codec::field{"precondition", &crm_topology_config_change::precondition},
     };
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_topology_config_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &crm_topology_config_removal::key},
         utility::codec::field{"precondition", &crm_topology_config_removal::precondition},
     };
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_topology_config_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &crm_topology_config_lookup::key},
         utility::codec::field{"crm_topology_config",
                               &crm_topology_config_lookup::crm_topology_config},
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_topology_configs_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &crm_topology_configs_filter::id_one_of},
     };
 }
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_topology_config_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &crm_topology_config_event::event_id},
         utility::codec::field{"key", &crm_topology_config_event::key},
         utility::codec::field{"action", &crm_topology_config_event::action},
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_topology_config_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"crm_topology_config",
                               &crm_topology_config_version_key::crm_topology_config},
         utility::codec::field{"version", &crm_topology_config_version_key::version},
@@ -499,7 +499,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_topology_config_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &crm_topology_config_versions_filter::version},
         utility::codec::field{"from_version", &crm_topology_config_versions_filter::from_version},
         utility::codec::field{"to_version", &crm_topology_config_versions_filter::to_version},
@@ -515,7 +515,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_crm_topology_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_crm_topology_configs_request::offset},
         utility::codec::field{"limit", &list_crm_topology_configs_request::limit},
         utility::codec::field{"order", &list_crm_topology_configs_request::order},
@@ -533,7 +533,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_crm_topology_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_crm_topology_configs_response::result},
         utility::codec::field{"crm_topology_configs",
                               &list_crm_topology_configs_response::crm_topology_configs},
@@ -550,7 +550,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_crm_topology_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_crm_topology_config_request::key},
     };
 }
@@ -564,7 +564,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_crm_topology_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_crm_topology_config_response::result},
         utility::codec::field{"crm_topology_config",
                               &get_crm_topology_config_response::crm_topology_config},
@@ -581,7 +581,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.crm_topology_conf
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_crm_topology_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_crm_topology_configs_request::keys},
     };
 }
@@ -596,7 +596,7 @@ wire_fields(std::type_identity<get_many_crm_topology_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_crm_topology_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_crm_topology_configs_response::result},
         utility::codec::field{"entries", &get_many_crm_topology_configs_response::entries},
     };
@@ -611,7 +611,7 @@ wire_fields(std::type_identity<get_many_crm_topology_configs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_crm_topology_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_crm_topology_config_request::change},
         utility::codec::field{"intent", &put_crm_topology_config_request::intent},
     };
@@ -626,7 +626,7 @@ wire_fields(std::type_identity<get_many_crm_topology_configs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_crm_topology_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_crm_topology_config_response::result},
         utility::codec::field{"crm_topology_config",
                               &put_crm_topology_config_response::crm_topology_config},
@@ -643,7 +643,7 @@ wire_fields(std::type_identity<get_many_crm_topology_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_crm_topology_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_crm_topology_configs_request::changes},
         utility::codec::field{"intent", &put_many_crm_topology_configs_request::intent},
     };
@@ -659,7 +659,7 @@ wire_fields(std::type_identity<put_many_crm_topology_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_crm_topology_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_crm_topology_configs_response::result},
         utility::codec::field{"crm_topology_configs",
                               &put_many_crm_topology_configs_response::crm_topology_configs},
@@ -675,7 +675,7 @@ wire_fields(std::type_identity<put_many_crm_topology_configs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_crm_topology_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_crm_topology_config_request::removal},
         utility::codec::field{"intent", &delete_crm_topology_config_request::intent},
     };
@@ -690,7 +690,7 @@ wire_fields(std::type_identity<put_many_crm_topology_configs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_crm_topology_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_crm_topology_config_response::result},
     };
 }
@@ -705,7 +705,7 @@ wire_fields(std::type_identity<put_many_crm_topology_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_crm_topology_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_crm_topology_configs_request::removals},
         utility::codec::field{"intent", &delete_many_crm_topology_configs_request::intent},
     };
@@ -721,7 +721,7 @@ wire_fields(std::type_identity<delete_many_crm_topology_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_crm_topology_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_crm_topology_configs_response::result},
     };
 }
@@ -736,7 +736,7 @@ wire_fields(std::type_identity<delete_many_crm_topology_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_crm_topology_config_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_crm_topology_config_versions_request::key},
         utility::codec::field{"offset", &list_crm_topology_config_versions_request::offset},
         utility::codec::field{"limit", &list_crm_topology_config_versions_request::limit},
@@ -755,7 +755,7 @@ wire_fields(std::type_identity<list_crm_topology_config_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_crm_topology_config_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_crm_topology_config_versions_response::result},
         utility::codec::field{"versions", &list_crm_topology_config_versions_response::versions},
         utility::codec::field{"total", &list_crm_topology_config_versions_response::total},
@@ -772,7 +772,7 @@ wire_fields(std::type_identity<list_crm_topology_config_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_crm_topology_config_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_crm_topology_config_version_request::key},
     };
 }
@@ -787,7 +787,7 @@ wire_fields(std::type_identity<get_crm_topology_config_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_crm_topology_config_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_crm_topology_config_version_response::result},
         utility::codec::field{"version", &get_crm_topology_config_version_response::version},
     };

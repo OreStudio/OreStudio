@@ -195,7 +195,7 @@ struct preview_ir_curve_shape_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<parameter_spec>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"parameter_name", &parameter_spec::parameter_name},
         ::ores::utility::codec::field{"parameter_value", &parameter_spec::parameter_value},
     };
@@ -210,7 +210,7 @@ struct preview_ir_curve_shape_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<simulate_ir_curve_paths_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"process_type",
                                       &simulate_ir_curve_paths_request::process_type},
         ::ores::utility::codec::field{"parameters", &simulate_ir_curve_paths_request::parameters},
@@ -229,7 +229,7 @@ struct preview_ir_curve_shape_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<simulate_ir_curve_paths_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &simulate_ir_curve_paths_response::success},
         ::ores::utility::codec::field{"message", &simulate_ir_curve_paths_response::message},
         ::ores::utility::codec::field{"paths", &simulate_ir_curve_paths_response::paths},
@@ -245,7 +245,7 @@ struct preview_ir_curve_shape_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_ir_curve_template_row>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"sequence_index",
                                       &preview_ir_curve_template_row::sequence_index},
         ::ores::utility::codec::field{"start_tenor_code",
@@ -266,7 +266,7 @@ struct preview_ir_curve_shape_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_ir_curve_shape_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"process_type",
                                       &preview_ir_curve_shape_request::process_type},
         ::ores::utility::codec::field{"parameters", &preview_ir_curve_shape_request::parameters},
@@ -286,7 +286,7 @@ struct preview_ir_curve_shape_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_ir_curve_shape_point>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"sequence_index",
                                       &preview_ir_curve_shape_point::sequence_index},
         ::ores::utility::codec::field{"start_tenor_code",
@@ -306,7 +306,7 @@ struct preview_ir_curve_shape_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_ir_curve_shape_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &preview_ir_curve_shape_response::success},
         ::ores::utility::codec::field{"message", &preview_ir_curve_shape_response::message},
         ::ores::utility::codec::field{"points", &preview_ir_curve_shape_response::points},

@@ -98,7 +98,7 @@ struct convert_fx_mixture_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<convert_fx_mixture_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"gmm_means", &convert_fx_mixture_request::gmm_means},
         ::ores::utility::codec::field{"gmm_stdevs", &convert_fx_mixture_request::gmm_stdevs},
         ::ores::utility::codec::field{"gmm_weights", &convert_fx_mixture_request::gmm_weights},
@@ -121,7 +121,7 @@ struct convert_fx_mixture_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<convert_fx_mixture_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &convert_fx_mixture_response::success},
         ::ores::utility::codec::field{"message", &convert_fx_mixture_response::message},
         ::ores::utility::codec::field{"gmm_means", &convert_fx_mixture_response::gmm_means},

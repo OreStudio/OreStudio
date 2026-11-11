@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &inflation_cap_floor_volatility_strikes_key::id},
     };
 }
@@ -410,7 +410,7 @@ wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &inflation_cap_floor_volatility_strikes_write::id},
         utility::codec::field{"inflation_cap_floor_volatility_config_id",
                               &inflation_cap_floor_volatility_strikes_write::
@@ -430,7 +430,7 @@ wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &inflation_cap_floor_volatility_strikes_change::write},
         utility::codec::field{"precondition",
                               &inflation_cap_floor_volatility_strikes_change::precondition},
@@ -447,7 +447,7 @@ wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &inflation_cap_floor_volatility_strikes_removal::key},
         utility::codec::field{"precondition",
                               &inflation_cap_floor_volatility_strikes_removal::precondition},
@@ -464,7 +464,7 @@ wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_removal>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &inflation_cap_floor_volatility_strikes_lookup::key},
         utility::codec::field{
             "inflation_cap_floor_volatility_strikes",
@@ -482,7 +482,7 @@ wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of",
                               &inflation_cap_floor_volatility_strikes_filter::id_one_of},
     };
@@ -498,7 +498,7 @@ wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &inflation_cap_floor_volatility_strikes_event::event_id},
         utility::codec::field{"key", &inflation_cap_floor_volatility_strikes_event::key},
         utility::codec::field{"action", &inflation_cap_floor_volatility_strikes_event::action},
@@ -520,7 +520,7 @@ wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"inflation_cap_floor_volatility_strikes",
                               &inflation_cap_floor_volatility_strikes_version_key::
                                   inflation_cap_floor_volatility_strikes},
@@ -539,7 +539,7 @@ wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_version_ke
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version",
                               &inflation_cap_floor_volatility_strikes_versions_filter::version},
         utility::codec::field{
@@ -559,7 +559,7 @@ wire_fields(std::type_identity<inflation_cap_floor_volatility_strikes_versions_f
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_inflation_cap_floor_volatility_strikes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset",
                               &list_inflation_cap_floor_volatility_strikes_request::offset},
         utility::codec::field{"limit", &list_inflation_cap_floor_volatility_strikes_request::limit},
@@ -580,7 +580,7 @@ wire_fields(std::type_identity<list_inflation_cap_floor_volatility_strikes_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_inflation_cap_floor_volatility_strikes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_inflation_cap_floor_volatility_strikes_response::result},
         utility::codec::field{
@@ -601,7 +601,7 @@ wire_fields(std::type_identity<list_inflation_cap_floor_volatility_strikes_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_inflation_cap_floor_volatility_strikes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_inflation_cap_floor_volatility_strikes_request::key},
     };
 }
@@ -616,7 +616,7 @@ wire_fields(std::type_identity<get_inflation_cap_floor_volatility_strikes_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_inflation_cap_floor_volatility_strikes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_inflation_cap_floor_volatility_strikes_response::result},
         utility::codec::field{"inflation_cap_floor_volatility_strikes",
@@ -635,7 +635,7 @@ wire_fields(std::type_identity<get_inflation_cap_floor_volatility_strikes_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_inflation_cap_floor_volatility_strikes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys",
                               &get_many_inflation_cap_floor_volatility_strikes_request::keys},
     };
@@ -651,7 +651,7 @@ wire_fields(std::type_identity<get_many_inflation_cap_floor_volatility_strikes_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_inflation_cap_floor_volatility_strikes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_inflation_cap_floor_volatility_strikes_response::result},
         utility::codec::field{"entries",
@@ -669,7 +669,7 @@ wire_fields(std::type_identity<get_many_inflation_cap_floor_volatility_strikes_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_inflation_cap_floor_volatility_strikes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change",
                               &put_inflation_cap_floor_volatility_strikes_request::change},
         utility::codec::field{"intent",
@@ -687,7 +687,7 @@ wire_fields(std::type_identity<put_inflation_cap_floor_volatility_strikes_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_inflation_cap_floor_volatility_strikes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_inflation_cap_floor_volatility_strikes_response::result},
         utility::codec::field{"inflation_cap_floor_volatility_strikes",
@@ -706,7 +706,7 @@ wire_fields(std::type_identity<put_inflation_cap_floor_volatility_strikes_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_inflation_cap_floor_volatility_strikes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_inflation_cap_floor_volatility_strikes_request::changes},
         utility::codec::field{"intent",
@@ -724,7 +724,7 @@ wire_fields(std::type_identity<put_many_inflation_cap_floor_volatility_strikes_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_inflation_cap_floor_volatility_strikes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_inflation_cap_floor_volatility_strikes_response::result},
         utility::codec::field{
@@ -743,7 +743,7 @@ wire_fields(std::type_identity<put_many_inflation_cap_floor_volatility_strikes_r
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_inflation_cap_floor_volatility_strikes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal",
                               &delete_inflation_cap_floor_volatility_strikes_request::removal},
         utility::codec::field{"intent",
@@ -761,7 +761,7 @@ wire_fields(std::type_identity<delete_inflation_cap_floor_volatility_strikes_req
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_inflation_cap_floor_volatility_strikes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_inflation_cap_floor_volatility_strikes_response::result},
     };
@@ -777,7 +777,7 @@ wire_fields(std::type_identity<delete_inflation_cap_floor_volatility_strikes_res
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_inflation_cap_floor_volatility_strikes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "removals", &delete_many_inflation_cap_floor_volatility_strikes_request::removals},
         utility::codec::field{"intent",
@@ -795,7 +795,7 @@ wire_fields(std::type_identity<delete_many_inflation_cap_floor_volatility_strike
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_inflation_cap_floor_volatility_strikes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_inflation_cap_floor_volatility_strikes_response::result},
     };
@@ -811,7 +811,7 @@ wire_fields(std::type_identity<delete_many_inflation_cap_floor_volatility_strike
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_inflation_cap_floor_volatility_strikes_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &list_inflation_cap_floor_volatility_strikes_versions_request::key},
         utility::codec::field{
@@ -835,7 +835,7 @@ wire_fields(std::type_identity<list_inflation_cap_floor_volatility_strikes_versi
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_inflation_cap_floor_volatility_strikes_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_inflation_cap_floor_volatility_strikes_versions_response::result},
         utility::codec::field{
@@ -855,7 +855,7 @@ wire_fields(std::type_identity<list_inflation_cap_floor_volatility_strikes_versi
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_inflation_cap_floor_volatility_strikes_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &get_inflation_cap_floor_volatility_strikes_version_request::key},
     };
@@ -871,7 +871,7 @@ wire_fields(std::type_identity<get_inflation_cap_floor_volatility_strikes_versio
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_inflation_cap_floor_volatility_strikes_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_inflation_cap_floor_volatility_strikes_version_response::result},
         utility::codec::field{

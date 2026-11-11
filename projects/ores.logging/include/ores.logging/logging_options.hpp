@@ -78,7 +78,7 @@ struct logging_options final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<logging_options>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"severity", &logging_options::severity},
         ::ores::utility::codec::field{"filename", &logging_options::filename},
         ::ores::utility::codec::field{"output_to_console", &logging_options::output_to_console},

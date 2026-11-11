@@ -78,7 +78,7 @@ struct tenor_basis_swap_pay_leg {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_leg>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"pay_index", &tenor_basis_swap_pay_leg::pay_index},
         utility::codec::field{"pay_frequency", &tenor_basis_swap_pay_leg::pay_frequency},
         utility::codec::field{"pay_is_averaged", &tenor_basis_swap_pay_leg::pay_is_averaged},

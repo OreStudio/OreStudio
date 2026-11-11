@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.subscription_i
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"provider_code", &subscription_interval_key::provider_code},
     };
 }
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.subscription_i
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &subscription_interval_write::id},
         utility::codec::field{"party_id", &subscription_interval_write::party_id},
         utility::codec::field{"provider_code", &subscription_interval_write::provider_code},
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.subscription_i
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &subscription_interval_change::write},
         utility::codec::field{"precondition", &subscription_interval_change::precondition},
     };
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.subscription_i
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &subscription_interval_removal::key},
         utility::codec::field{"precondition", &subscription_interval_removal::precondition},
     };
@@ -451,7 +451,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.subscription_i
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &subscription_interval_lookup::key},
         utility::codec::field{"subscription_interval",
                               &subscription_interval_lookup::subscription_interval},
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.subscription_i
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_intervals_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"party_id", &subscription_intervals_filter::party_id},
         utility::codec::field{"provider_code", &subscription_intervals_filter::provider_code},
         utility::codec::field{"feed_id", &subscription_intervals_filter::feed_id},
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.subscription_i
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &subscription_interval_event::event_id},
         utility::codec::field{"key", &subscription_interval_event::key},
         utility::codec::field{"action", &subscription_interval_event::action},
@@ -507,7 +507,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.subscription_i
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"subscription_interval",
                               &subscription_interval_version_key::subscription_interval},
         utility::codec::field{"version", &subscription_interval_version_key::version},
@@ -524,7 +524,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.subscription_i
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<subscription_interval_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &subscription_interval_versions_filter::version},
         utility::codec::field{"from_version", &subscription_interval_versions_filter::from_version},
         utility::codec::field{"to_version", &subscription_interval_versions_filter::to_version},
@@ -540,7 +540,7 @@ wire_fields(std::type_identity<subscription_interval_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_subscription_intervals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_subscription_intervals_request::offset},
         utility::codec::field{"limit", &list_subscription_intervals_request::limit},
         utility::codec::field{"order", &list_subscription_intervals_request::order},
@@ -558,7 +558,7 @@ wire_fields(std::type_identity<subscription_interval_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_subscription_intervals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_subscription_intervals_response::result},
         utility::codec::field{"subscription_intervals",
                               &list_subscription_intervals_response::subscription_intervals},
@@ -575,7 +575,7 @@ wire_fields(std::type_identity<subscription_interval_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_subscription_interval_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_subscription_interval_request::key},
     };
 }
@@ -589,7 +589,7 @@ wire_fields(std::type_identity<subscription_interval_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_subscription_interval_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_subscription_interval_response::result},
         utility::codec::field{"subscription_interval",
                               &get_subscription_interval_response::subscription_interval},
@@ -606,7 +606,7 @@ wire_fields(std::type_identity<subscription_interval_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_subscription_intervals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_subscription_intervals_request::keys},
     };
 }
@@ -621,7 +621,7 @@ wire_fields(std::type_identity<get_many_subscription_intervals_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_subscription_intervals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_subscription_intervals_response::result},
         utility::codec::field{"entries", &get_many_subscription_intervals_response::entries},
     };
@@ -636,7 +636,7 @@ wire_fields(std::type_identity<get_many_subscription_intervals_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_subscription_interval_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_subscription_interval_request::change},
         utility::codec::field{"intent", &put_subscription_interval_request::intent},
     };
@@ -651,7 +651,7 @@ wire_fields(std::type_identity<get_many_subscription_intervals_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_subscription_interval_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_subscription_interval_response::result},
         utility::codec::field{"subscription_interval",
                               &put_subscription_interval_response::subscription_interval},
@@ -668,7 +668,7 @@ wire_fields(std::type_identity<get_many_subscription_intervals_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_subscription_intervals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_subscription_intervals_request::changes},
         utility::codec::field{"intent", &put_many_subscription_intervals_request::intent},
     };
@@ -684,7 +684,7 @@ wire_fields(std::type_identity<put_many_subscription_intervals_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_subscription_intervals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_subscription_intervals_response::result},
         utility::codec::field{"subscription_intervals",
                               &put_many_subscription_intervals_response::subscription_intervals},
@@ -700,7 +700,7 @@ wire_fields(std::type_identity<put_many_subscription_intervals_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_subscription_interval_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_subscription_interval_request::removal},
         utility::codec::field{"intent", &delete_subscription_interval_request::intent},
     };
@@ -716,7 +716,7 @@ wire_fields(std::type_identity<put_many_subscription_intervals_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_subscription_interval_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_subscription_interval_response::result},
     };
 }
@@ -731,7 +731,7 @@ wire_fields(std::type_identity<delete_subscription_interval_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_subscription_intervals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_subscription_intervals_request::removals},
         utility::codec::field{"intent", &delete_many_subscription_intervals_request::intent},
     };
@@ -747,7 +747,7 @@ wire_fields(std::type_identity<delete_many_subscription_intervals_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_subscription_intervals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_subscription_intervals_response::result},
     };
 }
@@ -762,7 +762,7 @@ wire_fields(std::type_identity<delete_many_subscription_intervals_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_subscription_interval_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_subscription_interval_versions_request::key},
         utility::codec::field{"offset", &list_subscription_interval_versions_request::offset},
         utility::codec::field{"limit", &list_subscription_interval_versions_request::limit},
@@ -781,7 +781,7 @@ wire_fields(std::type_identity<list_subscription_interval_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_subscription_interval_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_subscription_interval_versions_response::result},
         utility::codec::field{"versions", &list_subscription_interval_versions_response::versions},
         utility::codec::field{"total", &list_subscription_interval_versions_response::total},
@@ -798,7 +798,7 @@ wire_fields(std::type_identity<list_subscription_interval_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_subscription_interval_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_subscription_interval_version_request::key},
     };
 }
@@ -813,7 +813,7 @@ wire_fields(std::type_identity<get_subscription_interval_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_subscription_interval_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_subscription_interval_version_response::result},
         utility::codec::field{"version", &get_subscription_interval_version_response::version},
     };

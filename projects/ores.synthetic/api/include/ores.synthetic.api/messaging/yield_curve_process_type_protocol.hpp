@@ -375,7 +375,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.yield_curve_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<yield_curve_process_type_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &yield_curve_process_type_key::code},
     };
 }
@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.yield_curve_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<yield_curve_process_type_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &yield_curve_process_type_write::code},
         utility::codec::field{"name", &yield_curve_process_type_write::name},
         utility::codec::field{"description", &yield_curve_process_type_write::description},
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.yield_curve_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<yield_curve_process_type_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &yield_curve_process_type_change::write},
         utility::codec::field{"precondition", &yield_curve_process_type_change::precondition},
     };
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.yield_curve_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<yield_curve_process_type_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &yield_curve_process_type_removal::key},
         utility::codec::field{"precondition", &yield_curve_process_type_removal::precondition},
     };
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.yield_curve_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<yield_curve_process_type_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &yield_curve_process_type_lookup::key},
         utility::codec::field{"yield_curve_process_type",
                               &yield_curve_process_type_lookup::yield_curve_process_type},
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.yield_curve_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<yield_curve_process_types_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &yield_curve_process_types_filter::code_one_of},
     };
 }
@@ -466,7 +466,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.yield_curve_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<yield_curve_process_type_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &yield_curve_process_type_event::event_id},
         utility::codec::field{"key", &yield_curve_process_type_event::key},
         utility::codec::field{"action", &yield_curve_process_type_event::action},
@@ -485,7 +485,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.yield_curve_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<yield_curve_process_type_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"yield_curve_process_type",
                               &yield_curve_process_type_version_key::yield_curve_process_type},
         utility::codec::field{"version", &yield_curve_process_type_version_key::version},
@@ -502,7 +502,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.yield_curve_pro
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<yield_curve_process_type_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &yield_curve_process_type_versions_filter::version},
         utility::codec::field{"from_version",
                               &yield_curve_process_type_versions_filter::from_version},
@@ -520,7 +520,7 @@ wire_fields(std::type_identity<yield_curve_process_type_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_yield_curve_process_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_yield_curve_process_types_request::offset},
         utility::codec::field{"limit", &list_yield_curve_process_types_request::limit},
         utility::codec::field{"order", &list_yield_curve_process_types_request::order},
@@ -539,7 +539,7 @@ wire_fields(std::type_identity<list_yield_curve_process_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_yield_curve_process_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_yield_curve_process_types_response::result},
         utility::codec::field{"process_types",
                               &list_yield_curve_process_types_response::process_types},
@@ -556,7 +556,7 @@ wire_fields(std::type_identity<list_yield_curve_process_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_yield_curve_process_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_yield_curve_process_type_request::key},
     };
 }
@@ -571,7 +571,7 @@ wire_fields(std::type_identity<list_yield_curve_process_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_yield_curve_process_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_yield_curve_process_type_response::result},
         utility::codec::field{"yield_curve_process_type",
                               &get_yield_curve_process_type_response::yield_curve_process_type},
@@ -588,7 +588,7 @@ wire_fields(std::type_identity<get_yield_curve_process_type_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_yield_curve_process_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_yield_curve_process_types_request::keys},
     };
 }
@@ -603,7 +603,7 @@ wire_fields(std::type_identity<get_many_yield_curve_process_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_yield_curve_process_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_yield_curve_process_types_response::result},
         utility::codec::field{"entries", &get_many_yield_curve_process_types_response::entries},
     };
@@ -618,7 +618,7 @@ wire_fields(std::type_identity<get_many_yield_curve_process_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_yield_curve_process_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_yield_curve_process_type_request::change},
         utility::codec::field{"intent", &put_yield_curve_process_type_request::intent},
     };
@@ -634,7 +634,7 @@ wire_fields(std::type_identity<get_many_yield_curve_process_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_yield_curve_process_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_yield_curve_process_type_response::result},
         utility::codec::field{"yield_curve_process_type",
                               &put_yield_curve_process_type_response::yield_curve_process_type},
@@ -651,7 +651,7 @@ wire_fields(std::type_identity<put_yield_curve_process_type_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_yield_curve_process_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_yield_curve_process_types_request::changes},
         utility::codec::field{"intent", &put_many_yield_curve_process_types_request::intent},
     };
@@ -667,7 +667,7 @@ wire_fields(std::type_identity<put_many_yield_curve_process_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_yield_curve_process_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_yield_curve_process_types_response::result},
         utility::codec::field{"process_types",
                               &put_many_yield_curve_process_types_response::process_types},
@@ -684,7 +684,7 @@ wire_fields(std::type_identity<put_many_yield_curve_process_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_yield_curve_process_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_yield_curve_process_type_request::removal},
         utility::codec::field{"intent", &delete_yield_curve_process_type_request::intent},
     };
@@ -700,7 +700,7 @@ wire_fields(std::type_identity<delete_yield_curve_process_type_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_yield_curve_process_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_yield_curve_process_type_response::result},
     };
 }
@@ -715,7 +715,7 @@ wire_fields(std::type_identity<delete_yield_curve_process_type_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_yield_curve_process_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_yield_curve_process_types_request::removals},
         utility::codec::field{"intent", &delete_many_yield_curve_process_types_request::intent},
     };
@@ -731,7 +731,7 @@ wire_fields(std::type_identity<delete_many_yield_curve_process_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_yield_curve_process_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_yield_curve_process_types_response::result},
     };
 }
@@ -746,7 +746,7 @@ wire_fields(std::type_identity<delete_many_yield_curve_process_types_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_yield_curve_process_type_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_yield_curve_process_type_versions_request::key},
         utility::codec::field{"offset", &list_yield_curve_process_type_versions_request::offset},
         utility::codec::field{"limit", &list_yield_curve_process_type_versions_request::limit},
@@ -765,7 +765,7 @@ wire_fields(std::type_identity<list_yield_curve_process_type_versions_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_yield_curve_process_type_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_yield_curve_process_type_versions_response::result},
         utility::codec::field{"versions",
                               &list_yield_curve_process_type_versions_response::versions},
@@ -783,7 +783,7 @@ wire_fields(std::type_identity<list_yield_curve_process_type_versions_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_yield_curve_process_type_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_yield_curve_process_type_version_request::key},
     };
 }
@@ -798,7 +798,7 @@ wire_fields(std::type_identity<get_yield_curve_process_type_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_yield_curve_process_type_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_yield_curve_process_type_version_response::result},
         utility::codec::field{"version", &get_yield_curve_process_type_version_response::version},
     };

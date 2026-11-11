@@ -402,7 +402,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<seed_profile_step_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &seed_profile_step_key::id},
     };
 }
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<seed_profile_step_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &seed_profile_step_write::id},
         utility::codec::field{"seed_profile_id", &seed_profile_step_write::seed_profile_id},
         utility::codec::field{"step_kind", &seed_profile_step_write::step_kind},
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<seed_profile_step_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &seed_profile_step_change::write},
         utility::codec::field{"precondition", &seed_profile_step_change::precondition},
     };
@@ -449,7 +449,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<seed_profile_step_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &seed_profile_step_removal::key},
         utility::codec::field{"precondition", &seed_profile_step_removal::precondition},
     };
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<seed_profile_step_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &seed_profile_step_lookup::key},
         utility::codec::field{"seed_profile_step", &seed_profile_step_lookup::seed_profile_step},
     };
@@ -479,7 +479,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<seed_profile_steps_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"seed_profile_id", &seed_profile_steps_filter::seed_profile_id},
         utility::codec::field{"id_one_of", &seed_profile_steps_filter::id_one_of},
         utility::codec::field{"seed_profile_id_one_of",
@@ -496,7 +496,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<seed_profile_step_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &seed_profile_step_event::event_id},
         utility::codec::field{"key", &seed_profile_step_event::key},
         utility::codec::field{"action", &seed_profile_step_event::action},
@@ -515,7 +515,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<seed_profile_step_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"seed_profile_step",
                               &seed_profile_step_version_key::seed_profile_step},
         utility::codec::field{"version", &seed_profile_step_version_key::version},
@@ -531,7 +531,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<seed_profile_step_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &seed_profile_step_versions_filter::version},
         utility::codec::field{"from_version", &seed_profile_step_versions_filter::from_version},
         utility::codec::field{"to_version", &seed_profile_step_versions_filter::to_version},
@@ -547,7 +547,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_seed_profile_steps_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_seed_profile_steps_request::offset},
         utility::codec::field{"limit", &list_seed_profile_steps_request::limit},
         utility::codec::field{"order", &list_seed_profile_steps_request::order},
@@ -565,7 +565,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_seed_profile_steps_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_seed_profile_steps_response::result},
         utility::codec::field{"seed_profile_steps",
                               &list_seed_profile_steps_response::seed_profile_steps},
@@ -582,7 +582,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_seed_profile_step_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_seed_profile_step_request::key},
     };
 }
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_seed_profile_step_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_seed_profile_step_response::result},
         utility::codec::field{"seed_profile_step",
                               &get_seed_profile_step_response::seed_profile_step},
@@ -612,7 +612,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_seed_profile_steps_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_seed_profile_steps_request::keys},
     };
 }
@@ -626,7 +626,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_seed_profile_steps_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_seed_profile_steps_response::result},
         utility::codec::field{"entries", &get_many_seed_profile_steps_response::entries},
     };
@@ -641,7 +641,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_seed_profile_step_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_seed_profile_step_request::change},
         utility::codec::field{"intent", &put_seed_profile_step_request::intent},
     };
@@ -656,7 +656,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_seed_profile_step_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_seed_profile_step_response::result},
         utility::codec::field{"seed_profile_step",
                               &put_seed_profile_step_response::seed_profile_step},
@@ -672,7 +672,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_seed_profile_steps_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_seed_profile_steps_request::changes},
         utility::codec::field{"intent", &put_many_seed_profile_steps_request::intent},
     };
@@ -687,7 +687,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_seed_profile_steps_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_seed_profile_steps_response::result},
         utility::codec::field{"seed_profile_steps",
                               &put_many_seed_profile_steps_response::seed_profile_steps},
@@ -703,7 +703,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_seed_profile_step_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_seed_profile_step_request::removal},
         utility::codec::field{"intent", &delete_seed_profile_step_request::intent},
     };
@@ -718,7 +718,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_seed_profile_step_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_seed_profile_step_response::result},
     };
 }
@@ -733,7 +733,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.seed_profile_steps.de
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_seed_profile_steps_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_seed_profile_steps_request::removals},
         utility::codec::field{"intent", &delete_many_seed_profile_steps_request::intent},
     };
@@ -749,7 +749,7 @@ wire_fields(std::type_identity<delete_many_seed_profile_steps_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_seed_profile_steps_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_seed_profile_steps_response::result},
     };
 }
@@ -764,7 +764,7 @@ wire_fields(std::type_identity<delete_many_seed_profile_steps_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_seed_profile_id_seed_profile_steps_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"seed_profile_id",
                               &list_by_seed_profile_id_seed_profile_steps_request::seed_profile_id},
         utility::codec::field{"scope", &list_by_seed_profile_id_seed_profile_steps_request::scope},
@@ -787,7 +787,7 @@ wire_fields(std::type_identity<list_by_seed_profile_id_seed_profile_steps_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_seed_profile_id_seed_profile_steps_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_seed_profile_id_seed_profile_steps_response::result},
         utility::codec::field{
@@ -807,7 +807,7 @@ wire_fields(std::type_identity<list_by_seed_profile_id_seed_profile_steps_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_seed_profile_step_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_seed_profile_step_versions_request::key},
         utility::codec::field{"offset", &list_seed_profile_step_versions_request::offset},
         utility::codec::field{"limit", &list_seed_profile_step_versions_request::limit},
@@ -826,7 +826,7 @@ wire_fields(std::type_identity<list_seed_profile_step_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_seed_profile_step_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_seed_profile_step_versions_response::result},
         utility::codec::field{"versions", &list_seed_profile_step_versions_response::versions},
         utility::codec::field{"total", &list_seed_profile_step_versions_response::total},
@@ -843,7 +843,7 @@ wire_fields(std::type_identity<list_seed_profile_step_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_seed_profile_step_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_seed_profile_step_version_request::key},
     };
 }
@@ -858,7 +858,7 @@ wire_fields(std::type_identity<get_seed_profile_step_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_seed_profile_step_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_seed_profile_step_version_response::result},
         utility::codec::field{"version", &get_seed_profile_step_version_response::version},
     };

@@ -87,7 +87,7 @@ struct audit_record {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<audit_record>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"modified_by", &audit_record::modified_by},
         utility::codec::field{"performed_by", &audit_record::performed_by},
         utility::codec::field{"change_reason_code", &audit_record::change_reason_code},

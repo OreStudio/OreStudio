@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &netting_set_key::code},
     };
 }
@@ -448,7 +448,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &netting_set_write::id},
         utility::codec::field{"code", &netting_set_write::code},
         utility::codec::field{"party_id", &netting_set_write::party_id},
@@ -471,7 +471,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &netting_set_change::write},
         utility::codec::field{"precondition", &netting_set_change::precondition},
     };
@@ -486,7 +486,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &netting_set_removal::key},
         utility::codec::field{"precondition", &netting_set_removal::precondition},
     };
@@ -501,7 +501,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &netting_set_lookup::key},
         utility::codec::field{"netting_set", &netting_set_lookup::netting_set},
     };
@@ -516,7 +516,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_sets_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"netting_agreement_id", &netting_sets_filter::netting_agreement_id},
         utility::codec::field{"credit_limit_id", &netting_sets_filter::credit_limit_id},
         utility::codec::field{"id_one_of", &netting_sets_filter::id_one_of},
@@ -536,7 +536,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &netting_set_event::event_id},
         utility::codec::field{"key", &netting_set_event::key},
         utility::codec::field{"action", &netting_set_event::action},
@@ -555,7 +555,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"netting_set", &netting_set_version_key::netting_set},
         utility::codec::field{"version", &netting_set_version_key::version},
     };
@@ -570,7 +570,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<netting_set_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &netting_set_versions_filter::version},
         utility::codec::field{"from_version", &netting_set_versions_filter::from_version},
         utility::codec::field{"to_version", &netting_set_versions_filter::to_version},
@@ -586,7 +586,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_netting_sets_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_netting_sets_request::offset},
         utility::codec::field{"limit", &list_netting_sets_request::limit},
         utility::codec::field{"order", &list_netting_sets_request::order},
@@ -604,7 +604,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_netting_sets_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_netting_sets_response::result},
         utility::codec::field{"netting_sets", &list_netting_sets_response::netting_sets},
         utility::codec::field{"total", &list_netting_sets_response::total},
@@ -620,7 +620,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_netting_set_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_netting_set_request::key},
     };
 }
@@ -634,7 +634,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_netting_set_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_netting_set_response::result},
         utility::codec::field{"netting_set", &get_netting_set_response::netting_set},
     };
@@ -649,7 +649,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_netting_sets_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_netting_sets_request::keys},
     };
 }
@@ -663,7 +663,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_netting_sets_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_netting_sets_response::result},
         utility::codec::field{"entries", &get_many_netting_sets_response::entries},
     };
@@ -678,7 +678,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_netting_set_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_netting_set_request::change},
         utility::codec::field{"intent", &put_netting_set_request::intent},
     };
@@ -693,7 +693,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_netting_set_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_netting_set_response::result},
         utility::codec::field{"netting_set", &put_netting_set_response::netting_set},
     };
@@ -708,7 +708,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_netting_sets_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_netting_sets_request::changes},
         utility::codec::field{"intent", &put_many_netting_sets_request::intent},
     };
@@ -723,7 +723,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_netting_sets_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_netting_sets_response::result},
         utility::codec::field{"netting_sets", &put_many_netting_sets_response::netting_sets},
     };
@@ -738,7 +738,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_netting_set_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_netting_set_request::removal},
         utility::codec::field{"intent", &delete_netting_set_request::intent},
     };
@@ -753,7 +753,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_netting_set_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_netting_set_response::result},
     };
 }
@@ -767,7 +767,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_netting_sets_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_netting_sets_request::removals},
         utility::codec::field{"intent", &delete_many_netting_sets_request::intent},
     };
@@ -782,7 +782,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_netting_sets_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_netting_sets_response::result},
     };
 }
@@ -797,7 +797,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.netting_sets.dele
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_netting_agreement_id_netting_sets_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "netting_agreement_id",
             &list_by_netting_agreement_id_netting_sets_request::netting_agreement_id},
@@ -819,7 +819,7 @@ wire_fields(std::type_identity<list_by_netting_agreement_id_netting_sets_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_netting_agreement_id_netting_sets_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_netting_agreement_id_netting_sets_response::result},
         utility::codec::field{"netting_sets",
@@ -838,7 +838,7 @@ wire_fields(std::type_identity<list_by_netting_agreement_id_netting_sets_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_credit_limit_id_netting_sets_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"credit_limit_id",
                               &list_by_credit_limit_id_netting_sets_request::credit_limit_id},
         utility::codec::field{"scope", &list_by_credit_limit_id_netting_sets_request::scope},
@@ -859,7 +859,7 @@ wire_fields(std::type_identity<list_by_credit_limit_id_netting_sets_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_credit_limit_id_netting_sets_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_credit_limit_id_netting_sets_response::result},
         utility::codec::field{"netting_sets",
                               &list_by_credit_limit_id_netting_sets_response::netting_sets},
@@ -876,7 +876,7 @@ wire_fields(std::type_identity<list_by_credit_limit_id_netting_sets_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_netting_set_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_netting_set_versions_request::key},
         utility::codec::field{"offset", &list_netting_set_versions_request::offset},
         utility::codec::field{"limit", &list_netting_set_versions_request::limit},
@@ -894,7 +894,7 @@ wire_fields(std::type_identity<list_by_credit_limit_id_netting_sets_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_netting_set_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_netting_set_versions_response::result},
         utility::codec::field{"versions", &list_netting_set_versions_response::versions},
         utility::codec::field{"total", &list_netting_set_versions_response::total},
@@ -910,7 +910,7 @@ wire_fields(std::type_identity<list_by_credit_limit_id_netting_sets_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_netting_set_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_netting_set_version_request::key},
     };
 }
@@ -924,7 +924,7 @@ wire_fields(std::type_identity<list_by_credit_limit_id_netting_sets_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_netting_set_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_netting_set_version_response::result},
         utility::codec::field{"version", &get_netting_set_version_response::version},
     };

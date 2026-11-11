@@ -326,7 +326,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolution_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"convention_code", &tenor_convention_resolution_key::convention_code},
         utility::codec::field{"tenor_code", &tenor_convention_resolution_key::tenor_code},
     };
@@ -341,7 +341,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolution_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"convention_code",
                               &tenor_convention_resolution_write::convention_code},
         utility::codec::field{"tenor_code", &tenor_convention_resolution_write::tenor_code},
@@ -365,7 +365,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolution_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &tenor_convention_resolution_change::write},
         utility::codec::field{"precondition", &tenor_convention_resolution_change::precondition},
     };
@@ -380,7 +380,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolution_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &tenor_convention_resolution_removal::key},
         utility::codec::field{"precondition", &tenor_convention_resolution_removal::precondition},
     };
@@ -395,7 +395,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolution_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &tenor_convention_resolution_lookup::key},
         utility::codec::field{"tenor_convention_resolution",
                               &tenor_convention_resolution_lookup::tenor_convention_resolution},
@@ -411,7 +411,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolutions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"convention_code",
                               &tenor_convention_resolutions_filter::convention_code},
         utility::codec::field{"convention_code_one_of",
@@ -428,7 +428,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolution_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &tenor_convention_resolution_event::event_id},
         utility::codec::field{"key", &tenor_convention_resolution_event::key},
         utility::codec::field{"action", &tenor_convention_resolution_event::action},
@@ -448,7 +448,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_tenor_convention_resolutions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_tenor_convention_resolutions_request::offset},
         utility::codec::field{"limit", &list_tenor_convention_resolutions_request::limit},
         utility::codec::field{"order", &list_tenor_convention_resolutions_request::order},
@@ -466,7 +466,7 @@ wire_fields(std::type_identity<list_tenor_convention_resolutions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_tenor_convention_resolutions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_tenor_convention_resolutions_response::result},
         utility::codec::field{
             "tenor_convention_resolutions",
@@ -485,7 +485,7 @@ wire_fields(std::type_identity<list_tenor_convention_resolutions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_tenor_convention_resolution_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_tenor_convention_resolution_request::key},
     };
 }
@@ -500,7 +500,7 @@ wire_fields(std::type_identity<get_tenor_convention_resolution_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_tenor_convention_resolution_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_tenor_convention_resolution_response::result},
         utility::codec::field{
             "tenor_convention_resolution",
@@ -518,7 +518,7 @@ wire_fields(std::type_identity<get_tenor_convention_resolution_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_tenor_convention_resolutions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_tenor_convention_resolutions_request::keys},
     };
 }
@@ -533,7 +533,7 @@ wire_fields(std::type_identity<get_many_tenor_convention_resolutions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_tenor_convention_resolutions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_tenor_convention_resolutions_response::result},
         utility::codec::field{"entries", &get_many_tenor_convention_resolutions_response::entries},
     };
@@ -549,7 +549,7 @@ wire_fields(std::type_identity<get_many_tenor_convention_resolutions_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_tenor_convention_resolution_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_tenor_convention_resolution_request::change},
         utility::codec::field{"intent", &put_tenor_convention_resolution_request::intent},
     };
@@ -565,7 +565,7 @@ wire_fields(std::type_identity<put_tenor_convention_resolution_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_tenor_convention_resolution_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_tenor_convention_resolution_response::result},
         utility::codec::field{
             "tenor_convention_resolution",
@@ -583,7 +583,7 @@ wire_fields(std::type_identity<put_tenor_convention_resolution_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_tenor_convention_resolutions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_tenor_convention_resolutions_request::changes},
         utility::codec::field{"intent", &put_many_tenor_convention_resolutions_request::intent},
     };
@@ -599,7 +599,7 @@ wire_fields(std::type_identity<put_many_tenor_convention_resolutions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_tenor_convention_resolutions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_tenor_convention_resolutions_response::result},
         utility::codec::field{
             "tenor_convention_resolutions",
@@ -617,7 +617,7 @@ wire_fields(std::type_identity<put_many_tenor_convention_resolutions_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_tenor_convention_resolution_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_tenor_convention_resolution_request::removal},
         utility::codec::field{"intent", &delete_tenor_convention_resolution_request::intent},
     };
@@ -633,7 +633,7 @@ wire_fields(std::type_identity<delete_tenor_convention_resolution_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_tenor_convention_resolution_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_tenor_convention_resolution_response::result},
     };
 }
@@ -648,7 +648,7 @@ wire_fields(std::type_identity<delete_tenor_convention_resolution_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_tenor_convention_resolutions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_tenor_convention_resolutions_request::removals},
         utility::codec::field{"intent", &delete_many_tenor_convention_resolutions_request::intent},
@@ -665,7 +665,7 @@ wire_fields(std::type_identity<delete_many_tenor_convention_resolutions_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_tenor_convention_resolutions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_tenor_convention_resolutions_response::result},
     };
 }
@@ -680,7 +680,7 @@ wire_fields(std::type_identity<delete_many_tenor_convention_resolutions_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_convention_code_tenor_convention_resolutions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "convention_code",
             &list_by_convention_code_tenor_convention_resolutions_request::convention_code},
@@ -707,7 +707,7 @@ wire_fields(std::type_identity<list_by_convention_code_tenor_convention_resoluti
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_convention_code_tenor_convention_resolutions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_by_convention_code_tenor_convention_resolutions_response::result},
         utility::codec::field{"tenor_convention_resolutions",

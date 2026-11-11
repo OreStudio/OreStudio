@@ -74,7 +74,7 @@ struct admitted_response {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<admitted_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ores::utility::codec::field{"result", &admitted_response::result},
         ores::utility::codec::field{"report_instance_id", &admitted_response::report_instance_id}};
 }

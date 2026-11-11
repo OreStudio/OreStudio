@@ -185,7 +185,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.run_results.del
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<run_result_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &run_result_key::id},
     };
 }
@@ -199,7 +199,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.run_results.del
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<run_result_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &run_result_lookup::key},
         utility::codec::field{"run_result", &run_result_lookup::run_result},
     };
@@ -214,7 +214,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.run_results.del
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<run_results_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"party_id", &run_results_filter::party_id},
         utility::codec::field{"report_instance_id", &run_results_filter::report_instance_id},
         utility::codec::field{"report_definition_id", &run_results_filter::report_definition_id},
@@ -247,7 +247,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.run_results.del
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<run_result_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &run_result_event::event_id},
         utility::codec::field{"key", &run_result_event::key},
         utility::codec::field{"action", &run_result_event::action},
@@ -266,7 +266,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.run_results.del
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_run_results_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_run_results_request::offset},
         utility::codec::field{"limit", &list_run_results_request::limit},
         utility::codec::field{"order", &list_run_results_request::order},
@@ -283,7 +283,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.run_results.del
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_run_results_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_run_results_response::result},
         utility::codec::field{"results", &list_run_results_response::results},
         utility::codec::field{"total", &list_run_results_response::total},
@@ -299,7 +299,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.run_results.del
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_result_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_run_result_request::key},
     };
 }
@@ -313,7 +313,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.run_results.del
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_result_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_run_result_response::result},
         utility::codec::field{"run_result", &get_run_result_response::run_result},
     };
@@ -328,7 +328,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.run_results.del
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_run_results_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_run_results_request::keys},
     };
 }
@@ -342,7 +342,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.run_results.del
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_run_results_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_run_results_response::result},
         utility::codec::field{"entries", &get_many_run_results_response::entries},
     };

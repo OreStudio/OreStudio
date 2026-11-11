@@ -1522,7 +1522,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_identity_field>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"name", &series_identity_field::name},
         ::ores::utility::codec::field{"text", &series_identity_field::text},
     };
@@ -1537,7 +1537,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<resolve_series_identity_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"asset", &resolve_series_identity_request::asset},
         ::ores::utility::codec::field{"scope", &resolve_series_identity_request::scope},
         ::ores::utility::codec::field{"instrument_type",
@@ -1559,7 +1559,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<resolve_series_identity_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"series", &resolve_series_identity_response::series},
         ::ores::utility::codec::field{"success", &resolve_series_identity_response::success},
         ::ores::utility::codec::field{"message", &resolve_series_identity_response::message},
@@ -1575,7 +1575,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<oresmd_field_spec>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"name", &oresmd_field_spec::name},
         ::ores::utility::codec::field{"role", &oresmd_field_spec::role},
         ::ores::utility::codec::field{"may_be_none", &oresmd_field_spec::may_be_none},
@@ -1593,7 +1593,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<oresmd_instrument>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"code", &oresmd_instrument::code},
         ::ores::utility::codec::field{"ore_name", &oresmd_instrument::ore_name},
         ::ores::utility::codec::field{"title", &oresmd_instrument::title},
@@ -1612,7 +1612,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<oresmd_index_field>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"name", &oresmd_index_field::name},
         ::ores::utility::codec::field{"optional", &oresmd_index_field::optional},
     };
@@ -1627,7 +1627,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<oresmd_index_family>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"code", &oresmd_index_family::code},
         ::ores::utility::codec::field{"asset", &oresmd_index_family::asset},
         ::ores::utility::codec::field{"subject", &oresmd_index_family::subject},
@@ -1644,7 +1644,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<describe_oresmd_schema_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -1656,7 +1656,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<describe_oresmd_schema_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"assets", &describe_oresmd_schema_response::assets},
         ::ores::utility::codec::field{"instruments", &describe_oresmd_schema_response::instruments},
         ::ores::utility::codec::field{"quotes", &describe_oresmd_schema_response::quotes},
@@ -1677,7 +1677,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<oresmd_uri_field>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"name", &oresmd_uri_field::name},
         ::ores::utility::codec::field{"text", &oresmd_uri_field::text},
     };
@@ -1692,7 +1692,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<parse_oresmd_uri_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"uri", &parse_oresmd_uri_request::uri},
     };
 }
@@ -1706,7 +1706,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<parse_oresmd_uri_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"kind", &parse_oresmd_uri_response::kind},
         ::ores::utility::codec::field{"instrument", &parse_oresmd_uri_response::instrument},
         ::ores::utility::codec::field{"quote", &parse_oresmd_uri_response::quote},
@@ -1727,7 +1727,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<compose_oresmd_uri_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"kind", &compose_oresmd_uri_request::kind},
         ::ores::utility::codec::field{"instrument", &compose_oresmd_uri_request::instrument},
         ::ores::utility::codec::field{"quote", &compose_oresmd_uri_request::quote},
@@ -1745,7 +1745,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<compose_oresmd_uri_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"uri", &compose_oresmd_uri_response::uri},
         ::ores::utility::codec::field{"success", &compose_oresmd_uri_response::success},
         ::ores::utility::codec::field{"message", &compose_oresmd_uri_response::message},
@@ -1761,7 +1761,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_series_identities_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"party_id", &list_series_identities_request::party_id},
     };
 }
@@ -1775,7 +1775,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<listed_series>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"series_id", &listed_series::series_id},
         ::ores::utility::codec::field{"identity", &listed_series::identity},
         ::ores::utility::codec::field{"axes", &listed_series::axes},
@@ -1791,7 +1791,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_series_identities_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"series", &list_series_identities_response::series},
         ::ores::utility::codec::field{"truncated", &list_series_identities_response::truncated},
         ::ores::utility::codec::field{"success", &list_series_identities_response::success},
@@ -1808,7 +1808,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_rate_item>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"crm_name", &crm_rate_item::crm_name},
         ::ores::utility::codec::field{"base_currency_code", &crm_rate_item::base_currency_code},
         ::ores::utility::codec::field{"quote_currency_code", &crm_rate_item::quote_currency_code},
@@ -1829,7 +1829,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_crm_rate_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"party_id", &get_crm_rate_request::party_id},
         ::ores::utility::codec::field{"crm_name", &get_crm_rate_request::crm_name},
         ::ores::utility::codec::field{"base_currency_code",
@@ -1848,7 +1848,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_crm_rate_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_crm_rate_response::success},
         ::ores::utility::codec::field{"message", &get_crm_rate_response::message},
         ::ores::utility::codec::field{"rate", &get_crm_rate_response::rate},
@@ -1864,7 +1864,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_crm_rates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"party_id", &get_crm_rates_request::party_id},
         ::ores::utility::codec::field{"crm_name", &get_crm_rates_request::crm_name},
         ::ores::utility::codec::field{"reciprocal", &get_crm_rates_request::reciprocal},
@@ -1880,7 +1880,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_crm_rates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_crm_rates_response::success},
         ::ores::utility::codec::field{"message", &get_crm_rates_response::message},
         ::ores::utility::codec::field{"rates", &get_crm_rates_response::rates},
@@ -1896,7 +1896,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<republish_curve_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"bootstrap_config_id",
                                       &republish_curve_request::bootstrap_config_id},
         ::ores::utility::codec::field{"as_of", &republish_curve_request::as_of},
@@ -1912,7 +1912,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<republish_curve_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &republish_curve_response::success},
         ::ores::utility::codec::field{"message", &republish_curve_response::message},
     };
@@ -1927,7 +1927,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<compute_curve_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"bootstrap_config_id",
                                       &compute_curve_request::bootstrap_config_id},
         ::ores::utility::codec::field{"as_of", &compute_curve_request::as_of},
@@ -1943,7 +1943,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<computed_curve_point>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"point_id", &computed_curve_point::point_id},
         ::ores::utility::codec::field{"date", &computed_curve_point::date},
         ::ores::utility::codec::field{"discount_factor", &computed_curve_point::discount_factor},
@@ -1959,7 +1959,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<compute_curve_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &compute_curve_response::success},
         ::ores::utility::codec::field{"message", &compute_curve_response::message},
         ::ores::utility::codec::field{"points", &compute_curve_response::points},
@@ -1975,7 +1975,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<series_slice_instant>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"as_of", &series_slice_instant::as_of},
         ::ores::utility::codec::field{"values", &series_slice_instant::values},
     };
@@ -1990,7 +1990,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_series_slice_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"identity", &get_series_slice_request::identity},
         ::ores::utility::codec::field{"component_field",
                                       &get_series_slice_request::component_field},
@@ -2010,7 +2010,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_series_slice_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_series_slice_response::success},
         ::ores::utility::codec::field{"message", &get_series_slice_response::message},
         ::ores::utility::codec::field{"coordinate_field",
@@ -2029,7 +2029,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<evolution_node>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"coordinates", &evolution_node::coordinates},
         ::ores::utility::codec::field{"status", &evolution_node::status},
     };
@@ -2044,7 +2044,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<evolution_instant>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"as_of", &evolution_instant::as_of},
         ::ores::utility::codec::field{"values", &evolution_instant::values},
     };
@@ -2059,7 +2059,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_series_evolution_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"identity", &get_series_evolution_request::identity},
         ::ores::utility::codec::field{"from_instant", &get_series_evolution_request::from_instant},
         ::ores::utility::codec::field{"to_instant", &get_series_evolution_request::to_instant},
@@ -2076,7 +2076,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_series_evolution_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_series_evolution_response::success},
         ::ores::utility::codec::field{"message", &get_series_evolution_response::message},
         ::ores::utility::codec::field{"coordinate_fields",
@@ -2095,7 +2095,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<point_provenance>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"source_kind", &point_provenance::source_kind},
         ::ores::utility::codec::field{"modified_by", &point_provenance::modified_by},
         ::ores::utility::codec::field{"change_reason_code", &point_provenance::change_reason_code},
@@ -2118,7 +2118,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_snapshot_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"identity", &get_curve_snapshot_request::identity},
         ::ores::utility::codec::field{"include_provenance",
                                       &get_curve_snapshot_request::include_provenance},
@@ -2134,7 +2134,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_snapshot_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_curve_snapshot_response::success},
         ::ores::utility::codec::field{"message", &get_curve_snapshot_response::message},
         ::ores::utility::codec::field{"as_of", &get_curve_snapshot_response::as_of},
@@ -2167,7 +2167,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<import_market_data_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"market_data_content",
                                       &import_market_data_request::market_data_content},
         ::ores::utility::codec::field{"fixings_content",
@@ -2187,7 +2187,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<import_market_data_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &import_market_data_response::success},
         ::ores::utility::codec::field{"message", &import_market_data_response::message},
         ::ores::utility::codec::field{"series_count", &import_market_data_response::series_count},
@@ -2208,7 +2208,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_kind_counts>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"started", &feed_kind_counts::started},
         ::ores::utility::codec::field{"already_running", &feed_kind_counts::already_running},
         ::ores::utility::codec::field{"skipped", &feed_kind_counts::skipped},
@@ -2224,7 +2224,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<start_feeds_under_folder_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"folder_id", &start_feeds_under_folder_request::folder_id},
     };
 }
@@ -2238,7 +2238,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<start_feeds_under_folder_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &start_feeds_under_folder_response::success},
         ::ores::utility::codec::field{"message", &start_feeds_under_folder_response::message},
         ::ores::utility::codec::field{"started", &start_feeds_under_folder_response::started},
@@ -2258,7 +2258,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_feeds_under_folder_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"folder_id", &stop_feeds_under_folder_request::folder_id},
     };
 }
@@ -2272,7 +2272,7 @@ struct store_market_state_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_feeds_under_folder_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &stop_feeds_under_folder_response::success},
         ::ores::utility::codec::field{"message", &stop_feeds_under_folder_response::message},
         ::ores::utility::codec::field{"stopped", &stop_feeds_under_folder_response::stopped},
@@ -2291,7 +2291,7 @@ struct store_market_state_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<export_market_data_to_storage_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"storage_bucket",
                                       &export_market_data_to_storage_request::storage_bucket},
         ::ores::utility::codec::field{"storage_key",
@@ -2315,7 +2315,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<export_market_data_to_storage_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &export_market_data_to_storage_response::success},
         ::ores::utility::codec::field{"message", &export_market_data_to_storage_response::message},
         ::ores::utility::codec::field{"series_count",
@@ -2341,7 +2341,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<backfill_series_identity_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"party_id", &backfill_series_identity_request::party_id},
     };
 }
@@ -2355,7 +2355,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<backfill_series_identity_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &backfill_series_identity_response::success},
         ::ores::utility::codec::field{"message", &backfill_series_identity_response::message},
         ::ores::utility::codec::field{"projected_count",
@@ -2376,7 +2376,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<key_manual_point_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"identity", &key_manual_point_request::identity},
         ::ores::utility::codec::field{"coordinates", &key_manual_point_request::coordinates},
         ::ores::utility::codec::field{"value", &key_manual_point_request::value},
@@ -2396,7 +2396,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<key_manual_point_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &key_manual_point_response::success},
         ::ores::utility::codec::field{"message", &key_manual_point_response::message},
     };
@@ -2411,7 +2411,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<clear_manual_point_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"identity", &clear_manual_point_request::identity},
         ::ores::utility::codec::field{"coordinates", &clear_manual_point_request::coordinates},
     };
@@ -2426,7 +2426,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<clear_manual_point_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &clear_manual_point_response::success},
         ::ores::utility::codec::field{"message", &clear_manual_point_response::message},
     };
@@ -2441,7 +2441,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<export_market_data_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"valuation_date",
                                       &export_market_data_request::valuation_date},
         ::ores::utility::codec::field{"max_age_days", &export_market_data_request::max_age_days},
@@ -2457,7 +2457,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<export_market_data_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &export_market_data_response::success},
         ::ores::utility::codec::field{"message", &export_market_data_response::message},
         ::ores::utility::codec::field{"market_data_content",
@@ -2483,7 +2483,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_tick>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"oresmd_uri", &market_tick::oresmd_uri},
         ::ores::utility::codec::field{"value", &market_tick::value},
         ::ores::utility::codec::field{"observation_time", &market_tick::observation_time},
@@ -2500,7 +2500,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_series_ticks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"identity", &get_series_ticks_request::identity},
         ::ores::utility::codec::field{"from_instant", &get_series_ticks_request::from_instant},
         ::ores::utility::codec::field{"to_instant", &get_series_ticks_request::to_instant},
@@ -2517,7 +2517,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_series_ticks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_series_ticks_response::result},
         ::ores::utility::codec::field{"coordinates", &get_series_ticks_response::coordinates},
         ::ores::utility::codec::field{"first_instant", &get_series_ticks_response::first_instant},
@@ -2537,7 +2537,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<store_market_state_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"party_id", &store_market_state_request::party_id},
         ::ores::utility::codec::field{"report_instance_id",
                                       &store_market_state_request::report_instance_id},
@@ -2560,7 +2560,7 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<store_market_state_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &store_market_state_response::result},
         ::ores::utility::codec::field{"families", &store_market_state_response::families},
         ::ores::utility::codec::field{"files", &store_market_state_response::files},

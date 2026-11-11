@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.average_ois_conve
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<average_ois_convention_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &average_ois_convention_key::id},
     };
 }
@@ -394,7 +394,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.average_ois_conve
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<average_ois_convention_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &average_ois_convention_write::id},
         utility::codec::field{"spot_lag", &average_ois_convention_write::spot_lag},
         utility::codec::field{"fixed_tenor", &average_ois_convention_write::fixed_tenor},
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.average_ois_conve
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<average_ois_convention_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &average_ois_convention_change::write},
         utility::codec::field{"precondition", &average_ois_convention_change::precondition},
     };
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.average_ois_conve
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<average_ois_convention_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &average_ois_convention_removal::key},
         utility::codec::field{"precondition", &average_ois_convention_removal::precondition},
     };
@@ -451,7 +451,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.average_ois_conve
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<average_ois_convention_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &average_ois_convention_lookup::key},
         utility::codec::field{"average_ois_convention",
                               &average_ois_convention_lookup::average_ois_convention},
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.average_ois_conve
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<average_ois_conventions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &average_ois_conventions_filter::id_one_of},
     };
 }
@@ -481,7 +481,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.average_ois_conve
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<average_ois_convention_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &average_ois_convention_event::event_id},
         utility::codec::field{"key", &average_ois_convention_event::key},
         utility::codec::field{"action", &average_ois_convention_event::action},
@@ -500,7 +500,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.average_ois_conve
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<average_ois_convention_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"average_ois_convention",
                               &average_ois_convention_version_key::average_ois_convention},
         utility::codec::field{"version", &average_ois_convention_version_key::version},
@@ -517,7 +517,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.average_ois_conve
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<average_ois_convention_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &average_ois_convention_versions_filter::version},
         utility::codec::field{"from_version",
                               &average_ois_convention_versions_filter::from_version},
@@ -534,7 +534,7 @@ wire_fields(std::type_identity<average_ois_convention_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_average_ois_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_average_ois_conventions_request::offset},
         utility::codec::field{"limit", &list_average_ois_conventions_request::limit},
         utility::codec::field{"order", &list_average_ois_conventions_request::order},
@@ -553,7 +553,7 @@ wire_fields(std::type_identity<average_ois_convention_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_average_ois_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_average_ois_conventions_response::result},
         utility::codec::field{"average_ois_conventions",
                               &list_average_ois_conventions_response::average_ois_conventions},
@@ -570,7 +570,7 @@ wire_fields(std::type_identity<list_average_ois_conventions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_average_ois_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_average_ois_convention_request::key},
     };
 }
@@ -584,7 +584,7 @@ wire_fields(std::type_identity<list_average_ois_conventions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_average_ois_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_average_ois_convention_response::result},
         utility::codec::field{"average_ois_convention",
                               &get_average_ois_convention_response::average_ois_convention},
@@ -601,7 +601,7 @@ wire_fields(std::type_identity<list_average_ois_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_average_ois_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_average_ois_conventions_request::keys},
     };
 }
@@ -616,7 +616,7 @@ wire_fields(std::type_identity<get_many_average_ois_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_average_ois_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_average_ois_conventions_response::result},
         utility::codec::field{"entries", &get_many_average_ois_conventions_response::entries},
     };
@@ -631,7 +631,7 @@ wire_fields(std::type_identity<get_many_average_ois_conventions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_average_ois_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_average_ois_convention_request::change},
         utility::codec::field{"intent", &put_average_ois_convention_request::intent},
     };
@@ -646,7 +646,7 @@ wire_fields(std::type_identity<get_many_average_ois_conventions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_average_ois_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_average_ois_convention_response::result},
         utility::codec::field{"average_ois_convention",
                               &put_average_ois_convention_response::average_ois_convention},
@@ -663,7 +663,7 @@ wire_fields(std::type_identity<get_many_average_ois_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_average_ois_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_average_ois_conventions_request::changes},
         utility::codec::field{"intent", &put_many_average_ois_conventions_request::intent},
     };
@@ -679,7 +679,7 @@ wire_fields(std::type_identity<put_many_average_ois_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_average_ois_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_average_ois_conventions_response::result},
         utility::codec::field{"average_ois_conventions",
                               &put_many_average_ois_conventions_response::average_ois_conventions},
@@ -696,7 +696,7 @@ wire_fields(std::type_identity<put_many_average_ois_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_average_ois_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_average_ois_convention_request::removal},
         utility::codec::field{"intent", &delete_average_ois_convention_request::intent},
     };
@@ -712,7 +712,7 @@ wire_fields(std::type_identity<delete_average_ois_convention_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_average_ois_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_average_ois_convention_response::result},
     };
 }
@@ -727,7 +727,7 @@ wire_fields(std::type_identity<delete_average_ois_convention_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_average_ois_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_average_ois_conventions_request::removals},
         utility::codec::field{"intent", &delete_many_average_ois_conventions_request::intent},
     };
@@ -743,7 +743,7 @@ wire_fields(std::type_identity<delete_many_average_ois_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_average_ois_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_average_ois_conventions_response::result},
     };
 }
@@ -758,7 +758,7 @@ wire_fields(std::type_identity<delete_many_average_ois_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_average_ois_convention_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_average_ois_convention_versions_request::key},
         utility::codec::field{"offset", &list_average_ois_convention_versions_request::offset},
         utility::codec::field{"limit", &list_average_ois_convention_versions_request::limit},
@@ -777,7 +777,7 @@ wire_fields(std::type_identity<list_average_ois_convention_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_average_ois_convention_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_average_ois_convention_versions_response::result},
         utility::codec::field{"versions", &list_average_ois_convention_versions_response::versions},
         utility::codec::field{"total", &list_average_ois_convention_versions_response::total},
@@ -794,7 +794,7 @@ wire_fields(std::type_identity<list_average_ois_convention_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_average_ois_convention_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_average_ois_convention_version_request::key},
     };
 }
@@ -809,7 +809,7 @@ wire_fields(std::type_identity<get_average_ois_convention_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_average_ois_convention_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_average_ois_convention_version_response::result},
         utility::codec::field{"version", &get_average_ois_convention_version_response::version},
     };

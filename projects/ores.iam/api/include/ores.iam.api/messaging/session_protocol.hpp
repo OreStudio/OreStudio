@@ -293,7 +293,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &session_key::id},
     };
 }
@@ -307,7 +307,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &session_write::id},
         utility::codec::field{"start_time", &session_write::start_time},
         utility::codec::field{"account_id", &session_write::account_id},
@@ -332,7 +332,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &session_change::write},
         utility::codec::field{"precondition", &session_change::precondition},
     };
@@ -347,7 +347,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &session_removal::key},
         utility::codec::field{"precondition", &session_removal::precondition},
     };
@@ -362,7 +362,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &session_lookup::key},
         utility::codec::field{"session", &session_lookup::session},
     };
@@ -377,7 +377,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<sessions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &sessions_filter::account_id},
         utility::codec::field{"account_id_one_of", &sessions_filter::account_id_one_of},
     };
@@ -392,7 +392,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &session_event::event_id},
         utility::codec::field{"key", &session_event::key},
         utility::codec::field{"action", &session_event::action},
@@ -411,7 +411,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_sessions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_sessions_request::offset},
         utility::codec::field{"limit", &list_sessions_request::limit},
         utility::codec::field{"order", &list_sessions_request::order},
@@ -428,7 +428,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_sessions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_sessions_response::result},
         utility::codec::field{"sessions", &list_sessions_response::sessions},
         utility::codec::field{"total", &list_sessions_response::total},
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_session_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_session_request::key},
     };
 }
@@ -458,7 +458,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_session_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_session_response::result},
         utility::codec::field{"session", &get_session_response::session},
     };
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_sessions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_sessions_request::keys},
     };
 }
@@ -487,7 +487,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_sessions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_sessions_response::result},
         utility::codec::field{"entries", &get_many_sessions_response::entries},
     };
@@ -502,7 +502,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_session_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_session_request::change},
         utility::codec::field{"intent", &put_session_request::intent},
     };
@@ -517,7 +517,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_session_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_session_response::result},
         utility::codec::field{"session", &put_session_response::session},
     };
@@ -532,7 +532,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_sessions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_sessions_request::changes},
         utility::codec::field{"intent", &put_many_sessions_request::intent},
     };
@@ -547,7 +547,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_sessions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_sessions_response::result},
         utility::codec::field{"sessions", &put_many_sessions_response::sessions},
     };
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_session_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_session_request::removal},
         utility::codec::field{"intent", &delete_session_request::intent},
     };
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_session_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_session_response::result},
     };
 }
@@ -591,7 +591,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_sessions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_sessions_request::removals},
         utility::codec::field{"intent", &delete_many_sessions_request::intent},
     };
@@ -606,7 +606,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.sessions.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_sessions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_sessions_response::result},
     };
 }

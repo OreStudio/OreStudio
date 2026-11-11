@@ -360,7 +360,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<exercise_type_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &exercise_type_key::code},
     };
 }
@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<exercise_type_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &exercise_type_write::code},
         utility::codec::field{"description", &exercise_type_write::description},
     };
@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<exercise_type_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &exercise_type_change::write},
         utility::codec::field{"precondition", &exercise_type_change::precondition},
     };
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<exercise_type_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &exercise_type_removal::key},
         utility::codec::field{"precondition", &exercise_type_removal::precondition},
     };
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<exercise_type_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &exercise_type_lookup::key},
         utility::codec::field{"exercise_type", &exercise_type_lookup::exercise_type},
     };
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<exercise_types_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &exercise_types_filter::code_one_of},
     };
 }
@@ -448,7 +448,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<exercise_type_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &exercise_type_event::event_id},
         utility::codec::field{"key", &exercise_type_event::key},
         utility::codec::field{"action", &exercise_type_event::action},
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<exercise_type_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"exercise_type", &exercise_type_version_key::exercise_type},
         utility::codec::field{"version", &exercise_type_version_key::version},
     };
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<exercise_type_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &exercise_type_versions_filter::version},
         utility::codec::field{"from_version", &exercise_type_versions_filter::from_version},
         utility::codec::field{"to_version", &exercise_type_versions_filter::to_version},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_exercise_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_exercise_types_request::offset},
         utility::codec::field{"limit", &list_exercise_types_request::limit},
         utility::codec::field{"order", &list_exercise_types_request::order},
@@ -516,7 +516,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_exercise_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_exercise_types_response::result},
         utility::codec::field{"exercise_types", &list_exercise_types_response::exercise_types},
         utility::codec::field{"total", &list_exercise_types_response::total},
@@ -532,7 +532,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_exercise_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_exercise_type_request::key},
     };
 }
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_exercise_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_exercise_type_response::result},
         utility::codec::field{"exercise_type", &get_exercise_type_response::exercise_type},
     };
@@ -561,7 +561,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_exercise_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_exercise_types_request::keys},
     };
 }
@@ -575,7 +575,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_exercise_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_exercise_types_response::result},
         utility::codec::field{"entries", &get_many_exercise_types_response::entries},
     };
@@ -590,7 +590,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_exercise_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_exercise_type_request::change},
         utility::codec::field{"intent", &put_exercise_type_request::intent},
     };
@@ -605,7 +605,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_exercise_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_exercise_type_response::result},
         utility::codec::field{"exercise_type", &put_exercise_type_response::exercise_type},
     };
@@ -620,7 +620,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_exercise_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_exercise_types_request::changes},
         utility::codec::field{"intent", &put_many_exercise_types_request::intent},
     };
@@ -635,7 +635,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_exercise_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_exercise_types_response::result},
         utility::codec::field{"exercise_types", &put_many_exercise_types_response::exercise_types},
     };
@@ -650,7 +650,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_exercise_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_exercise_type_request::removal},
         utility::codec::field{"intent", &delete_exercise_type_request::intent},
     };
@@ -665,7 +665,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_exercise_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_exercise_type_response::result},
     };
 }
@@ -679,7 +679,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_exercise_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_exercise_types_request::removals},
         utility::codec::field{"intent", &delete_many_exercise_types_request::intent},
     };
@@ -694,7 +694,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_exercise_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_exercise_types_response::result},
     };
 }
@@ -708,7 +708,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_exercise_type_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_exercise_type_versions_request::key},
         utility::codec::field{"offset", &list_exercise_type_versions_request::offset},
         utility::codec::field{"limit", &list_exercise_type_versions_request::limit},
@@ -726,7 +726,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_exercise_type_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_exercise_type_versions_response::result},
         utility::codec::field{"versions", &list_exercise_type_versions_response::versions},
         utility::codec::field{"total", &list_exercise_type_versions_response::total},
@@ -742,7 +742,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_exercise_type_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_exercise_type_version_request::key},
     };
 }
@@ -756,7 +756,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.exercise_types.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_exercise_type_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_exercise_type_version_response::result},
         utility::codec::field{"version", &get_exercise_type_version_response::version},
     };

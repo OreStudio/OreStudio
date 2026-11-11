@@ -46,7 +46,7 @@ namespace ores::iam::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<login_info>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"tenant_id", &login_info::tenant_id},
         utility::codec::field{"account_id", &login_info::account_id},
         utility::codec::field{"last_ip", &login_info::last_ip},

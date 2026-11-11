@@ -222,33 +222,37 @@ struct renew_step_claim_response {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<claim_step_request>) {
-    return std::tuple{utility::codec::field{"step_id", &claim_step_request::step_id},
-                      utility::codec::field{"tenant_id", &claim_step_request::tenant_id},
-                      utility::codec::field{"owner", &claim_step_request::owner}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"step_id", &claim_step_request::step_id},
+        utility::codec::field{"tenant_id", &claim_step_request::tenant_id},
+        utility::codec::field{"owner", &claim_step_request::owner}};
 }
 static_assert(utility::codec::names_every_member<claim_step_request>());
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<claim_step_response>) {
-    return std::tuple{utility::codec::field{"success", &claim_step_response::success},
-                      utility::codec::field{"claimed", &claim_step_response::claimed},
-                      utility::codec::field{"state", &claim_step_response::state},
-                      utility::codec::field{"message", &claim_step_response::message},
-                      utility::codec::field{"attempts", &claim_step_response::attempts}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"success", &claim_step_response::success},
+        utility::codec::field{"claimed", &claim_step_response::claimed},
+        utility::codec::field{"state", &claim_step_response::state},
+        utility::codec::field{"message", &claim_step_response::message},
+        utility::codec::field{"attempts", &claim_step_response::attempts}};
 }
 static_assert(utility::codec::names_every_member<claim_step_response>());
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<renew_step_claim_request>) {
-    return std::tuple{utility::codec::field{"step_id", &renew_step_claim_request::step_id},
-                      utility::codec::field{"tenant_id", &renew_step_claim_request::tenant_id},
-                      utility::codec::field{"owner", &renew_step_claim_request::owner}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"step_id", &renew_step_claim_request::step_id},
+        utility::codec::field{"tenant_id", &renew_step_claim_request::tenant_id},
+        utility::codec::field{"owner", &renew_step_claim_request::owner}};
 }
 static_assert(utility::codec::names_every_member<renew_step_claim_request>());
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<renew_step_claim_response>) {
-    return std::tuple{utility::codec::field{"success", &renew_step_claim_response::success},
-                      utility::codec::field{"renewed", &renew_step_claim_response::renewed},
-                      utility::codec::field{"state", &renew_step_claim_response::state},
-                      utility::codec::field{"message", &renew_step_claim_response::message}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"success", &renew_step_claim_response::success},
+        utility::codec::field{"renewed", &renew_step_claim_response::renewed},
+        utility::codec::field{"state", &renew_step_claim_response::state},
+        utility::codec::field{"message", &renew_step_claim_response::message}};
 }
 static_assert(utility::codec::names_every_member<renew_step_claim_response>());
 

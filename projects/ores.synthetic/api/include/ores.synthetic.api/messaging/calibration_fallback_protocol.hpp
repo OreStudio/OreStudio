@@ -372,7 +372,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_fallback_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &calibration_fallback_key::code},
     };
 }
@@ -386,7 +386,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_fallback_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &calibration_fallback_write::code},
         utility::codec::field{"name", &calibration_fallback_write::name},
         utility::codec::field{"description", &calibration_fallback_write::description},
@@ -403,7 +403,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_fallback_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &calibration_fallback_change::write},
         utility::codec::field{"precondition", &calibration_fallback_change::precondition},
     };
@@ -418,7 +418,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_fallback_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &calibration_fallback_removal::key},
         utility::codec::field{"precondition", &calibration_fallback_removal::precondition},
     };
@@ -433,7 +433,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_fallback_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &calibration_fallback_lookup::key},
         utility::codec::field{"calibration_fallback",
                               &calibration_fallback_lookup::calibration_fallback},
@@ -449,7 +449,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_fallbacks_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &calibration_fallbacks_filter::code_one_of},
     };
 }
@@ -463,7 +463,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_fallback_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &calibration_fallback_event::event_id},
         utility::codec::field{"key", &calibration_fallback_event::key},
         utility::codec::field{"action", &calibration_fallback_event::action},
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_fallback_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"calibration_fallback",
                               &calibration_fallback_version_key::calibration_fallback},
         utility::codec::field{"version", &calibration_fallback_version_key::version},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_fallback_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &calibration_fallback_versions_filter::version},
         utility::codec::field{"from_version", &calibration_fallback_versions_filter::from_version},
         utility::codec::field{"to_version", &calibration_fallback_versions_filter::to_version},
@@ -514,7 +514,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calibration_fallbacks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_calibration_fallbacks_request::offset},
         utility::codec::field{"limit", &list_calibration_fallbacks_request::limit},
         utility::codec::field{"order", &list_calibration_fallbacks_request::order},
@@ -532,7 +532,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calibration_fallbacks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_calibration_fallbacks_response::result},
         utility::codec::field{"fallbacks", &list_calibration_fallbacks_response::fallbacks},
         utility::codec::field{"total", &list_calibration_fallbacks_response::total},
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calibration_fallback_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_calibration_fallback_request::key},
     };
 }
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calibration_fallback_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_calibration_fallback_response::result},
         utility::codec::field{"calibration_fallback",
                               &get_calibration_fallback_response::calibration_fallback},
@@ -579,7 +579,7 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.calibration_fal
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_calibration_fallbacks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_calibration_fallbacks_request::keys},
     };
 }
@@ -594,7 +594,7 @@ wire_fields(std::type_identity<get_many_calibration_fallbacks_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_calibration_fallbacks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_calibration_fallbacks_response::result},
         utility::codec::field{"entries", &get_many_calibration_fallbacks_response::entries},
     };
@@ -609,7 +609,7 @@ wire_fields(std::type_identity<get_many_calibration_fallbacks_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_calibration_fallback_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_calibration_fallback_request::change},
         utility::codec::field{"intent", &put_calibration_fallback_request::intent},
     };
@@ -624,7 +624,7 @@ wire_fields(std::type_identity<get_many_calibration_fallbacks_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_calibration_fallback_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_calibration_fallback_response::result},
         utility::codec::field{"calibration_fallback",
                               &put_calibration_fallback_response::calibration_fallback},
@@ -641,7 +641,7 @@ wire_fields(std::type_identity<get_many_calibration_fallbacks_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_calibration_fallbacks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_calibration_fallbacks_request::changes},
         utility::codec::field{"intent", &put_many_calibration_fallbacks_request::intent},
     };
@@ -657,7 +657,7 @@ wire_fields(std::type_identity<put_many_calibration_fallbacks_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_calibration_fallbacks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_calibration_fallbacks_response::result},
         utility::codec::field{"fallbacks", &put_many_calibration_fallbacks_response::fallbacks},
     };
@@ -672,7 +672,7 @@ wire_fields(std::type_identity<put_many_calibration_fallbacks_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_calibration_fallback_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_calibration_fallback_request::removal},
         utility::codec::field{"intent", &delete_calibration_fallback_request::intent},
     };
@@ -687,7 +687,7 @@ wire_fields(std::type_identity<put_many_calibration_fallbacks_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_calibration_fallback_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_calibration_fallback_response::result},
     };
 }
@@ -702,7 +702,7 @@ wire_fields(std::type_identity<put_many_calibration_fallbacks_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_calibration_fallbacks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_calibration_fallbacks_request::removals},
         utility::codec::field{"intent", &delete_many_calibration_fallbacks_request::intent},
     };
@@ -718,7 +718,7 @@ wire_fields(std::type_identity<delete_many_calibration_fallbacks_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_calibration_fallbacks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_calibration_fallbacks_response::result},
     };
 }
@@ -733,7 +733,7 @@ wire_fields(std::type_identity<delete_many_calibration_fallbacks_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_calibration_fallback_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_calibration_fallback_versions_request::key},
         utility::codec::field{"offset", &list_calibration_fallback_versions_request::offset},
         utility::codec::field{"limit", &list_calibration_fallback_versions_request::limit},
@@ -752,7 +752,7 @@ wire_fields(std::type_identity<list_calibration_fallback_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_calibration_fallback_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_calibration_fallback_versions_response::result},
         utility::codec::field{"versions", &list_calibration_fallback_versions_response::versions},
         utility::codec::field{"total", &list_calibration_fallback_versions_response::total},
@@ -769,7 +769,7 @@ wire_fields(std::type_identity<list_calibration_fallback_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_calibration_fallback_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_calibration_fallback_version_request::key},
     };
 }
@@ -784,7 +784,7 @@ wire_fields(std::type_identity<get_calibration_fallback_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_calibration_fallback_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_calibration_fallback_version_response::result},
         utility::codec::field{"version", &get_calibration_fallback_version_response::version},
     };

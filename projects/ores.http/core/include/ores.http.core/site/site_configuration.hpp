@@ -54,9 +54,9 @@ struct environment_tls final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<environment_tls>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"ca", &environment_tls::ca},
-                      field{"cert", &environment_tls::cert},
-                      field{"key", &environment_tls::key}};
+    return ::ores::utility::codec::field_list{field{"ca", &environment_tls::ca},
+                                              field{"cert", &environment_tls::cert},
+                                              field{"key", &environment_tls::key}};
 }
 
 /**
@@ -76,15 +76,15 @@ struct environment final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<environment>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"id", &environment::id},
-                      field{"displayName", &environment::displayName},
-                      field{"description", &environment::description},
-                      field{"host", &environment::host},
-                      field{"port", &environment::port},
-                      field{"subjectPrefix", &environment::subjectPrefix},
-                      field{"httpBaseUrl", &environment::httpBaseUrl},
-                      field{"tls", &environment::tls},
-                      field{"nonProduction", &environment::nonProduction}};
+    return ::ores::utility::codec::field_list{field{"id", &environment::id},
+                                              field{"displayName", &environment::displayName},
+                                              field{"description", &environment::description},
+                                              field{"host", &environment::host},
+                                              field{"port", &environment::port},
+                                              field{"subjectPrefix", &environment::subjectPrefix},
+                                              field{"httpBaseUrl", &environment::httpBaseUrl},
+                                              field{"tls", &environment::tls},
+                                              field{"nonProduction", &environment::nonProduction}};
 }
 
 /**
@@ -98,9 +98,9 @@ struct shared_tls final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<shared_tls>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"ca", &shared_tls::ca},
-                      field{"cert", &shared_tls::cert},
-                      field{"key", &shared_tls::key}};
+    return ::ores::utility::codec::field_list{field{"ca", &shared_tls::ca},
+                                              field{"cert", &shared_tls::cert},
+                                              field{"key", &shared_tls::key}};
 }
 
 /**
@@ -114,9 +114,10 @@ struct developer_account final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<developer_account>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"username", &developer_account::username},
-                      field{"label", &developer_account::label},
-                      field{"description", &developer_account::description}};
+    return ::ores::utility::codec::field_list{
+        field{"username", &developer_account::username},
+        field{"label", &developer_account::label},
+        field{"description", &developer_account::description}};
 }
 
 /**
@@ -132,11 +133,12 @@ struct site_configuration final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<site_configuration>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"active", &site_configuration::active},
-                      field{"environments", &site_configuration::environments},
-                      field{"tls", &site_configuration::tls},
-                      field{"developerTools", &site_configuration::developerTools},
-                      field{"developerAccounts", &site_configuration::developerAccounts}};
+    return ::ores::utility::codec::field_list{
+        field{"active", &site_configuration::active},
+        field{"environments", &site_configuration::environments},
+        field{"tls", &site_configuration::tls},
+        field{"developerTools", &site_configuration::developerTools},
+        field{"developerAccounts", &site_configuration::developerAccounts}};
 }
 
 /**

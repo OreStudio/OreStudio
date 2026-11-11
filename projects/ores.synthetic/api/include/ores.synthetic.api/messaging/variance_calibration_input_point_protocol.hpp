@@ -393,7 +393,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<variance_calibration_input_point_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &variance_calibration_input_point_key::id},
     };
 }
@@ -408,7 +408,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<variance_calibration_input_point_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &variance_calibration_input_point_write::id},
         utility::codec::field{"input_id", &variance_calibration_input_point_write::input_id},
         utility::codec::field{"fixing_date", &variance_calibration_input_point_write::fixing_date},
@@ -432,7 +432,7 @@ wire_fields(std::type_identity<variance_calibration_input_point_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<variance_calibration_input_point_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &variance_calibration_input_point_change::write},
         utility::codec::field{"precondition",
                               &variance_calibration_input_point_change::precondition},
@@ -449,7 +449,7 @@ wire_fields(std::type_identity<variance_calibration_input_point_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<variance_calibration_input_point_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &variance_calibration_input_point_removal::key},
         utility::codec::field{"precondition",
                               &variance_calibration_input_point_removal::precondition},
@@ -466,7 +466,7 @@ wire_fields(std::type_identity<variance_calibration_input_point_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<variance_calibration_input_point_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &variance_calibration_input_point_lookup::key},
         utility::codec::field{
             "variance_calibration_input_point",
@@ -484,7 +484,7 @@ wire_fields(std::type_identity<variance_calibration_input_point_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<variance_calibration_input_points_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"input_id", &variance_calibration_input_points_filter::input_id},
         utility::codec::field{"id_one_of", &variance_calibration_input_points_filter::id_one_of},
         utility::codec::field{"input_id_one_of",
@@ -502,7 +502,7 @@ wire_fields(std::type_identity<variance_calibration_input_points_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<variance_calibration_input_point_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &variance_calibration_input_point_event::event_id},
         utility::codec::field{"key", &variance_calibration_input_point_event::key},
         utility::codec::field{"action", &variance_calibration_input_point_event::action},
@@ -523,7 +523,7 @@ wire_fields(std::type_identity<variance_calibration_input_point_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<variance_calibration_input_point_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "variance_calibration_input_point",
             &variance_calibration_input_point_version_key::variance_calibration_input_point},
@@ -541,7 +541,7 @@ wire_fields(std::type_identity<variance_calibration_input_point_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<variance_calibration_input_point_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version",
                               &variance_calibration_input_point_versions_filter::version},
         utility::codec::field{"from_version",
@@ -561,7 +561,7 @@ wire_fields(std::type_identity<variance_calibration_input_point_versions_filter>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_variance_calibration_input_points_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_variance_calibration_input_points_request::offset},
         utility::codec::field{"limit", &list_variance_calibration_input_points_request::limit},
         utility::codec::field{"order", &list_variance_calibration_input_points_request::order},
@@ -580,7 +580,7 @@ wire_fields(std::type_identity<list_variance_calibration_input_points_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_variance_calibration_input_points_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_variance_calibration_input_points_response::result},
         utility::codec::field{
             "variance_calibration_input_points",
@@ -599,7 +599,7 @@ wire_fields(std::type_identity<list_variance_calibration_input_points_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_variance_calibration_input_point_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_variance_calibration_input_point_request::key},
     };
 }
@@ -614,7 +614,7 @@ wire_fields(std::type_identity<get_variance_calibration_input_point_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_variance_calibration_input_point_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_variance_calibration_input_point_response::result},
         utility::codec::field{
             "variance_calibration_input_point",
@@ -632,7 +632,7 @@ wire_fields(std::type_identity<get_variance_calibration_input_point_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_variance_calibration_input_points_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_variance_calibration_input_points_request::keys},
     };
 }
@@ -647,7 +647,7 @@ wire_fields(std::type_identity<get_many_variance_calibration_input_points_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_variance_calibration_input_points_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_variance_calibration_input_points_response::result},
         utility::codec::field{"entries",
@@ -665,7 +665,7 @@ wire_fields(std::type_identity<get_many_variance_calibration_input_points_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_variance_calibration_input_point_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_variance_calibration_input_point_request::change},
         utility::codec::field{"intent", &put_variance_calibration_input_point_request::intent},
     };
@@ -681,7 +681,7 @@ wire_fields(std::type_identity<put_variance_calibration_input_point_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_variance_calibration_input_point_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_variance_calibration_input_point_response::result},
         utility::codec::field{
             "variance_calibration_input_point",
@@ -699,7 +699,7 @@ wire_fields(std::type_identity<put_variance_calibration_input_point_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_variance_calibration_input_points_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_variance_calibration_input_points_request::changes},
         utility::codec::field{"intent",
@@ -717,7 +717,7 @@ wire_fields(std::type_identity<put_many_variance_calibration_input_points_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_variance_calibration_input_points_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_variance_calibration_input_points_response::result},
         utility::codec::field{"variance_calibration_input_points",
@@ -736,7 +736,7 @@ wire_fields(std::type_identity<put_many_variance_calibration_input_points_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_variance_calibration_input_point_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_variance_calibration_input_point_request::removal},
         utility::codec::field{"intent", &delete_variance_calibration_input_point_request::intent},
     };
@@ -752,7 +752,7 @@ wire_fields(std::type_identity<delete_variance_calibration_input_point_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_variance_calibration_input_point_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_variance_calibration_input_point_response::result},
     };
 }
@@ -767,7 +767,7 @@ wire_fields(std::type_identity<delete_variance_calibration_input_point_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_variance_calibration_input_points_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_variance_calibration_input_points_request::removals},
         utility::codec::field{"intent",
@@ -785,7 +785,7 @@ wire_fields(std::type_identity<delete_many_variance_calibration_input_points_req
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_variance_calibration_input_points_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_variance_calibration_input_points_response::result},
     };
@@ -801,7 +801,7 @@ wire_fields(std::type_identity<delete_many_variance_calibration_input_points_res
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_variance_calibration_input_point_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_variance_calibration_input_point_versions_request::key},
         utility::codec::field{"offset",
                               &list_variance_calibration_input_point_versions_request::offset},
@@ -824,7 +824,7 @@ wire_fields(std::type_identity<list_variance_calibration_input_point_versions_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_variance_calibration_input_point_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_variance_calibration_input_point_versions_response::result},
         utility::codec::field{"versions",
@@ -844,7 +844,7 @@ wire_fields(std::type_identity<list_variance_calibration_input_point_versions_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_variance_calibration_input_point_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_variance_calibration_input_point_version_request::key},
     };
 }
@@ -859,7 +859,7 @@ wire_fields(std::type_identity<get_variance_calibration_input_point_version_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_variance_calibration_input_point_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_variance_calibration_input_point_version_response::result},
         utility::codec::field{"version",

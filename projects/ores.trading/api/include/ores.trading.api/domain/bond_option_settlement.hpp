@@ -74,7 +74,7 @@ struct bond_option_settlement {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_option_settlement>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"pay_currency", &bond_option_settlement::pay_currency},
         utility::codec::field{"fx_index", &bond_option_settlement::fx_index},
         utility::codec::field{"fixing_date", &bond_option_settlement::fixing_date},

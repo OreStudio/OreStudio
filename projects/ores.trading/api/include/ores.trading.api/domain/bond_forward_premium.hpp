@@ -69,7 +69,7 @@ struct bond_forward_premium {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_forward_premium>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"amount", &bond_forward_premium::amount},
         utility::codec::field{"date", &bond_forward_premium::date},
     };

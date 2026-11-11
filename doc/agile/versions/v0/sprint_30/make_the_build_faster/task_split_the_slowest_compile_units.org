@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :build:make_the_build_faster:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/split-the-slowest-compile-units
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ No single compile unit takes more than 5 min on the CI runner, so a cold build i
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F3AB6302-3325-4BDF-8106-70E0168C40F9][Make the build faster]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

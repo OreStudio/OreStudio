@@ -47,7 +47,7 @@ namespace ores::synthetic::domain {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<yield_curve_process_parameter_definition>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &yield_curve_process_parameter_definition::version},
         utility::codec::field{"tenant_id", &yield_curve_process_parameter_definition::tenant_id},
         utility::codec::field{"id", &yield_curve_process_parameter_definition::id},

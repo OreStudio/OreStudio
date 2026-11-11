@@ -50,7 +50,7 @@ struct hosted_source final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<hosted_source>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"source_name", &hosted_source::source_name},
         ::ores::utility::codec::field{"provider_code", &hosted_source::provider_code},
         ::ores::utility::codec::field{"adapter_code", &hosted_source::adapter_code},

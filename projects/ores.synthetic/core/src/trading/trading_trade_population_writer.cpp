@@ -628,7 +628,7 @@ trading_trade_population_writer::book_request_for(const domain::trade_population
     book_req.instruments.bond_issue_call_dates.clear();
     book_req.instruments.bond_issue_conversion_targets.clear();
     std::size_t rows = 0;
-    std::apply(
+    ores::utility::codec::apply_fields(
         [&](const auto&... fields) {
             (
                 [&] {

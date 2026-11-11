@@ -56,11 +56,11 @@ struct row_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<row_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"code", &row_body::code},
-                      field{"name", &row_body::name},
-                      field{"description", &row_body::description},
-                      field{"displayOrder", &row_body::displayOrder},
-                      field{"version", &row_body::version}};
+    return ::ores::utility::codec::field_list{field{"code", &row_body::code},
+                                              field{"name", &row_body::name},
+                                              field{"description", &row_body::description},
+                                              field{"displayOrder", &row_body::displayOrder},
+                                              field{"version", &row_body::version}};
 }
 
 /**
@@ -78,13 +78,13 @@ struct write_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<write_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"code", &write_body::code},
-                      field{"name", &write_body::name},
-                      field{"description", &write_body::description},
-                      field{"displayOrder", &write_body::displayOrder},
-                      field{"version", &write_body::version},
-                      field{"reasonCode", &write_body::reasonCode},
-                      field{"commentary", &write_body::commentary}};
+    return ::ores::utility::codec::field_list{field{"code", &write_body::code},
+                                              field{"name", &write_body::name},
+                                              field{"description", &write_body::description},
+                                              field{"displayOrder", &write_body::displayOrder},
+                                              field{"version", &write_body::version},
+                                              field{"reasonCode", &write_body::reasonCode},
+                                              field{"commentary", &write_body::commentary}};
 }
 
 /**
@@ -98,9 +98,9 @@ struct order_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<order_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"rows", &order_body::rows},
-                      field{"reasonCode", &order_body::reasonCode},
-                      field{"commentary", &order_body::commentary}};
+    return ::ores::utility::codec::field_list{field{"rows", &order_body::rows},
+                                              field{"reasonCode", &order_body::reasonCode},
+                                              field{"commentary", &order_body::commentary}};
 }
 
 /**
@@ -114,9 +114,9 @@ struct label_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<label_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"badgeCode", &label_body::badgeCode},
-                      field{"reasonCode", &label_body::reasonCode},
-                      field{"commentary", &label_body::commentary}};
+    return ::ores::utility::codec::field_list{field{"badgeCode", &label_body::badgeCode},
+                                              field{"reasonCode", &label_body::reasonCode},
+                                              field{"commentary", &label_body::commentary}};
 }
 
 /**
@@ -129,8 +129,8 @@ struct removal_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<removal_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"reasonCode", &removal_body::reasonCode},
-                      field{"commentary", &removal_body::commentary}};
+    return ::ores::utility::codec::field_list{field{"reasonCode", &removal_body::reasonCode},
+                                              field{"commentary", &removal_body::commentary}};
 }
 
 /**

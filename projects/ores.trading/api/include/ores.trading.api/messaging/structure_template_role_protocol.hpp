@@ -366,7 +366,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_templat
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_template_role_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"template_code", &structure_template_role_key::template_code},
         utility::codec::field{"role", &structure_template_role_key::role},
     };
@@ -381,7 +381,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_templat
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_template_role_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"template_code", &structure_template_role_write::template_code},
         utility::codec::field{"role", &structure_template_role_write::role},
         utility::codec::field{"min_legs", &structure_template_role_write::min_legs},
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_templat
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_template_role_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &structure_template_role_change::write},
         utility::codec::field{"precondition", &structure_template_role_change::precondition},
     };
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_templat
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_template_role_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &structure_template_role_removal::key},
         utility::codec::field{"precondition", &structure_template_role_removal::precondition},
     };
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_templat
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_template_role_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &structure_template_role_lookup::key},
         utility::codec::field{"structure_template_role",
                               &structure_template_role_lookup::structure_template_role},
@@ -445,7 +445,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_templat
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_template_role_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &structure_template_role_event::event_id},
         utility::codec::field{"key", &structure_template_role_event::key},
         utility::codec::field{"action", &structure_template_role_event::action},
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_templat
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_template_role_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"structure_template_role",
                               &structure_template_role_version_key::structure_template_role},
         utility::codec::field{"version", &structure_template_role_version_key::version},
@@ -481,7 +481,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_templat
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<structure_template_role_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &structure_template_role_versions_filter::version},
         utility::codec::field{"from_version",
                               &structure_template_role_versions_filter::from_version},
@@ -499,7 +499,7 @@ wire_fields(std::type_identity<structure_template_role_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_structure_template_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_structure_template_roles_request::offset},
         utility::codec::field{"limit", &list_structure_template_roles_request::limit},
         utility::codec::field{"order", &list_structure_template_roles_request::order},
@@ -517,7 +517,7 @@ wire_fields(std::type_identity<list_structure_template_roles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_structure_template_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_structure_template_roles_response::result},
         utility::codec::field{"template_roles",
                               &list_structure_template_roles_response::template_roles},
@@ -534,7 +534,7 @@ wire_fields(std::type_identity<list_structure_template_roles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_structure_template_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_structure_template_role_request::key},
     };
 }
@@ -548,7 +548,7 @@ wire_fields(std::type_identity<list_structure_template_roles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_structure_template_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_structure_template_role_response::result},
         utility::codec::field{"structure_template_role",
                               &get_structure_template_role_response::structure_template_role},
@@ -565,7 +565,7 @@ wire_fields(std::type_identity<list_structure_template_roles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_structure_template_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_structure_template_roles_request::keys},
     };
 }
@@ -580,7 +580,7 @@ wire_fields(std::type_identity<get_many_structure_template_roles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_structure_template_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_structure_template_roles_response::result},
         utility::codec::field{"entries", &get_many_structure_template_roles_response::entries},
     };
@@ -595,7 +595,7 @@ wire_fields(std::type_identity<get_many_structure_template_roles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_structure_template_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_structure_template_role_request::change},
         utility::codec::field{"intent", &put_structure_template_role_request::intent},
     };
@@ -610,7 +610,7 @@ wire_fields(std::type_identity<get_many_structure_template_roles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_structure_template_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_structure_template_role_response::result},
         utility::codec::field{"structure_template_role",
                               &put_structure_template_role_response::structure_template_role},
@@ -627,7 +627,7 @@ wire_fields(std::type_identity<get_many_structure_template_roles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_structure_template_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_structure_template_roles_request::changes},
         utility::codec::field{"intent", &put_many_structure_template_roles_request::intent},
     };
@@ -643,7 +643,7 @@ wire_fields(std::type_identity<put_many_structure_template_roles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_structure_template_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_structure_template_roles_response::result},
         utility::codec::field{"template_roles",
                               &put_many_structure_template_roles_response::template_roles},
@@ -660,7 +660,7 @@ wire_fields(std::type_identity<put_many_structure_template_roles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_structure_template_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_structure_template_role_request::removal},
         utility::codec::field{"intent", &delete_structure_template_role_request::intent},
     };
@@ -676,7 +676,7 @@ wire_fields(std::type_identity<delete_structure_template_role_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_structure_template_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_structure_template_role_response::result},
     };
 }
@@ -691,7 +691,7 @@ wire_fields(std::type_identity<delete_structure_template_role_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_structure_template_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_structure_template_roles_request::removals},
         utility::codec::field{"intent", &delete_many_structure_template_roles_request::intent},
     };
@@ -707,7 +707,7 @@ wire_fields(std::type_identity<delete_many_structure_template_roles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_structure_template_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_structure_template_roles_response::result},
     };
 }
@@ -722,7 +722,7 @@ wire_fields(std::type_identity<delete_many_structure_template_roles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_structure_template_role_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_structure_template_role_versions_request::key},
         utility::codec::field{"offset", &list_structure_template_role_versions_request::offset},
         utility::codec::field{"limit", &list_structure_template_role_versions_request::limit},
@@ -741,7 +741,7 @@ wire_fields(std::type_identity<list_structure_template_role_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_structure_template_role_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_structure_template_role_versions_response::result},
         utility::codec::field{"versions",
                               &list_structure_template_role_versions_response::versions},
@@ -759,7 +759,7 @@ wire_fields(std::type_identity<list_structure_template_role_versions_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_structure_template_role_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_structure_template_role_version_request::key},
     };
 }
@@ -774,7 +774,7 @@ wire_fields(std::type_identity<get_structure_template_role_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_structure_template_role_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_structure_template_role_version_response::result},
         utility::codec::field{"version", &get_structure_template_role_version_response::version},
     };

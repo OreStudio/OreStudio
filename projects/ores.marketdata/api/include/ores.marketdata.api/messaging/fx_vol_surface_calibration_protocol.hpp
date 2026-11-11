@@ -255,7 +255,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_calibration_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &fx_vol_surface_calibration_key::id},
     };
 }
@@ -269,7 +269,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_calibration_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &fx_vol_surface_calibration_lookup::key},
         utility::codec::field{"fx_vol_surface_calibration",
                               &fx_vol_surface_calibration_lookup::fx_vol_surface_calibration},
@@ -285,7 +285,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_calibrations_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"party_id", &fx_vol_surface_calibrations_filter::party_id},
         utility::codec::field{"id_one_of", &fx_vol_surface_calibrations_filter::id_one_of},
         utility::codec::field{"party_id_one_of",
@@ -302,7 +302,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_calibration_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &fx_vol_surface_calibration_event::event_id},
         utility::codec::field{"key", &fx_vol_surface_calibration_event::key},
         utility::codec::field{"action", &fx_vol_surface_calibration_event::action},
@@ -322,7 +322,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<fx_vol_surface_calibration_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"fx_vol_surface_calibration",
                               &fx_vol_surface_calibration_version_key::fx_vol_surface_calibration},
         utility::codec::field{"version", &fx_vol_surface_calibration_version_key::version},
@@ -339,7 +339,7 @@ wire_fields(std::type_identity<fx_vol_surface_calibration_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<fx_vol_surface_calibration_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &fx_vol_surface_calibration_versions_filter::version},
         utility::codec::field{"from_version",
                               &fx_vol_surface_calibration_versions_filter::from_version},
@@ -358,7 +358,7 @@ wire_fields(std::type_identity<fx_vol_surface_calibration_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_vol_surface_calibrations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_fx_vol_surface_calibrations_request::offset},
         utility::codec::field{"limit", &list_fx_vol_surface_calibrations_request::limit},
         utility::codec::field{"order", &list_fx_vol_surface_calibrations_request::order},
@@ -377,7 +377,7 @@ wire_fields(std::type_identity<list_fx_vol_surface_calibrations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_vol_surface_calibrations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_vol_surface_calibrations_response::result},
         utility::codec::field{"calibrations",
                               &list_fx_vol_surface_calibrations_response::calibrations},
@@ -395,7 +395,7 @@ wire_fields(std::type_identity<list_fx_vol_surface_calibrations_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_vol_surface_calibration_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_vol_surface_calibration_request::key},
     };
 }
@@ -410,7 +410,7 @@ wire_fields(std::type_identity<get_fx_vol_surface_calibration_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_vol_surface_calibration_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_vol_surface_calibration_response::result},
         utility::codec::field{"fx_vol_surface_calibration",
                               &get_fx_vol_surface_calibration_response::fx_vol_surface_calibration},
@@ -427,7 +427,7 @@ wire_fields(std::type_identity<get_fx_vol_surface_calibration_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_vol_surface_calibrations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_fx_vol_surface_calibrations_request::keys},
     };
 }
@@ -442,7 +442,7 @@ wire_fields(std::type_identity<get_many_fx_vol_surface_calibrations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_vol_surface_calibrations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_fx_vol_surface_calibrations_response::result},
         utility::codec::field{"entries", &get_many_fx_vol_surface_calibrations_response::entries},
     };
@@ -458,7 +458,7 @@ wire_fields(std::type_identity<get_many_fx_vol_surface_calibrations_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_vol_surface_calibration_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_fx_vol_surface_calibration_versions_request::key},
         utility::codec::field{"offset", &list_fx_vol_surface_calibration_versions_request::offset},
         utility::codec::field{"limit", &list_fx_vol_surface_calibration_versions_request::limit},
@@ -477,7 +477,7 @@ wire_fields(std::type_identity<list_fx_vol_surface_calibration_versions_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_vol_surface_calibration_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_vol_surface_calibration_versions_response::result},
         utility::codec::field{"versions",
                               &list_fx_vol_surface_calibration_versions_response::versions},
@@ -495,7 +495,7 @@ wire_fields(std::type_identity<list_fx_vol_surface_calibration_versions_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_vol_surface_calibration_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_vol_surface_calibration_version_request::key},
     };
 }
@@ -510,7 +510,7 @@ wire_fields(std::type_identity<get_fx_vol_surface_calibration_version_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_vol_surface_calibration_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_vol_surface_calibration_version_response::result},
         utility::codec::field{"version", &get_fx_vol_surface_calibration_version_response::version},
     };

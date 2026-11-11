@@ -110,7 +110,7 @@ struct publish_suppliers_from_dq_request {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<publish_market_data_observations_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -122,7 +122,7 @@ wire_fields(std::type_identity<publish_market_data_observations_from_dq_request>
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_adapters_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -134,7 +134,7 @@ wire_fields(std::type_identity<publish_market_data_observations_from_dq_request>
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_suppliers_from_dq_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 }

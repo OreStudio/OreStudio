@@ -119,7 +119,7 @@ inline constexpr std::string_view {{action}} = "{{subject}}";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<{{name}}>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
 {{#fields}}        utility::codec::field{"{{name}}", &{{struct_name}}::{{name}}},
 {{/fields}}    };
 }
@@ -214,7 +214,7 @@ struct {{name}} {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<{{name}}>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
 {{#fields}}        utility::codec::field{"{{name}}", &{{struct_name}}::{{name}}},
 {{/fields}}    };
 }
@@ -341,7 +341,7 @@ struct {{name}} {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<{{name}}>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
 {{#fields}}        ::ores::utility::codec::field{"{{name}}", &{{struct_name}}::{{name}}},
 {{/fields}}    };
 }
@@ -439,7 +439,7 @@ struct {{name}} {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<{{name}}>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
 {{#fields}}        ::ores::utility::codec::field{"{{name}}", &{{struct_name}}::{{name}}},
 {{/fields}}    };
 }

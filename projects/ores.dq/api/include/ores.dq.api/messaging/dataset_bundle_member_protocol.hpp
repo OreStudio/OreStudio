@@ -317,7 +317,7 @@ struct list_by_bundle_code_dataset_bundle_members_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_bundle_member_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"bundle_code", &dataset_bundle_member_key::bundle_code},
         utility::codec::field{"dataset_code", &dataset_bundle_member_key::dataset_code},
     };
@@ -332,7 +332,7 @@ struct list_by_bundle_code_dataset_bundle_members_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_bundle_member_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"bundle_code", &dataset_bundle_member_write::bundle_code},
         utility::codec::field{"dataset_code", &dataset_bundle_member_write::dataset_code},
         utility::codec::field{"display_order", &dataset_bundle_member_write::display_order},
@@ -349,7 +349,7 @@ struct list_by_bundle_code_dataset_bundle_members_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_bundle_member_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &dataset_bundle_member_change::write},
         utility::codec::field{"precondition", &dataset_bundle_member_change::precondition},
     };
@@ -364,7 +364,7 @@ struct list_by_bundle_code_dataset_bundle_members_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_bundle_member_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &dataset_bundle_member_removal::key},
         utility::codec::field{"precondition", &dataset_bundle_member_removal::precondition},
     };
@@ -379,7 +379,7 @@ struct list_by_bundle_code_dataset_bundle_members_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_bundle_member_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &dataset_bundle_member_lookup::key},
         utility::codec::field{"dataset_bundle_member",
                               &dataset_bundle_member_lookup::dataset_bundle_member},
@@ -395,7 +395,7 @@ struct list_by_bundle_code_dataset_bundle_members_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_bundle_members_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"bundle_code", &dataset_bundle_members_filter::bundle_code},
         utility::codec::field{"bundle_code_one_of",
                               &dataset_bundle_members_filter::bundle_code_one_of},
@@ -411,7 +411,7 @@ struct list_by_bundle_code_dataset_bundle_members_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_bundle_member_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &dataset_bundle_member_event::event_id},
         utility::codec::field{"key", &dataset_bundle_member_event::key},
         utility::codec::field{"action", &dataset_bundle_member_event::action},
@@ -430,7 +430,7 @@ struct list_by_bundle_code_dataset_bundle_members_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_dataset_bundle_members_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_dataset_bundle_members_request::offset},
         utility::codec::field{"limit", &list_dataset_bundle_members_request::limit},
         utility::codec::field{"order", &list_dataset_bundle_members_request::order},
@@ -447,7 +447,7 @@ struct list_by_bundle_code_dataset_bundle_members_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_dataset_bundle_members_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_dataset_bundle_members_response::result},
         utility::codec::field{"dataset_bundle_members",
                               &list_dataset_bundle_members_response::dataset_bundle_members},
@@ -464,7 +464,7 @@ struct list_by_bundle_code_dataset_bundle_members_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_dataset_bundle_member_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_dataset_bundle_member_request::key},
     };
 }
@@ -478,7 +478,7 @@ struct list_by_bundle_code_dataset_bundle_members_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_dataset_bundle_member_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_dataset_bundle_member_response::result},
         utility::codec::field{"dataset_bundle_member",
                               &get_dataset_bundle_member_response::dataset_bundle_member},
@@ -495,7 +495,7 @@ struct list_by_bundle_code_dataset_bundle_members_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_dataset_bundle_members_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_dataset_bundle_members_request::keys},
     };
 }
@@ -510,7 +510,7 @@ wire_fields(std::type_identity<get_many_dataset_bundle_members_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_dataset_bundle_members_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_dataset_bundle_members_response::result},
         utility::codec::field{"entries", &get_many_dataset_bundle_members_response::entries},
     };
@@ -525,7 +525,7 @@ wire_fields(std::type_identity<get_many_dataset_bundle_members_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_dataset_bundle_member_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_dataset_bundle_member_request::change},
         utility::codec::field{"intent", &put_dataset_bundle_member_request::intent},
     };
@@ -540,7 +540,7 @@ wire_fields(std::type_identity<get_many_dataset_bundle_members_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_dataset_bundle_member_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_dataset_bundle_member_response::result},
         utility::codec::field{"dataset_bundle_member",
                               &put_dataset_bundle_member_response::dataset_bundle_member},
@@ -557,7 +557,7 @@ wire_fields(std::type_identity<get_many_dataset_bundle_members_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_dataset_bundle_members_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_dataset_bundle_members_request::changes},
         utility::codec::field{"intent", &put_many_dataset_bundle_members_request::intent},
     };
@@ -573,7 +573,7 @@ wire_fields(std::type_identity<put_many_dataset_bundle_members_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_dataset_bundle_members_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_dataset_bundle_members_response::result},
         utility::codec::field{"dataset_bundle_members",
                               &put_many_dataset_bundle_members_response::dataset_bundle_members},
@@ -589,7 +589,7 @@ wire_fields(std::type_identity<put_many_dataset_bundle_members_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_dataset_bundle_member_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_dataset_bundle_member_request::removal},
         utility::codec::field{"intent", &delete_dataset_bundle_member_request::intent},
     };
@@ -605,7 +605,7 @@ wire_fields(std::type_identity<put_many_dataset_bundle_members_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_dataset_bundle_member_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_dataset_bundle_member_response::result},
     };
 }
@@ -620,7 +620,7 @@ wire_fields(std::type_identity<delete_dataset_bundle_member_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_dataset_bundle_members_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_dataset_bundle_members_request::removals},
         utility::codec::field{"intent", &delete_many_dataset_bundle_members_request::intent},
     };
@@ -636,7 +636,7 @@ wire_fields(std::type_identity<delete_many_dataset_bundle_members_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_dataset_bundle_members_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_dataset_bundle_members_response::result},
     };
 }
@@ -651,7 +651,7 @@ wire_fields(std::type_identity<delete_many_dataset_bundle_members_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_bundle_code_dataset_bundle_members_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"bundle_code",
                               &list_by_bundle_code_dataset_bundle_members_request::bundle_code},
         utility::codec::field{"scope", &list_by_bundle_code_dataset_bundle_members_request::scope},
@@ -674,7 +674,7 @@ wire_fields(std::type_identity<list_by_bundle_code_dataset_bundle_members_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_bundle_code_dataset_bundle_members_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_bundle_code_dataset_bundle_members_response::result},
         utility::codec::field{

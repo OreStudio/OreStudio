@@ -388,7 +388,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_volatility_proxy_surface_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_volatility_proxy_surface_key::id},
     };
 }
@@ -402,7 +402,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_volatility_proxy_surface_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_volatility_proxy_surface_write::id},
         utility::codec::field{"curve_volatility_kind_id",
                               &curve_volatility_proxy_surface_write::curve_volatility_kind_id},
@@ -427,7 +427,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_volatility_proxy_surface_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &curve_volatility_proxy_surface_change::write},
         utility::codec::field{"precondition", &curve_volatility_proxy_surface_change::precondition},
     };
@@ -443,7 +443,7 @@ wire_fields(std::type_identity<curve_volatility_proxy_surface_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_volatility_proxy_surface_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_volatility_proxy_surface_removal::key},
         utility::codec::field{"precondition",
                               &curve_volatility_proxy_surface_removal::precondition},
@@ -460,7 +460,7 @@ wire_fields(std::type_identity<curve_volatility_proxy_surface_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_volatility_proxy_surface_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_volatility_proxy_surface_lookup::key},
         utility::codec::field{
             "curve_volatility_proxy_surface",
@@ -478,7 +478,7 @@ wire_fields(std::type_identity<curve_volatility_proxy_surface_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_volatility_proxy_surfaces_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &curve_volatility_proxy_surfaces_filter::id_one_of},
     };
 }
@@ -492,7 +492,7 @@ wire_fields(std::type_identity<curve_volatility_proxy_surfaces_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_volatility_proxy_surface_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &curve_volatility_proxy_surface_event::event_id},
         utility::codec::field{"key", &curve_volatility_proxy_surface_event::key},
         utility::codec::field{"action", &curve_volatility_proxy_surface_event::action},
@@ -513,7 +513,7 @@ wire_fields(std::type_identity<curve_volatility_proxy_surfaces_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_volatility_proxy_surface_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "curve_volatility_proxy_surface",
             &curve_volatility_proxy_surface_version_key::curve_volatility_proxy_surface},
@@ -531,7 +531,7 @@ wire_fields(std::type_identity<curve_volatility_proxy_surface_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_volatility_proxy_surface_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &curve_volatility_proxy_surface_versions_filter::version},
         utility::codec::field{"from_version",
                               &curve_volatility_proxy_surface_versions_filter::from_version},
@@ -550,7 +550,7 @@ wire_fields(std::type_identity<curve_volatility_proxy_surface_versions_filter>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_volatility_proxy_surfaces_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_curve_volatility_proxy_surfaces_request::offset},
         utility::codec::field{"limit", &list_curve_volatility_proxy_surfaces_request::limit},
         utility::codec::field{"order", &list_curve_volatility_proxy_surfaces_request::order},
@@ -569,7 +569,7 @@ wire_fields(std::type_identity<list_curve_volatility_proxy_surfaces_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_volatility_proxy_surfaces_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_volatility_proxy_surfaces_response::result},
         utility::codec::field{
             "curve_volatility_proxy_surfaces",
@@ -588,7 +588,7 @@ wire_fields(std::type_identity<list_curve_volatility_proxy_surfaces_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_volatility_proxy_surface_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_volatility_proxy_surface_request::key},
     };
 }
@@ -603,7 +603,7 @@ wire_fields(std::type_identity<get_curve_volatility_proxy_surface_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_volatility_proxy_surface_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_volatility_proxy_surface_response::result},
         utility::codec::field{
             "curve_volatility_proxy_surface",
@@ -621,7 +621,7 @@ wire_fields(std::type_identity<get_curve_volatility_proxy_surface_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_volatility_proxy_surfaces_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_curve_volatility_proxy_surfaces_request::keys},
     };
 }
@@ -636,7 +636,7 @@ wire_fields(std::type_identity<get_many_curve_volatility_proxy_surfaces_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_volatility_proxy_surfaces_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_curve_volatility_proxy_surfaces_response::result},
         utility::codec::field{"entries",
                               &get_many_curve_volatility_proxy_surfaces_response::entries},
@@ -653,7 +653,7 @@ wire_fields(std::type_identity<get_many_curve_volatility_proxy_surfaces_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_curve_volatility_proxy_surface_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_curve_volatility_proxy_surface_request::change},
         utility::codec::field{"intent", &put_curve_volatility_proxy_surface_request::intent},
     };
@@ -669,7 +669,7 @@ wire_fields(std::type_identity<put_curve_volatility_proxy_surface_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_curve_volatility_proxy_surface_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_curve_volatility_proxy_surface_response::result},
         utility::codec::field{
             "curve_volatility_proxy_surface",
@@ -687,7 +687,7 @@ wire_fields(std::type_identity<put_curve_volatility_proxy_surface_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_volatility_proxy_surfaces_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_curve_volatility_proxy_surfaces_request::changes},
         utility::codec::field{"intent", &put_many_curve_volatility_proxy_surfaces_request::intent},
@@ -704,7 +704,7 @@ wire_fields(std::type_identity<put_many_curve_volatility_proxy_surfaces_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_volatility_proxy_surfaces_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_curve_volatility_proxy_surfaces_response::result},
         utility::codec::field{
             "curve_volatility_proxy_surfaces",
@@ -722,7 +722,7 @@ wire_fields(std::type_identity<put_many_curve_volatility_proxy_surfaces_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_volatility_proxy_surface_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_curve_volatility_proxy_surface_request::removal},
         utility::codec::field{"intent", &delete_curve_volatility_proxy_surface_request::intent},
     };
@@ -738,7 +738,7 @@ wire_fields(std::type_identity<delete_curve_volatility_proxy_surface_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_volatility_proxy_surface_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_curve_volatility_proxy_surface_response::result},
     };
 }
@@ -753,7 +753,7 @@ wire_fields(std::type_identity<delete_curve_volatility_proxy_surface_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_volatility_proxy_surfaces_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_curve_volatility_proxy_surfaces_request::removals},
         utility::codec::field{"intent",
@@ -771,7 +771,7 @@ wire_fields(std::type_identity<delete_many_curve_volatility_proxy_surfaces_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_volatility_proxy_surfaces_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_curve_volatility_proxy_surfaces_response::result},
     };
@@ -787,7 +787,7 @@ wire_fields(std::type_identity<delete_many_curve_volatility_proxy_surfaces_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_volatility_proxy_surface_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_curve_volatility_proxy_surface_versions_request::key},
         utility::codec::field{"offset",
                               &list_curve_volatility_proxy_surface_versions_request::offset},
@@ -810,7 +810,7 @@ wire_fields(std::type_identity<list_curve_volatility_proxy_surface_versions_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_volatility_proxy_surface_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_curve_volatility_proxy_surface_versions_response::result},
         utility::codec::field{"versions",
@@ -830,7 +830,7 @@ wire_fields(std::type_identity<list_curve_volatility_proxy_surface_versions_resp
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_volatility_proxy_surface_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_volatility_proxy_surface_version_request::key},
     };
 }
@@ -845,7 +845,7 @@ wire_fields(std::type_identity<get_curve_volatility_proxy_surface_version_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_volatility_proxy_surface_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_curve_volatility_proxy_surface_version_response::result},
         utility::codec::field{"version",

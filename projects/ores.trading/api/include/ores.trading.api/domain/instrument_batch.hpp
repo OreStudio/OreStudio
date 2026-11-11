@@ -1155,7 +1155,7 @@ template <typename T>
  * the type declares them.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_batch>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"bond_instruments", &instrument_batch::bond_instruments},
         ::ores::utility::codec::field{"commodity_instruments",
                                       &instrument_batch::commodity_instruments},

@@ -312,7 +312,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_country_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"currency_iso_code", &currency_country_key::currency_iso_code},
         utility::codec::field{"country_alpha2_code", &currency_country_key::country_alpha2_code},
     };
@@ -327,7 +327,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_country_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"currency_iso_code", &currency_country_write::currency_iso_code},
         utility::codec::field{"country_alpha2_code", &currency_country_write::country_alpha2_code},
     };
@@ -342,7 +342,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_country_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &currency_country_change::write},
         utility::codec::field{"precondition", &currency_country_change::precondition},
     };
@@ -357,7 +357,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_country_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &currency_country_removal::key},
         utility::codec::field{"precondition", &currency_country_removal::precondition},
     };
@@ -372,7 +372,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_country_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &currency_country_lookup::key},
         utility::codec::field{"currency_country", &currency_country_lookup::currency_country},
     };
@@ -387,7 +387,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_countries_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"currency_iso_code", &currency_countries_filter::currency_iso_code},
         utility::codec::field{"currency_iso_code_one_of",
                               &currency_countries_filter::currency_iso_code_one_of},
@@ -403,7 +403,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_country_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &currency_country_event::event_id},
         utility::codec::field{"key", &currency_country_event::key},
         utility::codec::field{"action", &currency_country_event::action},
@@ -422,7 +422,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_currency_countries_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_currency_countries_request::offset},
         utility::codec::field{"limit", &list_currency_countries_request::limit},
         utility::codec::field{"order", &list_currency_countries_request::order},
@@ -439,7 +439,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_currency_countries_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_currency_countries_response::result},
         utility::codec::field{"currency_countries",
                               &list_currency_countries_response::currency_countries},
@@ -456,7 +456,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_currency_country_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_currency_country_request::key},
     };
 }
@@ -470,7 +470,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_currency_country_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_currency_country_response::result},
         utility::codec::field{"currency_country", &get_currency_country_response::currency_country},
     };
@@ -485,7 +485,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_currency_countries_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_currency_countries_request::keys},
     };
 }
@@ -499,7 +499,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_currency_countries_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_currency_countries_response::result},
         utility::codec::field{"entries", &get_many_currency_countries_response::entries},
     };
@@ -514,7 +514,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_currency_country_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_currency_country_request::change},
         utility::codec::field{"intent", &put_currency_country_request::intent},
     };
@@ -529,7 +529,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_currency_country_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_currency_country_response::result},
         utility::codec::field{"currency_country", &put_currency_country_response::currency_country},
     };
@@ -544,7 +544,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_currency_countries_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_currency_countries_request::changes},
         utility::codec::field{"intent", &put_many_currency_countries_request::intent},
     };
@@ -559,7 +559,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_currency_countries_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_currency_countries_response::result},
         utility::codec::field{"currency_countries",
                               &put_many_currency_countries_response::currency_countries},
@@ -575,7 +575,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_currency_country_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_currency_country_request::removal},
         utility::codec::field{"intent", &delete_currency_country_request::intent},
     };
@@ -590,7 +590,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_currency_country_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_currency_country_response::result},
     };
 }
@@ -605,7 +605,7 @@ struct list_by_currency_iso_code_currency_countries_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_currency_countries_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_currency_countries_request::removals},
         utility::codec::field{"intent", &delete_many_currency_countries_request::intent},
     };
@@ -621,7 +621,7 @@ wire_fields(std::type_identity<delete_many_currency_countries_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_currency_countries_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_currency_countries_response::result},
     };
 }
@@ -636,7 +636,7 @@ wire_fields(std::type_identity<delete_many_currency_countries_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_currency_iso_code_currency_countries_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "currency_iso_code",
             &list_by_currency_iso_code_currency_countries_request::currency_iso_code},
@@ -663,7 +663,7 @@ wire_fields(std::type_identity<list_by_currency_iso_code_currency_countries_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_currency_iso_code_currency_countries_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_currency_iso_code_currency_countries_response::result},
         utility::codec::field{

@@ -392,7 +392,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workunit_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &workunit_key::id},
     };
 }
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workunit_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &workunit_write::id},
         utility::codec::field{"batch_id", &workunit_write::batch_id},
         utility::codec::field{"app_version_id", &workunit_write::app_version_id},
@@ -427,7 +427,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workunit_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &workunit_change::write},
         utility::codec::field{"precondition", &workunit_change::precondition},
     };
@@ -442,7 +442,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workunit_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &workunit_removal::key},
         utility::codec::field{"precondition", &workunit_removal::precondition},
     };
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workunit_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &workunit_lookup::key},
         utility::codec::field{"workunit", &workunit_lookup::workunit},
     };
@@ -472,7 +472,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workunits_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"batch_id", &workunits_filter::batch_id},
         utility::codec::field{"id_one_of", &workunits_filter::id_one_of},
         utility::codec::field{"batch_id_one_of", &workunits_filter::batch_id_one_of},
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workunit_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &workunit_event::event_id},
         utility::codec::field{"key", &workunit_event::key},
         utility::codec::field{"action", &workunit_event::action},
@@ -507,7 +507,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workunit_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"workunit", &workunit_version_key::workunit},
         utility::codec::field{"version", &workunit_version_key::version},
     };
@@ -522,7 +522,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workunit_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &workunit_versions_filter::version},
         utility::codec::field{"from_version", &workunit_versions_filter::from_version},
         utility::codec::field{"to_version", &workunit_versions_filter::to_version},
@@ -538,7 +538,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_workunits_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_workunits_request::offset},
         utility::codec::field{"limit", &list_workunits_request::limit},
         utility::codec::field{"order", &list_workunits_request::order},
@@ -556,7 +556,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_workunits_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_workunits_response::result},
         utility::codec::field{"workunits", &list_workunits_response::workunits},
         utility::codec::field{"total", &list_workunits_response::total},
@@ -572,7 +572,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_workunit_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_workunit_request::key},
     };
 }
@@ -586,7 +586,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_workunit_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_workunit_response::result},
         utility::codec::field{"workunit", &get_workunit_response::workunit},
     };
@@ -601,7 +601,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_workunits_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_workunits_request::keys},
     };
 }
@@ -615,7 +615,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_workunits_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_workunits_response::result},
         utility::codec::field{"entries", &get_many_workunits_response::entries},
     };
@@ -630,7 +630,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_workunit_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_workunit_request::change},
         utility::codec::field{"intent", &put_workunit_request::intent},
     };
@@ -645,7 +645,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_workunit_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_workunit_response::result},
         utility::codec::field{"workunit", &put_workunit_response::workunit},
     };
@@ -660,7 +660,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_workunits_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_workunits_request::changes},
         utility::codec::field{"intent", &put_many_workunits_request::intent},
     };
@@ -675,7 +675,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_workunits_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_workunits_response::result},
         utility::codec::field{"workunits", &put_many_workunits_response::workunits},
     };
@@ -690,7 +690,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_workunit_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_workunit_request::removal},
         utility::codec::field{"intent", &delete_workunit_request::intent},
     };
@@ -705,7 +705,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_workunit_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_workunit_response::result},
     };
 }
@@ -719,7 +719,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_workunits_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_workunits_request::removals},
         utility::codec::field{"intent", &delete_many_workunits_request::intent},
     };
@@ -734,7 +734,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_workunits_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_workunits_response::result},
     };
 }
@@ -748,7 +748,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_by_batch_id_workunits_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"batch_id", &list_by_batch_id_workunits_request::batch_id},
         utility::codec::field{"scope", &list_by_batch_id_workunits_request::scope},
         utility::codec::field{"offset", &list_by_batch_id_workunits_request::offset},
@@ -767,7 +767,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_by_batch_id_workunits_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_batch_id_workunits_response::result},
         utility::codec::field{"workunits", &list_by_batch_id_workunits_response::workunits},
         utility::codec::field{"total", &list_by_batch_id_workunits_response::total},
@@ -783,7 +783,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_workunit_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_workunit_versions_request::key},
         utility::codec::field{"offset", &list_workunit_versions_request::offset},
         utility::codec::field{"limit", &list_workunit_versions_request::limit},
@@ -801,7 +801,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_workunit_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_workunit_versions_response::result},
         utility::codec::field{"versions", &list_workunit_versions_response::versions},
         utility::codec::field{"total", &list_workunit_versions_response::total},
@@ -817,7 +817,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_workunit_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_workunit_version_request::key},
     };
 }
@@ -831,7 +831,7 @@ inline constexpr std::string_view deleted = "compute.v1.events.workunits.deleted
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_workunit_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_workunit_version_response::result},
         utility::codec::field{"version", &get_workunit_version_response::version},
     };

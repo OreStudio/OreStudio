@@ -3512,11 +3512,12 @@ private:
     std::type_identity<tenant_provisioning_handler::provision_step_result::party_report_schedule>) {
     using ::ores::utility::codec::field;
     using schedule = tenant_provisioning_handler::provision_step_result::party_report_schedule;
-    return std::tuple{field{"party", &schedule::party},
-                      field{"scheduled", &schedule::scheduled},
-                      field{"already_scheduled", &schedule::already_scheduled},
-                      field{"on_demand", &schedule::on_demand},
-                      field{"not_a_cron", &schedule::not_a_cron}};
+    return ::ores::utility::codec::field_list{
+        field{"party", &schedule::party},
+        field{"scheduled", &schedule::scheduled},
+        field{"already_scheduled", &schedule::already_scheduled},
+        field{"on_demand", &schedule::on_demand},
+        field{"not_a_cron", &schedule::not_a_cron}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<
@@ -3528,22 +3529,23 @@ static_assert(::ores::utility::codec::names_every_member<
 wire_fields(std::type_identity<tenant_provisioning_handler::provision_step_result>) {
     using ::ores::utility::codec::field;
     using result = tenant_provisioning_handler::provision_step_result;
-    return std::tuple{field{"kind", &result::kind},
-                      field{"bundles", &result::bundles},
-                      field{"root_lei", &result::root_lei},
-                      field{"parties", &result::parties},
-                      field{"accounts", &result::accounts},
-                      field{"images", &result::images},
-                      field{"datasets", &result::datasets},
-                      field{"tenant_id", &result::tenant_id},
-                      field{"child_instance_id", &result::child_instance_id},
-                      field{"configs", &result::configs},
-                      field{"trades_planned", &result::trades_planned},
-                      field{"trades_written", &result::trades_written},
-                      field{"trades_already_present", &result::trades_already_present},
-                      field{"report_schedules", &result::report_schedules},
-                      field{"curves", &result::curves},
-                      field{"curves_not_published", &result::curves_not_published}};
+    return ::ores::utility::codec::field_list{
+        field{"kind", &result::kind},
+        field{"bundles", &result::bundles},
+        field{"root_lei", &result::root_lei},
+        field{"parties", &result::parties},
+        field{"accounts", &result::accounts},
+        field{"images", &result::images},
+        field{"datasets", &result::datasets},
+        field{"tenant_id", &result::tenant_id},
+        field{"child_instance_id", &result::child_instance_id},
+        field{"configs", &result::configs},
+        field{"trades_planned", &result::trades_planned},
+        field{"trades_written", &result::trades_written},
+        field{"trades_already_present", &result::trades_already_present},
+        field{"report_schedules", &result::report_schedules},
+        field{"curves", &result::curves},
+        field{"curves_not_published", &result::curves_not_published}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<

@@ -424,7 +424,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_future_off_peak_index_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &commodity_future_off_peak_index_key::id},
     };
 }
@@ -439,7 +439,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_future_off_peak_index_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &commodity_future_off_peak_index_write::id},
         utility::codec::field{"convention_id",
                               &commodity_future_off_peak_index_write::convention_id},
@@ -463,7 +463,7 @@ wire_fields(std::type_identity<commodity_future_off_peak_index_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_future_off_peak_index_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &commodity_future_off_peak_index_change::write},
         utility::codec::field{"precondition",
                               &commodity_future_off_peak_index_change::precondition},
@@ -480,7 +480,7 @@ wire_fields(std::type_identity<commodity_future_off_peak_index_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_future_off_peak_index_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &commodity_future_off_peak_index_removal::key},
         utility::codec::field{"precondition",
                               &commodity_future_off_peak_index_removal::precondition},
@@ -497,7 +497,7 @@ wire_fields(std::type_identity<commodity_future_off_peak_index_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_future_off_peak_index_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &commodity_future_off_peak_index_lookup::key},
         utility::codec::field{
             "commodity_future_off_peak_index",
@@ -515,7 +515,7 @@ wire_fields(std::type_identity<commodity_future_off_peak_index_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_future_off_peak_indexes_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"convention_id",
                               &commodity_future_off_peak_indexes_filter::convention_id},
         utility::codec::field{"id_one_of", &commodity_future_off_peak_indexes_filter::id_one_of},
@@ -534,7 +534,7 @@ wire_fields(std::type_identity<commodity_future_off_peak_indexes_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_future_off_peak_index_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &commodity_future_off_peak_index_event::event_id},
         utility::codec::field{"key", &commodity_future_off_peak_index_event::key},
         utility::codec::field{"action", &commodity_future_off_peak_index_event::action},
@@ -555,7 +555,7 @@ wire_fields(std::type_identity<commodity_future_off_peak_index_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_future_off_peak_index_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "commodity_future_off_peak_index",
             &commodity_future_off_peak_index_version_key::commodity_future_off_peak_index},
@@ -573,7 +573,7 @@ wire_fields(std::type_identity<commodity_future_off_peak_index_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_future_off_peak_index_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &commodity_future_off_peak_index_versions_filter::version},
         utility::codec::field{"from_version",
                               &commodity_future_off_peak_index_versions_filter::from_version},
@@ -592,7 +592,7 @@ wire_fields(std::type_identity<commodity_future_off_peak_index_versions_filter>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_future_off_peak_indexes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_commodity_future_off_peak_indexes_request::offset},
         utility::codec::field{"limit", &list_commodity_future_off_peak_indexes_request::limit},
         utility::codec::field{"order", &list_commodity_future_off_peak_indexes_request::order},
@@ -611,7 +611,7 @@ wire_fields(std::type_identity<list_commodity_future_off_peak_indexes_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_future_off_peak_indexes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_commodity_future_off_peak_indexes_response::result},
         utility::codec::field{
             "commodity_future_off_peak_indexes",
@@ -630,7 +630,7 @@ wire_fields(std::type_identity<list_commodity_future_off_peak_indexes_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_future_off_peak_index_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_commodity_future_off_peak_index_request::key},
     };
 }
@@ -645,7 +645,7 @@ wire_fields(std::type_identity<get_commodity_future_off_peak_index_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_future_off_peak_index_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_commodity_future_off_peak_index_response::result},
         utility::codec::field{
             "commodity_future_off_peak_index",
@@ -663,7 +663,7 @@ wire_fields(std::type_identity<get_commodity_future_off_peak_index_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_commodity_future_off_peak_indexes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_commodity_future_off_peak_indexes_request::keys},
     };
 }
@@ -678,7 +678,7 @@ wire_fields(std::type_identity<get_many_commodity_future_off_peak_indexes_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_commodity_future_off_peak_indexes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_commodity_future_off_peak_indexes_response::result},
         utility::codec::field{"entries",
@@ -696,7 +696,7 @@ wire_fields(std::type_identity<get_many_commodity_future_off_peak_indexes_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_commodity_future_off_peak_index_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_commodity_future_off_peak_index_request::change},
         utility::codec::field{"intent", &put_commodity_future_off_peak_index_request::intent},
     };
@@ -712,7 +712,7 @@ wire_fields(std::type_identity<put_commodity_future_off_peak_index_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_commodity_future_off_peak_index_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_commodity_future_off_peak_index_response::result},
         utility::codec::field{
             "commodity_future_off_peak_index",
@@ -730,7 +730,7 @@ wire_fields(std::type_identity<put_commodity_future_off_peak_index_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_commodity_future_off_peak_indexes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_commodity_future_off_peak_indexes_request::changes},
         utility::codec::field{"intent",
@@ -748,7 +748,7 @@ wire_fields(std::type_identity<put_many_commodity_future_off_peak_indexes_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_commodity_future_off_peak_indexes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_commodity_future_off_peak_indexes_response::result},
         utility::codec::field{"commodity_future_off_peak_indexes",
@@ -767,7 +767,7 @@ wire_fields(std::type_identity<put_many_commodity_future_off_peak_indexes_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_commodity_future_off_peak_index_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_commodity_future_off_peak_index_request::removal},
         utility::codec::field{"intent", &delete_commodity_future_off_peak_index_request::intent},
     };
@@ -783,7 +783,7 @@ wire_fields(std::type_identity<delete_commodity_future_off_peak_index_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_commodity_future_off_peak_index_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_commodity_future_off_peak_index_response::result},
     };
 }
@@ -798,7 +798,7 @@ wire_fields(std::type_identity<delete_commodity_future_off_peak_index_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_commodity_future_off_peak_indexes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_commodity_future_off_peak_indexes_request::removals},
         utility::codec::field{"intent",
@@ -816,7 +816,7 @@ wire_fields(std::type_identity<delete_many_commodity_future_off_peak_indexes_req
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_commodity_future_off_peak_indexes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_commodity_future_off_peak_indexes_response::result},
     };
@@ -832,7 +832,7 @@ wire_fields(std::type_identity<delete_many_commodity_future_off_peak_indexes_res
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_convention_id_commodity_future_off_peak_indexes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "convention_id",
             &list_by_convention_id_commodity_future_off_peak_indexes_request::convention_id},
@@ -859,7 +859,7 @@ wire_fields(std::type_identity<list_by_convention_id_commodity_future_off_peak_i
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_convention_id_commodity_future_off_peak_indexes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_by_convention_id_commodity_future_off_peak_indexes_response::result},
         utility::codec::field{"commodity_future_off_peak_indexes",
@@ -880,7 +880,7 @@ wire_fields(std::type_identity<list_by_convention_id_commodity_future_off_peak_i
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_future_off_peak_index_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_commodity_future_off_peak_index_versions_request::key},
         utility::codec::field{"offset",
                               &list_commodity_future_off_peak_index_versions_request::offset},
@@ -903,7 +903,7 @@ wire_fields(std::type_identity<list_commodity_future_off_peak_index_versions_req
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_future_off_peak_index_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_commodity_future_off_peak_index_versions_response::result},
         utility::codec::field{"versions",
@@ -923,7 +923,7 @@ wire_fields(std::type_identity<list_commodity_future_off_peak_index_versions_res
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_future_off_peak_index_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_commodity_future_off_peak_index_version_request::key},
     };
 }
@@ -938,7 +938,7 @@ wire_fields(std::type_identity<get_commodity_future_off_peak_index_version_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_future_off_peak_index_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_commodity_future_off_peak_index_version_response::result},
         utility::codec::field{"version",

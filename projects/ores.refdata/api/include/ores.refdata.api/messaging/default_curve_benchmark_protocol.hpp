@@ -375,7 +375,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_ben
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_benchmark_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &default_curve_benchmark_key::id},
     };
 }
@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_ben
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_benchmark_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &default_curve_benchmark_write::id},
         utility::codec::field{"default_curve_configuration_id",
                               &default_curve_benchmark_write::default_curve_configuration_id},
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_ben
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_benchmark_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &default_curve_benchmark_change::write},
         utility::codec::field{"precondition", &default_curve_benchmark_change::precondition},
     };
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_ben
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_benchmark_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &default_curve_benchmark_removal::key},
         utility::codec::field{"precondition", &default_curve_benchmark_removal::precondition},
     };
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_ben
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_benchmark_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &default_curve_benchmark_lookup::key},
         utility::codec::field{"default_curve_benchmark",
                               &default_curve_benchmark_lookup::default_curve_benchmark},
@@ -456,7 +456,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_ben
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_benchmarks_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &default_curve_benchmarks_filter::id_one_of},
     };
 }
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_ben
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_benchmark_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &default_curve_benchmark_event::event_id},
         utility::codec::field{"key", &default_curve_benchmark_event::key},
         utility::codec::field{"action", &default_curve_benchmark_event::action},
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_ben
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<default_curve_benchmark_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"default_curve_benchmark",
                               &default_curve_benchmark_version_key::default_curve_benchmark},
         utility::codec::field{"version", &default_curve_benchmark_version_key::version},
@@ -506,7 +506,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.default_curve_ben
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<default_curve_benchmark_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &default_curve_benchmark_versions_filter::version},
         utility::codec::field{"from_version",
                               &default_curve_benchmark_versions_filter::from_version},
@@ -524,7 +524,7 @@ wire_fields(std::type_identity<default_curve_benchmark_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_default_curve_benchmarks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_default_curve_benchmarks_request::offset},
         utility::codec::field{"limit", &list_default_curve_benchmarks_request::limit},
         utility::codec::field{"order", &list_default_curve_benchmarks_request::order},
@@ -543,7 +543,7 @@ wire_fields(std::type_identity<list_default_curve_benchmarks_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_default_curve_benchmarks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_default_curve_benchmarks_response::result},
         utility::codec::field{"benchmarks", &list_default_curve_benchmarks_response::benchmarks},
         utility::codec::field{"total", &list_default_curve_benchmarks_response::total},
@@ -559,7 +559,7 @@ wire_fields(std::type_identity<list_default_curve_benchmarks_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_default_curve_benchmark_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_default_curve_benchmark_request::key},
     };
 }
@@ -573,7 +573,7 @@ wire_fields(std::type_identity<list_default_curve_benchmarks_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_default_curve_benchmark_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_default_curve_benchmark_response::result},
         utility::codec::field{"default_curve_benchmark",
                               &get_default_curve_benchmark_response::default_curve_benchmark},
@@ -590,7 +590,7 @@ wire_fields(std::type_identity<list_default_curve_benchmarks_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_default_curve_benchmarks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_default_curve_benchmarks_request::keys},
     };
 }
@@ -605,7 +605,7 @@ wire_fields(std::type_identity<get_many_default_curve_benchmarks_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_default_curve_benchmarks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_default_curve_benchmarks_response::result},
         utility::codec::field{"entries", &get_many_default_curve_benchmarks_response::entries},
     };
@@ -620,7 +620,7 @@ wire_fields(std::type_identity<get_many_default_curve_benchmarks_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_default_curve_benchmark_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_default_curve_benchmark_request::change},
         utility::codec::field{"intent", &put_default_curve_benchmark_request::intent},
     };
@@ -635,7 +635,7 @@ wire_fields(std::type_identity<get_many_default_curve_benchmarks_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_default_curve_benchmark_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_default_curve_benchmark_response::result},
         utility::codec::field{"default_curve_benchmark",
                               &put_default_curve_benchmark_response::default_curve_benchmark},
@@ -652,7 +652,7 @@ wire_fields(std::type_identity<get_many_default_curve_benchmarks_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_default_curve_benchmarks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_default_curve_benchmarks_request::changes},
         utility::codec::field{"intent", &put_many_default_curve_benchmarks_request::intent},
     };
@@ -668,7 +668,7 @@ wire_fields(std::type_identity<put_many_default_curve_benchmarks_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_default_curve_benchmarks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_default_curve_benchmarks_response::result},
         utility::codec::field{"benchmarks",
                               &put_many_default_curve_benchmarks_response::benchmarks},
@@ -685,7 +685,7 @@ wire_fields(std::type_identity<put_many_default_curve_benchmarks_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_default_curve_benchmark_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_default_curve_benchmark_request::removal},
         utility::codec::field{"intent", &delete_default_curve_benchmark_request::intent},
     };
@@ -701,7 +701,7 @@ wire_fields(std::type_identity<delete_default_curve_benchmark_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_default_curve_benchmark_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_default_curve_benchmark_response::result},
     };
 }
@@ -716,7 +716,7 @@ wire_fields(std::type_identity<delete_default_curve_benchmark_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_default_curve_benchmarks_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_default_curve_benchmarks_request::removals},
         utility::codec::field{"intent", &delete_many_default_curve_benchmarks_request::intent},
     };
@@ -732,7 +732,7 @@ wire_fields(std::type_identity<delete_many_default_curve_benchmarks_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_default_curve_benchmarks_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_default_curve_benchmarks_response::result},
     };
 }
@@ -747,7 +747,7 @@ wire_fields(std::type_identity<delete_many_default_curve_benchmarks_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_default_curve_benchmark_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_default_curve_benchmark_versions_request::key},
         utility::codec::field{"offset", &list_default_curve_benchmark_versions_request::offset},
         utility::codec::field{"limit", &list_default_curve_benchmark_versions_request::limit},
@@ -766,7 +766,7 @@ wire_fields(std::type_identity<list_default_curve_benchmark_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_default_curve_benchmark_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_default_curve_benchmark_versions_response::result},
         utility::codec::field{"versions",
                               &list_default_curve_benchmark_versions_response::versions},
@@ -784,7 +784,7 @@ wire_fields(std::type_identity<list_default_curve_benchmark_versions_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_default_curve_benchmark_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_default_curve_benchmark_version_request::key},
     };
 }
@@ -799,7 +799,7 @@ wire_fields(std::type_identity<get_default_curve_benchmark_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_default_curve_benchmark_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_default_curve_benchmark_version_response::result},
         utility::codec::field{"version", &get_default_curve_benchmark_version_response::version},
     };

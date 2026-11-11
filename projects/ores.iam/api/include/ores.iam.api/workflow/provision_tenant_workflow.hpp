@@ -341,8 +341,9 @@ struct provision_tenant_step {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_step>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"kind", &provision_tenant_step::kind},
-                      field{"arguments_json", &provision_tenant_step::arguments_json}};
+    return ::ores::utility::codec::field_list{
+        field{"kind", &provision_tenant_step::kind},
+        field{"arguments_json", &provision_tenant_step::arguments_json}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<provision_tenant_step>(),
@@ -361,8 +362,8 @@ struct provision_tenant_parameter {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_parameter>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"name", &provision_tenant_parameter::name},
-                      field{"value", &provision_tenant_parameter::value}};
+    return ::ores::utility::codec::field_list{field{"name", &provision_tenant_parameter::name},
+                                              field{"value", &provision_tenant_parameter::value}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<provision_tenant_parameter>(),
@@ -401,7 +402,7 @@ struct provision_tenant_workflow_request {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_workflow_request>) {
     using ::ores::utility::codec::field;
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         field{"profile_code", &provision_tenant_workflow_request::profile_code},
         field{"tenant_id", &provision_tenant_workflow_request::tenant_id},
         field{"tenant_code", &provision_tenant_workflow_request::tenant_code},
@@ -442,13 +443,14 @@ struct provision_tenant_step_command {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_step_command>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"kind", &provision_tenant_step_command::kind},
-                      field{"tenant_id", &provision_tenant_step_command::tenant_id},
-                      field{"tenant_code", &provision_tenant_step_command::tenant_code},
-                      field{"tenant_hostname", &provision_tenant_step_command::tenant_hostname},
-                      field{"admin_account_id", &provision_tenant_step_command::admin_account_id},
-                      field{"arguments_json", &provision_tenant_step_command::arguments_json},
-                      field{"parameters", &provision_tenant_step_command::parameters}};
+    return ::ores::utility::codec::field_list{
+        field{"kind", &provision_tenant_step_command::kind},
+        field{"tenant_id", &provision_tenant_step_command::tenant_id},
+        field{"tenant_code", &provision_tenant_step_command::tenant_code},
+        field{"tenant_hostname", &provision_tenant_step_command::tenant_hostname},
+        field{"admin_account_id", &provision_tenant_step_command::admin_account_id},
+        field{"arguments_json", &provision_tenant_step_command::arguments_json},
+        field{"parameters", &provision_tenant_step_command::parameters}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<provision_tenant_step_command>(),

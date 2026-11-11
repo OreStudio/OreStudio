@@ -342,7 +342,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_permission_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"role_id", &role_permission_key::role_id},
         utility::codec::field{"permission_id", &role_permission_key::permission_id},
     };
@@ -357,7 +357,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_permission_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"role_id", &role_permission_write::role_id},
         utility::codec::field{"permission_id", &role_permission_write::permission_id},
     };
@@ -372,7 +372,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_permission_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &role_permission_change::write},
         utility::codec::field{"precondition", &role_permission_change::precondition},
     };
@@ -387,7 +387,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_permission_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &role_permission_removal::key},
         utility::codec::field{"precondition", &role_permission_removal::precondition},
     };
@@ -402,7 +402,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_permission_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &role_permission_lookup::key},
         utility::codec::field{"role_permission", &role_permission_lookup::role_permission},
     };
@@ -417,7 +417,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_permissions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"role_id", &role_permissions_filter::role_id},
         utility::codec::field{"permission_id", &role_permissions_filter::permission_id},
         utility::codec::field{"role_id_one_of", &role_permissions_filter::role_id_one_of},
@@ -435,7 +435,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<role_permission_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &role_permission_event::event_id},
         utility::codec::field{"key", &role_permission_event::key},
         utility::codec::field{"action", &role_permission_event::action},
@@ -454,7 +454,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_role_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_role_permissions_request::offset},
         utility::codec::field{"limit", &list_role_permissions_request::limit},
         utility::codec::field{"order", &list_role_permissions_request::order},
@@ -471,7 +471,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_role_permissions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_role_permissions_response::result},
         utility::codec::field{"role_permissions",
                               &list_role_permissions_response::role_permissions},
@@ -488,7 +488,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_role_permission_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_role_permission_request::key},
     };
 }
@@ -502,7 +502,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_role_permission_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_role_permission_response::result},
         utility::codec::field{"role_permission", &get_role_permission_response::role_permission},
     };
@@ -517,7 +517,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_role_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_role_permissions_request::keys},
     };
 }
@@ -531,7 +531,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_role_permissions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_role_permissions_response::result},
         utility::codec::field{"entries", &get_many_role_permissions_response::entries},
     };
@@ -546,7 +546,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_role_permission_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_role_permission_request::change},
         utility::codec::field{"intent", &put_role_permission_request::intent},
     };
@@ -561,7 +561,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_role_permission_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_role_permission_response::result},
         utility::codec::field{"role_permission", &put_role_permission_response::role_permission},
     };
@@ -576,7 +576,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_role_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_role_permissions_request::changes},
         utility::codec::field{"intent", &put_many_role_permissions_request::intent},
     };
@@ -591,7 +591,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_role_permissions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_role_permissions_response::result},
         utility::codec::field{"role_permissions",
                               &put_many_role_permissions_response::role_permissions},
@@ -607,7 +607,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_role_permission_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_role_permission_request::removal},
         utility::codec::field{"intent", &delete_role_permission_request::intent},
     };
@@ -622,7 +622,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_role_permission_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_role_permission_response::result},
     };
 }
@@ -636,7 +636,7 @@ struct list_by_permission_id_role_permissions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_role_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_role_permissions_request::removals},
         utility::codec::field{"intent", &delete_many_role_permissions_request::intent},
     };
@@ -652,7 +652,7 @@ struct list_by_permission_id_role_permissions_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_role_permissions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_role_permissions_response::result},
     };
 }
@@ -667,7 +667,7 @@ wire_fields(std::type_identity<delete_many_role_permissions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_role_id_role_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"role_id", &list_by_role_id_role_permissions_request::role_id},
         utility::codec::field{"scope", &list_by_role_id_role_permissions_request::scope},
         utility::codec::field{"offset", &list_by_role_id_role_permissions_request::offset},
@@ -687,7 +687,7 @@ wire_fields(std::type_identity<list_by_role_id_role_permissions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_role_id_role_permissions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_role_id_role_permissions_response::result},
         utility::codec::field{"role_permissions",
                               &list_by_role_id_role_permissions_response::role_permissions},
@@ -705,7 +705,7 @@ wire_fields(std::type_identity<list_by_role_id_role_permissions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_permission_id_role_permissions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"permission_id",
                               &list_by_permission_id_role_permissions_request::permission_id},
         utility::codec::field{"scope", &list_by_permission_id_role_permissions_request::scope},
@@ -726,7 +726,7 @@ wire_fields(std::type_identity<list_by_permission_id_role_permissions_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_permission_id_role_permissions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_permission_id_role_permissions_response::result},
         utility::codec::field{"role_permissions",
                               &list_by_permission_id_role_permissions_response::role_permissions},

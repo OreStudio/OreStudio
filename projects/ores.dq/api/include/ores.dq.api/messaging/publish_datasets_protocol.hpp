@@ -105,7 +105,7 @@ struct publish_datasets_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_datasets_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"dataset_ids", &publish_datasets_request::dataset_ids},
         ::ores::utility::codec::field{"mode", &publish_datasets_request::mode},
         ::ores::utility::codec::field{"published_by", &publish_datasets_request::published_by},
@@ -123,7 +123,7 @@ struct publish_datasets_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_datasets_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &publish_datasets_response::success},
         ::ores::utility::codec::field{"message", &publish_datasets_response::message},
         ::ores::utility::codec::field{"instance_id", &publish_datasets_response::instance_id},

@@ -422,7 +422,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_option_exercise_fee_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &instrument_option_exercise_fee_key::trade_id},
         utility::codec::field{"sequence_number",
                               &instrument_option_exercise_fee_key::sequence_number},
@@ -438,7 +438,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_option_exercise_fee_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &instrument_option_exercise_fee_write::trade_id},
         utility::codec::field{"sequence_number",
                               &instrument_option_exercise_fee_write::sequence_number},
@@ -461,7 +461,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<instrument_option_exercise_fee_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &instrument_option_exercise_fee_change::write},
         utility::codec::field{"precondition", &instrument_option_exercise_fee_change::precondition},
     };
@@ -477,7 +477,7 @@ wire_fields(std::type_identity<instrument_option_exercise_fee_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<instrument_option_exercise_fee_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &instrument_option_exercise_fee_removal::key},
         utility::codec::field{"precondition",
                               &instrument_option_exercise_fee_removal::precondition},
@@ -494,7 +494,7 @@ wire_fields(std::type_identity<instrument_option_exercise_fee_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<instrument_option_exercise_fee_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &instrument_option_exercise_fee_lookup::key},
         utility::codec::field{
             "instrument_option_exercise_fee",
@@ -512,7 +512,7 @@ wire_fields(std::type_identity<instrument_option_exercise_fee_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<instrument_option_exercise_fees_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &instrument_option_exercise_fees_filter::trade_id},
         utility::codec::field{"trade_id_one_of",
                               &instrument_option_exercise_fees_filter::trade_id_one_of},
@@ -528,7 +528,7 @@ wire_fields(std::type_identity<instrument_option_exercise_fees_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_option_exercise_fee_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &instrument_option_exercise_fee_event::event_id},
         utility::codec::field{"key", &instrument_option_exercise_fee_event::key},
         utility::codec::field{"action", &instrument_option_exercise_fee_event::action},
@@ -549,7 +549,7 @@ wire_fields(std::type_identity<instrument_option_exercise_fees_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<instrument_option_exercise_fee_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "instrument_option_exercise_fee",
             &instrument_option_exercise_fee_version_key::instrument_option_exercise_fee},
@@ -567,7 +567,7 @@ wire_fields(std::type_identity<instrument_option_exercise_fee_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<instrument_option_exercise_fee_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &instrument_option_exercise_fee_versions_filter::version},
         utility::codec::field{"from_version",
                               &instrument_option_exercise_fee_versions_filter::from_version},
@@ -586,7 +586,7 @@ wire_fields(std::type_identity<instrument_option_exercise_fee_versions_filter>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_instrument_option_exercise_fees_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_instrument_option_exercise_fees_request::offset},
         utility::codec::field{"limit", &list_instrument_option_exercise_fees_request::limit},
         utility::codec::field{"order", &list_instrument_option_exercise_fees_request::order},
@@ -605,7 +605,7 @@ wire_fields(std::type_identity<list_instrument_option_exercise_fees_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_instrument_option_exercise_fees_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_instrument_option_exercise_fees_response::result},
         utility::codec::field{"exercise_fees",
                               &list_instrument_option_exercise_fees_response::exercise_fees},
@@ -623,7 +623,7 @@ wire_fields(std::type_identity<list_instrument_option_exercise_fees_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_instrument_option_exercise_fee_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_instrument_option_exercise_fee_request::key},
     };
 }
@@ -638,7 +638,7 @@ wire_fields(std::type_identity<get_instrument_option_exercise_fee_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_instrument_option_exercise_fee_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_instrument_option_exercise_fee_response::result},
         utility::codec::field{
             "instrument_option_exercise_fee",
@@ -656,7 +656,7 @@ wire_fields(std::type_identity<get_instrument_option_exercise_fee_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_instrument_option_exercise_fees_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_instrument_option_exercise_fees_request::keys},
     };
 }
@@ -671,7 +671,7 @@ wire_fields(std::type_identity<get_many_instrument_option_exercise_fees_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_instrument_option_exercise_fees_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_instrument_option_exercise_fees_response::result},
         utility::codec::field{"entries",
                               &get_many_instrument_option_exercise_fees_response::entries},
@@ -688,7 +688,7 @@ wire_fields(std::type_identity<get_many_instrument_option_exercise_fees_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_instrument_option_exercise_fee_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_instrument_option_exercise_fee_request::change},
         utility::codec::field{"intent", &put_instrument_option_exercise_fee_request::intent},
     };
@@ -704,7 +704,7 @@ wire_fields(std::type_identity<put_instrument_option_exercise_fee_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_instrument_option_exercise_fee_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_instrument_option_exercise_fee_response::result},
         utility::codec::field{
             "instrument_option_exercise_fee",
@@ -722,7 +722,7 @@ wire_fields(std::type_identity<put_instrument_option_exercise_fee_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_instrument_option_exercise_fees_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_instrument_option_exercise_fees_request::changes},
         utility::codec::field{"intent", &put_many_instrument_option_exercise_fees_request::intent},
@@ -739,7 +739,7 @@ wire_fields(std::type_identity<put_many_instrument_option_exercise_fees_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_instrument_option_exercise_fees_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_instrument_option_exercise_fees_response::result},
         utility::codec::field{"exercise_fees",
                               &put_many_instrument_option_exercise_fees_response::exercise_fees},
@@ -756,7 +756,7 @@ wire_fields(std::type_identity<put_many_instrument_option_exercise_fees_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_instrument_option_exercise_fee_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_instrument_option_exercise_fee_request::removal},
         utility::codec::field{"intent", &delete_instrument_option_exercise_fee_request::intent},
     };
@@ -772,7 +772,7 @@ wire_fields(std::type_identity<delete_instrument_option_exercise_fee_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_instrument_option_exercise_fee_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_instrument_option_exercise_fee_response::result},
     };
 }
@@ -787,7 +787,7 @@ wire_fields(std::type_identity<delete_instrument_option_exercise_fee_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_instrument_option_exercise_fees_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_instrument_option_exercise_fees_request::removals},
         utility::codec::field{"intent",
@@ -805,7 +805,7 @@ wire_fields(std::type_identity<delete_many_instrument_option_exercise_fees_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_instrument_option_exercise_fees_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_instrument_option_exercise_fees_response::result},
     };
@@ -821,7 +821,7 @@ wire_fields(std::type_identity<delete_many_instrument_option_exercise_fees_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_instrument_option_exercise_fees_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id",
                               &list_by_trade_id_instrument_option_exercise_fees_request::trade_id},
         utility::codec::field{"scope",
@@ -847,7 +847,7 @@ wire_fields(std::type_identity<list_by_trade_id_instrument_option_exercise_fees_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_instrument_option_exercise_fees_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_trade_id_instrument_option_exercise_fees_response::result},
         utility::codec::field{
@@ -868,7 +868,7 @@ wire_fields(std::type_identity<list_by_trade_id_instrument_option_exercise_fees_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_instrument_option_exercise_fee_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_instrument_option_exercise_fee_versions_request::key},
         utility::codec::field{"offset",
                               &list_instrument_option_exercise_fee_versions_request::offset},
@@ -891,7 +891,7 @@ wire_fields(std::type_identity<list_instrument_option_exercise_fee_versions_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_instrument_option_exercise_fee_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_instrument_option_exercise_fee_versions_response::result},
         utility::codec::field{"versions",
@@ -911,7 +911,7 @@ wire_fields(std::type_identity<list_instrument_option_exercise_fee_versions_resp
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_instrument_option_exercise_fee_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_instrument_option_exercise_fee_version_request::key},
     };
 }
@@ -926,7 +926,7 @@ wire_fields(std::type_identity<get_instrument_option_exercise_fee_version_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_instrument_option_exercise_fee_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_instrument_option_exercise_fee_version_response::result},
         utility::codec::field{"version",

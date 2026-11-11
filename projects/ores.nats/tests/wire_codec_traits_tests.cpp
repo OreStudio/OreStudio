@@ -37,8 +37,8 @@ struct generated_message {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<generated_message>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"name", &generated_message::name},
-                      field{"count", &generated_message::count}};
+    return ::ores::utility::codec::field_list{field{"name", &generated_message::name},
+                                              field{"count", &generated_message::count}};
 }
 
 }

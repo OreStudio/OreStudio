@@ -46,7 +46,7 @@ namespace ores::workflow::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &workflow_plan_dependency::version},
         utility::codec::field{"tenant_id", &workflow_plan_dependency::tenant_id},
         utility::codec::field{"id", &workflow_plan_dependency::id},

@@ -363,7 +363,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &bundle_import_key::id},
     };
 }
@@ -377,7 +377,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &bundle_import_write::id},
         utility::codec::field{"source", &bundle_import_write::source},
         utility::codec::field{"state", &bundle_import_write::state},
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &bundle_import_change::write},
         utility::codec::field{"precondition", &bundle_import_change::precondition},
     };
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &bundle_import_removal::key},
         utility::codec::field{"precondition", &bundle_import_removal::precondition},
     };
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &bundle_import_lookup::key},
         utility::codec::field{"bundle_import", &bundle_import_lookup::bundle_import},
     };
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_imports_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &bundle_imports_filter::id_one_of},
     };
 }
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &bundle_import_event::event_id},
         utility::codec::field{"key", &bundle_import_event::key},
         utility::codec::field{"action", &bundle_import_event::action},
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"bundle_import", &bundle_import_version_key::bundle_import},
         utility::codec::field{"version", &bundle_import_version_key::version},
     };
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &bundle_import_versions_filter::version},
         utility::codec::field{"from_version", &bundle_import_versions_filter::from_version},
         utility::codec::field{"to_version", &bundle_import_versions_filter::to_version},
@@ -504,7 +504,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bundle_imports_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_bundle_imports_request::offset},
         utility::codec::field{"limit", &list_bundle_imports_request::limit},
         utility::codec::field{"order", &list_bundle_imports_request::order},
@@ -522,7 +522,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bundle_imports_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_bundle_imports_response::result},
         utility::codec::field{"bundle_imports", &list_bundle_imports_response::bundle_imports},
         utility::codec::field{"total", &list_bundle_imports_response::total},
@@ -538,7 +538,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bundle_import_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_bundle_import_request::key},
     };
 }
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bundle_import_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_bundle_import_response::result},
         utility::codec::field{"bundle_import", &get_bundle_import_response::bundle_import},
     };
@@ -567,7 +567,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_bundle_imports_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_bundle_imports_request::keys},
     };
 }
@@ -581,7 +581,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_bundle_imports_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_bundle_imports_response::result},
         utility::codec::field{"entries", &get_many_bundle_imports_response::entries},
     };
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_bundle_import_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_bundle_import_request::change},
         utility::codec::field{"intent", &put_bundle_import_request::intent},
     };
@@ -611,7 +611,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_bundle_import_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_bundle_import_response::result},
         utility::codec::field{"bundle_import", &put_bundle_import_response::bundle_import},
     };
@@ -626,7 +626,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_bundle_imports_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_bundle_imports_request::changes},
         utility::codec::field{"intent", &put_many_bundle_imports_request::intent},
     };
@@ -641,7 +641,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_bundle_imports_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_bundle_imports_response::result},
         utility::codec::field{"bundle_imports", &put_many_bundle_imports_response::bundle_imports},
     };
@@ -656,7 +656,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_bundle_import_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_bundle_import_request::removal},
         utility::codec::field{"intent", &delete_bundle_import_request::intent},
     };
@@ -671,7 +671,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_bundle_import_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_bundle_import_response::result},
     };
 }
@@ -685,7 +685,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_bundle_imports_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_bundle_imports_request::removals},
         utility::codec::field{"intent", &delete_many_bundle_imports_request::intent},
     };
@@ -700,7 +700,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_bundle_imports_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_bundle_imports_response::result},
     };
 }
@@ -714,7 +714,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bundle_import_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_bundle_import_versions_request::key},
         utility::codec::field{"offset", &list_bundle_import_versions_request::offset},
         utility::codec::field{"limit", &list_bundle_import_versions_request::limit},
@@ -732,7 +732,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bundle_import_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_bundle_import_versions_response::result},
         utility::codec::field{"versions", &list_bundle_import_versions_response::versions},
         utility::codec::field{"total", &list_bundle_import_versions_response::total},
@@ -748,7 +748,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bundle_import_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_bundle_import_version_request::key},
     };
 }
@@ -762,7 +762,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.bundle_imports.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bundle_import_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_bundle_import_version_response::result},
         utility::codec::field{"version", &get_bundle_import_version_response::version},
     };

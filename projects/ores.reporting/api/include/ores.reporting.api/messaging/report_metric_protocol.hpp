@@ -313,7 +313,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_metric_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &report_metric_key::id},
     };
 }
@@ -327,7 +327,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_metric_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &report_metric_write::id},
         utility::codec::field{"party_id", &report_metric_write::party_id},
         utility::codec::field{"report_instance_id", &report_metric_write::report_instance_id},
@@ -357,7 +357,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_metric_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &report_metric_change::write},
         utility::codec::field{"precondition", &report_metric_change::precondition},
     };
@@ -372,7 +372,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_metric_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &report_metric_removal::key},
         utility::codec::field{"precondition", &report_metric_removal::precondition},
     };
@@ -387,7 +387,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_metric_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &report_metric_lookup::key},
         utility::codec::field{"report_metric", &report_metric_lookup::report_metric},
     };
@@ -402,7 +402,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_metrics_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"report_instance_id", &report_metrics_filter::report_instance_id},
         utility::codec::field{"measure", &report_metrics_filter::measure},
         utility::codec::field{"family", &report_metrics_filter::family},
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_metric_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &report_metric_event::event_id},
         utility::codec::field{"key", &report_metric_event::key},
         utility::codec::field{"action", &report_metric_event::action},
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_report_metrics_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_report_metrics_request::offset},
         utility::codec::field{"limit", &list_report_metrics_request::limit},
         utility::codec::field{"order", &list_report_metrics_request::order},
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_report_metrics_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_report_metrics_response::result},
         utility::codec::field{"metrics", &list_report_metrics_response::metrics},
         utility::codec::field{"total", &list_report_metrics_response::total},
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_report_metric_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_report_metric_request::key},
     };
 }
@@ -492,7 +492,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_report_metric_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_report_metric_response::result},
         utility::codec::field{"report_metric", &get_report_metric_response::report_metric},
     };
@@ -507,7 +507,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_report_metrics_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_report_metrics_request::keys},
     };
 }
@@ -521,7 +521,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_report_metrics_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_report_metrics_response::result},
         utility::codec::field{"entries", &get_many_report_metrics_response::entries},
     };
@@ -536,7 +536,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_report_metric_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_report_metric_request::change},
         utility::codec::field{"intent", &put_report_metric_request::intent},
     };
@@ -551,7 +551,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_report_metric_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_report_metric_response::result},
         utility::codec::field{"report_metric", &put_report_metric_response::report_metric},
     };
@@ -566,7 +566,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_report_metrics_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_report_metrics_request::changes},
         utility::codec::field{"intent", &put_many_report_metrics_request::intent},
     };
@@ -581,7 +581,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_report_metrics_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_report_metrics_response::result},
         utility::codec::field{"metrics", &put_many_report_metrics_response::metrics},
     };
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_report_metric_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_report_metric_request::removal},
         utility::codec::field{"intent", &delete_report_metric_request::intent},
     };
@@ -611,7 +611,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_report_metric_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_report_metric_response::result},
     };
 }
@@ -625,7 +625,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_report_metrics_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_report_metrics_request::removals},
         utility::codec::field{"intent", &delete_many_report_metrics_request::intent},
     };
@@ -640,7 +640,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_metrics.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_report_metrics_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_report_metrics_response::result},
     };
 }

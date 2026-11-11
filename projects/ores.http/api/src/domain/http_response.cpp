@@ -32,7 +32,8 @@ struct error_message final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<error_message>) {
-    return std::tuple{ores::utility::codec::field{"error", &error_message::error}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"error", &error_message::error}};
 }
 static_assert(ores::utility::codec::names_every_member<error_message>());
 
@@ -42,8 +43,9 @@ struct api_error_body final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<api_error_body>) {
-    return std::tuple{ores::utility::codec::field{"code", &api_error_body::code},
-                      ores::utility::codec::field{"message", &api_error_body::message}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"code", &api_error_body::code},
+        ores::utility::codec::field{"message", &api_error_body::message}};
 }
 static_assert(ores::utility::codec::names_every_member<api_error_body>());
 

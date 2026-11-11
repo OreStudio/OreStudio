@@ -46,7 +46,7 @@ namespace ores::marketdata::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &subscription_interval::version},
         utility::codec::field{"tenant_id", &subscription_interval::tenant_id},
         utility::codec::field{"id", &subscription_interval::id},

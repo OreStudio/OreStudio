@@ -51,7 +51,7 @@ namespace ores::refdata::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"identity", &tenor_basis_swap_pay_receive::identity},
         utility::codec::field{"pay_leg", &tenor_basis_swap_pay_receive::pay_leg},
         utility::codec::field{"rec_leg", &tenor_basis_swap_pay_receive::rec_leg},

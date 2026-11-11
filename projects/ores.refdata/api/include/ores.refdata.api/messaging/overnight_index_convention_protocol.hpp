@@ -376,7 +376,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.overnight_index_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<overnight_index_convention_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &overnight_index_convention_key::id},
     };
 }
@@ -390,7 +390,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.overnight_index_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<overnight_index_convention_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &overnight_index_convention_write::id},
         utility::codec::field{"fixing_calendar",
                               &overnight_index_convention_write::fixing_calendar},
@@ -411,7 +411,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.overnight_index_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<overnight_index_convention_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &overnight_index_convention_change::write},
         utility::codec::field{"precondition", &overnight_index_convention_change::precondition},
     };
@@ -426,7 +426,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.overnight_index_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<overnight_index_convention_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &overnight_index_convention_removal::key},
         utility::codec::field{"precondition", &overnight_index_convention_removal::precondition},
     };
@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.overnight_index_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<overnight_index_convention_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &overnight_index_convention_lookup::key},
         utility::codec::field{"overnight_index_convention",
                               &overnight_index_convention_lookup::overnight_index_convention},
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.overnight_index_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<overnight_index_conventions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &overnight_index_conventions_filter::id_one_of},
     };
 }
@@ -471,7 +471,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.overnight_index_c
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<overnight_index_convention_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &overnight_index_convention_event::event_id},
         utility::codec::field{"key", &overnight_index_convention_event::key},
         utility::codec::field{"action", &overnight_index_convention_event::action},
@@ -491,7 +491,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.overnight_index_c
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<overnight_index_convention_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"overnight_index_convention",
                               &overnight_index_convention_version_key::overnight_index_convention},
         utility::codec::field{"version", &overnight_index_convention_version_key::version},
@@ -508,7 +508,7 @@ wire_fields(std::type_identity<overnight_index_convention_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<overnight_index_convention_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &overnight_index_convention_versions_filter::version},
         utility::codec::field{"from_version",
                               &overnight_index_convention_versions_filter::from_version},
@@ -527,7 +527,7 @@ wire_fields(std::type_identity<overnight_index_convention_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_overnight_index_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_overnight_index_conventions_request::offset},
         utility::codec::field{"limit", &list_overnight_index_conventions_request::limit},
         utility::codec::field{"order", &list_overnight_index_conventions_request::order},
@@ -546,7 +546,7 @@ wire_fields(std::type_identity<list_overnight_index_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_overnight_index_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_overnight_index_conventions_response::result},
         utility::codec::field{
             "overnight_index_conventions",
@@ -565,7 +565,7 @@ wire_fields(std::type_identity<list_overnight_index_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_overnight_index_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_overnight_index_convention_request::key},
     };
 }
@@ -580,7 +580,7 @@ wire_fields(std::type_identity<get_overnight_index_convention_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_overnight_index_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_overnight_index_convention_response::result},
         utility::codec::field{"overnight_index_convention",
                               &get_overnight_index_convention_response::overnight_index_convention},
@@ -597,7 +597,7 @@ wire_fields(std::type_identity<get_overnight_index_convention_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_overnight_index_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_overnight_index_conventions_request::keys},
     };
 }
@@ -612,7 +612,7 @@ wire_fields(std::type_identity<get_many_overnight_index_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_overnight_index_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_overnight_index_conventions_response::result},
         utility::codec::field{"entries", &get_many_overnight_index_conventions_response::entries},
     };
@@ -628,7 +628,7 @@ wire_fields(std::type_identity<get_many_overnight_index_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_overnight_index_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_overnight_index_convention_request::change},
         utility::codec::field{"intent", &put_overnight_index_convention_request::intent},
     };
@@ -644,7 +644,7 @@ wire_fields(std::type_identity<put_overnight_index_convention_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_overnight_index_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_overnight_index_convention_response::result},
         utility::codec::field{"overnight_index_convention",
                               &put_overnight_index_convention_response::overnight_index_convention},
@@ -661,7 +661,7 @@ wire_fields(std::type_identity<put_overnight_index_convention_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_overnight_index_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_overnight_index_conventions_request::changes},
         utility::codec::field{"intent", &put_many_overnight_index_conventions_request::intent},
     };
@@ -677,7 +677,7 @@ wire_fields(std::type_identity<put_many_overnight_index_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_overnight_index_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_overnight_index_conventions_response::result},
         utility::codec::field{
             "overnight_index_conventions",
@@ -695,7 +695,7 @@ wire_fields(std::type_identity<put_many_overnight_index_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_overnight_index_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_overnight_index_convention_request::removal},
         utility::codec::field{"intent", &delete_overnight_index_convention_request::intent},
     };
@@ -711,7 +711,7 @@ wire_fields(std::type_identity<delete_overnight_index_convention_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_overnight_index_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_overnight_index_convention_response::result},
     };
 }
@@ -726,7 +726,7 @@ wire_fields(std::type_identity<delete_overnight_index_convention_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_overnight_index_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_overnight_index_conventions_request::removals},
         utility::codec::field{"intent", &delete_many_overnight_index_conventions_request::intent},
@@ -743,7 +743,7 @@ wire_fields(std::type_identity<delete_many_overnight_index_conventions_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_overnight_index_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_overnight_index_conventions_response::result},
     };
 }
@@ -758,7 +758,7 @@ wire_fields(std::type_identity<delete_many_overnight_index_conventions_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_overnight_index_convention_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_overnight_index_convention_versions_request::key},
         utility::codec::field{"offset", &list_overnight_index_convention_versions_request::offset},
         utility::codec::field{"limit", &list_overnight_index_convention_versions_request::limit},
@@ -777,7 +777,7 @@ wire_fields(std::type_identity<list_overnight_index_convention_versions_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_overnight_index_convention_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_overnight_index_convention_versions_response::result},
         utility::codec::field{"versions",
                               &list_overnight_index_convention_versions_response::versions},
@@ -795,7 +795,7 @@ wire_fields(std::type_identity<list_overnight_index_convention_versions_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_overnight_index_convention_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_overnight_index_convention_version_request::key},
     };
 }
@@ -810,7 +810,7 @@ wire_fields(std::type_identity<get_overnight_index_convention_version_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_overnight_index_convention_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_overnight_index_convention_version_response::result},
         utility::codec::field{"version", &get_overnight_index_convention_version_response::version},
     };

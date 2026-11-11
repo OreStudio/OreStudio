@@ -86,7 +86,7 @@ struct get_http_info_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_http_info_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -98,7 +98,7 @@ struct get_http_info_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_http_info_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"base_url", &get_http_info_response::base_url},
         ::ores::utility::codec::field{"success", &get_http_info_response::success},
         ::ores::utility::codec::field{"message", &get_http_info_response::message},

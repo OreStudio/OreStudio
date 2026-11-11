@@ -84,7 +84,7 @@ void write_object(json_value out) {
     out.set("type", "object");
     auto properties = out.add_object("properties");
     auto required = out.add_array("required");
-    std::apply(
+    apply_fields(
         [&](const auto&... members) {
             (
                 [&] {

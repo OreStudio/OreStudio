@@ -409,7 +409,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &workflow_plan_dependency_key::id},
     };
 }
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &workflow_plan_dependency_write::id},
         utility::codec::field{"workflow_id", &workflow_plan_dependency_write::workflow_id},
         utility::codec::field{"consumer_step_index",
@@ -442,7 +442,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &workflow_plan_dependency_change::write},
         utility::codec::field{"precondition", &workflow_plan_dependency_change::precondition},
     };
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &workflow_plan_dependency_removal::key},
         utility::codec::field{"precondition", &workflow_plan_dependency_removal::precondition},
     };
@@ -472,7 +472,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &workflow_plan_dependency_lookup::key},
         utility::codec::field{"workflow_plan_dependency",
                               &workflow_plan_dependency_lookup::workflow_plan_dependency},
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependencies_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"workflow_id", &workflow_plan_dependencies_filter::workflow_id},
         utility::codec::field{"id_one_of", &workflow_plan_dependencies_filter::id_one_of},
         utility::codec::field{"workflow_id_one_of",
@@ -505,7 +505,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &workflow_plan_dependency_event::event_id},
         utility::codec::field{"key", &workflow_plan_dependency_event::key},
         utility::codec::field{"action", &workflow_plan_dependency_event::action},
@@ -524,7 +524,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_plan_dependency_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"workflow_plan_dependency",
                               &workflow_plan_dependency_version_key::workflow_plan_dependency},
         utility::codec::field{"version", &workflow_plan_dependency_version_key::version},
@@ -541,7 +541,7 @@ inline constexpr std::string_view deleted = "workflow.v1.events.workflow_plan_de
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<workflow_plan_dependency_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &workflow_plan_dependency_versions_filter::version},
         utility::codec::field{"from_version",
                               &workflow_plan_dependency_versions_filter::from_version},
@@ -559,7 +559,7 @@ wire_fields(std::type_identity<workflow_plan_dependency_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_workflow_plan_dependencies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_workflow_plan_dependencies_request::offset},
         utility::codec::field{"limit", &list_workflow_plan_dependencies_request::limit},
         utility::codec::field{"order", &list_workflow_plan_dependencies_request::order},
@@ -578,7 +578,7 @@ wire_fields(std::type_identity<list_workflow_plan_dependencies_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_workflow_plan_dependencies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_workflow_plan_dependencies_response::result},
         utility::codec::field{"plan_dependencies",
                               &list_workflow_plan_dependencies_response::plan_dependencies},
@@ -595,7 +595,7 @@ wire_fields(std::type_identity<list_workflow_plan_dependencies_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_workflow_plan_dependency_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_workflow_plan_dependency_request::key},
     };
 }
@@ -610,7 +610,7 @@ wire_fields(std::type_identity<list_workflow_plan_dependencies_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_workflow_plan_dependency_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_workflow_plan_dependency_response::result},
         utility::codec::field{"workflow_plan_dependency",
                               &get_workflow_plan_dependency_response::workflow_plan_dependency},
@@ -627,7 +627,7 @@ wire_fields(std::type_identity<get_workflow_plan_dependency_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_workflow_plan_dependencies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_workflow_plan_dependencies_request::keys},
     };
 }
@@ -642,7 +642,7 @@ wire_fields(std::type_identity<get_many_workflow_plan_dependencies_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_workflow_plan_dependencies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_workflow_plan_dependencies_response::result},
         utility::codec::field{"entries", &get_many_workflow_plan_dependencies_response::entries},
     };
@@ -657,7 +657,7 @@ wire_fields(std::type_identity<get_many_workflow_plan_dependencies_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_workflow_plan_dependency_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_workflow_plan_dependency_request::change},
         utility::codec::field{"intent", &put_workflow_plan_dependency_request::intent},
     };
@@ -673,7 +673,7 @@ wire_fields(std::type_identity<get_many_workflow_plan_dependencies_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_workflow_plan_dependency_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_workflow_plan_dependency_response::result},
         utility::codec::field{"workflow_plan_dependency",
                               &put_workflow_plan_dependency_response::workflow_plan_dependency},
@@ -690,7 +690,7 @@ wire_fields(std::type_identity<put_workflow_plan_dependency_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_workflow_plan_dependencies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_workflow_plan_dependencies_request::changes},
         utility::codec::field{"intent", &put_many_workflow_plan_dependencies_request::intent},
     };
@@ -706,7 +706,7 @@ wire_fields(std::type_identity<put_many_workflow_plan_dependencies_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_workflow_plan_dependencies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_workflow_plan_dependencies_response::result},
         utility::codec::field{"plan_dependencies",
                               &put_many_workflow_plan_dependencies_response::plan_dependencies},
@@ -723,7 +723,7 @@ wire_fields(std::type_identity<put_many_workflow_plan_dependencies_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_workflow_plan_dependency_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_workflow_plan_dependency_request::removal},
         utility::codec::field{"intent", &delete_workflow_plan_dependency_request::intent},
     };
@@ -739,7 +739,7 @@ wire_fields(std::type_identity<delete_workflow_plan_dependency_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_workflow_plan_dependency_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_workflow_plan_dependency_response::result},
     };
 }
@@ -754,7 +754,7 @@ wire_fields(std::type_identity<delete_workflow_plan_dependency_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_workflow_plan_dependencies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_workflow_plan_dependencies_request::removals},
         utility::codec::field{"intent", &delete_many_workflow_plan_dependencies_request::intent},
@@ -771,7 +771,7 @@ wire_fields(std::type_identity<delete_many_workflow_plan_dependencies_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_workflow_plan_dependencies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_workflow_plan_dependencies_response::result},
     };
 }
@@ -786,7 +786,7 @@ wire_fields(std::type_identity<delete_many_workflow_plan_dependencies_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_workflow_id_workflow_plan_dependencies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"workflow_id",
                               &list_by_workflow_id_workflow_plan_dependencies_request::workflow_id},
         utility::codec::field{"scope",
@@ -812,7 +812,7 @@ wire_fields(std::type_identity<list_by_workflow_id_workflow_plan_dependencies_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_workflow_id_workflow_plan_dependencies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_workflow_id_workflow_plan_dependencies_response::result},
         utility::codec::field{
@@ -833,7 +833,7 @@ wire_fields(std::type_identity<list_by_workflow_id_workflow_plan_dependencies_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_workflow_plan_dependency_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_workflow_plan_dependency_versions_request::key},
         utility::codec::field{"offset", &list_workflow_plan_dependency_versions_request::offset},
         utility::codec::field{"limit", &list_workflow_plan_dependency_versions_request::limit},
@@ -852,7 +852,7 @@ wire_fields(std::type_identity<list_workflow_plan_dependency_versions_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_workflow_plan_dependency_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_workflow_plan_dependency_versions_response::result},
         utility::codec::field{"versions",
                               &list_workflow_plan_dependency_versions_response::versions},
@@ -870,7 +870,7 @@ wire_fields(std::type_identity<list_workflow_plan_dependency_versions_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_workflow_plan_dependency_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_workflow_plan_dependency_version_request::key},
     };
 }
@@ -885,7 +885,7 @@ wire_fields(std::type_identity<get_workflow_plan_dependency_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_workflow_plan_dependency_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_workflow_plan_dependency_version_response::result},
         utility::codec::field{"version", &get_workflow_plan_dependency_version_response::version},
     };

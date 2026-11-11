@@ -285,7 +285,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_vol_surface
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_publish_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &fx_vol_surface_publish_key::id},
     };
 }
@@ -299,7 +299,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_vol_surface
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_publish_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &fx_vol_surface_publish_lookup::key},
         utility::codec::field{"fx_vol_surface_publish",
                               &fx_vol_surface_publish_lookup::fx_vol_surface_publish},
@@ -315,7 +315,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_vol_surface
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_publishes_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &fx_vol_surface_publishes_filter::request_id},
         utility::codec::field{"party_id", &fx_vol_surface_publishes_filter::party_id},
         utility::codec::field{"blueprint_id", &fx_vol_surface_publishes_filter::blueprint_id},
@@ -337,7 +337,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_vol_surface
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_publish_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &fx_vol_surface_publish_event::event_id},
         utility::codec::field{"key", &fx_vol_surface_publish_event::key},
         utility::codec::field{"action", &fx_vol_surface_publish_event::action},
@@ -356,7 +356,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_vol_surface
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_publish_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"fx_vol_surface_publish",
                               &fx_vol_surface_publish_version_key::fx_vol_surface_publish},
         utility::codec::field{"version", &fx_vol_surface_publish_version_key::version},
@@ -373,7 +373,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.fx_vol_surface
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<fx_vol_surface_publish_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &fx_vol_surface_publish_versions_filter::version},
         utility::codec::field{"from_version",
                               &fx_vol_surface_publish_versions_filter::from_version},
@@ -391,7 +391,7 @@ wire_fields(std::type_identity<fx_vol_surface_publish_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_vol_surface_publishes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_fx_vol_surface_publishes_request::offset},
         utility::codec::field{"limit", &list_fx_vol_surface_publishes_request::limit},
         utility::codec::field{"order", &list_fx_vol_surface_publishes_request::order},
@@ -410,7 +410,7 @@ wire_fields(std::type_identity<list_fx_vol_surface_publishes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_vol_surface_publishes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_vol_surface_publishes_response::result},
         utility::codec::field{"publishes", &list_fx_vol_surface_publishes_response::publishes},
         utility::codec::field{"total", &list_fx_vol_surface_publishes_response::total},
@@ -426,7 +426,7 @@ wire_fields(std::type_identity<list_fx_vol_surface_publishes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_vol_surface_publish_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_vol_surface_publish_request::key},
     };
 }
@@ -440,7 +440,7 @@ wire_fields(std::type_identity<list_fx_vol_surface_publishes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_vol_surface_publish_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_vol_surface_publish_response::result},
         utility::codec::field{"fx_vol_surface_publish",
                               &get_fx_vol_surface_publish_response::fx_vol_surface_publish},
@@ -457,7 +457,7 @@ wire_fields(std::type_identity<list_fx_vol_surface_publishes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_vol_surface_publishes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_fx_vol_surface_publishes_request::keys},
     };
 }
@@ -472,7 +472,7 @@ wire_fields(std::type_identity<get_many_fx_vol_surface_publishes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_fx_vol_surface_publishes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_fx_vol_surface_publishes_response::result},
         utility::codec::field{"entries", &get_many_fx_vol_surface_publishes_response::entries},
     };
@@ -488,7 +488,7 @@ wire_fields(std::type_identity<get_many_fx_vol_surface_publishes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_request_id_fx_vol_surface_publishes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id",
                               &list_by_request_id_fx_vol_surface_publishes_request::request_id},
         utility::codec::field{"scope", &list_by_request_id_fx_vol_surface_publishes_request::scope},
@@ -511,7 +511,7 @@ wire_fields(std::type_identity<list_by_request_id_fx_vol_surface_publishes_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_request_id_fx_vol_surface_publishes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_request_id_fx_vol_surface_publishes_response::result},
         utility::codec::field{"publishes",
@@ -531,7 +531,7 @@ wire_fields(std::type_identity<list_by_request_id_fx_vol_surface_publishes_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_vol_surface_publish_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_fx_vol_surface_publish_versions_request::key},
         utility::codec::field{"offset", &list_fx_vol_surface_publish_versions_request::offset},
         utility::codec::field{"limit", &list_fx_vol_surface_publish_versions_request::limit},
@@ -550,7 +550,7 @@ wire_fields(std::type_identity<list_fx_vol_surface_publish_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_fx_vol_surface_publish_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_fx_vol_surface_publish_versions_response::result},
         utility::codec::field{"versions", &list_fx_vol_surface_publish_versions_response::versions},
         utility::codec::field{"total", &list_fx_vol_surface_publish_versions_response::total},
@@ -567,7 +567,7 @@ wire_fields(std::type_identity<list_fx_vol_surface_publish_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_vol_surface_publish_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_fx_vol_surface_publish_version_request::key},
     };
 }
@@ -582,7 +582,7 @@ wire_fields(std::type_identity<get_fx_vol_surface_publish_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_vol_surface_publish_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_fx_vol_surface_publish_version_response::result},
         utility::codec::field{"version", &get_fx_vol_surface_publish_version_response::version},
     };

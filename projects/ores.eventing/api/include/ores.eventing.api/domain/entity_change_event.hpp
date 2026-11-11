@@ -70,10 +70,10 @@ struct entity_change_event final {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_change_event>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"entity", &entity_change_event::entity},
-                      field{"timestamp", &entity_change_event::timestamp},
-                      field{"entity_ids", &entity_change_event::entity_ids},
-                      field{"tenant_id", &entity_change_event::tenant_id}};
+    return ::ores::utility::codec::field_list{field{"entity", &entity_change_event::entity},
+                                              field{"timestamp", &entity_change_event::timestamp},
+                                              field{"entity_ids", &entity_change_event::entity_ids},
+                                              field{"tenant_id", &entity_change_event::tenant_id}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<entity_change_event>(),

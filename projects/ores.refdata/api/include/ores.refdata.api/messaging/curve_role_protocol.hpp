@@ -359,7 +359,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_role_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &curve_role_key::code},
     };
 }
@@ -373,7 +373,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_role_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &curve_role_write::code},
         utility::codec::field{"name", &curve_role_write::name},
         utility::codec::field{"description", &curve_role_write::description},
@@ -390,7 +390,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_role_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &curve_role_change::write},
         utility::codec::field{"precondition", &curve_role_change::precondition},
     };
@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_role_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_role_removal::key},
         utility::codec::field{"precondition", &curve_role_removal::precondition},
     };
@@ -420,7 +420,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_role_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_role_lookup::key},
         utility::codec::field{"curve_role", &curve_role_lookup::curve_role},
     };
@@ -435,7 +435,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_roles_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &curve_roles_filter::code_one_of},
     };
 }
@@ -449,7 +449,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_role_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &curve_role_event::event_id},
         utility::codec::field{"key", &curve_role_event::key},
         utility::codec::field{"action", &curve_role_event::action},
@@ -468,7 +468,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_role_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"curve_role", &curve_role_version_key::curve_role},
         utility::codec::field{"version", &curve_role_version_key::version},
     };
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_role_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &curve_role_versions_filter::version},
         utility::codec::field{"from_version", &curve_role_versions_filter::from_version},
         utility::codec::field{"to_version", &curve_role_versions_filter::to_version},
@@ -499,7 +499,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_curve_roles_request::offset},
         utility::codec::field{"limit", &list_curve_roles_request::limit},
         utility::codec::field{"order", &list_curve_roles_request::order},
@@ -517,7 +517,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_roles_response::result},
         utility::codec::field{"roles", &list_curve_roles_response::roles},
         utility::codec::field{"total", &list_curve_roles_response::total},
@@ -533,7 +533,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_role_request::key},
     };
 }
@@ -547,7 +547,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_role_response::result},
         utility::codec::field{"curve_role", &get_curve_role_response::curve_role},
     };
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_curve_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_curve_roles_request::keys},
     };
 }
@@ -576,7 +576,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_curve_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_curve_roles_response::result},
         utility::codec::field{"entries", &get_many_curve_roles_response::entries},
     };
@@ -591,7 +591,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_curve_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_curve_role_request::change},
         utility::codec::field{"intent", &put_curve_role_request::intent},
     };
@@ -606,7 +606,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_curve_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_curve_role_response::result},
         utility::codec::field{"curve_role", &put_curve_role_response::curve_role},
     };
@@ -621,7 +621,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_curve_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_curve_roles_request::changes},
         utility::codec::field{"intent", &put_many_curve_roles_request::intent},
     };
@@ -636,7 +636,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_curve_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_curve_roles_response::result},
         utility::codec::field{"roles", &put_many_curve_roles_response::roles},
     };
@@ -651,7 +651,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_curve_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_curve_role_request::removal},
         utility::codec::field{"intent", &delete_curve_role_request::intent},
     };
@@ -666,7 +666,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_curve_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_curve_role_response::result},
     };
 }
@@ -680,7 +680,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_curve_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_curve_roles_request::removals},
         utility::codec::field{"intent", &delete_many_curve_roles_request::intent},
     };
@@ -695,7 +695,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_curve_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_curve_roles_response::result},
     };
 }
@@ -709,7 +709,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_role_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_curve_role_versions_request::key},
         utility::codec::field{"offset", &list_curve_role_versions_request::offset},
         utility::codec::field{"limit", &list_curve_role_versions_request::limit},
@@ -727,7 +727,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_role_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_role_versions_response::result},
         utility::codec::field{"versions", &list_curve_role_versions_response::versions},
         utility::codec::field{"total", &list_curve_role_versions_response::total},
@@ -743,7 +743,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_role_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_role_version_request::key},
     };
 }
@@ -757,7 +757,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_roles.delet
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_role_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_role_version_response::result},
         utility::codec::field{"version", &get_curve_role_version_response::version},
     };

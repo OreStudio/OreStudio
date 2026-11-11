@@ -42,7 +42,7 @@ namespace ores::dq::domain {
  * types make.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_dependency>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"tenant_id", &dataset_dependency::tenant_id},
         utility::codec::field{"dataset_code", &dataset_dependency::dataset_code},
         utility::codec::field{"dependency_code", &dataset_dependency::dependency_code},

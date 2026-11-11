@@ -359,7 +359,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<reporting_regime_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &reporting_regime_key::code},
         utility::codec::field{"coding_scheme_code", &reporting_regime_key::coding_scheme_code},
     };
@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<reporting_regime_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &reporting_regime_write::code},
         utility::codec::field{"coding_scheme_code", &reporting_regime_write::coding_scheme_code},
         utility::codec::field{"source", &reporting_regime_write::source},
@@ -391,7 +391,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<reporting_regime_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &reporting_regime_change::write},
         utility::codec::field{"precondition", &reporting_regime_change::precondition},
     };
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<reporting_regime_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &reporting_regime_removal::key},
         utility::codec::field{"precondition", &reporting_regime_removal::precondition},
     };
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<reporting_regime_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &reporting_regime_lookup::key},
         utility::codec::field{"reporting_regime", &reporting_regime_lookup::reporting_regime},
     };
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<reporting_regime_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &reporting_regime_event::event_id},
         utility::codec::field{"key", &reporting_regime_event::key},
         utility::codec::field{"action", &reporting_regime_event::action},
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<reporting_regime_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"reporting_regime", &reporting_regime_version_key::reporting_regime},
         utility::codec::field{"version", &reporting_regime_version_key::version},
     };
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<reporting_regime_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &reporting_regime_versions_filter::version},
         utility::codec::field{"from_version", &reporting_regime_versions_filter::from_version},
         utility::codec::field{"to_version", &reporting_regime_versions_filter::to_version},
@@ -486,7 +486,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_reporting_regimes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_reporting_regimes_request::offset},
         utility::codec::field{"limit", &list_reporting_regimes_request::limit},
         utility::codec::field{"order", &list_reporting_regimes_request::order},
@@ -503,7 +503,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_reporting_regimes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_reporting_regimes_response::result},
         utility::codec::field{"regimes", &list_reporting_regimes_response::regimes},
         utility::codec::field{"total", &list_reporting_regimes_response::total},
@@ -519,7 +519,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_reporting_regime_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_reporting_regime_request::key},
     };
 }
@@ -533,7 +533,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_reporting_regime_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_reporting_regime_response::result},
         utility::codec::field{"reporting_regime", &get_reporting_regime_response::reporting_regime},
     };
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_reporting_regimes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_reporting_regimes_request::keys},
     };
 }
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_reporting_regimes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_reporting_regimes_response::result},
         utility::codec::field{"entries", &get_many_reporting_regimes_response::entries},
     };
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_reporting_regime_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_reporting_regime_request::change},
         utility::codec::field{"intent", &put_reporting_regime_request::intent},
     };
@@ -592,7 +592,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_reporting_regime_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_reporting_regime_response::result},
         utility::codec::field{"reporting_regime", &put_reporting_regime_response::reporting_regime},
     };
@@ -607,7 +607,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_reporting_regimes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_reporting_regimes_request::changes},
         utility::codec::field{"intent", &put_many_reporting_regimes_request::intent},
     };
@@ -622,7 +622,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_reporting_regimes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_reporting_regimes_response::result},
         utility::codec::field{"regimes", &put_many_reporting_regimes_response::regimes},
     };
@@ -637,7 +637,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_reporting_regime_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_reporting_regime_request::removal},
         utility::codec::field{"intent", &delete_reporting_regime_request::intent},
     };
@@ -652,7 +652,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_reporting_regime_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_reporting_regime_response::result},
     };
 }
@@ -667,7 +667,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.reporting_regimes
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_reporting_regimes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_reporting_regimes_request::removals},
         utility::codec::field{"intent", &delete_many_reporting_regimes_request::intent},
     };
@@ -683,7 +683,7 @@ wire_fields(std::type_identity<delete_many_reporting_regimes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_reporting_regimes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_reporting_regimes_response::result},
     };
 }
@@ -698,7 +698,7 @@ wire_fields(std::type_identity<delete_many_reporting_regimes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_reporting_regime_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_reporting_regime_versions_request::key},
         utility::codec::field{"offset", &list_reporting_regime_versions_request::offset},
         utility::codec::field{"limit", &list_reporting_regime_versions_request::limit},
@@ -717,7 +717,7 @@ wire_fields(std::type_identity<list_reporting_regime_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_reporting_regime_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_reporting_regime_versions_response::result},
         utility::codec::field{"versions", &list_reporting_regime_versions_response::versions},
         utility::codec::field{"total", &list_reporting_regime_versions_response::total},
@@ -733,7 +733,7 @@ wire_fields(std::type_identity<list_reporting_regime_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_reporting_regime_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_reporting_regime_version_request::key},
     };
 }
@@ -748,7 +748,7 @@ wire_fields(std::type_identity<list_reporting_regime_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_reporting_regime_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_reporting_regime_version_response::result},
         utility::codec::field{"version", &get_reporting_regime_version_response::version},
     };

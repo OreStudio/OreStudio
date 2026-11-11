@@ -314,7 +314,7 @@ struct get_published_fx_vol_surface_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_pillar_fit>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"point", &fx_vol_pillar_fit::point},
         ::ores::utility::codec::field{"expiry", &fx_vol_pillar_fit::expiry},
         ::ores::utility::codec::field{"label", &fx_vol_pillar_fit::label},
@@ -334,7 +334,7 @@ struct get_published_fx_vol_surface_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_grid_point>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"expiry", &fx_vol_grid_point::expiry},
         ::ores::utility::codec::field{"strike", &fx_vol_grid_point::strike},
         ::ores::utility::codec::field{"log_moneyness", &fx_vol_grid_point::log_moneyness},
@@ -351,7 +351,7 @@ struct get_published_fx_vol_surface_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_violation>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"kind", &fx_vol_violation::kind},
         ::ores::utility::codec::field{"expiry", &fx_vol_violation::expiry},
         ::ores::utility::codec::field{"description", &fx_vol_violation::description},
@@ -367,7 +367,7 @@ struct get_published_fx_vol_surface_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_missing_pillar>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"point", &fx_vol_missing_pillar::point},
         ::ores::utility::codec::field{"series_ids", &fx_vol_missing_pillar::series_ids},
     };
@@ -382,7 +382,7 @@ struct get_published_fx_vol_surface_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibrate_fx_vol_surface_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"blueprint_id",
                                       &calibrate_fx_vol_surface_request::blueprint_id},
         ::ores::utility::codec::field{"as_of", &calibrate_fx_vol_surface_request::as_of},
@@ -398,7 +398,7 @@ struct get_published_fx_vol_surface_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibrate_fx_vol_surface_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &calibrate_fx_vol_surface_response::success},
         ::ores::utility::codec::field{"message", &calibrate_fx_vol_surface_response::message},
         ::ores::utility::codec::field{"calibration_id",
@@ -432,7 +432,7 @@ struct get_published_fx_vol_surface_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_fx_vol_surface_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"blueprint_id",
                                       &publish_fx_vol_surface_request::blueprint_id},
         ::ores::utility::codec::field{"as_of", &publish_fx_vol_surface_request::as_of},
@@ -451,7 +451,7 @@ struct get_published_fx_vol_surface_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_fx_vol_surface_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &publish_fx_vol_surface_response::success},
         ::ores::utility::codec::field{"message", &publish_fx_vol_surface_response::message},
         ::ores::utility::codec::field{"approval_request_id",
@@ -474,7 +474,7 @@ struct get_published_fx_vol_surface_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_vol_surface_publish_subject_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{
             "approval_request_id",
             &get_fx_vol_surface_publish_subject_request::approval_request_id},
@@ -491,7 +491,7 @@ wire_fields(std::type_identity<get_fx_vol_surface_publish_subject_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_fx_vol_surface_publish_subject_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success",
                                       &get_fx_vol_surface_publish_subject_response::success},
         ::ores::utility::codec::field{"message",
@@ -541,7 +541,7 @@ wire_fields(std::type_identity<get_fx_vol_surface_publish_subject_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_point>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"expiry", &fx_vol_surface_point::expiry},
         ::ores::utility::codec::field{"strike", &fx_vol_surface_point::strike},
         ::ores::utility::codec::field{"volatility", &fx_vol_surface_point::volatility},
@@ -557,7 +557,7 @@ wire_fields(std::type_identity<get_fx_vol_surface_publish_subject_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_published_fx_vol_surface_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"blueprint_id",
                                       &get_published_fx_vol_surface_request::blueprint_id},
         ::ores::utility::codec::field{"as_of", &get_published_fx_vol_surface_request::as_of},
@@ -576,7 +576,7 @@ wire_fields(std::type_identity<get_fx_vol_surface_publish_subject_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_published_fx_vol_surface_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_published_fx_vol_surface_response::success},
         ::ores::utility::codec::field{"message", &get_published_fx_vol_surface_response::message},
         ::ores::utility::codec::field{"blueprint_name",

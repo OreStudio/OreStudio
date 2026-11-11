@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_model_engine_pair_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &pricing_model_engine_pair_key::code},
     };
 }
@@ -394,7 +394,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_model_engine_pair_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &pricing_model_engine_pair_write::code},
         utility::codec::field{"model", &pricing_model_engine_pair_write::model},
         utility::codec::field{"engine", &pricing_model_engine_pair_write::engine},
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_model_engine_pair_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &pricing_model_engine_pair_change::write},
         utility::codec::field{"precondition", &pricing_model_engine_pair_change::precondition},
     };
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_model_engine_pair_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &pricing_model_engine_pair_removal::key},
         utility::codec::field{"precondition", &pricing_model_engine_pair_removal::precondition},
     };
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_model_engine_pair_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &pricing_model_engine_pair_lookup::key},
         utility::codec::field{"pricing_model_engine_pair",
                               &pricing_model_engine_pair_lookup::pricing_model_engine_pair},
@@ -460,7 +460,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_model_engine_pairs_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &pricing_model_engine_pairs_filter::code_one_of},
     };
 }
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_model_engine_pair_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &pricing_model_engine_pair_event::event_id},
         utility::codec::field{"key", &pricing_model_engine_pair_event::key},
         utility::codec::field{"action", &pricing_model_engine_pair_event::action},
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<pricing_model_engine_pair_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"pricing_model_engine_pair",
                               &pricing_model_engine_pair_version_key::pricing_model_engine_pair},
         utility::codec::field{"version", &pricing_model_engine_pair_version_key::version},
@@ -511,7 +511,7 @@ wire_fields(std::type_identity<pricing_model_engine_pair_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<pricing_model_engine_pair_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &pricing_model_engine_pair_versions_filter::version},
         utility::codec::field{"from_version",
                               &pricing_model_engine_pair_versions_filter::from_version},
@@ -529,7 +529,7 @@ wire_fields(std::type_identity<pricing_model_engine_pair_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_pricing_model_engine_pairs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_pricing_model_engine_pairs_request::offset},
         utility::codec::field{"limit", &list_pricing_model_engine_pairs_request::limit},
         utility::codec::field{"order", &list_pricing_model_engine_pairs_request::order},
@@ -548,7 +548,7 @@ wire_fields(std::type_identity<list_pricing_model_engine_pairs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_pricing_model_engine_pairs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_pricing_model_engine_pairs_response::result},
         utility::codec::field{"pairs", &list_pricing_model_engine_pairs_response::pairs},
         utility::codec::field{"total", &list_pricing_model_engine_pairs_response::total},
@@ -565,7 +565,7 @@ wire_fields(std::type_identity<list_pricing_model_engine_pairs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_pricing_model_engine_pair_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_pricing_model_engine_pair_request::key},
     };
 }
@@ -580,7 +580,7 @@ wire_fields(std::type_identity<get_pricing_model_engine_pair_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_pricing_model_engine_pair_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_pricing_model_engine_pair_response::result},
         utility::codec::field{"pricing_model_engine_pair",
                               &get_pricing_model_engine_pair_response::pricing_model_engine_pair},
@@ -597,7 +597,7 @@ wire_fields(std::type_identity<get_pricing_model_engine_pair_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_pricing_model_engine_pairs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_pricing_model_engine_pairs_request::keys},
     };
 }
@@ -612,7 +612,7 @@ wire_fields(std::type_identity<get_many_pricing_model_engine_pairs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_pricing_model_engine_pairs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_pricing_model_engine_pairs_response::result},
         utility::codec::field{"entries", &get_many_pricing_model_engine_pairs_response::entries},
     };
@@ -628,7 +628,7 @@ wire_fields(std::type_identity<get_many_pricing_model_engine_pairs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_pricing_model_engine_pair_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_pricing_model_engine_pair_request::change},
         utility::codec::field{"intent", &put_pricing_model_engine_pair_request::intent},
     };
@@ -644,7 +644,7 @@ wire_fields(std::type_identity<put_pricing_model_engine_pair_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_pricing_model_engine_pair_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_pricing_model_engine_pair_response::result},
         utility::codec::field{"pricing_model_engine_pair",
                               &put_pricing_model_engine_pair_response::pricing_model_engine_pair},
@@ -661,7 +661,7 @@ wire_fields(std::type_identity<put_pricing_model_engine_pair_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_pricing_model_engine_pairs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_pricing_model_engine_pairs_request::changes},
         utility::codec::field{"intent", &put_many_pricing_model_engine_pairs_request::intent},
     };
@@ -677,7 +677,7 @@ wire_fields(std::type_identity<put_many_pricing_model_engine_pairs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_pricing_model_engine_pairs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_pricing_model_engine_pairs_response::result},
         utility::codec::field{"pairs", &put_many_pricing_model_engine_pairs_response::pairs},
     };
@@ -693,7 +693,7 @@ wire_fields(std::type_identity<put_many_pricing_model_engine_pairs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_pricing_model_engine_pair_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_pricing_model_engine_pair_request::removal},
         utility::codec::field{"intent", &delete_pricing_model_engine_pair_request::intent},
     };
@@ -709,7 +709,7 @@ wire_fields(std::type_identity<delete_pricing_model_engine_pair_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_pricing_model_engine_pair_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_pricing_model_engine_pair_response::result},
     };
 }
@@ -724,7 +724,7 @@ wire_fields(std::type_identity<delete_pricing_model_engine_pair_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_pricing_model_engine_pairs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_pricing_model_engine_pairs_request::removals},
         utility::codec::field{"intent", &delete_many_pricing_model_engine_pairs_request::intent},
@@ -741,7 +741,7 @@ wire_fields(std::type_identity<delete_many_pricing_model_engine_pairs_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_pricing_model_engine_pairs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_pricing_model_engine_pairs_response::result},
     };
 }
@@ -756,7 +756,7 @@ wire_fields(std::type_identity<delete_many_pricing_model_engine_pairs_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_pricing_model_engine_pair_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_pricing_model_engine_pair_versions_request::key},
         utility::codec::field{"offset", &list_pricing_model_engine_pair_versions_request::offset},
         utility::codec::field{"limit", &list_pricing_model_engine_pair_versions_request::limit},
@@ -775,7 +775,7 @@ wire_fields(std::type_identity<list_pricing_model_engine_pair_versions_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_pricing_model_engine_pair_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_pricing_model_engine_pair_versions_response::result},
         utility::codec::field{"versions",
                               &list_pricing_model_engine_pair_versions_response::versions},
@@ -793,7 +793,7 @@ wire_fields(std::type_identity<list_pricing_model_engine_pair_versions_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_pricing_model_engine_pair_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_pricing_model_engine_pair_version_request::key},
     };
 }
@@ -808,7 +808,7 @@ wire_fields(std::type_identity<get_pricing_model_engine_pair_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_pricing_model_engine_pair_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_pricing_model_engine_pair_version_response::result},
         utility::codec::field{"version", &get_pricing_model_engine_pair_version_response::version},
     };

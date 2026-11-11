@@ -80,7 +80,7 @@ struct database_options final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<database_options>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"user", &database_options::user},
         ::ores::utility::codec::field{"host", &database_options::host},
         ::ores::utility::codec::field{"database", &database_options::database},

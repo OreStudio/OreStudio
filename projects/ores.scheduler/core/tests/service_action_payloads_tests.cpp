@@ -47,10 +47,11 @@ struct wider_result {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<wider_result>) {
-    return std::tuple{ores::utility::codec::field{"outcome", &wider_result::outcome},
-                      ores::utility::codec::field{"code", &wider_result::code},
-                      ores::utility::codec::field{"message", &wider_result::message},
-                      ores::utility::codec::field{"fields", &wider_result::fields}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"outcome", &wider_result::outcome},
+        ores::utility::codec::field{"code", &wider_result::code},
+        ores::utility::codec::field{"message", &wider_result::message},
+        ores::utility::codec::field{"fields", &wider_result::fields}};
 }
 
 struct wider_reply {
@@ -59,8 +60,9 @@ struct wider_reply {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<wider_reply>) {
-    return std::tuple{ores::utility::codec::field{"run_id", &wider_reply::run_id},
-                      ores::utility::codec::field{"result", &wider_reply::result}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"run_id", &wider_reply::run_id},
+        ores::utility::codec::field{"result", &wider_reply::result}};
 }
 
 /**

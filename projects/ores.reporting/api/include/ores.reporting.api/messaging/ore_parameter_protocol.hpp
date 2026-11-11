@@ -409,7 +409,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"name", &ore_parameter_key::name},
     };
 }
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &ore_parameter_write::id},
         utility::codec::field{"scope", &ore_parameter_write::scope},
         utility::codec::field{"subtype", &ore_parameter_write::subtype},
@@ -453,7 +453,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &ore_parameter_change::write},
         utility::codec::field{"precondition", &ore_parameter_change::precondition},
     };
@@ -468,7 +468,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &ore_parameter_removal::key},
         utility::codec::field{"precondition", &ore_parameter_removal::precondition},
     };
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &ore_parameter_lookup::key},
         utility::codec::field{"ore_parameter", &ore_parameter_lookup::ore_parameter},
     };
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameters_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"ore_parameter_value_domain_code",
                               &ore_parameters_filter::ore_parameter_value_domain_code},
         utility::codec::field{"id_one_of", &ore_parameters_filter::id_one_of},
@@ -516,7 +516,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &ore_parameter_event::event_id},
         utility::codec::field{"key", &ore_parameter_event::key},
         utility::codec::field{"action", &ore_parameter_event::action},
@@ -535,7 +535,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"ore_parameter", &ore_parameter_version_key::ore_parameter},
         utility::codec::field{"version", &ore_parameter_version_key::version},
     };
@@ -550,7 +550,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_parameter_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &ore_parameter_versions_filter::version},
         utility::codec::field{"from_version", &ore_parameter_versions_filter::from_version},
         utility::codec::field{"to_version", &ore_parameter_versions_filter::to_version},
@@ -566,7 +566,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_ore_parameters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_ore_parameters_request::offset},
         utility::codec::field{"limit", &list_ore_parameters_request::limit},
         utility::codec::field{"order", &list_ore_parameters_request::order},
@@ -584,7 +584,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_ore_parameters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_ore_parameters_response::result},
         utility::codec::field{"parameters", &list_ore_parameters_response::parameters},
         utility::codec::field{"total", &list_ore_parameters_response::total},
@@ -600,7 +600,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_ore_parameter_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_ore_parameter_request::key},
     };
 }
@@ -614,7 +614,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_ore_parameter_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_ore_parameter_response::result},
         utility::codec::field{"ore_parameter", &get_ore_parameter_response::ore_parameter},
     };
@@ -629,7 +629,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_ore_parameters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_ore_parameters_request::keys},
     };
 }
@@ -643,7 +643,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_ore_parameters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_ore_parameters_response::result},
         utility::codec::field{"entries", &get_many_ore_parameters_response::entries},
     };
@@ -658,7 +658,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_ore_parameter_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_ore_parameter_request::change},
         utility::codec::field{"intent", &put_ore_parameter_request::intent},
     };
@@ -673,7 +673,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_ore_parameter_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_ore_parameter_response::result},
         utility::codec::field{"ore_parameter", &put_ore_parameter_response::ore_parameter},
     };
@@ -688,7 +688,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_ore_parameters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_ore_parameters_request::changes},
         utility::codec::field{"intent", &put_many_ore_parameters_request::intent},
     };
@@ -703,7 +703,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_ore_parameters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_ore_parameters_response::result},
         utility::codec::field{"parameters", &put_many_ore_parameters_response::parameters},
     };
@@ -718,7 +718,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_ore_parameter_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_ore_parameter_request::removal},
         utility::codec::field{"intent", &delete_ore_parameter_request::intent},
     };
@@ -733,7 +733,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_ore_parameter_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_ore_parameter_response::result},
     };
 }
@@ -747,7 +747,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_ore_parameters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_ore_parameters_request::removals},
         utility::codec::field{"intent", &delete_many_ore_parameters_request::intent},
     };
@@ -762,7 +762,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_ore_parameters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_ore_parameters_response::result},
     };
 }
@@ -777,7 +777,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.ore_parameters.
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_ore_parameter_value_domain_code_ore_parameters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"ore_parameter_value_domain_code",
                               &list_by_ore_parameter_value_domain_code_ore_parameters_request::
                                   ore_parameter_value_domain_code},
@@ -804,7 +804,7 @@ wire_fields(std::type_identity<list_by_ore_parameter_value_domain_code_ore_param
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_ore_parameter_value_domain_code_ore_parameters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_by_ore_parameter_value_domain_code_ore_parameters_response::result},
         utility::codec::field{
@@ -824,7 +824,7 @@ wire_fields(std::type_identity<list_by_ore_parameter_value_domain_code_ore_param
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_ore_parameter_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_ore_parameter_versions_request::key},
         utility::codec::field{"offset", &list_ore_parameter_versions_request::offset},
         utility::codec::field{"limit", &list_ore_parameter_versions_request::limit},
@@ -842,7 +842,7 @@ wire_fields(std::type_identity<list_by_ore_parameter_value_domain_code_ore_param
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_ore_parameter_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_ore_parameter_versions_response::result},
         utility::codec::field{"versions", &list_ore_parameter_versions_response::versions},
         utility::codec::field{"total", &list_ore_parameter_versions_response::total},
@@ -858,7 +858,7 @@ wire_fields(std::type_identity<list_by_ore_parameter_value_domain_code_ore_param
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_ore_parameter_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_ore_parameter_version_request::key},
     };
 }
@@ -872,7 +872,7 @@ wire_fields(std::type_identity<list_by_ore_parameter_value_domain_code_ore_param
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_ore_parameter_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_ore_parameter_version_response::result},
         utility::codec::field{"version", &get_ore_parameter_version_response::version},
     };

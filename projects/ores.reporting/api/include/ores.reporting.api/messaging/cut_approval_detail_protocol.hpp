@@ -315,7 +315,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_approval_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_approval_detail_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &cut_approval_detail_key::id},
     };
 }
@@ -329,7 +329,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_approval_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_approval_detail_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &cut_approval_detail_lookup::key},
         utility::codec::field{"cut_approval_detail",
                               &cut_approval_detail_lookup::cut_approval_detail},
@@ -345,7 +345,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_approval_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_approval_details_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &cut_approval_details_filter::request_id},
         utility::codec::field{"cut_id", &cut_approval_details_filter::cut_id},
         utility::codec::field{"party_id", &cut_approval_details_filter::party_id},
@@ -365,7 +365,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_approval_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_approval_detail_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &cut_approval_detail_event::event_id},
         utility::codec::field{"key", &cut_approval_detail_event::key},
         utility::codec::field{"action", &cut_approval_detail_event::action},
@@ -384,7 +384,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_approval_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_approval_detail_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"cut_approval_detail",
                               &cut_approval_detail_version_key::cut_approval_detail},
         utility::codec::field{"version", &cut_approval_detail_version_key::version},
@@ -400,7 +400,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_approval_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_approval_detail_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &cut_approval_detail_versions_filter::version},
         utility::codec::field{"from_version", &cut_approval_detail_versions_filter::from_version},
         utility::codec::field{"to_version", &cut_approval_detail_versions_filter::to_version},
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_approval_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_cut_approval_details_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_cut_approval_details_request::offset},
         utility::codec::field{"limit", &list_cut_approval_details_request::limit},
         utility::codec::field{"order", &list_cut_approval_details_request::order},
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_approval_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_cut_approval_details_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_cut_approval_details_response::result},
         utility::codec::field{"details", &list_cut_approval_details_response::details},
         utility::codec::field{"total", &list_cut_approval_details_response::total},
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_approval_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_cut_approval_detail_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_cut_approval_detail_request::key},
     };
 }
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_approval_de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_cut_approval_detail_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_cut_approval_detail_response::result},
         utility::codec::field{"cut_approval_detail",
                               &get_cut_approval_detail_response::cut_approval_detail},
@@ -481,7 +481,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cut_approval_de
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_cut_approval_details_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_cut_approval_details_request::keys},
     };
 }
@@ -496,7 +496,7 @@ wire_fields(std::type_identity<get_many_cut_approval_details_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_cut_approval_details_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_cut_approval_details_response::result},
         utility::codec::field{"entries", &get_many_cut_approval_details_response::entries},
     };
@@ -512,7 +512,7 @@ wire_fields(std::type_identity<get_many_cut_approval_details_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_request_id_cut_approval_details_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id",
                               &list_by_request_id_cut_approval_details_request::request_id},
         utility::codec::field{"scope", &list_by_request_id_cut_approval_details_request::scope},
@@ -533,7 +533,7 @@ wire_fields(std::type_identity<list_by_request_id_cut_approval_details_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_request_id_cut_approval_details_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_request_id_cut_approval_details_response::result},
         utility::codec::field{"details",
                               &list_by_request_id_cut_approval_details_response::details},
@@ -551,7 +551,7 @@ wire_fields(std::type_identity<list_by_request_id_cut_approval_details_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_cut_id_cut_approval_details_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"cut_id", &list_by_cut_id_cut_approval_details_request::cut_id},
         utility::codec::field{"scope", &list_by_cut_id_cut_approval_details_request::scope},
         utility::codec::field{"offset", &list_by_cut_id_cut_approval_details_request::offset},
@@ -571,7 +571,7 @@ wire_fields(std::type_identity<list_by_cut_id_cut_approval_details_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_cut_id_cut_approval_details_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_cut_id_cut_approval_details_response::result},
         utility::codec::field{"details", &list_by_cut_id_cut_approval_details_response::details},
         utility::codec::field{"total", &list_by_cut_id_cut_approval_details_response::total},
@@ -588,7 +588,7 @@ wire_fields(std::type_identity<list_by_cut_id_cut_approval_details_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_cut_approval_detail_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_cut_approval_detail_versions_request::key},
         utility::codec::field{"offset", &list_cut_approval_detail_versions_request::offset},
         utility::codec::field{"limit", &list_cut_approval_detail_versions_request::limit},
@@ -607,7 +607,7 @@ wire_fields(std::type_identity<list_cut_approval_detail_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_cut_approval_detail_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_cut_approval_detail_versions_response::result},
         utility::codec::field{"versions", &list_cut_approval_detail_versions_response::versions},
         utility::codec::field{"total", &list_cut_approval_detail_versions_response::total},
@@ -624,7 +624,7 @@ wire_fields(std::type_identity<list_cut_approval_detail_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_cut_approval_detail_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_cut_approval_detail_version_request::key},
     };
 }
@@ -639,7 +639,7 @@ wire_fields(std::type_identity<get_cut_approval_detail_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_cut_approval_detail_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_cut_approval_detail_version_response::result},
         utility::codec::field{"version", &get_cut_approval_detail_version_response::version},
     };

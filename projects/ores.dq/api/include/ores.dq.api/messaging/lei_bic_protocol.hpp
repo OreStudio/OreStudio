@@ -166,7 +166,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_bic.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_bic_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"lei", &lei_bic_key::lei},
     };
 }
@@ -180,7 +180,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_bic.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_bic_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &lei_bic_lookup::key},
         utility::codec::field{"lei_bic", &lei_bic_lookup::lei_bic},
     };
@@ -195,7 +195,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_bic.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_bic_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"lei_one_of", &lei_bic_filter::lei_one_of},
     };
 }
@@ -209,7 +209,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_bic.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_bic_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &lei_bic_event::event_id},
         utility::codec::field{"key", &lei_bic_event::key},
         utility::codec::field{"action", &lei_bic_event::action},
@@ -228,7 +228,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_bic.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_lei_bic_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_lei_bic_request::offset},
         utility::codec::field{"limit", &list_lei_bic_request::limit},
         utility::codec::field{"order", &list_lei_bic_request::order},
@@ -245,7 +245,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_bic.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_lei_bic_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_lei_bic_response::result},
         utility::codec::field{"lei_bic", &list_lei_bic_response::lei_bic},
         utility::codec::field{"total", &list_lei_bic_response::total},
@@ -261,7 +261,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_bic.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_lei_bic_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_lei_bic_request::key},
     };
 }
@@ -275,7 +275,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_bic.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_lei_bic_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_lei_bic_response::result},
         utility::codec::field{"lei_bic", &get_lei_bic_response::lei_bic},
     };
@@ -290,7 +290,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_bic.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_lei_bic_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_lei_bic_request::keys},
     };
 }
@@ -304,7 +304,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.lei_bic.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_lei_bic_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_lei_bic_response::result},
         utility::codec::field{"entries", &get_many_lei_bic_response::entries},
     };

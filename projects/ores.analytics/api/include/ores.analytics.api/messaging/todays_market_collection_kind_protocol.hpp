@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collection_kind_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &todays_market_collection_kind_key::code},
     };
 }
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collection_kind_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &todays_market_collection_kind_write::code},
         utility::codec::field{"entry_element", &todays_market_collection_kind_write::entry_element},
         utility::codec::field{"key_attribute", &todays_market_collection_kind_write::key_attribute},
@@ -418,7 +418,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collection_kind_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &todays_market_collection_kind_change::write},
         utility::codec::field{"precondition", &todays_market_collection_kind_change::precondition},
     };
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_collection_kind_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &todays_market_collection_kind_removal::key},
         utility::codec::field{"precondition", &todays_market_collection_kind_removal::precondition},
     };
@@ -449,7 +449,7 @@ wire_fields(std::type_identity<todays_market_collection_kind_removal>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collection_kind_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &todays_market_collection_kind_lookup::key},
         utility::codec::field{"todays_market_collection_kind",
                               &todays_market_collection_kind_lookup::todays_market_collection_kind},
@@ -466,7 +466,7 @@ wire_fields(std::type_identity<todays_market_collection_kind_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_collection_kinds_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &todays_market_collection_kinds_filter::code_one_of},
     };
 }
@@ -480,7 +480,7 @@ wire_fields(std::type_identity<todays_market_collection_kinds_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_collection_kind_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &todays_market_collection_kind_event::event_id},
         utility::codec::field{"key", &todays_market_collection_kind_event::key},
         utility::codec::field{"action", &todays_market_collection_kind_event::action},
@@ -501,7 +501,7 @@ wire_fields(std::type_identity<todays_market_collection_kinds_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_collection_kind_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "todays_market_collection_kind",
             &todays_market_collection_kind_version_key::todays_market_collection_kind},
@@ -519,7 +519,7 @@ wire_fields(std::type_identity<todays_market_collection_kind_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<todays_market_collection_kind_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &todays_market_collection_kind_versions_filter::version},
         utility::codec::field{"from_version",
                               &todays_market_collection_kind_versions_filter::from_version},
@@ -538,7 +538,7 @@ wire_fields(std::type_identity<todays_market_collection_kind_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_todays_market_collection_kinds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_todays_market_collection_kinds_request::offset},
         utility::codec::field{"limit", &list_todays_market_collection_kinds_request::limit},
         utility::codec::field{"order", &list_todays_market_collection_kinds_request::order},
@@ -557,7 +557,7 @@ wire_fields(std::type_identity<list_todays_market_collection_kinds_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_todays_market_collection_kinds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_todays_market_collection_kinds_response::result},
         utility::codec::field{"kinds", &list_todays_market_collection_kinds_response::kinds},
         utility::codec::field{"total", &list_todays_market_collection_kinds_response::total},
@@ -574,7 +574,7 @@ wire_fields(std::type_identity<list_todays_market_collection_kinds_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_todays_market_collection_kind_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_todays_market_collection_kind_request::key},
     };
 }
@@ -589,7 +589,7 @@ wire_fields(std::type_identity<get_todays_market_collection_kind_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_todays_market_collection_kind_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_todays_market_collection_kind_response::result},
         utility::codec::field{
             "todays_market_collection_kind",
@@ -607,7 +607,7 @@ wire_fields(std::type_identity<get_todays_market_collection_kind_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_todays_market_collection_kinds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_todays_market_collection_kinds_request::keys},
     };
 }
@@ -622,7 +622,7 @@ wire_fields(std::type_identity<get_many_todays_market_collection_kinds_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_todays_market_collection_kinds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_todays_market_collection_kinds_response::result},
         utility::codec::field{"entries",
                               &get_many_todays_market_collection_kinds_response::entries},
@@ -639,7 +639,7 @@ wire_fields(std::type_identity<get_many_todays_market_collection_kinds_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_todays_market_collection_kind_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_todays_market_collection_kind_request::change},
         utility::codec::field{"intent", &put_todays_market_collection_kind_request::intent},
     };
@@ -655,7 +655,7 @@ wire_fields(std::type_identity<put_todays_market_collection_kind_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_todays_market_collection_kind_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_todays_market_collection_kind_response::result},
         utility::codec::field{
             "todays_market_collection_kind",
@@ -673,7 +673,7 @@ wire_fields(std::type_identity<put_todays_market_collection_kind_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_todays_market_collection_kinds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_todays_market_collection_kinds_request::changes},
         utility::codec::field{"intent", &put_many_todays_market_collection_kinds_request::intent},
     };
@@ -689,7 +689,7 @@ wire_fields(std::type_identity<put_many_todays_market_collection_kinds_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_todays_market_collection_kinds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_todays_market_collection_kinds_response::result},
         utility::codec::field{"kinds", &put_many_todays_market_collection_kinds_response::kinds},
     };
@@ -705,7 +705,7 @@ wire_fields(std::type_identity<put_many_todays_market_collection_kinds_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_todays_market_collection_kind_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_todays_market_collection_kind_request::removal},
         utility::codec::field{"intent", &delete_todays_market_collection_kind_request::intent},
     };
@@ -721,7 +721,7 @@ wire_fields(std::type_identity<delete_todays_market_collection_kind_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_todays_market_collection_kind_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_todays_market_collection_kind_response::result},
     };
 }
@@ -736,7 +736,7 @@ wire_fields(std::type_identity<delete_todays_market_collection_kind_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_todays_market_collection_kinds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_todays_market_collection_kinds_request::removals},
         utility::codec::field{"intent",
@@ -754,7 +754,7 @@ wire_fields(std::type_identity<delete_many_todays_market_collection_kinds_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_todays_market_collection_kinds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_todays_market_collection_kinds_response::result},
     };
@@ -770,7 +770,7 @@ wire_fields(std::type_identity<delete_many_todays_market_collection_kinds_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_todays_market_collection_kind_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_todays_market_collection_kind_versions_request::key},
         utility::codec::field{"offset",
                               &list_todays_market_collection_kind_versions_request::offset},
@@ -791,7 +791,7 @@ wire_fields(std::type_identity<list_todays_market_collection_kind_versions_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_todays_market_collection_kind_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_todays_market_collection_kind_versions_response::result},
         utility::codec::field{"versions",
@@ -811,7 +811,7 @@ wire_fields(std::type_identity<list_todays_market_collection_kind_versions_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_todays_market_collection_kind_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_todays_market_collection_kind_version_request::key},
     };
 }
@@ -826,7 +826,7 @@ wire_fields(std::type_identity<get_todays_market_collection_kind_version_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_todays_market_collection_kind_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_todays_market_collection_kind_version_response::result},
         utility::codec::field{"version",

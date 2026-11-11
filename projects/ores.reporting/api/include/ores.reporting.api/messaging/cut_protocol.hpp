@@ -269,7 +269,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &cut_key::id},
     };
 }
@@ -283,7 +283,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &cut_lookup::key},
         utility::codec::field{"cut", &cut_lookup::cut},
     };
@@ -298,7 +298,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cuts_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"kind_code", &cuts_filter::kind_code},
         utility::codec::field{"party_id", &cuts_filter::party_id},
         utility::codec::field{"business_centre_code", &cuts_filter::business_centre_code},
@@ -319,7 +319,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &cut_event::event_id},
         utility::codec::field{"key", &cut_event::key},
         utility::codec::field{"action", &cut_event::action},
@@ -338,7 +338,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"cut", &cut_version_key::cut},
         utility::codec::field{"version", &cut_version_key::version},
     };
@@ -353,7 +353,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<cut_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &cut_versions_filter::version},
         utility::codec::field{"from_version", &cut_versions_filter::from_version},
         utility::codec::field{"to_version", &cut_versions_filter::to_version},
@@ -369,7 +369,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_cuts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_cuts_request::offset},
         utility::codec::field{"limit", &list_cuts_request::limit},
         utility::codec::field{"order", &list_cuts_request::order},
@@ -387,7 +387,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_cuts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_cuts_response::result},
         utility::codec::field{"cuts", &list_cuts_response::cuts},
         utility::codec::field{"total", &list_cuts_response::total},
@@ -403,7 +403,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_cut_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_cut_request::key},
     };
 }
@@ -417,7 +417,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_cut_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_cut_response::result},
         utility::codec::field{"cut", &get_cut_response::cut},
     };
@@ -432,7 +432,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_cuts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_cuts_request::keys},
     };
 }
@@ -446,7 +446,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_cuts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_cuts_response::result},
         utility::codec::field{"entries", &get_many_cuts_response::entries},
     };
@@ -461,7 +461,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_by_kind_code_cuts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"kind_code", &list_by_kind_code_cuts_request::kind_code},
         utility::codec::field{"scope", &list_by_kind_code_cuts_request::scope},
         utility::codec::field{"offset", &list_by_kind_code_cuts_request::offset},
@@ -480,7 +480,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_by_kind_code_cuts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_kind_code_cuts_response::result},
         utility::codec::field{"cuts", &list_by_kind_code_cuts_response::cuts},
         utility::codec::field{"total", &list_by_kind_code_cuts_response::total},
@@ -496,7 +496,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_cut_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_cut_versions_request::key},
         utility::codec::field{"offset", &list_cut_versions_request::offset},
         utility::codec::field{"limit", &list_cut_versions_request::limit},
@@ -514,7 +514,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_cut_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_cut_versions_response::result},
         utility::codec::field{"versions", &list_cut_versions_response::versions},
         utility::codec::field{"total", &list_cut_versions_response::total},
@@ -530,7 +530,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_cut_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_cut_version_request::key},
     };
 }
@@ -544,7 +544,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.cuts.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_cut_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_cut_version_response::result},
         utility::codec::field{"version", &get_cut_version_response::version},
     };

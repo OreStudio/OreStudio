@@ -316,7 +316,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.engine_settings
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_change_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &engine_settings_change_key::id},
     };
 }
@@ -330,7 +330,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.engine_settings
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_change_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &engine_settings_change_lookup::key},
         utility::codec::field{"engine_settings_change",
                               &engine_settings_change_lookup::engine_settings_change},
@@ -346,7 +346,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.engine_settings
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_changes_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &engine_settings_changes_filter::request_id},
         utility::codec::field{"engine_settings_id",
                               &engine_settings_changes_filter::engine_settings_id},
@@ -367,7 +367,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.engine_settings
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_change_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &engine_settings_change_event::event_id},
         utility::codec::field{"key", &engine_settings_change_event::key},
         utility::codec::field{"action", &engine_settings_change_event::action},
@@ -386,7 +386,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.engine_settings
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_change_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"engine_settings_change",
                               &engine_settings_change_version_key::engine_settings_change},
         utility::codec::field{"version", &engine_settings_change_version_key::version},
@@ -403,7 +403,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.engine_settings
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<engine_settings_change_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &engine_settings_change_versions_filter::version},
         utility::codec::field{"from_version",
                               &engine_settings_change_versions_filter::from_version},
@@ -420,7 +420,7 @@ wire_fields(std::type_identity<engine_settings_change_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_engine_settings_changes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_engine_settings_changes_request::offset},
         utility::codec::field{"limit", &list_engine_settings_changes_request::limit},
         utility::codec::field{"order", &list_engine_settings_changes_request::order},
@@ -439,7 +439,7 @@ wire_fields(std::type_identity<engine_settings_change_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_engine_settings_changes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_engine_settings_changes_response::result},
         utility::codec::field{"engine_settings_changes",
                               &list_engine_settings_changes_response::engine_settings_changes},
@@ -456,7 +456,7 @@ wire_fields(std::type_identity<list_engine_settings_changes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_engine_settings_change_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_engine_settings_change_request::key},
     };
 }
@@ -470,7 +470,7 @@ wire_fields(std::type_identity<list_engine_settings_changes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_engine_settings_change_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_engine_settings_change_response::result},
         utility::codec::field{"engine_settings_change",
                               &get_engine_settings_change_response::engine_settings_change},
@@ -487,7 +487,7 @@ wire_fields(std::type_identity<list_engine_settings_changes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_engine_settings_changes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_engine_settings_changes_request::keys},
     };
 }
@@ -502,7 +502,7 @@ wire_fields(std::type_identity<get_many_engine_settings_changes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_engine_settings_changes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_engine_settings_changes_response::result},
         utility::codec::field{"entries", &get_many_engine_settings_changes_response::entries},
     };
@@ -518,7 +518,7 @@ wire_fields(std::type_identity<get_many_engine_settings_changes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_request_id_engine_settings_changes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id",
                               &list_by_request_id_engine_settings_changes_request::request_id},
         utility::codec::field{"scope", &list_by_request_id_engine_settings_changes_request::scope},
@@ -541,7 +541,7 @@ wire_fields(std::type_identity<list_by_request_id_engine_settings_changes_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_request_id_engine_settings_changes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_request_id_engine_settings_changes_response::result},
         utility::codec::field{
@@ -561,7 +561,7 @@ wire_fields(std::type_identity<list_by_request_id_engine_settings_changes_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_engine_settings_id_engine_settings_changes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "engine_settings_id",
             &list_by_engine_settings_id_engine_settings_changes_request::engine_settings_id},
@@ -588,7 +588,7 @@ wire_fields(std::type_identity<list_by_engine_settings_id_engine_settings_change
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_engine_settings_id_engine_settings_changes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_engine_settings_id_engine_settings_changes_response::result},
         utility::codec::field{
@@ -609,7 +609,7 @@ wire_fields(std::type_identity<list_by_engine_settings_id_engine_settings_change
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_engine_settings_change_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_engine_settings_change_versions_request::key},
         utility::codec::field{"offset", &list_engine_settings_change_versions_request::offset},
         utility::codec::field{"limit", &list_engine_settings_change_versions_request::limit},
@@ -628,7 +628,7 @@ wire_fields(std::type_identity<list_engine_settings_change_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_engine_settings_change_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_engine_settings_change_versions_response::result},
         utility::codec::field{"versions", &list_engine_settings_change_versions_response::versions},
         utility::codec::field{"total", &list_engine_settings_change_versions_response::total},
@@ -645,7 +645,7 @@ wire_fields(std::type_identity<list_engine_settings_change_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_engine_settings_change_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_engine_settings_change_version_request::key},
     };
 }
@@ -660,7 +660,7 @@ wire_fields(std::type_identity<get_engine_settings_change_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_engine_settings_change_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_engine_settings_change_version_response::result},
         utility::codec::field{"version", &get_engine_settings_change_version_response::version},
     };

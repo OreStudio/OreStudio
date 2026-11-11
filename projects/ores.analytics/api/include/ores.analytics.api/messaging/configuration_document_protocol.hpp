@@ -321,7 +321,7 @@ struct delete_todays_market_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_document>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"config", &pricing_engines_document::config},
         ::ores::utility::codec::field{"products", &pricing_engines_document::products},
         ::ores::utility::codec::field{"parameters", &pricing_engines_document::parameters},
@@ -337,7 +337,7 @@ struct delete_todays_market_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<todays_market_document>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"config", &todays_market_document::config},
         ::ores::utility::codec::field{"collections", &todays_market_document::collections},
         ::ores::utility::codec::field{"entries", &todays_market_document::entries},
@@ -355,7 +355,7 @@ struct delete_todays_market_document_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pricing_engines_document_problem>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"code", &pricing_engines_document_problem::code},
         ::ores::utility::codec::field{"product_id", &pricing_engines_document_problem::product_id},
         ::ores::utility::codec::field{"parameter_scope",
@@ -376,7 +376,7 @@ struct delete_todays_market_document_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<save_pricing_engines_document_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"document", &save_pricing_engines_document_request::document},
     };
 }
@@ -391,7 +391,7 @@ wire_fields(std::type_identity<save_pricing_engines_document_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<save_pricing_engines_document_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &save_pricing_engines_document_response::success},
         ::ores::utility::codec::field{"message", &save_pricing_engines_document_response::message},
         ::ores::utility::codec::field{"id", &save_pricing_engines_document_response::id},
@@ -409,7 +409,7 @@ wire_fields(std::type_identity<save_pricing_engines_document_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_pricing_engines_document_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"configuration_id",
                                       &get_pricing_engines_document_request::configuration_id},
         ::ores::utility::codec::field{"party_id", &get_pricing_engines_document_request::party_id},
@@ -426,7 +426,7 @@ wire_fields(std::type_identity<save_pricing_engines_document_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_pricing_engines_document_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_pricing_engines_document_response::success},
         ::ores::utility::codec::field{"message", &get_pricing_engines_document_response::message},
         ::ores::utility::codec::field{"document", &get_pricing_engines_document_response::document},
@@ -443,7 +443,7 @@ wire_fields(std::type_identity<get_pricing_engines_document_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_pricing_engines_document_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"configuration_id",
                                       &delete_pricing_engines_document_request::configuration_id},
     };
@@ -459,7 +459,7 @@ wire_fields(std::type_identity<delete_pricing_engines_document_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_pricing_engines_document_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success",
                                       &delete_pricing_engines_document_response::success},
         ::ores::utility::codec::field{"message",
@@ -476,7 +476,7 @@ wire_fields(std::type_identity<delete_pricing_engines_document_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<save_todays_market_document_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"document", &save_todays_market_document_request::document},
     };
 }
@@ -490,7 +490,7 @@ wire_fields(std::type_identity<delete_pricing_engines_document_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<save_todays_market_document_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &save_todays_market_document_response::success},
         ::ores::utility::codec::field{"message", &save_todays_market_document_response::message},
         ::ores::utility::codec::field{"id", &save_todays_market_document_response::id},
@@ -506,7 +506,7 @@ wire_fields(std::type_identity<delete_pricing_engines_document_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_todays_market_document_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"configuration_id",
                                       &get_todays_market_document_request::configuration_id},
         ::ores::utility::codec::field{"party_id", &get_todays_market_document_request::party_id},
@@ -522,7 +522,7 @@ wire_fields(std::type_identity<delete_pricing_engines_document_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_todays_market_document_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_todays_market_document_response::success},
         ::ores::utility::codec::field{"message", &get_todays_market_document_response::message},
         ::ores::utility::codec::field{"document", &get_todays_market_document_response::document},
@@ -539,7 +539,7 @@ wire_fields(std::type_identity<delete_pricing_engines_document_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_todays_market_document_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"configuration_id",
                                       &delete_todays_market_document_request::configuration_id},
     };
@@ -555,7 +555,7 @@ wire_fields(std::type_identity<delete_todays_market_document_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_todays_market_document_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &delete_todays_market_document_response::success},
         ::ores::utility::codec::field{"message", &delete_todays_market_document_response::message},
     };

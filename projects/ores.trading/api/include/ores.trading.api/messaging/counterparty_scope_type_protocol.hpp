@@ -370,7 +370,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.counterparty_scop
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_scope_type_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &counterparty_scope_type_key::code},
     };
 }
@@ -384,7 +384,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.counterparty_scop
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_scope_type_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &counterparty_scope_type_write::code},
         utility::codec::field{"description", &counterparty_scope_type_write::description},
     };
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.counterparty_scop
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_scope_type_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &counterparty_scope_type_change::write},
         utility::codec::field{"precondition", &counterparty_scope_type_change::precondition},
     };
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.counterparty_scop
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_scope_type_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &counterparty_scope_type_removal::key},
         utility::codec::field{"precondition", &counterparty_scope_type_removal::precondition},
     };
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.counterparty_scop
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_scope_type_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &counterparty_scope_type_lookup::key},
         utility::codec::field{"counterparty_scope_type",
                               &counterparty_scope_type_lookup::counterparty_scope_type},
@@ -445,7 +445,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.counterparty_scop
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_scope_types_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &counterparty_scope_types_filter::code_one_of},
     };
 }
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.counterparty_scop
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_scope_type_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &counterparty_scope_type_event::event_id},
         utility::codec::field{"key", &counterparty_scope_type_event::key},
         utility::codec::field{"action", &counterparty_scope_type_event::action},
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.counterparty_scop
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_scope_type_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"counterparty_scope_type",
                               &counterparty_scope_type_version_key::counterparty_scope_type},
         utility::codec::field{"version", &counterparty_scope_type_version_key::version},
@@ -495,7 +495,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.counterparty_scop
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<counterparty_scope_type_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &counterparty_scope_type_versions_filter::version},
         utility::codec::field{"from_version",
                               &counterparty_scope_type_versions_filter::from_version},
@@ -513,7 +513,7 @@ wire_fields(std::type_identity<counterparty_scope_type_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_counterparty_scope_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_counterparty_scope_types_request::offset},
         utility::codec::field{"limit", &list_counterparty_scope_types_request::limit},
         utility::codec::field{"order", &list_counterparty_scope_types_request::order},
@@ -532,7 +532,7 @@ wire_fields(std::type_identity<list_counterparty_scope_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_counterparty_scope_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_counterparty_scope_types_response::result},
         utility::codec::field{"counterparty_scope_types",
                               &list_counterparty_scope_types_response::counterparty_scope_types},
@@ -549,7 +549,7 @@ wire_fields(std::type_identity<list_counterparty_scope_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_counterparty_scope_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_counterparty_scope_type_request::key},
     };
 }
@@ -563,7 +563,7 @@ wire_fields(std::type_identity<list_counterparty_scope_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_counterparty_scope_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_counterparty_scope_type_response::result},
         utility::codec::field{"counterparty_scope_type",
                               &get_counterparty_scope_type_response::counterparty_scope_type},
@@ -580,7 +580,7 @@ wire_fields(std::type_identity<list_counterparty_scope_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_counterparty_scope_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_counterparty_scope_types_request::keys},
     };
 }
@@ -595,7 +595,7 @@ wire_fields(std::type_identity<get_many_counterparty_scope_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_counterparty_scope_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_counterparty_scope_types_response::result},
         utility::codec::field{"entries", &get_many_counterparty_scope_types_response::entries},
     };
@@ -610,7 +610,7 @@ wire_fields(std::type_identity<get_many_counterparty_scope_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_counterparty_scope_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_counterparty_scope_type_request::change},
         utility::codec::field{"intent", &put_counterparty_scope_type_request::intent},
     };
@@ -625,7 +625,7 @@ wire_fields(std::type_identity<get_many_counterparty_scope_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_counterparty_scope_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_counterparty_scope_type_response::result},
         utility::codec::field{"counterparty_scope_type",
                               &put_counterparty_scope_type_response::counterparty_scope_type},
@@ -642,7 +642,7 @@ wire_fields(std::type_identity<get_many_counterparty_scope_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_counterparty_scope_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_counterparty_scope_types_request::changes},
         utility::codec::field{"intent", &put_many_counterparty_scope_types_request::intent},
     };
@@ -658,7 +658,7 @@ wire_fields(std::type_identity<put_many_counterparty_scope_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_counterparty_scope_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_counterparty_scope_types_response::result},
         utility::codec::field{
             "counterparty_scope_types",
@@ -676,7 +676,7 @@ wire_fields(std::type_identity<put_many_counterparty_scope_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_counterparty_scope_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_counterparty_scope_type_request::removal},
         utility::codec::field{"intent", &delete_counterparty_scope_type_request::intent},
     };
@@ -692,7 +692,7 @@ wire_fields(std::type_identity<delete_counterparty_scope_type_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_counterparty_scope_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_counterparty_scope_type_response::result},
     };
 }
@@ -707,7 +707,7 @@ wire_fields(std::type_identity<delete_counterparty_scope_type_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_counterparty_scope_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_counterparty_scope_types_request::removals},
         utility::codec::field{"intent", &delete_many_counterparty_scope_types_request::intent},
     };
@@ -723,7 +723,7 @@ wire_fields(std::type_identity<delete_many_counterparty_scope_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_counterparty_scope_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_counterparty_scope_types_response::result},
     };
 }
@@ -738,7 +738,7 @@ wire_fields(std::type_identity<delete_many_counterparty_scope_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_counterparty_scope_type_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_counterparty_scope_type_versions_request::key},
         utility::codec::field{"offset", &list_counterparty_scope_type_versions_request::offset},
         utility::codec::field{"limit", &list_counterparty_scope_type_versions_request::limit},
@@ -757,7 +757,7 @@ wire_fields(std::type_identity<list_counterparty_scope_type_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_counterparty_scope_type_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_counterparty_scope_type_versions_response::result},
         utility::codec::field{"versions",
                               &list_counterparty_scope_type_versions_response::versions},
@@ -775,7 +775,7 @@ wire_fields(std::type_identity<list_counterparty_scope_type_versions_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_counterparty_scope_type_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_counterparty_scope_type_version_request::key},
     };
 }
@@ -790,7 +790,7 @@ wire_fields(std::type_identity<get_counterparty_scope_type_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_counterparty_scope_type_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_counterparty_scope_type_version_response::result},
         utility::codec::field{"version", &get_counterparty_scope_type_version_response::version},
     };

@@ -361,7 +361,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provider_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &provider_key::code},
     };
 }
@@ -375,7 +375,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provider_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &provider_write::code},
         utility::codec::field{"name", &provider_write::name},
         utility::codec::field{"kind", &provider_write::kind},
@@ -397,7 +397,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provider_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &provider_change::write},
         utility::codec::field{"precondition", &provider_change::precondition},
     };
@@ -412,7 +412,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provider_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &provider_removal::key},
         utility::codec::field{"precondition", &provider_removal::precondition},
     };
@@ -427,7 +427,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provider_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &provider_lookup::key},
         utility::codec::field{"provider", &provider_lookup::provider},
     };
@@ -442,7 +442,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<providers_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &providers_filter::code_one_of},
     };
 }
@@ -456,7 +456,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provider_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &provider_event::event_id},
         utility::codec::field{"key", &provider_event::key},
         utility::codec::field{"action", &provider_event::action},
@@ -475,7 +475,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provider_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"provider", &provider_version_key::provider},
         utility::codec::field{"version", &provider_version_key::version},
     };
@@ -490,7 +490,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provider_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &provider_versions_filter::version},
         utility::codec::field{"from_version", &provider_versions_filter::from_version},
         utility::codec::field{"to_version", &provider_versions_filter::to_version},
@@ -506,7 +506,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_providers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_providers_request::offset},
         utility::codec::field{"limit", &list_providers_request::limit},
         utility::codec::field{"order", &list_providers_request::order},
@@ -524,7 +524,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_providers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_providers_response::result},
         utility::codec::field{"providers", &list_providers_response::providers},
         utility::codec::field{"total", &list_providers_response::total},
@@ -540,7 +540,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_provider_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_provider_request::key},
     };
 }
@@ -554,7 +554,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_provider_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_provider_response::result},
         utility::codec::field{"provider", &get_provider_response::provider},
     };
@@ -569,7 +569,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_providers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_providers_request::keys},
     };
 }
@@ -583,7 +583,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_providers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_providers_response::result},
         utility::codec::field{"entries", &get_many_providers_response::entries},
     };
@@ -598,7 +598,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_provider_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_provider_request::change},
         utility::codec::field{"intent", &put_provider_request::intent},
     };
@@ -613,7 +613,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_provider_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_provider_response::result},
         utility::codec::field{"provider", &put_provider_response::provider},
     };
@@ -628,7 +628,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_providers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_providers_request::changes},
         utility::codec::field{"intent", &put_many_providers_request::intent},
     };
@@ -643,7 +643,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_providers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_providers_response::result},
         utility::codec::field{"providers", &put_many_providers_response::providers},
     };
@@ -658,7 +658,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_provider_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_provider_request::removal},
         utility::codec::field{"intent", &delete_provider_request::intent},
     };
@@ -673,7 +673,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_provider_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_provider_response::result},
     };
 }
@@ -687,7 +687,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_providers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_providers_request::removals},
         utility::codec::field{"intent", &delete_many_providers_request::intent},
     };
@@ -702,7 +702,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_providers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_providers_response::result},
     };
 }
@@ -716,7 +716,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_provider_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_provider_versions_request::key},
         utility::codec::field{"offset", &list_provider_versions_request::offset},
         utility::codec::field{"limit", &list_provider_versions_request::limit},
@@ -734,7 +734,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_provider_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_provider_versions_response::result},
         utility::codec::field{"versions", &list_provider_versions_response::versions},
         utility::codec::field{"total", &list_provider_versions_response::total},
@@ -750,7 +750,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_provider_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_provider_version_request::key},
     };
 }
@@ -764,7 +764,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.providers.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_provider_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_provider_version_response::result},
         utility::codec::field{"version", &get_provider_version_response::version},
     };

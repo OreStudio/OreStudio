@@ -48,7 +48,7 @@ struct login_options final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<login_options>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"username", &login_options::username},
     };
 }

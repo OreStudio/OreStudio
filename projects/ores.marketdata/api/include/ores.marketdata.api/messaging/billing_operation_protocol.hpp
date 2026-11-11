@@ -128,7 +128,7 @@ struct compute_bill_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bill_line_view>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"driver", &bill_line_view::driver},
         ::ores::utility::codec::field{"licence_right", &bill_line_view::licence_right},
         ::ores::utility::codec::field{"quantity", &bill_line_view::quantity},
@@ -146,7 +146,7 @@ struct compute_bill_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<source_bill_view>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"feed_id", &source_bill_view::feed_id},
         ::ores::utility::codec::field{"source_name", &source_bill_view::source_name},
         ::ores::utility::codec::field{"currency", &source_bill_view::currency},
@@ -165,7 +165,7 @@ struct compute_bill_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_charge_view>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"tenant_id", &party_charge_view::tenant_id},
         ::ores::utility::codec::field{"party_id", &party_charge_view::party_id},
         ::ores::utility::codec::field{"feed_id", &party_charge_view::feed_id},
@@ -184,7 +184,7 @@ struct compute_bill_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<compute_bill_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"period_from", &compute_bill_request::period_from},
         ::ores::utility::codec::field{"period_to", &compute_bill_request::period_to},
         ::ores::utility::codec::field{"source_name", &compute_bill_request::source_name},
@@ -200,7 +200,7 @@ struct compute_bill_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<compute_bill_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"source_bills", &compute_bill_response::source_bills},
         ::ores::utility::codec::field{"party_charges", &compute_bill_response::party_charges},
         ::ores::utility::codec::field{"unallocated_micros",

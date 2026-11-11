@@ -145,7 +145,7 @@ struct withdraw_provider_terms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<accept_provider_terms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"provider_code",
                                       &accept_provider_terms_request::provider_code},
         ::ores::utility::codec::field{"provider_version",
@@ -162,7 +162,7 @@ struct withdraw_provider_terms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<accept_provider_terms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &accept_provider_terms_response::success},
         ::ores::utility::codec::field{"message", &accept_provider_terms_response::message},
         ::ores::utility::codec::field{"accepted_by", &accept_provider_terms_response::accepted_by},
@@ -179,7 +179,7 @@ struct withdraw_provider_terms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_provider_terms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"provider_code",
                                       &withdraw_provider_terms_request::provider_code},
     };
@@ -194,7 +194,7 @@ struct withdraw_provider_terms_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_provider_terms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &withdraw_provider_terms_response::success},
         ::ores::utility::codec::field{"message", &withdraw_provider_terms_response::message},
     };

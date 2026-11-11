@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &ir_curve_generation_config_process_parameter_value_key::id},
     };
 }
@@ -438,7 +438,7 @@ wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_valu
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &ir_curve_generation_config_process_parameter_value_write::id},
         utility::codec::field{"config_id",
                               &ir_curve_generation_config_process_parameter_value_write::config_id},
@@ -461,7 +461,7 @@ wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_valu
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write",
                               &ir_curve_generation_config_process_parameter_value_change::write},
         utility::codec::field{
@@ -480,7 +480,7 @@ wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_valu
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &ir_curve_generation_config_process_parameter_value_removal::key},
         utility::codec::field{
@@ -499,7 +499,7 @@ wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_valu
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &ir_curve_generation_config_process_parameter_value_lookup::key},
         utility::codec::field{"ir_curve_generation_config_process_parameter_value",
@@ -518,7 +518,7 @@ wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_valu
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_values_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "config_id", &ir_curve_generation_config_process_parameter_values_filter::config_id},
         utility::codec::field{
@@ -539,7 +539,7 @@ wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_valu
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id",
                               &ir_curve_generation_config_process_parameter_value_event::event_id},
         utility::codec::field{"key",
@@ -566,7 +566,7 @@ wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_valu
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"ir_curve_generation_config_process_parameter_value",
                               &ir_curve_generation_config_process_parameter_value_version_key::
                                   ir_curve_generation_config_process_parameter_value},
@@ -585,7 +585,7 @@ wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_valu
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<ir_curve_generation_config_process_parameter_value_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "version",
             &ir_curve_generation_config_process_parameter_value_versions_filter::version},
@@ -608,7 +608,7 @@ wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_valu
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_ir_curve_generation_config_process_parameter_values_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "offset", &list_ir_curve_generation_config_process_parameter_values_request::offset},
         utility::codec::field{
@@ -632,7 +632,7 @@ wire_fields(std::type_identity<list_ir_curve_generation_config_process_parameter
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_ir_curve_generation_config_process_parameter_values_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_ir_curve_generation_config_process_parameter_values_response::result},
         utility::codec::field{"process_parameter_values",
@@ -653,7 +653,7 @@ wire_fields(std::type_identity<list_ir_curve_generation_config_process_parameter
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_ir_curve_generation_config_process_parameter_value_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &get_ir_curve_generation_config_process_parameter_value_request::key},
     };
@@ -669,7 +669,7 @@ wire_fields(std::type_identity<get_ir_curve_generation_config_process_parameter_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_ir_curve_generation_config_process_parameter_value_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &get_ir_curve_generation_config_process_parameter_value_response::result},
         utility::codec::field{"ir_curve_generation_config_process_parameter_value",
@@ -688,7 +688,7 @@ wire_fields(std::type_identity<get_ir_curve_generation_config_process_parameter_
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<get_many_ir_curve_generation_config_process_parameter_values_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "keys", &get_many_ir_curve_generation_config_process_parameter_values_request::keys},
     };
@@ -704,7 +704,7 @@ wire_fields(std::type_identity<get_ir_curve_generation_config_process_parameter_
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<get_many_ir_curve_generation_config_process_parameter_values_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result",
             &get_many_ir_curve_generation_config_process_parameter_values_response::result},
@@ -724,7 +724,7 @@ wire_fields(std::type_identity<get_ir_curve_generation_config_process_parameter_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_ir_curve_generation_config_process_parameter_value_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "change", &put_ir_curve_generation_config_process_parameter_value_request::change},
         utility::codec::field{
@@ -742,7 +742,7 @@ wire_fields(std::type_identity<put_ir_curve_generation_config_process_parameter_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_ir_curve_generation_config_process_parameter_value_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &put_ir_curve_generation_config_process_parameter_value_response::result},
         utility::codec::field{"ir_curve_generation_config_process_parameter_value",
@@ -761,7 +761,7 @@ wire_fields(std::type_identity<put_ir_curve_generation_config_process_parameter_
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<put_many_ir_curve_generation_config_process_parameter_values_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "changes",
             &put_many_ir_curve_generation_config_process_parameter_values_request::changes},
@@ -781,7 +781,7 @@ wire_fields(std::type_identity<put_ir_curve_generation_config_process_parameter_
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<put_many_ir_curve_generation_config_process_parameter_values_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result",
             &put_many_ir_curve_generation_config_process_parameter_values_response::result},
@@ -802,7 +802,7 @@ wire_fields(std::type_identity<put_ir_curve_generation_config_process_parameter_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_ir_curve_generation_config_process_parameter_value_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "removal", &delete_ir_curve_generation_config_process_parameter_value_request::removal},
         utility::codec::field{
@@ -820,7 +820,7 @@ wire_fields(std::type_identity<delete_ir_curve_generation_config_process_paramet
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<delete_ir_curve_generation_config_process_parameter_value_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &delete_ir_curve_generation_config_process_parameter_value_response::result},
     };
@@ -836,7 +836,7 @@ wire_fields(std::type_identity<delete_ir_curve_generation_config_process_paramet
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<delete_many_ir_curve_generation_config_process_parameter_values_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "removals",
             &delete_many_ir_curve_generation_config_process_parameter_values_request::removals},
@@ -856,7 +856,7 @@ wire_fields(std::type_identity<delete_ir_curve_generation_config_process_paramet
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<delete_many_ir_curve_generation_config_process_parameter_values_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result",
             &delete_many_ir_curve_generation_config_process_parameter_values_response::result},
@@ -873,7 +873,7 @@ wire_fields(std::type_identity<delete_ir_curve_generation_config_process_paramet
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<list_ir_curve_generation_config_process_parameter_value_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "key", &list_ir_curve_generation_config_process_parameter_value_versions_request::key},
         utility::codec::field{
@@ -901,7 +901,7 @@ wire_fields(std::type_identity<delete_ir_curve_generation_config_process_paramet
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<list_ir_curve_generation_config_process_parameter_value_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result",
             &list_ir_curve_generation_config_process_parameter_value_versions_response::result},
@@ -924,7 +924,7 @@ wire_fields(std::type_identity<delete_ir_curve_generation_config_process_paramet
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<get_ir_curve_generation_config_process_parameter_value_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "key", &get_ir_curve_generation_config_process_parameter_value_version_request::key},
     };
@@ -940,7 +940,7 @@ wire_fields(std::type_identity<delete_ir_curve_generation_config_process_paramet
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<get_ir_curve_generation_config_process_parameter_value_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result",
             &get_ir_curve_generation_config_process_parameter_value_version_response::result},

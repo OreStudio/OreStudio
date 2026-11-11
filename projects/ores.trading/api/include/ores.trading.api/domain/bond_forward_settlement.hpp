@@ -101,7 +101,7 @@ struct bond_forward_settlement {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_forward_settlement>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"forward_maturity_date",
                               &bond_forward_settlement::forward_maturity_date},
         utility::codec::field{"forward_settlement_date",

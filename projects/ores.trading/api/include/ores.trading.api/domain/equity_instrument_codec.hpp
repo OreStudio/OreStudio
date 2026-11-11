@@ -47,7 +47,7 @@ namespace ores::trading::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_instrument>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"identity", &equity_instrument::identity},
         utility::codec::field{"start_date", &equity_instrument::start_date},
         utility::codec::field{"maturity_date", &equity_instrument::maturity_date},

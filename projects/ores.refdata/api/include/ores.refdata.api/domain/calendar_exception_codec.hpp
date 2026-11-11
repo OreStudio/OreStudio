@@ -46,7 +46,7 @@ namespace ores::refdata::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_exception>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &calendar_exception::version},
         utility::codec::field{"tenant_id", &calendar_exception::tenant_id},
         utility::codec::field{"id", &calendar_exception::id},

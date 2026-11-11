@@ -47,7 +47,7 @@ struct counterparty_apply_workflow_request {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_apply_workflow_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &counterparty_apply_workflow_request::request_id}};
 }
 

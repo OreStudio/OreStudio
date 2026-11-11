@@ -57,11 +57,12 @@ struct bundle_publish_workflow_dataset {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_publish_workflow_dataset>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"dataset_id", &bundle_publish_workflow_dataset::dataset_id},
-                      field{"dataset_code", &bundle_publish_workflow_dataset::dataset_code},
-                      field{"target_subject", &bundle_publish_workflow_dataset::target_subject},
-                      field{"mode", &bundle_publish_workflow_dataset::mode},
-                      field{"params_json", &bundle_publish_workflow_dataset::params_json}};
+    return ::ores::utility::codec::field_list{
+        field{"dataset_id", &bundle_publish_workflow_dataset::dataset_id},
+        field{"dataset_code", &bundle_publish_workflow_dataset::dataset_code},
+        field{"target_subject", &bundle_publish_workflow_dataset::target_subject},
+        field{"mode", &bundle_publish_workflow_dataset::mode},
+        field{"params_json", &bundle_publish_workflow_dataset::params_json}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<bundle_publish_workflow_dataset>(),
@@ -85,10 +86,11 @@ struct bundle_publish_workflow_request {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_publish_workflow_request>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"bundle_code", &bundle_publish_workflow_request::bundle_code},
-                      field{"tenant_id", &bundle_publish_workflow_request::tenant_id},
-                      field{"published_by", &bundle_publish_workflow_request::published_by},
-                      field{"datasets", &bundle_publish_workflow_request::datasets}};
+    return ::ores::utility::codec::field_list{
+        field{"bundle_code", &bundle_publish_workflow_request::bundle_code},
+        field{"tenant_id", &bundle_publish_workflow_request::tenant_id},
+        field{"published_by", &bundle_publish_workflow_request::published_by},
+        field{"datasets", &bundle_publish_workflow_request::datasets}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<bundle_publish_workflow_request>(),

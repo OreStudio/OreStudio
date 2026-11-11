@@ -313,8 +313,11 @@ fx_result fx_barrier_option_builder<Product>::build() const {
         return std::unexpected(std::move(*refusal));
     const auto& barriers = terms_.barriers.get();
     if constexpr (Product == fx_barrier_product::double_barrier) {
-        if (auto refusal = fx_detail::barrier_refusal(
-                barriers, is_double_type, 2, "one KnockIn or KnockOut barrier of two levels"))
+        if (auto refusal =
+                fx_detail::barrier_refusal(barriers,
+                                           fx_detail::is_double_type,
+                                           2,
+                                           "one KnockIn or KnockOut barrier of two levels"))
             return std::unexpected(std::move(*refusal));
     } else if constexpr (Product == fx_barrier_product::kiko) {
         const bool shaped =
@@ -327,7 +330,7 @@ fx_result fx_barrier_option_builder<Product>::build() const {
                 "barriers", "must be a knock-in and a knock-out barrier of one level each"});
     } else {
         if (auto refusal = fx_detail::barrier_refusal(
-                barriers, is_single_type, 1, "one UpAnd or DownAnd barrier"))
+                barriers, fx_detail::is_single_type, 1, "one UpAnd or DownAnd barrier"))
             return std::unexpected(std::move(*refusal));
     }
 
@@ -363,13 +366,13 @@ fx_result fx_digital_option_builder<Product>::build() const {
     } else if constexpr (Product == fx_digital_product::double_touch) {
         if (auto refusal =
                 fx_detail::barrier_refusal(terms_.barriers,
-                                           is_double_type,
+                                           fx_detail::is_double_type,
                                            2,
                                            "one KnockIn or KnockOut barrier of two levels"))
             return std::unexpected(std::move(*refusal));
     } else {
         if (auto refusal = fx_detail::barrier_refusal(
-                terms_.barriers, is_single_type, 1, "one UpAnd or DownAnd barrier"))
+                terms_.barriers, fx_detail::is_single_type, 1, "one UpAnd or DownAnd barrier"))
             return std::unexpected(std::move(*refusal));
     }
 

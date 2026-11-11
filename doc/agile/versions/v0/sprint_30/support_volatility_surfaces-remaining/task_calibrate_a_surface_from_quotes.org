@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/calibrate-a-surface-from-quotes
-#+pr:
+#+pr: 4566
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4566][#4566]] | [marketdata] Calibrate a volatility surface from its quotes |
 
 * Review
 

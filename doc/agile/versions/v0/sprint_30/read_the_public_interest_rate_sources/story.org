@@ -56,7 +56,7 @@ The public overnight rate of as many currencies as their publishers allow is sto
 | [[id:86EA85AC-87C0-40AB-B102-0BAE47329890][Add the Norges Bank adapter]] | DONE | 2026-11-10 | 2026-11-10 | A specialised adapter reads NOWA from Norges Bank and stores its history as fixings in the system tenant. |
 | [[id:A29DAAA9-E4AA-446F-AF67-4379BC7AFAA5][Add the Riksbank adapter]] | DONE | 2026-11-10 | 2026-11-10 | A specialised adapter reads SWESTR from the Riksbank and stores its history as fixings in the system tenant. |
 | [[id:C9186AEB-2B2F-4379-9856-78397DB417B8][Add the Banco de Mexico adapter]] | DONE | 2026-11-11 | 2026-11-11 | A specialised adapter reads the overnight TIIE de Fondeo from Banco de Mexico and stores its history as fixings in the system tenant. |
-| [[id:37AD5218-D38E-4FF3-964A-3088ACD7D3B7][Add the Banco Central de Chile adapter]] | BACKLOG | | | A specialised adapter reads the Indice Camara Promedio from the Banco Central de Chile and stores its history as fixings in the system tenant. |
+| [[id:37AD5218-D38E-4FF3-964A-3088ACD7D3B7][Add the Banco Central de Chile adapter]] | STARTED | 2026-11-11 | | A specialised adapter reads the Indice Camara Promedio from the Banco Central de Chile and stores its history as fixings in the system tenant. |
 | [[id:8CCD7E45-5BC3-4688-BD59-5E760DC1DF5A][Add the MAS adapter]] | BACKLOG | | | A specialised adapter reads SORA from the Monetary Authority of Singapore and stores its history as fixings in the system tenant. |
 | [[id:E42764BE-BE8E-4BE4-A904-C9DEC77FACF5][Add the Czech National Bank adapter]] | BACKLOG | | | A specialised adapter reads CZEONIA from the Czech National Bank and stores its history as fixings in the system tenant. |
 

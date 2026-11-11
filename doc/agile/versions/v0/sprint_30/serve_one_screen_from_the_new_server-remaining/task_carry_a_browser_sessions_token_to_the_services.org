@@ -26,11 +26,11 @@ A route answering a cookie-session request forwards the session's own token, as 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -41,9 +41,17 @@ A route answering a cookie-session request forwards the session's own token, as 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Found on 2026-11-11 while reading the session path for the bootstrap read.
+=auth_session_routes= keeps the token a sign-in returns in the session record,
+and the session path in =http_session= took the claims from that record and
+nothing else. Every route forwards the token =get_bearer_token= reads from the
+=Authorization= header, so a browser request forwarded an empty token, and every
+route ported in this story would have failed for ores.web, which signs in with
+the cookie.
+
+The session path now sets the request's =Authorization= header from the token
+the session keeps, once the cookie proves the session. The header is set on
+the request only and never on the answer.
 
 * Measurements
 
@@ -82,6 +90,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the token now lives on the request inside the server. | =http_session.cpp= | Accepted | It is the session's own token, which the server already holds; the answer never carries it, and a test of the answer already proves that. |
+| 2 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
 
 * Result
+
+A request signed in with the session cookie now reaches its route with the
+session's token as its bearer token, so every route forwards it to the
+services as it does a bearer request. A test sends a cookie-session request and
+proves the handler receives the token.

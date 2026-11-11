@@ -28,11 +28,11 @@ builders, and the ORE engine test builds each one.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -83,9 +83,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trading API tests | 4406 test cases pass | =ores.trading.api.tests -r compact= | =e4dd30fda9= |
+| Synthetic tests against ORE | 130 test cases pass | =ores.synthetic.core.tests -r compact=, with the ORE engine set | =8866f2bad4= |
+| Of the five types, the ones ORE builds | 3 | =ores.synthetic.core.tests '[generated]'= | =8866f2bad4= |
 
 * Notes
+
+Two of the five types parse in ORE and still do not build. Both reasons are
+market data, which the story's market data task owns.
+
+- The spread option needs a correlation curve for its two commodities,
+  =COMM-NYMEX:CL/COMM-NYMEX:NG=.
+- The intraday power forward needs an intraday power index. The tenant's
+  commodity catalogue holds no power commodity, so the planner names crude or
+  gas. The commodity row has no category column, so the planner cannot pick
+  a power commodity yet. The market data task seeds one and the index it
+  needs.
 
 * Test Scenarios
 
@@ -111,3 +124,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The projection now writes and reads the five native commodity products from
+one table of products, which replaces the three lists of trade types. Each
+type has a builder, the registry holds it, and the planner calls it. The
+commodity row gained the delivery date, start and end through the codegen
+model. ORE now parses all five types and builds the digital option, the
+digital average price option and the position. The spread option and the
+intraday power forward stay in the known errors for the market data reasons
+in the notes.

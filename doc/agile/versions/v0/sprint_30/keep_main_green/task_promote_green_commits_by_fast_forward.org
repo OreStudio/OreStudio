@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-CI moves integration and main. A green continuous Linux run on a dev commit fast-forwards integration to it; a green run of every nightly platform on one dev commit fast-forwards main to it. Neither branch ever moves to an untested commit.
+CI moves integration and main. A green continuous Linux run on a dev commit fast-forwards integration to it; the nightlies build the tip of integration, and a green run of every nightly platform on that commit fast-forwards main to it. Neither branch ever moves to an untested commit.
 
 * Status
 
@@ -36,7 +36,7 @@ CI moves integration and main. A green continuous Linux run on a dev commit fast
 * Acceptance
 
 - After a green continuous Linux run on dev commit X, integration points at X.
-- After green Linux, Windows and macOS nightlies on dev commit Y, main points at Y.
+- The nightlies build the tip of integration; after green Linux, Windows and macOS nightlies on commit Y, main points at Y.
 - A red run leaves both branches where they were.
 - The promotion job never force-pushes.
 

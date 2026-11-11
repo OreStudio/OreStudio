@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 2585BB37-1F7F-4D2A-B3C7-EEA6B1805A54
+:END:
+#+title: Task: Show the branch of each build in CDash
+#+description: Submit each CI build to a CDash group named after the branch it built: dev, integration or main.
+#+type: task
+#+level: s1
+#+filetags: :ci:cdash:keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A CDash reader sees at a glance which branch each build tested. Each workflow builds one branch: continuous Linux builds dev, the nightlies build the tip of integration, and tag builds build main. CTest.cmake keeps the model (Nightly, Continuous) as the ctest_start model and passes the branch as its GROUP argument, the idiomatic CDash way to section a dashboard.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- CTest.cmake takes a branch parameter and passes it to ctest_start as GROUP, with the model unchanged.
+- The CDash dashboard shows dev, integration and main as separate groups, each with its Nightly or Continuous builds.
+- The nightly workflows check out the tip of integration, and a green nightly fast-forwards main to that commit.
+- The build name and site do not change, so CDash history for each preset stays continuous.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

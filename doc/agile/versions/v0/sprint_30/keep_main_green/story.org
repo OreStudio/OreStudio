@@ -32,7 +32,8 @@ Developers start work from a commit that CI has proven green, and main only move
 
 - dev is the default PR target; integration and main accept only fast-forward pushes from the CI bot.
 - A green continuous Linux run on a dev commit fast-forwards integration to that commit.
-- A green full nightly matrix on a dev commit fast-forwards main to that commit.
+- The nightlies build the tip of integration, and a green full nightly matrix fast-forwards main to that commit.
+- CDash shows each build in a group named after the branch it built: dev, integration or main.
 - compass task start branches new work from integration.
 - A red dev run lists the candidate PRs in its batch, and compass pr merge refuses a non-fix merge while dev is red.
 
@@ -46,12 +47,14 @@ Developers start work from a commit that CI has proven green, and main only move
 | [[id:5811D91F-227C-4121-8ED3-0B43220A803B][Run continuous Linux every hour]] | BACKLOG | | | Let continuous Linux runs overlap so each run tests a smaller batch of merges. |
 | [[id:20FA6378-3FCA-4156-89AC-9BCB527B8978][Name the culprit of a red run]] | BACKLOG | | | On a red continuous run, list the PRs between the last green commit and the run's commit and match them to the failing tests. |
 | [[id:7E177AB3-D85E-4029-B496-C21F76FEA34B][Stop the line when dev is red]] | BACKLOG | | | Make compass pr merge refuse a non-fix merge while the latest continuous run on dev is red. |
+| [[id:2585BB37-1F7F-4D2A-B3C7-EEA6B1805A54][Show the branch of each build in CDash]] | BACKLOG | | | Submit each CI build to a CDash group named after the branch it built: dev, integration or main. |
 
 * Decisions
 
 - *Promote by fast-forward; never stabilise on a separate branch.* A stabilisation branch that takes its own fixes needs merges in both directions and takes days at our build rate: each fix round costs a 3-hour Linux run or a night. Every fix lands on dev; integration and main only follow it.
 - *Three levels.* dev takes every PR. integration follows the continuous Linux gate (about 3 hours behind). main follows the full nightly matrix (at least a day behind) and is what releases and outside users see.
 - *Developers start from integration, not main.* main can freeze on a Windows-only or macOS-only break; on 2026-11-11 every nightly had been red for 8 days. Work based on main would then be days old and pay a large rebase at PR time.
+- *Each workflow builds one branch.* Continuous Linux builds dev; the nightlies build integration, whose tip is already Linux-green, so a nightly does not spend hours on a commit a 3-hour run already found broken; tag builds build main. CDash shows the branch as the ctest_start GROUP.
 - *No blocking PR build.* A full build takes 42 to 90 min on a 4-core runner, and no spare hardware is available. Each worktree already builds before its PR; what that misses is the merge with other PRs, which the continuous run on dev catches.
 - *Evidence, 2026-11-11.* 15 to 41 PRs merged per day over the last week. No workflow builds C++ on a pull request. Continuous Linux runs every 3 hours and takes about 3 hours.
 

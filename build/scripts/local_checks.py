@@ -323,6 +323,14 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("docs", "modeling", "codegen", "sql", "cpp", "services", "web", "plugins", "tooling", "ci"),
     ),
     Check(
+        id="no-committed-credentials",
+        title="No file git would commit holds a public source secret of .env",
+        argv=("python3", "build/scripts/check_no_committed_credentials.py"),
+        classes=("docs", "modeling", "codegen", "sql", "cpp", "services", "web", "plugins", "tooling", "ci"),
+        fix="Take the value out of the file. A provider names its key as env:NAME,"
+            " and the key itself lives only in .env.",
+    ),
+    Check(
         id="no-pr-triggers",
         title="No workflow triggers on a pull request",
         argv=("python3", "build/scripts/check_no_pr_triggers.py"),

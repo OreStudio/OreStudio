@@ -224,10 +224,27 @@ policy to say how stale a monthly fixing may be.
 ** Secrets
 
 A credential is never in a table, a log or a stored URL. A provider row holds a
-=credential_ref=, such as =env:ORES_MARKETDATA_FRED_API_KEY=, and a
-=secret_source= interface resolves it. The first implementation reads the
-service environment, as the database passwords are read. Frankfurter needs no
-key.
+=credential_ref=, such as =env:ORES_MARKETDATA_BANXICO_API_KEY=, and
+=resolve_secret= reads it from the service environment, as the database
+passwords are read. Frankfurter needs no key.
+
+The steps for a key:
+
+1. A person registers with the publisher and puts the key in the checkout's
+   =.env= as =ORES_MARKETDATA_<PROVIDER>_API_KEY=, or as a =_USER= and
+   =_PASSWORD= pair. Git ignores =.env=.
+2. =compass env configure= rebuilds =.env= and keeps every such variable.
+3. The provider seed names the variable as =env:NAME=, never its value.
+4. The services load =.env= into their environment. The adapter reads the key
+   when it starts and gives it to the fetcher. Without the key, a fetcher that
+   needs one reports the variable to set, and the adapter retries; a fetcher
+   whose publisher also serves callers without a key, such as the Riksbank,
+   reads without it.
+5. A fetcher puts the key in a query parameter whose name holds =key=,
+   =token=, =secret= or =password=, so =redacted= masks it in every logged
+   address and error.
+6. The gate check =no-committed-credentials= fails when a file that git would
+   commit holds the value of a key or password of =.env=.
 
 ** How this design changed
 

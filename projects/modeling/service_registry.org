@@ -655,6 +655,7 @@ named with the adapter that reads it.
 - --source riksbank-swestr:riksbank:riksbank_swestr:SWESTR
 - --source rba-aonia:rba:rba_table:f1.FIRMMCRID
 - --source bcb-cdi:bcb:bcb_sgs:4389
+- --source banxico-tiie-fondeo:banxico:banxico_sie:SF331451
 
 * ores.compute.wrapper
 :PROPERTIES:

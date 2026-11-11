@@ -67,6 +67,25 @@ def _gen_password() -> str:
     return "".join(secrets.choice(_PW_ALPHABET) for _ in range(32))
 
 
+# A public source's key, user or password, such as ORES_MARKETDATA_BANXICO_API_KEY.
+# Configure does not generate these: a person registers each with its publisher.
+# The service's own database variables are ORES_MARKETDATA_SERVICE_*, and
+# configure generates them, so they are left out.
+_SOURCE_CREDENTIAL = re.compile(
+    r"^ORES_MARKETDATA_(?!SERVICE_)[A-Z0-9_]+_(API_KEY|USER|PASSWORD)$")
+
+
+def _source_credentials(existing: dict) -> str:
+    """The .env section that keeps the public source credentials of an existing .env."""
+    names = sorted(k for k, v in existing.items()
+                   if _SOURCE_CREDENTIAL.match(k) and v)
+    if not names:
+        return ""
+    body = "".join(f"{k}={existing[k]}\n" for k in names)
+    return ("\n# Public source credentials. A person registers each with its publisher;\n"
+            "# a provider row names one as env:NAME. Configure keeps them.\n" + body)
+
+
 def _read_env(env_file: Path) -> dict:
     """Parse an existing .env into {KEY: value} (first occurrence wins)."""
     values: dict = {}
@@ -1003,6 +1022,11 @@ ORES_IAM_SERVICE_JWT_PRIVATE_KEY="{jwt_key_oneline}"
                    f"ORES_TEST_LOG_CONSOLE={log_console}\n")
     else:
         print("No test logging configuration found; skipping.")
+
+    credentials = _source_credentials(existing)
+    if credentials:
+        print("Preserving public source credentials")
+        out.append(credentials)
 
     print("Setting file permissions...")
     env_file.write_text("".join(out))

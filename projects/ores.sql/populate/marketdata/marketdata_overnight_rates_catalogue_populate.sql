@@ -64,7 +64,7 @@ values
     (ores_utility_system_tenant_id_fn(), 'riksbank', 0, 'Sveriges Riksbank', 'reference',
      'The Swedish krona short-term rate, SWESTR, published by the Riksbank each Swedish business day.',
      34, 'https://www.riksbank.se/en-gb/statistics/swestr/conditions-for-use-and-re-publishing/',
-     'Source: Sveriges Riksbank', true, '',
+     'Source: Sveriges Riksbank', true, 'env:ORES_MARKETDATA_RIKSBANK_API_KEY',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
     (ores_utility_system_tenant_id_fn(), 'rba', 0, 'Reserve Bank of Australia', 'reference',
      'The statistical tables of the Reserve Bank of Australia, among them AONIA, the interbank overnight cash rate, published each Australian business day.',
@@ -75,6 +75,11 @@ values
      'The time series of the Banco Central do Brasil, among them the annualised CDI that B3 computes, published each Brazilian business day.',
      36, 'https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/consultas/mercado-de-derivativos/indicadores/indicadores-financeiros/',
      'Source: B3, through the Banco Central do Brasil', true, '',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'banxico', 0, 'Banco de Mexico', 'reference',
+     'The economic information system of Banco de Mexico, among them the TIIE de Fondeo, the overnight funding rate, published each Mexican business day.',
+     37, 'https://www.banxico.org.mx/footer-en/terms-and-conditions-banco-mexico-s-website.html',
+     'Source: Banco de Mexico, https://www.banxico.org.mx', true, 'env:ORES_MARKETDATA_BANXICO_API_KEY',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -94,7 +99,8 @@ insert into t_overnight_inventory (provider_code, id_scheme, external_id, field,
     ('norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R', 'OBS_VALUE', 'oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA'),
     ('riksbank', 'riksbank_swestr', 'SWESTR', 'rate', 'oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR'),
     ('rba', 'rba_table', 'f1.FIRMMCRID', 'value', 'oresmd://ir/AUD?type=fixing&index=ibor&name=AONIA'),
-    ('bcb', 'bcb_sgs', '4389', 'valor', 'oresmd://ir/BRL?type=fixing&index=ibor&name=CDI');
+    ('bcb', 'bcb_sgs', '4389', 'valor', 'oresmd://ir/BRL?type=fixing&index=ibor&name=CDI'),
+    ('banxico', 'banxico_sie', 'SF331451', 'dato', 'oresmd://ir/MXN?type=fixing&index=ibor&name=FTIIE');
 
 insert into ores_marketdata_market_data_vendor_instruments_tbl (
     id, tenant_id, version, provider_code, id_scheme, external_id, field, minted, deviation_note,
@@ -188,6 +194,11 @@ values
      'bcb', 'bcb_sgs', 'production', 'https://api.bcb.gov.br', '',
      '{"url":"https://api.bcb.gov.br","backfill_days":400,"poll_minutes":60}', true,
      'The session that reads the series of the Banco Central do Brasil SGS API.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('banxico-sie', ores_utility_system_tenant_id_fn(), 0, 'Banxico SIE',
+     'banxico', 'banxico_sie', 'production', 'https://www.banxico.org.mx', '',
+     '{"url":"https://www.banxico.org.mx","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the Banco de Mexico SIE API.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -233,6 +244,10 @@ values
     ('2f903f0d-259c-59a8-9867-c632dd1af018', ores_utility_system_tenant_id_fn(), 0,
      'bcb-cdi', 'bcb', 'bcb-sgs', 'end_of_day', '4389', true,
      'The annualised CDI as the Banco Central do Brasil publishes it, read from its SGS API by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('5d31da1a-16cc-52b8-9d6e-8b3c77c6e5ab', ores_utility_system_tenant_id_fn(), 0,
+     'banxico-tiie-fondeo', 'banxico', 'banxico-sie', 'end_of_day', 'SF331451', true,
+     'The TIIE de Fondeo as Banco de Mexico publishes it, read from its SIE API by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -254,7 +269,8 @@ from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR'),
              ('norgesbank-nowa', 'norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R'),
              ('riksbank-swestr', 'riksbank', 'riksbank_swestr', 'SWESTR'),
              ('rba-aonia', 'rba', 'rba_table', 'f1.FIRMMCRID'),
-             ('bcb-cdi', 'bcb', 'bcb_sgs', '4389'))
+             ('bcb-cdi', 'bcb', 'bcb_sgs', '4389'),
+             ('banxico-tiie-fondeo', 'banxico', 'banxico_sie', 'SF331451'))
      as s(feed, provider, scheme, external_id)
 join ores_marketdata_feeds_tbl f
   on f.tenant_id = ores_utility_system_tenant_id_fn()
@@ -434,5 +450,23 @@ begin
         '2f903f0d-259c-59a8-9867-c632dd1af018',
         current_user, current_user, 'system.initial_load',
         'The system party reads the CDI from Banco Central do Brasil'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '2832ae4e-6ae7-582c-a4ee-84e31693f5d1', ores_utility_system_tenant_id_fn(), 0, v_party, 'banxico',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes the TIIE de Fondeo of Banco de Mexico for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '659924a0-4aed-5a92-b9bc-fdaf0c183409', ores_utility_system_tenant_id_fn(), 0, v_party, 'banxico', 'interest_rates',
+        '5d31da1a-16cc-52b8-9d6e-8b3c77c6e5ab',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads the TIIE de Fondeo from Banco de Mexico'
     ) on conflict do nothing;
 end $$;

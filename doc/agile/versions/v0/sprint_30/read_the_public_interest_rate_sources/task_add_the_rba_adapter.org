@@ -67,7 +67,7 @@ task and name that file in the Command column.
 
 * Notes
 
-- The user agent change was checked against each publisher with one request each. All answered 200 except the Riksbank, which answered =403 Out of call volume quota= to both the old and the new agent. [[id:931A6249-B689-496F-B666-A3CACB0A0494][Register a Riksbank API key]] records it.
+- The user agent change was checked against each publisher with one request each. All answered 200 except the Riksbank, which answered =403 Out of call volume quota= to both the old and the new agent. [[id:C9186AEB-2B2F-4379-9856-78397DB417B8][Add the Banco de Mexico adapter]] later gave the Riksbank fetcher a registered key.
 - The RBA writes a row for a day before it publishes the day's rate, with the rate cell missing. The parser skips such a row, so the next poll stores the rate.
 
 * Test Scenarios

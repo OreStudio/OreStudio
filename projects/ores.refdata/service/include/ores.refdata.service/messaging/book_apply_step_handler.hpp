@@ -76,7 +76,6 @@ public:
      * reason.
      */
     void recheck(ores::nats::delivery delivery) {
-        const auto& msg = delivery.msg();
         run(std::move(delivery), [this](const auto& ctx, const std::string& request_id) {
             // A run resumed after the request ended has nothing left to
             // check: the request is no longer approved, and its state stands.
@@ -102,7 +101,6 @@ public:
      * @brief Serves refdata.v1.steps.apply_book_changes.
      */
     void apply(ores::nats::delivery delivery) {
-        const auto& msg = delivery.msg();
         run(std::move(delivery), [this](const auto& ctx, const std::string& request_id) {
             const auto applied = service::book_proposal_service(ctx).apply(request_id);
             const auto result = apply_step_result(applied);

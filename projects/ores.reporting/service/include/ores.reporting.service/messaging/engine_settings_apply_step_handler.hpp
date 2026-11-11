@@ -73,7 +73,6 @@ public:
      * reason.
      */
     void recheck(ores::nats::delivery delivery) {
-        const auto& msg = delivery.msg();
         run(std::move(delivery), [](const auto& ctx, const std::string& request_id) {
             // A run resumed after the request ended has nothing left to check:
             // the request is no longer approved, and its state stands.
@@ -100,7 +99,6 @@ public:
      * @brief Serves reporting.v1.steps.apply_engine_settings_changes.
      */
     void apply(ores::nats::delivery delivery) {
-        const auto& msg = delivery.msg();
         run(std::move(delivery), [](const auto& ctx, const std::string& request_id) {
             const auto applied = service::engine_settings_proposal_service(ctx).apply(request_id);
             if (applied.applied)

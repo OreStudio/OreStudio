@@ -216,8 +216,6 @@ struct commodity_basket_option_terms final {
     required<utility::decimal::decimal> strike;
     required<std::chrono::year_month_day> expiry;
     required<option_position> position;
-    /// The unit the quantity counts, as the catalogue states it; empty when unstated.
-    std::string unit;
 };
 
 class ORES_TRADING_API_EXPORT commodity_basket_option_builder final {

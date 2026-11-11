@@ -912,8 +912,7 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                                                           .kind = kind,
                                                           .strike = strike,
                                                           .expiry = end,
-                                                          .position = position,
-                                                          .unit = drawn.unit})
+                                                          .position = position})
                          .build());
     }
     return std::nullopt;

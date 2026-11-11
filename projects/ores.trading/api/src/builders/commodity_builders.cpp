@@ -64,7 +64,11 @@ domain::instrument_option commodity_option_row(option_position position,
     return row;
 }
 
-/// A commodity leg that pays five days after its period on the NYSE calendar.
+/*
+ * A commodity leg pays five days after its period on the NYSE calendar,
+ * following, which is what every commodity example ORE ships states. A leg on
+ * another exchange's calendar needs these as terms.
+ */
 domain::swap_leg
 commodity_paying_leg(int leg_number, bool payer, std::string type, std::string currency) {
     auto row = rows::swap_leg(leg_number, payer, std::move(type), std::move(currency));
@@ -143,6 +147,11 @@ std::optional<build_error> commodity_option_refusal(const commodity_option_terms
     if (terms.strike.get() <= decimal{})
         return build_error{"strike", "must be positive"};
     return std::nullopt;
+}
+
+/// The side of an option strip a strike sits on.
+std::string strike_role_of(option_kind kind) {
+    return kind == option_kind::call ? "call" : "put";
 }
 
 domain::commodity_instrument commodity_option_row_of(std::string_view trade_type,
@@ -243,7 +252,7 @@ commodity_result commodity_option_strip_builder::build() const {
         1, terms_.start.get(), terms_.maturity.get(), terms_.roll_tenor.get()));
 
     domain::instrument_strike strike{};
-    strike.strike_role = terms_.kind.get() == option_kind::call ? "call" : "put";
+    strike.strike_role = strike_role_of(terms_.kind.get());
     strike.sequence_number = 1;
     strike.bare_value = terms_.strike.get();
     strike.long_short = long_short_of(terms_.position.get());
@@ -310,6 +319,10 @@ commodity_basket_option_builder::commodity_basket_option_builder(
     : terms_(std::move(terms)) {}
 
 commodity_result commodity_basket_option_builder::build() const {
+    if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.notional.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.strike.get() <= decimal{})
+        return std::unexpected(build_error{"strike", "must be positive"});
     const auto& basket = terms_.basket.get();
     if (basket.size() < 2)
         return std::unexpected(build_error{"basket", "must hold at least two commodities"});
@@ -320,17 +333,14 @@ commodity_result commodity_basket_option_builder::build() const {
             if (basket[i].underlying == basket[j].underlying)
                 return std::unexpected(build_error{"basket", "must not hold a commodity twice"});
     }
-    if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.notional.get()))
-        return std::unexpected(std::move(*refusal));
-    if (terms_.strike.get() <= decimal{})
-        return std::unexpected(build_error{"strike", "must be positive"});
 
-    // The row names the basket's first member, so it states a commodity as every row does.
-    auto row = commodity_row_of(trade_type,
-                                basket.front().underlying,
-                                terms_.currency.get(),
-                                terms_.notional.get(),
-                                terms_.unit);
+    /*
+     * The row names the basket's first member, so it states a commodity as
+     * every row does. It states no unit, because the members may count
+     * different ones.
+     */
+    auto row = commodity_row_of(
+        trade_type, basket.front().underlying, terms_.currency.get(), terms_.notional.get(), {});
     row.option_type = option_type_of(terms_.kind.get());
     row.strike_price = terms_.strike.get();
     row.exercise_type = "European";

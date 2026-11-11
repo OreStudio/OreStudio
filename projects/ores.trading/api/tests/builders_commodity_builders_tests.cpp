@@ -102,7 +102,7 @@ TEST_CASE("a_commodity_swap_states_a_fixed_and_a_floating_leg", commodity_tags) 
     REQUIRE(swap.has_value());
     REQUIRE(swap->legs.size() == 2);
     CHECK(swap->legs[0].leg_type_code == "CommodityFixed");
-    CHECK(swap->legs[0].payer);
+    CHECK(swap->legs[0].payer == true);
     CHECK(swap->legs[1].leg_type_code == "CommodityFloating");
     CHECK(swap->legs[1].floating_index_code == commodity("NYMEX:CL").uri());
     // Each leg rolls monthly to maturity, so ORE has an end to its schedule.
@@ -150,6 +150,40 @@ TEST_CASE("a_commodity_option_strip_states_its_strike_on_its_side", commodity_ta
     CHECK(strip->strikes[0].long_short == "Long");
     REQUIRE(strip->schedules.size() == 1);
     CHECK(strip->schedules[0].end_date == 2027y / 1 / 5);
+}
+
+TEST_CASE("a_short_commodity_option_strip_is_short_on_its_strike_not_its_leg", commodity_tags) {
+    const auto strip = commodity_option_strip_builder({.underlying = commodity("NYMEX:NG"),
+                                                       .currency = std::string("USD"),
+                                                       .quantity = amount("10000"),
+                                                       .kind = option_kind::call,
+                                                       .strike = amount("3"),
+                                                       .start = 2026y / 1 / 5,
+                                                       .maturity = 2027y / 1 / 5,
+                                                       .roll_tenor = std::string("1M"),
+                                                       .position = option_position::short_option})
+                           .build();
+    REQUIRE(strip.has_value());
+    // ORE reads a strip's direction from its strikes and receives on the leg itself.
+    CHECK(strip->strikes[0].long_short == "Short");
+    REQUIRE(strip->legs.size() == 1);
+    CHECK(strip->legs[0].payer == false);
+}
+
+TEST_CASE("a_commodity_basket_option_states_no_unit", commodity_tags) {
+    const auto option =
+        commodity_basket_option_builder(
+            {.basket = std::vector<commodity_basket_member>{{commodity("NYMEX:CL"), 0.5},
+                                                            {commodity("NYMEX:NG"), 0.5}},
+             .currency = std::string("USD"),
+             .notional = amount("1000"),
+             .kind = option_kind::call,
+             .strike = amount("50"),
+             .expiry = 2027y / 1 / 5,
+             .position = option_position::long_option})
+            .build();
+    REQUIRE(option.has_value());
+    CHECK(option->instrument.unit.empty());
 }
 
 TEST_CASE("a_commodity_average_price_option_averages_to_its_expiry", commodity_tags) {

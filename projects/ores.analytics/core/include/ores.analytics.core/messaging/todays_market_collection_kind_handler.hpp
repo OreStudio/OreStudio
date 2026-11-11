@@ -28,6 +28,7 @@
 #include "ores.analytics.api/messaging/todays_market_collection_kind_protocol.hpp"
 #include "ores.analytics.core/service/todays_market_collection_kind_service.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -57,7 +58,8 @@ using namespace ores::logging;
  * @brief NATS message handler for today's market collection kind operations.
  *
  * Todays Market Collection Kinds are system-owned global entities; list and history
- * operations use the system tenant context.
+ * operations use the system tenant context. Every tenant shares the rows, so
+ * a write from a session of any other tenant is denied.
  */
 class todays_market_collection_kind_handler {
 public:
@@ -252,6 +254,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_todays_market_collection_kind_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "today's market collection kind"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<put_todays_market_collection_kind_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(todays_market_collection_kind_handler_lg(), warn)
@@ -303,6 +313,14 @@ public:
             todays_market_collection_kind_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "analytics::todays_market_collection_kinds:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_many_todays_market_collection_kinds_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "today's market collection kind"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<put_many_todays_market_collection_kinds_request>(msg);
@@ -358,6 +376,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_todays_market_collection_kind_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "today's market collection kind"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<delete_todays_market_collection_kind_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(todays_market_collection_kind_handler_lg(), warn)
@@ -409,6 +435,14 @@ public:
             todays_market_collection_kind_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "analytics::todays_market_collection_kinds:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_many_todays_market_collection_kinds_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "today's market collection kind"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<delete_many_todays_market_collection_kinds_request>(msg);

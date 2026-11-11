@@ -26,6 +26,7 @@
 #define ORES_SYNTHETIC_CORE_MESSAGING_CALIBRATION_POLICY_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -57,7 +58,8 @@ using namespace ores::logging;
  * @brief NATS message handler for calibration policy operations.
  *
  * Calibration Policies are system-owned global entities; list and history
- * operations use the system tenant context.
+ * operations use the system tenant context. Every tenant shares the rows, so
+ * a write from a session of any other tenant is denied.
  */
 class calibration_policy_handler {
 public:
@@ -244,6 +246,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_calibration_policy_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "calibration policy"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<put_calibration_policy_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(calibration_policy_handler_lg(), warn)
@@ -293,6 +303,14 @@ public:
             calibration_policy_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "synthetic::calibration_policies:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_many_calibration_policies_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "calibration policy"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<put_many_calibration_policies_request>(msg);
@@ -346,6 +364,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_calibration_policy_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "calibration policy"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<delete_calibration_policy_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(calibration_policy_handler_lg(), warn)
@@ -395,6 +421,14 @@ public:
             calibration_policy_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "synthetic::calibration_policies:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_many_calibration_policies_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "calibration policy"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<delete_many_calibration_policies_request>(msg);

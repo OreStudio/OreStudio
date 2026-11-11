@@ -28,6 +28,7 @@
 #include "ores.analytics.api/messaging/stress_shift_family_protocol.hpp"
 #include "ores.analytics.core/service/stress_shift_family_service.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -57,7 +58,8 @@ using namespace ores::logging;
  * @brief NATS message handler for stress shift family operations.
  *
  * Stress Shift Families are system-owned global entities; list and history
- * operations use the system tenant context.
+ * operations use the system tenant context. Every tenant shares the rows, so
+ * a write from a session of any other tenant is denied.
  */
 class stress_shift_family_handler {
 public:
@@ -244,6 +246,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_stress_shift_family_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "stress shift family"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<put_stress_shift_family_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(stress_shift_family_handler_lg(), warn)
@@ -293,6 +303,14 @@ public:
             stress_shift_family_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "analytics::stress_shift_families:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_many_stress_shift_families_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "stress shift family"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<put_many_stress_shift_families_request>(msg);
@@ -346,6 +364,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_stress_shift_family_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "stress shift family"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<delete_stress_shift_family_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(stress_shift_family_handler_lg(), warn)
@@ -395,6 +421,14 @@ public:
             stress_shift_family_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "analytics::stress_shift_families:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_many_stress_shift_families_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "stress shift family"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<delete_many_stress_shift_families_request>(msg);

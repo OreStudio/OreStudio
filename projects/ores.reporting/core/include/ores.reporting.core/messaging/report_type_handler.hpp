@@ -26,6 +26,7 @@
 #define ORES_REPORTING_CORE_MESSAGING_REPORT_TYPE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -57,7 +58,8 @@ using namespace ores::logging;
  * @brief NATS message handler for report type operations.
  *
  * Report Types are system-owned global entities; list and history
- * operations use the system tenant context.
+ * operations use the system tenant context. Every tenant shares the rows, so
+ * a write from a session of any other tenant is denied.
  */
 class report_type_handler {
 public:
@@ -241,6 +243,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_report_type_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "report type"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<put_report_type_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(report_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -289,6 +299,14 @@ public:
             report_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::report_types:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_many_report_types_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "report type"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<put_many_report_types_request>(msg);
@@ -341,6 +359,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_report_type_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "report type"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<delete_report_type_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(report_type_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -389,6 +415,14 @@ public:
             report_type_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::report_types:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_many_report_types_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "report type"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<delete_many_report_types_request>(msg);

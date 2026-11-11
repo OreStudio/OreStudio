@@ -26,6 +26,7 @@
 #define ORES_SYNTHETIC_CORE_MESSAGING_YIELD_CURVE_PROCESS_PARAMETER_DEFINITION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -57,7 +58,8 @@ using namespace ores::logging;
  * @brief NATS message handler for yield curve process parameter definition operations.
  *
  * Yield Curve Process Parameter Definitions are system-owned global entities; list and history
- * operations use the system tenant context.
+ * operations use the system tenant context. Every tenant shares the rows, so
+ * a write from a session of any other tenant is denied.
  */
 class yield_curve_process_parameter_definition_handler {
 public:
@@ -261,6 +263,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_yield_curve_process_parameter_definition_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "yield curve process parameter definition"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<put_yield_curve_process_parameter_definition_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(yield_curve_process_parameter_definition_handler_lg(), warn)
@@ -315,6 +325,14 @@ public:
         if (!has_permission(req_ctx,
                             "synthetic::yield_curve_process_parameter_definitions:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_many_yield_curve_process_parameter_definitions_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "yield curve process parameter definition"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<put_many_yield_curve_process_parameter_definitions_request>(msg);
@@ -373,6 +391,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_yield_curve_process_parameter_definition_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "yield curve process parameter definition"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<delete_yield_curve_process_parameter_definition_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(yield_curve_process_parameter_definition_handler_lg(), warn)
@@ -427,6 +453,14 @@ public:
         if (!has_permission(req_ctx,
                             "synthetic::yield_curve_process_parameter_definitions:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_many_yield_curve_process_parameter_definitions_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "yield curve process parameter definition"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<delete_many_yield_curve_process_parameter_definitions_request>(msg);

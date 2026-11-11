@@ -52,6 +52,7 @@ using ores::ore::domain::credit_simulation_projection;
 using ores::ore::domain::mapped_credit_simulation;
 using ores::logging::make_logger;
 using ores::testing::scoped_database_helper;
+using namespace ores::logging;
 
 /**
  * The whole path, through the database: a corpus document is parsed, mapped into

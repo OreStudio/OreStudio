@@ -40,11 +40,11 @@ target_link_libraries(${tests_target_name}
         ores.openssl_cleanup
         Threads::Threads)
 
-find_package(magic_enum CONFIG REQUIRED)
-
 # A component's suites may use facilities the profile cannot know about --
 # a scoped temporary file, a compression helper -- so the component declares
 # them here rather than the profile carrying every component's needs.
+
+find_package(magic_enum CONFIG REQUIRED)
 
 target_link_libraries(${tests_target_name}
     PRIVATE

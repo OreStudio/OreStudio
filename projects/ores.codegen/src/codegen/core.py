@@ -856,12 +856,14 @@ def _component_include_root(component):
     return full_name
 
 
-def _resolve_web_entity(pattern, model, singular):
-    """Fill ``{web_entity}``, which only a model in the screens' registry has.
+def _resolve_flagged_entity(pattern, model, singular):
+    """Fill the placeholders that only a model with a given declaration has.
 
-    A model that names no ``#+web_resource:`` has no record routes, so the
-    placeholder does not resolve and the generator skips the archetype rather
-    than writing an empty unit.
+    ``{web_entity}`` needs ``#+web_resource:``, ``{web_classification_entity}``
+    needs ``#+web_classification:`` and ``{system_owned_entity}`` needs
+    ``:system_tenant_validation:`` on a model a client may write. A model
+    without what its placeholder needs leaves it unresolved, so the generator
+    skips the archetype rather than writing an empty unit.
     """
     if '{web_entity}' in pattern:
         if not (model.get('web_resource') or '').strip():
@@ -871,6 +873,11 @@ def _resolve_web_entity(pattern, model, singular):
         if not (model.get('web_classification') or '').strip():
             raise KeyError('web_classification_entity')
         pattern = pattern.replace('{web_classification_entity}', f'{singular}_classification')
+    if '{system_owned_entity}' in pattern:
+        writable = not (model.get('read_only') or model.get('client_read_only'))
+        if not (model.get('system_tenant_validation') and writable):
+            raise KeyError('system_owned_entity')
+        pattern = pattern.replace('{system_owned_entity}', f'{singular}_system_owned')
     return pattern
 
 
@@ -906,7 +913,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{EntityPascal}', entity_pascal)
         result = result.replace('{shell_menu}',
                                 shell_menu_name('domain_entity', model_data))
-        result = _resolve_web_entity(result, entity, entity_singular)
+        result = _resolve_flagged_entity(result, entity, entity_singular)
 
     elif model_type == 'junction' and 'junction' in model_data:
         junction = model_data['junction']
@@ -923,7 +930,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{entity_plural}', junction_name)
         result = result.replace('{shell_menu}',
                                 shell_menu_name('junction', model_data))
-        result = _resolve_web_entity(result, junction, name_singular)
+        result = _resolve_flagged_entity(result, junction, name_singular)
 
     elif model_type == 'family' and 'family' in model_data:
         family = model_data['family']

@@ -35,6 +35,7 @@ handler lives in [[id:A5B138BE-4244-42C5-9EE7-FF9B4C8AB6B3][ores.cpp.service-app
 | Archetype | Description |
 |-----------+-------------|
 | [[id:9DE9ACA3-DB9D-40B5-B62F-271B8FFC860E][ores.cpp.nats-handler.nats_handler_header]] | Subject handler skeleton dispatching protocol messages to the entity service. =nats-handler= profile. |
+| [[id:687946DF-24DA-4D3B-A8E4-D2F151DAF390][ores.cpp.nats-handler.system_owned_tests]] | System-owned entity handler tests: a write from a session of another tenant is denied, and the system tenant's write passes the gate. |
 
 * See also
 

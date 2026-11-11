@@ -149,6 +149,11 @@ via its "Verifies task" field.
 | 7 | PR #4621: the message answer repeated. | =feed_operation_routes.cpp= | Accepted | One =message_answer= helper. |
 | 8 | Local review: a subscription that stops inside the buffers' lock would block every read while it drains. | =feed_tick_buffers.cpp= | Accepted | =keep_only= moves the dropped runs out and stops them after the lock is released. |
 | 9 | Local review: a tick could reach a run that was dropped. | =feed_tick_buffers.cpp= | Accepted | The handler holds the run by a shared pointer; a test sends a tick to a dropped source. |
+| 10 | PR #4622: running feeds come first only within the first 120 the service answers. | =feed_tick_routes.cpp= | Accepted | As the BFF read them; the comment now says the partition is within that page. |
+| 11 | PR #4622: a raster read drops the buffers a ticks read made. | =feed_tick_buffers.hpp= | Accepted | As the BFF's did; the class comment now says a stopped feed's ticks last until a raster read stops listening. |
+| 12 | PR #4622: ticks reads could grow the subscriptions without end. | =feed_tick_buffers.cpp= | Accepted | At most a thousand sources are heard; a new one past that answers no ticks. A test proves the bound and that a dropped source frees a place. |
+| 13 | PR #4622: the raster's arrival time is the feed's stamp. | =feed_tick_buffers.hpp= | Accepted | As the BFF read it; =arrival_times= now says it reads the observation time. |
+| 14 | PR #4622: minor points. | =feed_tick_buffers.cpp=, =feed_tick_routes.cpp= | Partly accepted | The ticks route says its first read answers none, and a test sends ticks from another thread while reads drop and watch sources. =watch= still subscribes under the lock, so two reads of one source cannot both subscribe. =from_chars= for a double is used in the synthetic service and the ORE core already. |
 
 * Result
 
@@ -158,7 +163,7 @@ row below records a group; the task closes when all five have merged.
 | Group | PR | Routes | State |
 |-------+----+--------+-------|
 | Feed and folder operations, and the synthetic families | #4621 | 7 and 5 families | Merged |
-| Feed ticks and the raster | | 2 | Raised |
+| Feed ticks and the raster | #4622 | 2 | Merged |
 | Simulation and conversion | | 6 | Open |
 | Calibration | | 6 | Open |
 | Market regime | | 4 | Open |

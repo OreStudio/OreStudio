@@ -35,6 +35,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <thread>
 #include <vector>
 
 using ores::http::domain::http_method;
@@ -178,6 +179,52 @@ TEST_CASE("feed_tick_buffers_stop_listening_to_sources_no_longer_named", "[feed_
 
     buffers.keep_only({});
     CHECK(*transport.open == 0);
+}
+
+TEST_CASE("feed_tick_buffers_hear_at_most_a_thousand_sources", "[feed_ticks]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the bound on the sources heard";
+
+    hand_transport transport;
+    feed_tick_buffers buffers(transport.subscriber());
+    for (std::size_t i = 0; i < feed_tick_buffers::most_sources; ++i)
+        CHECK(buffers.watch("source-" + std::to_string(i)));
+    CHECK_FALSE(buffers.watch("one-too-many"));
+    CHECK(buffers.watch("source-0"));
+    CHECK(*transport.open == static_cast<int>(feed_tick_buffers::most_sources));
+
+    buffers.keep_only({"source-0"});
+    CHECK(buffers.watch("one-too-many"));
+}
+
+TEST_CASE("feed_tick_buffers_take_ticks_while_sources_come_and_go", "[feed_ticks]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing ticks that arrive while reads drop and watch sources";
+
+    hand_transport transport;
+    feed_tick_buffers buffers(transport.subscriber());
+    buffers.watch("EURUSD");
+    // The handler is taken once, as a transport holds it, and called from another thread.
+    const auto handler = transport.handlers.at("synthetic.v1.ops.feed_tick.EURUSD");
+    std::thread ticking([&handler] {
+        market_tick tick;
+        tick.value = "1.1";
+        tick.observation_time = noon;
+        for (int i = 0; i < 20000; ++i)
+            handler(tick);
+    });
+    // Reads take the run the ticks fill, while other sources come and go.
+    for (int i = 0; i < 2000; ++i) {
+        CHECK(buffers.ticks("EURUSD", 10).size() <= 10);
+        (void)buffers.arrival_times("EURUSD", noon);
+        buffers.watch("GBPUSD");
+        buffers.keep_only({"EURUSD"});
+    }
+    // Dropped while ticks may still arrive: they go to a run no one reads.
+    buffers.keep_only({});
+    ticking.join();
+    CHECK(buffers.size() == 0);
+    CHECK(buffers.ticks("EURUSD", 10).empty());
 }
 
 TEST_CASE("feed_tick_routes_refuse_a_malformed_request", "[feed_ticks]") {

@@ -138,7 +138,9 @@ void feed_tick_routes::register_routes(
     add(router->get("/api/synthetic/feeds/{id}/ticks")
             .summary("Read one feed's newest ticks, oldest first")
             .description("The feed is read as the session first, so a feed the session cannot "
-                         "see has no ticks to show. The resource names the feed's kind.")
+                         "see has no ticks to show. The resource names the feed's kind. The "
+                         "gateway starts listening to a feed at its first read, so that read "
+                         "answers no ticks and the next ones answer what was heard since.")
             .handler([&session,
                       buffers](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::list_fx_spot_generation_configs_request>(
@@ -201,8 +203,9 @@ void feed_tick_routes::register_routes(
                         rr::refuse(http_status::bad_gateway, "upstream-unavailable", page.message);
                     const auto runs = running_sources(req, session);
 
-                    // The feeds that run first, so a long list still opens on the
-                    // market; the service's label order holds inside each group.
+                    // The feeds that run first within the page the service answers,
+                    // its first 120 in label order, as the BFF read them; the
+                    // service's label order holds inside each group.
                     auto rows = page.feeds;
                     std::ranges::stable_partition(
                         rows, [&](const auto& feed) { return runs.contains(feed.source_name); });

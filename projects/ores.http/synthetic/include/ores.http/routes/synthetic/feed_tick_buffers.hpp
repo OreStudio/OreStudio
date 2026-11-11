@@ -51,7 +51,9 @@ struct feed_tick final {
  * A feed publishes its ticks on a subject a screen can tail, and the buffers
  * keep the newest ones of each source a read has named. A buffer holds ticks,
  * not a run's state, so a read of a feed that stopped finds whatever was heard
- * while it ran.
+ * while it ran, until a raster read stops listening to the feeds that no longer
+ * run, as the BFF's did. At most a thousand sources are heard at once, so reads
+ * that name feed after feed cannot grow the subscriptions without end.
  *
  * Ticks arrive on the transport's threads and reads on the server's, so each
  * source's ticks are guarded by a lock of their own, which a tick takes and
@@ -72,6 +74,9 @@ public:
     /// How many ticks a source's buffer keeps, the newest last.
     static constexpr std::size_t capacity = 500;
 
+    /// How many sources are heard at once.
+    static constexpr std::size_t most_sources = 1000;
+
     explicit feed_tick_buffers(subscriber subscribe);
 
     /**
@@ -82,8 +87,13 @@ public:
      */
     [[nodiscard]] static subscriber nats_subscriber(ores::nats::service::nats_client& session);
 
-    /// Starts listening to one source the first time a read names it.
-    void watch(const std::string& source_name);
+    /**
+     * @brief Starts listening to one source the first time a read names it.
+     *
+     * @return whether the source is heard: false when it is new and the buffers
+     *         already hear as many sources as they may.
+     */
+    bool watch(const std::string& source_name);
 
     /// The newest ticks of a source, at most @p limit, oldest first.
     [[nodiscard]] std::vector<feed_tick> ticks(const std::string& source_name,
@@ -92,6 +102,9 @@ public:
     /**
      * @brief When a source's ticks arrived from an instant on, at most @p limit of
      * them, in the order they were heard.
+     *
+     * The time is the one the feed stamps a tick with, its observation time, as
+     * the BFF's raster read it; a feed stamps it as it publishes.
      */
     [[nodiscard]] std::vector<std::chrono::system_clock::time_point>
     arrival_times(const std::string& source_name,

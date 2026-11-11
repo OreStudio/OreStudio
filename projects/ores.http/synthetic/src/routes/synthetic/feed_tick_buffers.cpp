@@ -47,10 +47,12 @@ feed_tick_buffers::nats_subscriber(ores::nats::service::nats_client& session) {
     };
 }
 
-void feed_tick_buffers::watch(const std::string& source_name) {
+bool feed_tick_buffers::watch(const std::string& source_name) {
     std::lock_guard lock(mutex_);
     if (runs_.contains(source_name))
-        return;
+        return true;
+    if (runs_.size() >= most_sources)
+        return false;
     auto ticks = std::make_shared<run>();
     // The handler holds the run it fills, so a tick that arrives while the run
     // is being dropped writes to a buffer nobody reads rather than a freed one.
@@ -69,6 +71,7 @@ void feed_tick_buffers::watch(const std::string& source_name) {
                            ticks->ticks.pop_front();
                    });
     runs_.emplace(source_name, heard{std::move(ticks), std::move(stop)});
+    return true;
 }
 
 std::shared_ptr<feed_tick_buffers::run>

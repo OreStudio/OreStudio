@@ -29,7 +29,7 @@ Pricing reads the surface. A report binds to a published surface as it binds to 
 | State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | Nothing: 2c runs against the current projection, and the native model task reprojects it. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-09                               |
 
@@ -52,6 +52,8 @@ Two parts.
 - *2a. Curate the surface blueprints through DQ.* The derived source quotes ten pairs (AUD/USD, EUR/CHF, EUR/GBP, EUR/JPY, EUR/USD, GBP/USD, NZD/USD, USD/CAD, USD/CHF, USD/JPY), each on the same 35 points: 1W to 1Y by ATM, 25RR, 25BF, 10RR and 10BF. Only EUR/USD has a blueprint, from a hand-written seed. A generator in =projects/ores.seeder/datasets/fx_vol_surfaces/= writes one SSVI blueprint for each pair, with its methodology, into a =refdata.fx_vol_surface_blueprints= dataset of the =system_core= bundle. A new publish, =refdata.v1.ops.publish_fx_vol_surface_blueprints_from_dq=, writes each blueprint with its pillars and sources, and the pair's derived and output series. The hand-written seeds go. Provisioning already copies every system blueprint to every party.
 - *2b. Curate each Acme party's FX volatility configuration through DQ.* =generate_configuration_data.py= gains an FX volatility curve of dimension Smile and smile type Delta for each quoted pair whose two currencies the party builds curves for: the blueprint's expiries, deltas =10P,25P,ATM,25C,10C=, the pair's FX option convention, FX spot and funding curves. The party's today's market names it under the pair. The smile needs a DQ artefact (=fx_volatility_smiles= has none) and a place in the curve configuration publish. A methodology file states the choices and their sources. Coverage: Group 3 pairs, UK 10, US 6, HK 3.
 - *2c. The ORE check.* A scripted check runs the ORE binary of the ORE build (=App/ore=) on the exported quotes and that configuration with an FX option at a test strike, inverts the NPV to a volatility, and compares it with the SSVI surface at that strike within a stated tolerance. It sits beside =projects/ores.ore/scripts/quantlib_fx_dates=.
+
+The data model of 2b is wrong, and is replaced. The FX volatility configuration it curated is a stored image of ORE's =FXVolatility= element: lists in columns, ORE reference strings, and a repeat of the blueprint's grid. [[id:E4380005-BE99-42F3-AB06-C7A6212FDE25][One native model for the stored ORE documents]], in the [[id:14807059-043D-4866-974D-B835151D61E8][Data model clean up]] story, replaces every stored ORE document in one go. 2c runs now, against the current projection, and checks the =curveconfig.xml= a run reads with the exported quotes through the ORE binary. That check is the contract the native model's projection must keep, so it carries over. Until then this story adds no column to the image tables, and one helper reads the blueprint's grid lists.
 
 Realism is outside this task. The derived quotes have plausible ATM levels (3% to 10%), but their smiles are near flat: a 25-delta risk reversal of 0.01 to 0.17 vol points against a market 0.3 to 1.5, a 25-delta butterfly under 0.02 against 0.15 to 0.3. The derived source infers skew from daily fixings, which carry little of it. Realistic initial surfaces need curated smile levels in the synthetic generator task.
 

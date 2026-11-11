@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 14807059-043D-4866-974D-B835151D61E8
+:END:
+#+title: Story: Data model clean up
+#+description: Bring the persisted data model to one data-oriented, consistent model: no stored ORE documents, no lists or JSON in a column, no second model of one thing, and references by key or oresmd identity.
+#+type: story
+#+level: s2
+#+filetags: :data_model:dod:refdata:clean_up:sprint_30:v0:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One data-oriented, consistent model of the system's persisted data. A document an external system defines, such as ORE XML, FpML or a CSV or JSON payload, crosses the boundary through a mapping and is never the shape of a table. A column holds one value, never a list or a serialised object. One thing has one model. A row names another thing by key or by oresmd identity, never by a string some other system spells.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Scaffolded; no clean-up task started.  |
+| Waiting on    | Nothing.                               |
+| Next          | Close the document-shaped loophole.    |
+| Last touched  | 2026-11-11                               |
+
+* Acceptance
+
+- The data-oriented design rules leave no way to persist a document tree, a list or a serialised payload as an entity model.
+- The market configuration (curves, FX volatility surfaces, today's market) has one native model, and ORE XML is projected from it at the export boundary.
+- Every other stored document image found on the way has a task of its own in this story.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:547323C3-0563-4E7F-AA3C-4B22BF26B148][Scaffold story: Data model clean up]] | DONE | 2026-11-11 | 2026-11-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A633E777-6E06-4542-98F0-5302318C7DC2][Close the document-shaped loophole in the data-oriented design rules]] | BACKLOG | | | No model may persist a document tree, a list or a serialised payload, whatever it calls itself. |
+| [[id:E4380005-BE99-42F3-AB06-C7A6212FDE25][One native model for the stored ORE documents]] | BACKLOG | | | Replace every stored ORE document image with one native model, in one go, and project ORE XML at export. |
+
+* Decisions
+
+- 2026-11-11: every stored ORE document is remodelled in one go, not one section at a time. The FX volatility configuration that triggered the story is not fixed on its own.
+- 2026-11-11: the volatility surface story goes on meanwhile. It adds no column to the image tables, and one helper reads the blueprint's grid lists, so the remodel changes one place.
+
+* Out of scope
+
+- Fixing one section of the image ahead of the rest.
+- Document payloads that stay transient at the boundary, such as an ORE XML a run writes and reads.

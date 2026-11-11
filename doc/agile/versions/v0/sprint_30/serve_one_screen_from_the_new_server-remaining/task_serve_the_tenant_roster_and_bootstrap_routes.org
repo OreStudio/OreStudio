@@ -114,6 +114,13 @@ via its "Verifies task" field.
 | 4 | Local review: the pairing table's =TENANCY= prefix has no user left. | =route_pairing.py= | Accepted | Removed. |
 | 5 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
 | 6 | =unity-collisions=: =wire_fields= in two file-local namespaces. | =provisioning_routes.cpp=, =tenant_roster_routes.cpp= | Accepted | The tenancy screens' bodies are one vocabulary, as the access screens' are, so they moved to =tenancy_screen_shapes.hpp= beside =access_screen_shapes.hpp=. |
+| 7 | PR review: a run read that reaches its cap leaves some setups null with no flag. | =tenant_roster_routes.cpp= | Declined | The BFF did the same and logged it; the warning stays. The cap is a thousand runs for one page of tenants. |
+| 8 | PR review: one progress read per tenant, in series. | =tenant_roster_routes.cpp= | Declined | The BFF also read each run's progress in series. A batched progress read is a service change. |
+| 9 | PR review: the sort field reaches the service with a length check only. | =tenant_roster_routes.cpp= | Accepted in part | The tenant repository orders only by its sortable fields and refuses any other. A comment now says so. |
+| 10 | PR review: the =std::exception= and =refusal= catches look redundant. | =tenant_roster_routes.cpp= | Declined | A refusal does not derive from =std::exception=, so both are reached. |
+| 11 | PR review: a malformed run target hides all activity. | =tenant_roster_routes.cpp= | Accepted | =run_target_of= skips a run whose target is not a UUID. |
+| 12 | PR review: failed runs older than the window count as setting up; 400 comes before 404 on removal; one message for every malformed page. | =tenant_roster_routes.cpp= | Declined | Each matches the BFF. |
+| 13 | PR review: =<map>= and the rest arrive through the header. | =tenant_roster_routes.cpp= | Declined | The unit's own header includes each. |
 
 * Result
 

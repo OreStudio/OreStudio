@@ -111,6 +111,8 @@ tenants_page(const http_request& req, nats_client& session, const tenant_list_qu
     messaging::list_tenants_request msg;
     msg.offset = q.offset;
     msg.limit = q.limit;
+    // The tenant repository orders only by the fields it lists as sortable and
+    // refuses any other, so the browser's sort reaches no query text.
     msg.order.field = q.sort.empty() ? "code" : q.sort;
     msg.order.descending = q.descending;
     msg.filter = messaging::tenants_filter{
@@ -185,6 +187,18 @@ tenant_setups setups_of(const http_request& req,
     }
     out.complete = static_cast<int>(reply.instances.size()) < tenant_setup_read_limit;
     return out;
+}
+
+/// The tenant a run acts on, or nothing when the run names none or names it
+/// malformed: one bad run must not hide the rest of the activity.
+std::optional<boost::uuids::uuid> run_target_of(const std::string& target_id) {
+    if (target_id.empty())
+        return std::nullopt;
+    try {
+        return boost::uuids::string_generator()(target_id);
+    } catch (const std::exception&) {
+        return std::nullopt;
+    }
 }
 
 std::vector<std::string> ids_of(const std::vector<tenant>& tenants) {
@@ -443,11 +457,9 @@ void tenant_roster_routes::register_routes(
                     std::vector<boost::uuids::uuid> ids;
                     for (const auto* runs : {&recent, &failed})
                         for (const auto& run : *runs) {
-                            if (run.target_id.empty())
-                                continue;
-                            const auto id = boost::uuids::string_generator()(run.target_id);
-                            if (std::ranges::find(ids, id) == ids.end())
-                                ids.push_back(id);
+                            const auto id = run_target_of(run.target_id);
+                            if (id && std::ranges::find(ids, *id) == ids.end())
+                                ids.push_back(*id);
                         }
                     std::map<std::string, tenant> by_id;
                     if (!ids.empty()) {

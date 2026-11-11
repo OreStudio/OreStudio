@@ -123,6 +123,21 @@ RULES = (
          "What the served client needs to render itself, the environment and on the"
          " developer surface the host, port and namespace, which the design delivers with"
          " the bundle rather than as a resource."),
+    Rule("the liveness endpoint route",
+         ("exact", "GET /api/health"),
+         CPP, TRANSPORT, NO_AREA,
+         "The liveness answer the BFF gave the deployment's probes, kept so a probe needs"
+         " no change when the BFF goes."),
+    Rule("the client's journal route",
+         ("exact", "POST /api/client-log"),
+         CPP, TRANSPORT, "operations",
+         "The browser's trail written into the server's journal under the session's id,"
+         " as the BFF wrote it."),
+    Rule("the served client's configuration route",
+         ("prefix", "GET /api/site"),
+         CPP, TRANSPORT, NO_AREA,
+         "What the served client needs to render itself, read from the site configuration"
+         " the BFF read, and the deployment's plumbing where the developer surface is offered."),
     Rule("the ORE URI codec",
          ("regex", r"^(GET|POST) /api/oresmd"),
          BFF, TRANSPORT, NO_AREA,

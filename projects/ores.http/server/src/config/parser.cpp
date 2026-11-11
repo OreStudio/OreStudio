@@ -47,6 +47,8 @@ const std::string server_cors_origins_arg("cors-origins");
 const std::string server_identifier_arg("identifier");
 const std::string storage_dir_arg("storage-dir");
 const std::string web_dir_arg("web-dir");
+const std::string site_config_arg("site-config");
+const std::string site_env_arg("site-env");
 const std::string web_session_name_arg("web-session-name");
 const std::string web_session_path_arg("web-session-path");
 const std::string http_base_url_arg("http-base-url");
@@ -108,6 +110,12 @@ options_description make_options_description() {
         web_dir_arg.c_str(),
         value<std::string>()->default_value("/var/ores/http-server/web"),
         "Root directory of the built browser bundle. Empty serves no bundle.")(
+        site_config_arg.c_str(),
+        value<std::string>()->default_value(""),
+        "Site configuration the served client reads. Empty reads ORES_WEB_SITE_CONFIG.")(
+        site_env_arg.c_str(),
+        value<std::string>()->default_value(""),
+        "Environment of the site configuration to serve. Empty chooses it as the BFF does.")(
         web_session_name_arg.c_str(),
         value<std::string>()->default_value("ores_web_session"),
         "Name of the session cookie, which carries the deployment's environment.")(
@@ -222,6 +230,8 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.http_base_url = vm[http_base_url_arg].as<std::string>();
     r.storage_dir = vm[storage_dir_arg].as<std::string>();
     r.web_dir = vm[web_dir_arg].as<std::string>();
+    r.site_config = vm[site_config_arg].as<std::string>();
+    r.site_env = vm[site_env_arg].as<std::string>();
     r.web_session_name = vm[web_session_name_arg].as<std::string>();
 
     return r;

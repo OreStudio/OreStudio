@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-transport-routes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Serve the event stream and its watch set, the client log, the liveness and site 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -41,9 +41,25 @@ Serve the event stream and its watch set, the client log, the liveness and site 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Ten BFF routes are in scope. Each is served from the server's own state or
+moves to the task that owns its service:
+
+- =GET /api/health=, =GET /api/site=, =GET /api/site/deployment= and
+  =POST /api/client-log= are served by =site_routes= in =ores.http.core=. The
+  site routes read the BFF's =environments.json=, chosen the way the BFF
+  chooses it, through =--site-config= and =--site-env= or the BFF's own
+  variables, so a deployment states it once for both.
+- The four ORE URI codec routes forward to the market data service, so they
+  move to [[id:1814D431-BFF9-420D-BDB4-4DC3FD90BEFE][Stand up the market data part and serve its resources]].
+- =GET /api/events= is already paired with =/api/v1/changes=. Its watch set,
+  =POST /api/events/watch=, needs the change stream to filter by subject, so
+  [[id:20112074-E433-4023-9C85-4648AA8F4D6C][Serve the change stream's watch set]] takes it.
+
+The client log answers a body the browser may not send with 400
+=invalid-request=; the BFF answered 500 =internal=, because its schema error has
+no status. Each entry goes to one =ores.web.client= channel with the browser's
+logger name in the line, because a channel named from the request would be a
+view of text the request owns.
 
 * Measurements
 
@@ -85,3 +101,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The C++ server answers the liveness probe, the site, the deployment view and the
+client log, each paired with its BFF route in the inventory. Ten tests prove
+them against the BFF's answers, including the file ores.web ships. The codec
+and the watch set moved to the tasks that own them.
+
+The work also restored the pick list routes to the inventory: the review fix
+on PR #4575 registered them in a loop, and the inventory reads each address
+from its registration call, so they had dropped out.

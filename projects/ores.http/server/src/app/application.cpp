@@ -28,6 +28,7 @@
 #include "ores.http.core/routes/history_routes.hpp"
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.core/routes/variability_routes.hpp"
+#include "ores.http.core/routes/site_routes.hpp"
 #include "ores.http.core/routes/web_bundle_routes.hpp"
 #include "ores.http.core/stream/change_feed.hpp"
 #include "ores.http.core/stream/change_ticker.hpp"
@@ -51,7 +52,11 @@
 #include <boost/asio/detached.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <chrono>
+#include <cstdlib>
 #include <filesystem>
+#include <optional>
+#include <string>
+#include <string_view>
 #include <utility>
 
 namespace ores::http::server::app {
@@ -173,6 +178,25 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     ores::http::routes::refdata::refdata_routes::register_routes(router, registry, service_nats);
 
     ores::http::routes::history_routes::register_routes(router, registry, service_nats);
+
+    /*
+     * The site the served client reads about itself is the BFF's file, chosen the
+     * same way, so a deployment states it once for both. A server with none still
+     * answers the liveness probe.
+     */
+    std::optional<http::site::loaded_site> site;
+    try {
+        site = http::site::load_site(
+            cfg.site_config, cfg.site_env, [](std::string_view name) -> std::optional<std::string> {
+                const auto* value = std::getenv(std::string(name).c_str());
+                return value ? std::optional<std::string>(value) : std::nullopt;
+            });
+        BOOST_LOG_SEV(lg(), info) << "Serving site environment " << site->served.id << " from "
+                                  << site->source;
+    } catch (const http::site::site_configuration_error& e) {
+        BOOST_LOG_SEV(lg(), warn) << "No site routes: " << e.what();
+    }
+    ores::http::routes::site_routes::register_routes(router, registry, std::move(site));
 
     ores::http::routes::synthetic::synthetic_routes::register_routes(
         router, registry, service_nats);

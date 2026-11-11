@@ -354,43 +354,37 @@ answer(const http_request& req, nats_client& session, std::span<const pick_list>
     }
 }
 
-/// One form: the address it reads its lists at, and the lists.
-struct pick_list_form final {
-    std::string_view path;
-    std::string_view summary;
-    std::span<const pick_list> lists;
-};
-
-const pick_list_form forms[]{
-    {"/api/books/pick-lists", "Read the books form's option lists", books_pick_lists},
-    {"/api/conventions/pick-lists",
-     "Read the conventions form's option lists",
-     conventions_pick_lists},
-    {"/api/counterparties/pick-lists",
-     "Read the counterparties form's option lists",
-     counterparties_pick_lists},
-    {"/api/tenors/pick-lists", "Read the tenors form's option lists", tenors_pick_lists},
-};
-
 }
 
 void pick_list_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    for (const auto& form : forms) {
-        auto route = router->get(std::string(form.path))
-                         .summary(std::string(form.summary))
-                         .description("Every row of each list the form offers, by the control's name.")
-                         .tags({"refdata"})
-                         .auth_required()
-                         .handler([&session, lists = form.lists](const http_request& req) {
-                             return answer(req, session, lists);
-                         });
-        const auto built = route.build();
+    // Each address is a literal at its own registration, because the route
+    // inventory reads the address from the call.
+    const auto add = [&](ores::http::net::route_builder builder,
+                         std::string summary,
+                         std::span<const pick_list> lists) {
+        const auto built =
+            builder.summary(std::move(summary))
+                .description("Every row of each list the form offers, by the control's name.")
+                .tags({"refdata"})
+                .auth_required()
+                .handler([&session, lists](const http_request& req) {
+                    return answer(req, session, lists);
+                })
+                .build();
         router->add_route(built);
         registry->register_route(built);
-    }
+    };
+    add(router->get("/api/books/pick-lists"), "Read the books form's option lists", books_pick_lists);
+    add(router->get("/api/conventions/pick-lists"),
+        "Read the conventions form's option lists",
+        conventions_pick_lists);
+    add(router->get("/api/counterparties/pick-lists"),
+        "Read the counterparties form's option lists",
+        counterparties_pick_lists);
+    add(router->get("/api/tenors/pick-lists"), "Read the tenors form's option lists", tenors_pick_lists);
 }
 
 }

@@ -91,6 +91,21 @@ struct options final {
      */
     std::string web_dir{"/var/ores/http-server/web"};
     /**
+     * @brief The site configuration the served client reads, the BFF's
+     * =environments.json=.
+     *
+     * Empty reads the file =ORES_WEB_SITE_CONFIG= names. Without one, the
+     * server answers no site routes and logs why.
+     */
+    std::string site_config;
+    /**
+     * @brief The environment of the site configuration this server serves.
+     *
+     * Empty chooses it as the BFF does: =ORES_WEB_ENV=, the checkout's
+     * =ORES_ENV_NAME=, the file's active environment, then its first.
+     */
+    std::string site_env;
+    /**
      * @brief Override for the HTTP base URL advertised via NATS service discovery.
      *
      * If empty, defaults to "http://localhost:{server.port}".
@@ -108,6 +123,8 @@ struct options final {
         ::ores::utility::codec::field{"web_session_name", &options::web_session_name},
         ::ores::utility::codec::field{"web_session_path", &options::web_session_path},
         ::ores::utility::codec::field{"web_dir", &options::web_dir},
+        ::ores::utility::codec::field{"site_config", &options::site_config},
+        ::ores::utility::codec::field{"site_env", &options::site_env},
         ::ores::utility::codec::field{"http_base_url", &options::http_base_url},
     };
 }

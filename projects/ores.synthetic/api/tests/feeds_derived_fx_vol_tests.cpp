@@ -16,6 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.testing/fx_vol_surface_fixture.hpp"
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
 #include "ores.synthetic.api/feeds/derived_fx_vol_feed.hpp"
 #include <catch2/catch_approx.hpp>
@@ -68,20 +69,6 @@ std::map<std::string, dated_series> derived_fixings(int count, std::uint32_t see
     return {{ecb_fixing_item("USD"), eur_usd}, {ecb_fixing_item("JPY"), eur_jpy}};
 }
 
-ores::refdata::domain::fx_option_convention derived_convention(std::string delta,
-                                                               std::string long_term_delta) {
-    ores::refdata::domain::fx_option_convention c;
-    c.id = "EUR-USD-FXOPTION";
-    c.atm_type = "AtmDeltaNeutral";
-    c.delta_type = std::move(delta);
-    c.switch_tenor = "2Y";
-    c.long_term_atm_type = "AtmDeltaNeutral";
-    c.long_term_delta_type = std::move(long_term_delta);
-    c.risk_reversal_in_favor_of = "Call";
-    c.butterfly_style = "Broker";
-    return c;
-}
-
 /// The fixings up to a day, as the reader would return them.
 dated_series derived_window(const dated_series& all, year_month_day to) {
     dated_series out;
@@ -104,8 +91,8 @@ derived_fx_readers derived_readers_of(const std::map<std::string, dated_series>&
             .convention = [](const derived_fx_pair& pair)
                 -> std::expected<ores::refdata::domain::fx_option_convention, std::string> {
                 if (pair.quote == "JPY")
-                    return derived_convention("PaSpot", "PaFwd");
-                return derived_convention("Spot", "Fwd");
+                    return ores::testing::eur_usd_fx_option_convention("PaSpot", "PaFwd");
+                return ores::testing::eur_usd_fx_option_convention();
             }};
 }
 
@@ -185,7 +172,7 @@ TEST_CASE("a_derivation_becomes_one_tick_per_label_of_each_quoted_expiry", deriv
         expiries.push_back(
             {.label = std::string(e.label),
              .years = e.years,
-             .convention = *convention_at(derived_convention("Spot", "Fwd"), e.label)});
+             .convention = *convention_at(ores::testing::eur_usd_fx_option_convention(), e.label)});
     const auto d = qm::derive_fx_quotes(returns->returns, expiries, {});
     REQUIRE(d);
     REQUIRE(d->expiries[7].has_value() == false);
@@ -367,7 +354,7 @@ TEST_CASE("a_missing_day_is_derived_from_the_returns_up_to_it_and_no_later", der
     const auto fixings = derived_fixings(400, 13);
     const auto returns = pair_log_returns(fixings.at(ecb_fixing_item("USD")), std::nullopt);
     REQUIRE(returns);
-    const auto convention = derived_convention("Spot", "Fwd");
+    const auto convention = ores::testing::eur_usd_fx_option_convention();
     const derived_fx_pair pair{.base = "EUR", .quote = "USD"};
     const std::set<year_month_day> stored{returns->dates[300]};
     const auto history = derive_missing_days(pair, *returns, convention, stored, {}, 250);
@@ -409,7 +396,7 @@ TEST_CASE("a_day_whose_history_covers_no_long_expiry_quotes_only_the_short_ones"
     const auto returns = pair_log_returns(fixings.at(ecb_fixing_item("USD")), std::nullopt);
     REQUIRE(returns);
     const auto history = derive_missing_days(
-        {.base = "EUR", .quote = "USD"}, *returns, derived_convention("Spot", "Fwd"), {}, {}, 30);
+        {.base = "EUR", .quote = "USD"}, *returns, ores::testing::eur_usd_fx_option_convention(), {}, {}, 30);
     REQUIRE(history);
     const auto* days = &history->days;
     REQUIRE_FALSE(days->empty());
@@ -517,7 +504,7 @@ TEST_CASE("a_history_held_whole_is_not_derived_again", derived_tags) {
         -> std::expected<ores::refdata::domain::fx_option_convention, std::string> {
         if (++conventions > 1)
             return std::unexpected("read twice");
-        return derived_convention("Spot", "Fwd");
+        return ores::testing::eur_usd_fx_option_convention();
     };
     derived_fx_vol_feed feed("derived-fx-vol", "derived", std::move(readers), {}, memory.store());
     feed.set_universe(derived_ids_of({.base = "EUR", .quote = "USD"}));

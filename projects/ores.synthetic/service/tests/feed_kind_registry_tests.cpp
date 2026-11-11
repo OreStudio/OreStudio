@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.testing/uuid_of.hpp"
 #include "../src/client_message.hpp"
 #include "../src/feed_config_handler.hpp"
 #include "../src/feed_kind_registry.hpp"
@@ -78,9 +79,7 @@ const std::string stub_outside_folder("55555555-5555-5555-5555-555555555555");
 const std::string stub_source("stub.test.source");
 const std::string stub_ignored_source("stub.test.ignored");
 
-boost::uuids::uuid uuid_of(const std::string& s) {
-    return boost::uuids::string_generator()(s);
-}
+using ores::testing::uuid_of;
 
 // A stub i_feed: the stand-in for a third asset class's producer.
 class stub_feed final : public ores::marketdata::domain::i_feed {

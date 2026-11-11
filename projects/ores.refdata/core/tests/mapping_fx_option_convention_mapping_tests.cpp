@@ -17,6 +17,7 @@
  *
  */
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
+#include "ores.testing/fx_vol_surface_fixture.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -25,19 +26,6 @@ using namespace ores::refdata::mapping;
 namespace qd = ores::analytics::quant::domain;
 namespace qm = ores::analytics::quant::math;
 
-ores::refdata::domain::fx_option_convention eur_usd(std::string delta, std::string long_term_delta) {
-    ores::refdata::domain::fx_option_convention c;
-    c.id = "EUR-USD-FXOPTION";
-    c.atm_type = "AtmDeltaNeutral";
-    c.delta_type = std::move(delta);
-    c.switch_tenor = "2Y";
-    c.long_term_atm_type = "AtmDeltaNeutral";
-    c.long_term_delta_type = std::move(long_term_delta);
-    c.risk_reversal_in_favor_of = "Call";
-    c.butterfly_style = "Broker";
-    return c;
-}
-
 qd::date_period tenor(std::string_view text) {
     return *parse_tenor_text(text);
 }
@@ -45,7 +33,7 @@ qd::date_period tenor(std::string_view text) {
 }
 
 TEST_CASE("an expiry at the switch tenor takes the long-term convention", "[fx_option_convention_mapping]") {
-    const auto c = eur_usd("PaSpot", "PaFwd");
+    const auto c = ores::testing::eur_usd_fx_option_convention("PaSpot", "PaFwd");
     const auto short_term = to_quote_convention(c, tenor("1Y"));
     const auto at_switch = to_quote_convention(c, tenor("24M"));
     REQUIRE(short_term);
@@ -64,13 +52,13 @@ TEST_CASE("an expiry at the switch tenor takes the long-term convention", "[fx_o
 
 TEST_CASE("a convention type the quant library does not model is refused by name",
           "[fx_option_convention_mapping]") {
-    auto c = eur_usd("Spot", "Fwd");
+    auto c = ores::testing::eur_usd_fx_option_convention();
     c.atm_type = "AtmPutCall50";
     const auto refused = to_quote_convention(c, tenor("1Y"));
     REQUIRE_FALSE(refused);
     CHECK(refused.error().find("AtmPutCall50") != std::string::npos);
 
-    auto unstated = eur_usd("Spot", "Fwd");
+    auto unstated = ores::testing::eur_usd_fx_option_convention();
     unstated.risk_reversal_in_favor_of.reset();
     unstated.butterfly_style.reset();
     const auto defaults = to_quote_convention(unstated, tenor("1Y"));
@@ -81,7 +69,7 @@ TEST_CASE("a convention type the quant library does not model is refused by name
 
 TEST_CASE("an expiry the switch tenor cannot be ordered against is refused",
           "[fx_option_convention_mapping]") {
-    auto c = eur_usd("Spot", "Fwd");
+    auto c = ores::testing::eur_usd_fx_option_convention();
     c.switch_tenor = "1M";
     const auto refused = to_quote_convention(c, tenor("4W"));
     REQUIRE_FALSE(refused);
@@ -93,7 +81,7 @@ TEST_CASE("an expiry the switch tenor cannot be ordered against is refused",
 
 TEST_CASE("a convention with no switch tenor keeps its short-term types at every expiry",
           "[fx_option_convention_mapping]") {
-    auto c = eur_usd("Spot", "Fwd");
+    auto c = ores::testing::eur_usd_fx_option_convention();
     c.switch_tenor.reset();
     const auto long_dated = to_quote_convention(c, tenor("10Y"));
     REQUIRE(long_dated);

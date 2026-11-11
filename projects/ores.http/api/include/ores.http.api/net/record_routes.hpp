@@ -22,6 +22,7 @@
 
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/domain/http_status.hpp"
+#include "ores.http.api/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/lexical_cast.hpp>
 #include <exception>
@@ -45,7 +46,7 @@ namespace ores::http::net::record_routes {
  * It is not a standard exception, so a handler's catch of a standard exception
  * cannot take it for a failure of its own.
  */
-struct refusal final {
+struct ORES_HTTP_API_EXPORT refusal final {
     domain::http_status status;
     std::string code;
     std::string message;
@@ -61,46 +62,47 @@ inline constexpr std::string_view unanswered = "The service could not answer thi
 /**
  * @brief Refuse with this status, code and message.
  */
-[[noreturn]] void refuse(domain::http_status status, std::string code, std::string message);
+[[noreturn]] ORES_HTTP_API_EXPORT void
+refuse(domain::http_status status, std::string code, std::string message);
 
 /**
  * @brief Refuse as a request the browser stated wrongly.
  */
-[[noreturn]] void invalid(std::string message);
+[[noreturn]] ORES_HTTP_API_EXPORT void invalid(std::string message);
 
 /**
  * @brief The response a refusal states.
  */
-domain::http_response answer(const refusal& r);
+ORES_HTTP_API_EXPORT domain::http_response answer(const refusal& r);
 
 /**
  * @brief A write's answer: no content.
  */
-domain::http_response no_content();
+ORES_HTTP_API_EXPORT domain::http_response no_content();
 
 /**
  * @brief The text without its leading and trailing spaces, tabs and line ends.
  */
-std::string trimmed(const std::string& raw);
+ORES_HTTP_API_EXPORT std::string trimmed(const std::string& raw);
 
 /**
  * @brief A code named in the address: 1 to 100 characters once trimmed.
  *
  * @throws refusal naming the sentence when the code is empty or too long.
  */
-std::string code(const std::string& raw, const std::string& sentence);
+ORES_HTTP_API_EXPORT std::string code(const std::string& raw, const std::string& sentence);
 
 /**
  * @brief Whether a reason is 1 to 200 characters once trimmed.
  */
-bool has_reason(const std::string& reason);
+ORES_HTTP_API_EXPORT bool has_reason(const std::string& reason);
 
 /**
  * @brief Refuse with the status a refused outcome names.
  *
  * A conflict the service states no words for says what it means.
  */
-void require_ok(const ores::utility::domain::result& result);
+ORES_HTTP_API_EXPORT void require_ok(const ores::utility::domain::result& result);
 
 /**
  * @brief One parameter read as the member's own type, refused by name when malformed.

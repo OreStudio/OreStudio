@@ -76,13 +76,6 @@ inline std::string make_epoch() {
 }
 
 /**
- * @brief Whose changes one stream hears.
- *
- * The tenant is the boundary a session may never cross. The party narrows it
- * within the tenant: a change to a party's data is the business of that party and
- * of an administrator; a tenant-wide change, which names no party, is everyone's.
- */
-/**
  * @brief The collections one session is watching, which a screen changes as it moves.
  *
  * A stream is one-way, so the session states what it watches beside it rather than
@@ -146,6 +139,13 @@ private:
     std::unordered_map<std::string, std::weak_ptr<watch_set>> sets_;
 };
 
+/**
+ * @brief Whose changes one stream hears.
+ *
+ * The tenant is the boundary a session may never cross. The party narrows it
+ * within the tenant: a change to a party's data is the business of that party and
+ * of an administrator; a tenant-wide change, which names no party, is everyone's.
+ */
 struct stream_scope final {
     std::string tenant;
     std::string party;
@@ -371,10 +371,15 @@ public:
             return party.empty() || scope.sees_all_parties || party == scope.party;
         };
 
+        /*
+         * A replay ignores the watch set. A reconnecting stream's set is new and
+         * empty until the browser states it again, so filtering would drop every
+         * missed frame while the stream's last id moved past them; the browser
+         * drops a frame for a collection it does not watch itself.
+         */
         if (resumed) {
             const auto eligible = [&](const retained_frame& frame) {
-                return frame.id > resumed->last_seen && hears(frame.tenant, frame.party) &&
-                       scope.wants(frame.collection);
+                return frame.id > resumed->last_seen && hears(frame.tenant, frame.party);
             };
             const auto oldest = retained_.empty() ? 0 : retained_.front().id;
             const auto newest = retained_.empty() ? 0 : retained_.back().id;

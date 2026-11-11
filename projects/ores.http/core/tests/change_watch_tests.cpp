@@ -94,7 +94,7 @@ TEST_CASE("a_watch_set_changes_under_an_open_stream", "[change_watch]") {
     CHECK(stream->size() == 1);
 }
 
-TEST_CASE("a_resumed_watching_stream_is_given_only_what_it_watches", "[change_watch]") {
+TEST_CASE("a_resumed_watching_stream_is_given_everything_it_missed", "[change_watch]") {
     change_hub hub(watch_system_tenant);
     auto first = hub.subscribe({.tenant = "acme"});
     publish(hub, "iam.book");
@@ -104,10 +104,11 @@ TEST_CASE("a_resumed_watching_stream_is_given_only_what_it_watches", "[change_wa
     publish(hub, "iam.trade");
     publish(hub, "iam.book");
 
-    auto resumed = hub.subscribe({.tenant = "acme", .watching = watching({"iam.book"})},
-                                 change_hub::read_id(id));
-    REQUIRE(resumed->size() == 1);
-    CHECK(resumed->try_pop()->find("iam.book") != std::string::npos);
+    auto resumed =
+        hub.subscribe({.tenant = "acme", .watching = watching({})}, change_hub::read_id(id));
+    CHECK(resumed->size() == 2);
+    publish(hub, "iam.trade");
+    CHECK(resumed->size() == 2);
 }
 
 TEST_CASE("a_session_watch_set_lives_as_long_as_its_stream", "[change_watch]") {

@@ -101,7 +101,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4581 review: a reconnecting stream's new, empty watch set drops every replayed frame. | =change_hub.hpp= | Accepted | A replay ignores the watch set; the browser drops what it does not watch, and the BFF replayed nothing at all. A test pins it. |
+| 2 | PR #4581 review: two tabs of one session share one watch set. | =change_routes.cpp= | Declined | The BFF keys the watch set by session too, and the browser's POST names no stream. A known limit, as before. |
+| 3 | PR #4581 review: a watch POST before the stream opens is dropped. | =change_routes.cpp= | Declined | ores.web posts only after the =connected= message, and states the whole set on every reconnect. |
+| 4 | PR #4581 review: the scope's doc comment sat above the new classes. | =change_hub.hpp= | Accepted | Moved back above =stream_scope=. |
 
 * Result
 

@@ -37,6 +37,7 @@ set(files
     "routes/iam/login_routes.cpp"
     "routes/iam/permission_routes.cpp"
     "routes/iam/role_routes.cpp"
+    "routes/iam/role_write_routes.cpp"
     "routes/iam/seed_profile_routes.cpp"
     "routes/iam/session_operations_routes.cpp"
     "routes/iam/session_routes.cpp"
@@ -51,6 +52,7 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.iam.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/access_read_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/access_screen_answers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/access_screen_shapes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_contact_information_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_credential_routes.hpp"
@@ -68,6 +70,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/login_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/permission_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/role_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/role_write_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/seed_profile_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/session_operations_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/session_routes.hpp"

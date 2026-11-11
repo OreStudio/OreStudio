@@ -21,6 +21,7 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.http/routes/iam/access_screen_answers.hpp"
 #include "ores.http/routes/iam/access_screen_shapes.hpp"
 #include "ores.http/routes/iam/account_view.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
@@ -45,6 +46,9 @@ using ores::nats::service::nats_client;
 namespace json = ores::utility::codec::json;
 namespace messaging = ores::iam::messaging;
 namespace rr = ores::http::net::record_routes;
+using access_screen_answers::characters_of;
+using access_screen_answers::guarded;
+using access_screen_answers::refused;
 
 namespace {
 
@@ -63,34 +67,6 @@ std::optional<std::uint32_t> count_of(const http_request& req,
     return value;
 }
 
-std::string trimmed(const std::string& text) {
-    const auto first = text.find_first_not_of(" \t\r\n");
-    if (first == std::string::npos)
-        return {};
-    return text.substr(first, text.find_last_not_of(" \t\r\n") - first + 1);
-}
-
-std::size_t characters_of(const std::string& text) {
-    return static_cast<std::size_t>(
-        std::ranges::count_if(text, [](unsigned char c) { return (c & 0xC0) != 0x80; }));
-}
-
-http_response refused(http_status status, std::string code, std::string message) {
-    return rr::answer(rr::refusal{status, std::move(code), std::move(message)});
-}
-
-/// Run one forward, answering a refusal with its own status and any other
-/// failure as the service not answering.
-template <typename Request>
-http_response guarded(const std::function<http_response()>& work) {
-    try {
-        return work();
-    } catch (const rr::refusal& r) {
-        return rr::answer(r);
-    } catch (const std::exception& e) {
-        return ores::http::forwarding::unanswered(Request::nats_subject, e);
-    }
-}
 
 /// Whether the path names the caller's own account, which the self read answers.
 bool is_own_account(const http_request& req, const std::string& username) {
@@ -104,7 +80,7 @@ std::optional<messaging::list_accounts_request>
 account_screen_routes::read_page_query(const http_request& req) {
     const auto offset = count_of(req, "offset", 0, 0, std::numeric_limits<std::uint32_t>::max());
     const auto limit = count_of(req, "limit", 100, 1, 1000);
-    const auto search = trimmed(req.get_query_param("search"));
+    const auto search = rr::trimmed(req.get_query_param("search"));
     const auto sort = req.get_query_param("sort");
     const auto descending = req.get_query_param("descending");
     if (!offset || !limit || characters_of(search) > 256 ||

@@ -19,7 +19,6 @@ to a C++ POST operation on purpose, so do not change a verb to make a pair match
 IAM_OPS = "/api/v1/iam/ops"
 ACCESS = "/api/v1/access"
 AUTH = "/api/v1/auth"
-TENANCY = "/api/v1/tenancy"
 REFDATA = "/api/v1/reference-data"
 
 PAIRS = {
@@ -85,9 +84,10 @@ PAIRS = {
     ("POST", "/api/events/watch"): ("POST", "/api/events/watch"),
 
     # tenancy
-    ("GET", "/api/tenants"): ("GET", f"{TENANCY}/tenants"),
-    ("GET", "/api/tenants/:code"): ("GET", f"{TENANCY}/tenants/{{code}}"),
-    ("DELETE", "/api/tenants/:code"): ("DELETE", f"{TENANCY}/tenants/{{code}}"),
+    ("GET", "/api/tenants"): ("GET", "/api/tenants"),
+    ("GET", "/api/overview"): ("GET", "/api/overview"),
+    ("GET", "/api/tenants/:code"): ("GET", "/api/tenants/{code}"),
+    ("DELETE", "/api/tenants/:code"): ("DELETE", "/api/tenants/{code}"),
     ("GET", "/api/tenant-statuses"): ("GET", "/api/tenant-statuses"),
     ("GET", "/api/tenant-types"): ("GET", "/api/tenant-types"),
     ("GET", "/api/seed-profiles"): ("GET", "/api/seed-profiles"),

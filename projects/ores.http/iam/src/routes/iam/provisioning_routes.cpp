@@ -21,6 +21,7 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.http/routes/iam/tenancy_screen_shapes.hpp"
 #include "ores.iam.api/messaging/seed_profile_parameter_protocol.hpp"
 #include "ores.iam.api/messaging/seed_profile_protocol.hpp"
 #include "ores.iam.api/messaging/seed_profile_step_protocol.hpp"
@@ -50,45 +51,6 @@ namespace refdata = ores::refdata::messaging;
 namespace rr = ores::http::net::record_routes;
 
 namespace {
-
-struct provision_tenant_body final {
-    std::string profileCode;
-    std::string tenantCode;
-    std::string tenantName;
-    std::string tenantHostname;
-    std::optional<std::string> tenantDescription;
-    std::string adminUsername;
-    std::string adminEmail;
-    std::string adminPassword;
-    std::optional<std::map<std::string, std::string>> parameters;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_body>) {
-    using ores::utility::codec::field;
-    using b = provision_tenant_body;
-    return std::tuple{field{"profileCode", &b::profileCode},
-                      field{"tenantCode", &b::tenantCode},
-                      field{"tenantName", &b::tenantName},
-                      field{"tenantHostname", &b::tenantHostname},
-                      field{"tenantDescription", &b::tenantDescription},
-                      field{"adminUsername", &b::adminUsername},
-                      field{"adminEmail", &b::adminEmail},
-                      field{"adminPassword", &b::adminPassword},
-                      field{"parameters", &b::parameters}};
-}
-
-struct provision_party_body final {
-    std::string fullName;
-    std::string shortCode;
-    std::optional<std::string> lei;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_party_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"fullName", &provision_party_body::fullName},
-                      field{"shortCode", &provision_party_body::shortCode},
-                      field{"lei", &provision_party_body::lei}};
-}
 
 /// How many parties one page of the root search reads, as the BFF read them.
 constexpr std::uint32_t party_page = 500;

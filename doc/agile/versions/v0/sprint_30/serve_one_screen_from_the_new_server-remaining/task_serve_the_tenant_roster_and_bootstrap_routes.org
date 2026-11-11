@@ -1,36 +1,36 @@
 :PROPERTIES:
 :ID: 6A5E392C-464E-4B9F-9E09-4ADF336D075A
 :END:
-#+title: Task: Serve the tenant roster and the bootstrap routes
-#+description: Thirteen tenancy routes remain at the BFF's addresses: the bootstrap and the tenant setup, the registration policy, the overview, and the tenants with their parties, people, sign-ins and images.
+#+title: Task: Serve the tenant roster
+#+description: System administration reads the deployment's tenants, one tenant's screen and the home overview, and removes a tenant, through the BFF. The C++ server must answer them.
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-tenant-roster-and-bootstrap-routes
-#+pr:
+#+pr: 4594
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Serve the tenant roster, the reads inside a tenant, and the bootstrap and setup routes at the BFF's own addresses and shapes.
+Serve the tenant roster, one tenant's screen and its removal, and the overview at the BFF's own addresses and shapes.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -54,9 +54,22 @@ The routes fall into three groups, each a reviewable unit:
   the read alone. The parties read reuses =party_page_routes::read_page= with a
   request that carries the tenant's token.
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+On 2026-11-11 the task served the roster first, and the other two groups
+moved to [[id:76115CCB-0D67-4833-8A6B-050F744C1677][Serve the reads inside a tenant and the bootstrap routes]].
+
+- =deployment_access= is a new unit in the IAM part. It names the deployment
+  read and refuses a caller whose roles do not cover it, by the rule
+  =ores::security::authorization::grants= states. The operations routes can use
+  it too.
+- =tenant_roster_routes= is a new unit in the IAM part: =GET /api/tenants=,
+  =GET /api/overview=, =GET /api/tenants/{code}= and =DELETE /api/tenants/{code}=.
+  Each checks the deployment read first, as the BFF did, and follows the BFF's
+  reads: the tenant types decide which rows show, test tenants are hidden and
+  counted, and each tenant joins its newest provisioning run. A failed run read
+  leaves the runs out and says so.
+- A tenant read the BFF failed with a plain error, which it answered as a 500,
+  fails here as unanswered, a 502. The browser treats both as a failed read.
+- The IAM part takes =ores.workflow.api= for the run reads.
 
 * Measurements
 
@@ -89,12 +102,30 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4594][#4594]] | [http] Serve the tenant roster from C++ |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: a tenant read the BFF failed as a 500 fails here as a 502. | =tenant_roster_routes.cpp= | Declined | Both statuses say the read failed, and the browser treats them alike. The plan states it. |
+| 2 | Local review: a malformed roster page is refused only after the deployment read. | =tenant_roster_routes.cpp= | Declined | The BFF checked the deployment read first, so a caller without it learns nothing about the query. A test proves the order. |
+| 3 | Local review: the roster reads the tenant types without their badges. | =tenant_roster_routes.cpp= | Accepted | The roster needs only the codes. The BFF also read the badges, which a roster never used. |
+| 4 | Local review: the pairing table's =TENANCY= prefix has no user left. | =route_pairing.py= | Accepted | Removed. |
+| 5 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 6 | =unity-collisions=: =wire_fields= in two file-local namespaces. | =provisioning_routes.cpp=, =tenant_roster_routes.cpp= | Accepted | The tenancy screens' bodies are one vocabulary, as the access screens' are, so they moved to =tenancy_screen_shapes.hpp= beside =access_screen_shapes.hpp=. |
+| 7 | PR review: a run read that reaches its cap leaves some setups null with no flag. | =tenant_roster_routes.cpp= | Declined | The BFF did the same and logged it; the warning stays. The cap is a thousand runs for one page of tenants. |
+| 8 | PR review: one progress read per tenant, in series. | =tenant_roster_routes.cpp= | Declined | The BFF also read each run's progress in series. A batched progress read is a service change. |
+| 9 | PR review: the sort field reaches the service with a length check only. | =tenant_roster_routes.cpp= | Accepted in part | The tenant repository orders only by its sortable fields and refuses any other. A comment now says so. |
+| 10 | PR review: the =std::exception= and =refusal= catches look redundant. | =tenant_roster_routes.cpp= | Declined | A refusal does not derive from =std::exception=, so both are reached. |
+| 11 | PR review: a malformed run target hides all activity. | =tenant_roster_routes.cpp= | Accepted | =run_target_of= skips a run whose target is not a UUID. |
+| 12 | PR review: failed runs older than the window count as setting up; 400 comes before 404 on removal; one message for every malformed page. | =tenant_roster_routes.cpp= | Declined | Each matches the BFF. |
+| 13 | PR review: =<map>= and the rest arrive through the header. | =tenant_roster_routes.cpp= | Declined | The unit's own header includes each. |
 
 * Result
+
+The C++ server answers the tenant roster, the overview, one tenant's screen
+and its removal at the BFF's addresses and in its shapes, and the inventory
+pairs each. Tests compare each shape exactly, read the roster bounds, prove
+the deployment read's rule, and prove each route checks that read first. The
+other nine routes moved to their own task.

@@ -57,7 +57,7 @@ The routes fall into four groups, each a reviewable unit:
   =/api/provision-tenant=.
 
 On 2026-11-11 the task served the provisioning group first, and the other
-three groups moved to [[id:6A5E392C-464E-4B9F-9E09-4ADF336D075A][Serve the tenant roster and the bootstrap routes]].
+three groups moved to [[id:6A5E392C-464E-4B9F-9E09-4ADF336D075A][Serve the tenant roster]].
 
 - =provisioning_routes= is a new unit in the IAM part. =GET /api/seed-profiles=
   joins each starting point with its steps and its parameters, reads the JSON

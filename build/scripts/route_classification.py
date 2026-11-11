@@ -732,6 +732,12 @@ RULES = (
          CPP, RESOURCE, "assets",
          "An image screen's read or upload at the address and in the shape the BFF answered,"
          " forwarded to the assets service as the caller."),
+    Rule("the tenant roster's route",
+         ("regex", r"^(GET /api/(tenants|overview|tenants/\{code\})|DELETE /api/tenants/\{code\})$"),
+         CPP, RESOURCE, "tenancy",
+         "The deployment's tenants as system administration reads them, each joined with the"
+         " run that set it up, at the address and in the shape the BFF answered, refused"
+         " without the deployment read."),
     Rule("a provisioning journey's route",
          ("regex", r"^(GET /api/seed-profiles|POST /api/provision-(tenant|party))$"),
          CPP, RESOURCE, "tenancy",

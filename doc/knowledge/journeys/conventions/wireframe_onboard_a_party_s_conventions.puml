@@ -35,7 +35,7 @@ salt
       <b>party_essentials</b>, published once per party with {"party_id": "..."}
       {#
         Order | Member
-        <b>5</b> | <b>ore.conventions</b>  (the instrument conventions)
+        <b>5</b> | <b>refdata.conventions</b>  (the instrument conventions)
         20 | refdata.crm_topology_bundles
       }
       <i>The conventions are a step of provisioning. They are not a manual fill.</i>

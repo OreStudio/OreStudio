@@ -106,7 +106,7 @@
 
 -- Instrument convention artefact tables. One per live party-scoped or
 -- world-data convention table. They all belong to the single
--- ore.conventions dataset, so the DQ create order here is arbitrary.
+-- refdata.conventions dataset, so the DQ create order here is arbitrary.
 --
 -- The atomised convention is the one exception to one-artefact-per-kind: its
 -- live shape is the central convention row plus the mutually exclusive parts,

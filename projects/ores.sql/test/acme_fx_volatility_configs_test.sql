@@ -113,11 +113,11 @@ select is(
     (select count(*)::int from t_volatility v
      where not exists (
          select 1 from ores_dq_fx_option_conventions_artefact_tbl c
-         join ores_dq_datasets_tbl d on d.id = c.dataset_id and d.code = 'ore.conventions'
+         join ores_dq_datasets_tbl d on d.id = c.dataset_id and d.code = 'refdata.conventions'
           and d.valid_to = ores_utility_infinity_timestamp_fn()
          where c.id = v.conventions)),
     0,
-    'every convention a curve names is in ore.conventions');
+    'every convention a curve names is in refdata.conventions');
 
 select is(
     (select count(*)::int from t_volatility v

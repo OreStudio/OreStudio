@@ -2,8 +2,6 @@ AED-CMS-1Y	oresmd://ir/AED?type=fixing&index=swap&tenor=1Y
 AED-CMS-30Y	oresmd://ir/AED?type=fixing&index=swap&tenor=30Y
 AED-EIBOR-3M	oresmd://ir/AED?type=fixing&index=ibor&name=EIBOR&tenor=3M
 AED-EIBORON	oresmd://ir/AED?type=fixing&index=ibor&name=EIBORON
-AMD-GENERIC	oresmd://ir/AMD?type=fixing&index=ibor&name=GENERIC
-AMD-GENERIC-3M	oresmd://ir/AMD?type=fixing&index=ibor&name=GENERIC&tenor=3M
 AOA-CMS-1Y	oresmd://ir/AOA?type=fixing&index=swap&tenor=1Y
 AOA-CMS-30Y	oresmd://ir/AOA?type=fixing&index=swap&tenor=30Y
 AOA-GENERIC	oresmd://ir/AOA?type=fixing&index=ibor&name=GENERIC
@@ -34,11 +32,6 @@ AUD-CMS-7Y	oresmd://ir/AUD?type=fixing&index=swap&tenor=7Y
 AUD-CMS-8Y	oresmd://ir/AUD?type=fixing&index=swap&tenor=8Y
 AUD-CMS-9Y	oresmd://ir/AUD?type=fixing&index=swap&tenor=9Y
 AUD-LIBOR	oresmd://ir/AUD?type=fixing&index=ibor&name=LIBOR
-AUD-LIBOR-3M	oresmd://ir/AUD?type=fixing&index=ibor&name=LIBOR&tenor=3M
-AZN-GENERIC	oresmd://ir/AZN?type=fixing&index=ibor&name=GENERIC
-AZN-GENERIC-3M	oresmd://ir/AZN?type=fixing&index=ibor&name=GENERIC&tenor=3M
-BDT-GENERIC	oresmd://ir/BDT?type=fixing&index=ibor&name=GENERIC
-BDT-GENERIC-3M	oresmd://ir/BDT?type=fixing&index=ibor&name=GENERIC&tenor=3M
 BECPIHL	oresmd://inflation/BECPIHL?type=fixing&index=inflation
 BGN-CMS-1Y	oresmd://ir/BGN?type=fixing&index=swap&tenor=1Y
 BGN-CMS-30Y	oresmd://ir/BGN?type=fixing&index=swap&tenor=30Y
@@ -72,7 +65,6 @@ CAD-CORRA	oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA
 CAD-CORRA-1M	oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA&tenor=1M
 CAD-CORRA-3M	oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA&tenor=3M
 CAD-LIBOR	oresmd://ir/CAD?type=fixing&index=ibor&name=LIBOR
-CAD-LIBOR-3M	oresmd://ir/CAD?type=fixing&index=ibor&name=LIBOR&tenor=3M
 CHF-CMS-10Y	oresmd://ir/CHF?type=fixing&index=swap&tenor=10Y
 CHF-CMS-1Y	oresmd://ir/CHF?type=fixing&index=swap&tenor=1Y
 CHF-CMS-2Y	oresmd://ir/CHF?type=fixing&index=swap&tenor=2Y
@@ -103,11 +95,11 @@ CLP-GENERIC	oresmd://ir/CLP?type=fixing&index=ibor&name=GENERIC
 CLP-GENERIC-3M	oresmd://ir/CLP?type=fixing&index=ibor&name=GENERIC&tenor=3M
 CNH-CMS-1Y	oresmd://ir/CNH?type=fixing&index=swap&tenor=1Y
 CNH-CMS-30Y	oresmd://ir/CNH?type=fixing&index=swap&tenor=30Y
+CNH-GENERIC	oresmd://ir/CNH?type=fixing&index=ibor&name=GENERIC
 CNH-GENERIC-3M	oresmd://ir/CNH?type=fixing&index=ibor&name=GENERIC&tenor=3M
 CNH-HIBOR	oresmd://ir/CNH?type=fixing&index=ibor&name=HIBOR
 CNH-HIBOR-3M	oresmd://ir/CNH?type=fixing&index=ibor&name=HIBOR&tenor=3M
 CNH-SHIBOR	oresmd://ir/CNH?type=fixing&index=ibor&name=SHIBOR
-CNH-SHIBOR-3M	oresmd://ir/CNH?type=fixing&index=ibor&name=SHIBOR&tenor=3M
 CNY-CMS-1Y	oresmd://ir/CNY?type=fixing&index=swap&tenor=1Y
 CNY-CMS-30Y	oresmd://ir/CNY?type=fixing&index=swap&tenor=30Y
 CNY-DEPO	oresmd://ir/CNY?type=fixing&index=ibor&name=DEPO
@@ -115,7 +107,6 @@ CNY-DEPO-1Y	oresmd://ir/CNY?type=fixing&index=ibor&name=DEPO&tenor=1Y
 CNY-GENERIC	oresmd://ir/CNY?type=fixing&index=ibor&name=GENERIC
 CNY-GENERIC-3M	oresmd://ir/CNY?type=fixing&index=ibor&name=GENERIC&tenor=3M
 CNY-REPOFIX	oresmd://ir/CNY?type=fixing&index=ibor&name=REPOFIX
-CNY-REPOFIX-3M	oresmd://ir/CNY?type=fixing&index=ibor&name=REPOFIX&tenor=3M
 CNY-REPOFIX-7D	oresmd://ir/CNY?type=fixing&index=ibor&name=REPOFIX&tenor=7D
 CNY-SHIBOR	oresmd://ir/CNY?type=fixing&index=ibor&name=SHIBOR
 CNY-SHIBOR-3M	oresmd://ir/CNY?type=fixing&index=ibor&name=SHIBOR&tenor=3M
@@ -125,8 +116,6 @@ COP-GENERIC	oresmd://ir/COP?type=fixing&index=ibor&name=GENERIC
 COP-GENERIC-3M	oresmd://ir/COP?type=fixing&index=ibor&name=GENERIC&tenor=3M
 COP-IBR	oresmd://ir/COP?type=fixing&index=ibor&name=IBR
 COP-IBR-3M	oresmd://ir/COP?type=fixing&index=ibor&name=IBR&tenor=3M
-CRC-GENERIC	oresmd://ir/CRC?type=fixing&index=ibor&name=GENERIC
-CRC-GENERIC-3M	oresmd://ir/CRC?type=fixing&index=ibor&name=GENERIC&tenor=3M
 CZK-CMS-1Y	oresmd://ir/CZK?type=fixing&index=swap&tenor=1Y
 CZK-CMS-30Y	oresmd://ir/CZK?type=fixing&index=swap&tenor=30Y
 CZK-CZEONIA	oresmd://ir/CZK?type=fixing&index=ibor&name=CZEONIA
@@ -136,7 +125,6 @@ CZK-PRIBOR-3M	oresmd://ir/CZK?type=fixing&index=ibor&name=PRIBOR&tenor=3M
 CZK-PRIBOR-6M	oresmd://ir/CZK?type=fixing&index=ibor&name=PRIBOR&tenor=6M
 DECPI	oresmd://inflation/DECPI?type=fixing&index=inflation
 DEM-LIBOR	oresmd://ir/DEM?type=fixing&index=ibor&name=LIBOR
-DEM-LIBOR-3M	oresmd://ir/DEM?type=fixing&index=ibor&name=LIBOR&tenor=3M
 DKCPI	oresmd://inflation/DKCPI?type=fixing&index=inflation
 DKK-CIBOR	oresmd://ir/DKK?type=fixing&index=ibor&name=CIBOR
 DKK-CIBOR-1M	oresmd://ir/DKK?type=fixing&index=ibor&name=CIBOR&tenor=1M
@@ -149,11 +137,6 @@ DKK-CMS-30Y	oresmd://ir/DKK?type=fixing&index=swap&tenor=30Y
 DKK-DESTR	oresmd://ir/DKK?type=fixing&index=ibor&name=DESTR
 DKK-DKKOIS	oresmd://ir/DKK?type=fixing&index=ibor&name=DKKOIS
 DKK-LIBOR	oresmd://ir/DKK?type=fixing&index=ibor&name=LIBOR
-DKK-LIBOR-3M	oresmd://ir/DKK?type=fixing&index=ibor&name=LIBOR&tenor=3M
-DOP-GENERIC	oresmd://ir/DOP?type=fixing&index=ibor&name=GENERIC
-DOP-GENERIC-3M	oresmd://ir/DOP?type=fixing&index=ibor&name=GENERIC&tenor=3M
-DZD-GENERIC	oresmd://ir/DZD?type=fixing&index=ibor&name=GENERIC
-DZD-GENERIC-3M	oresmd://ir/DZD?type=fixing&index=ibor&name=GENERIC&tenor=3M
 EGP-CMS-1Y	oresmd://ir/EGP?type=fixing&index=swap&tenor=1Y
 EGP-CMS-30Y	oresmd://ir/EGP?type=fixing&index=swap&tenor=30Y
 EGP-GENERIC	oresmd://ir/EGP?type=fixing&index=ibor&name=GENERIC
@@ -190,14 +173,11 @@ EUR-EURIBOR-1W	oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=1W
 EUR-EURIBOR-3M	oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=3M
 EUR-EURIBOR-6M	oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M
 EUR-EURIBOR365	oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR365
-EUR-EURIBOR365-3M	oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR365&tenor=3M
 EUR-LIBOR	oresmd://ir/EUR?type=fixing&index=ibor&name=LIBOR
 EUR-LIBOR-12M	oresmd://ir/EUR?type=fixing&index=ibor&name=LIBOR&tenor=12M
 EUR-LIBOR-1M	oresmd://ir/EUR?type=fixing&index=ibor&name=LIBOR&tenor=1M
 EUR-LIBOR-3M	oresmd://ir/EUR?type=fixing&index=ibor&name=LIBOR&tenor=3M
 EUR-LIBOR-6M	oresmd://ir/EUR?type=fixing&index=ibor&name=LIBOR&tenor=6M
-FJD-GENERIC	oresmd://ir/FJD?type=fixing&index=ibor&name=GENERIC
-FJD-GENERIC-3M	oresmd://ir/FJD?type=fixing&index=ibor&name=GENERIC&tenor=3M
 FRCPI	oresmd://inflation/FRCPI?type=fixing&index=inflation
 FRHICP	oresmd://inflation/FRHICP?type=fixing&index=inflation
 GBP-BoEBASE	oresmd://ir/GBP?type=fixing&index=ibor&name=BoEBASE
@@ -304,7 +284,6 @@ IDR-CMS-30Y	oresmd://ir/IDR?type=fixing&index=swap&tenor=30Y
 IDR-GENERIC	oresmd://ir/IDR?type=fixing&index=ibor&name=GENERIC
 IDR-GENERIC-3M	oresmd://ir/IDR?type=fixing&index=ibor&name=GENERIC&tenor=3M
 IDR-IDRFIX	oresmd://ir/IDR?type=fixing&index=ibor&name=IDRFIX
-IDR-IDRFIX-3M	oresmd://ir/IDR?type=fixing&index=ibor&name=IDRFIX&tenor=3M
 IDR-JIBOR	oresmd://ir/IDR?type=fixing&index=ibor&name=JIBOR
 IDR-JIBOR-3M	oresmd://ir/IDR?type=fixing&index=ibor&name=JIBOR&tenor=3M
 ILS-CMS-1Y	oresmd://ir/ILS?type=fixing&index=swap&tenor=1Y
@@ -324,8 +303,6 @@ INR-MIFOR-6M	oresmd://ir/INR?type=fixing&index=ibor&name=MIFOR&tenor=6M
 ISK-GENERIC	oresmd://ir/ISK?type=fixing&index=ibor&name=GENERIC
 ISK-GENERIC-3M	oresmd://ir/ISK?type=fixing&index=ibor&name=GENERIC&tenor=3M
 ITCPI	oresmd://inflation/ITCPI?type=fixing&index=inflation
-JMD-GENERIC	oresmd://ir/JMD?type=fixing&index=ibor&name=GENERIC
-JMD-GENERIC-3M	oresmd://ir/JMD?type=fixing&index=ibor&name=GENERIC&tenor=3M
 JOD-CMS-1Y	oresmd://ir/JOD?type=fixing&index=swap&tenor=1Y
 JOD-CMS-30Y	oresmd://ir/JOD?type=fixing&index=swap&tenor=30Y
 JOD-GENERIC	oresmd://ir/JOD?type=fixing&index=ibor&name=GENERIC
@@ -355,10 +332,7 @@ KES-CMS-1Y	oresmd://ir/KES?type=fixing&index=swap&tenor=1Y
 KES-CMS-30Y	oresmd://ir/KES?type=fixing&index=swap&tenor=30Y
 KES-GENERIC	oresmd://ir/KES?type=fixing&index=ibor&name=GENERIC
 KES-GENERIC-3M	oresmd://ir/KES?type=fixing&index=ibor&name=GENERIC&tenor=3M
-KGS-GENERIC	oresmd://ir/KGS?type=fixing&index=ibor&name=GENERIC
-KGS-GENERIC-3M	oresmd://ir/KGS?type=fixing&index=ibor&name=GENERIC&tenor=3M
 KRW-CD	oresmd://ir/KRW?type=fixing&index=ibor&name=CD
-KRW-CD-3M	oresmd://ir/KRW?type=fixing&index=ibor&name=CD&tenor=3M
 KRW-CD-91D	oresmd://ir/KRW?type=fixing&index=ibor&name=CD&tenor=91D
 KRW-CMS-1Y	oresmd://ir/KRW?type=fixing&index=swap&tenor=1Y
 KRW-CMS-30Y	oresmd://ir/KRW?type=fixing&index=swap&tenor=30Y
@@ -382,14 +356,10 @@ MAD-CMS-1Y	oresmd://ir/MAD?type=fixing&index=swap&tenor=1Y
 MAD-CMS-30Y	oresmd://ir/MAD?type=fixing&index=swap&tenor=30Y
 MAD-GENERIC	oresmd://ir/MAD?type=fixing&index=ibor&name=GENERIC
 MAD-GENERIC-3M	oresmd://ir/MAD?type=fixing&index=ibor&name=GENERIC&tenor=3M
-MNT-GENERIC	oresmd://ir/MNT?type=fixing&index=ibor&name=GENERIC
-MNT-GENERIC-3M	oresmd://ir/MNT?type=fixing&index=ibor&name=GENERIC&tenor=3M
 MUR-CMS-1Y	oresmd://ir/MUR?type=fixing&index=swap&tenor=1Y
 MUR-CMS-30Y	oresmd://ir/MUR?type=fixing&index=swap&tenor=30Y
 MUR-GENERIC	oresmd://ir/MUR?type=fixing&index=ibor&name=GENERIC
 MUR-GENERIC-3M	oresmd://ir/MUR?type=fixing&index=ibor&name=GENERIC&tenor=3M
-MWK-GENERIC	oresmd://ir/MWK?type=fixing&index=ibor&name=GENERIC
-MWK-GENERIC-3M	oresmd://ir/MWK?type=fixing&index=ibor&name=GENERIC&tenor=3M
 MXN-CMS-1Y	oresmd://ir/MXN?type=fixing&index=swap&tenor=1Y
 MXN-CMS-30Y	oresmd://ir/MXN?type=fixing&index=swap&tenor=30Y
 MXN-FTIIE	oresmd://ir/MXN?type=fixing&index=ibor&name=FTIIE
@@ -406,8 +376,6 @@ MYR-GENERIC	oresmd://ir/MYR?type=fixing&index=ibor&name=GENERIC
 MYR-GENERIC-3M	oresmd://ir/MYR?type=fixing&index=ibor&name=GENERIC&tenor=3M
 MYR-KLIBOR	oresmd://ir/MYR?type=fixing&index=ibor&name=KLIBOR
 MYR-KLIBOR-3M	oresmd://ir/MYR?type=fixing&index=ibor&name=KLIBOR&tenor=3M
-MZN-GENERIC	oresmd://ir/MZN?type=fixing&index=ibor&name=GENERIC
-MZN-GENERIC-3M	oresmd://ir/MZN?type=fixing&index=ibor&name=GENERIC&tenor=3M
 NGN-CMS-1Y	oresmd://ir/NGN?type=fixing&index=swap&tenor=1Y
 NGN-CMS-30Y	oresmd://ir/NGN?type=fixing&index=swap&tenor=30Y
 NGN-GENERIC	oresmd://ir/NGN?type=fixing&index=ibor&name=GENERIC
@@ -456,8 +424,6 @@ PLN-WIBOR-1M	oresmd://ir/PLN?type=fixing&index=ibor&name=WIBOR&tenor=1M
 PLN-WIBOR-3M	oresmd://ir/PLN?type=fixing&index=ibor&name=WIBOR&tenor=3M
 PLN-WIBOR-6M	oresmd://ir/PLN?type=fixing&index=ibor&name=WIBOR&tenor=6M
 PLN-WIBORON	oresmd://ir/PLN?type=fixing&index=ibor&name=WIBORON
-PYG-GENERIC	oresmd://ir/PYG?type=fixing&index=ibor&name=GENERIC
-PYG-GENERIC-3M	oresmd://ir/PYG?type=fixing&index=ibor&name=GENERIC&tenor=3M
 QAR-CMS-1Y	oresmd://ir/QAR?type=fixing&index=swap&tenor=1Y
 QAR-CMS-30Y	oresmd://ir/QAR?type=fixing&index=swap&tenor=30Y
 QAR-GENERIC	oresmd://ir/QAR?type=fixing&index=ibor&name=GENERIC
@@ -476,13 +442,10 @@ RUB-CMS-1Y	oresmd://ir/RUB?type=fixing&index=swap&tenor=1Y
 RUB-CMS-30Y	oresmd://ir/RUB?type=fixing&index=swap&tenor=30Y
 RUB-KEYRATE	oresmd://ir/RUB?type=fixing&index=ibor&name=KEYRATE
 RUB-KEYRATE-1W	oresmd://ir/RUB?type=fixing&index=ibor&name=KEYRATE&tenor=1W
-RUB-KEYRATE-3M	oresmd://ir/RUB?type=fixing&index=ibor&name=KEYRATE&tenor=3M
 RUB-MOSPRIME	oresmd://ir/RUB?type=fixing&index=ibor&name=MOSPRIME
 RUB-MOSPRIME-1M	oresmd://ir/RUB?type=fixing&index=ibor&name=MOSPRIME&tenor=1M
 RUB-MOSPRIME-3M	oresmd://ir/RUB?type=fixing&index=ibor&name=MOSPRIME&tenor=3M
 RUB-RUONIA	oresmd://ir/RUB?type=fixing&index=ibor&name=RUONIA
-RWF-GENERIC	oresmd://ir/RWF?type=fixing&index=ibor&name=GENERIC
-RWF-GENERIC-3M	oresmd://ir/RWF?type=fixing&index=ibor&name=GENERIC&tenor=3M
 SAR-CMS-1Y	oresmd://ir/SAR?type=fixing&index=swap&tenor=1Y
 SAR-CMS-30Y	oresmd://ir/SAR?type=fixing&index=swap&tenor=30Y
 SAR-GENERIC	oresmd://ir/SAR?type=fixing&index=ibor&name=GENERIC
@@ -494,7 +457,6 @@ SECPI	oresmd://inflation/SECPI?type=fixing&index=inflation
 SEK-CMS-1Y	oresmd://ir/SEK?type=fixing&index=swap&tenor=1Y
 SEK-CMS-30Y	oresmd://ir/SEK?type=fixing&index=swap&tenor=30Y
 SEK-LIBOR	oresmd://ir/SEK?type=fixing&index=ibor&name=LIBOR
-SEK-LIBOR-3M	oresmd://ir/SEK?type=fixing&index=ibor&name=LIBOR&tenor=3M
 SEK-SIOR	oresmd://ir/SEK?type=fixing&index=ibor&name=SIOR
 SEK-STIBOR	oresmd://ir/SEK?type=fixing&index=ibor&name=STIBOR
 SEK-STIBOR-1M	oresmd://ir/SEK?type=fixing&index=ibor&name=STIBOR&tenor=1M
@@ -513,7 +475,6 @@ SGD-SOR-6M	oresmd://ir/SGD?type=fixing&index=ibor&name=SOR&tenor=6M
 SGD-SORA	oresmd://ir/SGD?type=fixing&index=ibor&name=SORA
 SGD-SORON	oresmd://ir/SGD?type=fixing&index=ibor&name=SORON
 SKK-BRIBOR	oresmd://ir/SKK?type=fixing&index=ibor&name=BRIBOR
-SKK-BRIBOR-3M	oresmd://ir/SKK?type=fixing&index=ibor&name=BRIBOR&tenor=3M
 THB-BIBOR	oresmd://ir/THB?type=fixing&index=ibor&name=BIBOR
 THB-BIBOR-3M	oresmd://ir/THB?type=fixing&index=ibor&name=BIBOR&tenor=3M
 THB-BIBOR-6M	oresmd://ir/THB?type=fixing&index=ibor&name=BIBOR&tenor=6M
@@ -523,8 +484,6 @@ THB-THBFIX	oresmd://ir/THB?type=fixing&index=ibor&name=THBFIX
 THB-THBFIX-3M	oresmd://ir/THB?type=fixing&index=ibor&name=THBFIX&tenor=3M
 THB-THBFIX-6M	oresmd://ir/THB?type=fixing&index=ibor&name=THBFIX&tenor=6M
 THB-THOR	oresmd://ir/THB?type=fixing&index=ibor&name=THOR
-TJS-GENERIC	oresmd://ir/TJS?type=fixing&index=ibor&name=GENERIC
-TJS-GENERIC-3M	oresmd://ir/TJS?type=fixing&index=ibor&name=GENERIC&tenor=3M
 TND-CMS-1Y	oresmd://ir/TND?type=fixing&index=swap&tenor=1Y
 TND-CMS-30Y	oresmd://ir/TND?type=fixing&index=swap&tenor=30Y
 TND-GENERIC	oresmd://ir/TND?type=fixing&index=ibor&name=GENERIC
@@ -542,8 +501,6 @@ TWD-GENERIC	oresmd://ir/TWD?type=fixing&index=ibor&name=GENERIC
 TWD-GENERIC-3M	oresmd://ir/TWD?type=fixing&index=ibor&name=GENERIC&tenor=3M
 TWD-TAIBOR	oresmd://ir/TWD?type=fixing&index=ibor&name=TAIBOR
 TWD-TAIBOR-3M	oresmd://ir/TWD?type=fixing&index=ibor&name=TAIBOR&tenor=3M
-TZS-GENERIC	oresmd://ir/TZS?type=fixing&index=ibor&name=GENERIC
-TZS-GENERIC-3M	oresmd://ir/TZS?type=fixing&index=ibor&name=GENERIC&tenor=3M
 UAH-CMS-1Y	oresmd://ir/UAH?type=fixing&index=swap&tenor=1Y
 UAH-CMS-30Y	oresmd://ir/UAH?type=fixing&index=swap&tenor=30Y
 UAH-GENERIC	oresmd://ir/UAH?type=fixing&index=ibor&name=GENERIC
@@ -559,7 +516,6 @@ UKRPIX	oresmd://inflation/UKRPIX?type=fixing&index=inflation
 USCPI	oresmd://inflation/USCPI?type=fixing&index=inflation
 USCPIA	oresmd://inflation/USCPIA?type=fixing&index=inflation
 USD-AMBOR	oresmd://ir/USD?type=fixing&index=ibor&name=AMBOR
-USD-AMBOR-3M	oresmd://ir/USD?type=fixing&index=ibor&name=AMBOR&tenor=3M
 USD-AMERIBOR	oresmd://ir/USD?type=fixing&index=ibor&name=AMERIBOR
 USD-BSBY	oresmd://ir/USD?type=fixing&index=ibor&name=BSBY
 USD-BSBY-12M	oresmd://ir/USD?type=fixing&index=ibor&name=BSBY&tenor=12M
@@ -626,14 +582,10 @@ UYU-CMS-1Y	oresmd://ir/UYU?type=fixing&index=swap&tenor=1Y
 UYU-CMS-30Y	oresmd://ir/UYU?type=fixing&index=swap&tenor=30Y
 UYU-GENERIC	oresmd://ir/UYU?type=fixing&index=ibor&name=GENERIC
 UYU-GENERIC-3M	oresmd://ir/UYU?type=fixing&index=ibor&name=GENERIC&tenor=3M
-UZS-GENERIC	oresmd://ir/UZS?type=fixing&index=ibor&name=GENERIC
-UZS-GENERIC-3M	oresmd://ir/UZS?type=fixing&index=ibor&name=GENERIC&tenor=3M
 VND-CMS-1Y	oresmd://ir/VND?type=fixing&index=swap&tenor=1Y
 VND-CMS-30Y	oresmd://ir/VND?type=fixing&index=swap&tenor=30Y
 VND-GENERIC	oresmd://ir/VND?type=fixing&index=ibor&name=GENERIC
 VND-GENERIC-3M	oresmd://ir/VND?type=fixing&index=ibor&name=GENERIC&tenor=3M
-XAF-GENERIC	oresmd://ir/XAF?type=fixing&index=ibor&name=GENERIC
-XAF-GENERIC-3M	oresmd://ir/XAF?type=fixing&index=ibor&name=GENERIC&tenor=3M
 XOF-CMS-1Y	oresmd://ir/XOF?type=fixing&index=swap&tenor=1Y
 XOF-CMS-30Y	oresmd://ir/XOF?type=fixing&index=swap&tenor=30Y
 XOF-GENERIC	oresmd://ir/XOF?type=fixing&index=ibor&name=GENERIC

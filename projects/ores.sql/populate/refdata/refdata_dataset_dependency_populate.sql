@@ -63,4 +63,8 @@ BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'refdata.currency_pair_convention_calendars', 'refdata.currency_calendars',
         'calendar_reference');
+    -- A blueprint names the FX option convention of its pair, which states the
+    -- delta type of its strikes.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'refdata.fx_vol_surface_blueprints', 'refdata.conventions', 'fx_option_convention_source');
 END $$;

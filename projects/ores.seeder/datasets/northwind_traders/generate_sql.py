@@ -619,16 +619,16 @@ def generate_dataset_dependency_populate():
         ("northwind.account_contact_informations", "northwind.accounts", "account_source"),
         ("northwind.party_counterparties", "gleif.lei_counterparties.tiny",
          "counterparty_reference"),
-        ("northwind.pricing_engines", "ore.conventions", "convention_source"),
-        ("northwind.todays_market", "ore.conventions", "convention_source"),
-        ("northwind.curve_configuration", "ore.conventions", "convention_source"),
-        ("northwind.engine_settings", "ore.conventions", "convention_source"),
+        ("northwind.pricing_engines", "refdata.conventions", "convention_source"),
+        ("northwind.todays_market", "refdata.conventions", "convention_source"),
+        ("northwind.curve_configuration", "refdata.conventions", "convention_source"),
+        ("northwind.engine_settings", "refdata.conventions", "convention_source"),
         ("northwind.risk_report_configs", "northwind.portfolios", "scope_source"),
     ] + [
         ("northwind.report_definitions", child, "configuration_source")
         for child in ("northwind.pricing_engines", "northwind.todays_market",
                       "northwind.curve_configuration", "northwind.risk_report_configs",
-                      "northwind.engine_settings", "ore.conventions")
+                      "northwind.engine_settings", "refdata.conventions")
     ]
     body = "".join(
         f"    PERFORM ores_dq_dataset_dependencies_upsert_fn("

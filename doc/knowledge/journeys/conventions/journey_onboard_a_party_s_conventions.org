@@ -68,7 +68,7 @@ instance, and its steps are where the person reads what the run actually did.
    same plan, after the LEI hierarchy import and before staff are loaded.
 2. *Read the publish the plan's step performs, and in what order.* The bundle
    publishes its members in dependency order, one workflow step per dataset. The
-   conventions dataset, =ore.conventions=, is the bundle's member at display
+   conventions dataset, =refdata.conventions=, is the bundle's member at display
    order 5, before the CRM topology at 20. The step's command subject is
    =refdata.v1.ops.publish_conventions_from_dq= and its parameters carry the
    party's id. The person reads the step's counts, not a summary: the first

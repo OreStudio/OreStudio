@@ -38,7 +38,7 @@
 
 \echo ''
 \echo '--- Instrument Conventions Seed Data ---'
-\ir ./refdata_conventions_seed_populate.sql
+\ir ./refdata_conventions_artefact_populate.sql
 
 \echo ''
 \echo '--- CRM Topology Bundles Seed Data ---'

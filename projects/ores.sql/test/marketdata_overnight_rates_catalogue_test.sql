@@ -40,20 +40,19 @@ select plan(5);
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
 select results_eq(
-    $$select v.provider_code || ' ' || v.external_id || ' ' || coalesce(c.id, d.id, '<no convention>')
+    $$select v.provider_code || ' ' || v.external_id || ' ' || coalesce(c.id, '<no convention>')
       from ores_marketdata_market_data_vendor_instruments_tbl v
       join ores_marketdata_market_data_mappings_tbl m
         on m.vendor_instrument_id = v.id
        and m.tenant_id = v.tenant_id
        and m.valid_to = ores_utility_infinity_timestamp_fn()
-      left join ores_refdata_overnight_index_conventions_tbl c
-        on c.oresmd_uri = m.oresmd_uri
-       and c.tenant_id = v.tenant_id
-       and c.valid_to = ores_utility_infinity_timestamp_fn()
-      left join lateral (
-          select min(a.id) as id from ores_dq_overnight_index_conventions_artefact_tbl a
-          where a.oresmd_uri = m.oresmd_uri and c.id is null
-      ) d on true
+      left join (
+          select a.id, a.oresmd_uri from ores_dq_overnight_index_conventions_artefact_tbl a
+          join ores_dq_datasets_tbl d
+            on d.id = a.dataset_id
+           and d.code = 'refdata.conventions'
+           and d.valid_to = ores_utility_infinity_timestamp_fn()
+      ) c on c.oresmd_uri = m.oresmd_uri
       where v.tenant_id = ores_utility_system_tenant_id_fn()
         and v.id_scheme in ('nyfed_rate_type', 'ecb_sdmx', 'boe_iadb', 'boc_valet', 'boj_stat', 'nb_sdmx', 'riksbank_swestr', 'rba_table', 'bcb_sgs', 'banxico_sie')
         and v.valid_to = ores_utility_infinity_timestamp_fn()
@@ -70,7 +69,7 @@ select results_eq(
              ('nyfed SOFR USD-SOFR'),
              ('rba f1.FIRMMCRID AUD-AONIA'),
              ('riksbank SWESTR SEK-SWESTR')$$,
-    'each overnight series maps to the item of its index conventions: the built-in one, the alias a curve names, or else the one the conventions dataset gives'
+    'each overnight series maps to the item of an overnight index convention of the conventions dataset'
 );
 
 select is_empty(

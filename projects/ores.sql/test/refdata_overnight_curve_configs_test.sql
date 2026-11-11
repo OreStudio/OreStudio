@@ -60,10 +60,12 @@ select is(
     (select count(*)::int from t_configs t
      where t.name <> 'USD-SOFR-FOMC'
        and not exists (
-           select 1 from ores_refdata_overnight_index_conventions_tbl o
+           select 1 from ores_dq_overnight_index_conventions_artefact_tbl o
+           join ores_dq_datasets_tbl d
+             on d.id = o.dataset_id
+            and d.code = 'refdata.conventions'
+            and d.valid_to = ores_utility_infinity_timestamp_fn()
            where o.id = t.name
-             and o.tenant_id = ores_utility_system_tenant_id_fn()
-             and o.valid_to = ores_utility_infinity_timestamp_fn()
              and ((t.day_count_convention = 'A360' and o.day_count_fraction = 'ACT/360')
                or (t.day_count_convention = 'A365F' and o.day_count_fraction = 'ACT/365.FIXED')))),
     0,

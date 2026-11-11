@@ -137,7 +137,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:66CF6B10-92F7-4DA3-A310-AFAD381CC372][Hotfix: two changes on main fail four local checks]] | DONE | 2026-11-09 | 2026-11-09 | The holiday calendar and auto-approval changes on main fail four local checks: entity table writers, step translations, catalogue formatting and a generated shell recipe. |
 | [[id:34C502F0-6EA5-4C13-9C7E-5748B52A0391][Hotfix: recent changes on main fail five local checks]] | DONE | 2026-11-10 | 2026-11-10 | Changes on main fail component-drift, route-inventory, handler-permissions, bff-list-requests and codegen-tests. |
 | [[id:6EA15737-5413-46FB-9660-9C279B42B454][Build the calendars without a read per day]] | DONE | 2026-11-10 | 2026-11-10 | Provisioning fails at build_calendars: the step waits 600 s, and each calendar costs about 35 s because the batch write reads every day's version in its own transaction before it inserts. |
-| [[id:14807059-043D-4866-974D-B835151D61E8][Data model clean up]] | BACKLOG | | | Bring the persisted data model to one data-oriented, consistent model: no stored ORE documents, no lists or JSON in a column, no second model of one thing, and references by key or oresmd identity. |
+| [[id:14807059-043D-4866-974D-B835151D61E8][Data model clean up]] | STARTED | | | Bring the persisted data model to one data-oriented, consistent model: no stored ORE documents, no lists or JSON in a column, no second model of one thing, and references by key or oresmd identity. |
 
 * Achievements
 

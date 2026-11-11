@@ -23,7 +23,7 @@ One data-oriented, consistent model of the system's persisted data. A document a
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Scaffolded; no clean-up task started.  |
 | Waiting on    | Nothing.                               |
 | Next          | Close the document-shaped loophole.    |
 | Last touched  | 2026-11-11                               |
@@ -44,6 +44,10 @@ One data-oriented, consistent model of the system's persisted data. A document a
 
 * Decisions
 
+- 2026-11-11: every stored ORE document is remodelled in one go, not one section at a time. The FX volatility configuration that triggered the story is not fixed on its own.
+- 2026-11-11: the volatility surface story goes on meanwhile. It adds no column to the image tables, and one helper reads the blueprint's grid lists, so the remodel changes one place.
+
 * Out of scope
 
--
+- Fixing one section of the image ahead of the rest.
+- Document payloads that stay transient at the boundary, such as an ORE XML a run writes and reads.

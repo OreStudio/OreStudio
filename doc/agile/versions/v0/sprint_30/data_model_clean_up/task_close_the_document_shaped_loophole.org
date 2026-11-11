@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:14807059-043D-4866-974D-B835151D61E8][Data model clean up]] story. It captures the goal, current status, acceptance, and any notes or results.

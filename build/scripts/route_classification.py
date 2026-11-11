@@ -102,6 +102,11 @@ RULES = (
          BFF, TRANSPORT, "changes",
          "The change stream a client subscribes to, and the watch set that says which"
          " subjects it wants; delivery of events, not a domain object."),
+    Rule("the browser's change stream route",
+         ("regex", r"^(GET /api/events|POST /api/events/watch)$"),
+         CPP, TRANSPORT, "changes",
+         "The change stream in the shape ores.web reads, carrying only the collections the"
+         " session watches, and the route that replaces that watch set."),
     Rule("the change stream route",
          ("exact", "GET /api/v1/changes"),
          CPP, TRANSPORT, "changes",

@@ -8,12 +8,12 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-change-stream-watch-set
-#+pr:
+#+pr: 4581
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Serve POST /api/events/watch from the C++ server, so a client can say which subj
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -41,9 +41,28 @@ Serve POST /api/events/watch from the C++ server, so a client can say which subj
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The inventory paired =GET /api/events= with =/api/v1/changes=, but the two did
+not speak the same contract. ores.web listens for =connected= and
+=entity-changed= events and drops a change whose data has no =at=; the C++
+stream named each event after its collection, sent no =at= and no opening
+message. Switching the browser to it would have stopped every live update.
+
+- The C++ frame is now the browser's: =event: entity-changed=, with the
+  component, the entity and the instant it was published, and the tenant and
+  the party beside them. A stream opens with =event: connected=. Nothing else
+  read the old frame.
+- =GET /api/events= is the same stream, carrying only the collections the
+  session watches. =/api/v1/changes= keeps carrying every collection the caller
+  may see.
+- =POST /api/events/watch= replaces the session's watch set, with the BFF's
+  limits: at most 50 watches, each named in lower case. A session's set lives as
+  long as its stream.
+- The hub filters by the watch set before it queues a frame, on a live publish
+  and on a replay alike.
+
+The BFF also named the changed records in =keys=. The coalescer keeps
+collections, not records, so the C++ stream names none, and ores.web refreshes
+the whole collection, which its parser allows.
 
 * Measurements
 
@@ -76,12 +95,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4581][#4581]] | [http] Serve the browser's change stream and its watch set from C++ |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4581 review: a reconnecting stream's new, empty watch set drops every replayed frame. | =change_hub.hpp= | Accepted | A replay ignores the watch set; the browser drops what it does not watch, and the BFF replayed nothing at all. A test pins it. |
+| 2 | PR #4581 review: two tabs of one session share one watch set. | =change_routes.cpp= | Declined | The BFF keys the watch set by session too, and the browser's POST names no stream. A known limit, as before. |
+| 3 | PR #4581 review: a watch POST before the stream opens is dropped. | =change_routes.cpp= | Declined | ores.web posts only after the =connected= message, and states the whole set on every reconnect. |
+| 4 | PR #4581 review: the scope's doc comment sat above the new classes. | =change_hub.hpp= | Accepted | Moved back above =stream_scope=. |
 
 * Result
+
+The C++ server answers =GET /api/events= and =POST /api/events/watch= in the
+shapes ores.web reads, each paired with its BFF route in the inventory. The
+frame format, the watch filter on a live and a replayed stream, the watch set's
+life and the watch body's limits are each tested.

@@ -18,6 +18,10 @@
  *
  */
 #include "ores.http.core/routes/change_routes.hpp"
+#include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.core/stream/change_pump.hpp"
+#include <regex>
+#include <yyjson.h>
 
 namespace ores::http::server::routes {
 
@@ -35,22 +39,104 @@ void change_routes::register_routes(std::shared_ptr<http::net::router> router,
 
     BOOST_LOG_SEV(lg(), info) << "Registering the change stream";
 
-    auto changes =
-        router->get("/api/v1/changes")
-            .summary("Follow the changes")
-            .description("A stream of change frames, written as they happen")
-            .tags({"changes"})
-            .auth_required()
-            .handler([this](const domain::http_request& req) { return handle_changes(req); });
+    auto changes = router->get("/api/v1/changes")
+                       .summary("Follow the changes")
+                       .description("A stream of change frames, written as they happen")
+                       .tags({"changes"})
+                       .auth_required()
+                       .handler([this](const domain::http_request& req) {
+                           return handle_changes(req, false);
+                       });
     auto changes_built = changes.build();
     router->add_route(changes_built);
     registry->register_route(changes_built);
 
-    BOOST_LOG_SEV(lg(), info) << "Change routes registered: 1 endpoint";
+    auto events =
+        router->get("/api/events")
+            .summary("Follow the changes the session watches")
+            .description("The change stream, carrying only the collections the session watches")
+            .tags({"changes"})
+            .auth_required()
+            .handler([this](const domain::http_request& req) { return handle_changes(req, true); });
+    auto events_built = events.build();
+    router->add_route(events_built);
+    registry->register_route(events_built);
+
+    auto watch = router->post("/api/events/watch")
+                     .summary("State what the session watches")
+                     .description("Replaces the collections the session's change stream carries")
+                     .tags({"changes"})
+                     .auth_required()
+                     .handler([this](const domain::http_request& req)
+                                  -> boost::asio::awaitable<domain::http_response> {
+                         co_return handle_watch(req);
+                     });
+    auto watch_built = watch.build();
+    router->add_route(watch_built);
+    registry->register_route(watch_built);
+
+    BOOST_LOG_SEV(lg(), info) << "Change routes registered: 3 endpoints";
+}
+
+std::optional<std::unordered_set<std::string>>
+change_routes::read_watches(const std::string& body) {
+    static const std::regex name_form("^[a-z][a-z0-9_]*$");
+    std::unordered_set<std::string> out;
+    if (body.find_first_not_of(" \t\r\n") == std::string::npos)
+        return out;
+    std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> doc(
+        yyjson_read(body.data(), body.size(), 0), &yyjson_doc_free);
+    if (!doc || !yyjson_is_obj(yyjson_doc_get_root(doc.get())))
+        return std::nullopt;
+    auto* watches = yyjson_obj_get(yyjson_doc_get_root(doc.get()), "watches");
+    if (watches == nullptr)
+        return out;
+    if (!yyjson_is_arr(watches) || yyjson_arr_size(watches) > 50)
+        return std::nullopt;
+    std::size_t index = 0, count = 0;
+    yyjson_val* item = nullptr;
+    yyjson_arr_foreach(watches, index, count, item) {
+        const auto name = [&](const char* key) -> std::optional<std::string> {
+            auto* v = yyjson_obj_get(item, key);
+            if (!yyjson_is_str(v))
+                return std::nullopt;
+            std::string text(yyjson_get_str(v), yyjson_get_len(v));
+            if (!std::regex_match(text, name_form))
+                return std::nullopt;
+            return text;
+        };
+        const auto component = yyjson_is_obj(item) ? name("component") : std::nullopt;
+        const auto entity = yyjson_is_obj(item) ? name("entity") : std::nullopt;
+        if (!component || !entity)
+            return std::nullopt;
+        out.insert(*component + '.' + *entity);
+    }
+    return out;
+}
+
+namespace {
+
+std::string session_of(const domain::http_request& req) {
+    if (!req.authenticated_user)
+        return {};
+    return req.authenticated_user->session_id.value_or(req.authenticated_user->subject);
+}
+
+}
+
+domain::http_response change_routes::handle_watch(const domain::http_request& req) {
+    auto collections = read_watches(req.body);
+    if (!collections)
+        return http::net::record_routes::answer({domain::http_status::bad_request,
+                                                 "invalid-request",
+                                                 "The watch set is not one the browser sends."});
+    if (!watches_.watch(session_of(req), std::move(*collections)))
+        BOOST_LOG_SEV(lg(), debug) << "A watch set arrived for a session with no stream open";
+    return domain::http_response::json(R"({"ok":true})");
 }
 
 boost::asio::awaitable<domain::http_response>
-change_routes::handle_changes(const domain::http_request& req) {
+change_routes::handle_changes(const domain::http_request& req, bool watched) {
     BOOST_LOG_SEV(lg(), debug) << "Opening a change stream";
 
     domain::http_response resp;
@@ -103,10 +189,15 @@ change_routes::handle_changes(const domain::http_request& req) {
         }
     }
 
-    const stream::stream_scope scope{
-        .tenant = tenant, .party = party, .sees_all_parties = sees_all_parties};
+    const stream::stream_scope scope{.tenant = tenant,
+                                     .party = party,
+                                     .sees_all_parties = sees_all_parties,
+                                     .watching =
+                                         watched ? watches_.open(session_of(req)) : nullptr};
+    const auto connected = "event: connected\ndata: {\"at\":\"" +
+                           stream::instant_text(std::chrono::system_clock::now()) + "\"}\n\n";
     resp.body_awaitable = std::make_shared<stream::change_stream_source>(
-        hub_->subscribe(scope, resumed), keep_alive_);
+        hub_->subscribe(scope, resumed), keep_alive_, connected);
     co_return resp;
 }
 

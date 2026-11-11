@@ -16,14 +16,12 @@ CommodityAccumulator	Error parsing Trade XML	CommodityAccumulatorData node not f
 CommodityAsianOption	Error parsing Trade XML	No CommodityAsianOptionData node found.
 CommodityBasketVarianceSwap	Error parsing Trade XML	BasketVarianceSwapData node not found
 CommodityBestEntryOption	Error parsing Trade XML	BestEntryOptionData node not found
-CommodityDigitalAveragePriceOption	Error parsing Trade XML	No CommodityDigitalAveragePriceOptionData Node
-CommodityDigitalOption	Error parsing Trade XML	A commodity option needs a 'CommodityDigitalOptionData' node
 CommodityForwardVolatilityAgreement	Error parsing Trade XML	ForwardVolatilityAgreementData node not found
 CommodityGenericBarrierOption	Error parsing Trade XML	CommodityGenericBarrierOptionData node not found
 CommodityPairwiseVarianceSwap	Error parsing Trade XML	TradeFactory::getBuilder(CommodityPairwiseVarianceSwap): no builder found
-CommodityPosition	Error parsing Trade XML	XML Node is NULL (expected CommodityPositionData)
 CommodityRainbowOption	Error parsing Trade XML	CommodityRainbowOptionData node not found
-CommoditySpreadOption	Error parsing Trade XML	XML Node is NULL (expected CommoditySpreadOptionData)
+CommoditySpreadOption	Error building trade for context 'analytic/PRICING'	did not find object COMM-NYMEX:CL/COMM-NYMEX:NG in CorrelationCurves
+CommoditySpreadOption	Error building trade for context 'analytic/PRICING'	did not find object COMM-NYMEX:NG/COMM-NYMEX:CL in CorrelationCurves
 CommodityStrikeResettableOption	Error parsing Trade XML	StrikeResettableOptionData node not found
 CommodityTaRF	Error parsing Trade XML	CommodityTaRFData node not found
 CommodityWindowBarrierOption	Error parsing Trade XML	CommodityWindowBarrierOptionData node not found
@@ -56,7 +54,8 @@ IndexCreditDefaultSwapOption	Error building trade for context 'analytic/PRICING'
 IndexCreditDefaultSwapOption	Error building trade for context 'analytic/PRICING'	No CreditIndex constituents data for oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
 InflationSwap	Error building trade for context 'analytic/PRICING'	did not find object 'UKRPIX' of type zero inflation index under configuration 'default' or 'default'
 InflationSwap	Error building trade for context 'analytic/PRICING'	did not find object 'USCPIA' of type zero inflation index under configuration 'default' or 'default'
-IntradayPowerForward	Error parsing Trade XML	XMLNode is NULL (was looking for child Position)
+IntradayPowerForward	Error building trade for context 'analytic/PRICING'	did not find object 'NYMEX:CL' of type intraday power indices under configuration 'default' or 'default'
+IntradayPowerForward	Error building trade for context 'analytic/PRICING'	did not find object 'NYMEX:NG' of type intraday power indices under configuration 'default' or 'default'
 PerformanceOption_01	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
 RiskParticipationAgreement	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 RiskParticipationAgreement	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'

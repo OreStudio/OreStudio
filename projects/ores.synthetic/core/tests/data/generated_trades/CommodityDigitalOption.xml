@@ -2,8 +2,38 @@
 <Portfolio>
   <Trade id="ad2e43ef-f7bb-57e4-9071-01481f80a72f">
     <TradeType>CommodityDigitalOption</TradeType>
+    <CommodityDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2032-09-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Name>NYMEX:CL</Name>
+      <Currency>USD</Currency>
+      <Strike>98.88</Strike>
+      <Payoff>41086.15</Payoff>
+    </CommodityDigitalOptionData>
   </Trade>
   <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
     <TradeType>CommodityDigitalOption</TradeType>
+    <CommodityDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2031-08-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Name>NYMEX:NG</Name>
+      <Currency>USD</Currency>
+      <Strike>136.76</Strike>
+      <Payoff>4860.5</Payoff>
+    </CommodityDigitalOptionData>
   </Trade>
 </Portfolio>

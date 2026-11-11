@@ -2,8 +2,24 @@
 <Portfolio>
   <Trade id="b650b5a9-29e0-55f6-bed8-d85a96167ab0">
     <TradeType>CommodityPosition</TradeType>
+    <CommodityPositionData>
+      <Quantity>59364.18</Quantity>
+      <Underlying>
+        <Type>Commodity</Type>
+        <Name>NYMEX:NG</Name>
+        <Weight>1</Weight>
+      </Underlying>
+    </CommodityPositionData>
   </Trade>
   <Trade id="4511c81f-f685-58e9-8f37-1a99af3ff1ff">
     <TradeType>CommodityPosition</TradeType>
+    <CommodityPositionData>
+      <Quantity>59393.81</Quantity>
+      <Underlying>
+        <Type>Commodity</Type>
+        <Name>NYMEX:CL</Name>
+        <Weight>1</Weight>
+      </Underlying>
+    </CommodityPositionData>
   </Trade>
 </Portfolio>

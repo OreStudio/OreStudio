@@ -477,19 +477,14 @@ const std::set<std::string>& known_passthroughs() {
         "CommodityAsianOption",
         "CommodityBasketVarianceSwap",
         "CommodityBestEntryOption",
-        "CommodityDigitalAveragePriceOption",
-        "CommodityDigitalOption",
         "CommodityForwardVolatilityAgreement",
         "CommodityGenericBarrierOption",
         "CommodityPairwiseVarianceSwap",
-        "CommodityPosition",
         "CommodityRainbowOption",
-        "CommoditySpreadOption",
         "CommodityStrikeResettableOption",
         "CommodityTaRF",
         "CommodityWindowBarrierOption",
         "CommodityWorstOfBasketSwap",
-        "IntradayPowerForward",
     };
     return known;
 }

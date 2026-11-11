@@ -22,6 +22,7 @@
 
 #include "ores.trading.api/builders/bond_builders.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
+#include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
@@ -72,7 +73,23 @@ using all_builders = std::tuple<vanilla_swap_builder,
                                 bond_trs_builder,
                                 callable_bond_builder,
                                 convertible_bond_builder,
-                                ascot_builder>;
+                                ascot_builder,
+                                equity_option_builder,
+                                equity_cliquet_option_builder,
+                                equity_asian_option_builder,
+                                equity_barrier_option_builder<equity_barrier_product::barrier>,
+                                equity_barrier_option_builder<equity_barrier_product::european_barrier>,
+                                equity_barrier_option_builder<equity_barrier_product::double_barrier>,
+                                equity_digital_option_builder,
+                                equity_touch_option_builder,
+                                equity_forward_builder,
+                                equity_swap_builder,
+                                equity_worst_of_basket_swap_builder,
+                                equity_variance_swap_builder,
+                                equity_accumulator_builder,
+                                equity_tarf_builder,
+                                equity_position_builder,
+                                equity_option_position_builder>;
 
 namespace detail {
 

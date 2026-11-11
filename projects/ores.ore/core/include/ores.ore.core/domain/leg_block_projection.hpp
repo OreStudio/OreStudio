@@ -238,11 +238,14 @@ inline void read_cms_terms(swap_leg& row, const record_reader& cms, const cms_pa
 inline void read_equity_terms(swap_leg& row, const record_reader& equity) {
     if (equity.has("ReturnType"))
         row.equity_return_type = text_of(equity, "ReturnType");
+    // The leg's underlying is held as an address, through the same mapper as
+    // every other underlying; a bare Name is an equity.
     if (has_if(equity, "Name")) {
-        row.equity_name = text_of(equity, "Name");
+        row.equity_name = underlying_address_of("Equity", text_of(equity, "Name"));
     } else if (const auto underlying = child_if(equity, "Underlying")) {
         row.equity_underlying_type = text_of(*underlying, "Type");
-        row.equity_name = text_of(*underlying, "Name");
+        row.equity_name =
+            underlying_address_of(*row.equity_underlying_type, text_of(*underlying, "Name"));
         if (underlying->has("IdentifierType"))
             row.equity_underlying_identifier_type = text_of(*underlying, "IdentifierType");
     }
@@ -639,11 +642,11 @@ inline void write_equity_terms(record_writer payload, const swap_leg& row) {
     if (row.equity_underlying_type) {
         auto underlying = payload.child("Underlying");
         underlying.set_text("Type", *row.equity_underlying_type);
-        underlying.set_text("Name", row.equity_name.value_or(""));
+        underlying.set_text("Name", underlying_name_of(row.equity_name.value_or("")));
         if (row.equity_underlying_identifier_type)
             underlying.set_text("IdentifierType", *row.equity_underlying_identifier_type);
     } else if (row.equity_name) {
-        payload.set_text("Name", *row.equity_name);
+        payload.set_text("Name", underlying_name_of(*row.equity_name));
     }
     if (row.equity_initial_price)
         payload.set_decimal("InitialPrice", *row.equity_initial_price);

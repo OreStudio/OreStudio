@@ -8,7 +8,7 @@
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/generate-commodity-trades-through-builders
-#+pr:
+#+pr: 4612
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -114,7 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4612][#4612]] | [trading] Build the projected commodity types through builders |
 
 * Review
 

@@ -70,7 +70,6 @@ std::string json_of(const std::optional<ores::iam::domain::account>& account) {
     return account ? json_of(*account) : std::string("null");
 }
 
-
 std::string json_of(const ores::iam::domain::account_contact_information& c) {
     std::string out = "{\"version\":" + std::to_string(c.version);
     out += ",\"id\":" + json::write(boost::uuids::to_string(c.id));
@@ -95,7 +94,6 @@ std::string json_of(const ores::iam::domain::account_contact_information& c) {
 std::string json_of(const std::optional<ores::iam::domain::account_contact_information>& contact) {
     return contact ? json_of(*contact) : std::string("null");
 }
-
 
 std::string json_of(const ores::iam::domain::login_info& i) {
     std::string out = "{\"tenantId\":" + json::write(i.tenant_id.to_string());

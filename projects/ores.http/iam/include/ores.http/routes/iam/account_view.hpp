@@ -60,7 +60,6 @@ namespace ores::http::routes::iam::account_view {
 [[nodiscard]] std::string
 json_of(const std::optional<ores::iam::domain::account_contact_information>& contact);
 
-
 /**
  * @brief One account's sign-in state, as a JSON object in camelCase.
  */

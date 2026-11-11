@@ -31,9 +31,12 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <charconv>
+#include <cstdint>
 #include <functional>
 #include <limits>
+#include <optional>
 #include <string>
+#include <vector>
 
 namespace ores::http::routes::iam {
 
@@ -74,6 +77,10 @@ std::string sessions_page(const std::vector<ores::iam::domain::session>& session
            ",\"totalCount\":" + std::to_string(total) + "}";
 }
 
+
+std::string login_info_answer(const std::optional<ores::iam::domain::login_info>& info) {
+    return "{\"loginInfo\":" + account_view::json_of(info) + "}";
+}
 }
 
 std::optional<std::pair<std::uint32_t, std::uint32_t>>
@@ -136,8 +143,7 @@ void sign_in_routes::register_routes(
                 return guarded<messaging::get_my_login_info_request>([&] {
                     const auto reply = ores::http::forwarding::forward(
                         req, session, messaging::get_my_login_info_request{});
-                    return http_response::json(
-                        "{\"loginInfo\":" + account_view::json_of(reply.login_info) + "}");
+                    return http_response::json(login_info_answer(reply.login_info));
                 });
             return guarded<messaging::get_login_info_request>([&] {
                 const auto reply = ores::http::forwarding::forward(
@@ -145,8 +151,7 @@ void sign_in_routes::register_routes(
                     session,
                     messaging::get_login_info_request{
                         messaging::login_info_key{boost::uuids::string_generator()(account)}});
-                return http_response::json(
-                    "{\"loginInfo\":" + account_view::json_of(reply.login_info) + "}");
+                return http_response::json(login_info_answer(reply.login_info));
             });
         });
 

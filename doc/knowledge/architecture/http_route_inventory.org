@@ -81,7 +81,7 @@ an API publishes no area, so it is counted under =(none)=.
 | tenancy | iam, server | 63 | composed view 2, resource 61 |
 | trading | blotter, book-changes, booking, books, structures, trades | 24 | composed view 2, resource 22 |
 | workflow | inbox, server, timeline | 18 | composed view 6, resource 12 |
-| (none) | books, classifications, conventions, core, counterparties, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 394 | not an API 379, transport capability 15 |
+| (none) | books, classifications, conventions, core, counterparties, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 398 | not an API 383, transport capability 15 |
 
 * The composed views
 
@@ -159,8 +159,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | tenancy | 21 | 8 | 13 |
 | trading | 24 | 0 | 24 |
 | workflow | 18 | 0 | 18 |
-| (none) | 35 | 5 | 30 |
-| total | 324 | 45 | 279 |
+| (none) | 35 | 9 | 26 |
+| total | 324 | 49 | 275 |
 
 * The pairing
 
@@ -201,7 +201,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/book-changes/preview= | none |
 | GET =/api/books/:id= | none |
 | PUT =/api/books/books= | none |
-| GET =/api/books/pick-lists= | none |
+| GET =/api/books/pick-lists= | GET /api/books/pick-lists |
 | PUT =/api/books/portfolios= | none |
 | GET =/api/books/portfolios/:id/rights= | none |
 | GET =/api/books/tree= | none |
@@ -222,7 +222,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/conventions/:family/documents/:id= | none |
 | PUT =/api/conventions/:family/documents/:id/terms= | none |
 | GET =/api/conventions/families= | none |
-| GET =/api/conventions/pick-lists= | none |
+| GET =/api/conventions/pick-lists= | GET /api/conventions/pick-lists |
 | GET =/api/counterparties= | GET /api/v1/reference-data/counterparties |
 | GET =/api/counterparties/:id= | none |
 | PUT =/api/counterparties/:id/business-centres= | none |
@@ -230,7 +230,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | PUT =/api/counterparties/:id/visibility= | none |
 | GET =/api/counterparties/children= | none |
 | PUT =/api/counterparties/composite= | none |
-| GET =/api/counterparties/pick-lists= | none |
+| GET =/api/counterparties/pick-lists= | GET /api/counterparties/pick-lists |
 | POST =/api/curves/compute= | none |
 | POST =/api/curves/evolution= | none |
 | POST =/api/curves/fx-forward-ladder= | none |
@@ -474,7 +474,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/tenors/conventions/:code/resolutions= | none |
 | DELETE =/api/tenors/conventions/:code/resolutions/:tenor= | none |
 | PUT =/api/tenors/conventions/:code/resolutions/:tenor= | none |
-| GET =/api/tenors/pick-lists= | none |
+| GET =/api/tenors/pick-lists= | GET /api/tenors/pick-lists |
 | POST =/api/tenors/preview-resolution= | none |
 | POST =/api/tenors/resolve= | none |
 | POST =/api/tenors/resolve-convention= | none |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1088 routes: 324 answered by the BFF and 764 by ores.http.
+1092 routes: 324 answered by the BFF and 768 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -534,6 +534,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | trading | get | =/api/books/:id= | bff | projects/ores.web/packages/bff/src/books.ts:150 | One book with the portfolio it sits in, the portfolio read by id so the page shows a name rather than a key; one collection with its key resolved is a resource and not a view. |
 | resource | trading | put | =/api/books/books= | bff | projects/ores.web/packages/bff/src/books.ts:219 | One book or one portfolio written against the version the screen read. |
 | not an API | (none) | get | =/api/books/pick-lists= | bff | projects/ores.web/packages/bff/src/books.ts:175 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
+| not an API | (none) | get | =/api/books/pick-lists= | ores.http | projects/ores.http/refdata/src/routes/refdata/pick_list_routes.cpp:362 | The option lists the BFF answered for each reference data form, keyed by the control's name, kept so the forms work when the BFF goes. |
 | resource | trading | put | =/api/books/portfolios= | bff | projects/ores.web/packages/bff/src/books.ts:231 | One book or one portfolio written against the version the screen read. |
 | resource | trading | get | =/api/books/portfolios/:id/rights= | bff | projects/ores.web/packages/bff/src/books.ts:202 | The rights granted on one portfolio, with the tenant's accounts read beside them so each right names the account that holds it; one collection with its key resolved is a resource and not a view. |
 | composed view | trading | get | =/api/books/tree= | bff | projects/ores.web/packages/bff/src/books.ts:125 | Every portfolio and every book in one answer, two collection reads woven into the tree a person navigates. |
@@ -724,6 +725,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reference-data | put | =/api/conventions/:family/documents/:id/terms= | bff | projects/ores.web/packages/bff/src/conventions.ts:799 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
 | resource | reference-data | get | =/api/conventions/families= | bff | projects/ores.web/packages/bff/src/conventions.ts:593 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
 | not an API | (none) | get | =/api/conventions/pick-lists= | bff | projects/ores.web/packages/bff/src/conventions.ts:702 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
+| not an API | (none) | get | =/api/conventions/pick-lists= | ores.http | projects/ores.http/refdata/src/routes/refdata/pick_list_routes.cpp:375 | The option lists the BFF answered for each reference data form, keyed by the control's name, kept so the forms work when the BFF goes. |
 | resource | reference-data | get | =/api/counterparties= | bff | projects/ores.web/packages/bff/src/counterparties.ts:201 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | get | =/api/counterparties/:id= | bff | projects/ores.web/packages/bff/src/counterparties.ts:230 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | put | =/api/counterparties/:id/business-centres= | bff | projects/ores.web/packages/bff/src/counterparties.ts:358 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
@@ -732,6 +734,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reference-data | get | =/api/counterparties/children= | bff | projects/ores.web/packages/bff/src/counterparties.ts:252 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | put | =/api/counterparties/composite= | bff | projects/ores.web/packages/bff/src/counterparties.ts:316 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | not an API | (none) | get | =/api/counterparties/pick-lists= | bff | projects/ores.web/packages/bff/src/counterparties.ts:288 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
+| not an API | (none) | get | =/api/counterparties/pick-lists= | ores.http | projects/ores.http/refdata/src/routes/refdata/pick_list_routes.cpp:388 | The option lists the BFF answered for each reference data form, keyed by the control's name, kept so the forms work when the BFF goes. |
 | resource | market-data | post | =/api/curves/compute= | bff | projects/ores.web/packages/bff/src/curves.ts:312 | Computes a curve's points from a bootstrap configuration and stores nothing, a derived read of the curve the configuration describes. |
 | resource | market-data | post | =/api/curves/evolution= | bff | projects/ores.web/packages/bff/src/curves.ts:378 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
 | resource | market-data | post | =/api/curves/fx-forward-ladder= | bff | projects/ores.web/packages/bff/src/curves.ts:410 | One currency pair's forward ladder at one as-of, one service read that stores nothing and names the missing input when it refuses. |
@@ -751,7 +754,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | auth | get | =/api/geo/country= | bff | projects/ores.web/packages/bff/src/audit.ts:166 | Resolves one address to a country against the tenant's published ranges, the read the sign-in audit uses to say where a session came from. |
 | transport capability | (none) | get | =/api/health= | bff | projects/ores.web/packages/bff/src/server.ts:692 | The liveness answer the deployment's probes read, beside the metrics endpoints the design puts in the server. |
 | not an API | (none) | get | =/api/history= | bff | projects/ores.web/packages/bff/src/classifications.ts:369 | One history route for every entity type, named by an opaque entityType string, so the payload has no per-entity schema; ores.http already serves /versions for each versioned collection. |
-| not an API | (none) | get | =/api/history= | ores.http | projects/ores.http/core/src/routes/history_routes.cpp:206 | The one history read every history tab calls, kept so the tabs work when the BFF goes; the owning component answers on the subject the entity type names. |
+| not an API | (none) | get | =/api/history= | ores.http | projects/ores.http/core/src/routes/history_routes.cpp:213 | The one history read every history tab calls, kept so the tabs work when the BFF goes; the owning component answers on the subject the entity type names. |
 | resource | workflow | get | =/api/hold-reasons= | bff | projects/ores.web/packages/bff/src/inbox.ts:756 | The codes a decider may park a request with, a tenant-wide lookup that carries no personal data. |
 | composed view | assets | get | =/api/image-map= | bff | projects/ores.web/packages/bff/src/server.ts:2828 | Which image every flagged record uses, weaving currencies, countries, calendars and business centres into one code to image map, five reads, with a calendar and a business centre falling back to their country's flag and a placeholder for a code that has none. |
 | resource | assets | get | =/api/image-upload-policy= | bff | projects/ores.web/packages/bff/src/server.ts:2817 | The rule an uploaded image must satisfy, read from the validator that enforces it rather than copied into a picker. |
@@ -831,7 +834,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | qa | post | =/api/qa/scenarios/:id/steps/:step/images= | bff | projects/ores.web/packages/bff/src/qa.ts:193 | An image a tester attaches to one step of a scenario, written into the scenario's own store and read back with it. |
 | composed view | operations | get | =/api/queue/authorisations= | bff | projects/ores.web/packages/bff/src/inbox.ts:648 | The authorisation requests this person may decide with the deal each one names as it looks now, the open requests and the answered tail in one answer. |
 | not an API | (none) | get | =/api/refdata= | bff | projects/ores.web/packages/bff/src/records.ts:499 | A catalogue of the resources a screen may read, each with its key fields, sortable fields, search flag, version flag and the write and delete permission names, which is a table description rather than a resource. |
-| not an API | (none) | get | =/api/refdata= | ores.http | projects/ores.http/refdata/src/routes/refdata/refdata_routes.cpp:198 | The catalogue the BFF answered, built from each record unit's own entry, so the screens keep reading the resources they may name when the BFF goes. |
+| not an API | (none) | get | =/api/refdata= | ores.http | projects/ores.http/refdata/src/routes/refdata/refdata_routes.cpp:202 | The catalogue the BFF answered, built from each record unit's own entry, so the screens keep reading the resources they may name when the BFF goes. |
 | not an API | (none) | delete | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:679 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
 | not an API | (none) | get | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:525 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
 | not an API | (none) | put | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:649 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
@@ -1158,6 +1161,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reference-data | delete | =/api/tenors/conventions/:code/resolutions/:tenor= | bff | projects/ores.web/packages/bff/src/tenors.ts:361 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
 | resource | reference-data | put | =/api/tenors/conventions/:code/resolutions/:tenor= | bff | projects/ores.web/packages/bff/src/tenors.ts:337 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
 | not an API | (none) | get | =/api/tenors/pick-lists= | bff | projects/ores.web/packages/bff/src/tenors.ts:222 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
+| not an API | (none) | get | =/api/tenors/pick-lists= | ores.http | projects/ores.http/refdata/src/routes/refdata/pick_list_routes.cpp:401 | The option lists the BFF answered for each reference data form, keyed by the control's name, kept so the forms work when the BFF goes. |
 | resource | reference-data | post | =/api/tenors/preview-resolution= | bff | projects/ores.web/packages/bff/src/tenors.ts:234 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
 | resource | reference-data | post | =/api/tenors/resolve= | bff | projects/ores.web/packages/bff/src/tenors.ts:252 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
 | resource | reference-data | post | =/api/tenors/resolve-convention= | bff | projects/ores.web/packages/bff/src/tenors.ts:269 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |

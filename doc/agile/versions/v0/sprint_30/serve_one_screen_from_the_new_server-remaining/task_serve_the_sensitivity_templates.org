@@ -35,6 +35,7 @@ Port the 6 BFF routes of the analytics area to the C++ server. The routes read a
 
 * Acceptance
 
+- The C++ server answers =GET /api/analytics/sensitivity-templates/choices=, the methods and asset classes the template form offers, moved here from the pick list task.
 - Each route in scope names its C++ equivalent in the inventory.
 - A test proves each new route against the answer the BFF gives.
 - The local gate is green.

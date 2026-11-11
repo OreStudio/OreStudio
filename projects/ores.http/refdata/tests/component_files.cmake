@@ -95,6 +95,7 @@ set(files
     "party_type_classification_routes_tests.cpp"
     "party_web_routes_tests.cpp"
     "payment_frequency_web_routes_tests.cpp"
+    "pick_list_routes_tests.cpp"
     "purpose_type_classification_routes_tests.cpp"
     "regulatory_book_type_classification_routes_tests.cpp"
     "rounding_type_classification_routes_tests.cpp"

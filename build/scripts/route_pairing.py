@@ -80,5 +80,9 @@ PAIRS = {
     ("GET", "/api/classifications"): ("GET", "/api/classifications"),
     ("GET", "/api/labels"): ("GET", "/api/labels"),
     ("GET", "/api/history"): ("GET", "/api/history"),
+    ("GET", "/api/books/pick-lists"): ("GET", "/api/books/pick-lists"),
+    ("GET", "/api/conventions/pick-lists"): ("GET", "/api/conventions/pick-lists"),
+    ("GET", "/api/counterparties/pick-lists"): ("GET", "/api/counterparties/pick-lists"),
+    ("GET", "/api/tenors/pick-lists"): ("GET", "/api/tenors/pick-lists"),
     ("GET", "/api/counterparties"): ("GET", f"{REFDATA}/counterparties"),
 }

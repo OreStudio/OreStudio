@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: F8559BFA-9FF8-4F6D-8D70-780ECE9C5737
+:END:
+#+title: Provisioning approves without a person only while it runs
+#+description: Provisioning turns the tenant's auto-approval on for its own publishes and turns it off when the run ends, whether the run completes, fails or is abandoned.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:approval:auto_approval:provisioning:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+* Summary
+
+Provisioning publishes a tenant's own sets, such as each party's curves, before the tenant has the people who decide them. It does so under a grant of its own: each run holds a grant that names the run, the approval kinds it raises and an expiry. While the grant is held and unexpired, a request of one of those kinds closes under the =provisioning= rule. The run releases its grant when it ends, however it ends, and the expiry ends a grant whose run never released it. The tenant's own approvals mode is never touched.
+
+* Detail
+
+** The grant
+
+| Field | Meaning |
+|-------+---------|
+| Run | The provisioning run that holds it. |
+| Kinds | The approval kinds the run raises: the publish kinds of the sets it publishes. Withdrawals are not among them. |
+| Expiry | An instant after which the grant no longer applies, set from the profile's expected duration. |
+| Released | When the run released it. |
+
+The profile's first step that raises a request takes the grant, with the reason that provisioning runs without waiting on approvals ([[id:6014CFE1-D978-4ABA-BBA9-D87040FE44BA][The acme_demo profile is ten ordered steps, and the steps are data]]). The run releases it when it completes, fails or is abandoned, as part of closing the run.
+
+** Why a grant and not the mode
+
+A run that changed the tenant's mode would have to restore it, and would lose an administrator's own choice or a deployment's. A grant is the run's alone. Two overlapping runs each hold their own grant, and the end of one does not end the other's. A run whose process died never releases its grant, and its expiry ends it.
+
+** What it covers
+
+Every request of a granted kind closes under the =provisioning= rule ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]) and names it, whoever raises it. A withdrawal is never covered, because it takes data out of use. Every screen shows a held grant.
+
+** After the run
+
+When the grant is released or expires, a person decides every request, unless the tenant's administrator has set the tenant's mode with a reason.
+
+* See also
+
+- [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]
+- [[id:6014CFE1-D978-4ABA-BBA9-D87040FE44BA][The acme_demo profile is ten ordered steps, and the steps are data]]
+- [[id:8B0D92BD-7D15-45B7-80EA-07D111F73EB3][An Acme approval is decided by a permitted person who did not raise it]]

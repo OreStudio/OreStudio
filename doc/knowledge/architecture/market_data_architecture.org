@@ -231,6 +231,7 @@ and at saying which parts of a new asset class are config and which are code.
 
 * See also
 
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — completes: how a derived curve, forward set or surface becomes the set the system prices from.
 - [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — completes: how the ticks this cluster describes reach the store at one hundred thousand feeds.
 - [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — completes: the curve specific view of provenance.
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-Rates Matrix]] — completes: the no-arbitrage spanning tree over driver rates.

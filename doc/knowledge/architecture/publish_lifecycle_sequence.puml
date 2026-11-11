@@ -1,0 +1,66 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Publishing a derived market object: compute, raise, decide, apply
+
+actor "Trader\n(maker)" as maker
+participant "Market data" as md
+participant "Inbox\n(library, same database)" as inbox
+actor "Decider\n(checker)" as checker
+participant "Readers" as readers
+
+== Compute ==
+maker -> md : compute(subject, as-of)
+md -> md : solve and check; store the candidate\nwith its lineage, inputs and checks\n(an unchanged compute converges\non the existing version)
+md --> maker : candidate version and its checks
+
+== Raise ==
+maker -> md : raise publish(subject, as-of, reason)
+md -> md : the subject is the session party's;\nno blocking check failed;\nno open request for it;\nnot older than the live set
+md -> inbox : read the kind, the approvals mode\nand the provisioning grants\n(before the transaction, tenant-wide)
+inbox --> md : the rule in force, if any
+group one transaction
+  md -> inbox : write the request (and its rule)
+  md -> md : write the subject:\nsubject, as-of, candidate version
+  opt a stated rule closes it
+    inbox -> inbox : approve, decided by the system
+    md -> md : apply (below), in this transaction
+  end
+end
+alt closed by a rule
+  md --> maker : published
+else a person decides
+  md --> maker : raised; waits on the decision
+  inbox -> checker : a request waits
+  checker -> inbox : approve (not the maker)
+  inbox -> maker : the request is approved
+  maker -> md : apply(request), within the apply window
+end
+
+== Apply ==
+md -> md : the request is of the kind, approved,\nin its window, not applied; the subject\nmatches; the candidate is the version\napproved; no input was withdrawn;\nno newer set is live
+group one transaction
+  md -> md : publish the set; stamp publisher and instant
+  md -> md : supersede the sets it replaces
+  md -> md : write the notice (outbox row)
+end
+md -> readers : deliver the notice after the commit\n(retried until delivered)
+md --> maker : published
+
+@enduml

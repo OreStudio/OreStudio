@@ -163,21 +163,22 @@ and the next section is that act.
 
 * The hand-off to publication
 
-The candidate becomes authoritative in the three acts that make a curve
-authoritative: the maker raises a publish naming the blueprint and the as-of, a
-second person decides under the four-eyes rule, and the publish applies the
-approved request once, stamps the publisher and the instant, ends the set it
-replaces and sends the notice.
+The candidate becomes authoritative through the lifecycle every derived market
+object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]). The maker raises a publish naming the subject, the as-of and
+the candidate's version; a second person decides under the kind's maker and
+checker permissions and the record's four-eyes rule, or a stated rule closes the
+request ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]); the trader applies the approved request once, which stamps the
+publisher and the instant, ends the set it replaces and sends the notice ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]).
 
 The published set is what the rest of the system consumes. The report references
 it through its market binding, as
 [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve]]
 describes for a curve; the screens read it; a candidate never reaches either. The
 ORE export writes the published grid as ORE volatility quotes at the boundary,
-with the =fx_volatility_config= that describes the grid, and ORE interpolates
-between the grid points by its own rules. The grid therefore has to be fine
-enough that ORE's surface reproduces the calibrated one at the strikes a trade
-needs. The trader's side is
+and derives the FX volatility entry ORE reads from the blueprint, so the entry
+and the grid cannot disagree. ORE interpolates between the grid points by its
+own rules, so the grid has to be fine enough that ORE's surface reproduces the
+calibrated one at the strikes a trade needs. The trader's side is
 [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]],
 [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]],
 [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] and
@@ -186,30 +187,19 @@ with the publish journeys the curve shares.
 
 * The changes that reach the target
 
-Six changes remain, and each is a change to a named part of the system.
+Four changes remain, and each is a change to a named part of the system.
 
-The first is the surface blueprint. No record states a surface's recipe today;
-the refdata entities =fx_volatility_config= and =fx_volatility_smile= describe a
-surface to ORE, and the blueprint is the record that adds the pillars, their
-series, the contributors' weights, the smile model and the output series.
+The first is the publish. A surface is published through the one lifecycle of
+every derived market object ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]), with the curve and the forward set.
 
-The second is the calibration operation. A request that names the blueprint and
-the as-of and a response that carries the calibrated points and the error per
-pillar, the =marketdata.v1.ops.calibrate_fx_vol_surface= subject, which the calibrate
-journey calls, with the engine behind it.
-
-The third is the validation operation. Both kinds of check run in the service,
+The second is the validation operation. Both kinds of check run in the service,
 the first held against the blueprint's version and the second against the
 candidate, so a caller that is not a screen is held to the same rule.
 
-The fourth is the calibrated surface series. oresmd needs the instrument type
-whose identity names a calibrated FX volatility surface, created as part of the
-blueprint's lifecycle as a curve's output series is.
+The third is the ORE projection. The FX volatility entry a run reads is derived
+from the blueprint and its published grid at the export, and is not stored.
 
-The fifth is the surface and slice reads, which the slices journey needs and
-which read the published set rather than the quotes.
-
-The sixth is the synthetic surface feed, which publishes into the series the
+The fourth is the synthetic surface feed, which publishes into the series the
 pillars name, through the contributors of
 [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]].
 
@@ -257,5 +247,5 @@ two ways a surface differs from a curve.
 * Patterns used
 
 - [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] -- the calibration is a call that reads the quotes and answers the calibrated points and their errors.
-- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] -- a republish over the same series and as-of converges on the same natural key rather than duplicating the points.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] -- a compute over the same recipe, inputs and as-of converges on the candidate version it already wrote rather than duplicating the points.
 - [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] -- the construction reads refdata's recipe and conventions and market data's observations, and each component owns its own store.

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 86158AAD-423A-421A-8BE2-CC5123109297
+:END:
+#+title: A reader takes the newest published set at or before its as-of
+#+description: Every read of a derived market object answers with the newest set published for the subject at or before the as-of that is not withdrawn, with its state and its approval.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:marketdata:publish:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+* Summary
+
+Every read of a derived market object by as-of answers one question: which set did the party hold for this subject at this as-of? The answer is the newest published set of the subject, at or before the asked as-of, that is not withdrawn; at one as-of, the one published last. The read returns the set with its state, its approval and the candidate it published, and it never returns a candidate. A read by publish record, as a run's binding makes, returns that set whatever its state, and says the state.
+
+* Detail
+
+** The rule
+
+The newest wins, by as-of, then by the instant it was published:
+
+1. Take the published sets of the subject whose as-of is at or before the asked as-of.
+2. Drop the withdrawn ones.
+3. Take the one with the latest as-of; at an equal as-of, the one published last.
+
+The series' live set is what this rule answers for an as-of of now. A read at an as-of before every remaining published set refuses, naming the subject and the as-of.
+
+| Set | Taken by a read by as-of |
+|-----+--------------------------|
+| Published, not withdrawn | when the rule selects it |
+| Withdrawn | never |
+| Candidate | never |
+
+Supersession is a record of what replaced a set and when; the rule, not the mark, decides what is read. A superseded set is taken for an as-of before its successor's, and again after its successor is withdrawn.
+
+** What it returns
+
+The set's points, its as-of, who published it and when, its state, the request and how it was decided, and whether the decision was a person's or a stated rule's ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]). A forward set also returns the state of each curve it was built from.
+
+** Who reads it
+
+Screens, the ORE export of a run, a report's market binding ([[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]]) and the cut a run prices from ([[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]]). Reads by as-of go through this rule, so two readers at one as-of see one set. A binding names the publish record, so a repeated run reads the set it bound.
+
+* See also
+
+- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]
+- [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]
+- [[id:E474FB93-2ACE-4981-9761-33E214B3D268][A published set is withdrawn through a request of its own]]
+- [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]]
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]]

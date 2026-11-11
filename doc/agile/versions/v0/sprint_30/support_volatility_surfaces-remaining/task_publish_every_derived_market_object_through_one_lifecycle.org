@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: A171C0C0-634A-4ADF-8772-6EBBBDF94166
+:END:
+#+title: Task: Publish every derived market object through one lifecycle
+#+description: Bring curves, FX forward sets and FX volatility surfaces to the one publish lifecycle the architecture states, with auto-approval read and shown as documented and a transaction-bound context that refuses a change of tenant or party.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:publish:approval:auto_approval:database:support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Curves, FX forward sets and FX volatility surfaces are published through the one lifecycle [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] states: a stored candidate, a raise for one candidate version in one transaction, a decision or a stated rule, the trader's apply that supersedes and tells, a withdrawal of its own, and one read rule. Auto-approval works and shows as [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]] states, inside the raise's transaction, and a context bound to a transaction refuses a change of tenant or party. The investigation [[id:44E630B8-3CA4-42C5-BA94-75618F121327][The publish of derived market data: curves, forward sets and surfaces]] records why.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- One implementation of the lifecycle in =ores.marketdata.service=, parameterised by kind ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]). One publish record shape with the shared columns and a subject part per kind. The curve, forward set and surface each declare only their subject, compute, checks and approval kinds.
+- Each kind's compute stores a versioned candidate with its lineage, its input sets and its checks, each blocking or advisory, before any raise; an unchanged compute converges on the existing version; series reads by as-of never return a candidate ([[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][A candidate is computed and stored before a publish is raised]]). The curve publish no longer bootstraps at apply; the forward publish no longer computes inside the raise.
+- One raise for every kind ([[id:BF14C932-D699-4224-98DA-0481E49FA394][A publish raise names one candidate version, in one transaction]]): the session party owns the subject; a failed blocking check is refused; one open request per subject and as-of; a candidate older than the live set is refused, an equal as-of is a correction; no reason is refused; the request and the subject record naming the candidate version are one transaction; a request a stated rule closes is applied inside that transaction, and a refused apply rolls the raise back.
+- One apply for every kind ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]): the checks of the note, including the candidate's inputs not withdrawn; then publish, supersede and write the notice as an outbox row in one transaction, delivered after the commit; an approved request lapses after the kind's apply window. Forward sets are superseded and noticed like the others.
+- One withdrawal for every kind ([[id:E474FB93-2ACE-4981-9761-33E214B3D268][A published set is withdrawn through a request of its own]]), with a withdrawal approval kind per object kind, applied by the trader, for a live or a superseded set. Forward sets and surfaces gain it.
+- One read rule for every kind ([[id:86158AAD-423A-421A-8BE2-CC5123109297][A reader takes the newest published set at or before its as-of]]): the newest published, unwithdrawn set at or before the as-of, the last published at an equal as-of; a read by publish record returns the set whatever its state.
+- =context::with_tenant= and =with_party= throw on a context bound to a transaction ([[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][A context bound to a transaction cannot change its tenant or party]]); every caller that relied on them inside a unit of work reads before or beside the transaction.
+- The inbox reads the approvals mode, the kind and the system actor on a context not bound to the caller's transaction, under the tenant with no party restriction, so a raise inside a unit of work by a party's trader closes under the =tenant= rule ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]). A test raises in a unit of work as a party with the tenant's mode =auto_approved= and sees the request approved under =tenant=.
+- Provisioning holds a grant per run, naming its kinds and an expiry, in place of changing the tenant's mode; the run releases it however it ends, and the =provisioning= rule closes only the granted kinds ([[id:F8559BFA-9FF8-4F6D-8D70-780ECE9C5737][Provisioning approves without a person only while it runs]]).
+- Every screen of a tenant shows an =auto_approved= mode or a held provisioning grant, with who set it, when and why, and each request shows the rule that closed it ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]).
+- Tests: for each kind, the raise's refusals, the rule-closed raise and its rollback, the apply's refusals and the lapse, supersession and an equal-as-of correction, withdrawal of a live and of a superseded set and the reads after each, and the read rule; the provisioning grant's release and expiry; and the bound-context refusal.
+- The Acme provisioning publishes every party's curves, forward sets and surfaces through the lifecycle, and the evidence shows each request's rule.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The architecture is the [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] cluster, written and reviewed before this task starts. The decisions it rests on are recorded in the investigation's Recommendations and the story's Decisions.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

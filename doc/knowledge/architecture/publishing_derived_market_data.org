@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: B74CEF18-B533-45A1-B65E-F7DF836988D6
+:END:
+#+title: Publishing derived market data
+#+description: Structure note for the publish of derived market data: how a curve, an FX forward set or a volatility surface becomes the set the system prices from, in the order the pieces depend on each other.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:structure_note:marketdata:publish:approval:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+* Summary
+
+A curve, an FX forward set and an FX volatility surface are each derived from market quotes, and each becomes the set the system prices from in the same way. A compute writes a candidate. The maker raises a publish naming it. A second person decides, or a stated rule closes the request. The trader applies the approval, which publishes the set, supersedes the set it replaces and tells its readers. A published set is later withdrawn through a request of its own. A reader always takes the newest published set at or before its as-of.
+
+This page orders the cluster. Read it top to bottom when changing how a derived object is published; read one page when changing one step. Every page states the target, in the present tense.
+
+* Detail
+
+** Reading order
+
+The order follows dependency: each page needs the one before it.
+
+1. [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]] — the shape every kind shares, its states, and what a kind supplies.
+2. [[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][A candidate is computed and stored before a publish is raised]] — where the numbers come from, and why they exist before anyone is asked.
+3. [[id:BF14C932-D699-4224-98DA-0481E49FA394][A publish raise names one candidate version, in one transaction]] — how a request is raised for one candidate version, and what it refuses.
+4. [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]] — when a raised request closes without a person, and why.
+5. [[id:F8559BFA-9FF8-4F6D-8D70-780ECE9C5737][Provisioning approves without a person only while it runs]] — the grant a provisioning run holds so its own publishes close without a person, and how it ends.
+6. [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]] — how an approved request becomes the live set, and how readers learn of it.
+7. [[id:E474FB93-2ACE-4981-9761-33E214B3D268][A published set is withdrawn through a request of its own]] — how a live set is taken out of use.
+8. [[id:86158AAD-423A-421A-8BE2-CC5123109297][A reader takes the newest published set at or before its as-of]] — what every reader is given.
+9. [[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][A context bound to a transaction cannot change its tenant or party]] — the database rule that lets the raise be one transaction and still read the tenant's approval rule.
+
+** The kinds of object
+
+| Kind | Subject | Compute | Construction |
+|------+---------+---------+--------------|
+| IR curve | a bootstrap configuration of the party | the bootstrap | [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] |
+| FX forward set | a currency pair of the party | the forward compute, by covered interest parity from two published curves | [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]] |
+| FX volatility surface | a surface blueprint of the party | the calibration | [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] |
+
+The approval record and its rules are [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] and [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]]. The journeys a trader and a decider follow are [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]], [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]], [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] and [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]]. A report consumes a published set through [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]]
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]]
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]]

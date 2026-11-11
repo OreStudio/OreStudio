@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 31F9FEF5-4693-4C63-AE93-E74BA88DE175
+:END:
+#+title: A context bound to a transaction cannot change its tenant or party
+#+description: A transaction's tenant and parties are fixed when it opens, so a context bound to it refuses a narrower or wider tenant or party, and a read under another context runs outside it.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:database:tenancy:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+* Summary
+
+A transaction's tenant, party and visible parties are fixed when it opens ([[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]). A context bound to a transaction therefore refuses to be narrowed or widened to another tenant or party: =with_tenant= and =with_party= throw on it. A read that needs another tenant or another party's view, such as the approvals mode or the system tenant's approval kinds, runs on a context that is not bound to the transaction, before the transaction opens or beside it.
+
+* Detail
+
+** The rule
+
+| Context | =with_tenant=, =with_party= |
+|---------+-----------------------------|
+| Not bound to a transaction | Returns a copy for the other tenant or party. Its next transaction sets that tenant and party. |
+| Bound to a transaction | Throws, naming the transaction. |
+
+** Why it throws
+
+The settings of a transaction are sent once, with its first statement ([[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]]). A copy of a bound context that named another tenant or party would still run on the transaction, under the settings it opened with, and row-level security would answer for the original tenant and party. A read that silently ran as someone else is wrong in a way no test of its own sees, so the call fails where it is made.
+
+** What a caller does instead
+
+A caller that needs a configuration read, such as [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]] reading the approvals mode, makes it on its own context before it opens the unit of work, or on a context with no bound transaction. Everything written inside the unit of work acts for the transaction's tenant and party.
+
+* See also
+
+- [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]
+- [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]]
+- [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]]

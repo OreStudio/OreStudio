@@ -30,7 +30,7 @@ thinner book or a different feed changes a value rather than a build.
 |-------+------+-----------------|
 | 5 | =system_provision= | publishes the system's own datasets into the system tenant, which every tenant reads as an overlay |
 | 6 | =publish_system_curves= | bootstraps and publishes each IR curve the system tenant holds a config for, from its synthetic quotes. These are the system's reference set: no tenant prices from them |
-| 8 | =start_auto_approval= | turns the tenant's auto-approval on, so the publishes below close without a person. Every screen says so while it is on |
+| 8 | =start_auto_approval= | takes the run's provisioning grant for the publish kinds it raises, so the publishes below close without a person. Every screen says so while it is held |
 | 10 | =publish_bundle= | the =base= bundle, the =marketdata.reference_vintage_2026_05_05= bundle, the GLEIF counterparty set at the profile's chosen size, and the ORE counterparty aliases |
 | 15 | =build_calendars= | the business days of every calendar a currency or a pair convention names, to 2060 |
 | 20 | =import_lei_hierarchy= | the Acme LEI hierarchy, whose root is =9695ACMEGROUP0000030=, as the tenant's four parties |
@@ -42,7 +42,7 @@ thinner book or a different feed changes a value rather than a build.
 | 65 | =publish_party_curves= | each entity's own copy of the 20 curve blueprints, bootstrapped from the quotes its own subscriptions deliver and published under auto-approval |
 | 70 | =schedule_reports= | a scheduler job and a run grant for every report definition each party publishes whose schedule is a real cron, so the catalogue ticks without a person acting |
 | 80 | =generate_trades= | one trade population per trading entity, each booked into that entity's own book by its own traders |
-| 9000 | =end_auto_approval= | turns auto-approval off after every other step, so people decide from here on |
+| 9000 | =end_auto_approval= | releases the grant after every other step, so people decide from here on. A run that fails or is abandoned releases it as it closes, and the grant's expiry ends it if the run never does |
 
 The run then closes with =complete_provisioning=, which the workflow adds rather
 than the profile: it hands the tenant to its own administrator, clears the
@@ -122,6 +122,7 @@ belong to [[id:4C062ECC-D6D4-4BA4-8F96-10E141663D9C][New tenant]].
 
 * See also
 
+- [[id:F8559BFA-9FF8-4F6D-8D70-780ECE9C5737][Provisioning approves without a person only while it runs]] — completes: the window in which the tenant approves without a person.
 - [[id:DB09267A-E589-4688-9773-9A7BF982247F][The Acme demonstration's market data and its approvals]] — the structure note that orders this cluster.
 - [[id:9E8D00D3-5ADD-48E0-85AB-CC19693DEFFF][A subscription names the provider and the route names the source]] — completes: the rows step 60 writes.
 - [[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][Report families]] — orders: what the catalogue means by on demand, and where step 70's schedules come from.

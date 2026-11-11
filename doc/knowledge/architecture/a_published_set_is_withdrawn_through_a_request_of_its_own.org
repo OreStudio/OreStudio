@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: E474FB93-2ACE-4981-9761-33E214B3D268
+:END:
+#+title: A published set is withdrawn through a request of its own
+#+description: Taking a published set out of use is a four-eyes act with its own approval kind, applied by the trader, recorded with its reason and told to readers.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:marketdata:publish:approval:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+* Summary
+
+A published set that is wrong is taken out of use by a withdrawal: a request of the kind's withdrawal kind, raised with a reason, decided under four-eyes, and applied by the trader. Any published set that is not withdrawn can be withdrawn, live or superseded. The apply marks the set withdrawn, keeps the reason against it, and writes the notice. From then on no read by as-of takes it, and the series' live set is the newest published set that remains.
+
+* Detail
+
+** The act
+
+The withdrawal follows the publish's shape. The trader raises it naming the published set and a reason. It is refused if the set is already withdrawn or a withdrawal of it is open. A person decides it, or a stated rule closes it ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]), in which case the apply runs in the raise's transaction. Otherwise the trader applies it within the kind's apply window: the apply checks that the request is approved and the set not yet withdrawn, then marks it withdrawn and writes the notice in one transaction.
+
+** What a read takes afterwards
+
+A read by as-of skips a withdrawn set and takes the newest remaining published set at or before the as-of ([[id:86158AAD-423A-421A-8BE2-CC5123109297][A reader takes the newest published set at or before its as-of]]). Withdrawing the live set therefore makes the set it had superseded the series' live set again; withdrawing a superseded set changes the reads of the as-ofs it covered. If no published set remains, a read refuses.
+
+** What it leaves behind
+
+A run that bound the set before the withdrawal names it by its publish record ([[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]]), so a repeat of that run reads the same set and shows that it was withdrawn since. A cut that holds the set keeps it, for the same reason ([[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]]). Sets derived from a withdrawn set, such as a forward set built from a withdrawn curve, are not changed; their reads show the state of every input ([[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]]). A candidate computed from it cannot be published ([[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][A candidate is computed and stored before a publish is raised]]).
+
+** Withdraw or replace
+
+A correction is a new publish at the same or a newer as-of, which supersedes the wrong set ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]). A withdrawal is for a set that must not be used at all. The two are distinct acts with distinct approval kinds, as [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] describes.
+
+* See also
+
+- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]
+- [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]
+- [[id:86158AAD-423A-421A-8BE2-CC5123109297][A reader takes the newest published set at or before its as-of]]
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]]
+- [[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]]

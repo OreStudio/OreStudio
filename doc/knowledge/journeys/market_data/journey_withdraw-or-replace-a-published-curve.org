@@ -279,11 +279,10 @@ once.
 *** Open questions
 
 1. Does the withdrawal apply when the last decider approves, or does the trader
-   apply it? The recommendation is that it applies on the decision. A publish
-   waits for the trader because the trader owns the set that becomes live; a
-   withdrawal takes a risk out of the book, and a second press adds a wait and
-   no check. The alternative is the publish's path, with an apply call that
-   names the approved withdrawal request.
+   apply it? The trader applies it, as a publish is applied, so every act on a
+   published set has one shape ([[id:E474FB93-2ACE-4981-9761-33E214B3D268][A published set is withdrawn through a request of its own]]). A withdrawal that must take effect at
+   once is raised under a rule that closes it ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]), and the raise applies it
+   in the same call.
 2. Which reasons may a withdrawal name? The recommendation is a lookup of its
    own, seeded with the reasons a curve leaves use: a wrong quote, a stale
    pillar, a recipe changed after the fact, a duplicate publish, and a

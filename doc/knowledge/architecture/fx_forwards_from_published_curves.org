@@ -11,7 +11,7 @@
 
 * Summary
 
-ORE Studio derives each FX forward from one spot and two published funding curves, and it accepts no keyed points. The result is a parity forward, so it holds no cross-currency basis. A forward curve is a published record, written to the database with its provenance and approved as an IR curve is. Until that work is complete, the ladder still computes on read.
+ORE Studio derives each FX forward from one spot and two published funding curves, and it accepts no keyed points. The result is a parity forward, so it holds no cross-currency basis. A forward set is a published record, written to the database with its provenance. It is computed into a candidate, raised, decided and applied through the lifecycle every derived market object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]), so it supersedes the set it replaces, tells its readers, and is withdrawn through a request of its own.
 
 * Detail
 
@@ -34,6 +34,7 @@ A forward set belongs to a party, and so do the two funding curves it reads. The
 * See also
 
 - [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — completes: how the set is published, superseded and withdrawn.
 - [[id:47E963BF-2299-5565-BAE7-4F8C9BBA421C][The US dollar is the natural hub for FX forward curves]] — exemplifies: the hub this scope starts from.
 - [[id:5498FC33-2DDA-5E17-99E0-F524BFACA460][An FX-implied curve is backed out from a discount curve and forward points]] — contradicts: the other direction, which holds the basis.
 - [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]] — exemplifies: parity on published curves.

@@ -37,7 +37,6 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -78,14 +77,14 @@ struct selection_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<selection_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"folder", &selection_body::folder},
-                      field{"provider", &selection_body::provider},
-                      field{"assetClass", &selection_body::assetClass},
-                      field{"state", &selection_body::state},
-                      field{"shouldRun", &selection_body::shouldRun},
-                      field{"search", &selection_body::search},
-                      field{"feedIds", &selection_body::feedIds},
-                      field{"excludedIds", &selection_body::excludedIds}};
+    return ::ores::utility::codec::field_list{field{"folder", &selection_body::folder},
+                                              field{"provider", &selection_body::provider},
+                                              field{"assetClass", &selection_body::assetClass},
+                                              field{"state", &selection_body::state},
+                                              field{"shouldRun", &selection_body::shouldRun},
+                                              field{"search", &selection_body::search},
+                                              field{"feedIds", &selection_body::feedIds},
+                                              field{"excludedIds", &selection_body::excludedIds}};
 }
 
 }

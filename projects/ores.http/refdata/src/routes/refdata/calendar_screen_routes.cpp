@@ -33,7 +33,6 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
-#include <tuple>
 #include <type_traits>
 
 namespace ores::http::routes::refdata {
@@ -66,7 +65,7 @@ struct rebuild_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<rebuild_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"endYear", &rebuild_body::endYear}};
+    return ::ores::utility::codec::field_list{field{"endYear", &rebuild_body::endYear}};
 }
 
 }

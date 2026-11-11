@@ -36,7 +36,6 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -171,8 +170,8 @@ struct stated_intent final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stated_intent>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"reason_code", &stated_intent::reason_code},
-                      field{"commentary", &stated_intent::commentary}};
+    return ::ores::utility::codec::field_list{field{"reason_code", &stated_intent::reason_code},
+                                              field{"commentary", &stated_intent::commentary}};
 }
 
 /**
@@ -196,9 +195,9 @@ struct versioned_write final {
 template <typename Write>
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<versioned_write<Write>>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"intent", &versioned_write<Write>::intent},
-                      field{"version", &versioned_write<Write>::version},
-                      field{"write", &versioned_write<Write>::write}};
+    return ::ores::utility::codec::field_list{field{"intent", &versioned_write<Write>::intent},
+                                              field{"version", &versioned_write<Write>::version},
+                                              field{"write", &versioned_write<Write>::write}};
 }
 
 /**

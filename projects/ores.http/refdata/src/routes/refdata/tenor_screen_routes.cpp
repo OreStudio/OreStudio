@@ -34,7 +34,6 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
 
 namespace ores::http::routes::refdata {
@@ -61,8 +60,8 @@ struct removal_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<removal_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"intent", &removal_body::intent},
-                      field{"version", &removal_body::version}};
+    return ::ores::utility::codec::field_list{field{"intent", &removal_body::intent},
+                                              field{"version", &removal_body::version}};
 }
 
 }

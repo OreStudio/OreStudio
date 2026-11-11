@@ -39,7 +39,6 @@
 #include <set>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -70,7 +69,7 @@ struct run_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<run_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"configId", &run_body::configId}};
+    return ::ores::utility::codec::field_list{field{"configId", &run_body::configId}};
 }
 
 /// A reviewer's decision on a proposed variance calibration, and why.
@@ -81,8 +80,8 @@ struct review_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<review_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"decision", &review_body::decision},
-                      field{"reason", &review_body::reason}};
+    return ::ores::utility::codec::field_list{field{"decision", &review_body::decision},
+                                              field{"reason", &review_body::reason}};
 }
 
 /// The policy a person states for a class, at the version it was read, or null when new.
@@ -97,12 +96,13 @@ struct policy_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<policy_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"intent", &policy_body::intent},
-                      field{"version", &policy_body::version},
-                      field{"window_days", &policy_body::window_days},
-                      field{"allow_inverse", &policy_body::allow_inverse},
-                      field{"fallback_code", &policy_body::fallback_code},
-                      field{"provider_order", &policy_body::provider_order}};
+    return ::ores::utility::codec::field_list{
+        field{"intent", &policy_body::intent},
+        field{"version", &policy_body::version},
+        field{"window_days", &policy_body::window_days},
+        field{"allow_inverse", &policy_body::allow_inverse},
+        field{"fallback_code", &policy_body::fallback_code},
+        field{"provider_order", &policy_body::provider_order}};
 }
 
 /// One candidate a person pins on a feed, read over the window given.
@@ -115,10 +115,10 @@ struct pin_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pin_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"intent", &pin_body::intent},
-                      field{"item", &pin_body::item},
-                      field{"provider_code", &pin_body::provider_code},
-                      field{"window_days", &pin_body::window_days}};
+    return ::ores::utility::codec::field_list{field{"intent", &pin_body::intent},
+                                              field{"item", &pin_body::item},
+                                              field{"provider_code", &pin_body::provider_code},
+                                              field{"window_days", &pin_body::window_days}};
 }
 
 /// A removal, which states only why it is made.
@@ -128,7 +128,7 @@ struct intent_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<intent_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"intent", &intent_body::intent}};
+    return ::ores::utility::codec::field_list{field{"intent", &intent_body::intent}};
 }
 
 }

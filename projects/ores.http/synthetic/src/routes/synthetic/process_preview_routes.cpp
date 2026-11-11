@@ -32,7 +32,6 @@
 #include <optional>
 #include <set>
 #include <string>
-#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -72,17 +71,18 @@ struct fx_simple_body final {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_simple_body>) {
     using ores::utility::codec::field;
     using body = fx_simple_body;
-    return std::tuple{field{"process_type", &body::process_type},
-                      field{"to_simple", &body::to_simple},
-                      field{"initial_price", &body::initial_price},
-                      field{"ticks_per_hour", &body::ticks_per_hour},
-                      field{"gmm_means", &body::gmm_means},
-                      field{"gmm_stdevs", &body::gmm_stdevs},
-                      field{"gmm_weights", &body::gmm_weights},
-                      field{"trend_pct_per_hour", &body::trend_pct_per_hour},
-                      field{"volatility_pct_per_hour", &body::volatility_pct_per_hour},
-                      field{"jump_share_pct", &body::jump_share_pct},
-                      field{"half_life_minutes", &body::half_life_minutes}};
+    return ::ores::utility::codec::field_list{
+        field{"process_type", &body::process_type},
+        field{"to_simple", &body::to_simple},
+        field{"initial_price", &body::initial_price},
+        field{"ticks_per_hour", &body::ticks_per_hour},
+        field{"gmm_means", &body::gmm_means},
+        field{"gmm_stdevs", &body::gmm_stdevs},
+        field{"gmm_weights", &body::gmm_weights},
+        field{"trend_pct_per_hour", &body::trend_pct_per_hour},
+        field{"volatility_pct_per_hour", &body::volatility_pct_per_hour},
+        field{"jump_share_pct", &body::jump_share_pct},
+        field{"half_life_minutes", &body::half_life_minutes}};
 }
 
 /// An IR process's parameters by name, and which way to convert them.
@@ -94,9 +94,9 @@ struct ir_convert_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ir_convert_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"process_type", &ir_convert_body::process_type},
-                      field{"to_simple", &ir_convert_body::to_simple},
-                      field{"values", &ir_convert_body::values}};
+    return ::ores::utility::codec::field_list{field{"process_type", &ir_convert_body::process_type},
+                                              field{"to_simple", &ir_convert_body::to_simple},
+                                              field{"values", &ir_convert_body::values}};
 }
 
 }

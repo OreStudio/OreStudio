@@ -7,10 +7,10 @@
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on: the terms of the CDI, which B3 computes
-#+blocked_since: 2026-11-10
+#+branch: feature/add-the-bcb-adapter
+#+pr: 4569
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-11-10
 #+updated: 2026-11-10
 #+environment: clever_dijkstra
@@ -26,11 +26,11 @@ The annualised CDI is stored as fixings in the system tenant, with its history, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Held before implementation.            |
-| Waiting on   | The terms of the CDI. B3 computes it and the BCB republishes it. The BCB's open data portal lists its own series, such as the Selic, under the ODbL, but on 2026-11-10 it listed neither CDI series, =12= nor =4389=. B3's terms for the CDI are not read. |
-| Next         | Read B3's terms for the CDI, or ask the BCB whether the ODbL covers series =4389=. Then implement, or abandon the task. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. On 2026-11-10 the owner judged the use academic and not commercial, so the CDI is read without B3's terms. |
+| Next         | Nothing. |
 | Last touched | 2026-11-10                               |
 
 * Acceptance
@@ -38,15 +38,18 @@ The annualised CDI is stored as fixings in the system tenant, with its history, 
 - The adapter reads the Banco Central do Brasil alone, and it does not copy the announce, the demand, the backfill or the publish code.
 - The Banco Central do Brasil is a supplier in the catalogue, its series maps to the BRL-CDI item, and a session and a feed scoped to that item are seeded in the system tenant.
 - A fresh environment stores the history as fixings within minutes of provisioning, and the log names the source and the count it stored.
-- Each fixing is the decimal of the published percent, with the credit Fonte: Banco Central do Brasil, under the Open Database License.
+- Each fixing is the decimal of the published percent, with the credit "Source: B3, through the Banco Central do Brasil".
 - The depth of the history is measured and written into the calibration sources note.
 - Unit tests parse a recorded response, and a malformed response gives an error, not a fixing.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =bcb_fetcher= reads a series of the SGS API. Its key is the series number, such as =4389=, of one to nine digits.
+- The API serves a daily series in windows of at most ten years, so the fetcher asks in parts of five years.
+- The API answers both an empty window (a JSON 404, "Value(s) not found") and an unknown series (a text 404, "A serie nao existe!") with a 404. The fetcher uses =read_window=, with =/dados/ultimos/1= as the latest value, to tell them apart.
+- Dates are =dd/MM/yyyy=, and values are percents as text, so =decimal_of_percent= keeps every published digit.
+- The provider's terms point at B3's financial indicators page, because B3 computes the CDI, and the credit names both B3 and the BCB.
+- The tests replay recorded answers through a stub transport. No test reads the API.
 
 * Measurements
 
@@ -60,9 +63,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| CDI fixings stored by a fresh environment | 273, from 2025-10-07 to 2026-11-09, last =0.1365= | =compass sql=, =ores_marketdata_market_fixings_tbl= by =source= | fe610c5511 |
+| Unit test cases of =ores.marketdata.official.tests= | 89, all passing | =ores.marketdata.official.tests= | fe610c5511 |
+| Depth of series 4389 | 10,178 rates, from 1986-03-06 to 2026-11-09 | the SGS API, read in parts of five years | not a tree measurement |
 
 * Notes
+
+- Two provisioning runs failed at =publish_system_curves=. =ores.marketdata.service= died at its first curve request with a symbol lookup error, because this worktree's publish directory mixed libraries of two builds after a rebase. A rebuild of the service fixed it. The CDI feed stored its fixings first. [[id:04D014E6-E34F-4F77-A748-6E7AB5B2342B][Refuse to start services from a mixed build]] records it.
+- The note records the owner's judgement of 2026-11-10 that the use is academic and not commercial, and that B3 was not asked.
 
 Confirm that series 4389 is the annualised CDI on base 252, and record that B3 computes the CDI and the BCB republishes it.
 
@@ -81,12 +89,19 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4569][#4569]] | [marketdata] Add the Banco Central do Brasil adapter |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The year accepts a sign | =bcb.cpp= | Fixed | Every character but the two slashes must be a digit. Tests add a signed year and a day of =6a=. |
+| 2 | Comment the skip of an empty value | =bcb.cpp= | Declined | The header documents the skip. Why the BCB sends an empty value is not verified, so no reason is written. |
+| 3 | An unknown series' error should name it | =bcb.cpp= | No change | =read_window='s error quotes both addresses, and each holds the series number. |
+| 4 | Terms point to B3 | catalogue seeds | No change | The note already says B3's terms must be read before any commercial use. |
+| 5 | Hardcoded UUIDs | catalogue seeds | No change | They are deterministic, from the same rule as the other feeds. |
+| 6 | Re-run provisioning before merge | | Done | After a rebuild of the stale =ores.marketdata.service=, a fresh provisioning completed every step but =generate_trades=, which fails on main's duplicate GBP swap convention: [[id:9137921C-B9C9-4C9F-84B6-847A07B61F28][Name GBP LIBOR 3M in one swap convention]]. |
 
 * Result
+
+The annualised CDI is read from the Banco Central do Brasil's SGS API by =bcb_fetcher= and stored as fixings in the system tenant: a fresh environment stored 273, the last =0.1365= for 2026-11-09. The series goes back to 1986, with 10,178 rates. B3 computes the CDI, so the provider credits B3 through the BCB, on the owner's judgement that this academic use is not commercial.

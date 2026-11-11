@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 04D014E6-E34F-4F77-A748-6E7AB5B2342B
+:END:
+#+title: Refuse to start services from a mixed build
+#+description: A partial build after a rebase left ores.marketdata.service linked against an older libores.analytics.quant, so it died with a symbol lookup error at its first curve request and failed provisioning.
+#+type: capture
+#+level: cross
+#+filetags: :service:provisioning:observability:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make =compass services start= refuse, or warn, when the published binaries do not resolve against the published libraries, as it already refuses a database whose schema fingerprint does not match the checkout. =ldd -r= on each service binary, with the publish directory's =lib= on the library path, names each undefined symbol in a few seconds.
+
+* Why
+
+On 2026-11-11 this worktree rebased twice onto a newer main and rebuilt only =ores.marketdata.official=. The publish directory then held a =libores.analytics.quant= of the newer main and a =libores.marketdata.service= built against the older one. The services started, and =ores.marketdata.service= ran until its first =compute_curve= request, when lazy binding failed:
+
+#+begin_example
+./ores.marketdata.service: symbol lookup error: .../libores.marketdata.service.so.0: undefined symbol: _ZN4ores9analytics5quant7service31parse_bootstrap_c...
+Main process exited, code=exited, status=127/n/a
+#+end_example
+
+Provisioning's =publish_system_curves= step sends that request, so two fresh provisioning runs failed with only "NATS request timed out". =ldd -r= over every published service binary named =ores.marketdata.service= alone, with 4 undefined symbols.
+
+The step has no retry, so a service that dies or restarts during it fails the whole run. That is a smaller point: a retry would not have saved this run.
+
+* References
+
+- =projects/ores.compass= =services start=, which checks the schema fingerprint.
+- [[id:F305CDA3-C48F-45B5-B43F-5B220D744528][Add the Banco Central do Brasil adapter]], whose fresh environments showed it.
+
+* See also
+
+-

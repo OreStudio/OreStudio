@@ -30,8 +30,8 @@ std::ostream& operator<<(std::ostream& s, const options& v) {
       << ", ecb_url: " << v.ecb_url << ", boe_url: " << v.boe_url << ", boc_url: " << v.boc_url
       << ", boj_url: " << v.boj_url << ", norges_bank_url: " << v.norges_bank_url
       << ", riksbank_url: " << v.riksbank_url << ", rba_url: " << v.rba_url
-      << ", sources: " << v.sources.size() << ", backfill_days: " << v.backfill_days
-      << ", poll_minutes: " << v.poll_minutes << " }";
+      << ", bcb_url: " << v.bcb_url << ", sources: " << v.sources.size()
+      << ", backfill_days: " << v.backfill_days << ", poll_minutes: " << v.poll_minutes << " }";
     return s;
 }
 

@@ -411,7 +411,11 @@ void calibration_routes::register_routes(
                     msg.apply = false;
                     auto reply = forwarding::forward(req, session, msg);
                     if (!reply.success)
-                        rr::refuse(http_status::bad_gateway, "upstream-unavailable", reply.message);
+                        rr::refuse(http_status::bad_gateway,
+                                   "upstream-unavailable",
+                                   reply.message.empty() ?
+                                       "The synthetic service refused the calibration read." :
+                                       reply.message);
                     std::optional<int> version;
                     if (reply.policy.from_policy_row)
                         if (const auto row = policy_row_of(req, session, asset_class))

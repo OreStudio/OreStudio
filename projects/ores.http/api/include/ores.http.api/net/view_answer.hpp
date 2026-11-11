@@ -43,7 +43,10 @@ struct view_cache_policy final {
 
 /**
  * @brief The entity tag of a body: a strong tag over its bytes, so two answers
- * share a tag exactly when they share their bytes.
+ * share a tag when they share their bytes.
+ *
+ * The tag is a 64-bit hash and the length, enough to tell versions of an answer
+ * apart. It is not a security measure: nothing trusts it beyond saving a body.
  */
 ORES_HTTP_API_EXPORT std::string entity_tag(std::string_view body);
 
@@ -51,8 +54,9 @@ ORES_HTTP_API_EXPORT std::string entity_tag(std::string_view body);
  * @brief A composed view's JSON answer under its cache policy.
  *
  * A view with a freshness rule carries its entity tag and stays fresh in the
- * caller's private cache for that long; a request whose If-None-Match names the
- * tag answers 304 with no body. A view with no freshness rule is not stored.
+ * caller's private cache for that long, varying by the caller's credential; a
+ * request whose If-None-Match names the tag answers 304 with no body. A view
+ * with no freshness rule is not stored.
  */
 ORES_HTTP_API_EXPORT domain::http_response
 view_answer(const domain::http_request& req, std::string body, const view_cache_policy& policy);

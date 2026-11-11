@@ -304,7 +304,11 @@ void feed_operation_routes::register_routes(
                         rr::invalid("A folder tree read names a parent of up to 100 characters.");
                     auto reply = forwarding::forward(req, session, msg);
                     if (!reply.success)
-                        rr::refuse(http_status::bad_gateway, "upstream-unavailable", reply.message);
+                        rr::refuse(http_status::bad_gateway,
+                                   "upstream-unavailable",
+                                   reply.message.empty() ?
+                                       "The synthetic service refused the folder tree read." :
+                                       reply.message);
                     return ores::http::net::view_answer(
                         req,
                         json::write(feed_folder_tree{std::move(reply.folders)}),

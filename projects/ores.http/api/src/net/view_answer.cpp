@@ -71,6 +71,8 @@ view_answer(const domain::http_request& req, std::string body, const view_cache_
         resp = domain::http_response::json(std::move(body));
     }
     resp.headers["ETag"] = tag;
+    // The answer depends on the caller's credential, so a cache keys it by that too.
+    resp.headers["Vary"] = "Authorization, Cookie";
     resp.headers["Cache-Control"] = std::format("private, max-age={}", policy.stale_after->count());
     return resp;
 }

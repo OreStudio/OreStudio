@@ -116,7 +116,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4629: a cached view should vary by the credential; the tag is not a guard; an empty upstream message. | =view_answer.cpp=, =view_answer.hpp=, =calibration_routes.cpp=, =feed_operation_routes.cpp= | Accepted | Cached views carry =Vary: Authorization, Cookie=, tested; the header says the tag is not a security measure; the folder tree and calibration reads state a message of their own when the service gives none. |
+| 2 | PR #4629: 64-bit numbers in JSON, a failed policy-row read, no 304 test through a route. | =market_regime_routes.cpp=, =calibration_routes.cpp= | Declined | The BFF sent the same numbers. A failed policy read refuses, because a whole read refuses any page that is not ok; a missing row is null, as in the BFF. A 304 through a route needs a forward the suite cannot fake yet; =view_answer= proves it. |
 
 * Result
 

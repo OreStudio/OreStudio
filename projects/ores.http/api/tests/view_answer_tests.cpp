@@ -49,6 +49,7 @@ TEST_CASE("view_answer_tags_a_cached_view_and_states_its_freshness", "[view_answ
     CHECK(answer.body == view_body);
     CHECK(answer.headers.at("ETag") == entity_tag(view_body));
     CHECK(answer.headers.at("Cache-Control") == "private, max-age=60");
+    CHECK(answer.headers.at("Vary") == "Authorization, Cookie");
 }
 
 TEST_CASE("view_answer_answers_not_modified_when_the_caller_holds_the_tag", "[view_answer]") {

@@ -98,6 +98,7 @@ struct commodity_instrument_write {
     std::optional<std::string> trigger_type;
     std::optional<ores::utility::decimal::decimal> trigger_price;
     std::optional<ores::utility::decimal::decimal> premium_amount;
+    std::optional<ores::utility::decimal::decimal> target_amount;
     std::string description;
 
     friend bool operator==(const commodity_instrument_write&,
@@ -493,6 +494,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.commodity_instrum
         utility::codec::field{"trigger_type", &commodity_instrument_write::trigger_type},
         utility::codec::field{"trigger_price", &commodity_instrument_write::trigger_price},
         utility::codec::field{"premium_amount", &commodity_instrument_write::premium_amount},
+        utility::codec::field{"target_amount", &commodity_instrument_write::target_amount},
         utility::codec::field{"description", &commodity_instrument_write::description},
     };
 }

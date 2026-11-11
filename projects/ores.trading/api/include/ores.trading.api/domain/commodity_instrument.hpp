@@ -324,6 +324,11 @@ struct commodity_instrument final {
     std::optional<ores::utility::decimal::decimal> premium_amount;
 
     /**
+     * @brief The gain at which a TaRF knocks out, as TargetAmount states it.
+     */
+    std::optional<ores::utility::decimal::decimal> target_amount;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -396,6 +401,7 @@ struct commodity_instrument final {
     ores::utility::digest::append_member(out, "trigger_type", v.trigger_type);
     ores::utility::digest::append_member(out, "trigger_price", v.trigger_price);
     ores::utility::digest::append_member(out, "premium_amount", v.premium_amount);
+    ores::utility::digest::append_member(out, "target_amount", v.target_amount);
     out.push_back('}');
     return out;
 }

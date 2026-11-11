@@ -81,6 +81,7 @@ export interface CommodityInstrumentWrite {
     trigger_type: string | null;
     trigger_price: string | null;
     premium_amount: string | null;
+    target_amount: string | null;
     description: string;
 }
 

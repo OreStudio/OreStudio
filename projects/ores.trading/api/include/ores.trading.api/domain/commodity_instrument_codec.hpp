@@ -97,6 +97,7 @@ namespace ores::trading::domain {
         utility::codec::field{"trigger_type", &commodity_instrument::trigger_type},
         utility::codec::field{"trigger_price", &commodity_instrument::trigger_price},
         utility::codec::field{"premium_amount", &commodity_instrument::premium_amount},
+        utility::codec::field{"target_amount", &commodity_instrument::target_amount},
         utility::codec::field{"description", &commodity_instrument::description},
         utility::codec::field{"audit", &commodity_instrument::audit},
     };

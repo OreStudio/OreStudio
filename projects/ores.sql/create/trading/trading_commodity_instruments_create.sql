@@ -90,6 +90,7 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     "trigger_type" text null,
     "trigger_price" numeric(38, 12) null,
     "premium_amount" numeric(38, 12) null,
+    "target_amount" numeric(38, 12) null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,

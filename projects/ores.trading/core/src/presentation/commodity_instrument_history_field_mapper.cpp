@@ -147,6 +147,8 @@ render_commodity_instrument_fields(const domain::commodity_instrument& v) {
                       .value = v.trigger_price ? v.trigger_price->to_string() : std::string{}});
     fields.push_back({.name = "Premium Amount",
                       .value = v.premium_amount ? v.premium_amount->to_string() : std::string{}});
+    fields.push_back({.name = "Target Amount",
+                      .value = v.target_amount ? v.target_amount->to_string() : std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

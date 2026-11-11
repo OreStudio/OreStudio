@@ -151,6 +151,7 @@ commodity_instrument_to_domain(const messaging::commodity_instrument_write& writ
     v.trigger_type = write.trigger_type;
     v.trigger_price = write.trigger_price;
     v.premium_amount = write.premium_amount;
+    v.target_amount = write.target_amount;
     v.description = write.description;
     return v;
 }

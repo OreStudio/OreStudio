@@ -149,7 +149,7 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<delivery_roll_days> <future_month_offset> <include_period_end> <position> "
         "<delivery_date> <delivery_start> <delivery_end> <fva_date> <premium_date> "
         "<settlement_date> <implied_vol_strike> <reset_strike> <trigger_type> <trigger_price> "
-        "<premium_amount> <description> <reason> <commentary>");
+        "<premium_amount> <target_amount> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -166,7 +166,7 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<delivery_roll_days> <future_month_offset> <include_period_end> <position> "
         "<delivery_date> <delivery_start> <delivery_end> <fva_date> <premium_date> "
         "<settlement_date> <implied_vol_strike> <reset_strike> <trigger_type> <trigger_price> "
-        "<premium_amount> <description> <reason> <commentary> [--version <n>]");
+        "<premium_amount> <target_amount> <description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -183,7 +183,7 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<delivery_roll_days> <future_month_offset> <include_period_end> <position> "
         "<delivery_date> <delivery_start> <delivery_end> <fva_date> <premium_date> "
         "<settlement_date> <implied_vol_strike> <reset_strike> <trigger_type> <trigger_price> "
-        "<premium_amount> <description> <reason> <commentary>");
+        "<premium_amount> <target_amount> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -384,8 +384,8 @@ void commodity_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 49 + 2) {
-            fail(out) << "Expected " << (49 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 50 + 2) {
+            fail(out) << "Expected " << (50 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -492,6 +492,8 @@ void commodity_instrument_commands::process_add(std::ostream& out,
             req.change.write.trigger_price, parsed->positionals[next++], "trigger_price");
         commodity_instrument_read_token(
             req.change.write.premium_amount, parsed->positionals[next++], "premium_amount");
+        commodity_instrument_read_token(
+            req.change.write.target_amount, parsed->positionals[next++], "target_amount");
         commodity_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -538,8 +540,8 @@ void commodity_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 49 + 2) {
-            fail(out) << "Expected " << (49 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 50 + 2) {
+            fail(out) << "Expected " << (50 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -646,6 +648,8 @@ void commodity_instrument_commands::process_set(std::ostream& out,
             req.change.write.trigger_price, parsed->positionals[next++], "trigger_price");
         commodity_instrument_read_token(
             req.change.write.premium_amount, parsed->positionals[next++], "premium_amount");
+        commodity_instrument_read_token(
+            req.change.write.target_amount, parsed->positionals[next++], "target_amount");
         commodity_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -704,8 +708,8 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 49 + 2) {
-            fail(out) << "Expected " << (change_count * 49 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 50 + 2) {
+            fail(out) << "Expected " << (change_count * 50 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -814,6 +818,8 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
                 change.write.trigger_price, parsed->positionals[next++], "trigger_price");
             commodity_instrument_read_token(
                 change.write.premium_amount, parsed->positionals[next++], "premium_amount");
+            commodity_instrument_read_token(
+                change.write.target_amount, parsed->positionals[next++], "target_amount");
             commodity_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

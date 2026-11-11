@@ -102,6 +102,7 @@ struct commodity_instrument_entity {
     std::optional<std::string> trigger_type;
     std::optional<ores::utility::decimal::decimal> trigger_price;
     std::optional<ores::utility::decimal::decimal> premium_amount;
+    std::optional<ores::utility::decimal::decimal> target_amount;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -167,6 +168,7 @@ struct commodity_instrument_entity {
                query_builder::bind("trigger_type", &e::trigger_type) |
                query_builder::bind("trigger_price", &e::trigger_price) |
                query_builder::bind("premium_amount", &e::premium_amount) |
+               query_builder::bind("target_amount", &e::target_amount) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

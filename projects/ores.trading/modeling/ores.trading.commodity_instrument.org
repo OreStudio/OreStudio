@@ -610,6 +610,16 @@ The price that resets a strike resettable option's strike, as
 
 The premium a strike resettable option pays, as =Premium= states it.
 
+** target_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The gain at which a TaRF knocks out, as =TargetAmount= states it.
+
 ** description
 :PROPERTIES:
 :type:     text

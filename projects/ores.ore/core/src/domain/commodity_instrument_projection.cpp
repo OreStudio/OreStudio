@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/barrier_block_projection.hpp"
 #include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
@@ -529,6 +530,119 @@ auto read_commodity_basket_option(const record_reader& trade) -> commodity_instr
 }
 
 // ---------------------------------------------------------------------------
+// Reading: the scripted products on one commodity
+//
+// Their underlyings, barriers, schedules and range bounds land in the shared
+// rows through the family's tables, and their flat terms through the scalar
+// terms table. A reader keeps the rest on the row.
+// ---------------------------------------------------------------------------
+
+/// The commodity a scripted product names in its Underlying block.
+auto scripted_commodity_of(const record_reader& data) -> std::string {
+    if (const auto underlying = data.child("Underlying"))
+        return commodity_address_of(commodity_instrument_projection_text_of(*underlying, "Name"));
+    return {};
+}
+
+/// The option type, style and expiry an OptionData block states, onto the row.
+void read_option_summary(commodity_instrument& r, const std::optional<record_reader>& option) {
+    r.option_type = option_type_of(option);
+    r.exercise_type = exercise_style_of(option);
+    r.maturity_date = first_exercise_date_of(option);
+}
+
+auto read_commodity_asian_option(const record_reader& trade) -> commodity_instrument {
+    auto r = make_row("CommodityAsianOption");
+    const auto data = trade.child("CommodityAsianOptionData");
+    if (!data)
+        return r;
+    r.commodity_code = scripted_commodity_of(*data);
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
+    r.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
+    r.strike_price = optional_strike_of(*data);
+    read_option_summary(r, data->child("OptionData"));
+    return r;
+}
+
+/*
+ * An accumulator states the amount it accumulates each fixing, which the row
+ * keeps as its accumulation amount rather than as its quantity.
+ */
+auto read_commodity_accumulator(const record_reader& trade) -> commodity_instrument {
+    auto r = make_row("CommodityAccumulator");
+    const auto data = trade.child("CommodityAccumulatorData");
+    if (!data)
+        return r;
+    r.commodity_code = scripted_commodity_of(*data);
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
+    r.accumulation_amount = optional_decimal_of(*data, "FixingAmount");
+    r.strike_price = optional_decimal_of(*data, "Strike");
+    r.start_date = optional_date_of(*data, "StartDate");
+    return r;
+}
+
+auto read_commodity_tarf(const record_reader& trade) -> commodity_instrument {
+    auto r = make_row("CommodityTaRF");
+    const auto data = trade.child("CommodityTaRFData");
+    if (!data)
+        return r;
+    r.commodity_code = scripted_commodity_of(*data);
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
+    r.accumulation_amount = optional_decimal_of(*data, "FixingAmount");
+    r.strike_price = optional_decimal_of(*data, "Strike");
+    r.target_amount = optional_decimal_of(*data, "TargetAmount");
+    return r;
+}
+
+/// The barriers' monitoring schedule lands in the shared schedule rows.
+auto read_commodity_generic_barrier_option(const record_reader& trade)
+    -> commodity_instrument_data {
+    commodity_instrument_data result{make_row("CommodityGenericBarrierOption"), {}};
+    const auto data = trade.child("CommodityGenericBarrierOptionData");
+    if (!data)
+        return result;
+    auto& r = result.instrument;
+    r.commodity_code = scripted_commodity_of(*data);
+    r.currency = commodity_instrument_projection_spelling_of(*data, "PayCurrency");
+    r.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
+    r.strike_price = optional_decimal_of(*data, "Strike");
+    read_option_summary(r, data->child("OptionData"));
+    if (const auto barriers = data->child("Barriers"))
+        if (const auto schedule = barriers->child("ScheduleData"))
+            option_block::read_schedule(result, *schedule, "option", 1, "barrier_schedule");
+    return result;
+}
+
+auto read_commodity_strike_resettable_option(const record_reader& trade) -> commodity_instrument {
+    auto r = make_row("CommodityStrikeResettableOption");
+    const auto data = trade.child("CommodityStrikeResettableOptionData");
+    if (!data)
+        return r;
+    r.commodity_code = scripted_commodity_of(*data);
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
+    r.option_type = commodity_instrument_projection_spelling_of(*data, "OptionType");
+    r.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
+    r.strike_price = optional_decimal_of(*data, "Strike");
+    r.maturity_date = optional_date_of(*data, "ExpiryDate");
+    return r;
+}
+
+/// The option expiry is the row's maturity, and the underlying strike its strike.
+auto read_commodity_forward_volatility_agreement(const record_reader& trade)
+    -> commodity_instrument {
+    auto r = make_row("CommodityForwardVolatilityAgreement");
+    const auto data = trade.child("CommodityForwardVolatilityAgreementData");
+    if (!data)
+        return r;
+    r.commodity_code = scripted_commodity_of(*data);
+    r.currency = commodity_instrument_projection_spelling_of(*data, "PayCcy");
+    r.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
+    r.strike_price = optional_decimal_of(*data, "UnderlyingStrike");
+    r.maturity_date = optional_date_of(*data, "OptionExpiry");
+    return r;
+}
+
+// ---------------------------------------------------------------------------
 // Writing: the shared shapes
 // ---------------------------------------------------------------------------
 
@@ -813,6 +927,111 @@ void write_commodity_basket_option(record_writer& trade, const commodity_instrum
 }
 
 // ---------------------------------------------------------------------------
+// Writing: the scripted products on one commodity
+//
+// A writer states the elements the row keeps. The shared rows and the scalar
+// terms table write the rest after it, and the scalar terms write the row's
+// own direction over the "Long" a writer states to keep the schema's order.
+// ---------------------------------------------------------------------------
+
+/// The product's Underlying block, from the shared rows or else the row's commodity.
+void write_scripted_underlying(record_writer& data, const commodity_instrument_data& carrier) {
+    if (underlying_block::write_underlyings(data, "Underlying", carrier, "underlying"))
+        return;
+    auto underlying = data.child("Underlying");
+    underlying.set_text("Type", "Commodity");
+    underlying.set_text("Name", underlying_name_of(carrier.instrument.commodity_code));
+}
+
+void write_commodity_asian_option(record_writer& trade, const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
+    auto data = trade.child("CommodityAsianOptionData");
+    data.set_spelling("Currency", v.currency, "currency");
+    set_decimal_from_double(data, "Quantity", v.quantity);
+    data.child("StrikeData").set_decimal("Value", v.strike_price.value_or(decimal{}));
+    write_scripted_underlying(data, carrier);
+    write_option_terms(data.child("OptionData"), v, v.maturity_date);
+    option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
+}
+
+void write_commodity_accumulator(record_writer& trade, const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
+    auto data = trade.child("CommodityAccumulatorData");
+    data.set_spelling("Currency", v.currency, "currency");
+    data.set_decimal("FixingAmount", v.accumulation_amount.value_or(decimal{}));
+    if (v.strike_price)
+        data.set_decimal("Strike", *v.strike_price);
+    write_scripted_underlying(data, carrier);
+    data.child("OptionData").set_text("LongShort", "Long");
+    if (v.start_date)
+        data.set_text("StartDate", commodity_instrument_projection_to_ore_date(v.start_date));
+    option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
+    option_block::write_product_schedule(data, carrier, "PricingDates", "pricing_schedule");
+    option_block::write_range_bounds(data, carrier.range_bounds);
+    barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier");
+}
+
+void write_commodity_tarf(record_writer& trade, const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
+    auto data = trade.child("CommodityTaRFData");
+    data.set_spelling("Currency", v.currency, "currency");
+    data.set_decimal("FixingAmount", v.accumulation_amount.value_or(decimal{}));
+    if (v.target_amount)
+        data.set_decimal("TargetAmount", *v.target_amount);
+    if (v.strike_price)
+        data.set_decimal("Strike", *v.strike_price);
+    write_scripted_underlying(data, carrier);
+    option_block::write_product_schedule(data, carrier, "ScheduleData", "product_schedule");
+    data.child("OptionData").set_text("LongShort", "Long");
+    option_block::write_range_bounds(data, carrier.range_bounds);
+    barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier");
+}
+
+void write_commodity_generic_barrier_option(record_writer& trade,
+                                            const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
+    auto data = trade.child("CommodityGenericBarrierOptionData");
+    write_scripted_underlying(data, carrier);
+    write_option_terms(data.child("OptionData"), v, v.maturity_date);
+    data.set_spelling("PayCurrency", v.currency, "currency");
+    set_decimal_from_double(data, "Quantity", v.quantity);
+    if (v.strike_price)
+        data.set_decimal("Strike", *v.strike_price);
+    barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier");
+    if (option_block::has_product_schedule(carrier, "barrier_schedule")) {
+        auto barriers = data.child("Barriers");
+        option_block::write_product_schedule(barriers, carrier, "ScheduleData", "barrier_schedule");
+    }
+}
+
+void write_commodity_strike_resettable_option(record_writer& trade,
+                                              const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
+    auto data = trade.child("CommodityStrikeResettableOptionData");
+    data.set_spelling("LongShort", "Long", "long short");
+    data.set_spelling("OptionType", v.option_type, "option type");
+    data.set_spelling("Currency", v.currency, "currency");
+    data.set_decimal("Strike", v.strike_price.value_or(decimal{}));
+    set_decimal_from_double(data, "Quantity", v.quantity);
+    write_scripted_underlying(data, carrier);
+    data.set_text("ExpiryDate", commodity_instrument_projection_to_ore_date(v.maturity_date));
+    option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
+}
+
+void write_commodity_forward_volatility_agreement(record_writer& trade,
+                                                  const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
+    auto data = trade.child("CommodityForwardVolatilityAgreementData");
+    data.set_text("OptionExpiry", commodity_instrument_projection_to_ore_date(v.maturity_date));
+    write_scripted_underlying(data, carrier);
+    data.set_spelling("LongShort", "Long", "long short");
+    set_decimal_from_double(data, "Quantity", v.quantity);
+    data.set_spelling("PayCcy", v.currency, "currency");
+    if (v.strike_price)
+        data.set_decimal("UnderlyingStrike", *v.strike_price);
+}
+
+// ---------------------------------------------------------------------------
 // The products the family states
 // ---------------------------------------------------------------------------
 
@@ -878,6 +1097,27 @@ constexpr commodity_product commodity_products[] = {
      commodity_row_only<read_intraday_power_forward>,
      commodity_of_row<write_intraday_power_forward>,
      false},
+    {"CommodityAsianOption",
+     commodity_row_only<read_commodity_asian_option>,
+     write_commodity_asian_option,
+     true},
+    {"CommodityAccumulator",
+     commodity_row_only<read_commodity_accumulator>,
+     write_commodity_accumulator,
+     true},
+    {"CommodityTaRF", commodity_row_only<read_commodity_tarf>, write_commodity_tarf, true},
+    {"CommodityGenericBarrierOption",
+     read_commodity_generic_barrier_option,
+     write_commodity_generic_barrier_option,
+     true},
+    {"CommodityStrikeResettableOption",
+     commodity_row_only<read_commodity_strike_resettable_option>,
+     write_commodity_strike_resettable_option,
+     false},
+    {"CommodityForwardVolatilityAgreement",
+     commodity_row_only<read_commodity_forward_volatility_agreement>,
+     write_commodity_forward_volatility_agreement,
+     false},
 };
 
 const commodity_product* commodity_product_of(std::string_view trade_type) {
@@ -903,12 +1143,49 @@ constexpr scalar_terms::term<commodity_instrument> commodity_terms[] = {
     {"DeliveryDate", &commodity_instrument::delivery_date},
     {"DeliveryStart", &commodity_instrument::delivery_start},
     {"DeliveryEnd", &commodity_instrument::delivery_end},
+    {"LongShort", &commodity_instrument::position},
+    {"FvaDate", &commodity_instrument::fva_date},
+    {"PremiumDate", &commodity_instrument::premium_date},
+    {"SettlementDate", &commodity_instrument::settlement_date},
+    {"ImpliedVolStrike", &commodity_instrument::implied_vol_strike},
+    {"ResetStrike", &commodity_instrument::reset_strike},
+    {"TriggerType", &commodity_instrument::trigger_type},
+    {"TriggerPrice", &commodity_instrument::trigger_price},
+    {"Premium", &commodity_instrument::premium_amount},
 };
 
 /// Where a commodity product states its underlyings.
 constexpr underlying_block::underlying_holder commodity_underlying_holders[] = {
     {"CommodityVarianceSwap", "", "Underlying", "underlying"},
     {"CommodityPosition", "", "Underlying", "underlying"},
+    {"CommodityAsianOption", "", "Underlying", "underlying"},
+    {"CommodityAccumulator", "", "Underlying", "underlying"},
+    {"CommodityTaRF", "", "Underlying", "underlying"},
+    {"CommodityGenericBarrierOption", "", "Underlying", "underlying"},
+    {"CommodityStrikeResettableOption", "", "Underlying", "underlying"},
+    {"CommodityForwardVolatilityAgreement", "", "Underlying", "underlying"},
+};
+
+/// Where a commodity product states its barriers.
+constexpr barrier_block::barrier_holder commodity_barrier_holders[] = {
+    {"CommodityAccumulator", "Barriers", "barrier"},
+    {"CommodityTaRF", "Barriers", "barrier"},
+    {"CommodityGenericBarrierOption", "Barriers", "barrier"},
+};
+
+/// The schedules a commodity product states on its own element.
+constexpr option_block::product_schedule commodity_product_schedules[] = {
+    {"CommodityAsianOption", "ObservationDates", "observation_schedule"},
+    {"CommodityAccumulator", "ObservationDates", "observation_schedule"},
+    {"CommodityAccumulator", "PricingDates", "pricing_schedule"},
+    {"CommodityTaRF", "ScheduleData", "product_schedule"},
+    {"CommodityStrikeResettableOption", "ObservationDates", "observation_schedule"},
+};
+
+/// The products that pay on range bounds.
+constexpr std::string_view commodity_range_bound_products[] = {
+    "CommodityAccumulator",
+    "CommodityTaRF",
 };
 
 auto read_commodity_instrument(xml::record_reader trade, std::string_view trade_type)
@@ -929,9 +1206,15 @@ auto read_commodity_instrument(xml::record_reader trade, std::string_view trade_
     }
     underlying_block::read_product_underlyings(
         data, trade, trade_type, commodity_underlying_holders);
+    barrier_block::read_product_barriers(data, trade, trade_type, commodity_barrier_holders);
+    option_block::read_product_schedules(data, trade, trade_type, commodity_product_schedules);
     if (trade.declares(element))
-        if (const auto holder = trade.child(element))
+        if (const auto holder = trade.child(element)) {
             scalar_terms::read_terms(data.instrument, *holder, commodity_terms);
+            if (std::ranges::find(commodity_range_bound_products, trade_type) !=
+                std::ranges::end(commodity_range_bound_products))
+                option_block::read_range_bounds(data, *holder);
+        }
     return trading::domain::trade_instrument{std::move(data)};
 }
 

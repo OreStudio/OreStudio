@@ -99,6 +99,7 @@ commodity_instrument_mapper::map(const commodity_instrument_entity& v) {
     r.trigger_type = v.trigger_type;
     r.trigger_price = v.trigger_price;
     r.premium_amount = v.premium_amount;
+    r.target_amount = v.target_amount;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -170,6 +171,7 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
     r.trigger_type = v.trigger_type;
     r.trigger_price = v.trigger_price;
     r.premium_amount = v.premium_amount;
+    r.target_amount = v.target_amount;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

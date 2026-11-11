@@ -99,6 +99,9 @@ generate_synthetic_commodity_instrument(utility::generation::generation_context&
     r.premium_amount = ores::utility::decimal::decimal::from_string(
                            std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                            .value();
+    r.target_amount = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

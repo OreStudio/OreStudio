@@ -1,19 +1,19 @@
 :PROPERTIES:
 :ID: 8B40FAA3-24D5-4F54-9779-FF45B0BDC8F1
 :END:
-#+title: Task: Serve the tenancy routes
+#+title: Task: Serve the tenancy catalogues
 #+description: Twenty-one tenancy routes remain at the BFF's addresses: the bootstrap and the tenant setup, the registration policy, the tenants and their parties, people, sign-ins and images, party and tenant provisioning, the overview, the LEI entities, the caller's parties and the tenancy catalogues.
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-tenancy-routes
-#+pr:
+#+pr: 4591
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Serve the tenancy routes ores.web calls at the BFF's own addresses and shapes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -41,9 +41,14 @@ Serve the tenancy routes ores.web calls at the BFF's own addresses and shapes.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Serve the tenancy screens' catalogues at the BFF's addresses in
+=tenancy_catalogue_routes=: the tenant statuses and types, each painted with
+the badge its code names, and the legal entities a tenant may start from. The
+statuses keep the service's order and the types their display order, as the
+BFF sorted them; a code no badge names is painted with none. The badges and
+the legal entities are the dq service's, so =ores.http.iam= takes =ores.dq.api=.
+
+The other 18 tenancy routes move to [[id:6B079A05-65D0-41B0-A725-8AD9DA84D5BE][Serve the remaining tenancy routes]].
 
 * Measurements
 
@@ -76,12 +81,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4591][#4591]] | [http] Serve the tenancy catalogues from C++ |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 2 | PR review: confirm how a failed badge read maps. | =tenancy_catalogue_routes.cpp= | Declined | =guarded= answers a refusal with its status and any other failure as unanswered, logged with the subject. The BFF also failed the whole list when the badge read failed. |
+| 3 | PR review: the LEI =limit= has no upper bound. | =tenancy_catalogue_routes.cpp= | Accepted in part | The BFF passed the number on uncapped, so the route keeps that. The read is now =lei_limit=, which takes a positive whole number or falls back to 20, and a test proves it. |
+| 4 | PR review: the badge map is built per request. | =tenancy_catalogue_routes.cpp= | Declined | The BFF read the badges per request, and a cache would serve stale badges after a change. |
+| 5 | PR review: the 200 badge page needs a reason. | =tenancy_catalogue_routes.cpp= | Accepted | A comment says the BFF read one page of 200, which holds every badge the platform defines. |
+| 6 | PR review: add empty-list, escaping and exact-JSON tests. | =tenancy_catalogue_routes_tests.cpp= | Accepted | A test compares exact JSON for empty lists and for a row with quotes and a line break. |
 
 * Result
+
+The C++ server answers the tenant statuses, the tenant types and the legal
+entity search at the addresses ores.web calls, each paired in the inventory.
+The tests prove the badge join, the types' order and the legal entity shape.

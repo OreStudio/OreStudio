@@ -40,6 +40,8 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         # The account screens answer an account's picture, an assets image.
         ores.assets.api.lib
+        # The tenancy screens paint each status and type with a dq badge.
+        ores.dq.api.lib
     PRIVATE
         ores.http.nats.lib
         ores.iam.api.lib

@@ -46,6 +46,7 @@ set(files
     "session_statistics_operations_routes_tests.cpp"
     "sign_in_routes_tests.cpp"
     "signup_routes_tests.cpp"
+    "tenancy_catalogue_routes_tests.cpp"
     "tenant_routes_tests.cpp"
     "tenant_status_routes_tests.cpp"
     "tenant_type_routes_tests.cpp"

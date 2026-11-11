@@ -56,7 +56,7 @@ kept in =access_screen_answers= are needed by a second part, so they move to
 the shared layers: =refused= and =characters_of= to =record_routes=, =guarded=
 to =forwarding=. Every access unit is migrated and the header is deleted.
 
-The 21 tenancy routes move to [[id:8B40FAA3-24D5-4F54-9779-FF45B0BDC8F1][Serve the tenancy routes]].
+The 21 tenancy routes move to [[id:8B40FAA3-24D5-4F54-9779-FF45B0BDC8F1][Serve the tenancy catalogues]].
 
 * Measurements
 

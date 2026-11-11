@@ -24,10 +24,7 @@
  */
 #include "ores.http/routes/refdata/party_id_scheme_web_routes.hpp"
 #include "ores.http.api/net/record_routes.hpp"
-#include "ores.nats/domain/headers.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
-#include "ores.nats/service/session_expired_error.hpp"
-#include "ores.nats/service/timeouts.hpp"
+#include "ores.http.nats/forwarding.hpp"
 #include "ores.refdata.api/domain/party_id_scheme_codec.hpp"
 #include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -57,56 +54,8 @@ namespace rr = ores::http::net::record_routes;
 
 namespace {
 
-/// The unit's logger, for the detail a refusal does not show the browser.
-auto& party_id_scheme_web_lg() {
-    static auto instance = make_logger("ores.http.routes.refdata.party_id_scheme_web_routes");
-    return instance;
-}
-
 /// How many rows a whole read asks for at a time.
 constexpr std::uint32_t party_id_scheme_web_page_size = 1000;
-
-/**
- * @brief Forward one canonical request with the caller's token, and decode the reply.
- *
- * A refusal the service states in its reply header becomes the status it
- * names. An expired session is the caller's to renew.
- */
-template <typename Request>
-typename Request::response_type
-party_id_scheme_web_call(const http_request& req, nats_client& session, const Request& msg) {
-    auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
-    try {
-        const auto reply =
-            delegated.authenticated_request(msg.nats_subject,
-                                            ores::nats::default_wire_codec().encode(msg),
-                                            ores::nats::service::default_request_timeout);
-        if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
-            it != reply.headers.end()) {
-            if (it->second == "forbidden")
-                rr::refuse(http_status::forbidden, "forbidden", it->second);
-            if (it->second == "bad_request")
-                rr::invalid(it->second);
-            if (it->second == "unauthorized" || it->second == "token_expired" ||
-                it->second == "max_session_exceeded")
-                rr::refuse(http_status::unauthorized, "not-authenticated", it->second);
-            BOOST_LOG_SEV(party_id_scheme_web_lg(), warn)
-                << "Unknown service error: " << it->second;
-            rr::refuse(
-                http_status::bad_gateway, "upstream-unavailable", std::string(rr::unanswered));
-        }
-        auto decoded =
-            ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
-        if (!decoded) {
-            BOOST_LOG_SEV(party_id_scheme_web_lg(), error)
-                << "Failed to decode response: " << decoded.error().what();
-            rr::refuse(http_status::bad_gateway, "internal", std::string(rr::unanswered));
-        }
-        return std::move(*decoded);
-    } catch (const ores::nats::service::session_expired_error& e) {
-        rr::refuse(http_status::unauthorized, "session-expired", e.what());
-    }
-}
 
 /// One row as the service sends it, with the version the screens read on every row.
 std::string party_id_scheme_web_row(const ores::refdata::domain::party_id_scheme& row) {
@@ -186,7 +135,7 @@ party_id_scheme_web_routes::handle_list(const http_request& req, nats_client& se
             // advances by the rows that arrived and ends on an empty page, or on
             // a short one once it holds the total.
             for (std::uint32_t offset = 0;;) {
-                const auto reply = party_id_scheme_web_call(
+                const auto reply = ores::http::forwarding::forward(
                     req, session, party_id_scheme_web_page(offset, party_id_scheme_web_page_size));
                 rr::require_ok(reply.result);
                 const auto& got = reply.schemes;
@@ -240,7 +189,7 @@ party_id_scheme_web_routes::handle_list(const http_request& req, nats_client& se
                 rr::invalid("party-id-schemes cannot be filtered by " + member + ".");
         }
 
-        const auto reply = party_id_scheme_web_call(req, session, msg);
+        const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);
         co_return http_response::json("{\"rows\":" + party_id_scheme_web_rows(reply.schemes) +
                                       ",\"total\":" + std::to_string(reply.total) + "}");
@@ -261,7 +210,7 @@ party_id_scheme_web_routes::handle_key(const http_request& req, nats_client& ses
         auto msg = party_id_scheme_web_page(0, 1);
         msg.filter = messaging::party_id_schemes_filter{};
         msg.filter->code_one_of = std::vector<std::string>{rr::read<std::string>(key, "key")};
-        const auto reply = party_id_scheme_web_call(req, session, msg);
+        const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);
         if (reply.schemes.empty())
             rr::refuse(http_status::not_found,
@@ -294,7 +243,7 @@ party_id_scheme_web_routes::handle_put(const http_request& req, nats_client& ses
         msg.change.precondition.version = body->version;
         msg.intent.reason_code = body->reasonCode;
         msg.intent.commentary = body->commentary;
-        const auto reply = party_id_scheme_web_call(req, session, msg);
+        const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);
         co_return rr::no_content();
     } catch (const rr::refusal& refusal) {
@@ -321,7 +270,7 @@ party_id_scheme_web_routes::handle_delete(const http_request& req, nats_client& 
         msg.removal.precondition.version = body->version;
         msg.intent.reason_code = body->reasonCode;
         msg.intent.commentary = body->commentary;
-        const auto reply = party_id_scheme_web_call(req, session, msg);
+        const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);
         co_return rr::no_content();
     } catch (const rr::refusal& refusal) {

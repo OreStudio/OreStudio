@@ -66,10 +66,13 @@ for =_COMPONENT_FILES_TEMPLATES=.
 
 *Transport: NATS, not the service in process.* A generated route includes
 only =ores.<component>.<subcomponent>/messaging/<entity>_protocol.hpp= and
-speaks the canonical protocol. It builds the canonical request message, sends
-it over the =ores.nats= client on the subject the request states, and maps the
-reply to an HTTP response. The gateway holds no service, repository or
-database context, so it cannot decide anything the service decides.
+speaks the canonical protocol. It builds the canonical request message and
+hands it to =ores.http.nats=, the gateway's one forwarding step. That step
+sends it as the caller on the subject the request states, through
+=ores.nats='s =request_and_decode=, and states each failure as the HTTP
+refusal the browser reads, so no unit carries its own copy. The gateway holds
+no service, repository or database context, so it cannot decide anything the
+service decides.
 
 *Security: one declaration, one enforcement point.* The service's generated
 handler already checks the entity's permission (=assets::images:read=,

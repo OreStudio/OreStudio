@@ -65,5 +65,7 @@ def test_a_real_opted_in_model_reaches_the_template_opted_in():
 def test_an_opted_in_route_uses_its_codec():
     for model, template, section in CASES:
         text = render(model, template, section, True)
-        assert "write_json(*decoded)" in text, model
+        # The reply is written by the shared forwarding step through the
+        # response's own wire_traits, which the opted-in codec specialises.
+        assert "ores::http::forwarding::respond(" in text, model
         assert "_read_body<request_type>(req.body)" in text, model

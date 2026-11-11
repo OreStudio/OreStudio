@@ -225,8 +225,8 @@ TEST_CASE("party_identifier_routes_requires_a_session_where_the_operation_does",
 }
 
 // The client below is not connected. A request the route accepts therefore
-// fails at the forward step with a server error, and only a request the route
-// refuses is a bad request. That difference is what each case reads.
+// fails at the forward step, answered as the service not answering, and only a
+// request the route refuses is a bad request. That difference is what each case reads.
 TEST_CASE("party_identifier_routes_list_accepts_a_page_and_an_order", "[routes]") {
     auto lg(make_logger(test_suite));
 
@@ -236,7 +236,7 @@ TEST_CASE("party_identifier_routes_list_accepts_a_page_and_an_order", "[routes]"
             {{"offset", "10"}, {"limit", "5"}, {"sort", "version"}, {"descending", "true"}}),
         session));
 
-    CHECK(response.status == http_status::internal_server_error);
+    CHECK(response.status == http_status::bad_gateway);
     BOOST_LOG_SEV(lg, debug) << "Response: " << response.body;
 }
 
@@ -255,7 +255,7 @@ TEST_CASE("party_identifier_routes_list_accepts_every_filter_it_declares", "[rou
         const auto response = party_identifier_run(
             party_identifier_routes::handle_list(party_identifier_query({{name, ""}}), session));
         INFO(name);
-        CHECK(response.status == http_status::internal_server_error);
+        CHECK(response.status == http_status::bad_gateway);
     }
     BOOST_LOG_SEV(lg, debug) << "Checked " << names.size() << " declared filter(s).";
 }

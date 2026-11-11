@@ -19,10 +19,7 @@
  */
 #include "ores.http/routes/synthetic/feed_key_routes.hpp"
 #include "ores.http.api/net/record_routes.hpp"
-#include "ores.nats/domain/headers.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
-#include "ores.nats/service/session_expired_error.hpp"
-#include "ores.nats/service/timeouts.hpp"
+#include "ores.http.nats/forwarding.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config_codec.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config_codec.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
@@ -55,44 +52,6 @@ auto& feed_key_lg() {
 }
 
 /**
- * @brief Forward one canonical request with the caller's token, and decode the reply.
- */
-template <typename Request>
-typename Request::response_type
-feed_key_call(const http_request& req, nats_client& session, const Request& msg) {
-    auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
-    try {
-        const auto reply =
-            delegated.authenticated_request(msg.nats_subject,
-                                            ores::nats::default_wire_codec().encode(msg),
-                                            ores::nats::service::default_request_timeout);
-        if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
-            it != reply.headers.end()) {
-            if (it->second == "forbidden")
-                rr::refuse(http_status::forbidden, "forbidden", it->second);
-            if (it->second == "bad_request")
-                rr::invalid(it->second);
-            if (it->second == "unauthorized" || it->second == "token_expired" ||
-                it->second == "max_session_exceeded")
-                rr::refuse(http_status::unauthorized, "not-authenticated", it->second);
-            BOOST_LOG_SEV(feed_key_lg(), warn) << "Unknown service error: " << it->second;
-            rr::refuse(
-                http_status::bad_gateway, "upstream-unavailable", std::string(rr::unanswered));
-        }
-        auto decoded =
-            ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
-        if (!decoded) {
-            BOOST_LOG_SEV(feed_key_lg(), error)
-                << "Failed to decode response: " << decoded.error().what();
-            rr::refuse(http_status::bad_gateway, "internal", std::string(rr::unanswered));
-        }
-        return std::move(*decoded);
-    } catch (const ores::nats::service::session_expired_error& e) {
-        rr::refuse(http_status::unauthorized, "session-expired", e.what());
-    }
-}
-
-/**
  * @brief One row of a list by its id, or a 404 that names the resource.
  */
 template <typename Request, typename Filter, typename Rows>
@@ -108,7 +67,7 @@ auto feed_key_one(const http_request& req,
     msg.order.descending = false;
     msg.filter = Filter{};
     msg.filter->id_one_of = std::vector<boost::uuids::uuid>{id};
-    const auto reply = feed_key_call(req, session, msg);
+    const auto reply = ores::http::forwarding::forward(req, session, msg);
     rr::require_ok(reply.result);
     const auto& found = reply.*rows;
     if (found.empty())
@@ -140,7 +99,8 @@ boost::asio::awaitable<http_response> feed_key_read(const http_request& req,
             &messaging::list_market_data_generation_configs_response::
                 market_data_generation_configs);
 
-        const auto running = feed_key_call(req, session, messaging::list_feeds_request{});
+        const auto running =
+            ores::http::forwarding::forward(req, session, messaging::list_feeds_request{});
         if (!running.success)
             rr::refuse(
                 http_status::bad_gateway, "upstream-unavailable", std::string(rr::unanswered));

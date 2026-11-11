@@ -11,20 +11,27 @@
 
 * Summary
 
-Every read of a derived market object answers one question: which set did the party hold for this subject at this as-of? The answer is the newest set published for the subject whose as-of is at or before the asked as-of and that is not withdrawn. The read returns the set with its state, its approval and the candidate it published, and it never returns a candidate.
+Every read of a derived market object by as-of answers one question: which set did the party hold for this subject at this as-of? The answer is the newest published set of the subject, at or before the asked as-of, that is not withdrawn; at one as-of, the one published last. The read returns the set with its state, its approval and the candidate it published, and it never returns a candidate. A read by publish record, as a run's binding makes, returns that set whatever its state, and says the state.
 
 * Detail
 
 ** The rule
 
-| Set | Taken for an as-of |
-|-----+--------------------|
-| Published (live) | at or after its own as-of |
-| Superseded | at or after its own as-of and before its successor's |
+The newest wins, by as-of, then by the instant it was published:
+
+1. Take the published sets of the subject whose as-of is at or before the asked as-of.
+2. Drop the withdrawn ones.
+3. Take the one with the latest as-of; at an equal as-of, the one published last.
+
+The series' live set is what this rule answers for an as-of of now. A read at an as-of before every remaining published set refuses, naming the subject and the as-of.
+
+| Set | Taken by a read by as-of |
+|-----+--------------------------|
+| Published, not withdrawn | when the rule selects it |
 | Withdrawn | never |
 | Candidate | never |
 
-A read at an as-of before any published set refuses, naming the subject and the as-of.
+Supersession is a record of what replaced a set and when; the rule, not the mark, decides what is read. A superseded set is taken for an as-of before its successor's, and again after its successor is withdrawn.
 
 ** What it returns
 
@@ -32,7 +39,7 @@ The set's points, its as-of, who published it and when, its state, the request a
 
 ** Who reads it
 
-Screens, the ORE export of a run, a report's market binding ([[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]]) and the cut a run prices from ([[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]]). All of them read through this rule, so two readers at one as-of see one set.
+Screens, the ORE export of a run, a report's market binding ([[id:FB8F701C-E56A-49A9-AA90-1B6BD0B02092][A report binds to a published curve, not to a name]]) and the cut a run prices from ([[id:DD59B04C-DAD2-458C-B35E-3F6B0B3D6DC6][Market data cut]]). Reads by as-of go through this rule, so two readers at one as-of see one set. A binding names the publish record, so a repeated run reads the set it bound.
 
 * See also
 

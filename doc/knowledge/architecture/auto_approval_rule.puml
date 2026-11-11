@@ -25,7 +25,11 @@ if (The request names parts?) then (yes)
   :Wait for the people\nwho answer the parts;
   stop
 endif
-:Read the approvals mode,\noutside the raise's transaction,\nfor the whole tenant;
+:Read the provisioning grants and the\napprovals mode, before the raise's\ntransaction, for the whole tenant;
+if (A provisioning run holds an unexpired\ngrant for the request's kind?) then (yes)
+  :Approve under the rule **provisioning**;
+  stop
+endif
 if (The tenant states a mode?) then (yes)
   if (Tenant mode is auto_approved?) then (yes)
     :Approve under the rule **tenant**;
@@ -49,6 +53,9 @@ endif
 note right
   A mode that cannot be read
   is read as enforced.
+  A rule never passes a candidate
+  that failed a blocking check:
+  the raise refuses it first.
 end note
 stop
 

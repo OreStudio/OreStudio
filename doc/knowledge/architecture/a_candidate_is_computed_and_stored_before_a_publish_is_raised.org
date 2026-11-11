@@ -11,21 +11,27 @@
 
 * Summary
 
-A publish is a decision about numbers, so the numbers exist before anyone is asked. Each kind has a compute operation that computes a candidate for a subject at an as-of and stores it, with its lineage and its checks, as a version. The raise names that version, the decider reads it, and the apply publishes it. Nothing is computed at the raise or at the apply.
+A publish is a decision about numbers, so the numbers exist before anyone is asked. Each kind has a compute operation that computes a candidate for a subject at an as-of and stores it, with its lineage, its inputs and its checks, as a version. The raise names that version, a check that blocks refuses the raise, the decider reads the rest, and the apply publishes the version. Nothing is computed at the raise or at the apply.
 
 * Detail
 
 ** What a candidate is
 
-The compute writes the candidate's points as observations of the subject's output series at the as-of, each with a lineage record naming the series it read and the version of the recipe that produced it ([[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve point provenance]]). The output series is the subject's own, named by its oresmd identity ([[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]). The candidate is traceable and it is not authoritative: no report and no screen of published data reads it.
+The compute writes the candidate's points against the subject's output series at the as-of, each with a lineage record naming the series it read and the version of the recipe that produced it ([[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve point provenance]]). The output series is the subject's own, named by its oresmd identity ([[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]). The candidate is traceable and it is not authoritative.
+
+A candidate's points carry their candidate version. A read of the output series by as-of answers through the read rule ([[id:86158AAD-423A-421A-8BE2-CC5123109297][A reader takes the newest published set at or before its as-of]]), which takes only published sets, so no generic read, screen or export reaches a candidate. A candidate is read only by the candidate reads of its kind: the trader inspecting it, and the decider.
 
 ** One candidate per subject and as-of, versioned
 
-A candidate is keyed by its subject and its as-of. Computing it again writes a new version and keeps the old one. A request names the version it was raised for, so a decision never covers numbers computed after it.
+A candidate is keyed by its subject, its as-of and its version. A compute whose recipe and inputs are unchanged converges on the existing version and writes nothing new, so a retried compute does not multiply versions. A compute with a changed recipe or changed inputs writes a new version and keeps the old one. A request names the version it was raised for, so a decision never covers numbers computed after it.
+
+** The inputs
+
+A candidate records the published sets it was computed from, such as the two curve publishes a forward set reads, with the state of each at the compute. The apply refuses a candidate whose inputs were withdrawn after the compute ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]).
 
 ** The checks
 
-The compute runs the kind's checks and stores their result with the version: for a curve, the bootstrap's checks; for a forward set, its inputs' states; for a surface, convergence, the pillar errors and the arbitrage checks. The decider reads them on the request, so a refusal can name what failed.
+The compute runs the kind's checks and stores their result with the version. Each check is blocking or advisory. A blocking check failed means the candidate cannot be published, under any rule: a surface with calendar or butterfly arbitrage, a curve whose bootstrap did not converge, a forward set whose input curve is withdrawn. An advisory check is a fact the decider weighs, such as a pillar error within tolerance. The raise refuses a candidate with a failed blocking check ([[id:BF14C932-D699-4224-98DA-0481E49FA394][A publish raise names one candidate version, in one transaction]]), so a request closed without a person never publishes numbers that failed one.
 
 ** Why before the raise
 
@@ -35,6 +41,7 @@ A decider approves what the trader saw. If the numbers were computed at the appl
 
 - [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]
 - [[id:BF14C932-D699-4224-98DA-0481E49FA394][A publish raise names one candidate version, in one transaction]]
+- [[id:86158AAD-423A-421A-8BE2-CC5123109297][A reader takes the newest published set at or before its as-of]]
 - [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]
 - [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]]
 - [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]]

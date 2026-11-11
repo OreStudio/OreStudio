@@ -11,7 +11,7 @@
 
 * Summary
 
-Every kind of derived market object, a curve, an FX forward set, a volatility surface and any kind added later, goes through one lifecycle, implemented once in =ores.marketdata= and parameterised by the kind. A kind supplies only what differs in finance: its subject, its compute and its checks. The record of a publish, its states, the raise, the apply, the supersession, the withdrawal, the notices and the read are the same for every kind, so the same act behaves the same way whatever is published.
+Every kind of derived market object, a curve, an FX forward set, a volatility surface and any kind added later, goes through one lifecycle, implemented once in =ores.marketdata= and parameterised by the kind. A kind supplies only what differs in finance: its subject, its compute, its checks and its approval kinds. The record of a publish, its states, the raise, the apply, the supersession, the withdrawal, the notices and the read are the same for every kind, so the same act behaves the same way whatever is published.
 
 * Detail
 
@@ -24,13 +24,15 @@ Source: [[proj:doc/knowledge/architecture/publish_lifecycle_states.puml][=publis
 
 | State | Meaning |
 |-------+---------|
-| Candidate | Computed and stored as a version, with its lineage and checks. Not consumable. |
+| Candidate | Computed and stored as a version, with its lineage, its inputs and its checks. Not consumable. |
 | Raised | A request names the candidate's version and waits on a decision. |
-| Approved | The request is approved, by a person or under a stated rule. |
-| Published | The live set of its series. Readers take it. |
-| Superseded | A newer set of the series was applied. It stays the set for an as-of before its successor's. |
-| Withdrawn | Taken out of use under an approved withdrawal. No reader takes it. |
-| Closed | The request was refused, withdrawn or expired, or its candidate changed before the apply, so nothing was published. |
+| Approved | The request is approved by a person and waits for the trader to apply it, within the kind's apply window. |
+| Published | Applied. The newest published set of the series that is not withdrawn is the live set. |
+| Superseded | A set at a newer or equal as-of was applied after it. It is still the set for an as-of before its successor's. |
+| Withdrawn | Taken out of use under an approved withdrawal. No read by as-of takes it. |
+| Closed | The request was refused, withdrawn, expired or lapsed, or its apply was refused, so nothing was published. |
+
+A request closed under a stated rule is applied in the transaction that raised it, so it passes from Raised to Published at once and is never left approved.
 
 ** What a kind supplies
 
@@ -38,8 +40,8 @@ Source: [[proj:doc/knowledge/architecture/publish_lifecycle_states.puml][=publis
 |------+----------------------|
 | Subject | What one set is a set of, and the party that owns it: a bootstrap configuration, a currency pair, a surface blueprint. The subject names the output series the set is written to. |
 | Compute | The operation that computes a candidate for a subject at an as-of. |
-| Checks | What a candidate is checked against, and what a decider reads. |
-| Approval kinds | One kind for a publish and one for a withdrawal, each with the permission that raises it and the permission that decides it. |
+| Checks | What a candidate is checked against, which checks block a raise, and which a decider reads. |
+| Approval kinds | One kind for a publish and one for a withdrawal, each with the permission that raises it, the permission that decides it, its auto-approval code ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]) and its apply window. |
 
 ** What is the same for every kind
 
@@ -54,11 +56,11 @@ Source: [[proj:doc/knowledge/architecture/publish_lifecycle_states.puml][=publis
 
 ** The record
 
-A publish is one record, whatever its kind, with the columns every kind shares: the request, the party, the as-of, the candidate and its version, the output series, who published it and when, who superseded it, when, and as of which instant, and who withdrew it, when, and why. The subject is a part of its own, one table per kind, keyed by the publish. A reader of any kind reads one shape.
+A publish is one record, whatever its kind, with the columns every kind shares: the request, the party, the as-of, the candidate and its version, the output series, who published it and when, who superseded it, when and as of which instant, and who withdrew it, when and why. The subject is a part of its own, one table per kind, keyed by the publish. A reader of any kind reads one shape.
 
 ** Where it lives
 
-=ores.marketdata.service= holds the one implementation. A kind is a declaration beside it, never a copy of it: its subject part, its compute operation, its checks and its approval kinds. The messages of every kind name the same steps: compute, raise, apply, withdraw and read.
+=ores.marketdata.service= holds the one implementation. A kind is a declaration beside it, never a copy of it: its subject part, its compute operation, its checks and its approval kinds. The messages of every kind name the same steps: compute, raise, apply, withdraw and read. The approval record is written by the inbox's library inside the same database transaction, because the inbox and market data share one database.
 
 * See also
 

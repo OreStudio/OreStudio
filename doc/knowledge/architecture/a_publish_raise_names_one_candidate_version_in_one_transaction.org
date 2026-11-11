@@ -11,7 +11,7 @@
 
 * Summary
 
-A raise asks for one candidate version to become the live set of its series. It refuses a subject of another party, a second open request for the same subject and as-of, and a candidate older than the live set. The request and the subject record, which names the candidate's version, are written in one transaction, so no request ever names nothing and no subject record waits without a request. When a stated rule closes the request as it is raised, the raise applies it in the same call.
+A raise asks for one candidate version to become the published set of its series at its as-of. It refuses a subject of another party, a candidate with a failed blocking check, a second open request for the same subject and as-of, and a candidate older than the live set. The request and the subject record, which names the candidate's version, are written in one transaction. When a stated rule closes the request, the apply runs in that same transaction, so a request is never left approved and unapplied by a rule.
 
 * Detail
 
@@ -26,17 +26,20 @@ Source: [[proj:doc/knowledge/architecture/publish_lifecycle_sequence.puml][=publ
 |---------+-----|
 | The subject belongs to another party | A party publishes only its own sets. The party is the session's, and the subject's party must match it. |
 | No candidate exists for the subject and as-of | There is nothing to decide. |
-| A request for the same subject and as-of is waiting or approved | One open request per subject, as [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] states for every kind. |
-| The candidate's as-of is older than the live set's | A publish never puts older data in place of newer. A correction is a newer as-of. |
+| The candidate failed a blocking check | It cannot be published, whoever decides ([[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][A candidate is computed and stored before a publish is raised]]). |
+| A request for the same subject and as-of is waiting, or approved and within its apply window | One open request per subject, as [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] states for every kind. |
+| The candidate's as-of is older than the live set's | A publish never puts older data in place of newer. |
 | No reason is given | The decider reads a reason. |
+
+A candidate at the same as-of as the live set is a correction and is not refused: once applied, it supersedes the live set. The as-of is an instant, so a correction during the day has an as-of of its own.
 
 ** One transaction
 
-The request, written by the inbox, and the subject record, written by market data, are one transaction, as [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] states for every raise. The raise reads the approval kind and the approvals mode before it opens that transaction, under the tenant and with no party restriction, because a transaction's tenant and parties are fixed when it opens ([[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][A context bound to a transaction cannot change its tenant or party]]).
+The request, written by the inbox's library, and the subject record, written by market data, are one database transaction, as [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] states for every raise; the inbox and market data share one database. The raise reads the approval kind and the approvals mode before it opens that transaction, under the tenant and with no party restriction, because a transaction's tenant and parties are fixed when it opens ([[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][A context bound to a transaction cannot change its tenant or party]]). The rule in force when the raise begins is the rule that closes it, and the request records which.
 
 ** When a rule closes the request
 
-If [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]] closes the request as it is raised, the raise goes on to the apply in the same call, so a trader who needs no decider publishes in one act. The apply makes every check it makes for a person's approval.
+If [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]] closes the request as it is raised, the apply runs inside the raise's transaction, with every check of the apply ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]). If the apply refuses, the whole raise rolls back and the trader reads why, so no request is left approved with nothing applied.
 
 * See also
 

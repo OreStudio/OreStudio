@@ -25,7 +25,7 @@ The order follows dependency: each page needs the one before it.
 2. [[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][A candidate is computed and stored before a publish is raised]] — where the numbers come from, and why they exist before anyone is asked.
 3. [[id:BF14C932-D699-4224-98DA-0481E49FA394][A publish raise names one candidate version, in one transaction]] — how a request is raised for one candidate version, and what it refuses.
 4. [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]] — when a raised request closes without a person, and why.
-5. [[id:F8559BFA-9FF8-4F6D-8D70-780ECE9C5737][Provisioning approves without a person only while it runs]] — the one window in which a tenant approves without a person by default.
+5. [[id:F8559BFA-9FF8-4F6D-8D70-780ECE9C5737][Provisioning approves without a person only while it runs]] — the grant a provisioning run holds so its own publishes close without a person, and how it ends.
 6. [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]] — how an approved request becomes the live set, and how readers learn of it.
 7. [[id:E474FB93-2ACE-4981-9761-33E214B3D268][A published set is withdrawn through a request of its own]] — how a live set is taken out of use.
 8. [[id:86158AAD-423A-421A-8BE2-CC5123109297][A reader takes the newest published set at or before its as-of]] — what every reader is given.

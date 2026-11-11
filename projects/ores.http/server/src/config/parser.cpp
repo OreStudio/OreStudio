@@ -103,6 +103,29 @@ options_description make_options_description() {
                              value<std::uint32_t>()->default_value(5),
                              "Seconds between writes of a session's byte totals. Defaults to 5.");
 
+    options_description rod("Rate limits");
+    rod.add_options()(
+        "open-requests-per-minute",
+        value<std::uint32_t>()->default_value(300),
+        "Requests one client address may make in a minute to a route that needs no session. "
+        "Defaults to 300.")("authenticated-requests-per-minute",
+                            value<std::uint32_t>()->default_value(1200),
+                            "Requests one account may make in a minute to a route that needs a "
+                            "session. Defaults to 1200.")(
+        "credential-attempts-per-minute",
+        value<std::uint32_t>()->default_value(10),
+        "Sign-in and sign-up attempts one client address may make in a minute. Defaults to 10.")(
+        "registration-policy-reads-per-minute",
+        value<std::uint32_t>()->default_value(120),
+        "Registration policy reads one client address may make in a minute. Defaults to 120.")(
+        "rate-limit-max-keys",
+        value<std::uint32_t>()->default_value(65536),
+        "The most clients and accounts tracked at once. Defaults to 65536.")(
+        "trusted-proxies",
+        value<std::string>()->default_value(""),
+        "Comma separated networks whose X-Forwarded-For names the client, such as "
+        "127.0.0.1/32. Defaults to none.");
+
     options_description cod("Object Storage");
     cod.add_options()(storage_dir_arg.c_str(),
                       value<std::string>()->default_value("/var/ores/http-server/storage"),
@@ -135,7 +158,7 @@ options_description make_options_description() {
     const auto dod(database_configuration::make_options_description());
 
     options_description r;
-    r.add(god).add(lod).add(sod).add(nod).add(natsd).add(cod).add(dod);
+    r.add(god).add(lod).add(sod).add(rod).add(nod).add(natsd).add(cod).add(dod);
     return r;
 }
 
@@ -183,6 +206,14 @@ http_server_options read_server_configuration(const variables_map& vm) {
     r.worker_threads = vm["worker-threads"].as<std::uint32_t>();
     r.max_inflight_requests = vm["max-inflight-requests"].as<std::uint32_t>();
     r.bytes_flush_interval = std::chrono::seconds(vm["bytes-flush-interval"].as<std::uint32_t>());
+    r.open_requests_per_minute = vm["open-requests-per-minute"].as<std::uint32_t>();
+    r.authenticated_requests_per_minute =
+        vm["authenticated-requests-per-minute"].as<std::uint32_t>();
+    r.credential_attempts_per_minute = vm["credential-attempts-per-minute"].as<std::uint32_t>();
+    r.registration_policy_reads_per_minute =
+        vm["registration-policy-reads-per-minute"].as<std::uint32_t>();
+    r.rate_limit_max_keys = vm["rate-limit-max-keys"].as<std::uint32_t>();
+    r.trusted_proxies = vm["trusted-proxies"].as<std::string>();
 
     return r;
 }

@@ -451,6 +451,112 @@ TEST_CASE("a_session_request_that_changes_something_must_prove_intent", "[sessio
     REQUIRE(intended->result_int() == 200);
 }
 
+TEST_CASE("an_open_route_refuses_a_client_past_its_budget", "[rate_limit][http_metrics]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a client past the open budget is told to wait";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+    options.open_requests_per_minute = 2;
+
+    metrics_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->get("/open")
+                          .summary("An open read")
+                          .auth_optional()
+                          .handler([](const http_request&) -> asio::awaitable<http_response> {
+                              co_return http_response::json(R"({"ok":true})");
+                          })
+                          .build());
+
+    const auto first = metrics_send(fixture.port(), http::verb::get, "/open", "");
+    REQUIRE(first.has_value());
+    CHECK(first->result_int() == 200);
+    CHECK(first->at("RateLimit-Policy") == "\"open\";q=2;w=60");
+    CHECK(first->at("RateLimit") == "\"open\";r=1;t=30");
+    REQUIRE(metrics_send(fixture.port(), http::verb::get, "/open", "")->result_int() == 200);
+
+    const auto refused = metrics_send(fixture.port(), http::verb::get, "/open", "");
+    REQUIRE(refused.has_value());
+    CHECK(refused->result_int() == 429);
+    CHECK(refused->at("Retry-After") == "30");
+    CHECK(refused->body().find("too-many-requests") != std::string::npos);
+
+    const auto metrics = metrics_send(fixture.port(), http::verb::get, "/metrics", "");
+    // The metrics route is open too, so its own read is past the budget.
+    REQUIRE(metrics.has_value());
+    CHECK(metrics->result_int() == 429);
+    CHECK(fixture.server().counters().to_text().find(
+              R"(ores_http_refused_rate_limited_total{policy="open"} 2)") != std::string::npos);
+}
+
+TEST_CASE("an_authenticated_route_counts_the_account", "[rate_limit][http_metrics]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a signed-in caller spends its own budget";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+    options.authenticated_requests_per_minute = 1;
+
+    metrics_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->get("/mine")
+                          .summary("A signed-in read")
+                          .auth_required()
+                          .handler([](const http_request&) -> asio::awaitable<http_response> {
+                              co_return http_response::json(R"({"ok":true})");
+                          })
+                          .build());
+
+    cookie_settings settings;
+    settings.name = "ores_web_session_test";
+    fixture.server().set_cookie_settings(settings);
+    const auto cookie_for = [&](const std::string& account) {
+        session_record record;
+        record.token = "token-" + account;
+        record.claims.subject = account;
+        return settings.name + "=" + fixture.server().sessions()->open(record);
+    };
+    const auto alice = cookie_for("alice");
+    const auto bob = cookie_for("bob");
+
+    const auto first = metrics_send_with(fixture.port(), http::verb::get, "/mine", alice);
+    REQUIRE(first.has_value());
+    CHECK(first->result_int() == 200);
+    CHECK(first->at("RateLimit-Policy") == "\"authenticated\";q=1;w=60");
+    CHECK(metrics_send_with(fixture.port(), http::verb::get, "/mine", alice)->result_int() == 429);
+    // Another account behind the same address has a budget of its own.
+    CHECK(metrics_send_with(fixture.port(), http::verb::get, "/mine", bob)->result_int() == 200);
+}
+
+TEST_CASE("failed_credentials_spend_the_open_budget", "[rate_limit][http_metrics]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that guessing a credential is limited like an open read";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+    options.open_requests_per_minute = 1;
+
+    metrics_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->get("/mine")
+                          .summary("A signed-in read")
+                          .auth_required()
+                          .handler([](const http_request&) -> asio::awaitable<http_response> {
+                              co_return http_response::json(R"({"ok":true})");
+                          })
+                          .build());
+
+    CHECK(metrics_send(fixture.port(), http::verb::get, "/mine", "")->result_int() == 401);
+    CHECK(metrics_send(fixture.port(), http::verb::get, "/mine", "")->result_int() == 429);
+}
+
 TEST_CASE("metrics_count_what_the_server_answered", "[http_metrics]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that an answer moves the counter it belongs to";

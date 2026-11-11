@@ -36,6 +36,9 @@ Three constructs carry weight here.
 - ={{#requires_session}}= emits =.auth_required()= and ={{^requires_session}}=
   emits =.auth_optional()=, so the route states exactly one of the two and the
   message's own =:auth:= property alone decides which.
+- ={{#rate_policy}}= emits =.rate_limit()= with the policy a public message
+  names in =:rate_policy:=; a message that names none runs under the default
+  for its authentication position.
 
 *One enforcement point.* =forward()= takes the caller's token from the HTTP
 request, hands it to =nats_client::with_delegation=, and sends the request on
@@ -135,6 +138,9 @@ void {{entity_singular}}_routes::register_routes(
 {{^requires_session}}
                                     .auth_optional()
 {{/requires_session}}
+{{#rate_policy}}
+                                    .rate_limit("{{rate_policy}}")
+{{/rate_policy}}
                                     .body<messaging::{{request}}>()
                                     .response<messaging::{{response_type}}>()
                                     .handler([&session](const http_request& req) {

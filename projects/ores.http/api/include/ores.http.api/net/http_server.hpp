@@ -25,6 +25,7 @@
 #include "ores.http.api/export.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
 #include "ores.http.api/net/http_session.hpp"
+#include "ores.http.api/net/rate_limiter.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/net/server_counters.hpp"
 #include "ores.http.api/net/session_bytes_accumulator.hpp"
@@ -35,6 +36,7 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <atomic>
 #include <memory>
 
@@ -145,6 +147,9 @@ private:
 
     boost::asio::awaitable<void> accept_connections();
 
+    /// Drops the full buckets every half minute, so idle callers cost nothing.
+    void schedule_sweep();
+
     boost::asio::io_context& io_ctx_;
     http_server_options options_;
     std::shared_ptr<router> router_;
@@ -175,6 +180,11 @@ private:
     std::shared_ptr<domain::session_store> sessions_;
     domain::cookie_settings cookie_;
     session_bytes_callback bytes_callback_;
+
+    // The rate policies, the proxies whose forwarded address is believed, and the
+    // buckets every session counts against. Null when the options turn limiting off.
+    std::shared_ptr<rate_limiting> limits_;
+    std::unique_ptr<boost::asio::steady_timer> sweep_timer_;
 };
 
 }

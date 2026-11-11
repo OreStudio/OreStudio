@@ -23,7 +23,10 @@
 #include "ores.http.api/export.hpp"
 #include <atomic>
 #include <cstdint>
+#include <map>
+#include <mutex>
 #include <string>
+#include <string_view>
 
 namespace ores::http::net {
 
@@ -72,7 +75,16 @@ struct ORES_HTTP_API_EXPORT server_counters final {
     /**
      * @brief The counters in the text format a scraper reads.
      */
+    /**
+     * @brief Count a request refused by a rate policy, under the policy's name.
+     */
+    void record_rate_limited(std::string_view policy);
+
     [[nodiscard]] std::string to_text() const;
+
+private:
+    mutable std::mutex rate_limited_mutex_;
+    std::map<std::string, std::uint64_t, std::less<>> rate_limited_;
 };
 
 }

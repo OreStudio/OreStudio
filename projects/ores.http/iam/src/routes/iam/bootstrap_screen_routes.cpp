@@ -19,6 +19,7 @@
  */
 #include "ores.http/routes/iam/bootstrap_screen_routes.hpp"
 #include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/net/rate_limiter.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/iam/tenancy_screen_shapes.hpp"
@@ -159,6 +160,7 @@ void bootstrap_screen_routes::register_routes(
             .summary("Create the first administrator, which ends bootstrap mode")
             .tags({"setup"})
             .auth_optional()
+            .rate_limit(ores::http::net::rate_policies::credential)
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 const auto body = json::read_expected<initial_administrator_body>(req.body);
                 if (!body || body->principal.empty() || body->password.empty() ||
@@ -243,6 +245,7 @@ void bootstrap_screen_routes::register_routes(
             .summary("Read what the deployment offers somebody not in it yet")
             .tags({"setup"})
             .auth_optional()
+            .rate_limit(ores::http::net::rate_policies::registration_policy)
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::registration_policy_request>([&] {
                     return http_response::json(policy_json(

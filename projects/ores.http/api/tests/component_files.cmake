@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "classification_routes_tests.cpp"
+    "client_address_tests.cpp"
     "endpoint_registry_tests.cpp"
     "http_body_limit_tests.cpp"
     "http_info_protocol_codec_roundtrip_tests.cpp"
@@ -31,6 +32,7 @@ set(files
     "http_server_options_tests.cpp"
     "http_streamed_body_tests.cpp"
     "main.cpp"
+    "rate_limiter_tests.cpp"
     "record_routes_tests.cpp"
     "route_tests.cpp"
     "router_tests.cpp"

@@ -24,6 +24,7 @@
 #include "ores.http.api/domain/session_store.hpp"
 #include "ores.http.api/export.hpp"
 #include "ores.http.api/net/http_server_options.hpp"
+#include "ores.http.api/net/rate_limiter.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/net/server_counters.hpp"
 #include "ores.http.api/net/worker_pool.hpp"
@@ -73,7 +74,8 @@ public:
                           session_bytes_callback bytes_callback = nullptr,
                           server_counters* counters = nullptr,
                           std::shared_ptr<domain::session_store> sessions = nullptr,
-                          domain::cookie_settings cookie = {});
+                          domain::cookie_settings cookie = {},
+                          std::shared_ptr<rate_limiting> limits = nullptr);
 
     /**
      * @brief Starts processing the session.
@@ -94,8 +96,10 @@ private:
      */
     enum class body_outcome { complete, too_large, destination_failed };
 
-    boost::asio::awaitable<void>
-    handle_request(domain::http_request req, std::optional<domain::route> route, bool keep_alive);
+    boost::asio::awaitable<void> handle_request(domain::http_request req,
+                                                std::optional<domain::route> route,
+                                                bool keep_alive,
+                                                std::optional<rate_note> note);
 
     /**
      * @brief Reads the body in chunks into the sink, or into content when the
@@ -168,6 +172,24 @@ private:
     boost::asio::awaitable<void>
     refuse_too_large(unsigned version, std::string_view subject, std::uint64_t size);
 
+    /**
+     * @brief Count a failed credential against the open policy by client, and
+     * answer 429 rather than 401 once that budget is spent, so guessing tokens
+     * is limited like any open request. Says whether it answered.
+     */
+    boost::asio::awaitable<bool>
+    refused_failed_credential(unsigned version, std::string_view subject, bool keep_alive);
+
+    /**
+     * @brief Answer a request a rate policy refused, counted under the policy.
+     */
+    boost::asio::awaitable<void> refuse_rate_limited(unsigned version,
+                                                     std::string_view subject,
+                                                     const rate_policy& policy,
+                                                     const rate_decision& decision,
+                                                     std::string_view caller,
+                                                     bool keep_alive);
+
     boost::asio::awaitable<void>
     refuse_destination(unsigned version, std::string_view subject, std::string_view note);
 
@@ -199,6 +221,10 @@ private:
     // Null when the server serves no browser session.
     std::shared_ptr<domain::session_store> sessions_;
     domain::cookie_settings cookie_;
+    std::shared_ptr<rate_limiting> limits_;
+    boost::asio::ip::address peer_;
+    /// The client the current request counts as, set as its headers are read.
+    std::string client_;
 };
 
 }

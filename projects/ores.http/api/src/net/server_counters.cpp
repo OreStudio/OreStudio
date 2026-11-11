@@ -45,6 +45,15 @@ void add_gauge(std::ostringstream& out,
 
 }
 
+void server_counters::record_rate_limited(std::string_view policy) {
+    std::lock_guard lock(rate_limited_mutex_);
+    auto found = rate_limited_.find(policy);
+    if (found == rate_limited_.end())
+        rate_limited_.emplace(std::string(policy), 1);
+    else
+        ++found->second;
+}
+
 std::string server_counters::to_text() const {
     std::ostringstream out;
 
@@ -88,6 +97,15 @@ std::string server_counters::to_text() const {
                 "ores_http_response_bytes_total",
                 "Bytes written by answers",
                 response_bytes.load(std::memory_order_relaxed));
+
+    {
+        std::lock_guard lock(rate_limited_mutex_);
+        constexpr std::string_view name = "ores_http_refused_rate_limited_total";
+        out << "# HELP " << name << " Requests refused by a rate policy\n"
+            << "# TYPE " << name << " counter\n";
+        for (const auto& [policy, count] : rate_limited_)
+            out << name << "{policy=\"" << policy << "\"} " << count << '\n';
+    }
 
     return out.str();
 }

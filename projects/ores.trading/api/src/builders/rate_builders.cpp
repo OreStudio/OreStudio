@@ -131,7 +131,8 @@ swap_result cross_currency_swap_builder::build() const {
                                            .maturity = domestic_terms.maturity.get(),
                                            .fixed_rate = domestic_terms.fixed_rate.get(),
                                            .index = terms_.foreign_index.get(),
-                                           .fixed_side = domestic_terms.fixed_side.get()};
+                                           .fixed_side = domestic_terms.fixed_side.get(),
+                                           .convention = terms_.foreign_convention};
     const auto foreign = swap_of(conventions_, foreign_terms);
     if (!foreign)
         return std::unexpected(within("foreign", foreign.error()));

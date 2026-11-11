@@ -111,7 +111,9 @@ std::expected<domain::swap_instrument_data, build_error> vanilla_swap_builder::b
     if (terms_.maturity.get() <= terms_.start.get())
         return std::unexpected(build_error{"maturity", "must be after the start"});
 
-    const auto swap = conventions_.swap_convention_of(terms_.index.get());
+    const auto swap = terms_.convention ? conventions_.swap_convention_by_id(*terms_.convention,
+                                                                             terms_.index.get()) :
+                                          conventions_.swap_convention_of(terms_.index.get());
     if (!swap)
         return std::unexpected(index_error(swap.error()));
     const auto index = conventions_.index_definition_of(terms_.index.get());

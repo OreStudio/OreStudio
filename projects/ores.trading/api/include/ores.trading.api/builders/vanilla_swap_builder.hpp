@@ -46,6 +46,8 @@ struct vanilla_swap_terms final {
     required<utility::decimal::decimal> fixed_rate;
     required<marketdata::datum::market_reference> index;
     required<side> fixed_side;
+    /// The id of the swap convention to build by, when the index has more than one.
+    std::optional<std::string> convention = std::nullopt;
 };
 
 /**

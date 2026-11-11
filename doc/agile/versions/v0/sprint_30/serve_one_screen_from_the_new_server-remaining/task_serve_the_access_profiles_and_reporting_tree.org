@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0BD277CC-A6E2-4C34-BECD-8A81E8FD672C
 :END:
-#+title: Task: Serve the access profiles, contacts and reporting tree
+#+title: Task: Serve the access profiles and contact records
 #+description: Nine access routes remain at the BFF's addresses: the account picture, own and account profiles, own and account contact information, the reporting line, the reporting tree and the ways to hold a permission.
 #+type: task
 #+level: s1
@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Serve the last nine access routes ores.web calls at the BFF's own addresses and 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -41,9 +41,20 @@ Serve the last nine access routes ores.web calls at the BFF's own addresses and 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Serve the profile and contact screens at the BFF's addresses in a hand-written
+unit, =profile_routes=: a person's own profile and contact record, and an
+administrator's view of one account's. The own routes name no account. A
+profile write that states the version the screen read is refused as a moved
+record when the account has changed since; the administrator's write reads the
+account inside the request and keeps the fields the screen does not set. The
+administrator's contact write reuses the account's current record identifier,
+so a claim of no record finds the row the panel did not see and is refused.
+
+A contact record is stated as the screens read it by =account_view=, beside the
+account, and the bodies are read through =access_screen_shapes=.
+
+The last four routes, the picture, the reporting line and tree and the ways to
+hold, move to [[id:58A99F28-A560-4408-9D86-203A55CA2060][Serve the account picture, the reporting tree and the ways to hold]].
 
 * Measurements
 
@@ -85,3 +96,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The C++ server answers six profile and contact routes at the addresses ores.web
+calls, each paired with its BFF route in the inventory. The tests prove the
+bodies, the moved-record check, the refusals before forwarding and the contact
+record as the screens read it. The pairing kept two stale pairs for the
+account's contact record on two lines, which a one-line match missed; they are
+gone, and a check of the pairs finds no key twice.

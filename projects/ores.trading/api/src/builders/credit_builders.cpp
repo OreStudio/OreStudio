@@ -84,7 +84,7 @@ domain::credit_instrument header_of(std::string_view trade_type,
                                     const std::string& reference_entity,
                                     std::chrono::year_month_day start,
                                     std::chrono::year_month_day maturity) {
-    domain::credit_instrument row;
+    domain::credit_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
     row.reference_entity_id_type = "LEI";
     row.reference_entity_id = reference_entity;
@@ -121,7 +121,7 @@ void add_coupon_leg(domain::credit_instrument_data& out,
 
     out.leg_rates.push_back(rows::leg_rate(leg_number, "fixed", terms.running_spread.get()));
 
-    domain::instrument_schedule schedule;
+    domain::instrument_schedule schedule{};
     schedule.owner_role = "swap";
     schedule.owner_number = leg_number;
     schedule.schedule_role = "schedule";
@@ -156,7 +156,7 @@ index_swap_of(std::string_view trade_type,
     if (!premium)
         return std::unexpected(premium.error());
 
-    domain::credit_instrument_data out;
+    domain::credit_instrument_data out{};
     out.instrument = header_of(
         trade_type, terms.reference_entity.get(), terms.start.get(), terms.maturity.get());
     out.index_credit_default_swap_instruments.push_back(
@@ -181,7 +181,7 @@ credit_default_swap_builder::build() const {
     if (!premium)
         return std::unexpected(premium.error());
 
-    domain::credit_instrument_data out;
+    domain::credit_instrument_data out{};
     out.instrument = header_of(
         trade_type, terms_.reference_entity.get(), terms_.start.get(), terms_.maturity.get());
     auto fact =
@@ -229,26 +229,26 @@ index_credit_default_swap_option_builder::build() const {
     out->wrapped_index_swap->protection_start_date = terms_.swap.start.get();
     out->wrapped_index_swap->upfront_fee = decimal{};
 
-    domain::index_credit_default_swap_option_instrument fact;
+    domain::index_credit_default_swap_option_instrument fact{};
     fact.knock_out = false;
     fact.index_term = terms_.index_term.get();
     fact.strike_type = "Price";
     out->index_credit_default_swap_option_instruments.push_back(std::move(fact));
 
-    domain::instrument_strike strike;
+    domain::instrument_strike strike{};
     strike.strike_role = "single";
     strike.sequence_number = 1;
     strike.bare_value = terms_.strike.get();
     out->strikes.push_back(std::move(strike));
 
-    domain::instrument_option option;
+    domain::instrument_option option{};
     option.long_short = long_short_of(terms_.position.get());
     option.style = "European";
     option.settlement = "Cash";
     option.pay_off_at_expiry = "false";
     out->options.push_back(std::move(option));
 
-    domain::instrument_schedule exercise;
+    domain::instrument_schedule exercise{};
     exercise.owner_role = "option";
     exercise.owner_number = 1;
     exercise.schedule_role = "exercise_dates";
@@ -256,7 +256,7 @@ index_credit_default_swap_option_builder::build() const {
     exercise.schedule_kind = "dates";
     out->schedules.push_back(std::move(exercise));
 
-    domain::instrument_schedule_date date;
+    domain::instrument_schedule_date date{};
     date.owner_role = "option";
     date.owner_number = 1;
     date.schedule_role = "exercise_dates";
@@ -280,10 +280,10 @@ credit_linked_swap_builder::build() const {
     if (!premium)
         return std::unexpected(premium.error());
 
-    domain::credit_instrument_data out;
+    domain::credit_instrument_data out{};
     out.instrument = header_of(
         trade_type, terms_.reference_entity.get(), terms_.start.get(), terms_.maturity.get());
-    domain::credit_linked_swap_instrument fact;
+    domain::credit_linked_swap_instrument fact{};
     fact.credit_curve_id = terms_.credit_curve.get().uri();
     fact.settles_accrual = premium->convention.settles_accrual;
     fact.default_payment_time = protection_payment_time_of(premium->convention);
@@ -327,12 +327,12 @@ risk_participation_agreement_builder::build() const {
             build_error{"underlying." + swap.error().term, std::move(swap.error().message)});
 
     const auto& underlying = terms_.underlying;
-    domain::credit_instrument_data out;
+    domain::credit_instrument_data out{};
     out.instrument = header_of(trade_type,
                                terms_.reference_entity.get(),
                                underlying.start.get(),
                                underlying.maturity.get());
-    domain::risk_participation_agreement_instrument fact;
+    domain::risk_participation_agreement_instrument fact{};
     fact.credit_curve_id = terms_.credit_curve.get().uri();
     fact.participation_rate = rate;
     fact.issuer_id = terms_.reference_entity.get();

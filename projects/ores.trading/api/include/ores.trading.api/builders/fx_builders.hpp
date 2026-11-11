@@ -305,7 +305,6 @@ private:
     fx_accumulator_terms terms_;
 };
 
-
 template <fx_barrier_product Product>
 fx_result fx_barrier_option_builder<Product>::build() const {
     const auto& option = terms_.option;
@@ -341,7 +340,7 @@ fx_result fx_barrier_option_builder<Product>::build() const {
     row.settlement = "Cash";
     fx_detail::set_barrier_columns(row, barriers);
     row.barrier_fixing_index = terms_.fx_index.get().uri();
-    domain::fx_instrument_data out;
+    domain::fx_instrument_data out{};
     out.options.push_back(fx_detail::option_row(option.position.get(), "European"));
     out.barrier_options.push_back(std::move(row));
     fx_detail::add_barriers(out, barriers);
@@ -376,7 +375,7 @@ fx_result fx_digital_option_builder<Product>::build() const {
             return std::unexpected(std::move(*refusal));
     }
 
-    domain::fx_digital_option_instrument row;
+    domain::fx_digital_option_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
     row.foreign_currency = terms_.foreign_currency.get();
     row.domestic_currency = terms_.domestic_currency.get();
@@ -391,7 +390,7 @@ fx_result fx_digital_option_builder<Product>::build() const {
     if constexpr (Product == fx_digital_product::digital_barrier)
         row.barrier_fixing_index = terms_.fx_index.get().uri();
 
-    domain::fx_instrument_data out;
+    domain::fx_instrument_data out{};
     out.digital_options.push_back(std::move(row));
     // A touch pays when touched, so ORE states no exercise style for it.
     constexpr bool touch =

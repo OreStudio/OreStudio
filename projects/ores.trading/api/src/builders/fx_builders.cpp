@@ -39,7 +39,7 @@ fx_result fx_forward_builder::build() const {
     auto row = exchange_row<domain::fx_forward_instrument>(trade_type, terms_.exchange);
     row.value_date = terms_.value_date.get();
     row.settlement = settlement_of(terms_.settles.get());
-    domain::fx_instrument_data out;
+    domain::fx_instrument_data out{};
     out.forwards.push_back(std::move(row));
     return out;
 }
@@ -60,7 +60,7 @@ fx_result fx_swap_builder::build() const {
     row.far_bought_amount = terms_.far_bought_amount.get();
     row.far_sold_amount = terms_.far_sold_amount.get();
     row.settlement = "Physical";
-    domain::fx_instrument_data out;
+    domain::fx_instrument_data out{};
     out.forwards.push_back(std::move(row));
     return out;
 }
@@ -76,7 +76,7 @@ fx_result fx_option_builder::build() const {
     row.expiry_date = terms_.expiry.get();
     row.exercise_style = "European";
     row.settlement = "Cash";
-    domain::fx_instrument_data out;
+    domain::fx_instrument_data out{};
     out.vanilla_options.push_back(std::move(row));
     out.options.push_back(option_row(terms_.position.get(), "European"));
     return out;
@@ -108,7 +108,7 @@ fx_result fx_generic_barrier_option_builder::build() const {
         return std::unexpected(build_error{"strike", "the exchange states no rate a strike holds"});
     row.strike = *strike;
     set_barrier_columns(row, barriers);
-    domain::fx_instrument_data out;
+    domain::fx_instrument_data out{};
     out.barrier_options.push_back(std::move(row));
     out.options.push_back(option_row(option.position.get(), std::nullopt, "Vanilla"));
     add_underlying(out, terms_.fx_index.get());
@@ -127,7 +127,7 @@ fx_result fx_average_forward_builder::build() const {
     if (terms_.reference_notional.get() <= decimal{} ||
         terms_.settlement_notional.get() <= decimal{})
         return std::unexpected(build_error{"notionals", "must be positive"});
-    domain::fx_asian_forward_instrument row;
+    domain::fx_asian_forward_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
     row.fx_index = terms_.fx_index.get().uri();
     row.reference_currency = terms_.reference_currency.get();
@@ -138,7 +138,7 @@ fx_result fx_average_forward_builder::build() const {
     row.currency = terms_.settlement_currency.get();
     row.long_short = "Long";
     row.fixed_payer = false;
-    domain::fx_instrument_data out;
+    domain::fx_instrument_data out{};
     out.asian_forwards.push_back(std::move(row));
     add_schedule(out, "observation_schedule", "1M", terms_.start.get(), terms_.payment_date.get());
     return out;
@@ -154,7 +154,7 @@ fx_result fx_tarf_builder::build() const {
         terms_.target_amount.get() <= decimal{})
         return std::unexpected(
             build_error{"amounts", "the strike, fixing amount and target must be positive"});
-    domain::fx_asian_forward_instrument row;
+    domain::fx_asian_forward_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
     row.fx_index = terms_.fx_index.get().uri();
     row.currency = terms_.currency.get();
@@ -162,7 +162,7 @@ fx_result fx_tarf_builder::build() const {
     row.strike = terms_.strike.get();
     row.target_amount = terms_.target_amount.get();
     row.long_short = long_short_of(terms_.position.get());
-    domain::fx_instrument_data out;
+    domain::fx_instrument_data out{};
     out.asian_forwards.push_back(std::move(row));
     add_underlying(out, terms_.fx_index.get());
     out.options.push_back(
@@ -183,7 +183,7 @@ fx_result fx_variance_swap_builder::build() const {
         return std::unexpected(build_error{"strike", "must be positive"});
     if (terms_.notional.get() <= decimal{})
         return std::unexpected(build_error{"notional", "must be positive"});
-    domain::fx_variance_swap_instrument row;
+    domain::fx_variance_swap_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
     row.start_date = terms_.start.get();
     row.end_date = terms_.end.get();
@@ -193,7 +193,7 @@ fx_result fx_variance_swap_builder::build() const {
     row.strike = terms_.strike.get();
     row.notional = terms_.notional.get();
     row.moment_type = "Variance";
-    domain::fx_instrument_data out;
+    domain::fx_instrument_data out{};
     out.variance_swaps.push_back(std::move(row));
     add_underlying(out, terms_.fx_index.get());
     return out;
@@ -210,7 +210,7 @@ fx_result fx_accumulator_builder::build() const {
             build_error{"amounts", "the strike and fixing amount must be positive"});
     if (terms_.knock_out.get() <= terms_.strike.get())
         return std::unexpected(build_error{"knock_out", "must be above the strike"});
-    domain::fx_accumulator_instrument row;
+    domain::fx_accumulator_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
     row.currency = terms_.currency.get();
     row.fixing_amount = terms_.fixing_amount.get();
@@ -219,7 +219,7 @@ fx_result fx_accumulator_builder::build() const {
     row.long_short = long_short_of(terms_.position.get());
     row.start_date = terms_.start.get();
     row.knock_out_barrier = terms_.knock_out.get();
-    domain::fx_instrument_data out;
+    domain::fx_instrument_data out{};
     out.accumulators.push_back(std::move(row));
     add_underlying(out, terms_.fx_index.get());
     out.options.push_back(

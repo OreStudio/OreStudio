@@ -79,7 +79,6 @@ constexpr std::string_view bond_leg_role = "bond";
  * rows these are, so a row there carries no role and the answer is the
  * bond.
  */
-
 std::string_view leg_role_of(const domain::bond_leg& row) {
     return row.leg_role;
 }

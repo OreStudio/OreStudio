@@ -88,7 +88,7 @@ inline domain::instrument_option option_row(option_position position,
                                             std::optional<std::string> style,
                                             std::optional<std::string> payoff_type = {},
                                             std::optional<std::string> pay_off_at_expiry = {}) {
-    domain::instrument_option row;
+    domain::instrument_option row{};
     row.long_short = long_short_of(position);
     row.style = std::move(style);
     if (row.style)
@@ -101,14 +101,14 @@ inline domain::instrument_option option_row(option_position position,
 inline void add_barriers(domain::fx_instrument_data& out, const std::vector<fx_barrier>& barriers) {
     int number = 0;
     for (const auto& barrier : barriers) {
-        domain::instrument_barrier row;
+        domain::instrument_barrier row{};
         row.barrier_role = "barrier";
         row.sequence_number = ++number;
         row.barrier_type = barrier.type;
         out.barriers.push_back(std::move(row));
         int level_number = 0;
         for (const auto& value : barrier.levels) {
-            domain::instrument_barrier_level level;
+            domain::instrument_barrier_level level{};
             level.barrier_role = "barrier";
             level.barrier_sequence_number = number;
             level.sequence_number = ++level_number;
@@ -121,7 +121,7 @@ inline void add_barriers(domain::fx_instrument_data& out, const std::vector<fx_b
 /// The pair an FX product observes, as the Underlying block states it.
 inline void add_underlying(domain::fx_instrument_data& out,
                            const marketdata::datum::market_reference& fx_index) {
-    domain::instrument_underlying row;
+    domain::instrument_underlying row{};
     row.underlying_role = "underlying";
     row.sequence_number = 1;
     row.underlying_type = "FX";
@@ -136,7 +136,7 @@ inline void add_underlying(domain::fx_instrument_data& out,
  */
 inline void add_schedule(
     domain::fx_instrument_data& out, std::string role, std::string tenor, ymd start, ymd end) {
-    domain::instrument_schedule row;
+    domain::instrument_schedule row{};
     row.owner_role = "option";
     row.owner_number = 1;
     row.schedule_role = std::move(role);
@@ -153,11 +153,11 @@ inline void add_schedule(
 
 /// Fixings below the strike are taken twice, those above it once.
 inline std::vector<domain::range_bound> strike_leverage_bounds(decimal strike) {
-    domain::range_bound below;
+    domain::range_bound below{};
     below.sequence_number = 1;
     below.range_to = strike;
     below.leverage = 2.0;
-    domain::range_bound above;
+    domain::range_bound above{};
     above.sequence_number = 2;
     above.range_from = strike;
     above.leverage = 1.0;

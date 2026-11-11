@@ -43,7 +43,7 @@ std::optional<build_error> holding_refusal(const bond_holding& holding) {
 }
 
 domain::bond_product product_of(std::string_view trade_type, const bond_holding& holding) {
-    domain::bond_product product;
+    domain::bond_product product{};
     auto& instrument = product.row.instrument;
     instrument.identity.trade_type_code = std::string(trade_type);
     instrument.issue_id = holding.issue_id.get();
@@ -70,7 +70,7 @@ void add_trade_leg(domain::bond_product& product,
                    std::string tenor,
                    ymd start,
                    ymd end) {
-    domain::bond_leg leg;
+    domain::bond_leg leg{};
     leg.leg_role = role;
     leg.leg_number = 1;
     leg.payer = payer;
@@ -80,7 +80,7 @@ void add_trade_leg(domain::bond_product& product,
     leg.payment_convention = "F";
     product.legs.push_back(std::move(leg));
 
-    domain::bond_leg_amount notional;
+    domain::bond_leg_amount notional{};
     notional.leg_role = role;
     notional.leg_number = 1;
     notional.amount_role = "notional";
@@ -88,7 +88,7 @@ void add_trade_leg(domain::bond_product& product,
     notional.value = holding.notional.get();
     product.leg_amounts.push_back(std::move(notional));
 
-    domain::instrument_schedule schedule;
+    domain::instrument_schedule schedule{};
     schedule.owner_role = std::move(role);
     schedule.owner_number = 1;
     schedule.schedule_role = "schedule";
@@ -110,14 +110,14 @@ void add_leg_rate(domain::bond_product& product,
                   std::optional<std::string> index,
                   std::string amount_role,
                   decimal value) {
-    domain::bond_leg_rate rate;
+    domain::bond_leg_rate rate{};
     rate.leg_role = role;
     rate.leg_number = 1;
     rate.rate_kind = std::move(kind);
     rate.index = std::move(index);
     product.leg_rates.push_back(std::move(rate));
 
-    domain::bond_leg_amount amount;
+    domain::bond_leg_amount amount{};
     amount.leg_role = role;
     amount.leg_number = 1;
     amount.amount_role = std::move(amount_role);
@@ -144,7 +144,7 @@ std::expected<domain::bond_security, build_error> bond_issue_builder::build() co
         return std::unexpected(build_error{"maturity", "must be after the issue date"});
 
     const auto id = terms_.issue_id.get();
-    domain::bond_security out;
+    domain::bond_security out{};
     auto& issue = out.issue;
     issue.issue_id = id;
     issue.security_id = terms_.security_id.get();
@@ -158,7 +158,7 @@ std::expected<domain::bond_security, build_error> bond_issue_builder::build() co
     if (!terms_.reference_curve.empty())
         issue.reference_curve_id = terms_.reference_curve;
 
-    domain::bond_issue_leg leg;
+    domain::bond_issue_leg leg{};
     leg.issue_id = id;
     leg.leg_number = 1;
     leg.payer = false;
@@ -168,7 +168,7 @@ std::expected<domain::bond_security, build_error> bond_issue_builder::build() co
     leg.day_counter = "ACT/ACT";
     out.legs.push_back(std::move(leg));
 
-    domain::bond_issue_leg_amount notional;
+    domain::bond_issue_leg_amount notional{};
     notional.issue_id = id;
     notional.leg_number = 1;
     notional.amount_role = "notional";
@@ -176,13 +176,13 @@ std::expected<domain::bond_security, build_error> bond_issue_builder::build() co
     notional.value = terms_.face_value.get();
     out.amounts.push_back(std::move(notional));
 
-    domain::bond_issue_leg_rate rate;
+    domain::bond_issue_leg_rate rate{};
     rate.issue_id = id;
     rate.leg_number = 1;
     rate.rate_kind = "fixed";
     out.rates.push_back(std::move(rate));
 
-    domain::bond_issue_leg_amount coupon;
+    domain::bond_issue_leg_amount coupon{};
     coupon.issue_id = id;
     coupon.leg_number = 1;
     coupon.amount_role = "rate";
@@ -190,7 +190,7 @@ std::expected<domain::bond_security, build_error> bond_issue_builder::build() co
     coupon.value = terms_.coupon_rate.get();
     out.amounts.push_back(std::move(coupon));
 
-    domain::bond_issue_leg_schedule schedule;
+    domain::bond_issue_leg_schedule schedule{};
     schedule.issue_id = id;
     schedule.leg_number = 1;
     schedule.schedule_role = "schedule";
@@ -226,7 +226,7 @@ bond_result bond_position_builder::build() const {
         return std::unexpected(build_error{"identifier", "must not be empty"});
     auto product = product_of(trade_type, terms_.holding);
     product.row.instrument.position_identifier = terms_.identifier.get();
-    domain::instrument_underlying underlying;
+    domain::instrument_underlying underlying{};
     underlying.underlying_role = "underlying";
     underlying.sequence_number = 1;
     underlying.underlying_type = "Bond";
@@ -246,7 +246,7 @@ bond_result bond_option_builder::build() const {
         return std::unexpected(build_error{"strike", "must be positive"});
     auto product = product_of(trade_type, terms_.holding);
 
-    domain::bond_option option;
+    domain::bond_option option{};
     option.option_type = option_type_of(terms_.kind.get());
     option.option_strike = terms_.strike.get();
     option.redemption = "100";
@@ -254,21 +254,21 @@ bond_result bond_option_builder::build() const {
     option.knocks_out = "false";
     product.options.push_back(std::move(option));
 
-    domain::instrument_option block;
+    domain::instrument_option block{};
     block.long_short = long_short_of(terms_.position.get());
     block.option_type = option_type_of(terms_.kind.get());
     block.style = "European";
     block.settlement = "Cash";
     product.option_block.push_back(std::move(block));
 
-    domain::instrument_schedule exercise;
+    domain::instrument_schedule exercise{};
     exercise.owner_role = "option";
     exercise.owner_number = 1;
     exercise.schedule_role = "exercise_dates";
     exercise.sequence_number = 1;
     exercise.schedule_kind = "dates";
     product.schedules.push_back(std::move(exercise));
-    domain::instrument_schedule_date date;
+    domain::instrument_schedule_date date{};
     date.owner_role = "option";
     date.owner_number = 1;
     date.schedule_role = "exercise_dates";
@@ -289,7 +289,7 @@ bond_result forward_bond_builder::build() const {
         return std::unexpected(
             build_error{"settlement", "must not be after the forward's maturity"});
     auto product = product_of(trade_type, terms_.holding);
-    domain::bond_forward forward;
+    domain::bond_forward forward{};
     // ORE reads LongInForward as a boolean.
     forward.long_in_forward = terms_.long_in_forward.get() ? "true" : "false";
     forward.forward_maturity_date = iso(terms_.forward_maturity.get());
@@ -313,7 +313,7 @@ bond_result bond_future_builder::build() const {
     if (terms_.contract_notional.get() <= decimal{})
         return std::unexpected(build_error{"contract_notional", "must be positive"});
     auto product = product_of(trade_type, terms_.holding);
-    domain::bond_future future;
+    domain::bond_future future{};
     future.contract_name = terms_.contract.get();
     future.contract_notional = terms_.contract_notional.get();
     future.long_short = long_short_of(terms_.position.get());
@@ -332,7 +332,7 @@ bond_result bond_repo_builder::build() const {
     if (auto refusal = refusals::period(terms_.start.get(), terms_.end.get()))
         return std::unexpected(std::move(*refusal));
     auto product = product_of(trade_type, terms_.holding);
-    domain::bond_repo repo;
+    domain::bond_repo repo{};
     repo.repo_type = "Fixed";
     repo.repo_rate = terms_.repo_rate.get();
     product.repos.push_back(std::move(repo));
@@ -352,7 +352,7 @@ bond_result bond_trs_builder::build() const {
     if (auto refusal = refusals::period(terms_.start.get(), terms_.end.get()))
         return std::unexpected(std::move(*refusal));
     auto product = product_of(trade_type, terms_.holding);
-    domain::bond_trs trs;
+    domain::bond_trs trs{};
     trs.return_type = "Price";
     trs.funding_leg_type = "Fixed";
     trs.funding_rate = terms_.funding_rate.get();
@@ -372,7 +372,7 @@ bond_result bond_trs_builder::build() const {
     add_leg_rate(product, "trs_funding", "fixed", std::nullopt, "rate", terms_.funding_rate.get());
 
     // The dates the bond's return is measured over, quarterly like the funding.
-    domain::instrument_schedule returns;
+    domain::instrument_schedule returns{};
     returns.owner_role = "trs";
     returns.owner_number = 1;
     returns.schedule_role = "schedule";
@@ -397,13 +397,12 @@ bond_result callable_bond_builder::build() const {
     const auto& calls = terms_.calls.get();
     if (calls.empty())
         return std::unexpected(build_error{"calls", "must state at least one date"});
-    if (!std::ranges::is_sorted(calls, std::less_equal<>{}) ||
-        std::ranges::adjacent_find(calls) != calls.end())
+    if (std::ranges::adjacent_find(calls, std::greater_equal<>{}) != calls.end())
         return std::unexpected(build_error{"calls", "must be in order with no date twice"});
     auto product = product_of(trade_type, terms_.holding);
     int number = 0;
     for (const auto& when : terms_.calls.get()) {
-        domain::bond_issue_call_date call;
+        domain::bond_issue_call_date call{};
         call.issue_id = terms_.holding.issue_id.get();
         call.sequence_number = ++number;
         call.call_date = when;
@@ -423,7 +422,7 @@ bond_result convertible_bond_builder::build() const {
     if (!(terms_.conversion_ratio.get() > 0.0))
         return std::unexpected(build_error{"conversion_ratio", "must be positive"});
     auto product = product_of(trade_type, terms_.holding);
-    domain::bond_issue_conversion_target target;
+    domain::bond_issue_conversion_target target{};
     target.issue_id = terms_.holding.issue_id.get();
     target.sequence_number = 1;
     target.underlying_id = terms_.share.get();
@@ -442,18 +441,18 @@ bond_result ascot_builder::build() const {
     if (!product)
         return product;
     product->row.instrument.identity.trade_type_code = std::string(trade_type);
-    domain::ascot ascot;
+    domain::ascot ascot{};
     ascot.ascot_option_type = option_type_of(terms_.kind.get());
     product->ascots.push_back(std::move(ascot));
 
     // The holder may recall the bond on any day from the start to the end.
-    domain::instrument_option block;
+    domain::instrument_option block{};
     block.long_short = "Long";
     block.option_type = option_type_of(terms_.kind.get());
     block.style = "American";
     block.settlement = "Cash";
     product->option_block.push_back(std::move(block));
-    domain::instrument_schedule exercise;
+    domain::instrument_schedule exercise{};
     exercise.owner_role = "option";
     exercise.owner_number = 1;
     exercise.schedule_role = "exercise_dates";
@@ -462,7 +461,7 @@ bond_result ascot_builder::build() const {
     product->schedules.push_back(std::move(exercise));
     int number = 0;
     for (const auto when : {terms_.start.get(), terms_.end.get()}) {
-        domain::instrument_schedule_date date;
+        domain::instrument_schedule_date date{};
         date.owner_role = "option";
         date.owner_number = 1;
         date.schedule_role = "exercise_dates";

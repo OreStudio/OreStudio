@@ -282,6 +282,9 @@ private:
     }
 
     std::vector<domain::route> routes_;
+
+    /// Each route's specificity, at the same index as the route, worked out once when added.
+    std::vector<std::vector<int>> ranks_;
 };
 
 }

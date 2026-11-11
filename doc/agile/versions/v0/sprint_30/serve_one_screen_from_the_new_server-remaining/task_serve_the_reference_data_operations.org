@@ -108,5 +108,11 @@ via its "Verifies task" field.
 | 3 | Local review: three copies of one identifier check. | =record_routes.cpp= | Accepted | One =rr::is_uuid=, with a test; the IAM and assets copies are deleted. |
 | 4 | Local review: a composite body that leaves a child list out. | =counterparty_screen_routes.cpp= | Accepted | Each list is optional and becomes empty, as the BFF's defaults did; the counterparty itself is still read strictly. |
 | 5 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 6 | PR #4616: an upper case id in a children read matched no rows. | =counterparty_screen_routes.cpp= | Accepted | =read_ids= puts each id in its lower case form; a test names one in upper case. |
+| 7 | PR #4616: the business centre write was not atomic. | =counterparty_screen_routes.cpp= | Accepted | The links go as one =put_many= and the closes as one =delete_many=; each lands whole, links first. |
+| 8 | PR #4616: the composite message promised an id check the code did not make. | =counterparty_screen_routes.cpp= | Accepted | A nil counterparty id is refused, as the BFF's schema did; a test proves it. |
+| 9 | PR #4616: =match= re-parsed each pattern and allocated per route. | =router.cpp= | Accepted | The rank is worked out once in =add_route=; one parameter map is reused. |
+| 10 | PR #4616: =is_uuid= used =std::regex=. | =record_routes.cpp= | Accepted | A 36 character check replaces it. |
+| 11 | PR #4616: duplicate ids, and a whole read with no bound. | =counterparty_screen_routes.cpp= | Accepted | Each id is named once; a whole read stops with an error after 1000 pages. |
 
 * Result

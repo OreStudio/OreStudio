@@ -73,8 +73,9 @@ public:
                                                    const std::vector<std::string>& wanted);
 
     /**
-     * @brief The identifiers a children read names, comma separated, or nothing
-     * when one is malformed, when none is named, or when more than 200 are.
+     * @brief The identifiers a children read names, comma separated, each in
+     * lower case and named once, or nothing when one is malformed, when none is
+     * named, or when more than 200 are.
      */
     [[nodiscard]] static std::optional<std::vector<std::string>> read_ids(const std::string& text);
 

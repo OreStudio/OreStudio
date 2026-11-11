@@ -265,6 +265,7 @@ void router::add_route(const domain::route& route) {
     BOOST_LOG_SEV(lg(), info) << "Registered route: " << static_cast<int>(route.method) << " "
                               << route.pattern;
     routes_.push_back(route);
+    ranks_.push_back(specificity_of(route.pattern));
 }
 
 std::optional<domain::route>
@@ -282,19 +283,20 @@ router::match(domain::http_method method,
      * registration decides only between patterns of equal standing.
      */
     const domain::route* best = nullptr;
-    std::vector<int> best_rank;
+    const std::vector<int>* best_rank = nullptr;
     std::unordered_map<std::string, std::string> best_params;
-    for (const auto& route : routes_) {
+    std::unordered_map<std::string, std::string> params;
+    for (std::size_t i = 0; i < routes_.size(); ++i) {
+        const auto& route = routes_[i];
         if (route.method != method)
             continue;
-        std::unordered_map<std::string, std::string> params;
+        params.clear();
         if (!route.match(path, params))
             continue;
-        auto rank = specificity_of(route.pattern);
-        if (best == nullptr || rank > best_rank) {
+        if (best == nullptr || ranks_[i] > *best_rank) {
             best = &route;
-            best_rank = std::move(rank);
-            best_params = std::move(params);
+            best_rank = &ranks_[i];
+            std::swap(best_params, params);
         }
     }
 

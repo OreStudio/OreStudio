@@ -111,15 +111,24 @@ TEST_CASE("counterparty_children_read_names_1_to_200_identifiers", "[counterpart
     REQUIRE(ids);
     CHECK(*ids == std::vector<std::string>{first, second});
 
+    const std::string upper = "00000000-0000-0000-0000-00000000000A";
+    const auto folded = counterparty_screen_routes::read_ids(upper + "," + first + "," + second);
+    REQUIRE(folded);
+    CHECK(*folded == std::vector<std::string>{first, second});
+
     CHECK_FALSE(counterparty_screen_routes::read_ids(""));
     CHECK_FALSE(counterparty_screen_routes::read_ids(","));
     CHECK_FALSE(counterparty_screen_routes::read_ids(first + ",not-an-id"));
 
-    std::string many = first;
-    for (int i = 0; i < 199; ++i)
-        many += "," + first;
+    const auto numbered = [](int n) {
+        const auto digits = std::to_string(n);
+        return "00000000-0000-0000-0000-" + std::string(12 - digits.size(), '0') + digits;
+    };
+    std::string many = numbered(0);
+    for (int i = 1; i < 200; ++i)
+        many += "," + numbered(i);
     CHECK(counterparty_screen_routes::read_ids(many));
-    CHECK_FALSE(counterparty_screen_routes::read_ids(many + "," + first));
+    CHECK_FALSE(counterparty_screen_routes::read_ids(many + "," + numbered(200)));
 }
 
 TEST_CASE("counterparty_children_are_grouped_in_the_order_named", "[counterparty_screen]") {
@@ -169,6 +178,11 @@ TEST_CASE("counterparty_routes_refuse_a_malformed_request_before_forwarding",
                       with_body(R"({"counterparty":{"id":")" + first + R"("}})"),
                       "/api/counterparties/composite"),
             "a reason");
+    refused(answer_at(http_method::put,
+                      "/api/counterparties/composite",
+                      with_body(R"({"counterparty":{},)" + intent + "}"),
+                      "/api/counterparties/composite"),
+            "with its id");
 
     refused(answer_at(http_method::put,
                       "/api/counterparties/" + first + "/visibility",

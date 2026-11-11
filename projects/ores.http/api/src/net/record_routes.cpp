@@ -19,8 +19,8 @@
  */
 #include "ores.http.api/net/record_routes.hpp"
 #include <algorithm>
+#include <cctype>
 #include <cstdlib>
-#include <regex>
 #include <string>
 #include <utility>
 #include <yyjson.h>
@@ -73,9 +73,14 @@ std::string code(const std::string& raw, const std::string& sentence) {
 }
 
 bool is_uuid(std::string_view text) {
-    static const std::regex form(
-        "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-    return std::regex_match(text.begin(), text.end(), form);
+    if (text.size() != 36)
+        return false;
+    for (std::size_t i = 0; i < text.size(); ++i) {
+        const bool hyphen_place = i == 8 || i == 13 || i == 18 || i == 23;
+        if (hyphen_place ? text[i] != '-' : std::isxdigit(static_cast<unsigned char>(text[i])) == 0)
+            return false;
+    }
+    return true;
 }
 
 bool has_reason(const std::string& reason) {

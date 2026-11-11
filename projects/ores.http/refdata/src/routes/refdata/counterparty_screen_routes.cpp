@@ -45,6 +45,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <set>
+#include <stdexcept>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -68,6 +69,9 @@ constexpr std::uint32_t counterparty_screen_page = 1000;
 
 /// The most counterparties one children read may name.
 constexpr std::size_t counterparty_screen_most_ids = 200;
+
+/// The most pages a whole read takes, so a service that ignores the limit cannot hold the route.
+constexpr std::uint32_t counterparty_screen_most_pages = 1000;
 
 /// Why a write is made, as the screen states it: the commentary may be left out.
 struct counterparty_screen_intent final {
@@ -160,7 +164,8 @@ std::string counterparty_id_of(const http_request& req) {
 template <typename Request, typename Rows>
 auto read_all(const http_request& req, nats_client& session, Request msg, Rows member) {
     std::remove_cvref_t<decltype(std::declval<typename Request::response_type>().*member)> all;
-    for (std::uint32_t offset = 0;;) {
+    std::uint32_t offset = 0;
+    for (std::uint32_t page = 0; page < counterparty_screen_most_pages; ++page) {
         msg.offset = offset;
         msg.limit = counterparty_screen_page;
         const auto reply = ores::http::forwarding::forward(req, session, msg);
@@ -171,6 +176,7 @@ auto read_all(const http_request& req, nats_client& session, Request msg, Rows m
             return all;
         offset += static_cast<std::uint32_t>(got.size());
     }
+    throw std::runtime_error("The service sent more pages than a whole read takes.");
 }
 
 /// The rows of a children read that belong to one counterparty.
@@ -218,7 +224,10 @@ counterparty_screen_routes::read_ids(const std::string& text) {
         if (!id.empty()) {
             if (!rr::is_uuid(id))
                 return std::nullopt;
-            ids.push_back(std::move(id));
+            // The service's rows carry the lower case form, so the named id is matched in it.
+            auto canonical = boost::uuids::to_string(uuid_of(id));
+            if (std::ranges::find(ids, canonical) == ids.end())
+                ids.push_back(std::move(canonical));
         }
         start = end + 1;
     }
@@ -335,7 +344,7 @@ void counterparty_screen_routes::register_routes(
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 const auto body = rr::read_body<counterparty_composite_body>(req.body);
                 const auto intent = body ? intent_of(body->intent) : std::nullopt;
-                if (!body || !intent)
+                if (!body || !intent || body->counterparty.id.is_nil())
                     co_return rr::refused(
                         http_status::bad_request,
                         "invalid-request",
@@ -400,7 +409,7 @@ void counterparty_screen_routes::register_routes(
     add(router->put("/api/counterparties/{id}/business-centres")
             .summary("Set the business centres a counterparty holds")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                co_return guarded<messaging::put_counterparty_business_centre_request>([&] {
+                co_return guarded<messaging::put_many_counterparty_business_centres_request>([&] {
                     const auto id = counterparty_id_of(req);
                     const auto body = rr::read_body<counterparty_centres_body>(req.body);
                     const auto intent = body ? intent_of(body->intent) : std::nullopt;
@@ -429,24 +438,37 @@ void counterparty_screen_routes::register_routes(
                                       counterparty_business_centres))
                         held.push_back(row.business_centre_code);
 
+                    /*
+                     * Each batch lands whole or not at all. The links land
+                     * first, so when the closing batch fails the counterparty
+                     * holds both sets, never neither.
+                     */
                     const auto changes = changes_of(held, wanted);
-                    for (const auto& code : changes.links) {
-                        messaging::put_counterparty_business_centre_request msg;
-                        msg.change.write.counterparty_id = uuid_of(id);
-                        msg.change.write.business_centre_code = code;
-                        msg.change.precondition.kind =
-                            utility_domain::precondition_kind::must_not_exist;
+                    if (!changes.links.empty()) {
+                        messaging::put_many_counterparty_business_centres_request msg;
+                        for (const auto& code : changes.links) {
+                            messaging::counterparty_business_centre_change change;
+                            change.write.counterparty_id = uuid_of(id);
+                            change.write.business_centre_code = code;
+                            change.precondition.kind =
+                                utility_domain::precondition_kind::must_not_exist;
+                            msg.changes.push_back(std::move(change));
+                        }
                         msg.intent = *intent;
                         const auto result =
                             ores::http::forwarding::forward(req, session, msg).result;
                         if (result.outcome != utility_domain::outcome::ok)
                             return http_response::json(result_json(result));
                     }
-                    for (const auto& code : changes.unlinks) {
-                        messaging::delete_counterparty_business_centre_request msg;
-                        msg.removal.key.counterparty_id = uuid_of(id);
-                        msg.removal.key.business_centre_code = code;
-                        msg.removal.precondition.kind = utility_domain::precondition_kind::any;
+                    if (!changes.unlinks.empty()) {
+                        messaging::delete_many_counterparty_business_centres_request msg;
+                        for (const auto& code : changes.unlinks) {
+                            messaging::counterparty_business_centre_removal removal;
+                            removal.key.counterparty_id = uuid_of(id);
+                            removal.key.business_centre_code = code;
+                            removal.precondition.kind = utility_domain::precondition_kind::any;
+                            msg.removals.push_back(std::move(removal));
+                        }
                         msg.intent = *intent;
                         const auto result =
                             ores::http::forwarding::forward(req, session, msg).result;

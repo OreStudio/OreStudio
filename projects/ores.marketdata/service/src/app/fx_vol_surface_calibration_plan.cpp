@@ -71,20 +71,6 @@ std::expected<read_label, std::string> read_strike_label(const std::string& poin
                            "', whose suffix is not RR, BF, C or P");
 }
 
-std::vector<std::string> split_list(const std::string& text) {
-    std::vector<std::string> out;
-    std::size_t start = 0;
-    while (start <= text.size()) {
-        const auto end = std::min(text.find(',', start), text.size());
-        auto item = text.substr(start, end - start);
-        item.erase(0, item.find_first_not_of(' '));
-        item.erase(item.find_last_not_of(' ') + 1);
-        if (!item.empty())
-            out.push_back(std::move(item));
-        start = end + 1;
-    }
-    return out;
-}
 
 std::string pillar_key_of(const std::string& expiry, const std::string& label) {
     return expiry + "/" + label;
@@ -200,6 +186,21 @@ std::expected<expiry_terms, std::string> terms_at(const surface_calibration_reci
 
 }
 
+std::vector<std::string> split_blueprint_list(const std::string& text) {
+    std::vector<std::string> out;
+    std::size_t start = 0;
+    while (start <= text.size()) {
+        const auto end = std::min(text.find(',', start), text.size());
+        auto item = text.substr(start, end - start);
+        item.erase(0, item.find_first_not_of(' '));
+        item.erase(item.find_last_not_of(' ') + 1);
+        if (!item.empty())
+            out.push_back(std::move(item));
+        start = end + 1;
+    }
+    return out;
+}
+
 std::chrono::year_month_day add_period(std::chrono::year_month_day from, qd::date_period period) {
     using namespace std::chrono;
     const auto clamp = [](year_month_day d) {
@@ -287,7 +288,7 @@ std::expected<checked_recipe, std::string> check_recipe(const surface_calibratio
 
     const auto& first = out.expiries.front();
     const auto& last = out.expiries.back();
-    for (const auto& code : split_list(blueprint.output_expiries)) {
+    for (const auto& code : split_blueprint_list(blueprint.output_expiries)) {
         const auto period = mapping::parse_tenor_text(code);
         if (!period)
             return std::unexpected("output expiry " + code + ": " + period.error());
@@ -301,7 +302,7 @@ std::expected<checked_recipe, std::string> check_recipe(const surface_calibratio
     }
     if (out.grid_expiries.empty())
         return std::unexpected("the blueprint " + blueprint.name + " names no output expiry");
-    for (const auto& text : split_list(blueprint.output_strikes)) {
+    for (const auto& text : split_blueprint_list(blueprint.output_strikes)) {
         auto strike = grid_strike_of(text);
         if (!strike)
             return std::unexpected(strike.error());

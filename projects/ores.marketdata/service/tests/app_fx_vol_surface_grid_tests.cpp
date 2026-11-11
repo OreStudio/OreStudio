@@ -71,3 +71,17 @@ TEST_CASE("a slice the surface does not hold is refused, naming it", "[app][fx_v
     REQUIRE_FALSE(strike);
     CHECK(strike.error() == "the surface has no strike DEL/Spot/Put/10");
 }
+
+TEST_CASE("expiries of the same length stay grouped, each with its own points",
+          "[app][fx_vol_surface_grid]") {
+    std::vector<surface_grid_point> points{{"1Y", "ATM", 0.1}, {"12M", "ATM", 0.2},
+                                           {"1Y", "DEL/Spot/Put/25", 0.3}, {"12M", "DEL/Spot/Put/25", 0.4}};
+    const auto grid = surface_grid_of(points, blueprint_strikes, "", "");
+    REQUIRE(grid);
+    CHECK(grid->expiries == std::vector<std::string>{"12M", "1Y"});
+    REQUIRE(grid->points.size() == 4);
+    CHECK(grid->points[0].expiry == "12M");
+    CHECK(grid->points[1].expiry == "12M");
+    CHECK(grid->points[2].expiry == "1Y");
+    CHECK(grid->points[3].expiry == "1Y");
+}

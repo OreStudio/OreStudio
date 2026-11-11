@@ -43,8 +43,10 @@ std::expected<surface_grid, std::string> surface_grid_of(std::vector<surface_gri
         return at == strike_order.end() ? strike_order.size() : static_cast<std::size_t>(at - strike_order.begin());
     };
     std::ranges::sort(points, [&](const auto& a, const auto& b) {
-        if (a.expiry != b.expiry)
-            return qd::compare_periods(periods.at(a.expiry), periods.at(b.expiry)) < 0;
+        if (a.expiry != b.expiry) {
+            const auto order = qd::compare_periods(periods.at(a.expiry), periods.at(b.expiry));
+            return order == 0 ? a.expiry < b.expiry : order < 0;
+        }
         if (rank_of_strike(a.strike) != rank_of_strike(b.strike))
             return rank_of_strike(a.strike) < rank_of_strike(b.strike);
         return a.strike < b.strike;
@@ -65,7 +67,7 @@ std::expected<surface_grid, std::string> surface_grid_of(std::vector<surface_gri
             out.strikes.push_back(p.strike);
         out.points.push_back(std::move(p));
     }
-    std::ranges::sort(out.strikes, {}, rank_of_strike);
+    std::ranges::stable_sort(out.strikes, {}, rank_of_strike);
     return out;
 }
 

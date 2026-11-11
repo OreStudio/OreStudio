@@ -84,7 +84,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Equal-length expiries can interleave | =fx_vol_surface_grid.cpp= | Fixed | Ties break on the text; a test pins 12M and 1Y. |
+| 2 | The strike sort is not stable | =fx_vol_surface_grid.cpp= | Fixed | =stable_sort=. |
+| 3 | The calibration guard is not atomic | =fx_vol_surface_calibration_service.cpp= | Kept | One operator calibrates and publishes; a constraint is a change for concurrent desks. |
+| 4 | The read may scan a series' history | =fx_vol_surface_publish_service.cpp= | Kept | A surface series holds 35 points per as-of. |
+| 5 | Points that do not read are dropped silently | =fx_vol_surface_publish_service.cpp= | Fixed | Logged as a warning. |
+| 6 | The strike list is parsed inline | =fx_vol_surface_publish_service.cpp= | Fixed | =split_blueprint_list= is shared with the planner. |
+| 7 | Include order | =fx_vol_surface_publish_service.cpp= | Fixed | Sorted. |
+| 8 | No test for the candidate filter or the published-as-of refusal | evidence | Kept | Both shown live in =evidence/fx_vol_surface_read.ores=; the service tests need a database. |
 
 * Result
 

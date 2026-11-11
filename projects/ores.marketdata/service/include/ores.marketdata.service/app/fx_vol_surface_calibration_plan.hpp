@@ -140,6 +140,9 @@ prepare_calibration(const surface_calibration_recipe& recipe,
                     std::chrono::year_month_day as_of,
                     double pillar_tolerance);
 
+/// The items of a blueprint's comma-separated list, such as its output strikes, trimmed.
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::vector<std::string> split_blueprint_list(const std::string& text);
+
 /// The day a period after @p from falls on, unadjusted, the end of a short month clamped.
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::chrono::year_month_day
 add_period(std::chrono::year_month_day from, analytics::quant::domain::date_period period);

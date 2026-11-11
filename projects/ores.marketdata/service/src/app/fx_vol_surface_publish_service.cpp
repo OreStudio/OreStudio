@@ -20,14 +20,15 @@
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.core/repository/fx_vol_surface_calibration_repository.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.core/repository/fx_vol_surface_calibration_repository.hpp"
 #include "ores.marketdata.core/repository/fx_vol_surface_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
+#include "ores.marketdata.service/app/curve_notices.hpp"
+#include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
+#include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_grid.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
-#include "ores.marketdata.service/app/curve_notices.hpp"
-#include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.core/repository/fx_vol_surface_blueprint_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -346,24 +347,19 @@ fx_vol_surface_publish_service::read_published(context ctx, const msg::get_publi
                 continue;
             const auto named = datum::oresmd_uri_codec::read(obs.oresmd_uri);
             const auto value = ores::platform::numeric::parse_double(obs.value);
-            if (!named || !value)
+            if (!named || !value) {
+                BOOST_LOG_SEV(publish_log(), ores::logging::warn)
+                    << "Skipping a point of the published surface of " << blueprint.name
+                    << " that does not read: " << obs.oresmd_uri;
                 continue;
+            }
             const auto* expiry = named->get<datum::field::expiry>();
             const auto* strike = named->get<datum::field::strike>();
             if (expiry && strike)
                 points.push_back({expiry->text(), strike->text(), *value});
         }
-        std::vector<std::string> strike_order;
-        std::string_view strikes = blueprint.output_strikes;
-        while (!strikes.empty()) {
-            const auto comma = strikes.find(',');
-            auto item = std::string(strikes.substr(0, comma));
-            std::erase(item, ' ');
-            if (!item.empty())
-                strike_order.push_back(std::move(item));
-            strikes = comma == std::string_view::npos ? std::string_view{} : strikes.substr(comma + 1);
-        }
-        auto grid = surface_grid_of(std::move(points), strike_order, req.expiry, req.strike);
+        auto grid = surface_grid_of(std::move(points), split_blueprint_list(blueprint.output_strikes),
+                                    req.expiry, req.strike);
         if (!grid)
             throw std::invalid_argument("The published surface of " + blueprint.name + ": " + grid.error() + ".");
         out.success = true;

@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 86D8986F-5247-4138-85C7-F8899C029F24
+:END:
+#+title: The trader applies an approved publish, which supersedes the live set and tells its readers
+#+description: The apply checks the approval and the candidate's version, then publishes, ends every live set of the series and writes the notice in one transaction.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:marketdata:publish:approval:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+* Summary
+
+The apply is the trader's act, run with the approved request's id, and it is the only way a set becomes live. It checks the request and the candidate again, because both may have moved since the raise. Then, in one transaction, it publishes the set, supersedes every live set of the series and writes the notice. A series therefore always has exactly one live set once anything is published, and a reader learns of every change.
+
+* Detail
+
+** What the apply checks
+
+| Check | Refusal |
+|-------+---------|
+| The request is of the kind's publish kind | A request of another kind authorises nothing here. |
+| The subject and as-of are the ones the request names | A request authorises one subject at one as-of. |
+| The request is approved | A waiting, held or refused request publishes nothing. |
+| The request has not published already | A request publishes once. The next publish is a new request. |
+| The candidate is still the version the request names | A candidate computed again after the raise was not decided. |
+| No newer set of the series is live | Another publish was applied in between. |
+
+** The one transaction
+
+The apply stamps the publisher and the instant on the publish record, marks every live set of the series superseded, naming the request and the as-of that replaced it, and writes the notice. Either all of it is written or none is.
+
+** The notice
+
+The notice names the series, the set published and the set it replaced, and every reader of the series receives it, as [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] states. A notice that cannot be sent is logged and does not undo the publish.
+
+** Why the trader applies it
+
+The trader who raised the publish is the one who knows when the desk should move to the new set, so the apply is the trader's act and not a workflow that runs on the decision, as [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]] describes. A request closed by a stated rule is applied by the raise itself ([[id:BF14C932-D699-4224-98DA-0481E49FA394][A publish raise names one candidate version, in one transaction]]).
+
+* See also
+
+- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]
+- [[id:BF14C932-D699-4224-98DA-0481E49FA394][A publish raise names one candidate version, in one transaction]]
+- [[id:86158AAD-423A-421A-8BE2-CC5123109297][A reader takes the newest published set at or before its as-of]]
+- [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]]
+- [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]]

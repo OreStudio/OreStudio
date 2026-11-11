@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 71146F3F-B884-4E61-BA8B-A8A0731703C6
+:END:
+#+title: A request closes without a person only under a stated rule
+#+description: Auto-approval: the rules under which an approval request is approved as it is raised, why each exists, who the decider is, how the mode is set and read, and how every screen shows it.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:approval:auto_approval:four_eyes:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+* Summary
+
+Four-eyes is the default: a request waits until a person other than the one who raised it decides. A request is approved as it is raised, without a person, only under one of four stated rules, read in a fixed order. Each rule exists because, where it applies, a person's decision would be a formality with no one able to give it. The system is the decider of record, the request names the rule that closed it, and every screen shows when a rule is in force.
+
+* Detail
+
+** The rule
+
+[[proj:doc/knowledge/architecture/auto_approval_rule.png]]
+
+Source: [[proj:doc/knowledge/architecture/auto_approval_rule.puml][=auto_approval_rule.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/auto_approval_rule.puml=. The rules are read in this order, and the first that applies closes the request.
+
+| Order | Rule | Applies when | Why it exists |
+|-------+------+--------------+---------------|
+| 0 | none | the request names parts | The parts are people who answer for their part ([[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]]). A close that skipped them would leave their parts open with no one to answer. |
+| 1 | =tenant= | the tenant's approvals mode is =auto_approved= | A tenant that is being set up, or a demonstration tenant, has no people to decide yet. Its administrator, or its provisioning ([[id:F8559BFA-9FF8-4F6D-8D70-780ECE9C5737][Provisioning approves without a person only while it runs]]), states the mode with a reason. |
+| 2 | =deployment= | the tenant states no mode, and the installation's mode is =auto_approved= | An installation for one person, such as a development or evaluation environment, has no second person at all. |
+| 3 | =every_request= | the request's kind says so | A kind whose decision is a record of an act and not a control of it. |
+| 4 | =system_tenant= | the request is the system tenant's, and its kind says so | The system tenant's own reference sets, such as the system's curves, are published by the system for every tenant to read, and no person of a tenant may decide them. |
+
+** The approvals mode
+
+The mode is the system setting =system.approvals.mode=, =enforced= or =auto_approved=. The installation states it once, in the system tenant. A tenant may state its own, which then holds for the tenant and nothing else. A change of mode is a versioned row with the account that made it and its reason, made by a tenant administrator with =set-approvals-mode= or by provisioning.
+
+The mode is read for the whole tenant, with no party restriction, and outside the transaction of the raise ([[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][A context bound to a transaction cannot change its tenant or party]]), so a raise by a trader of one party sees the mode its tenant states. A mode that cannot be read is read as =enforced=: an installation that cannot say whether it enforces approvals enforces them.
+
+** The decider of record
+
+A request closed under a rule is decided by the system's service account, never by the person who raised it, so four-eyes holds on the record. The request carries the rule's code in =auto_approval_code=, and its decision says which rule closed it. A reader of a published set sees it ([[id:86158AAD-423A-421A-8BE2-CC5123109297][A reader takes the newest published set at or before its as-of]]).
+
+** What a person sees
+
+While a mode of =auto_approved= is in force, every screen of the tenant shows it, with who set it, when and why, and the shell's approvals commands print it. The queue and the request page show the rule that closed each request. Nothing closes without a trace.
+
+** What it changes, and what it does not
+
+A rule replaces the decision and nothing else. The raise makes every check it makes for a person, and the owning component applies the approval through the same apply, with every check of the apply. For a published market object, the raise applies it in the same call ([[id:BF14C932-D699-4224-98DA-0481E49FA394][A publish raise names one candidate version, in one transaction]]).
+
+* See also
+
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]]
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]]
+- [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]]
+- [[id:F8559BFA-9FF8-4F6D-8D70-780ECE9C5737][Provisioning approves without a person only while it runs]]
+- [[id:8B0D92BD-7D15-45B7-80EA-07D111F73EB3][An Acme approval is decided by a permitted person who did not raise it]]
+- [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]]

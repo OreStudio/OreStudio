@@ -121,7 +121,7 @@ table keyed by the request and the part, written at raise.
 
 One generated operation raises a request. Its message is typed: a reason, and for
 each gated entity a typed list of proposed writes, in the shape the entity's put
-already takes. It does four things in one transaction:
+already takes. It reads the policy, the kind and the approvals mode before it opens its transaction, because a transaction's tenant and parties are fixed when it opens ([[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][A context bound to a transaction cannot change its tenant or party]]). It then does four things in one transaction:
 
 1. It runs each write through the real service's database layer inside a savepoint
    and rolls the savepoint back, so every refusal the service would give, such as a
@@ -327,6 +327,7 @@ The work splits so each piece is usable and reviewable alone:
 
 * See also
 
+- [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]] — completes: when a raised request closes without a person.
 - [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record this note extends.
 - [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][Implement four-eyes authorisation framework]] — the deferred item this answers.
 - [[id:C5846977-529F-4E36-A9DB-EA48A7476E6F][Book types and the controls on each]] — the acts, the deciders and the policy rows.

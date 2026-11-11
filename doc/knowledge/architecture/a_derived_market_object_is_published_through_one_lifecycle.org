@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 186B44DD-51EA-45AA-971E-0C2D4D21A6DD
+:END:
+#+title: A derived market object is published through one lifecycle
+#+description: Every curve, FX forward set and volatility surface becomes authoritative the same way: compute a candidate, raise, decide, apply, and later supersede or withdraw, implemented once and parameterised by the kind of object.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:marketdata:publish:approval:four_eyes:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+* Summary
+
+Every kind of derived market object, a curve, an FX forward set, a volatility surface and any kind added later, goes through one lifecycle, implemented once in =ores.marketdata= and parameterised by the kind. A kind supplies only what differs in finance: its subject, its compute and its checks. The record of a publish, its states, the raise, the apply, the supersession, the withdrawal, the notices and the read are the same for every kind, so the same act behaves the same way whatever is published.
+
+* Detail
+
+** The states
+
+[[proj:doc/knowledge/architecture/publish_lifecycle_states.png]]
+
+Source: [[proj:doc/knowledge/architecture/publish_lifecycle_states.puml][=publish_lifecycle_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/publish_lifecycle_states.puml=. The states are those of a set: a candidate, the request raised for it, and the published set that comes of it.
+
+| State | Meaning |
+|-------+---------|
+| Candidate | Computed and stored as a version, with its lineage and checks. Not consumable. |
+| Raised | A request names the candidate's version and waits on a decision. |
+| Approved | The request is approved, by a person or under a stated rule. |
+| Published | The live set of its series. Readers take it. |
+| Superseded | A newer set of the series was applied. It stays the set for an as-of before its successor's. |
+| Withdrawn | Taken out of use under an approved withdrawal. No reader takes it. |
+| Closed | The request was refused, withdrawn or expired, or its candidate changed before the apply, so nothing was published. |
+
+** What a kind supplies
+
+| Part | What the kind states |
+|------+----------------------|
+| Subject | What one set is a set of, and the party that owns it: a bootstrap configuration, a currency pair, a surface blueprint. The subject names the output series the set is written to. |
+| Compute | The operation that computes a candidate for a subject at an as-of. |
+| Checks | What a candidate is checked against, and what a decider reads. |
+| Approval kinds | One kind for a publish and one for a withdrawal, each with the permission that raises it and the permission that decides it. |
+
+** What is the same for every kind
+
+| Part | Page |
+|------+------|
+| The candidate is stored before the raise, as a version | [[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][A candidate is computed and stored before a publish is raised]] |
+| The raise, its refusals, and its single transaction | [[id:BF14C932-D699-4224-98DA-0481E49FA394][A publish raise names one candidate version, in one transaction]] |
+| Auto-approval | [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]] |
+| The apply, the supersession and the notice | [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]] |
+| The withdrawal | [[id:E474FB93-2ACE-4981-9761-33E214B3D268][A published set is withdrawn through a request of its own]] |
+| The read | [[id:86158AAD-423A-421A-8BE2-CC5123109297][A reader takes the newest published set at or before its as-of]] |
+
+** The record
+
+A publish is one record, whatever its kind, with the columns every kind shares: the request, the party, the as-of, the candidate and its version, the output series, who published it and when, who superseded it, when, and as of which instant, and who withdrew it, when, and why. The subject is a part of its own, one table per kind, keyed by the publish. A reader of any kind reads one shape.
+
+** Where it lives
+
+=ores.marketdata.service= holds the one implementation. A kind is a declaration beside it, never a copy of it: its subject part, its compute operation, its checks and its approval kinds. The messages of every kind name the same steps: compute, raise, apply, withdraw and read.
+
+* See also
+
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]]
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]]
+- [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]]
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]]
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]]

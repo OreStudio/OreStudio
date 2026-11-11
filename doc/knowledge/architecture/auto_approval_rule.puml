@@ -1,0 +1,55 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Auto-approval: the rule a raise is closed under
+
+start
+:A request is raised;
+if (The request names parts?) then (yes)
+  :Wait for the people\nwho answer the parts;
+  stop
+endif
+:Read the approvals mode,\noutside the raise's transaction,\nfor the whole tenant;
+if (The tenant states a mode?) then (yes)
+  if (Tenant mode is auto_approved?) then (yes)
+    :Approve under the rule **tenant**;
+    stop
+  endif
+else (no)
+  if (Installation mode is auto_approved?) then (yes)
+    :Approve under the rule **deployment**;
+    stop
+  endif
+endif
+if (The kind's code is every_request?) then (yes)
+  :Approve under the rule **every_request**;
+  stop
+endif
+if (The kind's code is system_tenant\nand the request is the system tenant's?) then (yes)
+  :Approve under the rule **system_tenant**;
+  stop
+endif
+:Wait for a person;
+note right
+  A mode that cannot be read
+  is read as enforced.
+end note
+stop
+
+@enduml

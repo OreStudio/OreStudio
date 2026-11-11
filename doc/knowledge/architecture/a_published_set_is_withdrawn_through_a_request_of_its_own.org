@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: E474FB93-2ACE-4981-9761-33E214B3D268
+:END:
+#+title: A published set is withdrawn through a request of its own
+#+description: Taking a published set out of use is a four-eyes act with its own approval kind, applied by the trader, recorded with its reason and told to readers.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:marketdata:publish:approval:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+* Summary
+
+A published set that is wrong is taken out of use by a withdrawal: a request of the kind's withdrawal kind, raised with a reason, decided under four-eyes, and applied by the trader. The apply marks the set withdrawn, keeps the reason against it, and writes the notice. A withdrawn set is never read again, and the series has no live set until a new publish is applied.
+
+* Detail
+
+** The act
+
+The withdrawal follows the publish's shape. The trader raises it naming the published set and a reason. It is refused if the set is not live or if a withdrawal of it is already open. A person decides it, or a stated rule closes it ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]). The trader applies it, and the apply checks that the request is approved and the set is still live, then marks it withdrawn and writes the notice in one transaction.
+
+** Withdraw or replace
+
+A correction is a new publish at a newer as-of, which supersedes the wrong set ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]). A withdrawal is for a set that must not be used at all, for any as-of. The two are distinct acts with distinct approval kinds, as [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] describes.
+
+** What it leaves behind
+
+Sets derived from a withdrawn set, such as a forward set built from a withdrawn curve, are not changed. Their reads show the state of every input, so a reader sees that an input was withdrawn ([[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]]).
+
+* See also
+
+- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]
+- [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]
+- [[id:86158AAD-423A-421A-8BE2-CC5123109297][A reader takes the newest published set at or before its as-of]]
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]]

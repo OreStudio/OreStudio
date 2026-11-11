@@ -1,0 +1,64 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Publishing a derived market object: compute, raise, decide, apply
+
+actor "Trader\n(maker)" as maker
+participant "Market data" as md
+participant "Inbox" as inbox
+actor "Decider\n(checker)" as checker
+participant "Readers" as readers
+
+== Compute ==
+maker -> md : compute(subject, as-of)
+md -> md : solve, check, store the candidate\nwith its lineage, as a version
+md --> maker : candidate version and its checks
+
+== Raise ==
+maker -> md : raise publish(subject, as-of, reason)
+md -> md : the subject is the session party's;\nno open request for it;\nnot older than the live set
+md -> inbox : read the approvals mode and the kind\n(outside the raise transaction)
+inbox --> md : the rule that applies, if any
+group one transaction
+  md -> inbox : write the request
+  md -> md : write the subject:\nsubject, as-of, candidate version
+end
+alt a stated rule closes it
+  inbox --> md : approved, decided by the system
+  md -> md : apply at once (below)
+else a person decides
+  inbox --> md : waiting
+  md --> maker : raised; waits on the decision
+  inbox -> checker : a request waits
+  checker -> inbox : approve (not the maker)
+  inbox -> maker : the request is approved
+  maker -> md : apply(request)
+end
+
+== Apply ==
+md -> md : the request is of the kind, approved,\nnot applied; the subject matches;\nthe candidate is the version approved
+group one transaction
+  md -> md : publish the set; stamp publisher and instant
+  md -> md : supersede every live set of the series
+  md -> md : write the notice
+end
+md -> readers : the set of the series changed
+md --> maker : published
+
+@enduml

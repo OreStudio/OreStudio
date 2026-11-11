@@ -133,3 +133,13 @@ TEST_CASE("record_routes_adds_a_default_only_where_a_write_leaves_the_member_out
 
     CHECK(rr::with_write_defaults("not json", {{"b", "1"}}) == "not json");
 }
+
+TEST_CASE("record_routes_reads_an_identifier_only_in_its_canonical_form", "[record_routes]") {
+    CHECK(rr::is_uuid("00000000-0000-0000-0000-00000000000a"));
+    CHECK(rr::is_uuid("ABCDEF01-2345-6789-abcd-ef0123456789"));
+    CHECK_FALSE(rr::is_uuid(""));
+    CHECK_FALSE(rr::is_uuid("children"));
+    CHECK_FALSE(rr::is_uuid("00000000000000000000000000000000"));
+    CHECK_FALSE(rr::is_uuid("00000000-0000-0000-0000-00000000000g"));
+    CHECK_FALSE(rr::is_uuid(" 00000000-0000-0000-0000-00000000000a"));
+}

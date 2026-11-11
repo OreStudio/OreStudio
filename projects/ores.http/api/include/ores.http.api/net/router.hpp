@@ -256,6 +256,9 @@ public:
 
     /**
      * @brief Attempts to match a request and returns the matching route.
+     *
+     * When several patterns match, a literal segment beats a parameter at the
+     * first segment where they differ, whatever order they were added in.
      */
     std::optional<domain::route>
     match(domain::http_method method,

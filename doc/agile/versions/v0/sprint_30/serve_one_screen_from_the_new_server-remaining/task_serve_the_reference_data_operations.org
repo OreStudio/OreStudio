@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-reference-data-operations
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Port the 29 BFF routes of the reference data area to the C++ server. Include con
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,30 @@ Port the 29 BFF routes of the reference data area to the C++ server. Include con
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The inventory lists 33 unpaired reference data routes in five groups. Each group
+is one pull request, so each review covers one screen's routes.
+
+| Group | Routes | BFF source |
+|-------+--------+------------|
+| Counterparties | 6 | =counterparties.ts= |
+| Conventions | 5 | =conventions.ts= |
+| Curve configurations | 3 | =curve-configuration.ts= |
+| Tenors | 9 | =tenors.ts= |
+| Generic records, calendars and ORE currency documents | 10 | =records.ts= |
+
+Each route keeps the BFF's address and answer shape, as the earlier ports did.
+
+Decisions made in the counterparty group:
+
+- The router sends a path to the most specific pattern that matches it. A
+  literal segment beats a parameter at the first segment where two patterns
+  differ, as the BFF's framework did. Before this, the first pattern added won,
+  so =/api/counterparties/{id}= could take =/api/counterparties/children=.
+- The identifier check moves into =record_routes= as =rr::is_uuid=. The IAM and
+  assets copies are deleted, so the refdata routes use the same check.
+- A write answers the service's =result= with 200, whatever its outcome, as
+  the BFF did. A read that the service refuses answers with the status the
+  outcome names, through =rr::require_ok=.
 
 * Measurements
 
@@ -82,6 +103,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the first pattern added took a path a more specific pattern also matched. | =router.cpp= | Accepted | A literal segment now beats a parameter; a router test adds the parameter first to prove it. |
+| 2 | Local review: =match= now tries every route rather than stopping at the first. | =router.cpp= | Declined | The first match stopped half way on average, so the cost at most doubles; correctness needs every candidate. |
+| 3 | Local review: three copies of one identifier check. | =record_routes.cpp= | Accepted | One =rr::is_uuid=, with a test; the IAM and assets copies are deleted. |
+| 4 | Local review: a composite body that leaves a child list out. | =counterparty_screen_routes.cpp= | Accepted | Each list is optional and becomes empty, as the BFF's defaults did; the counterparty itself is still read strictly. |
+| 5 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
 
 * Result

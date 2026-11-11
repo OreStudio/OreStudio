@@ -727,6 +727,12 @@ RULES = (
          CPP, RESOURCE, "access",
          "An access screen's read or write at the address and in the shape the BFF answered,"
          " forwarded to IAM as the caller, kept so the screens work when the BFF goes."),
+    Rule("the counterparty screen's route",
+         ("regex", r"^(GET|PUT) /api/counterparties/(\{id\}(/(visibility|business-centres))?|children|composite)$"),
+         CPP, RESOURCE, "reference-data",
+         "The counterparty onboarding screen's read or write at the address and in the shape"
+         " the BFF answered: one record with its identifiers, the children of a page, the"
+         " composite write, and the visibility and business centre writes."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

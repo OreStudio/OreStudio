@@ -36,6 +36,7 @@
 #include "ores.http/routes/refdata/calendar_web_routes.hpp"
 #include "ores.http/routes/refdata/classification_routes.hpp"
 #include "ores.http/routes/refdata/counterparty_routes.hpp"
+#include "ores.http/routes/refdata/counterparty_screen_routes.hpp"
 #include "ores.http/routes/refdata/counterparty_web_routes.hpp"
 #include "ores.http/routes/refdata/country_routes.hpp"
 #include "ores.http/routes/refdata/country_web_routes.hpp"
@@ -192,6 +193,9 @@ void refdata_routes::register_routes(
     // The option lists the reference data forms offer, one read per form.
     pick_list_routes::register_routes(router, registry, session);
     party_page_routes::register_routes(router, registry, session);
+
+    // The counterparty onboarding screen's own reads and writes.
+    counterparty_screen_routes::register_routes(router, registry, session);
 
     // The reference data lookups the synthetic screens read, under /api/synthetic.
     tenor_web_routes::register_routes(router, registry, session);

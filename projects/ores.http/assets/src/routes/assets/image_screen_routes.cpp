@@ -32,7 +32,6 @@
 #include <exception>
 #include <functional>
 #include <limits>
-#include <regex>
 #include <tuple>
 #include <type_traits>
 #include <vector>
@@ -60,12 +59,6 @@ struct upload_body final {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<upload_body>) {
     using ores::utility::codec::field;
     return std::tuple{field{"mimeType", &upload_body::mimeType}, field{"data", &upload_body::data}};
-}
-
-bool is_uuid(const std::string& text) {
-    static const std::regex form(
-        "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-    return std::regex_match(text, form);
 }
 
 }
@@ -157,7 +150,7 @@ void image_screen_routes::register_routes(
         "Read one image's bytes",
         [&session](const http_request& req) {
             const auto id = req.get_path_param("id");
-            if (!is_uuid(id))
+            if (!rr::is_uuid(id))
                 return refused(
                     http_status::not_found, "not-found", "No image has this identifier.");
             return guarded<messaging::list_images_request>([&] {

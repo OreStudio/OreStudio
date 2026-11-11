@@ -20,6 +20,8 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include <algorithm>
 #include <cstdlib>
+#include <regex>
+#include <string>
 #include <utility>
 #include <yyjson.h>
 
@@ -68,6 +70,12 @@ std::string code(const std::string& raw, const std::string& sentence) {
     if (value.empty() || value.size() > 100)
         invalid(sentence);
     return value;
+}
+
+bool is_uuid(std::string_view text) {
+    static const std::regex form(
+        "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+    return std::regex_match(text.begin(), text.end(), form);
 }
 
 bool has_reason(const std::string& reason) {

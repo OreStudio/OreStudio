@@ -21,7 +21,6 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.http/routes/iam/access_read_routes.hpp"
 #include "ores.http/routes/iam/account_view.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
@@ -172,7 +171,7 @@ void sign_in_routes::register_routes(
         "Read one account's sign-in record",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
-            if (!access_read_routes::is_uuid(account))
+            if (!ores::http::net::record_routes::is_uuid(account))
                 return refused(
                     http_status::bad_request, "invalid-request", "An account id is required.");
             const auto own =

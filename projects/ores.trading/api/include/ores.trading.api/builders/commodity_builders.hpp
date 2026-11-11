@@ -228,6 +228,123 @@ private:
     commodity_basket_option_terms terms_;
 };
 
+/// An option that pays a fixed cash amount when the commodity ends beyond its strike.
+struct commodity_digital_option_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    required<std::string> currency;
+    /// The cash the option pays when it ends in the money.
+    required<utility::decimal::decimal> payoff;
+    required<option_kind> kind;
+    required<utility::decimal::decimal> strike;
+    required<std::chrono::year_month_day> expiry;
+    required<option_position> position;
+};
+
+class ORES_TRADING_API_EXPORT commodity_digital_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityDigitalOption";
+    explicit commodity_digital_option_builder(commodity_digital_option_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_digital_option_terms terms_;
+};
+
+/// A digital option on the commodity's arithmetic average price from a start to the expiry.
+struct commodity_digital_average_price_option_terms final {
+    commodity_digital_option_terms option;
+    required<std::chrono::year_month_day> averaging_start;
+};
+
+class ORES_TRADING_API_EXPORT commodity_digital_average_price_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityDigitalAveragePriceOption";
+    explicit commodity_digital_average_price_option_builder(
+        commodity_digital_average_price_option_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_digital_average_price_option_terms terms_;
+};
+
+/// A holding of a quantity of one commodity.
+struct commodity_position_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    /// The currency the commodity is quoted in, which ORE values the position in.
+    required<std::string> currency;
+    required<utility::decimal::decimal> quantity;
+    /// The unit the quantity counts, as the catalogue states it; empty when unstated.
+    std::string unit;
+};
+
+class ORES_TRADING_API_EXPORT commodity_position_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityPosition";
+    explicit commodity_position_builder(commodity_position_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_position_terms terms_;
+};
+
+/**
+ * @brief A strip of monthly options on the spread between two commodities'
+ * prices, long the first and short the second.
+ *
+ * ORE requires both commodities to be quoted in the option's currency.
+ */
+struct commodity_spread_option_terms final {
+    required<marketdata::datum::market_reference> long_underlying;
+    required<marketdata::datum::market_reference> short_underlying;
+    required<std::string> currency;
+    required<utility::decimal::decimal> quantity;
+    required<option_kind> kind;
+    /// The spread each option is struck at, which may be zero or negative.
+    required<utility::decimal::decimal> spread_strike;
+    required<std::chrono::year_month_day> start;
+    required<std::chrono::year_month_day> maturity;
+    required<option_position> position;
+    /// The unit the quantity counts, as the catalogue states it; empty when unstated.
+    std::string unit;
+};
+
+class ORES_TRADING_API_EXPORT commodity_spread_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommoditySpreadOption";
+    explicit commodity_spread_option_builder(commodity_spread_option_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_spread_option_terms terms_;
+};
+
+/// Power bought or sold forward for a span of one delivery day.
+struct intraday_power_forward_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    required<std::string> currency;
+    required<utility::decimal::decimal> quantity;
+    required<utility::decimal::decimal> price;
+    required<std::chrono::year_month_day> maturity;
+    required<std::chrono::year_month_day> delivery_date;
+    /// The second of the delivery day the delivery starts at.
+    required<int> delivery_start;
+    /// The second of the delivery day the delivery ends at.
+    required<int> delivery_end;
+    required<option_position> position;
+    /// The unit the quantity counts, as the catalogue states it; empty when unstated.
+    std::string unit;
+};
+
+class ORES_TRADING_API_EXPORT intraday_power_forward_builder final {
+public:
+    static constexpr std::string_view trade_type = "IntradayPowerForward";
+    explicit intraday_power_forward_builder(intraday_power_forward_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    intraday_power_forward_terms terms_;
+};
+
 }
 
 #endif

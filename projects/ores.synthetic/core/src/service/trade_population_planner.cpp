@@ -894,6 +894,60 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                           .maturity = end,
                           .unit = drawn.unit})
                          .build());
+    if (type == "CommodityDigitalOption" || type == "CommodityDigitalAveragePriceOption") {
+        // A digital pays the drawn quantity as cash.
+        const tb::commodity_digital_option_terms digital{.underlying = underlying,
+                                                         .currency = currency,
+                                                         .payoff = quantity,
+                                                         .kind = kind,
+                                                         .strike = strike,
+                                                         .expiry = end,
+                                                         .position = position};
+        if (type == "CommodityDigitalOption")
+            return built(tb::commodity_digital_option_builder(digital).build());
+        return built(tb::commodity_digital_average_price_option_builder(
+                         {.option = digital, .averaging_start = start})
+                         .build());
+    }
+    if (type == "CommodityPosition")
+        return built(tb::commodity_position_builder({.underlying = underlying,
+                                                     .currency = currency,
+                                                     .quantity = quantity,
+                                                     .unit = drawn.unit})
+                         .build());
+    if (type == "CommoditySpreadOption") {
+        if (drawn.spread_commodity_code.empty())
+            throw trade_population_error("A commodity spread option needs two commodities quoted "
+                                         "in one currency, and the tenant holds fewer.");
+        return built(tb::commodity_spread_option_builder(
+                         {.long_underlying = underlying,
+                          .short_underlying = commodity_address_of(drawn.spread_commodity_code),
+                          .currency = currency,
+                          .quantity = quantity,
+                          .kind = kind,
+                          .spread_strike = money(drawn.spread_amount.value_or(0.0)),
+                          .start = start,
+                          .maturity = end,
+                          .position = position,
+                          .unit = drawn.unit})
+                         .build());
+    }
+    if (type == "IntradayPowerForward") {
+        // One hour of the delivery day, delivered a week after the forward matures.
+        const auto hour = static_cast<int>(draw(name, 11) * 23.0);
+        return built(tb::intraday_power_forward_builder(
+                         {.underlying = underlying,
+                          .currency = currency,
+                          .quantity = quantity,
+                          .price = price,
+                          .maturity = end,
+                          .delivery_date = year_month_day{sys_days{end} + days{7}},
+                          .delivery_start = hour * 3600,
+                          .delivery_end = (hour + 1) * 3600,
+                          .position = position,
+                          .unit = drawn.unit})
+                         .build());
+    }
     if (type == "CommodityBasketOption") {
         std::vector<tb::commodity_basket_member> basket;
         for (const auto& member : drawn.basket)
@@ -1074,8 +1128,16 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
             case commodity_shape::spread_option:
                 terms.option_type = "Call";
                 terms.strike_price = strike;
-                terms.spread_commodity_code =
-                    scope.commodities[(slot + 1) % scope.commodities.size()].code;
+                // ORE prices a spread on two commodities quoted in one currency.
+                for (std::size_t step = 1; step < scope.commodities.size(); ++step) {
+                    const auto& other =
+                        scope.commodities[(slot + step) % scope.commodities.size()];
+                    if (other.code != commodity.code &&
+                        other.quotation_currency == commodity.quotation_currency) {
+                        terms.spread_commodity_code = other.code;
+                        break;
+                    }
+                }
                 terms.spread_amount = price_from(name, 7, 1.0, 20.0);
                 break;
             case commodity_shape::variance_swap:

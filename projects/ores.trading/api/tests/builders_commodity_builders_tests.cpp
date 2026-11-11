@@ -55,6 +55,40 @@ commodity_swap_terms crude_swap() {
             .fixed_side = side::pay};
 }
 
+commodity_digital_option_terms crude_digital() {
+    return {.underlying = commodity("NYMEX:CL"),
+            .currency = std::string("USD"),
+            .payoff = amount("5000"),
+            .kind = option_kind::call,
+            .strike = amount("80"),
+            .expiry = 2027y / 1 / 5,
+            .position = option_position::long_option};
+}
+
+commodity_spread_option_terms crude_gas_spread() {
+    return {.long_underlying = commodity("NYMEX:CL"),
+            .short_underlying = commodity("NYMEX:NG"),
+            .currency = std::string("USD"),
+            .quantity = amount("1000"),
+            .kind = option_kind::call,
+            .spread_strike = amount("-2.5"),
+            .start = 2026y / 1 / 5,
+            .maturity = 2027y / 1 / 5,
+            .position = option_position::long_option};
+}
+
+intraday_power_forward_terms power_hour() {
+    return {.underlying = commodity("PJM_WH_RT_PK"),
+            .currency = std::string("USD"),
+            .quantity = amount("50"),
+            .price = amount("32.9"),
+            .maturity = 2027y / 1 / 5,
+            .delivery_date = 2027y / 1 / 12,
+            .delivery_start = 3600,
+            .delivery_end = 7200,
+            .position = option_position::short_option};
+}
+
 commodity_option_terms crude_call() {
     return {.underlying = commodity("NYMEX:CL"),
             .currency = std::string("USD"),
@@ -251,6 +285,121 @@ TEST_CASE("the_registry_names_every_commodity_builder", commodity_tags) {
                              "CommoditySwap",
                              "CommoditySwaption",
                              "CommodityVarianceSwap",
-                             "CommodityBasketOption"})
+                             "CommodityBasketOption",
+                             "CommodityDigitalOption",
+                             "CommodityDigitalAveragePriceOption",
+                             "CommodityPosition",
+                             "CommoditySpreadOption",
+                             "IntradayPowerForward"})
         CHECK(types.contains(type));
+}
+
+TEST_CASE("a_commodity_digital_option_keeps_its_payoff_as_its_quantity", commodity_tags) {
+    const auto option = commodity_digital_option_builder(crude_digital()).build();
+    REQUIRE(option.has_value());
+    CHECK(option->instrument.quantity == 5000.0);
+    CHECK(option->instrument.unit.empty());
+    CHECK(option->instrument.strike_price == amount("80"));
+    REQUIRE(option->options.size() == 1);
+    CHECK(option->options[0].long_short == "Long");
+}
+
+TEST_CASE("a_commodity_digital_option_with_no_payoff_fails_and_names_the_term", commodity_tags) {
+    auto terms = crude_digital();
+    terms.payoff = amount("0");
+    const auto option = commodity_digital_option_builder(terms).build();
+    REQUIRE_FALSE(option.has_value());
+    CHECK(option.error().term == "payoff");
+}
+
+TEST_CASE("a_commodity_digital_average_price_option_averages_to_its_expiry", commodity_tags) {
+    const auto option = commodity_digital_average_price_option_builder(
+                            {.option = crude_digital(), .averaging_start = 2026y / 7 / 5})
+                            .build();
+    REQUIRE(option.has_value());
+    CHECK(option->instrument.averaging_start_date == 2026y / 7 / 5);
+    CHECK(option->instrument.averaging_end_date == 2027y / 1 / 5);
+    CHECK(option->instrument.quantity == 5000.0);
+}
+
+TEST_CASE("a_commodity_digital_average_price_option_averaging_past_its_expiry_fails",
+          commodity_tags) {
+    const auto option = commodity_digital_average_price_option_builder(
+                            {.option = crude_digital(), .averaging_start = 2027y / 2 / 5})
+                            .build();
+    REQUIRE_FALSE(option.has_value());
+    CHECK(option.error().term == "end");
+}
+
+TEST_CASE("a_commodity_position_holds_its_commodity_as_one_underlying", commodity_tags) {
+    const auto position = commodity_position_builder({.underlying = commodity("NYMEX:CL"),
+                                                      .currency = std::string("USD"),
+                                                      .quantity = amount("1000"),
+                                                      .unit = "bbl"})
+                              .build();
+    REQUIRE(position.has_value());
+    REQUIRE(position->instrument_underlyings.size() == 1);
+    const auto& underlying = position->instrument_underlyings[0];
+    CHECK(underlying.underlying_type == "Commodity");
+    CHECK(underlying.name == commodity("NYMEX:CL").uri());
+    CHECK(underlying.weight == 1.0);
+    CHECK(position->instrument.quantity == 1000.0);
+}
+
+TEST_CASE("a_commodity_spread_option_receives_its_long_leg_and_pays_its_short_leg",
+          commodity_tags) {
+    const auto option = commodity_spread_option_builder(crude_gas_spread()).build();
+    REQUIRE(option.has_value());
+    REQUIRE(option->legs.size() == 2);
+    CHECK(option->legs[0].floating_index_code == commodity("NYMEX:CL").uri());
+    CHECK(option->legs[0].payer == false);
+    CHECK(option->legs[1].floating_index_code == commodity("NYMEX:NG").uri());
+    CHECK(option->legs[1].payer == true);
+    CHECK(option->instrument.spread_commodity_code == commodity("NYMEX:NG").uri());
+    // A spread may be struck below zero.
+    CHECK(option->instrument.strike_price == amount("-2.5"));
+    REQUIRE(option->schedules.size() == 2);
+    CHECK(option->schedules[0].tenor == "1M");
+    CHECK(option->schedules[1].tenor == "1M");
+}
+
+TEST_CASE("a_commodity_spread_option_on_one_commodity_fails", commodity_tags) {
+    auto terms = crude_gas_spread();
+    terms.short_underlying = commodity("NYMEX:CL");
+    const auto option = commodity_spread_option_builder(terms).build();
+    REQUIRE_FALSE(option.has_value());
+    CHECK(option.error().term == "short_underlying");
+}
+
+TEST_CASE("an_intraday_power_forward_keeps_its_delivery_hours", commodity_tags) {
+    const auto forward = intraday_power_forward_builder(power_hour()).build();
+    REQUIRE(forward.has_value());
+    CHECK(forward->instrument.delivery_date == 2027y / 1 / 12);
+    CHECK(forward->instrument.delivery_start == 3600);
+    CHECK(forward->instrument.delivery_end == 7200);
+    CHECK(forward->instrument.position == "Short");
+}
+
+TEST_CASE("an_intraday_power_forward_ending_before_it_starts_fails", commodity_tags) {
+    auto terms = power_hour();
+    terms.delivery_end = 3600;
+    const auto forward = intraday_power_forward_builder(terms).build();
+    REQUIRE_FALSE(forward.has_value());
+    CHECK(forward.error().term == "delivery_end");
+}
+
+TEST_CASE("an_intraday_power_forward_delivering_past_the_day_fails", commodity_tags) {
+    auto terms = power_hour();
+    terms.delivery_end = 90000;
+    const auto forward = intraday_power_forward_builder(terms).build();
+    REQUIRE_FALSE(forward.has_value());
+    CHECK(forward.error().term == "delivery");
+}
+
+TEST_CASE("an_intraday_power_forward_delivering_before_it_matures_fails", commodity_tags) {
+    auto terms = power_hour();
+    terms.delivery_date = 2027y / 1 / 4;
+    const auto forward = intraday_power_forward_builder(terms).build();
+    REQUIRE_FALSE(forward.has_value());
+    CHECK(forward.error().term == "delivery_date");
 }

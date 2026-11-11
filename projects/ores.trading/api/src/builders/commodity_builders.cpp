@@ -165,6 +165,35 @@ domain::commodity_instrument commodity_option_row_of(std::string_view trade_type
     return row;
 }
 
+std::optional<build_error> commodity_digital_refusal(const commodity_digital_option_terms& terms) {
+    if (terms.currency.get().empty())
+        return build_error{"currency", "must not be empty"};
+    if (terms.payoff.get() <= decimal{})
+        return build_error{"payoff", "must be positive"};
+    if (terms.strike.get() <= decimal{})
+        return build_error{"strike", "must be positive"};
+    return std::nullopt;
+}
+
+/// A digital option's row keeps the cash it pays as its quantity, which counts no unit.
+domain::commodity_instrument commodity_digital_row_of(std::string_view trade_type,
+                                                      const commodity_digital_option_terms& terms) {
+    auto row = commodity_row_of(
+        trade_type, terms.underlying.get(), terms.currency.get(), terms.payoff.get(), {});
+    row.option_type = option_type_of(terms.kind.get());
+    row.strike_price = terms.strike.get();
+    row.exercise_type = "European";
+    row.maturity_date = terms.expiry.get();
+    return row;
+}
+
+/*
+ * A delivery day counts 86400 seconds. A day that gains an hour when the
+ * clocks change counts more, and ORE states that hour by a flag these terms
+ * do not carry.
+ */
+constexpr int commodity_seconds_in_a_day = 86400;
+
 }
 
 commodity_forward_builder::commodity_forward_builder(commodity_forward_terms terms)
@@ -356,6 +385,130 @@ commodity_result commodity_basket_option_builder::build() const {
         out.constituents.push_back(std::move(constituent));
     }
     out.options.push_back(commodity_option_row(terms_.position.get(), "Vanilla"));
+    return out;
+}
+
+commodity_digital_option_builder::commodity_digital_option_builder(
+    commodity_digital_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_digital_option_builder::build() const {
+    if (auto refusal = commodity_digital_refusal(terms_))
+        return std::unexpected(std::move(*refusal));
+    domain::commodity_instrument_data out{};
+    out.instrument = commodity_digital_row_of(trade_type, terms_);
+    out.options.push_back(commodity_option_row(terms_.position.get()));
+    return out;
+}
+
+commodity_digital_average_price_option_builder::commodity_digital_average_price_option_builder(
+    commodity_digital_average_price_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_digital_average_price_option_builder::build() const {
+    const auto& option = terms_.option;
+    if (auto refusal = commodity_digital_refusal(option))
+        return std::unexpected(std::move(*refusal));
+    if (auto refusal = refusals::period(terms_.averaging_start.get(), option.expiry.get()))
+        return std::unexpected(std::move(*refusal));
+    auto row = commodity_digital_row_of(trade_type, option);
+    row.average_type = "Arithmetic";
+    row.averaging_start_date = terms_.averaging_start.get();
+    row.averaging_end_date = option.expiry.get();
+    domain::commodity_instrument_data out{};
+    out.instrument = std::move(row);
+    out.options.push_back(commodity_option_row(option.position.get()));
+    return out;
+}
+
+commodity_position_builder::commodity_position_builder(commodity_position_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_position_builder::build() const {
+    if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.quantity.get()))
+        return std::unexpected(std::move(*refusal));
+    domain::commodity_instrument_data out{};
+    out.instrument = commodity_row_of(trade_type,
+                                      terms_.underlying.get(),
+                                      terms_.currency.get(),
+                                      terms_.quantity.get(),
+                                      terms_.unit);
+    domain::instrument_underlying underlying{};
+    underlying.underlying_role = "underlying";
+    underlying.sequence_number = 1;
+    underlying.underlying_type = "Commodity";
+    underlying.name = terms_.underlying.get().uri();
+    underlying.weight = 1.0;
+    out.instrument_underlyings.push_back(std::move(underlying));
+    return out;
+}
+
+commodity_spread_option_builder::commodity_spread_option_builder(
+    commodity_spread_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_spread_option_builder::build() const {
+    if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.quantity.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.long_underlying.get() == terms_.short_underlying.get())
+        return std::unexpected(
+            build_error{"short_underlying", "must differ from the long underlying"});
+    if (auto refusal = refusals::period(terms_.start.get(), terms_.maturity.get()))
+        return std::unexpected(std::move(*refusal));
+
+    const auto& currency = terms_.currency.get();
+    auto row = commodity_row_of(
+        trade_type, terms_.long_underlying.get(), currency, terms_.quantity.get(), terms_.unit);
+    row.spread_commodity_code = terms_.short_underlying.get().uri();
+    row.option_type = option_type_of(terms_.kind.get());
+    row.strike_price = terms_.spread_strike.get();
+    row.exercise_type = "European";
+    row.start_date = terms_.start.get();
+    row.maturity_date = terms_.maturity.get();
+    domain::commodity_instrument_data out{};
+    out.instrument = std::move(row);
+    // ORE is long the leg it receives and short the leg it pays.
+    out.legs.push_back(commodity_floating_leg(1, false, currency, terms_.long_underlying.get()));
+    out.legs.push_back(commodity_floating_leg(2, true, currency, terms_.short_underlying.get()));
+    for (int leg = 1; leg <= 2; ++leg) {
+        out.leg_amounts.push_back(rows::leg_amount(leg, terms_.quantity.get()));
+        out.schedules.push_back(
+            commodity_leg_schedule(leg, terms_.start.get(), terms_.maturity.get(), "1M"));
+    }
+    out.options.push_back(commodity_option_row(terms_.position.get()));
+    return out;
+}
+
+intraday_power_forward_builder::intraday_power_forward_builder(intraday_power_forward_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result intraday_power_forward_builder::build() const {
+    if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.quantity.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.price.get() <= decimal{})
+        return std::unexpected(build_error{"price", "must be positive"});
+    if (terms_.delivery_date.get() < terms_.maturity.get())
+        return std::unexpected(build_error{"delivery_date", "must not be before the maturity"});
+    const auto start = terms_.delivery_start.get();
+    const auto end = terms_.delivery_end.get();
+    if (start < 0 || end > commodity_seconds_in_a_day)
+        return std::unexpected(build_error{"delivery", "must lie within the delivery day"});
+    if (end <= start)
+        return std::unexpected(build_error{"delivery_end", "must be after the delivery start"});
+
+    auto row = commodity_row_of(trade_type,
+                                terms_.underlying.get(),
+                                terms_.currency.get(),
+                                terms_.quantity.get(),
+                                terms_.unit);
+    row.fixed_price = terms_.price.get();
+    row.maturity_date = terms_.maturity.get();
+    row.position = long_short_of(terms_.position.get());
+    row.delivery_date = terms_.delivery_date.get();
+    row.delivery_start = start;
+    row.delivery_end = end;
+    domain::commodity_instrument_data out{};
+    out.instrument = std::move(row);
     return out;
 }
 

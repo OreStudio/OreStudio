@@ -39,6 +39,8 @@ dev exists and is the default PR target. integration and main exist and accept o
 - A direct push to integration or main by a person is refused.
 - A non-fast-forward push to integration or main is refused.
 - compass pr create and compass pr merge target dev.
+- The promotion pushes use a GitHub App token whose App is the only actor allowed to bypass the branch protection of integration and main.
+- The App token, not GITHUB_TOKEN, makes the pushes, because a push made with GITHUB_TOKEN does not trigger workflows and the tag builds on main need to run.
 
 * Plan
 

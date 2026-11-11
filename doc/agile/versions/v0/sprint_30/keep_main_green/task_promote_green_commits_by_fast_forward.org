@@ -39,6 +39,9 @@ CI moves integration and main. A green continuous Linux run on a dev commit fast
 - The nightlies build the tip of integration; after green Linux, Windows and macOS nightlies on commit Y, main points at Y.
 - A red run leaves both branches where they were.
 - The promotion job never force-pushes.
+- Promotion only moves a branch forward: a green run on a commit that is not a descendant of the branch's current tip is skipped, so an older run that finishes after a newer one changes nothing.
+- Each nightly records the integration SHA it checked out at start, and main moves only when every platform is green on that same SHA.
+- When only some platforms pass, main stays where it was and the job summary names the platforms that failed.
 
 * Plan
 

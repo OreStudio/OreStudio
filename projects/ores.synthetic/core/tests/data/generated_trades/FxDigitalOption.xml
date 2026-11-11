@@ -6,6 +6,8 @@
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2028-10-02</ExerciseDate>
         </ExerciseDates>
@@ -22,6 +24,8 @@
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2026-12-02</ExerciseDate>
         </ExerciseDates>

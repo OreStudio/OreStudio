@@ -53,19 +53,6 @@ EquityTouchOption	Error building trade for context 'analytic/PRICING'	No eqIndex
 EquityVarianceSwap	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity spot under configuration 'default' or 'default'
 EquityWorstOfBasketSwap	Error parsing Trade XML	Unknown Underlying type share
 FlexiSwap	Error building trade for context 'analytic/PRICING'	No EngineBuilder for LGM/Grid/FlexiSwap
-FxAccumulator	Error building trade for context 'analytic/PRICING'	invalid payoff type, expected Accumulator or Decumulator
-FxAverageForward	Error building trade for context 'analytic/PRICING'	makeSchedule(): Schedule does not have an end date, this is not supported in this context / for this trade type. Please provide an end date.
-FxBarrierOption	Error building trade for context 'analytic/PRICING'	Invalid number of barrier levels
-FxDigitalBarrierOption	Error building trade for context 'analytic/PRICING'	Option Style unknown: 
-FxDigitalOption	Error building trade for context 'analytic/PRICING'	Option Style unknown: 
-FxDoubleBarrierOption	Error building trade for context 'analytic/PRICING'	Option Style unknown: 
-FxEuropeanBarrierOption	Error building trade for context 'analytic/PRICING'	Option Style unknown: 
-FxGenericBarrierOption	Error building trade for context 'analytic/PRICING'	Could not build index info for 'EUR/USD', expected a valid COMM, FX, EQ, GENERIC, Ibor, Swap, Inflation index identifier.
-FxKIKOBarrierOption	Error building trade for context 'analytic/PRICING'	Option Style unknown: 
-FxSwap	Error building trade for context 'analytic/PRICING'	null date SimpleCashFlow
-FxTaRF	Error parsing Trade XML	either RangeBounds or RangeBoundSet nodes required
-FxTouchOption	Error parsing Trade XML	Barrier type "KnockOut" not recognized
-FxVarianceSwap	Error building trade for context 'analytic/PRICING'	four tokens required in FX-EUR/USD: FX-TAG-CCY1-CCY2
 IndexCreditDefaultSwap	Error building trade for context 'analytic/PRICING'	No CreditIndex reference data for oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
 IndexCreditDefaultSwap	Error building trade for context 'analytic/PRICING'	No CreditIndex reference data for oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
 IndexCreditDefaultSwapOption	Error building trade for context 'analytic/PRICING'	No CreditIndex constituents data for oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR

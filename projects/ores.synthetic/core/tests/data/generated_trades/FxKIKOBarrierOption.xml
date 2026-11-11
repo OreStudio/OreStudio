@@ -6,58 +6,64 @@
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2031-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <Barriers>
         <BarrierData>
-          <Type>KnockIn</Type>
+          <Type>DownAndIn</Type>
           <Levels>
             <Level>1.241</Level>
           </Levels>
         </BarrierData>
         <BarrierData>
-          <Type>KnockIn</Type>
+          <Type>UpAndOut</Type>
           <Levels>
             <Level>1.5168</Level>
           </Levels>
         </BarrierData>
       </Barriers>
+      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>4983709.98</BoughtAmount>
+      <BoughtAmount>3614264.98</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>3614264.98</SoldAmount>
+      <SoldAmount>4983709.98</SoldAmount>
     </FxKIKOBarrierOptionData>
   </Trade>
   <Trade id="90294a9c-9eb6-5d85-ac7b-0550e6e0f628">
     <TradeType>FxKIKOBarrierOption</TradeType>
     <FxKIKOBarrierOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2029-12-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <Barriers>
         <BarrierData>
-          <Type>KnockIn</Type>
+          <Type>DownAndIn</Type>
           <Levels>
             <Level>0.6903</Level>
           </Levels>
         </BarrierData>
         <BarrierData>
-          <Type>KnockIn</Type>
+          <Type>UpAndOut</Type>
           <Levels>
             <Level>0.8437</Level>
           </Levels>
         </BarrierData>
       </Barriers>
+      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>6701613.27</BoughtAmount>
+      <BoughtAmount>8737435.82</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>8737435.82</SoldAmount>
+      <SoldAmount>6701613.27</SoldAmount>
     </FxKIKOBarrierOptionData>
   </Trade>
 </Portfolio>

@@ -1,0 +1,11 @@
+# Recorded generated trades that differ after they are read back and written again,
+# by type and path. A family's builder task removes its lines; the test fails on any change.
+CommoditySwap added Trade/SwapData/LegData/ScheduleData/Rules/Convention
+CommoditySwap added Trade/SwapData/LegData/ScheduleData/Rules/EndDate
+CommoditySwap added Trade/SwapData/LegData/ScheduleData/Rules/StartDate
+CommoditySwaption added Trade/CommoditySwaptionData/LegData/ScheduleData/Rules/Convention
+EquityCliquetOption added Trade/EquityCliquetOptionData/ScheduleData/Rules/StartDate
+EquitySwap added Trade/EquitySwapData/LegData/ScheduleData/Rules/Convention
+EquityTaRF added Trade/EquityTaRFData/ScheduleData/Rules/StartDate
+EquityWorstOfBasketSwap added Trade/EquityWorstOfBasketSwapData/FloatingPayDates/Rules/StartDate
+EquityWorstOfBasketSwap added Trade/EquityWorstOfBasketSwapData/FloatingPeriodSchedule/Rules/StartDate

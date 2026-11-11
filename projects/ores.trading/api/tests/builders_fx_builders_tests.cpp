@@ -38,8 +38,8 @@ decimal fx_amount(const char* text) {
 }
 
 md::market_reference eur_usd() {
-    auto index = md::market_index::make(
-        md::index_family::fx, "EUR", {{"source", "TR20H"}, {"ccy", "USD"}});
+    auto index =
+        md::market_index::make(md::index_family::fx, "EUR", {{"source", "TR20H"}, {"ccy", "USD"}});
     REQUIRE(index);
     auto reference = md::market_reference::of(std::move(*index));
     REQUIRE(reference);
@@ -126,8 +126,15 @@ TEST_CASE("a_kiko_states_a_knock_in_and_a_knock_out_barrier", fx_tags) {
 
 TEST_CASE("a_generic_barrier_observes_its_pair_as_an_underlying", fx_tags) {
     const auto option =
-        barrier_option<fx_barrier_product::generic>({{"UpAndOut", {fx_amount("1.2")}}});
+        fx_generic_barrier_option_builder({.option = fx_call(),
+                                           .barrier = fx_barrier{"UpAndOut", {fx_amount("1.2")}},
+                                           .fx_index = eur_usd(),
+                                           .monitoring_start = 2026y / 1 / 5})
+            .build();
     REQUIRE(option.has_value());
+    REQUIRE(option->schedules.size() == 1);
+    CHECK(option->schedules[0].schedule_role == "barrier_schedule");
+    CHECK(option->schedules[0].end_date == 2027y / 1 / 5);
     REQUIRE(option->instrument_underlyings.size() == 1);
     CHECK(option->instrument_underlyings[0].underlying_type == "FX");
     CHECK(option->instrument_underlyings[0].name == eur_usd().uri());

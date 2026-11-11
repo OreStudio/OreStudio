@@ -114,7 +114,7 @@ private:
 };
 
 /// The FX barrier products, each a European option with its own barriers.
-enum class fx_barrier_product { barrier, double_barrier, european_barrier, kiko, generic };
+enum class fx_barrier_product { barrier, double_barrier, european_barrier, kiko };
 
 /**
  * @brief The terms of an FX barrier option.
@@ -140,10 +140,8 @@ public:
                 return std::string_view("FxDoubleBarrierOption");
             case fx_barrier_product::european_barrier:
                 return std::string_view("FxEuropeanBarrierOption");
-            case fx_barrier_product::kiko:
-                return std::string_view("FxKIKOBarrierOption");
             default:
-                return std::string_view("FxGenericBarrierOption");
+                return std::string_view("FxKIKOBarrierOption");
         }
     }();
     explicit fx_barrier_option_builder(fx_barrier_option_terms terms)
@@ -152,6 +150,27 @@ public:
 
 private:
     fx_barrier_option_terms terms_;
+};
+
+/**
+ * @brief A vanilla option on a pair that knocks out at a barrier watched daily
+ * from the monitoring start to the expiry.
+ */
+struct fx_generic_barrier_option_terms final {
+    fx_option_terms option;
+    required<fx_barrier> barrier;
+    required<marketdata::datum::market_reference> fx_index;
+    required<std::chrono::year_month_day> monitoring_start;
+};
+
+class ORES_TRADING_API_EXPORT fx_generic_barrier_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "FxGenericBarrierOption";
+    explicit fx_generic_barrier_option_builder(fx_generic_barrier_option_terms terms);
+    [[nodiscard]] fx_result build() const;
+
+private:
+    fx_generic_barrier_option_terms terms_;
 };
 
 /// The FX products that pay a fixed amount: on expiry, or on a touch.
@@ -294,15 +313,20 @@ private:
     fx_accumulator_terms terms_;
 };
 
-extern template class ORES_TRADING_API_EXPORT fx_barrier_option_builder<fx_barrier_product::barrier>;
-extern template class ORES_TRADING_API_EXPORT fx_barrier_option_builder<fx_barrier_product::double_barrier>;
-extern template class ORES_TRADING_API_EXPORT fx_barrier_option_builder<fx_barrier_product::european_barrier>;
+extern template class ORES_TRADING_API_EXPORT
+    fx_barrier_option_builder<fx_barrier_product::barrier>;
+extern template class ORES_TRADING_API_EXPORT
+    fx_barrier_option_builder<fx_barrier_product::double_barrier>;
+extern template class ORES_TRADING_API_EXPORT
+    fx_barrier_option_builder<fx_barrier_product::european_barrier>;
 extern template class ORES_TRADING_API_EXPORT fx_barrier_option_builder<fx_barrier_product::kiko>;
-extern template class ORES_TRADING_API_EXPORT fx_barrier_option_builder<fx_barrier_product::generic>;
-extern template class ORES_TRADING_API_EXPORT fx_digital_option_builder<fx_digital_product::digital>;
+extern template class ORES_TRADING_API_EXPORT
+    fx_digital_option_builder<fx_digital_product::digital>;
 extern template class ORES_TRADING_API_EXPORT fx_digital_option_builder<fx_digital_product::touch>;
-extern template class ORES_TRADING_API_EXPORT fx_digital_option_builder<fx_digital_product::double_touch>;
-extern template class ORES_TRADING_API_EXPORT fx_digital_option_builder<fx_digital_product::digital_barrier>;
+extern template class ORES_TRADING_API_EXPORT
+    fx_digital_option_builder<fx_digital_product::double_touch>;
+extern template class ORES_TRADING_API_EXPORT
+    fx_digital_option_builder<fx_digital_product::digital_barrier>;
 
 }
 

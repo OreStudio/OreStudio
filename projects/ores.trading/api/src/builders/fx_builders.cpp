@@ -95,10 +95,7 @@ void add_underlying(domain::fx_instrument_data& out,
 }
 
 /// A monthly schedule from @p start to @p end, kept as the product's own.
-void add_monthly_schedule(domain::fx_instrument_data& out,
-                          std::string role,
-                          ymd start,
-                          ymd end) {
+void add_monthly_schedule(domain::fx_instrument_data& out, std::string role, ymd start, ymd end) {
     domain::instrument_schedule row;
     row.owner_role = "option";
     row.owner_number = 1;
@@ -232,11 +229,10 @@ fx_result fx_barrier_option_builder<Product>::build() const {
                 barriers, is_double_type, 2, "one KnockIn or KnockOut barrier of two levels"))
             return std::unexpected(std::move(*refusal));
     } else if constexpr (Product == fx_barrier_product::kiko) {
-        const bool shaped =
-            barriers.size() == 2 && is_single_type(barriers[0].type) &&
-            is_single_type(barriers[1].type) &&
-            knocks_in(barriers[0].type) != knocks_in(barriers[1].type) &&
-            barriers[0].levels.size() == 1 && barriers[1].levels.size() == 1;
+        const bool shaped = barriers.size() == 2 && is_single_type(barriers[0].type) &&
+                            is_single_type(barriers[1].type) &&
+                            knocks_in(barriers[0].type) != knocks_in(barriers[1].type) &&
+                            barriers[0].levels.size() == 1 && barriers[1].levels.size() == 1;
         if (!shaped)
             return std::unexpected(build_error{
                 "barriers", "must be a knock-in and a knock-out barrier of one level each"});
@@ -251,22 +247,57 @@ fx_result fx_barrier_option_builder<Product>::build() const {
     row.expiry_date = option.expiry.get();
     row.settlement = "Cash";
     set_barrier_columns(row, barriers);
+    row.barrier_fixing_index = terms_.fx_index.get().uri();
     domain::fx_instrument_data out;
-    if constexpr (Product == fx_barrier_product::generic) {
-        // A generic barrier pays the vanilla payoff on the bought amount,
-        // struck at the exchange's own rate.
-        row.quantity = option.exchange.bought_amount.get().to_double();
-        row.strike = decimal::from_double(option.exchange.sold_amount.get().to_double() /
-                                          option.exchange.bought_amount.get().to_double())
-                         .value_or(decimal{});
-        add_underlying(out, terms_.fx_index.get());
-        out.options.push_back(option_row(option.position.get(), std::nullopt, "Vanilla"));
-    } else {
-        row.barrier_fixing_index = terms_.fx_index.get().uri();
-        out.options.push_back(option_row(option.position.get(), "European"));
-    }
+    out.options.push_back(option_row(option.position.get(), "European"));
     out.barrier_options.push_back(std::move(row));
     add_barriers(out, barriers);
+    return out;
+}
+
+fx_generic_barrier_option_builder::fx_generic_barrier_option_builder(
+    fx_generic_barrier_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+fx_result fx_generic_barrier_option_builder::build() const {
+    const auto& option = terms_.option;
+    if (auto refusal = exchange_refusal(option.exchange))
+        return std::unexpected(std::move(*refusal));
+    const std::vector<fx_barrier> barriers{terms_.barrier.get()};
+    if (auto refusal = barrier_refusal(barriers, is_single_type, 1, "one UpAnd or DownAnd barrier"))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.monitoring_start.get() >= option.expiry.get())
+        return std::unexpected(build_error{"monitoring_start", "must be before the expiry"});
+
+    // The vanilla payoff on the bought amount, struck at the exchange's own rate.
+    auto row = exchange_row<domain::fx_barrier_option_instrument>(trade_type, option.exchange);
+    row.option_type = option_type_of(option.kind.get());
+    row.expiry_date = option.expiry.get();
+    row.settlement = "Cash";
+    row.quantity = option.exchange.bought_amount.get().to_double();
+    row.strike = decimal::from_double(option.exchange.sold_amount.get().to_double() /
+                                      option.exchange.bought_amount.get().to_double())
+                     .value_or(decimal{});
+    set_barrier_columns(row, barriers);
+    domain::fx_instrument_data out;
+    out.barrier_options.push_back(std::move(row));
+    out.options.push_back(option_row(option.position.get(), std::nullopt, "Vanilla"));
+    add_underlying(out, terms_.fx_index.get());
+    add_barriers(out, barriers);
+
+    domain::instrument_schedule watched;
+    watched.owner_role = "option";
+    watched.owner_number = 1;
+    watched.schedule_role = "barrier_schedule";
+    watched.sequence_number = 1;
+    watched.schedule_kind = "rules";
+    watched.start_date = terms_.monitoring_start.get();
+    watched.end_date = option.expiry.get();
+    watched.tenor = "1D";
+    watched.calendar = "TARGET";
+    watched.convention = "F";
+    watched.rule = "Forward";
+    out.schedules.push_back(std::move(watched));
     return out;
 }
 
@@ -276,20 +307,22 @@ fx_result fx_digital_option_builder<Product>::build() const {
         return std::unexpected(build_error{"currencies", "must be two different currencies"});
     if (terms_.payoff_amount.get() <= decimal{})
         return std::unexpected(build_error{"payoff_amount", "must be positive"});
-    constexpr bool struck = Product == fx_digital_product::digital ||
-                            Product == fx_digital_product::digital_barrier;
+    constexpr bool struck =
+        Product == fx_digital_product::digital || Product == fx_digital_product::digital_barrier;
     if (struck && !(terms_.strike && *terms_.strike > decimal{}))
         return std::unexpected(build_error{"strike", "must be positive"});
     if constexpr (Product == fx_digital_product::digital) {
         if (!terms_.barriers.empty())
             return std::unexpected(build_error{"barriers", "must be none"});
     } else if constexpr (Product == fx_digital_product::double_touch) {
-        if (auto refusal = barrier_refusal(
-                terms_.barriers, is_double_type, 2, "one KnockIn or KnockOut barrier of two levels"))
+        if (auto refusal = barrier_refusal(terms_.barriers,
+                                           is_double_type,
+                                           2,
+                                           "one KnockIn or KnockOut barrier of two levels"))
             return std::unexpected(std::move(*refusal));
     } else {
-        if (auto refusal = barrier_refusal(
-                terms_.barriers, is_single_type, 1, "one UpAnd or DownAnd barrier"))
+        if (auto refusal =
+                barrier_refusal(terms_.barriers, is_single_type, 1, "one UpAnd or DownAnd barrier"))
             return std::unexpected(std::move(*refusal));
     }
 
@@ -312,8 +345,8 @@ fx_result fx_digital_option_builder<Product>::build() const {
     // A touch pays when touched, so ORE states no exercise style for it.
     constexpr bool touch =
         Product == fx_digital_product::touch || Product == fx_digital_product::double_touch;
-    out.options.push_back(touch ? option_row(terms_.position.get(), std::nullopt, {}, "true")
-                                : option_row(terms_.position.get(), "European"));
+    out.options.push_back(touch ? option_row(terms_.position.get(), std::nullopt, {}, "true") :
+                                  option_row(terms_.position.get(), "European"));
     add_barriers(out, terms_.barriers);
     return out;
 }
@@ -449,13 +482,15 @@ fx_result fx_accumulator_builder::build() const {
 }
 
 template class ORES_TRADING_API_EXPORT fx_barrier_option_builder<fx_barrier_product::barrier>;
-template class ORES_TRADING_API_EXPORT fx_barrier_option_builder<fx_barrier_product::double_barrier>;
-template class ORES_TRADING_API_EXPORT fx_barrier_option_builder<fx_barrier_product::european_barrier>;
+template class ORES_TRADING_API_EXPORT
+    fx_barrier_option_builder<fx_barrier_product::double_barrier>;
+template class ORES_TRADING_API_EXPORT
+    fx_barrier_option_builder<fx_barrier_product::european_barrier>;
 template class ORES_TRADING_API_EXPORT fx_barrier_option_builder<fx_barrier_product::kiko>;
-template class ORES_TRADING_API_EXPORT fx_barrier_option_builder<fx_barrier_product::generic>;
 template class ORES_TRADING_API_EXPORT fx_digital_option_builder<fx_digital_product::digital>;
 template class ORES_TRADING_API_EXPORT fx_digital_option_builder<fx_digital_product::touch>;
 template class ORES_TRADING_API_EXPORT fx_digital_option_builder<fx_digital_product::double_touch>;
-template class ORES_TRADING_API_EXPORT fx_digital_option_builder<fx_digital_product::digital_barrier>;
+template class ORES_TRADING_API_EXPORT
+    fx_digital_option_builder<fx_digital_product::digital_barrier>;
 
 }

@@ -6,17 +6,19 @@
       <OptionData>
         <LongShort>Short</LongShort>
         <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2036-01-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
-        <Type>KnockOut</Type>
+        <Type>UpAndOut</Type>
         <Levels>
-          <Level>1.2921</Level>
           <Level>1.5793</Level>
         </Levels>
       </BarrierData>
+      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
       <Strike>1.4357</Strike>
       <PayoffAmount>3895254.25</PayoffAmount>
       <PayoffCurrency>USD</PayoffCurrency>
@@ -30,17 +32,19 @@
       <OptionData>
         <LongShort>Short</LongShort>
         <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2026-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <BarrierData>
-        <Type>KnockOut</Type>
+        <Type>UpAndOut</Type>
         <Levels>
-          <Level>0.8888</Level>
           <Level>1.0864</Level>
         </Levels>
       </BarrierData>
+      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
       <Strike>0.9876</Strike>
       <PayoffAmount>4801709.49</PayoffAmount>
       <PayoffCurrency>USD</PayoffCurrency>

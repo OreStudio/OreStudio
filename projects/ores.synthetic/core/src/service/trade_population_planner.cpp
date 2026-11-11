@@ -1446,13 +1446,12 @@ const domain::currency_pair_reference& pair_for(const domain::trade_generation_s
 constexpr std::string_view fx_fixing_source = "TR20H";
 
 /// The FX index of a pair, built as an oresmd index: the projection writes it as ORE names it.
-ores::marketdata::datum::market_reference
-fx_index_of(const domain::currency_pair_reference& pair) {
+ores::marketdata::datum::market_reference fx_index_of(const domain::currency_pair_reference& pair) {
     namespace md = ores::marketdata::datum;
-    auto index = md::market_index::make(
-        md::index_family::fx,
-        pair.base,
-        {{"source", std::string(fx_fixing_source)}, {"ccy", pair.quote}});
+    auto index =
+        md::market_index::make(md::index_family::fx,
+                               pair.base,
+                               {{"source", std::string(fx_fixing_source)}, {"ccy", pair.quote}});
     if (!index)
         throw trade_population_error("The pair " + pair.base + pair.quote +
                                      " has no FX index: " + index.error());
@@ -1509,13 +1508,12 @@ namespace {
  * pair's level the trade is struck at; barriers sit a tenth either side of it,
  * and a touch or a single barrier is the one above it.
  */
-ores::trading::domain::instrument_batch
-build_fx_trade(const domain::trade_generation_scope& scope,
-               const domain::trade_population_slot& entry,
-               const domain::currency_pair_reference& pair,
-               year_month_day start,
-               year_month_day end,
-               double rate) {
+ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_generation_scope& scope,
+                                                       const domain::trade_population_slot& entry,
+                                                       const domain::currency_pair_reference& pair,
+                                                       year_month_day start,
+                                                       year_month_day end,
+                                                       double rate) {
     namespace tb = ores::trading::builders;
     using ores::utility::decimal::decimal;
     const auto money = [](double value) {
@@ -1530,8 +1528,8 @@ build_fx_trade(const domain::trade_generation_scope& scope,
     const auto& type = entry.trade_type_code;
     const auto index = fx_index_of(pair);
     const auto notional = entry.notional;
-    const auto position = draw(name, 4) < 0.5 ? tb::option_position::long_option
-                                              : tb::option_position::short_option;
+    const auto position =
+        draw(name, 4) < 0.5 ? tb::option_position::long_option : tb::option_position::short_option;
     const auto kind = draw(name, 3) < 0.5 ? tb::option_kind::call : tb::option_kind::put;
     const tb::fx_exchange exchange{.bought_currency = pair.base,
                                    .bought_amount = money(notional),
@@ -1543,7 +1541,9 @@ build_fx_trade(const domain::trade_generation_scope& scope,
     const auto upper = level(rate * 1.1);
     const auto single = std::vector<tb::fx_barrier>{{"UpAndOut", {upper}}};
     const auto both = std::vector<tb::fx_barrier>{{"KnockOut", {lower, upper}}};
-    const auto built = [&](auto result) { return fx_batch_of(std::move(result), type); };
+    const auto built = [&](auto result) {
+        return fx_batch_of(std::move(result), type);
+    };
     const auto barrier = [&]<tb::fx_barrier_product Product>(std::vector<tb::fx_barrier> barriers) {
         return built(tb::fx_barrier_option_builder<Product>(
                          {.option = option, .barriers = std::move(barriers), .fx_index = index})
@@ -1586,12 +1586,16 @@ build_fx_trade(const domain::trade_generation_scope& scope,
         return barrier.template operator()<tb::fx_barrier_product::kiko>(
             {{"DownAndIn", {lower}}, {"UpAndOut", {upper}}});
     if (type == "FxGenericBarrierOption")
-        return barrier.template operator()<tb::fx_barrier_product::generic>(single);
+        return built(tb::fx_generic_barrier_option_builder({.option = option,
+                                                            .barrier = single.front(),
+                                                            .fx_index = index,
+                                                            .monitoring_start = start})
+                         .build());
     if (type == "FxDigitalOption")
         return digital.template operator()<tb::fx_digital_product::digital>(level(rate), {});
     if (type == "FxTouchOption")
-        return digital.template operator()<tb::fx_digital_product::touch>(
-            std::nullopt, {{"UpAndIn", {upper}}});
+        return digital.template operator()<tb::fx_digital_product::touch>(std::nullopt,
+                                                                          {{"UpAndIn", {upper}}});
     if (type == "FxDoubleTouchOption")
         return digital.template operator()<tb::fx_digital_product::double_touch>(
             std::nullopt, {{"KnockIn", {lower, upper}}});

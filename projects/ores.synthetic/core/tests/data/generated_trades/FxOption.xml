@@ -4,7 +4,7 @@
     <TradeType>FxOption</TradeType>
     <FxOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
@@ -13,16 +13,16 @@
         </ExerciseDates>
       </OptionData>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>4069109.38</BoughtAmount>
+      <BoughtAmount>5375309.62</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>5375309.62</SoldAmount>
+      <SoldAmount>4069109.38</SoldAmount>
     </FxOptionData>
   </Trade>
   <Trade id="f2c4ae8a-a1b6-5d49-a9c5-03fc6a378431">
     <TradeType>FxOption</TradeType>
     <FxOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
@@ -31,9 +31,9 @@
         </ExerciseDates>
       </OptionData>
       <BoughtCurrency>EUR</BoughtCurrency>
-      <BoughtAmount>5326187.24</BoughtAmount>
+      <BoughtAmount>4118292.15</BoughtAmount>
       <SoldCurrency>USD</SoldCurrency>
-      <SoldAmount>4118292.15</SoldAmount>
+      <SoldAmount>5326187.24</SoldAmount>
     </FxOptionData>
   </Trade>
 </Portfolio>

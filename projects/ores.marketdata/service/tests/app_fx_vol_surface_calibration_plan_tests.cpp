@@ -197,3 +197,23 @@ TEST_CASE("a flat market calibrates to a flat surface on the grid", "[app][fx_vo
     CHECK(fit->grid[0].log_moneyness < fit->grid[1].log_moneyness);
     CHECK(fit->grid[1].log_moneyness < fit->grid[2].log_moneyness);
 }
+
+TEST_CASE("a pillar named twice is refused before any quote is read",
+          "[app][fx_vol_surface_calibration_plan]") {
+    auto recipe = eur_usd_recipe();
+    recipe.pillars.push_back(recipe.pillars.front());
+    const auto checked = check_recipe(recipe);
+    REQUIRE_FALSE(checked);
+    CHECK(checked.error().find("1M/ATM appears twice") != std::string::npos);
+}
+
+TEST_CASE("a forward set that ends before an expiry refuses the calibration, naming it",
+          "[app][fx_vol_surface_calibration_plan]") {
+    auto forwards = eur_usd_forward_set();
+    forwards.points.pop_back();
+    const auto recipe = eur_usd_recipe();
+    const auto prepared = prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(),
+                                              calibration_as_of, 0.001);
+    REQUIRE_FALSE(prepared);
+    CHECK(prepared.error().find("ends before the 2Y expiry") != std::string::npos);
+}

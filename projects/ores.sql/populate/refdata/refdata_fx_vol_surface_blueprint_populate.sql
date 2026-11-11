@@ -25,7 +25,9 @@
  * total variance, and writes its grid to the fx_vol_surface series that
  * marketdata_market_series_fx_vol_surface_populate.sql seeds.
  *
- * It has one pillar for each expiry and label the derived source publishes. Every
+ * It has one pillar for each expiry and label the derived source quotes from the
+ * fixings it holds: 1W to 1Y. The source lists 2Y, but quotes it only from two years
+ * of fixings, which the seeded history does not yet reach. Every
  * pillar has one source, the pair's derived series, which holds every quote: the
  * pillar's expiry and label find the quote inside it. The grid stays inside the
  * pillars' expiries, because the calibration refuses a grid expiry outside them.
@@ -49,7 +51,7 @@ select
     ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
     'EURUSD_SSVI', 'EUR', 'USD', 'EUR-USD-FXOPTION',
     'ssvi', 'linear_total_variance',
-    '1W,1M,2M,3M,6M,9M,1Y,2Y',
+    '1W,1M,2M,3M,6M,9M,1Y',
     'DEL/Spot/Put/10,DEL/Spot/Put/25,ATM,DEL/Spot/Call/25,DEL/Spot/Call/10',
     current_user, current_user, 'system.initial_load',
     'Initial population of the EUR/USD surface blueprint'
@@ -66,7 +68,7 @@ create temporary table t_eurusd_surface_pillars (
 
 insert into t_eurusd_surface_pillars (id, expiry_code, strike_label)
 select md5('fx_vol_surface_pillar|EURUSD_SSVI|' || e.code || '|' || l.label)::uuid, e.code, l.label
-from (values ('1W'), ('1M'), ('2M'), ('3M'), ('6M'), ('9M'), ('1Y'), ('2Y')) as e (code)
+from (values ('1W'), ('1M'), ('2M'), ('3M'), ('6M'), ('9M'), ('1Y')) as e (code)
 cross join (values ('ATM'), ('25RR'), ('25BF'), ('10RR'), ('10BF')) as l (label);
 
 insert into ores_refdata_fx_vol_surface_pillars_tbl (

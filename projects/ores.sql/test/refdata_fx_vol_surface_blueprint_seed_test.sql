@@ -55,7 +55,7 @@ select is((select party_id from t_blueprint),
 
 select is((select smile_model from t_blueprint), 'ssvi', 'the blueprint fits SSVI');
 
-select is((select count(*)::int from t_pillars), 40, 'the blueprint has every pillar of eight expiries');
+select is((select count(*)::int from t_pillars), 35, 'the blueprint has every pillar of seven expiries');
 
 select is(
     (select count(*)::int from (
@@ -78,7 +78,7 @@ select is(
       and m.valid_to = ores_utility_infinity_timestamp_fn()
      where m.oresmd_uri = 'oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD'
        and m.provider_code = 'derived' and s.contributor_code = 'derived'),
-    40,
+    35,
     'every source names the series the derived source writes');
 
 select is(

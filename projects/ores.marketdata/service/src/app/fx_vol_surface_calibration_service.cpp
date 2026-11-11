@@ -20,6 +20,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.analytics.quant/service/ssvi_calibration_engine.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/fx_vol_surface_calibration.hpp"
@@ -217,10 +218,19 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
         if (!series_datum || !series_datum->is_series())
             throw std::invalid_argument("The output series of " + blueprint.name + ", " +
                                         output_series.oresmd_uri + ", is not a series URI.");
+        const bool claimed = output_series.derivation_kind == "FX_VOL_SURFACE_CALIBRATION" &&
+                             output_series.derivation_config_id == blueprint.id;
+        if (output_series.derivation_kind != "OBSERVED" && !claimed)
+            throw std::invalid_argument("The output series of " + blueprint.name + " is derived by " +
+                                        output_series.derivation_kind +
+                                        ", and only its own blueprint writes a surface into it.");
         std::vector<datum::market_datum> datums;
         for (const auto& point : fit->grid)
             datums.push_back(grid_datum(*series_datum, point));
 
+        // Every grid point comes from the whole fit, so each names every source series. A series
+        // carries the weight of the first pillar that reads it; the weight of each pillar's source
+        // is in the blueprint version the lineage names.
         std::vector<std::string> source_ids;
         std::vector<double> weights;
         for (const auto& [point, used] : prepared->sources_by_point)
@@ -235,7 +245,11 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
         const auto source_weights = json_numbers(weights);
         const auto writer = ores::service::messaging::delegated_actor(ctx);
 
-        if (output_series.derivation_kind == "OBSERVED") {
+        // The candidate is one act: a grid without its lineage or its record would be a surface
+        // nobody can trace.
+        ores::database::repository::unit_of_work uow(ctx);
+        const auto& tx = uow.ctx();
+        if (!claimed) {
             output_series.derivation_kind = "FX_VOL_SURFACE_CALIBRATION";
             output_series.derivation_config_id = blueprint.id;
             output_series.derivation_config_version = blueprint.version;
@@ -243,7 +257,7 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
             output_series.performed_by = ctx.service_account();
             output_series.change_reason_code = "system.derived_series";
             output_series.change_commentary = "Claimed by FX volatility surface blueprint " + blueprint.name;
-            repository::market_series_repository{}.write(ctx, output_series);
+            repository::market_series_repository{}.write(tx, output_series);
         }
 
         boost::uuids::random_generator uuid_gen;
@@ -265,7 +279,7 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
             observations.push_back(std::move(obs));
 
             const auto existing =
-                lineage_repo.read_latest_by_observation(ctx, blueprint.output_series_id, as_of, uri);
+                lineage_repo.read_latest_by_observation(tx, blueprint.output_series_id, as_of, uri);
             domain::observation_lineage lin;
             lin.tenant_id = ctx.tenant_id();
             lin.id = existing ? existing->id : uuid_gen();
@@ -284,10 +298,10 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
             lin.change_commentary = "FX volatility surface calibration of " + blueprint.name;
             lineages.push_back(std::move(lin));
         }
-        repository::market_observation_repository{}.insert(ctx, observations);
-        series_shape_writer::declare(ctx, *series_datum, blueprint.output_series_id, blueprint.party_id,
+        repository::market_observation_repository{}.insert(tx, observations);
+        series_shape_writer::declare(tx, *series_datum, blueprint.output_series_id, blueprint.party_id,
                                      datums, series_shape_writer::term_check::against_reference_tenors);
-        ores::marketdata::service::observation_lineage_service(ctx).save_observation_lineages(lineages);
+        ores::marketdata::service::observation_lineage_service(tx).save_observation_lineages(lineages);
 
         for (const auto& p : fit->pillars) {
             const auto slash = p.point_id.find('/');
@@ -342,7 +356,8 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
         record.performed_by = ctx.service_account();
         record.change_reason_code = "system.surface_calibration";
         record.change_commentary = "FX volatility surface calibration of " + blueprint.name;
-        repository::fx_vol_surface_calibration_repository{}.write(ctx, record);
+        repository::fx_vol_surface_calibration_repository{}.write(tx, record);
+        uow.commit();
 
         out.success = true;
         out.message = std::format("Calibrated {} at {} points; the largest pillar error is {:.4f}.",

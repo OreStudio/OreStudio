@@ -54,7 +54,10 @@ std::expected<read_label, std::string> read_strike_label(const std::string& poin
         return std::unexpected("pillar " + point + " has the strike label '" + std::string(label) +
                                "', which is not ATM or a delta and a suffix");
     int points = 0;
-    std::from_chars(label.data(), label.data() + suffix_at, points);
+    const auto [end, ec] = std::from_chars(label.data(), label.data() + suffix_at, points);
+    if (ec != std::errc{} || points < 1 || points > 99)
+        return std::unexpected("pillar " + point + " has a delta in '" + std::string(label) +
+                               "' that is not from 1 to 99");
     const auto suffix = label.substr(suffix_at);
     if (suffix == "RR")
         return read_label{qs::ssvi_quote_kind::risk_reversal, points / 100.0, points};
@@ -177,6 +180,8 @@ terms_at(const surface_calibration_recipe& recipe,
     const auto discounts = discounts_at(forwards, by_date, code, add_period(forwards.spot_date, period));
     if (!discounts)
         return std::unexpected(discounts.error());
+    // An FX option expires a tenor after the trade and delivers a tenor after spot, so its time
+    // runs from the as-of and its discounting from the spot date.
     return expiry_terms{.years = days_between(as_of, add_period(as_of, period)) / 365.0,
                         .market = {.spot = forwards.spot,
                                    .domestic_discount = discounts->second,
@@ -224,8 +229,11 @@ std::expected<checked_recipe, std::string> check_recipe(const surface_calibratio
         std::set<int> butterflies;
     };
     std::map<std::string, expiry_labels> labels_by_expiry;
+    std::set<std::string> points;
     for (const auto& pillar : recipe.pillars) {
         const auto point = point_of(pillar.expiry_code, pillar.strike_label);
+        if (!points.insert(point).second)
+            return std::unexpected("pillar " + point + " appears twice in the blueprint");
         const auto label = read_strike_label(point, pillar.strike_label);
         if (!label)
             return std::unexpected(label.error());
@@ -325,7 +333,10 @@ prepare_calibration(const surface_calibration_recipe& recipe,
             if (pillar.expiry_code != expiry.code)
                 continue;
             const auto point = point_of(pillar.expiry_code, pillar.strike_label);
-            const auto label = *read_strike_label(point, pillar.strike_label);
+            const auto read = read_strike_label(point, pillar.strike_label);
+            if (!read)
+                return std::unexpected(read.error());
+            const auto& label = *read;
             qs::ssvi_pillar fit{.point_id = point,
                                 .kind = label.kind,
                                 .delta = label.delta,

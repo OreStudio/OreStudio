@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: FF39FE73-54B5-4296-A46C-687AFC7D1450
+:END:
+#+title: Provisioning fails when two swap conventions name the drawn index
+#+description: generate_trades failed on bright_faraday 2026-11-11: the RiskParticipationAgreement builder refused oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=12M because EUR-12M-SWAP-CONVENTIONS and EUR-EURIBOR-12M-SWAP both name it. The branch predates #4565; check whether main still fails.
+#+type: capture
+#+level: cross
+#+filetags: :trading:refdata:provisioning:bug:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+On 2026-11-11 the Acme provisioning failed at its last step, =generate_trades=: "The RiskParticipationAgreement builder refuses the drawn underlying.index: oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=12M: more than one swap convention names it: EUR-12M-SWAP-CONVENTIONS and EUR-EURIBOR-12M-SWAP." The convention lookup refuses an index that two swap conventions name, and the curated conventions hold two for EURIBOR 12M. Either the lookup prefers one, or the data keeps one, or the generator draws only indices with one convention.
+
+* Why
+
+A provisioning run that fails at its last step leaves the tenant without its trades and the auto-approval switch on, because =end_auto_approval= never runs. The draw is random, so the failure comes and goes. The run was on a branch based before #4565, which rebuilt rates trades through their builders, so check main first.
+
+* References
+
+- =projects/ores.marketdata/api/src/conventions/convention_lookup.cpp=, the ambiguity refusal.
+
+* See also
+
+- Found during the live check of Calibrate a volatility surface from its quotes.

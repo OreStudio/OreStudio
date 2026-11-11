@@ -811,13 +811,14 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
     const auto name = slot_name(scope, entry.slot);
     const auto underlying = commodity_address_of(drawn.commodity_code);
     const auto quantity = money(drawn.quantity);
-    const auto start = *drawn.start_date;
-    const auto end = *drawn.maturity_date;
+    const auto start = drawn.start_date;
+    const auto end = drawn.maturity_date;
     const auto position =
         draw(name, 9) < 0.5 ? tb::option_position::long_option : tb::option_position::short_option;
     const auto kind = drawn.option_type == "Put" ? tb::option_kind::put : tb::option_kind::call;
     const auto strike = money(drawn.strike_price.value_or(0.0));
-    const auto price = money(drawn.fixed_price.value_or(0.0));
+    // A swaption's fixed price is its strike.
+    const auto price = money(drawn.fixed_price.value_or(drawn.strike_price.value_or(0.0)));
     const auto built = [&](tb::commodity_result result) {
         if (!result)
             throw trade_population_error("The " + type + " builder refuses the drawn " +
@@ -833,7 +834,8 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                                             .kind = kind,
                                             .strike = strike,
                                             .expiry = end,
-                                            .position = position};
+                                            .position = position,
+                                            .unit = drawn.unit};
     const auto swap_from = [&](year_month_day swap_start) {
         return tb::commodity_swap_terms{.underlying = underlying,
                                         .currency = currency,
@@ -842,7 +844,8 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                                         .start = swap_start,
                                         .maturity = end,
                                         .fixed_side = draw(name, 10) < 0.5 ? tb::side::pay :
-                                                                             tb::side::receive};
+                                                                             tb::side::receive,
+                                        .unit = drawn.unit};
     };
 
     if (type == "CommodityForward")
@@ -851,7 +854,8 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                                                     .quantity = quantity,
                                                     .price = price,
                                                     .maturity = end,
-                                                    .position = position})
+                                                    .position = position,
+                                                    .unit = drawn.unit})
                          .build());
     if (type == "CommodityOption")
         return built(tb::commodity_option_builder(option).build());
@@ -868,7 +872,8 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                                                          .start = start,
                                                          .maturity = end,
                                                          .roll_tenor = std::string("1M"),
-                                                         .position = position})
+                                                         .position = position,
+                                                         .unit = drawn.unit})
                          .build());
     if (type == "CommoditySwap")
         return built(tb::commodity_swap_builder(swap_from(start)).build());
@@ -886,7 +891,8 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                           .notional = quantity,
                           .variance_strike = drawn.variance_strike.value_or(0.04),
                           .start = start,
-                          .maturity = end})
+                          .maturity = end,
+                          .unit = drawn.unit})
                          .build());
     if (type == "CommodityBasketOption") {
         std::vector<tb::commodity_basket_member> basket;
@@ -906,7 +912,8 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                                                           .kind = kind,
                                                           .strike = strike,
                                                           .expiry = end,
-                                                          .position = position})
+                                                          .position = position,
+                                                          .unit = drawn.unit})
                          .build());
     }
     return std::nullopt;

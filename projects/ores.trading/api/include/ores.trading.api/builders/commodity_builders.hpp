@@ -58,6 +58,8 @@ struct commodity_forward_terms final {
     required<utility::decimal::decimal> price;
     required<std::chrono::year_month_day> maturity;
     required<option_position> position;
+    /// The unit the quantity counts, as the catalogue states it; empty when unstated.
+    std::string unit;
 };
 
 class ORES_TRADING_API_EXPORT commodity_forward_builder final {
@@ -79,6 +81,8 @@ struct commodity_option_terms final {
     required<utility::decimal::decimal> strike;
     required<std::chrono::year_month_day> expiry;
     required<option_position> position;
+    /// The unit the quantity counts, as the catalogue states it; empty when unstated.
+    std::string unit;
 };
 
 class ORES_TRADING_API_EXPORT commodity_option_builder final {
@@ -119,6 +123,8 @@ struct commodity_option_strip_terms final {
     /// How often the strip rolls, as a schedule tenor such as 1M.
     required<std::string> roll_tenor;
     required<option_position> position;
+    /// The unit the quantity counts, as the catalogue states it; empty when unstated.
+    std::string unit;
 };
 
 class ORES_TRADING_API_EXPORT commodity_option_strip_builder final {
@@ -141,6 +147,8 @@ struct commodity_swap_terms final {
     required<std::chrono::year_month_day> maturity;
     /// Whether the fixed price is paid or received.
     required<side> fixed_side;
+    /// The unit the quantity counts, as the catalogue states it; empty when unstated.
+    std::string unit;
 };
 
 class ORES_TRADING_API_EXPORT commodity_swap_builder final {
@@ -179,6 +187,8 @@ struct commodity_variance_swap_terms final {
     required<double> variance_strike;
     required<std::chrono::year_month_day> start;
     required<std::chrono::year_month_day> maturity;
+    /// The unit the quantity counts, as the catalogue states it; empty when unstated.
+    std::string unit;
 };
 
 class ORES_TRADING_API_EXPORT commodity_variance_swap_builder final {
@@ -206,6 +216,8 @@ struct commodity_basket_option_terms final {
     required<utility::decimal::decimal> strike;
     required<std::chrono::year_month_day> expiry;
     required<option_position> position;
+    /// The unit the quantity counts, as the catalogue states it; empty when unstated.
+    std::string unit;
 };
 
 class ORES_TRADING_API_EXPORT commodity_basket_option_builder final {

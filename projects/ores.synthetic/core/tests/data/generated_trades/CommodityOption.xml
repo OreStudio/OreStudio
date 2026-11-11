@@ -7,12 +7,13 @@
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2028-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <Name>NYMEX:NG</Name>
-      <Currency>EUR</Currency>
+      <Currency>USD</Currency>
       <Strike>51.69</Strike>
       <Quantity>92270.32</Quantity>
     </CommodityOptionData>
@@ -21,15 +22,16 @@
     <TradeType>CommodityOption</TradeType>
     <CommodityOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2026-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <Name>NYMEX:CL</Name>
-      <Currency>EUR</Currency>
+      <Currency>USD</Currency>
       <Strike>136.18</Strike>
       <Quantity>91209.48</Quantity>
     </CommodityOptionData>

@@ -43,12 +43,14 @@ std::optional<build_error> commodity_amount_refusal(const std::string& currency,
 domain::commodity_instrument commodity_row_of(std::string_view trade_type,
                                               const marketdata::datum::market_reference& underlying,
                                               const std::string& currency,
-                                              const decimal& quantity) {
+                                              const decimal& quantity,
+                                              const std::string& unit) {
     domain::commodity_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
     row.commodity_code = underlying.uri();
     row.currency = currency;
     row.quantity = quantity.to_double();
+    row.unit = unit;
     return row;
 }
 
@@ -128,7 +130,7 @@ void add_commodity_swap_legs(domain::commodity_instrument_data& out,
 domain::commodity_instrument commodity_swap_row(std::string_view trade_type,
                                                 const commodity_swap_terms& terms) {
     auto row = commodity_row_of(
-        trade_type, terms.underlying.get(), terms.currency.get(), terms.quantity.get());
+        trade_type, terms.underlying.get(), terms.currency.get(), terms.quantity.get(), terms.unit);
     row.start_date = terms.start.get();
     row.maturity_date = terms.maturity.get();
     row.fixed_price = terms.price.get();
@@ -146,7 +148,7 @@ std::optional<build_error> commodity_option_refusal(const commodity_option_terms
 domain::commodity_instrument commodity_option_row_of(std::string_view trade_type,
                                                      const commodity_option_terms& terms) {
     auto row = commodity_row_of(
-        trade_type, terms.underlying.get(), terms.currency.get(), terms.quantity.get());
+        trade_type, terms.underlying.get(), terms.currency.get(), terms.quantity.get(), terms.unit);
     row.option_type = option_type_of(terms.kind.get());
     row.strike_price = terms.strike.get();
     row.exercise_type = "European";
@@ -164,8 +166,11 @@ commodity_result commodity_forward_builder::build() const {
         return std::unexpected(std::move(*refusal));
     if (terms_.price.get() <= decimal{})
         return std::unexpected(build_error{"price", "must be positive"});
-    auto row = commodity_row_of(
-        trade_type, terms_.underlying.get(), terms_.currency.get(), terms_.quantity.get());
+    auto row = commodity_row_of(trade_type,
+                                terms_.underlying.get(),
+                                terms_.currency.get(),
+                                terms_.quantity.get(),
+                                terms_.unit);
     row.fixed_price = terms_.price.get();
     row.maturity_date = terms_.maturity.get();
     row.position = long_short_of(terms_.position.get());
@@ -219,8 +224,11 @@ commodity_result commodity_option_strip_builder::build() const {
     if (terms_.roll_tenor.get().empty())
         return std::unexpected(build_error{"roll_tenor", "must not be empty"});
 
-    auto row = commodity_row_of(
-        trade_type, terms_.underlying.get(), terms_.currency.get(), terms_.quantity.get());
+    auto row = commodity_row_of(trade_type,
+                                terms_.underlying.get(),
+                                terms_.currency.get(),
+                                terms_.quantity.get(),
+                                terms_.unit);
     row.option_type = option_type_of(terms_.kind.get());
     row.strike_price = terms_.strike.get();
     row.start_date = terms_.start.get();
@@ -284,8 +292,11 @@ commodity_result commodity_variance_swap_builder::build() const {
         return std::unexpected(build_error{"variance_strike", "must be positive"});
     if (auto refusal = refusals::period(terms_.start.get(), terms_.maturity.get()))
         return std::unexpected(std::move(*refusal));
-    auto row = commodity_row_of(
-        trade_type, terms_.underlying.get(), terms_.currency.get(), terms_.notional.get());
+    auto row = commodity_row_of(trade_type,
+                                terms_.underlying.get(),
+                                terms_.currency.get(),
+                                terms_.notional.get(),
+                                terms_.unit);
     row.variance_strike = strike;
     row.start_date = terms_.start.get();
     row.maturity_date = terms_.maturity.get();
@@ -315,8 +326,11 @@ commodity_result commodity_basket_option_builder::build() const {
         return std::unexpected(build_error{"strike", "must be positive"});
 
     // The row names the basket's first member, so it states a commodity as every row does.
-    auto row = commodity_row_of(
-        trade_type, basket.front().underlying, terms_.currency.get(), terms_.notional.get());
+    auto row = commodity_row_of(trade_type,
+                                basket.front().underlying,
+                                terms_.currency.get(),
+                                terms_.notional.get(),
+                                terms_.unit);
     row.option_type = option_type_of(terms_.kind.get());
     row.strike_price = terms_.strike.get();
     row.exercise_type = "European";

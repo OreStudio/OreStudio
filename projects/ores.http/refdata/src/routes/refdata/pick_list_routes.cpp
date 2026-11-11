@@ -70,8 +70,10 @@
 #include "ores.refdata.api/messaging/tenor_unit_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <exception>
+#include <memory>
 #include <span>
 #include <string>
 #include <string_view>
@@ -352,63 +354,43 @@ answer(const http_request& req, nats_client& session, std::span<const pick_list>
     }
 }
 
+/// One form: the address it reads its lists at, and the lists.
+struct pick_list_form final {
+    std::string_view path;
+    std::string_view summary;
+    std::span<const pick_list> lists;
+};
+
+const pick_list_form forms[]{
+    {"/api/books/pick-lists", "Read the books form's option lists", books_pick_lists},
+    {"/api/conventions/pick-lists",
+     "Read the conventions form's option lists",
+     conventions_pick_lists},
+    {"/api/counterparties/pick-lists",
+     "Read the counterparties form's option lists",
+     counterparties_pick_lists},
+    {"/api/tenors/pick-lists", "Read the tenors form's option lists", tenors_pick_lists},
+};
+
 }
 
 void pick_list_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
-    auto books_route =
-        router->get("/api/books/pick-lists")
-            .summary("Read the books form's option lists")
-            .description("Every row of each list the form offers, by the control's name.")
-            .tags({"refdata"})
-            .auth_required()
-            .handler([&session](const http_request& req) {
-                return answer(req, session, books_pick_lists);
-            });
-    const auto books_built = books_route.build();
-    router->add_route(books_built);
-    registry->register_route(books_built);
-
-    auto conventions_route =
-        router->get("/api/conventions/pick-lists")
-            .summary("Read the conventions form's option lists")
-            .description("Every row of each list the form offers, by the control's name.")
-            .tags({"refdata"})
-            .auth_required()
-            .handler([&session](const http_request& req) {
-                return answer(req, session, conventions_pick_lists);
-            });
-    const auto conventions_built = conventions_route.build();
-    router->add_route(conventions_built);
-    registry->register_route(conventions_built);
-
-    auto counterparties_route =
-        router->get("/api/counterparties/pick-lists")
-            .summary("Read the counterparties form's option lists")
-            .description("Every row of each list the form offers, by the control's name.")
-            .tags({"refdata"})
-            .auth_required()
-            .handler([&session](const http_request& req) {
-                return answer(req, session, counterparties_pick_lists);
-            });
-    const auto counterparties_built = counterparties_route.build();
-    router->add_route(counterparties_built);
-    registry->register_route(counterparties_built);
-
-    auto tenors_route =
-        router->get("/api/tenors/pick-lists")
-            .summary("Read the tenors form's option lists")
-            .description("Every row of each list the form offers, by the control's name.")
-            .tags({"refdata"})
-            .auth_required()
-            .handler([&session](const http_request& req) {
-                return answer(req, session, tenors_pick_lists);
-            });
-    const auto tenors_built = tenors_route.build();
-    router->add_route(tenors_built);
-    registry->register_route(tenors_built);
+    for (const auto& form : forms) {
+        auto route = router->get(std::string(form.path))
+                         .summary(std::string(form.summary))
+                         .description("Every row of each list the form offers, by the control's name.")
+                         .tags({"refdata"})
+                         .auth_required()
+                         .handler([&session, lists = form.lists](const http_request& req) {
+                             return answer(req, session, lists);
+                         });
+        const auto built = route.build();
+        router->add_route(built);
+        registry->register_route(built);
+    }
 }
 
 }

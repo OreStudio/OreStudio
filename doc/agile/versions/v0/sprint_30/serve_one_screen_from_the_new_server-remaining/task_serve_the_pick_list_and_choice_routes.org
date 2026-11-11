@@ -91,6 +91,13 @@ via its "Verifies task" field.
 | 1 | Local review: the two choice routes read the analytics and reporting protocols, which have no HTTP part. | task | Accepted | Each moved to its area's task, whose acceptance names it. |
 | 2 | =unity-collisions=: =apply= in two marketdata publish services, from main. | =fx_forward_publish_service.cpp=, =fx_vol_surface_publish_service.cpp= | Accepted | Two different publishes sharing a vague name; a shared template over their different types would be speculative. They are =apply_forward_publish= and =apply_surface_publish=. |
 | 3 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 4 | PR review: one failing list fails the whole form. | =pick_list_routes.cpp= | Declined | The BFF's =readAll= throws on any failure, so the form failed whole there too. |
+| 5 | PR review: tenors reads full calendars, conventions reads calendar names. | =pick_list_routes.cpp= | Declined | Each copies its BFF table exactly. |
+| 6 | PR review: =rollRules= reads the business day convention list. | =pick_list_routes.cpp= | Declined | The BFF's tenors table does the same. |
+| 7 | PR review: the lists are read one after another. | =pick_list_routes.cpp= | Declined | The BFF also reads them in series, and the lists are small. |
+| 8 | PR review: the four registrations repeat one block. | =pick_list_routes.cpp= | Accepted | A table of forms, each with its address, summary and lists, and one loop. |
+| 9 | PR review: =<cstddef>= and =<memory>= arrive only transitively. | =pick_list_routes.cpp= | Accepted | Both are included. |
+| 10 | PR review: no test of the JSON shape or the paging. | =pick_list_routes_tests.cpp= | Declined | The forward step is a free function on a live client, so a page sequence needs a seam no other route has. The PR states it as a limitation. |
 
 * Result
 

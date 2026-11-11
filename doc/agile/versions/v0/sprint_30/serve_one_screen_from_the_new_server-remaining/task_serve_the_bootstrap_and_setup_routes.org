@@ -65,7 +65,8 @@ The BFF rate limits the policy read, which the C++ server cannot do yet.
   the tenant from the host the request arrived at, without its port, as the
   BFF read it.
 - The BFF rate limited the policy read at 120 a minute for each address. The
-  C++ server has no limiter yet, so the policy read goes unlimited.
+  C++ server has no limiter yet, so the policy read goes unlimited until
+  [[id:D4460ECD-7832-4F2B-AD71-4688684D2F26][Rate limit the HTTP API]] lands.
 - The IAM part takes =ores.variability.api= for the settings and the end of
   first-run setup.
 
@@ -106,7 +107,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | Local review: the policy read has no rate limit, where the BFF had one. | =bootstrap_screen_routes.cpp= | Declined | The C++ server has no limiter yet. The PR states the gap, and the sign-up route in the session task needs the same limiter. |
+| 1 | Local review: the policy read has no rate limit, where the BFF had one. | =bootstrap_screen_routes.cpp= | Deferred | The C++ server has no limiter yet. [[id:D4460ECD-7832-4F2B-AD71-4688684D2F26][Rate limit the HTTP API]] tracks it for every route, and the switch to the C++ server waits for it. |
 | 2 | Local review: an open write would act as the browser's session. | =http_session.cpp= | Accepted | Only an open read takes the session; a test proves an open write does not. |
 | 3 | Local review: the cookie must not replace a caller's own bearer token. | =http_session.cpp= | Accepted | An open read with a bearer token keeps it. |
 | 4 | =route-auth=: a route passed through a helper is unnamed to the gate. | =bootstrap_screen_routes.cpp= | Accepted | Each route is registered where it is built. |

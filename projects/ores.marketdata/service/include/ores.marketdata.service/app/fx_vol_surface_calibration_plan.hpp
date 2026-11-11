@@ -132,16 +132,18 @@ struct prepared_surface_calibration final {
  * missing, and an expiry left short of the pillars SSVI needs is refused, naming the series it
  * could not read.
  */
-[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::expected<prepared_surface_calibration, std::string>
-prepare_calibration(const surface_calibration_recipe& recipe,
-                    const checked_recipe& checked,
-                    const surface_forward_set& forwards,
-                    const std::map<boost::uuids::uuid, surface_series_quotes>& quotes,
-                    std::chrono::year_month_day as_of,
-                    double pillar_tolerance);
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT
+    std::expected<prepared_surface_calibration, std::string>
+    prepare_calibration(const surface_calibration_recipe& recipe,
+                        const checked_recipe& checked,
+                        const surface_forward_set& forwards,
+                        const std::map<boost::uuids::uuid, surface_series_quotes>& quotes,
+                        std::chrono::year_month_day as_of,
+                        double pillar_tolerance);
 
 /// The items of a blueprint's comma-separated list, such as its output strikes, trimmed.
-[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::vector<std::string> split_blueprint_list(const std::string& text);
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::vector<std::string>
+split_blueprint_list(const std::string& text);
 
 /// The day a period after @p from falls on, unadjusted, the end of a short month clamped.
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::chrono::year_month_day

@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.testing/uuid_of.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -42,6 +41,7 @@
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.testing/uuid_of.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "test_suite.hpp"
 #include <boost/log/sources/severity_feature.hpp>

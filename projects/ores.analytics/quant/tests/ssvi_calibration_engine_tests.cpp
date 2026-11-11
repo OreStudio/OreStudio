@@ -236,20 +236,23 @@ TEST_CASE("a delta grid strike sits where the fitted surface gives that delta",
     const auto convention =
         convention_of(fx_atm_type::delta_neutral, fx_delta_type::spot, fx_butterfly_style::smile);
     auto request = request_of(convention);
-    request.grid_expiries = {{.expiry_id = "1Y", .years = 1.0, .market = market, .convention = convention}};
+    request.grid_expiries = {
+        {.expiry_id = "1Y", .years = 1.0, .market = market, .convention = convention}};
     request.grid_strikes = {
         {"DEL/Spot/Put/25",
          ssvi_delta_strike{.type = fx_delta_type::spot, .side = option_side::put, .delta = 0.25}},
         {"ATM", ssvi_atm_strike{}},
         {"DEL/Fwd/Call/10",
-         ssvi_delta_strike{.type = fx_delta_type::forward, .side = option_side::call, .delta = 0.10}}};
+         ssvi_delta_strike{
+             .type = fx_delta_type::forward, .side = option_side::call, .delta = 0.10}}};
     const auto fit = calibrate_ssvi(request);
     REQUIRE(fit.has_value());
     REQUIRE(fit->grid.size() == 3);
 
     const double forward = market.forward();
     const auto delta_at = [&](const ssvi_grid_point& p, fx_delta_type type, option_side side) {
-        return fx_delta(type, side, market, std::sqrt(p.total_variance), forward * std::exp(p.log_moneyness));
+        return fx_delta(
+            type, side, market, std::sqrt(p.total_variance), forward * std::exp(p.log_moneyness));
     };
     CHECK(delta_at(fit->grid[0], fx_delta_type::spot, option_side::put) ==
           Catch::Approx(-0.25).margin(1e-8));
@@ -258,7 +261,8 @@ TEST_CASE("a delta grid strike sits where the fitted surface gives that delta",
     CHECK(fit->grid[0].log_moneyness < fit->grid[1].log_moneyness);
     CHECK(fit->grid[1].log_moneyness < fit->grid[2].log_moneyness);
 
-    const auto atm_fit = std::ranges::find(fit->pillars, std::string("1Y/ATM"), &ssvi_pillar_fit::point_id);
+    const auto atm_fit =
+        std::ranges::find(fit->pillars, std::string("1Y/ATM"), &ssvi_pillar_fit::point_id);
     REQUIRE(atm_fit != fit->pillars.end());
     CHECK(fit->grid[1].volatility == Catch::Approx(atm_fit->fitted).margin(1e-10));
     CHECK(forward * std::exp(fit->grid[1].log_moneyness) ==

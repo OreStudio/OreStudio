@@ -18,8 +18,8 @@
  *
  */
 #include "ores.iam.core/messaging/party_curve_blueprints.hpp"
-#include "party_blueprint_fixture.hpp"
 #include "ores.testing/uuid_of.hpp"
+#include "party_blueprint_fixture.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
@@ -63,16 +63,18 @@ system_curve_blueprints eur_estr() {
         p.market_series_id = eur_quotes;
         system.pillars.push_back(p);
     }
-    auto output =
-        market_series_row(eur_output,
-               system_party,
-               "oresmd://ir/EUR?type=series&instrument=discount&quote=rate&curve_id=EUR-ESTR",
-               "ore", "yield");
+    auto output = market_series_row(
+        eur_output,
+        system_party,
+        "oresmd://ir/EUR?type=series&instrument=discount&quote=rate&curve_id=EUR-ESTR",
+        "ore",
+        "yield");
     output.derivation_kind = "IR_CURVE_BOOTSTRAP";
     output.derivation_config_id = eur_config;
     output.derivation_config_version = 1;
     system.series.push_back(output);
-    system.series.push_back(market_series_row(eur_quotes, system_party, eur_quotes_uri, "bloomberg", "yield"));
+    system.series.push_back(
+        market_series_row(eur_quotes, system_party, eur_quotes_uri, "bloomberg", "yield"));
     return system;
 }
 
@@ -83,9 +85,12 @@ TEST_CASE("a party's copy of a curve reads its own series of the same item and p
     const auto own_quotes = uuid_of("00000000-0000-4000-8000-0000000000b1");
     party_curve_holdings acme;
     acme.party_id = acme_us;
-    acme.series = {
-        market_series_row(own_quotes, acme_us, eur_quotes_uri, "lseg", "yield"),
-        market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b2"), acme_us, eur_quotes_uri, "bloomberg", "yield")};
+    acme.series = {market_series_row(own_quotes, acme_us, eur_quotes_uri, "lseg", "yield"),
+                   market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b2"),
+                                     acme_us,
+                                     eur_quotes_uri,
+                                     "bloomberg",
+                                     "yield")};
 
     const auto plan = plan_party_curves(eur_estr(), acme);
 
@@ -116,10 +121,16 @@ TEST_CASE("a curve whose quotes have not reached the party waits and writes noth
           "[party_curves]") {
     party_curve_holdings acme;
     acme.party_id = acme_us;
-    acme.series = {
-        market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b1"), acme_us, eur_quotes_uri, "lseg", "yield"),
-        market_series_row(
-            uuid_of("00000000-0000-4000-8000-0000000000b3"), system_party, eur_quotes_uri, "bloomberg", "yield")};
+    acme.series = {market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b1"),
+                                     acme_us,
+                                     eur_quotes_uri,
+                                     "lseg",
+                                     "yield"),
+                   market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b3"),
+                                     system_party,
+                                     eur_quotes_uri,
+                                     "bloomberg",
+                                     "yield")};
 
     const auto plan = plan_party_curves(eur_estr(), acme);
 
@@ -134,8 +145,11 @@ TEST_CASE("a curve whose quotes have not reached the party waits and writes noth
 TEST_CASE("a party that already holds its copy is planned no row twice", "[party_curves]") {
     party_curve_holdings acme;
     acme.party_id = acme_us;
-    acme.series = {
-        market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b2"), acme_us, eur_quotes_uri, "bloomberg", "yield")};
+    acme.series = {market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b2"),
+                                     acme_us,
+                                     eur_quotes_uri,
+                                     "bloomberg",
+                                     "yield")};
     const auto first = plan_party_curves(eur_estr(), acme);
     REQUIRE(first.configs_to_write.size() == 1);
 
@@ -171,17 +185,23 @@ TEST_CASE("a curve whose discount curve waits waits too, and writes nothing", "[
     pillar.bootstrap_config_id = projection_config;
     pillar.market_series_id = projection_quotes;
     system.pillars.push_back(pillar);
-    system.series.push_back(market_series_row(projection_output,
-                                   system_party,
-                                   "oresmd://ir/EUR?type=series&instrument=discount&quote=rate"
-                                   "&curve_id=EUR-EURIBOR-6M",
-                                   "ore", "yield"));
-    system.series.push_back(market_series_row(projection_quotes, system_party, projection_uri, "bloomberg", "yield"));
+    system.series.push_back(
+        market_series_row(projection_output,
+                          system_party,
+                          "oresmd://ir/EUR?type=series&instrument=discount&quote=rate"
+                          "&curve_id=EUR-EURIBOR-6M",
+                          "ore",
+                          "yield"));
+    system.series.push_back(
+        market_series_row(projection_quotes, system_party, projection_uri, "bloomberg", "yield"));
 
     party_curve_holdings acme;
     acme.party_id = acme_us;
-    acme.series = {
-        market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b4"), acme_us, projection_uri, "bloomberg", "yield")};
+    acme.series = {market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b4"),
+                                     acme_us,
+                                     projection_uri,
+                                     "bloomberg",
+                                     "yield")};
 
     const auto plan = plan_party_curves(system, acme);
 

@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.testing/uuid_of.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/commands/synthetic_commands.hpp"
 #include "ores.synthetic.api/domain/gmm_component_codec.hpp"
@@ -28,6 +27,7 @@
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
+#include "ores.testing/uuid_of.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/domain/protocol_codec.hpp"
 #include "test_suite.hpp"

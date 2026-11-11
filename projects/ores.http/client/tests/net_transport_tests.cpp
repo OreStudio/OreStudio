@@ -101,9 +101,10 @@ certificate make_certificate(const std::string& host) {
 
 std::filesystem::path written(const std::string& pem) {
     static int n = 0;
-    const auto path = std::filesystem::temp_directory_path() /
-                      ("ores_http_client_test_" + std::to_string(ores::platform::process::current_pid()) + "_" +
-                       std::to_string(n++) + ".pem");
+    const auto path =
+        std::filesystem::temp_directory_path() /
+        ("ores_http_client_test_" + std::to_string(ores::platform::process::current_pid()) + "_" +
+         std::to_string(n++) + ".pem");
     std::ofstream(path) << pem;
     return path;
 }
@@ -119,15 +120,19 @@ template <typename Stream>
 class session final : public std::enable_shared_from_this<session<Stream>> {
 public:
     session(Stream stream, reply r)
-        : stream_(std::move(stream)), timer_(stream_.get_executor()), reply_(std::move(r)) {}
+        : stream_(std::move(stream))
+        , timer_(stream_.get_executor())
+        , reply_(std::move(r)) {}
 
     void serve() {
-        bhttp::async_read(stream_, buffer_, request_,
-                          [self = this->shared_from_this()](boost::system::error_code ec,
-                                                            std::size_t) {
-                              if (!ec)
-                                  self->answer_later();
-                          });
+        bhttp::async_read(
+            stream_,
+            buffer_,
+            request_,
+            [self = this->shared_from_this()](boost::system::error_code ec, std::size_t) {
+                if (!ec)
+                    self->answer_later();
+            });
     }
 
     Stream& stream() {
@@ -148,7 +153,8 @@ private:
         response_.body() = reply_.body;
         response_.prepare_payload();
         bhttp::async_write(
-            stream_, response_,
+            stream_,
+            response_,
             [self = this->shared_from_this()](boost::system::error_code, std::size_t) {
                 boost::system::error_code ignored;
                 boost::beast::get_lowest_layer(self->stream_).close(ignored);
@@ -176,7 +182,8 @@ public:
     explicit local_server(reply r,
                           std::optional<certificate> cert = std::nullopt,
                           const std::string& address = "127.0.0.1")
-        : acceptor_(io_, tcp::endpoint(asio::ip::make_address(address), 0)), reply_(std::move(r)) {
+        : acceptor_(io_, tcp::endpoint(asio::ip::make_address(address), 0))
+        , reply_(std::move(r)) {
         port_ = acceptor_.local_endpoint().port();
         if (cert) {
             tls_.emplace(asio::ssl::context::tls_server);
@@ -210,7 +217,8 @@ private:
             return;
         }
         using tls_stream = asio::ssl::stream<tcp::socket>;
-        auto s = std::make_shared<session<tls_stream>>(tls_stream(std::move(socket), *tls_), reply_);
+        auto s =
+            std::make_shared<session<tls_stream>>(tls_stream(std::move(socket), *tls_), reply_);
         s->stream().async_handshake(asio::ssl::stream_base::server,
                                     [s](boost::system::error_code ec) {
                                         if (!ec)

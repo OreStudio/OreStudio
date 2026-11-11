@@ -304,27 +304,27 @@ std::expected<double, std::string> grid_log_moneyness(const ssvi_grid_expiry& ex
     if (const auto* fixed = std::get_if<ssvi_log_moneyness_strike>(&strike.at))
         return fixed->value;
     if (!(expiry.market.spot > 0.0))
-        return std::unexpected("grid expiry " + expiry.expiry_id + " has no market to resolve strike " +
-                               strike.strike_id);
+        return std::unexpected("grid expiry " + expiry.expiry_id +
+                               " has no market to resolve strike " + strike.strike_id);
     const auto smile = [&](double k) {
         return std::sqrt(ssvi_total_variance(k, theta, rho, phi) / expiry.years);
     };
     const double level = std::sqrt(theta / expiry.years);
     const auto resolved =
-        std::holds_alternative<ssvi_atm_strike>(strike.at)
-            ? math::smile_atm_log_moneyness(smile,
+        std::holds_alternative<ssvi_atm_strike>(strike.at) ?
+            math::smile_atm_log_moneyness(smile,
+                                          level,
+                                          expiry.years,
+                                          expiry.market,
+                                          expiry.convention.atm,
+                                          expiry.convention.delta) :
+            math::smile_delta_log_moneyness(smile,
                                             level,
                                             expiry.years,
                                             expiry.market,
-                                            expiry.convention.atm,
-                                            expiry.convention.delta)
-            : math::smile_delta_log_moneyness(smile,
-                                              level,
-                                              expiry.years,
-                                              expiry.market,
-                                              std::get<ssvi_delta_strike>(strike.at).type,
-                                              std::get<ssvi_delta_strike>(strike.at).side,
-                                              std::get<ssvi_delta_strike>(strike.at).delta);
+                                            std::get<ssvi_delta_strike>(strike.at).type,
+                                            std::get<ssvi_delta_strike>(strike.at).side,
+                                            std::get<ssvi_delta_strike>(strike.at).delta);
     if (!resolved)
         return std::unexpected("strike " + strike.strike_id + " at grid expiry " +
                                expiry.expiry_id + ": " + resolved.error());

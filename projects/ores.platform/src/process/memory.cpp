@@ -21,7 +21,6 @@
 
 #if defined(_WIN32)
 #    include <windows.h>
-
 #    include <psapi.h>
 #else
 #    include <sys/resource.h>

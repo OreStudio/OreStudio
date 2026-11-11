@@ -17,10 +17,9 @@
  *
  */
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.analytics.quant/service/ssvi_calibration_engine.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/fx_vol_surface_calibration.hpp"
@@ -40,6 +39,7 @@
 #include "ores.refdata.core/repository/fx_vol_surface_blueprint_repository.hpp"
 #include "ores.refdata.core/repository/fx_vol_surface_pillar_repository.hpp"
 #include "ores.refdata.core/repository/fx_vol_surface_pillar_source_repository.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -62,14 +62,15 @@ using time_point = std::chrono::system_clock::time_point;
 using context = ores::database::context;
 
 auto& calibration_log() {
-    static auto instance =
-        ores::logging::make_logger("ores.marketdata.service.app.fx_vol_surface_calibration_service");
+    static auto instance = ores::logging::make_logger(
+        "ores.marketdata.service.app.fx_vol_surface_calibration_service");
     return instance;
 }
 
-surface_calibration_recipe read_recipe(context ctx, const std::string& blueprint_id,
-                                       const boost::uuids::uuid& party) {
-    const auto blueprints = refdata_repo::fx_vol_surface_blueprint_repository{}.read_latest(ctx, blueprint_id);
+surface_calibration_recipe
+read_recipe(context ctx, const std::string& blueprint_id, const boost::uuids::uuid& party) {
+    const auto blueprints =
+        refdata_repo::fx_vol_surface_blueprint_repository{}.read_latest(ctx, blueprint_id);
     if (blueprints.empty())
         throw std::invalid_argument("No FX volatility surface blueprint " + blueprint_id +
                                     " is visible to your party.");
@@ -94,8 +95,10 @@ surface_calibration_recipe read_recipe(context ctx, const std::string& blueprint
     return recipe;
 }
 
-surface_forward_set read_forwards(context ctx, const surface_calibration_recipe& recipe, time_point as_of) {
-    const auto pair = recipe.blueprint.base_currency_code + "/" + recipe.blueprint.quote_currency_code;
+surface_forward_set
+read_forwards(context ctx, const surface_calibration_recipe& recipe, time_point as_of) {
+    const auto pair =
+        recipe.blueprint.base_currency_code + "/" + recipe.blueprint.quote_currency_code;
     const auto set = fx_forward_publish_service::read(ctx, {.pair_code = pair, .as_of = as_of});
     if (!set.success)
         throw std::invalid_argument("The forwards of " + pair + ": " + set.message +
@@ -113,9 +116,11 @@ surface_forward_set read_forwards(context ctx, const surface_calibration_recipe&
     return out;
 }
 
-surface_series_quotes read_quotes(context ctx, const boost::uuids::uuid& series_id, time_point as_of) {
+surface_series_quotes
+read_quotes(context ctx, const boost::uuids::uuid& series_id, time_point as_of) {
     surface_series_quotes out;
-    for (const auto& obs : repository::market_observation_repository{}.read_as_of(ctx, series_id, as_of)) {
+    for (const auto& obs :
+         repository::market_observation_repository{}.read_as_of(ctx, series_id, as_of)) {
         const auto named = datum::oresmd_uri_codec::read(obs.oresmd_uri);
         if (!named)
             continue;
@@ -130,14 +135,16 @@ surface_series_quotes read_quotes(context ctx, const boost::uuids::uuid& series_
 }
 
 /// The point of the output series a grid point is written as.
-datum::market_datum grid_datum(const datum::market_datum& series, const qs::ssvi_grid_point& point) {
+datum::market_datum grid_datum(const datum::market_datum& series,
+                               const qs::ssvi_grid_point& point) {
     const auto expiry = datum::term::parse(point.expiry_id);
     const auto strike = datum::strike::parse(point.strike_id);
     if (!expiry || !strike)
         throw std::invalid_argument("The grid point " + point.expiry_id + " " + point.strike_id +
                                     " is not a term and a strike.");
-    auto d = datum::datum_at(series, {{datum::field::expiry, datum::value(*expiry)},
-                                      {datum::field::strike, datum::value(*strike)}});
+    auto d = datum::datum_at(series,
+                             {{datum::field::expiry, datum::value(*expiry)},
+                              {datum::field::strike, datum::value(*strike)}});
     if (!d)
         throw std::invalid_argument("The output series names no point " + point.expiry_id + " " +
                                     point.strike_id + ": " + d.error());
@@ -175,38 +182,45 @@ boost::uuids::uuid calibration_id_of(const boost::uuids::uuid& blueprint_id,
 }
 
 mm::calibrate_fx_vol_surface_response
-fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_fx_vol_surface_request& req) {
+fx_vol_surface_calibration_service::calibrate(context ctx,
+                                              const mm::calibrate_fx_vol_surface_request& req) {
     mm::calibrate_fx_vol_surface_response out;
     try {
         const auto party = ores::service::messaging::session_party(ctx, "A surface");
         const auto as_of = std::chrono::floor<std::chrono::microseconds>(req.as_of);
         if (as_of == time_point{})
-            throw std::invalid_argument("Name the as-of instant the calibration reads the market at.");
+            throw std::invalid_argument(
+                "Name the as-of instant the calibration reads the market at.");
 
         const auto recipe = read_recipe(ctx, req.blueprint_id, party);
         // A published surface never changes: its grid is what the publish authorised.
         for (const auto& published :
-             repository::fx_vol_surface_publish_repository{}.read_published_for_blueprint(ctx, recipe.blueprint.id))
+             repository::fx_vol_surface_publish_repository{}.read_published_for_blueprint(
+                 ctx, recipe.blueprint.id))
             if (published.as_of == as_of)
-                throw std::invalid_argument("The surface of " + recipe.blueprint.name + " as of this instant is "
-                                            "published, and a published surface never changes. Calibrate at a "
-                                            "new as-of.");
+                throw std::invalid_argument(
+                    "The surface of " + recipe.blueprint.name +
+                    " as of this instant is "
+                    "published, and a published surface never changes. Calibrate at a "
+                    "new as-of.");
         const auto checked = check_recipe(recipe);
         if (!checked)
-            throw std::invalid_argument("The recipe of " + recipe.blueprint.name + " is refused: " +
-                                        checked.error() + ".");
+            throw std::invalid_argument("The recipe of " + recipe.blueprint.name +
+                                        " is refused: " + checked.error() + ".");
 
         const auto forwards = read_forwards(ctx, recipe, as_of);
         std::map<boost::uuids::uuid, surface_series_quotes> quotes;
         for (const auto& source : recipe.sources)
             if (!quotes.contains(source.market_series_id))
-                quotes.emplace(source.market_series_id, read_quotes(ctx, source.market_series_id, as_of));
-        const auto as_of_date = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(as_of)};
+                quotes.emplace(source.market_series_id,
+                               read_quotes(ctx, source.market_series_id, as_of));
+        const auto as_of_date =
+            std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(as_of)};
         const auto prepared =
             prepare_calibration(recipe, *checked, forwards, quotes, as_of_date, pillar_tolerance);
         if (!prepared)
-            throw std::invalid_argument("The quotes of " + recipe.blueprint.name + " are refused: " +
-                                        prepared.error() + ".");
+            throw std::invalid_argument("The quotes of " + recipe.blueprint.name +
+                                        " are refused: " + prepared.error() + ".");
         const auto fit = qs::calibrate_ssvi(prepared->request);
         if (!fit)
             throw std::invalid_argument("The calibration of " + recipe.blueprint.name +
@@ -216,7 +230,8 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
         auto series_rows = repository::market_series_repository{}.read_latest(
             ctx, boost::uuids::to_string(blueprint.output_series_id));
         if (series_rows.empty())
-            throw std::invalid_argument("The output series of " + blueprint.name + " is not stored.");
+            throw std::invalid_argument("The output series of " + blueprint.name +
+                                        " is not stored.");
         auto output_series = series_rows.front();
         const auto series_datum = datum::oresmd_uri_codec::read(output_series.oresmd_uri);
         if (!series_datum || !series_datum->is_series())
@@ -225,8 +240,8 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
         const bool claimed = output_series.derivation_kind == "FX_VOL_SURFACE_CALIBRATION" &&
                              output_series.derivation_config_id == blueprint.id;
         if (output_series.derivation_kind != "OBSERVED" && !claimed)
-            throw std::invalid_argument("The output series of " + blueprint.name + " is derived by " +
-                                        output_series.derivation_kind +
+            throw std::invalid_argument("The output series of " + blueprint.name +
+                                        " is derived by " + output_series.derivation_kind +
                                         ", and only its own blueprint writes a surface into it.");
         std::vector<datum::market_datum> datums;
         for (const auto& point : fit->grid)
@@ -260,7 +275,8 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
             output_series.modified_by = writer;
             output_series.performed_by = ctx.service_account();
             output_series.change_reason_code = "system.derived_series";
-            output_series.change_commentary = "Claimed by FX volatility surface blueprint " + blueprint.name;
+            output_series.change_commentary =
+                "Claimed by FX volatility surface blueprint " + blueprint.name;
             repository::market_series_repository{}.write(tx, output_series);
         }
 
@@ -303,9 +319,14 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
             lineages.push_back(std::move(lin));
         }
         repository::market_observation_repository{}.insert(tx, observations);
-        series_shape_writer::declare(tx, *series_datum, blueprint.output_series_id, blueprint.party_id,
-                                     datums, series_shape_writer::term_check::against_reference_tenors);
-        ores::marketdata::service::observation_lineage_service(tx).save_observation_lineages(lineages);
+        series_shape_writer::declare(tx,
+                                     *series_datum,
+                                     blueprint.output_series_id,
+                                     blueprint.party_id,
+                                     datums,
+                                     series_shape_writer::term_check::against_reference_tenors);
+        ores::marketdata::service::observation_lineage_service(tx).save_observation_lineages(
+            lineages);
 
         for (const auto& p : fit->pillars) {
             const auto slash = p.point_id.find('/');
@@ -318,7 +339,8 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
                                    .beyond_tolerance = p.beyond_tolerance});
         }
         for (const auto& v : fit->violations)
-            out.violations.push_back({.kind = to_string(v.kind), .expiry = v.expiry_id, .description = v.description});
+            out.violations.push_back(
+                {.kind = to_string(v.kind), .expiry = v.expiry_id, .description = v.description});
         for (const auto& m : prepared->missing) {
             mm::fx_vol_missing_pillar missing{.point = m.point, .series_ids = {}};
             for (const auto& id : m.series_ids)
@@ -365,7 +387,9 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
 
         out.success = true;
         out.message = std::format("Calibrated {} at {} points; the largest pillar error is {:.4f}.",
-                                  blueprint.name, fit->grid.size(), max_abs_error);
+                                  blueprint.name,
+                                  fit->grid.size(),
+                                  max_abs_error);
         out.calibration_id = boost::uuids::to_string(record.id);
         out.blueprint_name = blueprint.name;
         out.blueprint_version = blueprint.version;
@@ -381,7 +405,8 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
         out = {};
         out.success = false;
         out.message = e.what();
-        BOOST_LOG_SEV(calibration_log(), ores::logging::warn) << "Calibration refused: " << e.what();
+        BOOST_LOG_SEV(calibration_log(), ores::logging::warn)
+            << "Calibration refused: " << e.what();
     }
     return out;
 }

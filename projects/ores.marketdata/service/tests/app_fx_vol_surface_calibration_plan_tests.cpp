@@ -19,9 +19,9 @@
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
 #include "ores.testing/fx_vol_surface_fixture.hpp"
 #include "ores.testing/uuid_of.hpp"
+#include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <algorithm>
 #include <cmath>
 #include <format>
 
@@ -34,14 +34,19 @@ using Catch::Approx;
 using ores::testing::uuid_of;
 using std::chrono::year_month_day;
 
-const auto calibration_as_of = year_month_day{std::chrono::year{2026}, std::chrono::month{11}, std::chrono::day{9}};
-const auto forward_spot_date = year_month_day{std::chrono::year{2026}, std::chrono::month{11}, std::chrono::day{11}};
+const auto calibration_as_of =
+    year_month_day{std::chrono::year{2026}, std::chrono::month{11}, std::chrono::day{9}};
+const auto forward_spot_date =
+    year_month_day{std::chrono::year{2026}, std::chrono::month{11}, std::chrono::day{11}};
 const auto derived_quotes_series = uuid_of("00000000-0000-4000-8000-0000000000e1");
 
 /// EURUSD_SSVI at 1M, 1Y and 2Y with the given labels, every pillar reading the derived quotes.
-surface_calibration_recipe eur_usd_recipe(const std::vector<std::string>& labels = {"ATM", "25RR", "25BF"}) {
-    auto rows = ores::testing::eur_usd_ssvi_surface(
-        uuid_of("00000000-0000-4000-8000-0000000000a2"), derived_quotes_series, {"1M", "1Y", "2Y"}, labels);
+surface_calibration_recipe eur_usd_recipe(const std::vector<std::string>& labels = {
+                                              "ATM", "25RR", "25BF"}) {
+    auto rows = ores::testing::eur_usd_ssvi_surface(uuid_of("00000000-0000-4000-8000-0000000000a2"),
+                                                    derived_quotes_series,
+                                                    {"1M", "1Y", "2Y"},
+                                                    labels);
     return {.blueprint = std::move(rows.blueprint),
             .pillars = std::move(rows.pillars),
             .sources = std::move(rows.sources),
@@ -50,7 +55,10 @@ surface_calibration_recipe eur_usd_recipe(const std::vector<std::string>& labels
 
 surface_forward_set eur_usd_forward_set() {
     using namespace std::chrono;
-    const auto at = [](int y, int m, int d) { return year_month_day{year{y}, month{static_cast<unsigned>(m)}, day{static_cast<unsigned>(d)}}; };
+    const auto at = [](int y, int m, int d) {
+        return year_month_day{
+            year{y}, month{static_cast<unsigned>(m)}, day{static_cast<unsigned>(d)}};
+    };
     return {.publish_id = "fwd-1",
             .spot = 1.08,
             .spot_date = forward_spot_date,
@@ -72,19 +80,22 @@ std::map<boost::uuids::uuid, surface_series_quotes> flat_smile_quotes() {
 
 }
 
-TEST_CASE("a recipe with a single call pillar is refused before any quote is read", "[app][fx_vol_surface_calibration_plan]") {
+TEST_CASE("a recipe with a single call pillar is refused before any quote is read",
+          "[app][fx_vol_surface_calibration_plan]") {
     const auto checked = check_recipe(eur_usd_recipe({"ATM", "25RR", "25BF", "10C"}));
     REQUIRE_FALSE(checked);
     CHECK(checked.error().find("1M/10C") != std::string::npos);
 }
 
-TEST_CASE("an expiry without a butterfly is refused, naming the expiry", "[app][fx_vol_surface_calibration_plan]") {
+TEST_CASE("an expiry without a butterfly is refused, naming the expiry",
+          "[app][fx_vol_surface_calibration_plan]") {
     const auto checked = check_recipe(eur_usd_recipe({"ATM", "25RR"}));
     REQUIRE_FALSE(checked);
     CHECK(checked.error().find("expiry 1M lacks") != std::string::npos);
 }
 
-TEST_CASE("a recipe the calibration cannot honour is refused by what it lacks", "[app][fx_vol_surface_calibration_plan]") {
+TEST_CASE("a recipe the calibration cannot honour is refused by what it lacks",
+          "[app][fx_vol_surface_calibration_plan]") {
     auto sabr = eur_usd_recipe();
     sabr.blueprint.smile_model = "sabr";
     CHECK(check_recipe(sabr).error().find("sabr") != std::string::npos);
@@ -106,7 +117,8 @@ TEST_CASE("a recipe the calibration cannot honour is refused by what it lacks", 
     CHECK(check_recipe(moneyness).error().find("MNY/Fwd/1.1") != std::string::npos);
 }
 
-TEST_CASE("a checked recipe orders its expiries and reads its grid", "[app][fx_vol_surface_calibration_plan]") {
+TEST_CASE("a checked recipe orders its expiries and reads its grid",
+          "[app][fx_vol_surface_calibration_plan]") {
     auto shuffled = eur_usd_recipe();
     std::ranges::reverse(shuffled.pillars);
     const auto checked = check_recipe(shuffled);
@@ -126,7 +138,12 @@ TEST_CASE("a checked recipe orders its expiries and reads its grid", "[app][fx_v
 TEST_CASE("each expiry reads its market from the forward set and its convention from the switch",
           "[app][fx_vol_surface_calibration_plan]") {
     const auto recipe = eur_usd_recipe();
-    const auto prepared = prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), flat_smile_quotes(), calibration_as_of, 0.001);
+    const auto prepared = prepare_calibration(recipe,
+                                              *check_recipe(recipe),
+                                              eur_usd_forward_set(),
+                                              flat_smile_quotes(),
+                                              calibration_as_of,
+                                              0.001);
     REQUIRE(prepared);
     const auto& expiries = prepared->request.expiries;
     REQUIRE(expiries.size() == 3);
@@ -143,7 +160,8 @@ TEST_CASE("each expiry reads its market from the forward set and its convention 
     CHECK(grid[1].market.foreign_discount > 0.975);
 }
 
-TEST_CASE("a pillar's quote is each contributor's at its weight", "[app][fx_vol_surface_calibration_plan]") {
+TEST_CASE("a pillar's quote is each contributor's at its weight",
+          "[app][fx_vol_surface_calibration_plan]") {
     auto recipe = eur_usd_recipe();
     const auto& atm_1y = *std::ranges::find_if(recipe.pillars, [](const auto& p) {
         return p.expiry_code == "1Y" && p.strike_label == "ATM";
@@ -157,7 +175,8 @@ TEST_CASE("a pillar's quote is each contributor's at its weight", "[app][fx_vol_
     auto quotes = flat_smile_quotes();
     quotes[broker.market_series_id][{"1Y", "ATM"}] = 0.12;
 
-    const auto prepared = prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, calibration_as_of, 0.001);
+    const auto prepared = prepare_calibration(
+        recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, calibration_as_of, 0.001);
     REQUIRE(prepared);
     const auto& pillars = prepared->request.expiries[1].pillars;
     const auto atm = std::ranges::find(pillars, std::string("1Y/ATM"), &qs::ssvi_pillar::point_id);
@@ -167,27 +186,36 @@ TEST_CASE("a pillar's quote is each contributor's at its weight", "[app][fx_vol_
     CHECK(prepared->sources_by_point.at("1Y/ATM").size() == 2);
 }
 
-TEST_CASE("an unquoted pillar is reported, and an expiry it leaves short is refused", "[app][fx_vol_surface_calibration_plan]") {
+TEST_CASE("an unquoted pillar is reported, and an expiry it leaves short is refused",
+          "[app][fx_vol_surface_calibration_plan]") {
     auto recipe = eur_usd_recipe({"ATM", "25RR", "25BF", "10RR", "10BF"});
     auto quotes = flat_smile_quotes();
     quotes[derived_quotes_series][{"1M", "10RR"}] = 0.0;
 
-    const auto prepared = prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, calibration_as_of, 0.001);
+    const auto prepared = prepare_calibration(
+        recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, calibration_as_of, 0.001);
     REQUIRE(prepared);
     CHECK(prepared->missing.size() == 5);
     CHECK(prepared->missing.front().point == "1M/10BF");
     CHECK(prepared->missing.front().series_ids == std::vector{derived_quotes_series});
 
     quotes[derived_quotes_series].erase({"1Y", "25BF"});
-    const auto refused = prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, calibration_as_of, 0.001);
+    const auto refused = prepare_calibration(
+        recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, calibration_as_of, 0.001);
     REQUIRE_FALSE(refused);
     CHECK(refused.error().find("expiry 1Y") != std::string::npos);
     CHECK(refused.error().find("1Y/25BF") != std::string::npos);
 }
 
-TEST_CASE("a flat market calibrates to a flat surface on the grid", "[app][fx_vol_surface_calibration_plan]") {
+TEST_CASE("a flat market calibrates to a flat surface on the grid",
+          "[app][fx_vol_surface_calibration_plan]") {
     const auto recipe = eur_usd_recipe();
-    const auto prepared = prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), flat_smile_quotes(), calibration_as_of, 0.001);
+    const auto prepared = prepare_calibration(recipe,
+                                              *check_recipe(recipe),
+                                              eur_usd_forward_set(),
+                                              flat_smile_quotes(),
+                                              calibration_as_of,
+                                              0.001);
     REQUIRE(prepared);
     const auto fit = qs::calibrate_ssvi(prepared->request);
     REQUIRE(fit);
@@ -212,8 +240,8 @@ TEST_CASE("a forward set that ends before an expiry refuses the calibration, nam
     auto forwards = eur_usd_forward_set();
     forwards.points.pop_back();
     const auto recipe = eur_usd_recipe();
-    const auto prepared = prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(),
-                                              calibration_as_of, 0.001);
+    const auto prepared = prepare_calibration(
+        recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), calibration_as_of, 0.001);
     REQUIRE_FALSE(prepared);
     CHECK(prepared.error().find("ends before the 2Y expiry") != std::string::npos);
 }

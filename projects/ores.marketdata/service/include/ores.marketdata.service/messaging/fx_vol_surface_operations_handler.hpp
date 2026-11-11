@@ -51,9 +51,10 @@ inline auto& fx_vol_surface_operations_handler_lg() {
  */
 class fx_vol_surface_operations_handler {
 public:
-    fx_vol_surface_operations_handler(ores::nats::service::client& nats,
-                                      ores::database::context ctx,
-                                      std::optional<ores::security::jwt::jwt_authenticator> verifier)
+    fx_vol_surface_operations_handler(
+        ores::nats::service::client& nats,
+        ores::database::context ctx,
+        std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
@@ -79,7 +80,8 @@ public:
         }
         reply(nats_,
               msg,
-              ores::marketdata::service::app::fx_vol_surface_calibration_service::calibrate(*req_ctx, *req));
+              ores::marketdata::service::app::fx_vol_surface_calibration_service::calibrate(
+                  *req_ctx, *req));
     }
 
     void publish(ores::nats::message msg) {
@@ -111,7 +113,10 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        reply(nats_, msg, ores::marketdata::service::app::fx_vol_surface_publish_service::publish(*req_ctx, *req));
+        reply(nats_,
+              msg,
+              ores::marketdata::service::app::fx_vol_surface_publish_service::publish(*req_ctx,
+                                                                                      *req));
     }
 
     void read_published(ores::nats::message msg) {
@@ -133,7 +138,10 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        reply(nats_, msg, ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(*req_ctx, *req));
+        reply(nats_,
+              msg,
+              ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(
+                  *req_ctx, *req));
     }
 
     void read_publish(ores::nats::message msg) {
@@ -155,7 +163,9 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        reply(nats_, msg, ores::marketdata::service::app::fx_vol_surface_publish_service::read(*req_ctx, *req));
+        reply(nats_,
+              msg,
+              ores::marketdata::service::app::fx_vol_surface_publish_service::read(*req_ctx, *req));
     }
 
 private:

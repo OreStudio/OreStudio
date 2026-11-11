@@ -19,13 +19,13 @@
  */
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.api/generators/approval_request_generator.hpp"
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_state_repository.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/repository/fx_vol_surface_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
@@ -503,9 +503,11 @@ TEST_CASE("export_with_a_date_leaves_out_a_datum_whose_value_is_older_than_the_l
 namespace {
 
 const std::string surface_series_uri =
-    "oresmd://fx/EUR?type=series&instrument=fx_vol_surface&quote=rate_lnvol&ccy=USD&surface_id=EURUSD_SSVI";
-const auto surface_as_of = std::chrono::sys_days{std::chrono::year{2026} / std::chrono::November / 11} +
-                           std::chrono::hours{2};
+    "oresmd://fx/"
+    "EUR?type=series&instrument=fx_vol_surface&quote=rate_lnvol&ccy=USD&surface_id=EURUSD_SSVI";
+const auto surface_as_of =
+    std::chrono::sys_days{std::chrono::year{2026} / std::chrono::November / 11} +
+    std::chrono::hours{2};
 
 /// A surface series a blueprint claimed, with two points at the as-of: the 1Y ATM and 25 delta put.
 boost::uuids::uuid write_surface(export_tenant& t, const boost::uuids::uuid& blueprint) {
@@ -527,15 +529,18 @@ boost::uuids::uuid write_surface(export_tenant& t, const boost::uuids::uuid& blu
     ores::marketdata::repository::market_series_repository{}.write(t.ctx, s);
 
     ores::marketdata::repository::market_observation_repository obs_repo;
-    for (const auto& [strike, value] : {std::pair{"ATM", "0.0551"}, std::pair{"DEL/Spot/Put/25", "0.0552"}}) {
+    for (const auto& [strike, value] :
+         {std::pair{"ATM", "0.0551"}, std::pair{"DEL/Spot/Put/25", "0.0552"}}) {
         ores::marketdata::domain::market_observation o;
         o.id = gen();
         o.tenant_id = t.ctx.tenant_id();
         o.party_id = s.party_id;
         o.series_id = s.id;
         o.observation_datetime = surface_as_of;
-        o.oresmd_uri = "oresmd://fx/EUR?type=quote&instrument=fx_vol_surface&quote=rate_lnvol&ccy=USD"
-                       "&surface_id=EURUSD_SSVI&expiry=1Y&strike=" + std::string(strike);
+        o.oresmd_uri =
+            "oresmd://fx/EUR?type=quote&instrument=fx_vol_surface&quote=rate_lnvol&ccy=USD"
+            "&surface_id=EURUSD_SSVI&expiry=1Y&strike=" +
+            std::string(strike);
         o.value = value;
         obs_repo.insert(t.ctx, o);
     }
@@ -543,7 +548,9 @@ boost::uuids::uuid write_surface(export_tenant& t, const boost::uuids::uuid& blu
 }
 
 /// The publish of the surface at its as-of, under an approval request the store holds.
-void publish_surface(export_tenant& t, const boost::uuids::uuid& blueprint, const boost::uuids::uuid& series) {
+void publish_surface(export_tenant& t,
+                     const boost::uuids::uuid& blueprint,
+                     const boost::uuids::uuid& series) {
     ores::testing::database_helper h;
     auto gen_ctx = ores::testing::make_generation_context(h);
 
@@ -561,14 +568,18 @@ void publish_surface(export_tenant& t, const boost::uuids::uuid& blueprint, cons
     asker.change_reason_code = "system.test";
     ores::iam::repository::account_repository{}.write(t.ctx, asker);
 
-    const auto system_ctx = t.ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+    const auto system_ctx =
+        t.ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
     auto request = ores::inbox::generators::generate_synthetic_approval_request(gen_ctx);
     request.tenant_id = t.ctx.tenant_id();
     request.change_reason_code = "system.test";
     request.requested_by = asker.id;
-    request.kind_code = ores::inbox::repository::approval_kind_repository{}.read_latest(system_ctx).front().code;
-    request.state_code =
-        ores::inbox::repository::approval_request_state_repository{}.read_latest(system_ctx).front().code;
+    request.kind_code =
+        ores::inbox::repository::approval_kind_repository{}.read_latest(system_ctx).front().code;
+    request.state_code = ores::inbox::repository::approval_request_state_repository{}
+                             .read_latest(system_ctx)
+                             .front()
+                             .code;
     ores::inbox::repository::approval_request_repository{}.write(t.ctx, request);
 
     ores::marketdata::domain::fx_vol_surface_publish p;
@@ -611,14 +622,18 @@ TEST_CASE("export_writes_a_published_surface_as_fx_option_quotes", "[service][or
     const auto blueprint = boost::uuids::random_generator{}();
     const auto series = write_surface(t, blueprint);
     publish_surface(t, blueprint, series);
-    write_fx_row(t,
-                 "oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD",
-                 "oresmd://fx/EUR?type=quote&instrument=fx_option&quote=rate_lnvol&ccy=USD&expiry=1Y&strike_label=ATM");
+    write_fx_row(
+        t,
+        "oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD",
+        "oresmd://fx/"
+        "EUR?type=quote&instrument=fx_option&quote=rate_lnvol&ccy=USD&expiry=1Y&strike_label=ATM");
 
     const ore_export_service exporter(t.ctx);
     const auto result = exporter.write_all(std::string("2026-11-11"));
     const auto keys = body_keys(result.market_data);
-    CHECK(std::ranges::count_if(keys, [](const auto& k) { return k.starts_with("FX_OPTION/RATE_LNVOL/EUR/USD/"); }) == 2);
+    CHECK(std::ranges::count_if(keys, [](const auto& k) {
+              return k.starts_with("FX_OPTION/RATE_LNVOL/EUR/USD/");
+          }) == 2);
     CHECK(result.market_data.contains("FX_OPTION/RATE_LNVOL/EUR/USD/1Y/ATM"));
     CHECK(result.market_data.contains("FX_OPTION/RATE_LNVOL/EUR/USD/1Y/25P"));
     std::istringstream lines(result.market_data);

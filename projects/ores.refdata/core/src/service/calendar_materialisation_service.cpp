@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.core/service/calendar_materialisation_service.hpp"
-#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.analytics.quant/domain/calendar_rule.hpp"
 #include "ores.analytics.quant/domain/calendar_ruleset.hpp"
 #include "ores.analytics.quant/service/calendar_rule_engine.hpp"
@@ -27,6 +26,7 @@
 #include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.api/domain/calendar_exception.hpp"
 #include "ores.refdata.api/domain/calendar_rule.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.refdata.core/repository/calendar_exception_repository.hpp"
 #include "ores.refdata.core/repository/calendar_repository.hpp"

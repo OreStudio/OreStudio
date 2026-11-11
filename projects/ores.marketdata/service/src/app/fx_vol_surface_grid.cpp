@@ -24,10 +24,11 @@
 
 namespace ores::marketdata::service::app {
 
-std::expected<surface_grid, std::string> surface_grid_of(std::vector<surface_grid_point> points,
-                                                         const std::vector<std::string>& strike_order,
-                                                         const std::string& expiry,
-                                                         const std::string& strike) {
+std::expected<surface_grid, std::string>
+surface_grid_of(std::vector<surface_grid_point> points,
+                const std::vector<std::string>& strike_order,
+                const std::string& expiry,
+                const std::string& strike) {
     namespace qd = ores::analytics::quant::domain;
     std::map<std::string, qd::date_period> periods;
     for (const auto& p : points) {
@@ -35,12 +36,14 @@ std::expected<surface_grid, std::string> surface_grid_of(std::vector<surface_gri
             continue;
         const auto period = ores::refdata::mapping::parse_tenor_text(p.expiry);
         if (!period)
-            return std::unexpected("the surface holds the expiry " + p.expiry + ": " + period.error());
+            return std::unexpected("the surface holds the expiry " + p.expiry + ": " +
+                                   period.error());
         periods.emplace(p.expiry, *period);
     }
     const auto rank_of_strike = [&](const std::string& s) {
         const auto at = std::ranges::find(strike_order, s);
-        return at == strike_order.end() ? strike_order.size() : static_cast<std::size_t>(at - strike_order.begin());
+        return at == strike_order.end() ? strike_order.size() :
+                                          static_cast<std::size_t>(at - strike_order.begin());
     };
     std::ranges::sort(points, [&](const auto& a, const auto& b) {
         if (a.expiry != b.expiry) {
@@ -52,9 +55,11 @@ std::expected<surface_grid, std::string> surface_grid_of(std::vector<surface_gri
         return a.strike < b.strike;
     });
 
-    if (!expiry.empty() && !std::ranges::any_of(points, [&](const auto& p) { return p.expiry == expiry; }))
+    if (!expiry.empty() &&
+        !std::ranges::any_of(points, [&](const auto& p) { return p.expiry == expiry; }))
         return std::unexpected("the surface has no expiry " + expiry);
-    if (!strike.empty() && !std::ranges::any_of(points, [&](const auto& p) { return p.strike == strike; }))
+    if (!strike.empty() &&
+        !std::ranges::any_of(points, [&](const auto& p) { return p.strike == strike; }))
         return std::unexpected("the surface has no strike " + strike);
 
     surface_grid out;

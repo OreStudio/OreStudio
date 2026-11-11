@@ -34,35 +34,39 @@
 namespace ores::refdata::mapping {
 
 /// An ATM type in ORE's spelling: AtmDeltaNeutral or AtmFwd.
-[[nodiscard]] ORES_REFDATA_CORE_EXPORT std::expected<analytics::quant::math::fx_atm_type, std::string>
-parse_fx_atm_type_code(std::string_view code);
+[[nodiscard]] ORES_REFDATA_CORE_EXPORT
+    std::expected<analytics::quant::math::fx_atm_type, std::string>
+    parse_fx_atm_type_code(std::string_view code);
 
 /// A delta type in ORE's spelling: Spot, Fwd, PaSpot or PaFwd.
-[[nodiscard]] ORES_REFDATA_CORE_EXPORT std::expected<analytics::quant::math::fx_delta_type, std::string>
-parse_fx_delta_type_code(std::string_view code);
+[[nodiscard]] ORES_REFDATA_CORE_EXPORT
+    std::expected<analytics::quant::math::fx_delta_type, std::string>
+    parse_fx_delta_type_code(std::string_view code);
 
 /**
  * @brief A tenor as a convention or a quote writes it, such as 1W, 6M or 2Y, as a period.
  *
  * Refuses text that is not a count followed by D, W, M or Y.
  */
-[[nodiscard]] ORES_REFDATA_CORE_EXPORT std::expected<analytics::quant::domain::date_period, std::string>
-parse_tenor_text(std::string_view text);
+[[nodiscard]] ORES_REFDATA_CORE_EXPORT
+    std::expected<analytics::quant::domain::date_period, std::string>
+    parse_tenor_text(std::string_view text);
 
 /**
  * @brief The quoting convention an FX option convention states for an option of @p expiry.
  *
  * An expiry at or past the switch tenor takes the long-term ATM and delta types, where the
  * convention states them, compared as QuantLib compares periods. A convention with no switch
- * tenor, or a switch of zero length, keeps its short-term types at every expiry, as ORE does. ORE's spellings are read:
- * AtmDeltaNeutral and AtmFwd; Spot, Fwd, PaSpot and PaFwd; a risk reversal in favour of Call or
- * Put, Call when unstated; a Broker or Smile butterfly, Smile when unstated. Refuses a type the
- * quant library does not model, a switch tenor that is not a tenor, and an expiry the switch
- * tenor cannot be ordered against, naming each.
+ * tenor, or a switch of zero length, keeps its short-term types at every expiry, as ORE does. ORE's
+ * spellings are read: AtmDeltaNeutral and AtmFwd; Spot, Fwd, PaSpot and PaFwd; a risk reversal in
+ * favour of Call or Put, Call when unstated; a Broker or Smile butterfly, Smile when unstated.
+ * Refuses a type the quant library does not model, a switch tenor that is not a tenor, and an
+ * expiry the switch tenor cannot be ordered against, naming each.
  */
-[[nodiscard]] ORES_REFDATA_CORE_EXPORT std::expected<analytics::quant::math::fx_quote_convention, std::string>
-to_quote_convention(const domain::fx_option_convention& convention,
-                    analytics::quant::domain::date_period expiry);
+[[nodiscard]] ORES_REFDATA_CORE_EXPORT
+    std::expected<analytics::quant::math::fx_quote_convention, std::string>
+    to_quote_convention(const domain::fx_option_convention& convention,
+                        analytics::quant::domain::date_period expiry);
 
 }
 

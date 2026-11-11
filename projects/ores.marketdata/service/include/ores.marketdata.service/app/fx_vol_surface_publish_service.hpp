@@ -27,7 +27,8 @@
 namespace ores::marketdata::service::app {
 
 /// The approval kind a surface publish raises.
-inline constexpr std::string_view fx_vol_surface_publish_kind_code = "marketdata.fx_vol_surface_publish";
+inline constexpr std::string_view fx_vol_surface_publish_kind_code =
+    "marketdata.fx_vol_surface_publish";
 
 /**
  * @brief The approval-gated publish of a party's calibrated FX volatility surface, and the read of
@@ -47,8 +48,9 @@ public:
 
     /// The published surface of a blueprint at an as-of, or a slice of it. Never a candidate.
     [[nodiscard]] static ores::marketdata::messaging::get_published_fx_vol_surface_response
-    read_published(ores::database::context ctx,
-                   const ores::marketdata::messaging::get_published_fx_vol_surface_request& request);
+    read_published(
+        ores::database::context ctx,
+        const ores::marketdata::messaging::get_published_fx_vol_surface_request& request);
 
     [[nodiscard]] static ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response
     read(ores::database::context ctx,

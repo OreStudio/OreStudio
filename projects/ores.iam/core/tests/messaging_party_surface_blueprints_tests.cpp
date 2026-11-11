@@ -19,8 +19,8 @@
  */
 #include "ores.iam.core/messaging/party_surface_blueprints.hpp"
 #include "ores.testing/fx_vol_surface_fixture.hpp"
-#include "party_blueprint_fixture.hpp"
 #include "ores.testing/uuid_of.hpp"
+#include "party_blueprint_fixture.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
@@ -49,10 +49,12 @@ system_surface_blueprints eurusd() {
     system.blueprints = {rows.blueprint};
     system.pillars = rows.pillars;
     system.sources = rows.sources;
-    system.series.push_back(market_series_row(output_id, system_party,
-                                           "oresmd://fx/EUR?type=series&instrument=fx_vol_surface"
-                                           "&quote=rate_lnvol&ccy=USD&surface_id=EURUSD_SSVI",
-                                           "derived"));
+    system.series.push_back(
+        market_series_row(output_id,
+                          system_party,
+                          "oresmd://fx/EUR?type=series&instrument=fx_vol_surface"
+                          "&quote=rate_lnvol&ccy=USD&surface_id=EURUSD_SSVI",
+                          "derived"));
     system.series.push_back(market_series_row(quotes_id, system_party, quotes_uri, "derived"));
     return system;
 }

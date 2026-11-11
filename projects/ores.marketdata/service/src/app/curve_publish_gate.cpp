@@ -18,7 +18,6 @@
  *
  */
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
@@ -27,6 +26,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>

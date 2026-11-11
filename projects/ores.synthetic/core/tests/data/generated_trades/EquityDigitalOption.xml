@@ -6,6 +6,8 @@
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2032-09-02</ExerciseDate>
         </ExerciseDates>
@@ -14,7 +16,7 @@
       <PayoffCurrency>USD</PayoffCurrency>
       <PayoffAmount>5790664.33</PayoffAmount>
       <Name>.SPX</Name>
-      <Quantity>1</Quantity>
+      <Quantity>4132.38</Quantity>
     </EquityDigitalOptionData>
   </Trade>
   <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
@@ -23,6 +25,8 @@
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2028-11-02</ExerciseDate>
         </ExerciseDates>
@@ -31,7 +35,7 @@
       <PayoffCurrency>USD</PayoffCurrency>
       <PayoffAmount>4187691.98</PayoffAmount>
       <Name>.SPX</Name>
-      <Quantity>1</Quantity>
+      <Quantity>1995.71</Quantity>
     </EquityDigitalOptionData>
   </Trade>
 </Portfolio>

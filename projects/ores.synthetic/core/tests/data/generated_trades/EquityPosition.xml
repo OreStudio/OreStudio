@@ -3,7 +3,7 @@
   <Trade id="9a5f3fc2-d4ad-52dd-b2e2-9b9aa35c2185">
     <TradeType>EquityPosition</TradeType>
     <EquityPositionData>
-      <Quantity>1036903.28</Quantity>
+      <Quantity>2489</Quantity>
       <Underlying>
         <Type>Equity</Type>
         <Name>.STOXX50E</Name>
@@ -13,7 +13,7 @@
   <Trade id="f262704e-0db6-5eb8-834a-a9b463b23010">
     <TradeType>EquityPosition</TradeType>
     <EquityPositionData>
-      <Quantity>1014327.95</Quantity>
+      <Quantity>238</Quantity>
       <Underlying>
         <Type>Equity</Type>
         <Name>.STOXX50E</Name>

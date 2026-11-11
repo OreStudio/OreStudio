@@ -11,6 +11,7 @@
       <Strike>0.04</Strike>
       <Notional>6103286.3</Notional>
       <Calendar>USD</Calendar>
+      <MomentType>Variance</MomentType>
     </EquityVarianceSwapData>
   </Trade>
   <Trade id="356d7f28-c93e-5c72-8752-26e0716d501f">
@@ -24,6 +25,7 @@
       <Strike>0.04</Strike>
       <Notional>7492174.07</Notional>
       <Calendar>USD</Calendar>
+      <MomentType>Variance</MomentType>
     </EquityVarianceSwapData>
   </Trade>
 </Portfolio>

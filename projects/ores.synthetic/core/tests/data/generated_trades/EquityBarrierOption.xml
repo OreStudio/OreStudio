@@ -4,9 +4,10 @@
     <TradeType>EquityBarrierOption</TradeType>
     <EquityBarrierOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Put</OptionType>
         <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2027-11-02</ExerciseDate>
         </ExerciseDates>
@@ -20,16 +21,17 @@
       <Name>.STOXX50E</Name>
       <Currency>EUR</Currency>
       <Strike>1292.37</Strike>
-      <Quantity>5375309.62</Quantity>
+      <Quantity>4159.27</Quantity>
     </EquityBarrierOptionData>
   </Trade>
   <Trade id="f2c4ae8a-a1b6-5d49-a9c5-03fc6a378431">
     <TradeType>EquityBarrierOption</TradeType>
     <EquityBarrierOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Put</OptionType>
         <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2028-01-02</ExerciseDate>
         </ExerciseDates>
@@ -43,7 +45,7 @@
       <Name>.STOXX50E</Name>
       <Currency>EUR</Currency>
       <Strike>3968.6</Strike>
-      <Quantity>4118292.15</Quantity>
+      <Quantity>1037.72</Quantity>
     </EquityBarrierOptionData>
   </Trade>
 </Portfolio>

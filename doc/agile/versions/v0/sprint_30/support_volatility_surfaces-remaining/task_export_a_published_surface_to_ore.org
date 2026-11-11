@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/export-a-published-surface-to-ore
-#+pr: 4577
+#+pr: 4596
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -43,9 +43,17 @@ Pricing reads the surface. A report binds to a published surface as it binds to 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two parts.
+
+*Part 1, merged in #4577.* The market data export writes a surface only as published: the newest published set at or before the close, each grid point an FX option volatility quote whose strike is a delta label (=DEL/Spot/Put/25= is =25P=, =ATM= stays =ATM=). A candidate is left out. A pair with a published surface takes its option quotes from the surface alone, because the pair's raw quotes share its keys. This also fixed a break: the calibration's points have no ORE key, so before it the export failed for any party with a calibration.
+
+*Part 2.* The matching configuration and the ORE check, for every pair the system quotes. All initial data goes through DQ. A generation script writes it, a methodology says where each value comes from, and a dataset carries the provenance. Three units, one PR each:
+
+- *2a. Curate the surface blueprints through DQ.* The derived source quotes ten pairs (AUD/USD, EUR/CHF, EUR/GBP, EUR/JPY, EUR/USD, GBP/USD, NZD/USD, USD/CAD, USD/CHF, USD/JPY), each on the same 35 points: 1W to 1Y by ATM, 25RR, 25BF, 10RR and 10BF. Only EUR/USD has a blueprint, from a hand-written seed. A generator in =projects/ores.seeder/datasets/fx_vol_surfaces/= writes one SSVI blueprint for each pair, with its methodology, into a =refdata.fx_vol_surface_blueprints= dataset of the =system_core= bundle. A new publish, =refdata.v1.ops.publish_fx_vol_surface_blueprints_from_dq=, writes each blueprint with its pillars and sources, and the pair's derived and output series. The hand-written seeds go. Provisioning already copies every system blueprint to every party.
+- *2b. Curate each Acme party's FX volatility configuration through DQ.* =generate_configuration_data.py= gains an FX volatility curve of dimension Smile and smile type Delta for each quoted pair whose two currencies the party builds curves for: the blueprint's expiries, deltas =10P,25P,ATM,25C,10C=, the pair's FX option convention, FX spot and funding curves. The party's today's market names it under the pair. The smile needs a DQ artefact (=fx_volatility_smiles= has none) and a place in the curve configuration publish. A methodology file states the choices and their sources. Coverage: Group 3 pairs, UK 10, US 6, HK 3.
+- *2c. The ORE check.* A scripted check runs the ORE binary of the ORE build (=App/ore=) on the exported quotes and that configuration with an FX option at a test strike, inverts the NPV to a volatility, and compares it with the SSVI surface at that strike within a stated tolerance. It sits beside =projects/ores.ore/scripts/quantlib_fx_dates=.
+
+Realism is outside this task. The derived quotes have plausible ATM levels (3% to 10%), but their smiles are near flat: a 25-delta risk reversal of 0.01 to 0.17 vol points against a market 0.3 to 1.5, a 25-delta butterfly under 0.02 against 0.15 to 0.3. The derived source infers skew from daily fixings, which carry little of it. Realistic initial surfaces need curated smile levels in the synthetic generator task.
 
 * Measurements
 
@@ -80,6 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4596][#4596]] | [refdata] Curate a surface blueprint for every quoted pair through DQ |
 | [[https://github.com/OreStudio/OreStudio/pull/4577][#4577]] | [marketdata] Export a published surface as ORE option quotes |
 
 * Review
@@ -93,5 +102,12 @@ via its "Verifies task" field.
 | 5 | One bad point aborts the export | =ore_export_service.cpp= | Kept | The file's data-integrity rule: a point that does not read names itself. |
 | 6 | Anything not a call becomes a put | =ore_export_service.cpp= | Fixed | A strike that is neither is refused. |
 | 7 | Tests for a raw quote, an early date and two sets | =service_ore_export_tests.cpp= | Fixed in part | A raw EUR/USD option quote is shown dropped, and an earlier date leaves the surface out. Two sets: the repository orders them, and the live read evidence picks the newest. |
+| 8 | #4596: the derivation stamp is copied into SQL | =marketdata_surface_series_create.sql= | Fixed | Both places now name each other. A drift mislabels the series but cannot duplicate it: the feed finds a series by URI, party and provider. |
+| 9 | #4596: the publish never updates a blueprint | =refdata_publish_from_dq_create.sql= | Documented | Insert-only is deliberate, so a rerun never resets a claimed series. The function and the methodology say a change arrives on recreate or reprovision. |
+| 10 | #4596: the counters mix row kinds | =refdata_publish_from_dq_create.sql= | No change | No caller reads them by kind; the test reads only that a rerun inserts nothing. |
+| 11 | #4596: series looked up before the blueprint check | =refdata_publish_from_dq_create.sql= | No change | The pillar sources of a live blueprint still need the quotes series id; two indexed lookups a pair. |
+| 12 | #4596: the surface series lookup names the provider | =marketdata_surface_series_create.sql= | No change | The lookup is the table's unique key (tenant, party, URI, provider). A claim keeps provider =ore=: the live claimed series is =FX_VOL_SURFACE_CALIBRATION= under =ore=. |
+| 13 | #4596: the generator reads the licence from a populate file | =generate_sql.py= | No change | The file's header is the project licence, which every SQL file carries verbatim. |
+| 14 | #4596: no test of the reuse path | =refdata_fx_vol_surface_blueprints_publish_test.sql= | Fixed | Two tests: a series the feed wrote first is named, and a missing one is created once. 15/15. |
 
 * Result

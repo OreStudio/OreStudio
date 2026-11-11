@@ -532,6 +532,28 @@ struct publish_curve_configuration_from_dq_request {
 };
 
 /**
+ * @brief The workflow step that publishes the DQ-cleared FX volatility surface blueprints.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_fx_vol_surface_blueprints_from_dq_fn.
+ */
+struct publish_fx_vol_surface_blueprints_from_dq_request {
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.ops.publish_fx_vol_surface_blueprints_from_dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_fx_vol_surface_blueprints_from_dq_request&,
+                           const publish_fx_vol_surface_blueprints_from_dq_request&) = default;
+};
+
+/**
  * @brief The workflow step that publishes the DQ-cleared currency groups.
  *
  * A trigger rather than a request: the DQ publisher sends it and reads no
@@ -1436,6 +1458,19 @@ wire_fields(std::type_identity<publish_curve_configuration_from_dq_request>) {
 }
 
 /**
+ * @brief The members of publish_fx_vol_surface_blueprints_from_dq_request, named as the wire names
+ * them and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<publish_fx_vol_surface_blueprints_from_dq_request>) {
+    return std::tuple{};
+}
+
+/**
  * @brief The members of publish_currency_groups_from_dq_request, named as the wire names them and
  * in the order the type declares them.
  *
@@ -2112,6 +2147,20 @@ struct ORES_REFDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::refdata::messaging::publish_curve_configuration_from_dq_request& v);
     static ores::refdata::messaging::publish_curve_configuration_from_dq_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::publish_fx_vol_surface_blueprints_from_dq_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(
+        const ores::refdata::messaging::publish_fx_vol_surface_blueprints_from_dq_request& v);
+    static ores::refdata::messaging::publish_fx_vol_surface_blueprints_from_dq_request
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::refdata::messaging::publish_fx_vol_surface_blueprints_from_dq_request& v);
+    static ores::refdata::messaging::publish_fx_vol_surface_blueprints_from_dq_request
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

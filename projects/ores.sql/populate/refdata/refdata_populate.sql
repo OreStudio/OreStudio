@@ -92,8 +92,8 @@
 \ir ./refdata_ir_curve_overnight_configs_populate.sql
 
 \echo ''
-\echo '--- FX Volatility Surface Blueprint Seed Data ---'
-\ir ./refdata_fx_vol_surface_blueprint_populate.sql
+\echo '--- FX Volatility Surface Blueprints ---'
+\ir ./refdata_fx_vol_surface_blueprints_artefact_populate.sql
 
 \echo ''
 \ir ./refdata_floating_index_types_populate.sql

@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: E70334BC-17DF-49A2-8B54-F9F8DA210B8C
+:END:
+#+title: MXN-TIIE means two indices, and a fresh database holds only one
+#+description: The MXN overnight curve config names MXN-TIIE as an overnight index, but a fresh database seeds MXN-TIIE only as an IBOR, so refdata_overnight_curve_configs_test fails until provisioning imports the corpus row.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:conventions:ir_curves:sql_tests:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Decide what the MXN overnight curve is named after, and make a fresh database agree with a provisioned one.
+
+The id =MXN-TIIE= has two meanings:
+
+- ORE's code builds =MXN-TIIE= as an IBOR index (=MXNTiie=, the 28-day TIIE). =refdata_builtin_index_conventions_populate.sql= seeds it into =ores_refdata_ibor_index_conventions_tbl=, and =refdata_overnight_index_conventions_populate.sql= leaves it out on purpose, because that script keeps only the families ORE builds no index for.
+- The ORE example corpus defines =MXN-TIIE= as an =OvernightIndex= (A360, zero settlement days) in =external/ore/examples/Products/Input/conventions.xml=. Only the =ore.conventions= dataset carries it, and that dataset publishes at system provisioning. Its oresmd address still names the IBOR fixing (=index=ibor&name=TIIE=).
+
+=refdata_ir_curve_overnight_configs_populate.sql= seeds an overnight curve config named =MXN-TIIE=. Test 3 of =refdata_overnight_curve_configs_test.sql= looks that name up among the overnight conventions. On a recreated database, 18 of the 19 configs it checks find a seeded convention and =MXN-TIIE= finds none, so the test fails. After system provisioning the corpus row arrives and the test passes.
+
+* Why
+
+A pgTAP suite that passes only after provisioning hides real failures behind a known one: on 2026-11-11 the full suite on a recreated database reported 1 failure in 89 files, and it took a trace to show the failure was this gap and not the change under test.
+
+The identity is also wrong for the market. Mexico's overnight benchmark is TIIE de Fondeo (F-TIIE), which Banxico publishes daily. The 28-day TIIE is a term rate. A curve that discounts on an overnight index should name that index, and its quotes should fix against it.
+
+The commit that seeded the configs (46a56a2f94) verified them on a provisioned environment, and it already held back ILS, CNH, HUF and PLN on "the decision on their misnamed indices". MXN belongs with them.
+
+Options:
+- Name the curve after an overnight MXN index that a fresh database seeds, such as an F-TIIE convention added to the overnight seed with its source.
+- Hold MXN back with the other misnamed indices until that decision.
+- At least, make test 3 state that it needs the =ore.conventions= rows, so a failure on a fresh database says why.
+
+* References
+
+- =projects/ores.sql/test/refdata_overnight_curve_configs_test.sql=, test 3.
+- =projects/ores.sql/populate/refdata/refdata_ir_curve_overnight_configs_populate.sql=, the =MXN-TIIE= config.
+- =projects/ores.sql/populate/refdata/refdata_builtin_index_conventions_populate.sql=, the IBOR row.
+- =tools/ore_conventions/builtin_indices.tsv=, =MXN-TIIE ibor MXNTiie=.
+- =external/ore/examples/Products/Input/conventions.xml=, the =OvernightIndex= definition.
+- Commits 46a56a2f94 (configs and test) and 5c3bcca095 (builtin index seed).
+
+* See also
+
+- The IR curves work in progress in the clever_dijkstra environment, which owns the party funding curves.

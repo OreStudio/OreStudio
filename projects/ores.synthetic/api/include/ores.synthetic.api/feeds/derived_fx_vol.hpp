@@ -44,6 +44,10 @@ inline constexpr std::string_view derived_fx_field = "rate_lnvol";
 /**
  * @brief How a derived series names its derivation: the kind, and the method and its version,
  * which a change of the computation raises so a series says which method computed it.
+ *
+ * ores_marketdata_publish_surface_series_fn (marketdata_surface_series_create.sql) stamps the
+ * series a blueprint publish creates with a copy of the method and version, so a change here
+ * must change it there.
  */
 inline constexpr std::string_view derived_fx_derivation_kind = "FX_VOL_DERIVATION";
 inline constexpr int derived_fx_method_version = 1;

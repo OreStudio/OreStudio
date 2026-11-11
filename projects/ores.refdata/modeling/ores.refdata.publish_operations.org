@@ -378,6 +378,21 @@ are one value written twice and both move together.
  */
 #+end_src
 
+** publish_fx_vol_surface_blueprints_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_fx_vol_surface_blueprints_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared FX volatility surface blueprints.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_fx_vol_surface_blueprints_from_dq_fn.
+ */
+#+end_src
+
 ** publish_currency_groups_from_dq_request
 :PROPERTIES:
 :subject: refdata.v1.ops.publish_currency_groups_from_dq

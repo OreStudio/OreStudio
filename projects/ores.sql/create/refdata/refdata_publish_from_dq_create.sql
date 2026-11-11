@@ -6730,6 +6730,137 @@ comment on function ores_refdata_publish_curve_configuration_from_dq_fn(uuid, uu
  mode has no effect.';
 
 -- =============================================================================
+-- FX volatility surface blueprints: refdata.v1.ops.publish_fx_vol_surface_blueprints_from_dq
+-- =============================================================================
+
+-- The system's surface recipes. They belong to the system tenant's system party, and
+-- provisioning copies them to every party, so the publish refuses any other tenant. Each
+-- blueprint is written after the two series it names, then its pillars, then their
+-- sources, because each row names the one before it. The staged series ids are nil: the
+-- series are found by their URI, so a series the derived feed created first is the one
+-- the sources name. A row that is already live is left as it is, so a rerun changes
+-- nothing and never resets a series the calibration has claimed. The publish therefore
+-- never updates a blueprint: a change to a staged blueprint reaches a database only when
+-- it is recreated, and a party's copy only when it is provisioned again.
+create or replace function ores_refdata_publish_fx_vol_surface_blueprints_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (action text, record_count bigint) as $$
+declare
+    v_dataset_name text;
+    v_party_id uuid;
+    v_actor text := coalesce(ores_iam_current_service_fn(), current_user);
+    v_commentary text;
+    v_series record;
+    b record;
+    v_inserted bigint := 0;
+    v_skipped bigint := 0;
+    v_rows bigint;
+begin
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    if p_target_tenant_id <> ores_utility_system_tenant_id_fn() then
+        raise exception 'The surface blueprints of % belong to the system tenant, not to tenant %',
+            v_dataset_name, p_target_tenant_id;
+    end if;
+
+    select s.id into v_party_id from ores_refdata_read_system_party_fn(p_target_tenant_id) s;
+    if v_party_id is null then
+        raise exception 'The system tenant has no system party to hold the blueprints of %',
+            v_dataset_name;
+    end if;
+
+    v_commentary := 'Imported from DQ dataset: ' || v_dataset_name;
+
+    for b in
+        select dq.*
+        from ores_dq_fx_vol_surface_blueprints_artefact_tbl dq
+        where dq.dataset_id = p_dataset_id
+        order by dq.name
+    loop
+        select * into v_series
+        from ores_marketdata_publish_surface_series_fn(
+            p_target_tenant_id, v_party_id, b.base_currency_code, b.quote_currency_code, b.name);
+
+        if exists (
+            select 1 from ores_refdata_fx_vol_surface_blueprints_tbl x
+            where x.tenant_id = p_target_tenant_id and x.id = b.id
+              and x.valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            v_skipped := v_skipped + 1;
+        else
+            insert into ores_refdata_fx_vol_surface_blueprints_tbl (
+                id, tenant_id, version, output_series_id, party_id, name,
+                base_currency_code, quote_currency_code, fx_option_convention_id,
+                smile_model, expiry_interpolation, output_expiries, output_strikes,
+                modified_by, performed_by, change_reason_code, change_commentary
+            )
+            values (
+                b.id, p_target_tenant_id, 0, v_series.surface_series_id, v_party_id, b.name,
+                b.base_currency_code, b.quote_currency_code, b.fx_option_convention_id,
+                b.smile_model, b.expiry_interpolation, b.output_expiries, b.output_strikes,
+                v_actor, current_user, 'system.external_data_import', v_commentary
+            );
+            v_inserted := v_inserted + 1;
+        end if;
+
+        insert into ores_refdata_fx_vol_surface_pillars_tbl (
+            id, tenant_id, version, party_id, blueprint_id, expiry_code, strike_label,
+            modified_by, performed_by, change_reason_code, change_commentary
+        )
+        select p.id, p_target_tenant_id, 0, v_party_id, p.blueprint_id, p.expiry_code,
+               p.strike_label, v_actor, current_user, 'system.external_data_import', v_commentary
+        from ores_dq_fx_vol_surface_pillars_artefact_tbl p
+        where p.dataset_id = p_dataset_id
+          and p.blueprint_id = b.id
+          and not exists (
+              select 1 from ores_refdata_fx_vol_surface_pillars_tbl x
+              where x.tenant_id = p_target_tenant_id and x.id = p.id
+                and x.valid_to = ores_utility_infinity_timestamp_fn());
+        get diagnostics v_rows = row_count;
+        v_inserted := v_inserted + v_rows;
+
+        insert into ores_refdata_fx_vol_surface_pillar_sources_tbl (
+            id, tenant_id, version, party_id, pillar_id, market_series_id, contributor_code,
+            weight, modified_by, performed_by, change_reason_code, change_commentary
+        )
+        select s.id, p_target_tenant_id, 0, v_party_id, s.pillar_id, v_series.quotes_series_id,
+               s.contributor_code, s.weight, v_actor, current_user,
+               'system.external_data_import', v_commentary
+        from ores_dq_fx_vol_surface_pillar_sources_artefact_tbl s
+        join ores_dq_fx_vol_surface_pillars_artefact_tbl p
+          on p.dataset_id = s.dataset_id and p.id = s.pillar_id
+        where s.dataset_id = p_dataset_id
+          and p.blueprint_id = b.id
+          and not exists (
+              select 1 from ores_refdata_fx_vol_surface_pillar_sources_tbl x
+              where x.tenant_id = p_target_tenant_id and x.id = s.id
+                and x.valid_to = ores_utility_infinity_timestamp_fn());
+        get diagnostics v_rows = row_count;
+        v_inserted := v_inserted + v_rows;
+    end loop;
+
+    return query
+    select 'inserted'::text, v_inserted where v_inserted > 0
+    union all select 'skipped'::text, v_skipped where v_skipped > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+comment on function ores_refdata_publish_fx_vol_surface_blueprints_from_dq_fn(uuid, uuid, text, jsonb) is
+'Publishes the system''s FX volatility surface blueprints, with their pillars, pillar
+ sources and the series they name, into the system tenant''s system party. Idempotent
+ per row. A publish only inserts, so the mode has no effect.';
+
+-- =============================================================================
 -- Commodities
 -- =============================================================================
 

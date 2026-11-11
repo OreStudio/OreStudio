@@ -1,0 +1,96 @@
+FX Volatility Surface Blueprint Methodology
+===========================================
+
+A blueprint is the recipe a calibration fits one FX volatility surface by: the
+pair, the quoted points it reads, the smile model, how it joins its expiries,
+and the grid it writes. The system tenant holds one blueprint for each pair the
+derived source quotes. Provisioning gives each party its own copy, and the
+party's copy reads the party's own quotes.
+
+This dataset holds recipes only. It holds no volatility. The levels a surface
+shows come from the quotes its pillars read.
+
+1. PAIRS
+
+   One blueprint for each of the ten pairs the derived source of FX
+   volatility quotes publishes: EUR/USD, GBP/USD, USD/JPY, USD/CHF, AUD/USD,
+   USD/CAD, NZD/USD, EUR/GBP, EUR/JPY and EUR/CHF. The source's inventory is
+   in projects/ores.sql/populate/marketdata/marketdata_derived_catalogue_populate.sql.
+   These are the G10 pairs that carry most FX option turnover (BIS Triennial
+   Central Bank Survey of foreign exchange and OTC derivatives markets, 2022).
+   A pair keeps market quoting order: EUR, GBP, AUD and NZD quote against USD,
+   USD quotes against CAD, CHF and JPY, and EUR quotes against GBP, JPY and CHF.
+
+2. PILLARS
+
+   Each blueprint reads 35 points: the expiries 1W, 1M, 2M, 3M, 6M, 9M and 1Y,
+   each quoted as ATM, the 25 and 10 delta risk reversals (25RR, 10RR) and the
+   25 and 10 delta butterflies (25BF, 10BF). This is the quote set an FX option
+   broker shows for a pair (I. Clark, Foreign Exchange Option Pricing: A
+   Practitioner's Guide, Wiley 2011, chapter 3; D. Reiswich and U. Wystup, FX
+   Volatility Smile Construction, Wilmott 2012).
+
+   The 2Y expiry is left out. The derived source quotes 2Y only from two years
+   of fixings, and the seeded history does not reach that far. A blueprint
+   whose pillar has no quote cannot be calibrated.
+
+3. SOURCES
+
+   Each pillar has one source: the pair's fx_option series of the derived
+   source, with contributor "derived" and weight 1. The series holds every
+   quote of the pair, so the pillar's expiry and label find its quote inside
+   it. The staged rows carry no series id. The publish finds the series by its
+   oresmd URI, or creates it with the derived source's own derivation stamp, so
+   the feed writes into it and does not create a second one.
+
+4. MODEL
+
+   Every blueprint fits SSVI (J. Gatheral and A. Jacquier, Arbitrage-free SVI
+   volatility surfaces, Quantitative Finance 14(1), 2014), and joins its
+   expiries linearly in total variance, which keeps the surface free of
+   calendar arbitrage between pillars.
+
+5. OUTPUT GRID
+
+   The grid is the pillar expiries by five strikes: the 10 and 25 delta puts,
+   ATM, and the 25 and 10 delta calls. This is the grid an ORE FXVolatility
+   entry of dimension Smile and smile type Delta reads (deltas 10P, 25P, ATM,
+   25C, 10C), so the export writes a published surface as quotes ORE reads
+   without a second interpolation.
+
+   A strike's delta type is the short-dated delta type of the pair's FX option
+   convention in the ore.conventions dataset, which is extracted from the ORE
+   example corpus (external/ore/examples). Five conventions state a premium
+   adjusted spot delta (PaSpot): USD/JPY, USD/CHF, USD/CAD, EUR/JPY and
+   EUR/CHF. The other five state a spot delta (Spot). The test
+   refdata_fx_vol_surface_blueprints_publish_test.sql refuses a blueprint whose
+   delta type differs from its convention.
+
+6. OUTPUT SERIES
+
+   Each blueprint writes its calibrated grid to its own fx_vol_surface series,
+   oresmd://fx/<base>?type=series&instrument=fx_vol_surface&quote=rate_lnvol
+   &ccy=<quote>&surface_id=<name>. The publish creates it OBSERVED, and the
+   calibration claims it on its first run.
+
+7. NAMES
+
+   A blueprint is named for its pair and model, such as EURUSD_SSVI.
+
+GENERATION
+
+   File: generate_sql.py (this directory).
+   Output: projects/ores.sql/populate/refdata/refdata_fx_vol_surface_blueprints_artefact_populate.sql,
+   which registers this methodology and the refdata.fx_vol_surface_blueprints
+   dataset and stages its rows. The staged ids are fixed by hashing, so a
+   regeneration reproduces them.
+
+   The publish, ores_refdata_publish_fx_vol_surface_blueprints_from_dq_fn,
+   writes into the system tenant under its system party, as part of the
+   system_core bundle. It only inserts. A change to a blueprint here reaches a
+   database when the database is recreated, and a party's copy when the party
+   is provisioned again.
+
+REGENERATE
+
+   python3 projects/ores.seeder/datasets/fx_vol_surfaces/generate_sql.py

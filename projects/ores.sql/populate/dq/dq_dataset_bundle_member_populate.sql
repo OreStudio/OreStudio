@@ -87,6 +87,11 @@ BEGIN
     -- its own copy through party_essentials; this one is the system party's.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.conventions', 21);
 
+    -- The FX volatility surface blueprints: one recipe for each pair the derived source
+    -- quotes. Each names the pair's FX option convention, so it follows the conventions.
+    -- Provisioning copies every one of them to each party.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'refdata.fx_vol_surface_blueprints', 22);
+
     -- =============================================================================
     -- Base System Bundle Members
     -- =============================================================================

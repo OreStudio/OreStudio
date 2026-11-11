@@ -733,6 +733,12 @@ RULES = (
          "The counterparty onboarding screen's read or write at the address and in the shape"
          " the BFF answered: one record with its identifiers, the children of a page, the"
          " composite write, and the visibility and business centre writes."),
+    Rule("the conventions screen's route",
+         ("regex", r"^(GET /api/conventions/(families|\{family\})|PUT /api/conventions/\{family\})$"),
+         CPP, RESOURCE, "reference-data",
+         "The conventions screen's read or write at the address and in the shape the BFF"
+         " answered: each family with its count, one family's page, and the write of a family"
+         " whose terms the screen draws."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

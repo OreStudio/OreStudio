@@ -30,10 +30,13 @@
 #include "ores.nats/service/session_expired_error.hpp"
 #include "ores.nats/service/timeouts.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstdint>
 #include <exception>
 #include <functional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 
 /**
@@ -115,6 +118,35 @@ typename Request::response_type forward(const ores::http::domain::http_request& 
                                         ores::nats::service::nats_client& session,
                                         const Request& msg) {
     return forward_on(req, session, Request::nats_subject, msg);
+}
+
+/**
+ * @brief Every row of a list, read 1000 at a time until a page comes back short.
+ *
+ * A page that is not ok is refused with the status its outcome names. The read
+ * stops with an error after 1000 pages, so a service that ignores the limit
+ * cannot hold the route.
+ */
+template <typename Request, typename Rows>
+auto forward_all(const ores::http::domain::http_request& req,
+                 ores::nats::service::nats_client& session,
+                 Request msg,
+                 Rows member) {
+    constexpr std::uint32_t page = 1000;
+    std::remove_cvref_t<decltype(std::declval<typename Request::response_type>().*member)> all;
+    std::uint32_t offset = 0;
+    for (std::uint32_t read = 0; read < page; ++read) {
+        msg.offset = offset;
+        msg.limit = page;
+        const auto reply = forward(req, session, msg);
+        ores::http::net::record_routes::require_ok(reply.result);
+        const auto& got = reply.*member;
+        all.insert(all.end(), got.begin(), got.end());
+        if (got.size() < page)
+            return all;
+        offset += static_cast<std::uint32_t>(got.size());
+    }
+    throw std::runtime_error("The service sent more pages than a whole read takes.");
 }
 
 /**

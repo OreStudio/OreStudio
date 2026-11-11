@@ -138,4 +138,28 @@ PAIRS = {
     ("PUT", "/api/tenors/conventions"): ("PUT", "/api/tenors/conventions"),
     ("PUT", "/api/tenors/conventions/:code/resolutions/:tenor"): ("PUT", "/api/tenors/conventions/{code}/resolutions/{tenor}"),
     ("DELETE", "/api/tenors/conventions/:code/resolutions/:tenor"): ("DELETE", "/api/tenors/conventions/{code}/resolutions/{tenor}"),
+    ("GET", "/api/refdata/calendars/:code/days"): ("GET", "/api/refdata/calendars/{code}/days"),
+    ("POST", "/api/refdata/calendars/:code/rebuild"): ("POST", "/api/refdata/calendars/{code}/rebuild"),
+    ("GET", "/api/refdata/currencies/ore-document"): ("GET", "/api/refdata/currencies/ore-document"),
+    ("POST", "/api/refdata/currencies/ore-import/preview"): ("POST", "/api/refdata/currencies/ore-import/preview"),
+    ("POST", "/api/refdata/currencies/ore-import"): ("POST", "/api/refdata/currencies/ore-import"),
+    ("GET", "/api/change-reasons"): ("GET", "/api/change-reasons"),
 }
+
+# A BFF route that takes the resource as a parameter is answered in ores.http by
+# one generated route per resource, at the address the BFF would have matched.
+# Each family names the registry the BFF reads its resources from, the C++
+# address with {resource} in place of the resource, and which resources must
+# answer it: every resource, those read by one key, those read by a parent, or
+# those the registry marks writable. The inventory reads the registry and fails
+# when a resource that must answer a family has no route at its address.
+REFDATA_RECORDS = "projects/ores.web/packages/wire-protocol/src/records.ts:REFDATA_RECORDS"
+
+FAMILIES = {
+    ("GET", "/api/refdata/:resource"): (REFDATA_RECORDS, "GET", "/api/refdata/{resource}", "every"),
+    ("GET", "/api/refdata/:resource/key/:key"): (REFDATA_RECORDS, "GET", "/api/refdata/{resource}/key/{key}", "one_key"),
+    ("GET", "/api/refdata/:resource/by/:parent"): (REFDATA_RECORDS, "GET", "/api/refdata/{resource}/by/{parent}", "list_by"),
+    ("PUT", "/api/refdata/:resource"): (REFDATA_RECORDS, "PUT", "/api/refdata/{resource}", "writable"),
+    ("DELETE", "/api/refdata/:resource"): (REFDATA_RECORDS, "DELETE", "/api/refdata/{resource}", "writable"),
+}
+

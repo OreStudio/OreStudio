@@ -24,6 +24,7 @@
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.http.api/net/http_server.hpp"
+#include "ores.http.core/routes/change_reason_routes.hpp"
 #include "ores.http.core/routes/change_routes.hpp"
 #include "ores.http.core/routes/history_routes.hpp"
 #include "ores.http.core/routes/site_routes.hpp"
@@ -181,6 +182,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     ores::http::routes::refdata::refdata_routes::register_routes(router, registry, service_nats);
 
     ores::http::routes::history_routes::register_routes(router, registry, service_nats);
+
+    ores::http::routes::change_reason_routes::register_routes(router, registry, service_nats);
 
     /*
      * The site the served client reads about itself is the BFF's file, chosen the

@@ -23,6 +23,7 @@ set(files
     "change_coalescer_tests.cpp"
     "change_feed_tests.cpp"
     "change_pump_tests.cpp"
+    "change_reason_routes_tests.cpp"
     "change_stream_tests.cpp"
     "change_ticker_tests.cpp"
     "change_watch_tests.cpp"

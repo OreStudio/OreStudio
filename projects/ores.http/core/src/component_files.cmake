@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "routes/bundle_manifest.cpp"
+    "routes/change_reason_routes.cpp"
     "routes/change_routes.cpp"
     "routes/history_routes.cpp"
     "routes/site_routes.cpp"
@@ -41,6 +42,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/ores.http.core.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/bundle_manifest.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/change_reason_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/change_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/history_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.core/routes/site_routes.hpp"

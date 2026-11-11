@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-reference-data-operations
-#+pr: 4619
+#+pr: 4620
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,12 +26,12 @@ Port the 29 BFF routes of the reference data area to the C++ server. Include con
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-11                               |
 
 * Acceptance
 
@@ -101,6 +101,24 @@ Decisions made in the tenors group:
 - The membership write takes its convention and tenor codes from the address,
   as the BFF did, so the body may leave them out.
 
+Decisions made in the records group:
+
+- The generic =/api/refdata/:resource= routes are answered by the generated
+  unit of each resource, at the address the BFF matched. =route_pairing.py=
+  states them as families: each names the BFF registry, the C++ address with
+  ={resource}= in it, and which resources must answer it (every resource, those
+  read by one key, those read by a parent, or the writable ones). The inventory
+  reads the registry and fails when a resource lacks its address. The 26
+  resources of =REFDATA_RECORDS= all answer.
+- The ORE currency routes link =ores.ore.api= into the refdata part. The
+  inventory files a route by the screen that calls it, and these are the
+  currency screen's import and export.
+- =GET /api/change-reasons= was missing from the plan's count; it is reference
+  data and is ported here, in =ores.http.core= beside the history route, because
+  every screen's reason picker reads it.
+- A failed calendar days read or rebuild answers 409 with the service's words,
+  as the BFF's =OperationFailedError= did.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -117,6 +135,11 @@ task and name that file in the Command column.
 
 * Notes
 
+Component audit of =ores.http= at close: =validate_docs.sh= passes for all 40
+components. The task adds no part. =ores.http.refdata= now also links
+=ores.ore.api=, a service's wire protocol, which the component overview allows:
+the gateway depends on the services' wire protocols and not on their libraries.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -132,6 +155,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4620][#4620]] | [http] Serve the calendar days, ORE currency documents and change reasons |
 | [[https://github.com/OreStudio/OreStudio/pull/4619][#4619]] | [http] Serve the tenors screen's operations |
 | [[https://github.com/OreStudio/OreStudio/pull/4618][#4618]] | [http] Serve the conventions screen's families, page and write |
 | [[https://github.com/OreStudio/OreStudio/pull/4616][#4616]] | [http] Serve the counterparty screen's routes |
@@ -169,18 +193,33 @@ via its "Verifies task" field.
 | 27 | PR #4619: =decltype(Put{}.change.write)= in =put_at_version=. | =forwarding.hpp= | Declined | Every put request is default constructible, and the protocols name no write type alias. |
 | 28 | PR #4619: the membership write and removal answer only the result. | =tenor_screen_routes.cpp= | Declined | The BFF answered only the result, and the screen reads only that. |
 | 29 | PR #4619: =question_sentence= has a static initialiser. | =tenor_screen_routes.cpp= | Accepted | It is a =constexpr std::string_view=. |
+| 30 | Local review: a generic BFF route has no single C++ route to pair with. | =route_pairing.py=, =route_inventory.py= | Accepted | Families pair it with one address per registry resource; four tests prove the registry read and the check that names a missing address. |
+| 31 | Local review: =/api/change-reasons= was a reference data gap outside the plan. | =change_reason_routes.cpp= | Accepted | Ported in this group, with a test of its page bounds. |
+| 32 | PR #4620: a year's days are read by paging from the calendar's first day. | =calendar_screen_routes.cpp= | Deferred | The dates filter has no date range, so the fix is on the refdata service; captured as [[id:8F6F0248-B10D-4BB6-A402-BF262F7589E8][A calendar year read pages from the calendar's first day]]. |
+| 33 | PR #4620: two import choices may name one currency. | =currency_ore_document_routes.cpp= | Accepted | The service takes the last one, so the order would decide; the gateway refuses a repeated currency, with a test. |
+| 34 | PR #4620: a failed days read answers 409. | =calendar_screen_routes.cpp= | Declined | The BFF answered 409, and the screen reads it so. |
+| 35 | PR #4620: small notes. | =calendar_screen_routes.cpp=, =currency_ore_document_routes.cpp= | Partly accepted | The local =year= is now =requested_year=. The preview body keeps the server's 1 MB default limit, which holds a currency file. |
 
 * Result
 
-The task is delivered in five pull requests, one per group of the plan. Each
-row below records a group that has merged; the task closes when all five have.
+The C++ server answers 23 of the reference data area's BFF routes in hand-written
+units, over four pull requests. The generated units answer the five generic
+record routes, which the inventory now pairs as families and checks against the
+BFF's registry. Each
+new route has a test of its refusals and of its forward step. Six routes leave
+this task: the conventions document and terms routes and the three curve
+configuration routes read the ORE value sets, so
+[[id:504FD469-B1A1-4480-9694-34724AD2F2A5][Stand up the reporting part and serve its resources]]
+serves them with the value set reader; the tenor catalogue is a composed view,
+so [[id:068865A5-2C31-4735-873E-2CB04A134EF2][Serve the tenor catalogue composed view]]
+serves it.
 
 | Group | PR | Routes | State |
 |-------+----+--------+-------|
 | Counterparties | #4616 | 6 | Merged |
 | Conventions: families, page and write | #4618 | 3 | Merged |
-| Conventions: document and terms | | 2 | Waits for the reporting part |
-| Curve configurations | | 3 | Open |
 | Tenors | #4619 | 8 | Merged |
+| Records, calendars, ORE currency and change reasons | #4620 | 6 and 5 families | Merged |
+| Conventions: document and terms | | 2 | Moved to the reporting part task |
+| Curve configurations | | 3 | Moved to the reporting part task |
 | Tenor catalogue view | | 1 | Moved to the tenor catalogue view task |
-| Records, calendars and ORE currency | | 10 | Open |

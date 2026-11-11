@@ -30,7 +30,7 @@
 
 begin;
 
-select plan(13);
+select plan(15);
 
 create temporary table t_party on commit drop as
 select id from ores_refdata_read_system_party_fn(ores_utility_system_tenant_id_fn());
@@ -167,6 +167,33 @@ select is(
               and m.valid_to = ores_utility_infinity_timestamp_fn()) <> 1),
     0,
     'the derived feed has one series to find for each pair');
+
+-- The series function on two pairs no blueprint names, so the checks hold on a fresh and
+-- on a provisioned database alike: one series the derived feed wrote first, one missing.
+insert into ores_marketdata_market_series_tbl (
+    id, tenant_id, version, party_id, oresmd_uri, series_subclass, provider_code,
+    derivation_kind, derivation_config_id, derivation_config_version,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values (
+    'b1a5e0c3-9f2d-4c8e-a6b7-0d1e2f3a4b5c', ores_utility_system_tenant_id_fn(), 0,
+    (select id from t_party),
+    'oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=SEK',
+    'volatility', 'derived', 'FX_VOL_DERIVATION', 'fefdf018-d882-5c4e-bd27-2aeedfcad9c9', 1,
+    current_user, current_user, 'system.new_record', 'The series the derived feed wrote first');
+
+select is(
+    (select quotes_series_id from ores_marketdata_publish_surface_series_fn(
+        ores_utility_system_tenant_id_fn(), (select id from t_party), 'EUR', 'SEK', 'EURSEK_SSVI')),
+    'b1a5e0c3-9f2d-4c8e-a6b7-0d1e2f3a4b5c'::uuid,
+    'a blueprint names the series the derived feed created first');
+
+select is(
+    (select row(a.*)::text from ores_marketdata_publish_surface_series_fn(
+        ores_utility_system_tenant_id_fn(), (select id from t_party), 'EUR', 'NOK', 'EURNOK_SSVI') a),
+    (select row(a.*)::text from ores_marketdata_publish_surface_series_fn(
+        ores_utility_system_tenant_id_fn(), (select id from t_party), 'EUR', 'NOK', 'EURNOK_SSVI') a),
+    'a missing series is created once, and a second call names the same two series');
 
 select is(
     (select coalesce(sum(record_count), 0)::int

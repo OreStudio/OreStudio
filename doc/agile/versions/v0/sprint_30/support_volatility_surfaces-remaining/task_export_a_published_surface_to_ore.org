@@ -102,5 +102,12 @@ via its "Verifies task" field.
 | 5 | One bad point aborts the export | =ore_export_service.cpp= | Kept | The file's data-integrity rule: a point that does not read names itself. |
 | 6 | Anything not a call becomes a put | =ore_export_service.cpp= | Fixed | A strike that is neither is refused. |
 | 7 | Tests for a raw quote, an early date and two sets | =service_ore_export_tests.cpp= | Fixed in part | A raw EUR/USD option quote is shown dropped, and an earlier date leaves the surface out. Two sets: the repository orders them, and the live read evidence picks the newest. |
+| 8 | #4596: the derivation stamp is copied into SQL | =marketdata_surface_series_create.sql= | Fixed | Both places now name each other. A drift mislabels the series but cannot duplicate it: the feed finds a series by URI, party and provider. |
+| 9 | #4596: the publish never updates a blueprint | =refdata_publish_from_dq_create.sql= | Documented | Insert-only is deliberate, so a rerun never resets a claimed series. The function and the methodology say a change arrives on recreate or reprovision. |
+| 10 | #4596: the counters mix row kinds | =refdata_publish_from_dq_create.sql= | No change | No caller reads them by kind; the test reads only that a rerun inserts nothing. |
+| 11 | #4596: series looked up before the blueprint check | =refdata_publish_from_dq_create.sql= | No change | The pillar sources of a live blueprint still need the quotes series id; two indexed lookups a pair. |
+| 12 | #4596: the surface series lookup names the provider | =marketdata_surface_series_create.sql= | No change | The lookup is the table's unique key (tenant, party, URI, provider). A claim keeps provider =ore=: the live claimed series is =FX_VOL_SURFACE_CALIBRATION= under =ore=. |
+| 13 | #4596: the generator reads the licence from a populate file | =generate_sql.py= | No change | The file's header is the project licence, which every SQL file carries verbatim. |
+| 14 | #4596: no test of the reuse path | =refdata_fx_vol_surface_blueprints_publish_test.sql= | Fixed | Two tests: a series the feed wrote first is named, and a missing one is created once. 15/15. |
 
 * Result

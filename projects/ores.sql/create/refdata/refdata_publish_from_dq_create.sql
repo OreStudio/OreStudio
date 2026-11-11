@@ -6739,7 +6739,9 @@ comment on function ores_refdata_publish_curve_configuration_from_dq_fn(uuid, uu
 -- sources, because each row names the one before it. The staged series ids are nil: the
 -- series are found by their URI, so a series the derived feed created first is the one
 -- the sources name. A row that is already live is left as it is, so a rerun changes
--- nothing and never resets a series the calibration has claimed.
+-- nothing and never resets a series the calibration has claimed. The publish therefore
+-- never updates a blueprint: a change to a staged blueprint reaches a database only when
+-- it is recreated, and a party's copy only when it is provisioned again.
 create or replace function ores_refdata_publish_fx_vol_surface_blueprints_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,

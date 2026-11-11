@@ -28,8 +28,11 @@
  * missing series is created:
  *
  *  - The fx_option series carries the derived source's own derivation stamp,
- *    derived_fx_method_id() of ores.synthetic's derived_fx_vol.cpp at version 1,
- *    so the feed finds it and writes into it, and does not create a second one.
+ *    derived_fx_method_id() and derived_fx_method_version of ores.synthetic's
+ *    derived_fx_vol, so it reads as the feed's own series. The feed finds a series
+ *    by its URI, party and provider, so it writes into this one and does not create
+ *    a second. The stamp is copied here, so a change to it there must change it
+ *    here too.
  *
  *  - The fx_vol_surface series starts OBSERVED, as a bootstrapped curve's series
  *    does, and the calibration claims it on its first run.

@@ -87,7 +87,9 @@ GENERATION
 
    The publish, ores_refdata_publish_fx_vol_surface_blueprints_from_dq_fn,
    writes into the system tenant under its system party, as part of the
-   system_core bundle.
+   system_core bundle. It only inserts. A change to a blueprint here reaches a
+   database when the database is recreated, and a party's copy when the party
+   is provisioned again.
 
 REGENERATE
 

@@ -1130,8 +1130,7 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
                 terms.strike_price = strike;
                 // ORE prices a spread on two commodities quoted in one currency.
                 for (std::size_t step = 1; step < scope.commodities.size(); ++step) {
-                    const auto& other =
-                        scope.commodities[(slot + step) % scope.commodities.size()];
+                    const auto& other = scope.commodities[(slot + step) % scope.commodities.size()];
                     if (other.code != commodity.code &&
                         other.quotation_currency == commodity.quotation_currency) {
                         terms.spread_commodity_code = other.code;

@@ -448,7 +448,8 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
             throw trade_population_error("The security " + security_id +
                                          " has no address: " + reference.error());
         return built(
-            tb::bond_position_builder({.holding = holding, .security = std::move(*reference)})
+            tb::bond_position_builder(
+                {.holding = holding, .security = std::move(*reference), .identifier = security_id})
                 .build());
     }
     if (type == "BondOption")
@@ -461,10 +462,11 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
                  .position = position})
                 .build());
     if (type == "ForwardBond")
+        // A forward on the bond matures a year out, well before the bond does.
         return built(tb::forward_bond_builder({.holding = holding,
                                                .long_in_forward = slot % 2 == 0,
-                                               .forward_maturity = maturity,
-                                               .settlement = add_months(maturity, -1),
+                                               .forward_maturity = add_years(scope.as_of_date, 1),
+                                               .settlement = add_years(scope.as_of_date, 1),
                                                .lock_rate = rate(0.02, 0.03, 7)})
                          .build());
     if (type == "BondFuture")

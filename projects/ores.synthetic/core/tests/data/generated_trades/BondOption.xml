@@ -5,6 +5,7 @@
     <BondOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
@@ -59,6 +60,7 @@
     <BondOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>

@@ -217,7 +217,10 @@ bond_position_builder::bond_position_builder(bond_position_terms terms)
 bond_result bond_position_builder::build() const {
     if (auto refusal = holding_refusal(terms_.holding))
         return std::unexpected(std::move(*refusal));
+    if (terms_.identifier.get().empty())
+        return std::unexpected(build_error{"identifier", "must not be empty"});
     auto product = product_of(trade_type, terms_.holding);
+    product.row.instrument.position_identifier = terms_.identifier.get();
     domain::instrument_underlying underlying;
     underlying.underlying_role = "underlying";
     underlying.sequence_number = 1;
@@ -433,6 +436,32 @@ bond_result ascot_builder::build() const {
     domain::ascot ascot;
     ascot.ascot_option_type = option_type_of(terms_.kind.get());
     product->ascots.push_back(std::move(ascot));
+
+    // The holder may recall the bond on any day from the start to the end.
+    domain::instrument_option block;
+    block.long_short = "Long";
+    block.option_type = option_type_of(terms_.kind.get());
+    block.style = "American";
+    block.settlement = "Cash";
+    product->option_block.push_back(std::move(block));
+    domain::instrument_schedule exercise;
+    exercise.owner_role = "option";
+    exercise.owner_number = 1;
+    exercise.schedule_role = "exercise_dates";
+    exercise.sequence_number = 1;
+    exercise.schedule_kind = "dates";
+    product->schedules.push_back(std::move(exercise));
+    int number = 0;
+    for (const auto when : {terms_.start.get(), terms_.end.get()}) {
+        domain::instrument_schedule_date date;
+        date.owner_role = "option";
+        date.owner_number = 1;
+        date.schedule_role = "exercise_dates";
+        date.schedule_sequence_number = 1;
+        date.sequence_number = ++number;
+        date.schedule_date = when;
+        product->schedule_dates.push_back(std::move(date));
+    }
     // The holder recalls the bond against the swap's floating leg plus the spread.
     const auto& holding = terms_.convertible.holding;
     add_trade_leg(*product,

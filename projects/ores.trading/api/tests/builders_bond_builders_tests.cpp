@@ -160,6 +160,9 @@ TEST_CASE("an_ascot_recalls_against_a_floating_swap_leg", bond_tags) {
     REQUIRE(ascot->leg_rates.size() == 1);
     CHECK(ascot->leg_rates[0].index == euribor.uri());
     CHECK(ascot->conversion_targets.size() == 1);
+    REQUIRE(ascot->option_block.size() == 1);
+    CHECK(ascot->option_block[0].style == "American");
+    CHECK(ascot->schedule_dates.size() == 2);
 }
 
 TEST_CASE("a_bond_position_holds_its_security_as_a_bond_underlying", bond_tags) {
@@ -168,15 +171,20 @@ TEST_CASE("a_bond_position_holds_its_security_as_a_bond_underlying", bond_tags) 
     auto security = md::market_reference::of(std::move(*index));
     REQUIRE(security);
     const auto position =
-        bond_position_builder({.holding = holding(), .security = *security}).build();
+        bond_position_builder(
+            {.holding = holding(), .security = *security, .identifier = std::string("SEC-1")})
+            .build();
     REQUIRE(position.has_value());
     REQUIRE(position->underlyings.size() == 1);
     CHECK(position->underlyings[0].underlying_type == "Bond");
     CHECK(position->underlyings[0].name == security->uri());
+    CHECK(position->row.instrument.position_identifier == "SEC-1");
 }
 
 TEST_CASE("a_callable_bond_with_no_call_fails_and_names_the_term", bond_tags) {
-    const auto callable = callable_bond_builder({.holding = holding(), .calls = std::vector<year_month_day>{}}).build();
+    const auto callable =
+        callable_bond_builder({.holding = holding(), .calls = std::vector<year_month_day>{}})
+            .build();
     REQUIRE_FALSE(callable.has_value());
     CHECK(callable.error().term == "calls");
 }

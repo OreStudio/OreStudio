@@ -41,10 +41,9 @@
         <SubType>Fixed</SubType>
       </BondData>
       <SettlementData>
-        <ForwardMaturityDate>2027-07-02</ForwardMaturityDate>
-        <ForwardSettlementDate>2027-06-02</ForwardSettlementDate>
+        <ForwardMaturityDate>2027-01-02</ForwardMaturityDate>
+        <ForwardSettlementDate>2027-01-02</ForwardSettlementDate>
         <Settlement>Cash</Settlement>
-        <Amount>5375309.62</Amount>
         <LockRate>0.0232</LockRate>
         <SettlementDirty>false</SettlementDirty>
       </SettlementData>
@@ -92,10 +91,9 @@
         <SubType>Fixed</SubType>
       </BondData>
       <SettlementData>
-        <ForwardMaturityDate>2035-07-02</ForwardMaturityDate>
-        <ForwardSettlementDate>2035-06-02</ForwardSettlementDate>
+        <ForwardMaturityDate>2027-01-02</ForwardMaturityDate>
+        <ForwardSettlementDate>2027-01-02</ForwardSettlementDate>
         <Settlement>Cash</Settlement>
-        <Amount>3895254.25</Amount>
         <LockRate>0.0346</LockRate>
         <SettlementDirty>false</SettlementDirty>
       </SettlementData>

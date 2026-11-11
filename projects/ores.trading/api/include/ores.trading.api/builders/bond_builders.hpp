@@ -91,6 +91,8 @@ private:
 struct bond_position_terms final {
     bond_holding holding;
     required<marketdata::datum::market_reference> security;
+    /// The position's own name, which ORE requires beside the underlying.
+    required<std::string> identifier;
 };
 
 class ORES_TRADING_API_EXPORT bond_position_builder final {

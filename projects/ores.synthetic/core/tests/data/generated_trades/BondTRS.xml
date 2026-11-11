@@ -44,7 +44,16 @@
         <Payer>false</Payer>
         <InitialPrice>100</InitialPrice>
         <PriceType>Clean</PriceType>
-        <ScheduleData/>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-01-02</StartDate>
+            <EndDate>2027-01-02</EndDate>
+            <Tenor>3M</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>F</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
       </TotalReturnData>
       <FundingData>
         <LegData>
@@ -119,7 +128,16 @@
         <Payer>false</Payer>
         <InitialPrice>100</InitialPrice>
         <PriceType>Clean</PriceType>
-        <ScheduleData/>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-01-02</StartDate>
+            <EndDate>2027-01-02</EndDate>
+            <Tenor>3M</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>F</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
       </TotalReturnData>
       <FundingData>
         <LegData>

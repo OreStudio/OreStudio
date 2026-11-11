@@ -52,8 +52,14 @@
         </ConversionData>
       </ConvertibleBondData>
       <OptionData>
-        <LongShort></LongShort>
+        <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
+        <Style>American</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2026-01-02</ExerciseDate>
+          <ExerciseDate>2031-07-02</ExerciseDate>
+        </ExerciseDates>
       </OptionData>
       <ReferenceSwapData>
         <LegData>
@@ -137,8 +143,14 @@
         </ConversionData>
       </ConvertibleBondData>
       <OptionData>
-        <LongShort></LongShort>
+        <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
+        <Style>American</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2026-01-02</ExerciseDate>
+          <ExerciseDate>2026-07-02</ExerciseDate>
+        </ExerciseDates>
       </OptionData>
       <ReferenceSwapData>
         <LegData>

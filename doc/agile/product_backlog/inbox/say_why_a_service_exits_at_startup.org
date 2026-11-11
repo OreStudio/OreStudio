@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: 04D014E6-E34F-4F77-A748-6E7AB5B2342B
+:END:
+#+title: Say why a service exits at startup
+#+description: ores.marketdata.service exited during a fresh start with no log line, and provisioning failed at publish_system_curves because the step sent its request while the service restarted.
+#+type: capture
+#+level: cross
+#+filetags: :service:provisioning:observability:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two changes, so a failed start says why and does not fail a provisioning run:
+- =main= of a service catches =db_connection_exception= and returns its exit code with no word to the log or to stderr. It must write the exception's text, as the other paths in the same =main= do. The pattern is in =projects/ores.marketdata/service/src/main.cpp=, and other services may share it.
+- The =publish_system_curves= step sends =compute_curve_request= with the client's default 30 s patience and no retry. A service that restarts during the step fails the whole run.
+
+* Why
+
+On 2026-11-11 a fresh environment started its services at 00:54:33, and the provisioning run began at once. =ores.marketdata.service= logged until 00:54:35, then nothing, and systemd recorded "Failed with result 'exit-code'" at 00:54:57. It never reached the ready notice of its =Type=notify= unit. Its restart came up at 00:55:00 and subscribed =compute_curve= at 00:55:01. The curve step had sent its first =compute_curve_request= at about 00:54:57, so the request had no handler, it timed out at 00:55:27, and the run failed at step 2 of 3.
+
+The cause of the exit is not known. =db_connection_exception= is the only path in =main= that exits without writing anything, so a failed database connection is a guess. At 01:00 the server held 634 of its 1,500 connections, and its log could not be read. The restart ran with the same data, so the data does not make it fail each time.
+
+* References
+
+- =projects/ores.marketdata/service/src/main.cpp=, the silent =catch=.
+- =projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp=, =publish_curves=.
+- [[id:F305CDA3-C48F-45B5-B43F-5B220D744528][Add the Banco Central do Brasil adapter]], whose fresh environment showed it.
+
+* See also
+
+-

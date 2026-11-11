@@ -1,41 +1,37 @@
 :PROPERTIES:
 :ID: D4275B6D-BF22-4A77-9F00-018D776966CB
 :END:
-#+title: Task: Serve the browser's session routes, sign-up and password
-#+description: Eight auth routes belong to the browser's session: POST, GET and DELETE /api/session, the two party switches, sign-up, the password policy and the password change. The C++ server signs in with a cookie at /api/v1/auth/sessions, at other addresses and in another shape.
+#+title: Task: Serve sign-up, the password policy and the password change
+#+description: The door registers an account, reads the password rules before anybody signs in, and changes the signed-in account's own password through the BFF. The C++ server must answer them.
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-cookie-session-routes
-#+pr:
+#+pr: 4613
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Serve the cookie session, the party switches, sign-up, the password policy and
-the password change at the BFF's own addresses and shapes, so the browser signs
-in to the C++ server as it does to the BFF. Sign-up and the policy are read
-before a session exists, sign-up is rate limited per address, and a password
-change updates the session the browser holds, so all eight are the session's
-work.
+Serve =POST /api/signup=, =GET /api/password-policy= and =POST /api/account/password=
+at the BFF's own addresses and shapes. Sign-up shares the sign-in budget.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -46,9 +42,22 @@ work.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The task began with eight routes. The five that hold the browser's session --
+sign-in, the session read, sign-out, the party choice and the party switch --
+need the session record to hold what the BFF's session held, so on 2026-11-11
+they moved to [[id:E57938AF-06F7-4330-B992-F7BE5296D8A3][Serve the browser's session routes]].
+
+- =account_door_routes= is a new unit in the IAM part. =POST /api/signup= runs
+  under the credential policy, so it shares the sign-in budget as the BFF's
+  did, takes the tenant from the request's host as the bootstrap routes do, and
+  maps each refusal code to the BFF's status and code. =GET /api/password-policy=
+  needs no session. =POST /api/account/password= forwards the change and refuses
+  a failed one as the BFF refused a failed operation.
+- The BFF cleared its session's password-reset flag after a change. The C++
+  session record holds no such flag yet; the session task adds it and clears it.
+- The BFF read the body before it spent the budget; the C++ policy runs before
+  the body is read, so a malformed registration also spends an attempt.
+- The pairing table's =IAM_OPS= prefix has no user left and is removed.
 
 * Measurements
 
@@ -84,12 +93,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4613][#4613]] | [http] Serve sign-up, the password policy and the password change |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: =credential_routes= sits beside the generated =account_credential_routes=. | =account_door_routes.*= | Accepted | Renamed for what the routes are: the account's door. |
+| 2 | Local review: a malformed registration spends an attempt. | =account_door_routes.cpp= | Declined | The policy runs before the body is read, which is what bounds the cost of a stranger's writes; the plan states the difference. |
+| 3 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 4 | PR review: a failed password change answers the service's message; can it carry internal detail? | =account_operations_handler.hpp= | Accepted | It could: an exception's own text reached the caller. The handler now answers fixed words and logs the detail, as the first administrator create does. The 409 stays the BFF's status. |
+| 5 | PR review: an unknown registration code falls back silently. | =account_door_routes.cpp= | Accepted | It is logged as a warning, so the map can be kept in step with the service. |
+| 6 | PR review: the password-reset flag stays set after a change. | =account_door_routes.cpp= | Deferred | The session task's acceptance names it; that task adds the flag to the session record and clears it. |
+| 7 | PR review: the tenant comes from the Host header. | =account_door_routes.cpp= | Declined | The BFF did the same, and the service resolves the tenant from the host and applies that tenant's own registration policy, so a client choosing a host only reaches a tenant that accepts registrations. |
+| 8 | PR review: a malformed registration spends the budget; checks are emptiness only; the client is captured by reference; tests for an unknown code and a missing session. | =account_door_routes.*= | Declined | As row 2 records; the service checks strength and format; every route unit captures the client so; a test already maps an unknown code, and the password route requires a session, which a test proves. |
 
 * Result
+
+The C++ server answers a registration, the password rules and the signed-in
+account's password change at the BFF's addresses and in its shapes, and the
+inventory pairs each. Tests compare each shape exactly, map every refusal code,
+prove which routes are open and that a registration shares the sign-in budget,
+and prove the refusals before any forward. The session routes moved to their
+own task.

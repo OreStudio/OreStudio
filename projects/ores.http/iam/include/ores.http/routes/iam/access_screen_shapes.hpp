@@ -286,6 +286,36 @@ struct reporting_line_body final {
                       field{"commentary", &reporting_line_body::commentary}};
 }
 
+/**
+ * @brief A registration: the username, the password and the email address.
+ */
+struct signup_body final {
+    std::string principal;
+    std::string password;
+    std::string email;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<signup_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"principal", &signup_body::principal},
+                      field{"password", &signup_body::password},
+                      field{"email", &signup_body::email}};
+}
+
+/**
+ * @brief The signed-in account's password change: the current one and the new one.
+ */
+struct password_change_body final {
+    std::string currentPassword;
+    std::string newPassword;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<password_change_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"currentPassword", &password_change_body::currentPassword},
+                      field{"newPassword", &password_change_body::newPassword}};
+}
+
 }
 
 #endif

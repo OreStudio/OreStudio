@@ -738,6 +738,12 @@ RULES = (
          "The deployment's tenants as system administration reads them, each joined with the"
          " run that set it up, at the address and in the shape the BFF answered, refused"
          " without the deployment read."),
+    Rule("the account door's route",
+         ("regex", r"^(POST /api/(signup|account/password)|GET /api/password-policy)$"),
+         CPP, RESOURCE, "auth",
+         "A registration, the rules a password must keep, and the signed-in account's own"
+         " password change, at the address and in the shape the BFF answered; a"
+         " registration shares the sign-in budget."),
     Rule("a setup screen's route",
          ("regex", r"^(GET /api/(bootstrap|tenant-setup|registration-policy)|POST /api/bootstrap/(administrator|complete))$"),
          CPP, RESOURCE, "tenancy",

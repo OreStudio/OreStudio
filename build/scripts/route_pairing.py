@@ -16,7 +16,6 @@ The two routes of a pair can use different verbs. Many BFF GET and DELETE routes
 to a C++ POST operation on purpose, so do not change a verb to make a pair match.
 """
 
-IAM_OPS = "/api/v1/iam/ops"
 ACCESS = "/api/v1/access"
 AUTH = "/api/v1/auth"
 REFDATA = "/api/v1/reference-data"
@@ -66,8 +65,9 @@ PAIRS = {
     ("GET", "/api/session"): ("GET", f"{AUTH}/sessions/me"),
     ("GET", "/api/login-info"): ("GET", "/api/login-info"),
     ("GET", "/api/login-info/:accountId"): ("GET", "/api/login-info/{accountId}"),
-    ("POST", "/api/account/password"): ("POST", f"{IAM_OPS}/change_password"),
-    ("POST", "/api/signup"): ("POST", f"{IAM_OPS}/signup"),
+    ("POST", "/api/account/password"): ("POST", "/api/account/password"),
+    ("GET", "/api/password-policy"): ("GET", "/api/password-policy"),
+    ("POST", "/api/signup"): ("POST", "/api/signup"),
     ("GET", "/api/sessions"): ("GET", "/api/sessions"),
     ("GET", "/api/sessions/active"): ("GET", "/api/sessions/active"),
     ("POST", "/api/sessions/:sessionId/end"): ("POST", "/api/sessions/{sessionId}/end"),

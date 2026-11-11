@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-simulation-collections-and-actions
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Port the 25 BFF routes of the simulation area to the C++ server. Include the rem
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,47 @@ Port the 25 BFF routes of the simulation area to the C++ server. Include the rem
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The inventory lists 25 unpaired simulation resource routes in five groups. Each
+group is one pull request, so each review covers one screen's routes.
+
+| Group | Routes | BFF source |
+|-------+--------+------------|
+| Feed and folder operations | 7 | =synthetic.ts= |
+| Feed ticks and the raster | 2 | =synthetic.ts=, =market-regime.ts=, =feed-ticks.ts= |
+| Simulation and conversion | 6 | =synthetic.ts= |
+| Calibration | 6 | =calibration.ts= |
+| Market regime | 4 | =market-regime.ts= |
+
+The feed ticks and the raster read buffers the BFF fills by listening to each
+running feed's tick subject, so they need a tick buffer in the gateway, which
+is its own pull request.
+
+The three composed views of the area (=GET /api/synthetic/calibration/:assetClass=,
+=GET /api/synthetic/feed-folders= and =GET /api/synthetic/market-trace=) belong
+to [[id:BE5A7BF2-B680-42BF-AB49-E9801C307742][Serve the synthetic composed views]].
+
+The first pull request also pairs the five generic =/api/synthetic/:resource=
+routes as families, as the reference data task paired its own. The generated
+units already answer the 16 resources of the BFF's =SYNTHETIC_RECORDS=. That
+registry states a resource in another form, so the inventory's registry reader
+learns it: one =keyField=, a =parentField= for a read by parent, and
+=readOnlyBecause= for a resource no screen writes.
+
+Each route keeps the BFF's address and answer shape, as the earlier ports did.
+
+Decisions made in the feed and folder operations group:
+
+- The folder start and stop call the market data service, so the synthetic part
+  links =ores.marketdata.api=, a service's wire protocol. The inventory files a
+  route by the screen that calls it, and these are the feed screen's.
+- A refused start or stop answers 409, a refused page or selection 400, and an
+  unread running set 502, as the BFF answered them.
+- The feed page refuses a query parameter it does not know, as the BFF's strict
+  schema did. A selection body ignores a member it does not know, because the
+  codec reads the members it names; the BFF refused one.
+- The registry reader learns the synthetic form, and reads the three reference
+  data lookups that the synthetic registry spreads into its array with the
+  members a trailing map adds.
 
 * Measurements
 
@@ -82,6 +120,18 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the synthetic registry spreads three lookups whose members a map adds. | =route_inventory.py= | Accepted | The reader takes the spread entries with the map's members; a test proves both forms and that a nested member is not the entry's own. |
+| 2 | Local review: a third suite needed a route answer helper. | =synthetic/tests/route_answer.hpp= | Accepted | The same helper as the refdata suite's, in the synthetic suite's namespace; a shared test library would need a home outside the parts. |
 
 * Result
+
+The task is delivered in five pull requests, one per group of the plan. Each
+row below records a group; the task closes when all five have merged.
+
+| Group | PR | Routes | State |
+|-------+----+--------+-------|
+| Feed and folder operations, and the synthetic families | | 7 and 5 families | Raised |
+| Feed ticks and the raster | | 2 | Open |
+| Simulation and conversion | | 6 | Open |
+| Calibration | | 6 | Open |
+| Market regime | | 4 | Open |

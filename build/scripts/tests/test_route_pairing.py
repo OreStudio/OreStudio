@@ -183,3 +183,52 @@ def test_coverage_counts_a_family_as_paired(registry, monkeypatch):
     assert "| GET =/api/refdata/:resource= | GET /api/refdata/{resource}, one per resource (2) |" in lines
     assert "| reference-data | 2 | 1 | 1 |" in lines
 
+
+SYNTHETIC_REGISTRY = """const RECORDS: readonly SyntheticResource[] = [
+    {
+        key: 'folders',
+        keyField: 'id',
+        subjects: {
+            list: 'a',
+            parentField: 'nested',
+        },
+        readOnlyBecause: 'No journey writes a folder.',
+    },
+    {
+        key: 'gmm-components',
+        keyField: 'id',
+        writes: z.object({
+            weight: z.number(),
+        }),
+        parentField: 'config_id',
+    },
+    ...[
+        {
+            key: 'tenors',
+            rows: 'tenors',
+        },
+    ].map((lookup): SyntheticResource => ({
+        ...lookup,
+        keyField: 'code',
+        readOnlyBecause: 'Reference data.',
+    })),
+];
+"""
+
+
+def test_a_registry_in_the_synthetic_form_states_what_each_resource_answers(tmp_path, monkeypatch):
+    (tmp_path / "synthetic.ts").write_text(SYNTHETIC_REGISTRY, encoding="utf-8")
+    monkeypatch.setattr(route_inventory, "ROOT", tmp_path)
+    resources = route_inventory.registry_resources("synthetic.ts:RECORDS")
+    assert [r["key"] for r in resources] == ["folders", "gmm-components", "tenors"]
+    assert [r["one_key"] for r in resources] == [True, True, True]
+    # A member named inside a nested value is not the entry's own.
+    assert [r["list_by"] for r in resources] == [False, True, False]
+    assert [r["writable"] for r in resources] == [False, True, False]
+
+
+def test_a_registry_the_file_does_not_declare_reads_as_empty(tmp_path, monkeypatch):
+    (tmp_path / "synthetic.ts").write_text(SYNTHETIC_REGISTRY, encoding="utf-8")
+    monkeypatch.setattr(route_inventory, "ROOT", tmp_path)
+    assert route_inventory.registry_resources("synthetic.ts:OTHER") == []
+

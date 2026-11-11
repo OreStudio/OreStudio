@@ -144,6 +144,15 @@ PAIRS = {
     ("POST", "/api/refdata/currencies/ore-import/preview"): ("POST", "/api/refdata/currencies/ore-import/preview"),
     ("POST", "/api/refdata/currencies/ore-import"): ("POST", "/api/refdata/currencies/ore-import"),
     ("GET", "/api/change-reasons"): ("GET", "/api/change-reasons"),
+
+    # simulation
+    ("POST", "/api/synthetic/feeds/:id/start"): ("POST", "/api/synthetic/feeds/{id}/start"),
+    ("POST", "/api/synthetic/feeds/:id/stop"): ("POST", "/api/synthetic/feeds/{id}/stop"),
+    ("POST", "/api/synthetic/folders/:id/start"): ("POST", "/api/synthetic/folders/{id}/start"),
+    ("POST", "/api/synthetic/folders/:id/stop"): ("POST", "/api/synthetic/folders/{id}/stop"),
+    ("GET", "/api/synthetic/folder-feeds"): ("GET", "/api/synthetic/folder-feeds"),
+    ("POST", "/api/synthetic/feed-selection/start"): ("POST", "/api/synthetic/feed-selection/start"),
+    ("POST", "/api/synthetic/feed-selection/stop"): ("POST", "/api/synthetic/feed-selection/stop"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by
@@ -154,6 +163,7 @@ PAIRS = {
 # those the registry marks writable. The inventory reads the registry and fails
 # when a resource that must answer a family has no route at its address.
 REFDATA_RECORDS = "projects/ores.web/packages/wire-protocol/src/records.ts:REFDATA_RECORDS"
+SYNTHETIC_RECORDS = "projects/ores.web/packages/bff/src/synthetic.ts:SYNTHETIC_RECORDS"
 
 FAMILIES = {
     ("GET", "/api/refdata/:resource"): (REFDATA_RECORDS, "GET", "/api/refdata/{resource}", "every"),
@@ -161,5 +171,10 @@ FAMILIES = {
     ("GET", "/api/refdata/:resource/by/:parent"): (REFDATA_RECORDS, "GET", "/api/refdata/{resource}/by/{parent}", "list_by"),
     ("PUT", "/api/refdata/:resource"): (REFDATA_RECORDS, "PUT", "/api/refdata/{resource}", "writable"),
     ("DELETE", "/api/refdata/:resource"): (REFDATA_RECORDS, "DELETE", "/api/refdata/{resource}", "writable"),
+    ("GET", "/api/synthetic/:resource"): (SYNTHETIC_RECORDS, "GET", "/api/synthetic/{resource}", "every"),
+    ("GET", "/api/synthetic/:resource/key/:key"): (SYNTHETIC_RECORDS, "GET", "/api/synthetic/{resource}/key/{key}", "one_key"),
+    ("GET", "/api/synthetic/:resource/by/:parent"): (SYNTHETIC_RECORDS, "GET", "/api/synthetic/{resource}/by/{parent}", "list_by"),
+    ("PUT", "/api/synthetic/:resource"): (SYNTHETIC_RECORDS, "PUT", "/api/synthetic/{resource}", "writable"),
+    ("DELETE", "/api/synthetic/:resource"): (SYNTHETIC_RECORDS, "DELETE", "/api/synthetic/{resource}", "writable"),
 }
 

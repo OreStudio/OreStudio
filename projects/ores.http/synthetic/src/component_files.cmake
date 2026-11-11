@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "routes/synthetic/calibration_routes.cpp"
     "routes/synthetic/feed_key_routes.cpp"
     "routes/synthetic/feed_operation_routes.cpp"
     "routes/synthetic/feed_tick_buffers.cpp"
@@ -45,6 +46,7 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.synthetic.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/calibration_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/feed_key_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/feed_operation_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/feed_tick_buffers.hpp"

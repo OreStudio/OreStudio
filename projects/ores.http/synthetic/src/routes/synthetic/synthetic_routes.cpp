@@ -23,6 +23,7 @@
 #include "ores.http/routes/refdata/instrument_code_web_routes.hpp"
 #include "ores.http/routes/refdata/payment_frequency_web_routes.hpp"
 #include "ores.http/routes/refdata/tenor_web_routes.hpp"
+#include "ores.http/routes/synthetic/calibration_routes.hpp"
 #include "ores.http/routes/synthetic/feed_key_routes.hpp"
 #include "ores.http/routes/synthetic/feed_operation_routes.hpp"
 #include "ores.http/routes/synthetic/feed_tick_routes.hpp"
@@ -109,6 +110,7 @@ void synthetic_routes::register_routes(
     yield_curve_process_type_web_routes::register_routes(router, registry, session);
     yield_curve_process_parameter_definition_web_routes::register_routes(router, registry, session);
     feed_key_routes::register_routes(router, registry, session);
+    calibration_routes::register_routes(router, registry, session);
     feed_operation_routes::register_routes(router, registry, session);
     feed_tick_routes::register_routes(router, registry, session);
     process_preview_routes::register_routes(router, registry, session);

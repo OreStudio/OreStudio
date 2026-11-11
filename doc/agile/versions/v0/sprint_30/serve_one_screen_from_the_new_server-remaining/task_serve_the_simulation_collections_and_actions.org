@@ -114,6 +114,24 @@ Decisions made in the simulation and conversion group:
   that object come back in name order, which a JSON object does not promise
   anyway.
 
+Decisions made in the calibration group:
+
+- The six routes are one unit, =calibration_routes=, because one screen calls
+  them and they share the asset class, the intent and the system tenant check.
+  The class's composed read stays with the composed views task.
+- A policy and a review are refused 403 outside the system tenant before the
+  body is read, as the BFF refused them. A pin is any tenant's, because a feed
+  belongs to its tenant.
+- A policy row is found by reading every policy, as the BFF did, because the
+  list filter names no asset class. A save keeps the variance window and the
+  approval rules as stored, or as the domain's defaults for a new row, which
+  are the column defaults the BFF stated.
+- A write the service refuses answers with the status its outcome names, so a
+  stale version is a 409. The BFF answered every refusal but a denial, a
+  missing row and an outage as 400.
+- The run and the review refuse a body member they do not name, as the BFF's
+  strict schemas did. The policy and the pin ignore one, as the BFF's did.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -170,6 +188,7 @@ via its "Verifies task" field.
 | 15 | PR #4623: the IR conversion caps no parameter count and does not trim a name. | =process_preview_routes.cpp= | Accepted | At most 100 parameters, each named by a trimmed code of 1 to 100 characters, as the other IR previews; two tests prove it. |
 | 16 | PR #4623: the FX engine list could fall out of step with the service. | =process_preview_routes.cpp= | Accepted | The comment says the service publishes none, so the list is stated as the BFF stated it. |
 | 17 | PR #4623: no price or number check on the FX paths, NaN, every refusal a 400, the IR value padding, the frequency not trimmed. | =process_preview_routes.cpp= | Declined | Each is the BFF's behaviour. JSON carries no NaN or infinity and the reader refuses them; a transport failure throws and answers 502, so only the service's own refusal is a 400. |
+| 18 | Local review: two names collided with other files of the unity build. | =calibration_routes.cpp=, =calibration_routes_tests.cpp= | Accepted | Renamed to =calibration_body_of= and =calibrated_feed_id=; the collision check is clean. |
 
 * Result
 
@@ -181,5 +200,5 @@ row below records a group; the task closes when all five have merged.
 | Feed and folder operations, and the synthetic families | #4621 | 7 and 5 families | Merged |
 | Feed ticks and the raster | #4622 | 2 | Merged |
 | Simulation and conversion | #4623 | 6 | Merged |
-| Calibration | | 6 | Open |
+| Calibration | | 6 | In review |
 | Market regime | | 4 | Open |

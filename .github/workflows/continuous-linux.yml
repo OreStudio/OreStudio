@@ -150,13 +150,15 @@ jobs:
         run: python3 build/scripts/check_boost_dependencies.py
 
       - name: Install Clang
-        # The Ubuntu archive has clang 19, so apt installs it in seconds. The
-        # LLVM release tarball that this step downloaded before took 90 to 120 s.
+        # apt.llvm.org installs clang in seconds. The LLVM release tarball that
+        # this step downloaded before took 90 to 120 s. The version comes from
+        # the file that the CI image is built from, so both get the same
+        # compiler.
         if: ${{ matrix.compiler == 'clang' }}
         run: |
-          sudo apt-get update -q -o Acquire::Retries=3
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q -o Acquire::Retries=3 clang-19 llvm-19
-          echo "/usr/lib/llvm-19/bin" >> "$GITHUB_PATH"
+          llvm_major="$(sed -n 's/^LLVM_MAJOR=//p' build/docker/ci/versions.env)"
+          ./build/scripts/install_llvm.sh "${llvm_major}"
+          echo "/usr/lib/llvm-${llvm_major}/bin" >> "$GITHUB_PATH"
 
       - name: Restore sccache
         uses: actions/cache/restore@v6

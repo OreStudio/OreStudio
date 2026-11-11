@@ -48,7 +48,7 @@ statuses keep the service's order and the types their display order, as the
 BFF sorted them; a code no badge names is painted with none. The badges and
 the legal entities are the dq service's, so =ores.http.iam= takes =ores.dq.api=.
 
-The other 18 tenancy routes move to [[id:6B079A05-65D0-41B0-A725-8AD9DA84D5BE][Serve the party reads]]. Sixteen of them later move on to [[id:169CA9EA-6515-45B6-9F9F-7385FCF53C98][Serve the tenant roster, setup and provisioning routes]].
+The other 18 tenancy routes move to [[id:6B079A05-65D0-41B0-A725-8AD9DA84D5BE][Serve the party reads]]. Sixteen of them later move on to [[id:169CA9EA-6515-45B6-9F9F-7385FCF53C98][Serve the provisioning routes]].
 
 * Measurements
 

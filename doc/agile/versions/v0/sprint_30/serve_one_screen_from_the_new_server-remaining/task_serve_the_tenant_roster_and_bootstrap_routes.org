@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 6A5E392C-464E-4B9F-9E09-4ADF336D075A
+:END:
+#+title: Task: Serve the tenant roster and the bootstrap routes
+#+description: Thirteen tenancy routes remain at the BFF's addresses: the bootstrap and the tenant setup, the registration policy, the overview, and the tenants with their parties, people, sign-ins and images.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/serve-the-tenant-roster-and-bootstrap-routes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Serve the tenant roster, the reads inside a tenant, and the bootstrap and setup routes at the BFF's own addresses and shapes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- Each route names its same-address C++ route in the inventory.
+- A test proves each route against the answer the BFF gives.
+- The local gate is green.
+
+* Plan
+
+The routes fall into three groups, each a reviewable unit:
+
+- The bootstrap and setup reads: =/api/bootstrap=, =/api/bootstrap/administrator=,
+  =/api/bootstrap/complete=, =/api/tenant-setup= and =/api/registration-policy=.
+  The first two run with no session and the BFF rate limits the policy read,
+  which the C++ server cannot do yet.
+- The roster: =/api/tenants=, =/api/tenants/{code}= (read and remove) and
+  =/api/overview=. Each needs the deployment read and joins the provisioning runs.
+- The reads inside a tenant: =/api/tenants/{code}/parties=, =people=,
+  =accounts/{username}/sign-ins= and =images/{id}=. Each enters the tenant for
+  the read alone. The parties read reuses =party_page_routes::read_page= with a
+  request that carries the tenant's token.
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -78,7 +78,7 @@ an API publishes no area, so it is counted under =(none)=.
 | reference-data | conventions, counterparties, curve-configuration, records, refdata, server, tenors | 277 | composed view 1, resource 276 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 44 | composed view 12, resource 32 |
 | simulation | calibration, market-regime, synthetic | 38 | composed view 3, resource 35 |
-| tenancy | iam, refdata, server | 67 | composed view 2, resource 65 |
+| tenancy | iam, refdata, server | 70 | composed view 2, resource 68 |
 | trading | blotter, book-changes, booking, books, structures, trades | 24 | composed view 2, resource 22 |
 | workflow | inbox, server, timeline | 18 | composed view 6, resource 12 |
 | (none) | books, classifications, conventions, core, counterparties, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 401 | not an API 383, transport capability 18 |
@@ -156,11 +156,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | reference-data | 30 | 1 | 29 |
 | reporting | 44 | 0 | 44 |
 | simulation | 28 | 0 | 28 |
-| tenancy | 21 | 10 | 11 |
+| tenancy | 21 | 12 | 9 |
 | trading | 24 | 0 | 24 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 12 | 23 |
-| total | 324 | 76 | 248 |
+| total | 324 | 78 | 246 |
 
 * The pairing
 
@@ -318,8 +318,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/parties= | GET /api/parties |
 | GET =/api/password-policy= | none |
 | GET =/api/permissions= | GET /api/permissions |
-| POST =/api/provision-party= | none |
-| POST =/api/provision-tenant= | none |
+| POST =/api/provision-party= | POST /api/provision-party |
+| POST =/api/provision-tenant= | POST /api/provision-tenant |
 | GET =/api/qa/docs/:id= | none |
 | GET =/api/qa/scenarios= | none |
 | GET =/api/qa/scenarios/:id= | none |
@@ -404,7 +404,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | PUT =/api/roles/:roleId/permissions= | PUT /api/roles/{roleId}/permissions |
 | POST =/api/roles/:roleId/permissions/changes= | POST /api/roles/{roleId}/permissions/changes |
 | GET =/api/roles/page= | GET /api/roles/page |
-| GET =/api/seed-profiles= | GET /api/v1/tenancy/seed_profiles |
+| GET =/api/seed-profiles= | GET /api/seed-profiles |
 | GET =/api/series/:id/observations= | none |
 | DELETE =/api/session= | DELETE /api/v1/auth/sessions |
 | GET =/api/session= | GET /api/v1/auth/sessions/me |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1148 routes: 324 answered by the BFF and 824 by ores.http.
+1151 routes: 324 answered by the BFF and 827 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -772,7 +772,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | auth | get | =/api/geo/country= | bff | projects/ores.web/packages/bff/src/audit.ts:166 | Resolves one address to a country against the tenant's published ranges, the read the sign-in audit uses to say where a session came from. |
 | resource | auth | get | =/api/geo/country= | ores.http | projects/ores.http/iam/src/routes/iam/audit_routes.cpp:208 | Resolves one address to a country against the tenant's published ranges, the read the sign-in audit uses to say where a session came from. |
 | transport capability | (none) | get | =/api/health= | bff | projects/ores.web/packages/bff/src/server.ts:692 | The liveness answer the deployment's probes read, beside the metrics endpoints the design puts in the server. |
-| transport capability | (none) | get | =/api/health= | ores.http | projects/ores.http/core/src/routes/site_routes.cpp:279 | The liveness answer the BFF gave the deployment's probes, kept so a probe needs no change when the BFF goes. |
+| transport capability | (none) | get | =/api/health= | ores.http | projects/ores.http/core/src/routes/site_routes.cpp:275 | The liveness answer the BFF gave the deployment's probes, kept so a probe needs no change when the BFF goes. |
 | not an API | (none) | get | =/api/history= | bff | projects/ores.web/packages/bff/src/classifications.ts:369 | One history route for every entity type, named by an opaque entityType string, so the payload has no per-entity schema; ores.http already serves /versions for each versioned collection. |
 | not an API | (none) | get | =/api/history= | ores.http | projects/ores.http/core/src/routes/history_routes.cpp:213 | The one history read every history tab calls, kept so the tabs work when the BFF goes; the owning component answers on the subject the entity type names. |
 | resource | workflow | get | =/api/hold-reasons= | bff | projects/ores.web/packages/bff/src/inbox.ts:756 | The codes a decider may park a request with, a tenant-wide lookup that carries no personal data. |
@@ -863,7 +863,9 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | access | get | =/api/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1463 | Every permission the platform defines, the catalogue a role is described against. |
 | resource | access | get | =/api/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/role_write_routes.cpp:356 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | tenancy | post | =/api/provision-party= | bff | projects/ores.web/packages/bff/src/server.ts:2582 | Adds one party to the tenant the caller works in and starts the run that brings it to life, the row first and the run after it. |
+| resource | tenancy | post | =/api/provision-party= | ores.http | projects/ores.http/iam/src/routes/iam/provisioning_routes.cpp:295 | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
 | resource | tenancy | post | =/api/provision-tenant= | bff | projects/ores.web/packages/bff/src/server.ts:2634 | Provisions one tenant from a starting point and answers the run that does the rest. |
+| resource | tenancy | post | =/api/provision-tenant= | ores.http | projects/ores.http/iam/src/routes/iam/provisioning_routes.cpp:275 | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
 | resource | qa | get | =/api/qa/docs/:id= | bff | projects/ores.web/packages/bff/src/qa.ts:163 | One document the scenario store holds, by its identifier. |
 | resource | qa | get | =/api/qa/scenarios= | bff | projects/ores.web/packages/bff/src/qa.ts:151 | The QA scenarios the store holds, one scenario by id, and the image kept beside one of its steps. |
 | resource | qa | get | =/api/qa/scenarios/:id= | bff | projects/ores.web/packages/bff/src/qa.ts:156 | The QA scenarios the store holds, one scenario by id, and the image kept beside one of its steps. |
@@ -1070,6 +1072,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | access | put | =/api/roles/{roleId}/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/role_write_routes.cpp:413 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | access | post | =/api/roles/{roleId}/permissions/changes= | ores.http | projects/ores.http/iam/src/routes/iam/role_write_routes.cpp:427 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | tenancy | get | =/api/seed-profiles= | bff | projects/ores.web/packages/bff/src/server.ts:2519 | The starting points a new tenant may be provisioned from, each with the step kinds it orders and the parameters its form declares. |
+| resource | tenancy | get | =/api/seed-profiles= | ores.http | projects/ores.http/iam/src/routes/iam/provisioning_routes.cpp:248 | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
 | resource | market-data | get | =/api/series/:id/observations= | bff | projects/ores.web/packages/bff/src/series.ts:77 | One series' observations inside a window, oldest first, the count read as the cap on the answer. |
 | transport capability | auth | delete | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1025 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
 | transport capability | auth | get | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1017 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
@@ -1086,9 +1089,9 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | auth | post | =/api/sessions/{sessionId}/end= | ores.http | projects/ores.http/iam/src/routes/iam/audit_routes.cpp:232 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | resource | auth | post | =/api/signup= | bff | projects/ores.web/packages/bff/src/server.ts:860 | Registers one account against the tenant the address resolves to and answers its state rather than a session. |
 | transport capability | (none) | get | =/api/site= | bff | projects/ores.web/packages/bff/src/server.ts:902 | What the served client needs to render itself, the environment and on the developer surface the host, port and namespace, which the design delivers with the bundle rather than as a resource. |
-| transport capability | (none) | get | =/api/site= | ores.http | projects/ores.http/core/src/routes/site_routes.cpp:296 | What the served client needs to render itself, read from the site configuration the BFF read, and the deployment's plumbing where the developer surface is offered. |
+| transport capability | (none) | get | =/api/site= | ores.http | projects/ores.http/core/src/routes/site_routes.cpp:300 | What the served client needs to render itself, read from the site configuration the BFF read, and the deployment's plumbing where the developer surface is offered. |
 | transport capability | (none) | get | =/api/site/deployment= | bff | projects/ores.web/packages/bff/src/server.ts:925 | What the served client needs to render itself, the environment and on the developer surface the host, port and namespace, which the design delivers with the bundle rather than as a resource. |
-| transport capability | (none) | get | =/api/site/deployment= | ores.http | projects/ores.http/core/src/routes/site_routes.cpp:303 | What the served client needs to render itself, read from the site configuration the BFF read, and the deployment's plumbing where the developer surface is offered. |
+| transport capability | (none) | get | =/api/site/deployment= | ores.http | projects/ores.http/core/src/routes/site_routes.cpp:311 | What the served client needs to render itself, read from the site configuration the BFF read, and the deployment's plumbing where the developer surface is offered. |
 | resource | trading | get | =/api/structure-kinds= | bff | projects/ores.web/packages/bff/src/structures.ts:550 | The kinds a structure may be, a lookup the server holds. |
 | resource | trading | get | =/api/structures= | bff | projects/ores.web/packages/bff/src/structures.ts:711 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
 | resource | trading | post | =/api/structures= | bff | projects/ores.web/packages/bff/src/structures.ts:571 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |

@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 169CA9EA-6515-45B6-9F9F-7385FCF53C98
 :END:
-#+title: Task: Serve the tenant roster, setup and provisioning routes
-#+description: Sixteen tenancy routes remain at the BFF's addresses: the bootstrap and the tenant setup, the registration policy, the tenants with their parties, people, sign-ins and images, party and tenant provisioning, the overview and the seed profiles.
+#+title: Task: Serve the provisioning routes
+#+description: ores.web reads the starting points a tenant is provisioned from, and provisions a tenant or a party, through the BFF. The C++ server must answer them.
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
@@ -13,24 +13,24 @@
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Serve the tenant roster, the reads inside a tenant, the bootstrap and setup routes, and the provisioning routes at the BFF's own addresses and shapes.
+Serve the starting points a tenant is provisioned from, and the tenant and party provisioning journeys, at the BFF's own addresses and shapes.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -56,9 +56,22 @@ The routes fall into four groups, each a reviewable unit:
 - Provisioning: =/api/seed-profiles=, =/api/provision-party= and
   =/api/provision-tenant=.
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+On 2026-11-11 the task served the provisioning group first, and the other
+three groups moved to [[id:6A5E392C-464E-4B9F-9E09-4ADF336D075A][Serve the tenant roster and the bootstrap routes]].
+
+- =provisioning_routes= is a new unit in the IAM part. =GET /api/seed-profiles=
+  joins each starting point with its steps and its parameters, reads the JSON
+  list columns as lists, and orders the cards by their declared order and then
+  by code, as the BFF did.
+- =POST /api/provision-tenant= reads the body into the provision command. Each
+  parameter becomes one =name=value= entry. The codec reads the parameters as a
+  map, so the entries are in name order rather than the order the browser sent;
+  the service reads them by name.
+- =POST /api/provision-party= reads every party of the tenant to find its root,
+  writes the new party under it with a random id, inactive, operational and in
+  =WRLD=, and then starts the party stage. A refused write or stage is an
+  answer with success false, as the BFF sent it.
+- The IAM part takes =ores.refdata.api=, for the party reads and the write.
 
 * Measurements
 
@@ -97,6 +110,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the parameters reach the command in name order, not the browser's order. | =provisioning_routes.cpp= | Declined | The codec reads a JSON object as a map. The service reads each entry by its name, so the order carries no meaning. The plan states it. |
+| 2 | Local review: a JSON list column that holds something else. | =provisioning_routes.cpp= | Accepted | The read fails as unanswered, as the BFF's schema failed it, and a test proves the refusal. |
+| 3 | Local review: the request bodies are file-local codec structs. | =provisioning_routes.cpp= | Accepted | They sit in the unit's anonymous namespace, so no other unit of the part can clash with them. |
+| 4 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
 
 * Result
+
+The C++ server answers =GET /api/seed-profiles=, =POST /api/provision-tenant=
+and =POST /api/provision-party= at the BFF's addresses and in its shapes, and
+the inventory pairs each. Tests compare the card shape exactly, read the list
+columns, the tenant body and the root party, and prove the refusals come before
+a forward. The other thirteen routes moved to their own task.

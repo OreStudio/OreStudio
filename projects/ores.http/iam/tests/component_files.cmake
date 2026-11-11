@@ -38,6 +38,7 @@ set(files
     "main.cpp"
     "permission_routes_tests.cpp"
     "profile_routes_tests.cpp"
+    "provisioning_routes_tests.cpp"
     "role_routes_tests.cpp"
     "role_write_routes_tests.cpp"
     "seed_profile_routes_tests.cpp"

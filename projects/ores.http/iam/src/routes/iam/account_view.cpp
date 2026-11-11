@@ -96,4 +96,47 @@ std::string json_of(const std::optional<ores::iam::domain::account_contact_infor
     return contact ? json_of(*contact) : std::string("null");
 }
 
+
+std::string json_of(const ores::iam::domain::login_info& i) {
+    std::string out = "{\"tenantId\":" + json::write(i.tenant_id.to_string());
+    out += ",\"accountId\":" + json::write(boost::uuids::to_string(i.account_id));
+    out += ",\"lastIp\":" + json::write(i.last_ip);
+    out += ",\"lastAttemptIp\":" + json::write(i.last_attempt_ip);
+    out += ",\"failedLogins\":" + std::to_string(i.failed_logins);
+    out += ",\"locked\":" + std::string(i.locked ? "true" : "false");
+    out += ",\"lastLogin\":" + json::write(i.last_login);
+    out += ",\"online\":" + std::string(i.online ? "true" : "false");
+    out +=
+        ",\"passwordResetRequired\":" + std::string(i.password_reset_required ? "true" : "false");
+    return out + "}";
+}
+
+std::string json_of(const std::optional<ores::iam::domain::login_info>& info) {
+    return info ? json_of(*info) : std::string("null");
+}
+
+std::string json_of(const ores::iam::domain::session& s) {
+    std::string out = "{\"tenantId\":" + json::write(s.tenant_id.to_string());
+    out += ",\"id\":" + json::write(boost::uuids::to_string(s.id));
+    out += ",\"accountId\":" + json::write(boost::uuids::to_string(s.account_id));
+    out += ",\"startTime\":" + json::write(s.start_time);
+    out += ",\"endTime\":" + json::write(s.end_time);
+    out += ",\"clientIp\":" + json::write(s.client_ip);
+    out += ",\"clientIdentifier\":" + json::write(s.client_identifier);
+    out += ",\"clientVersionMajor\":" + std::to_string(s.client_version_major);
+    out += ",\"clientVersionMinor\":" + std::to_string(s.client_version_minor);
+    out += ",\"bytesSent\":" + std::to_string(s.bytes_sent);
+    out += ",\"bytesReceived\":" + std::to_string(s.bytes_received);
+    out += ",\"countryCode\":" + json::write(s.country_code);
+    out += ",\"protocol\":" + json::write(s.protocol);
+    return out + "}";
+}
+
+std::string json_of(const std::vector<ores::iam::domain::session>& sessions) {
+    std::string out = "[";
+    for (std::size_t i = 0; i < sessions.size(); ++i)
+        out += (i == 0 ? "" : ",") + json_of(sessions[i]);
+    return out + "]";
+}
+
 }

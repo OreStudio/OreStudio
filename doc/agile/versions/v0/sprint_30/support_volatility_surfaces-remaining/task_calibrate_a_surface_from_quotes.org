@@ -26,11 +26,11 @@ A caller names a blueprint and an as-of, and the system writes a calibrated surf
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Published FX forward sets for each party. |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -97,6 +97,19 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The four writes are not atomic | =fx_vol_surface_calibration_service.cpp= | Fixed | One =unit_of_work= holds the claim, the grid, the axes, the lineage and the record. |
+| 2 | A rerun at the same as-of may duplicate rows | =fx_vol_surface_calibration_service.cpp= | Verified | The live rerun left 35 observations and the record at version 2. |
+| 3 | The output series' owner is not checked | =fx_vol_surface_calibration_service.cpp= | Fixed | A series another derivation owns is refused. |
+| 4 | The lineage weights are lossy | =fx_vol_surface_calibration_service.cpp= | Documented | A series carries its first pillar's weight; each pillar's weight is in the blueprint version the lineage names. |
+| 5 | A fit that did not converge is still written | =fx_vol_surface_calibration_service.cpp= | Kept | A candidate records what the quotes imply; the publish task now shows the fit and its checks to the decider. |
+| 6 | The time and the discounting use different dates | =fx_vol_surface_calibration_plan.cpp= | Kept | An FX option's time runs from the trade and its delivery from spot; a comment states it. |
+| 7 | Duplicate pillars, an unchecked label, an unchecked delta | =fx_vol_surface_calibration_plan.cpp= | Fixed | Each is refused, with tests for the duplicate and for a forward set that ends early. |
+| 8 | Read by blueprint, batch the lineage reads, escape JSON | =fx_vol_surface_calibration_service.cpp= | Deferred | Grids of 35 points and a handful of blueprints; the JSON holds UUIDs only. |
 
 * Result
+
+Done on 2026-11-11. On a fresh Acme tenant, a trader of ACCOUS published the party's EUR/USD forward set and calibrated its EURUSD_SSVI blueprint at 01:05. The fit converged with every one of its 35 pillars within the tolerance, the largest error 0.000012 in volatility, no arbitrage violation and no missing pillar. The output series holds 35 observations, 1W to 1Y by five delta strikes, is claimed FX_VOL_SURFACE_CALIBRATION and declares its expiry and strike axes. Each point's lineage names blueprint version 1, the derived series and its weight. A rerun at the same as-of converged on the same record, at version 2, with no duplicate observation. An as-of before any forward set was refused, naming the forwards. The scripts are =evidence/fx_vol_surface_calibrate.ores= and =evidence/fx_vol_surface_calibrations.sql=.
+
+The first live run was refused: the derived source quotes no 2Y, so EURUSD_SSVI now seeds 1W to 1Y; see the story's decisions. Both provisioning runs failed at the unrelated =generate_trades= step, filed as the capture Provisioning fails when two swap conventions name the drawn index.
+
+Tests: quant 621, market data service 239 with only NATS running, market data API 1042, shell market data 404, IAM blueprints 8, refdata mappers 25.

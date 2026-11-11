@@ -109,6 +109,10 @@ via its "Verifies task" field.
 | 4 | =component-drift=: refdata's CMake was edited by hand on main, and its model did not say so. | refdata =component_overview.org= | Accepted | The model states quant as a public dependency and magic_enum for the tests. |
 | 5 | =component-drift=: =ores.http.nats= is missing from =#+parts:= and states the adapter kind. | =ores.http= models | Tracked | Modelling the part makes codegen own its CMake, a change of its own. [[id:B773B120-7C5D-47C2-A44E-484E13BEEFF7][Model the gateway's forwarding part so codegen owns it]] takes it. |
 | 6 | Local review: a test that cannot fail proves nothing. | generated tests | Checked | With the provider handler's gate removed, its test fails at the first write. |
+| 7 | PR #4578 review: the gate rests on a verb list, so a new state-changing verb would pass it. | =org_loader.py= | Accepted | The derivation names its read and write verbs, and refuses any other, so an unknown verb fails the generation instead of serving an unguarded handler. A test pins it. A dry run of every handler found none. |
+| 8 | PR #4578 review: a hand-written handler may switch to the system tenant for a write. | hand-written handlers | No change | The hand-written handlers that switch read the system catalogue only, such as the dq template list and the reporting trigger's configuration types. |
+| 9 | PR #4578 review: the test rebuilds the permission code from a pattern. | test archetype | Declined | The handler builds its check from the same expression, so the two cannot differ. |
+| 10 | PR #4578 review: watch the full run for link fallout from the new =ores.service= links. | — | No change | The five test targets build with -Werror. |
 
 * Result
 

@@ -100,7 +100,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale doc comment above bond_leg_role | bond_instrument_reader.cpp | Accept | The constant sits above the comment that documents leg_role_of. |
+| 2 | Repo and funding rates unchecked | bond_builders.hpp | Accept in part | Negative rates are valid; the terms state it. |
+| 3 | Unchecked dates | bond_builders.cpp | Accept in part | Call dates must be in order with no repeat, with a test. An option's expiry is not checked against the issue, which a holding does not carry; a forward settling on its maturity is valid. |
+| 4 | Leg currency unchecked against the issue | bond_builders.cpp | Decline | A holding names the issue by id only; the planner states one currency for both. |
+| 5 | Hard-coded leg conventions | bond_builders.hpp | Decline | The header states them; the terms grow when a caller needs another. |
+| 6 | Unchecked value() for par | bond_builders.cpp | Accept | Named par_price. |
+| 7 | Ascot checks its period late | bond_builders.cpp | Accept | Checked first. |
+| 8 | Callable fixture proves stand-ins | capture | No change | The capture tracks it. |
+| 9 | No real booking of the leg arrays | tests | No change | The close-out task runs the Acme reports, which book them. |
 
 * Result
 

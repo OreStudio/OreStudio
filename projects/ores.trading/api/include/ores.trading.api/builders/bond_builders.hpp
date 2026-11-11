@@ -161,7 +161,7 @@ private:
     bond_future_terms terms_;
 };
 
-/// A repo of the bond: cash lent at a fixed rate from the start to the end.
+/// A repo of the bond: cash lent at a fixed rate, which may be negative, from the start to the end.
 struct bond_repo_terms final {
     bond_holding holding;
     required<utility::decimal::decimal> repo_rate;
@@ -179,7 +179,7 @@ private:
     bond_repo_terms terms_;
 };
 
-/// The bond's price return against a quarterly fixed funding leg.
+/// The bond's price return against a quarterly fixed funding leg, whose rate may be negative.
 struct bond_trs_terms final {
     bond_holding holding;
     required<utility::decimal::decimal> funding_rate;

@@ -20,7 +20,9 @@
 #include "ores.trading.api/builders/bond_builders.hpp"
 #include "refusals.hpp"
 #include <boost/uuid/nil_generator.hpp>
+#include <algorithm>
 #include <format>
+#include <functional>
 #include <utility>
 
 namespace ores::trading::builders {
@@ -48,6 +50,9 @@ domain::bond_product product_of(std::string_view trade_type, const bond_holding&
     instrument.notional = holding.notional.get();
     return product;
 }
+
+/// The price a TRS states its initial price at: par, per hundred.
+constexpr double par_price = 100.0;
 
 std::string iso(ymd date) {
     return std::format("{:%F}", std::chrono::sys_days{date});
@@ -354,7 +359,7 @@ bond_result bond_trs_builder::build() const {
     // The book receives the bond's return and pays the funding leg.
     trs.payer = "false";
     trs.price_type = "Clean";
-    trs.initial_price = decimal::from_double(100.0).value();
+    trs.initial_price = decimal::from_double(par_price).value();
     product.trs.push_back(std::move(trs));
     add_trade_leg(product,
                   "trs_funding",
@@ -389,8 +394,12 @@ callable_bond_builder::callable_bond_builder(callable_bond_terms terms)
 bond_result callable_bond_builder::build() const {
     if (auto refusal = holding_refusal(terms_.holding))
         return std::unexpected(std::move(*refusal));
-    if (terms_.calls.get().empty())
+    const auto& calls = terms_.calls.get();
+    if (calls.empty())
         return std::unexpected(build_error{"calls", "must state at least one date"});
+    if (!std::ranges::is_sorted(calls, std::less_equal<>{}) ||
+        std::ranges::adjacent_find(calls) != calls.end())
+        return std::unexpected(build_error{"calls", "must be in order with no date twice"});
     auto product = product_of(trade_type, terms_.holding);
     int number = 0;
     for (const auto& when : terms_.calls.get()) {
@@ -427,11 +436,11 @@ ascot_builder::ascot_builder(ascot_terms terms)
     : terms_(std::move(terms)) {}
 
 bond_result ascot_builder::build() const {
+    if (auto refusal = refusals::period(terms_.start.get(), terms_.end.get()))
+        return std::unexpected(std::move(*refusal));
     auto product = convertible_bond_builder(terms_.convertible).build();
     if (!product)
         return product;
-    if (auto refusal = refusals::period(terms_.start.get(), terms_.end.get()))
-        return std::unexpected(std::move(*refusal));
     product->row.instrument.identity.trade_type_code = std::string(trade_type);
     domain::ascot ascot;
     ascot.ascot_option_type = option_type_of(terms_.kind.get());

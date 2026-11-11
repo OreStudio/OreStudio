@@ -1,0 +1,254 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+---
+# Measures what the unity batch size costs. Each matrix entry builds three
+# times with one batch size:
+#
+#   cold         the first parent of `head`, in a fresh tree, empty sccache
+#   incremental  `head` in the same tree, with no compiler cache, so only the
+#                units the merged PR really invalidates are compiled
+#   warm         `head` in a fresh tree with the cold build's sccache, which is
+#                what a continuous run sees after a merge
+#
+# The order keeps the phases apart: the incremental build bypasses sccache, so
+# the warm build finds only the cold build's objects. Nothing is restored from
+# or saved to the shared caches, so this never changes what Continuous reads.
+name: Unity batch measurement
+
+env:
+  VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
+  SCCACHE_DIR: '${{ github.workspace }}/.sccache'
+
+on:  # yamllint disable-line rule:truthy
+  workflow_dispatch:
+    inputs:
+      head:
+        description: 'A merge commit on main. Its first parent is the cold build; the PR it merges is the incremental change.'
+        required: true
+      buildtype:
+        description: 'Build type to measure.'
+        type: choice
+        options: [debug, release]
+        default: debug
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    name: batch-${{ matrix.batch }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        # 0 turns unity off.
+        batch: [16, 8, 4, 0]
+    env:
+      PRESET: linux-clang-${{ inputs.buildtype }}-ninja
+      RESULT: ${{ github.workspace }}/measurement/batch-${{ matrix.batch }}.json
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /usr/share/swift /usr/lib/jvm /home/linuxbrew/.linuxbrew \
+            /usr/local/.ghcup /usr/share/miniconda /usr/share/miniconda3 \
+            /opt/az /opt/pipx/venvs/azure-cli /usr/lib/google-cloud-sdk \
+            /usr/share/google-cloud-sdk /usr/local/share/powershell \
+            /usr/local/share/chromium /usr/local/share/chrome_beta \
+            /opt/google/chrome /opt/hostedtoolcache/CodeQL \
+            /opt/hostedtoolcache/Ruby /opt/hostedtoolcache/node \
+            /opt/hostedtoolcache/go /usr/local/share/boost \
+            /usr/local/lib/node_modules /var/cache/snapd
+          sudo snap remove lxd 2>/dev/null || true
+          sudo docker image prune --all --force || true
+          sudo apt-get clean
+          df -h .
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.head }}
+          fetch-depth: 0
+          submodules: true
+
+      - name: Check out the base commit
+        run: |
+          head_sha="$(git rev-parse HEAD)"
+          base_sha="$(git rev-parse HEAD^1)"
+          echo "HEAD_SHA=${head_sha}" >> "$GITHUB_ENV"
+          echo "BASE_SHA=${base_sha}" >> "$GITHUB_ENV"
+          git checkout --quiet "${base_sha}"
+          git submodule update --init --quiet
+          if ! grep -q ORES_UNITY_BUILD_BATCH_SIZE CMakeLists.txt \
+              || [ ! -f build/scripts/ninja_log_summary.py ]; then
+            echo "::error::base ${base_sha} predates ORES_UNITY_BUILD_BATCH_SIZE; pick a later merge commit"
+            exit 1
+          fi
+          cp build/scripts/ninja_log_summary.py "$RUNNER_TEMP/"
+          mkdir -p measurement
+          echo "base ${base_sha}, head ${head_sha}"
+          git log --oneline -1 "${head_sha}"
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Install Clang
+        uses: KyleMayes/install-llvm-action@v2
+        with:
+          version: "19"
+          arch: x64
+
+      - name: Install sccache
+        uses: hendrikmuhs/ccache-action@v1.2.24
+        with:
+          variant: sccache
+          # A key no earlier run saved, so the cold build starts empty.
+          key: unity-measurement-${{ github.run_id }}-${{ matrix.batch }}
+          max-size: 30G
+          save: false
+
+      - name: Install dev packages
+        run: ./projects/ores.compass/compass.sh env install-packages
+
+      - name: get-cmake
+        uses: lukka/get-cmake@v4.4.5
+
+      - name: Restore vcpkg binary packages
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ github.workspace }}/vcpkg-cache
+          key: vcpkg-linux-clang-${{ inputs.buildtype }}-ninja-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-linux-clang-${{ inputs.buildtype }}-ninja-
+
+      - name: run-vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          doNotCache: true
+
+      - name: Configure
+        run: |
+          if [ "${{ matrix.batch }}" = "0" ]; then
+            unity="-DORES_UNITY_BUILD=OFF"
+          else
+            unity="-DORES_UNITY_BUILD=ON -DORES_UNITY_BUILD_BATCH_SIZE=${{ matrix.batch }}"
+          fi
+          link=""
+          if [ "${{ inputs.buildtype }}" = "debug" ]; then
+            for t in EXE SHARED MODULE; do
+              link="${link} -DCMAKE_${t}_LINKER_FLAGS_DEBUG=-Wl,--compress-debug-sections=zlib"
+            done
+          fi
+          echo "CONFIGURE_ARGS=${unity}${link}" >> "$GITHUB_ENV"
+          cmake --preset "${PRESET}" ${unity}${link}
+
+      - name: Cold build of the base commit
+        timeout-minutes: 300
+        run: |
+          tree="build/output/${PRESET}"
+          sccache --zero-stats
+          start=$(date +%s)
+          cmake --build "${tree}" --parallel "$(nproc)"
+          wall=$(( $(date +%s) - start ))
+          sccache --show-stats
+          python3 "$RUNNER_TEMP/ninja_log_summary.py" phase \
+            --log "${tree}/.ninja_log" --skip 0 --wall "${wall}" \
+            --name cold --out "${RESULT}" \
+            --meta batch=${{ matrix.batch }} --meta buildtype=${{ inputs.buildtype }} \
+            --meta base="${BASE_SHA}" --meta head="${HEAD_SHA}"
+          df -h .
+
+      - name: Incremental build of the head commit
+        timeout-minutes: 120
+        run: |
+          tree="build/output/${PRESET}"
+          git checkout --quiet "${HEAD_SHA}"
+          git submodule update --init --quiet
+          skip=$(wc -l < "${tree}/.ninja_log")
+          start=$(date +%s)
+          # An empty CI makes compiler_cache_wrapper.sh call the compiler
+          # directly, so every unit the PR invalidates is really compiled.
+          CI= cmake --build "${tree}" --parallel "$(nproc)"
+          wall=$(( $(date +%s) - start ))
+          python3 "$RUNNER_TEMP/ninja_log_summary.py" phase \
+            --log "${tree}/.ninja_log" --skip "${skip}" --wall "${wall}" \
+            --name incremental --out "${RESULT}"
+          rm -rf "${tree}"
+          df -h .
+
+      - name: Warm build of the head commit in a fresh tree
+        timeout-minutes: 300
+        run: |
+          tree="build/output/warm"
+          cmake --preset "${PRESET}" -B "${tree}" ${CONFIGURE_ARGS}
+          sccache --zero-stats
+          start=$(date +%s)
+          cmake --build "${tree}" --parallel "$(nproc)"
+          wall=$(( $(date +%s) - start ))
+          stats="$(sccache --show-stats)"
+          echo "${stats}"
+          hits=$(echo "${stats}" | awk '/^Cache hits  /{print $NF; exit}')
+          misses=$(echo "${stats}" | awk '/^Cache misses  /{print $NF; exit}')
+          python3 "$RUNNER_TEMP/ninja_log_summary.py" phase \
+            --log "${tree}/.ninja_log" --skip 0 --wall "${wall}" \
+            --hits "${hits}" --misses "${misses}" \
+            --name warm --out "${RESULT}"
+
+      - name: Upload the result
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unity-batch-${{ matrix.batch }}
+          path: measurement/
+          if-no-files-found: warn
+
+  report:
+    needs: measure
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: build/scripts/ninja_log_summary.py
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: unity-batch-*
+          path: measurement
+          merge-multiple: true
+
+      - name: Compare the batch sizes
+        run: |
+          shopt -s nullglob
+          files=(measurement/*.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No batch produced a result." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          {
+            echo "## Unity batch measurement (${{ inputs.buildtype }})"
+            echo
+            python3 build/scripts/ninja_log_summary.py table "${files[@]}"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -20,7 +20,9 @@
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "leg_rows.hpp"
 #include "refusals.hpp"
+#include <tuple>
 #include <utility>
+#include <variant>
 
 namespace ores::trading::builders {
 
@@ -273,7 +275,10 @@ equity_result equity_touch_option_builder::build() const {
     row.expiry_date = terms_.expiry.get();
     row.long_short = long_short_of(terms_.position.get());
     row.payout_amount = terms_.payout.get();
-    // ORE watches a touch against the equity's index, on the TARGET calendar.
+    /*
+     * ORE watches a touch against the equity's index. The catalogue keeps no
+     * exchange calendar for an equity, so the touch is watched on TARGET.
+     */
     row.barrier_fixing_index = terms_.underlying.get().uri();
     row.barrier_calendar = "TARGET";
     domain::equity_instrument_data out;
@@ -373,8 +378,10 @@ equity_result equity_swap_builder::build() const {
 }
 
 equity_worst_of_basket_swap_builder::equity_worst_of_basket_swap_builder(
+    const marketdata::conventions::convention_lookup& conventions,
     equity_worst_of_basket_swap_terms terms)
-    : terms_(std::move(terms)) {}
+    : conventions_(conventions)
+    , terms_(std::move(terms)) {}
 
 equity_result equity_worst_of_basket_swap_builder::build() const {
     const auto& basket = terms_.basket.get();
@@ -402,6 +409,22 @@ equity_result equity_worst_of_basket_swap_builder::build() const {
             return std::unexpected(build_error{
                 "observation_dates", "must ascend after the start and end no later than maturity"});
     }
+    const auto& funding = terms_.funding_index.get();
+    if (funding.index() == nullptr || funding.index()->subject() != terms_.currency.get())
+        return std::unexpected(build_error{"funding_index", "must be an index in the currency"});
+    const auto definition = conventions_.index_definition_of(funding);
+    if (!definition)
+        return std::unexpected(build_error{
+            "funding_index", definition.error().reference + ": " + definition.error().reason});
+    // The funding leg accrues and rolls as its index's convention defines.
+    const auto [day_count, calendar, adjustment] = std::visit(
+        [](const auto& index) {
+            std::string rolls = "MF";
+            if constexpr (requires { index.business_day_convention; })
+                rolls = index.business_day_convention;
+            return std::tuple{index.day_count_fraction, index.fixing_calendar, rolls};
+        },
+        *definition);
 
     domain::equity_swap_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
@@ -415,7 +438,7 @@ equity_result equity_worst_of_basket_swap_builder::build() const {
     row.fixed_rate = decimal{};
     row.floating_index = terms_.funding_index.get().uri();
     row.floating_spread = decimal{};
-    row.floating_day_count_fraction = "A360";
+    row.floating_day_count_fraction = day_count;
     domain::equity_instrument_data out;
     out.instrument = std::move(row);
     int number = 0;
@@ -446,8 +469,8 @@ equity_result equity_worst_of_basket_swap_builder::build() const {
         schedule.schedule_role = role;
         schedule.sequence_number = 1;
         schedule.schedule_kind = "dates";
-        schedule.calendar = "TARGET";
-        schedule.convention = "MF";
+        schedule.calendar = calendar;
+        schedule.convention = adjustment;
         out.schedules.push_back(std::move(schedule));
         int date_number = 0;
         std::vector<ymd> dates{terms_.start.get()};

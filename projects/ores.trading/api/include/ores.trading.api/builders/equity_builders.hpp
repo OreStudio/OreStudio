@@ -304,10 +304,15 @@ struct equity_worst_of_basket_swap_terms final {
 class ORES_TRADING_API_EXPORT equity_worst_of_basket_swap_builder final {
 public:
     static constexpr std::string_view trade_type = "EquityWorstOfBasketSwap";
-    explicit equity_worst_of_basket_swap_builder(equity_worst_of_basket_swap_terms terms);
+    equity_worst_of_basket_swap_builder(
+        const marketdata::conventions::convention_lookup& conventions,
+        equity_worst_of_basket_swap_terms terms);
+    equity_worst_of_basket_swap_builder(marketdata::conventions::convention_lookup&&,
+                                        equity_worst_of_basket_swap_terms) = delete;
     [[nodiscard]] equity_result build() const;
 
 private:
+    const marketdata::conventions::convention_lookup& conventions_;
     equity_worst_of_basket_swap_terms terms_;
 };
 

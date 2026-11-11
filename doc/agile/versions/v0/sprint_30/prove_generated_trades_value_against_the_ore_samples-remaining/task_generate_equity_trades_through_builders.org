@@ -106,6 +106,12 @@ via its "Verifies task" field.
 | 6 | Header includes | equity_builders.hpp | Accept | The header includes what it uses. |
 | 7 | Swap schedule copy selects on leg only | equity_builders.cpp | Accept | The swap copies only the floating leg's own schedule. |
 | 8 | Basket names need a tracked home | equity_builders.cpp | Accept | Constituents store the catalogue code, which the store check accepts, until the soft foreign key task reads addresses. |
+| 9 | Basket calendar and day count hard-coded | equity_builders.cpp | Accept | The basket takes the funding index's day count, calendar and adjustment from its convention. The touch keeps TARGET, because the catalogue has no exchange calendar for an equity; a comment says so. |
+| 10 | Funding index not checked against currency | equity_builders.cpp | Accept | The builder refuses an index in another currency; tested. |
+| 11 | Ascending check untested | builders_equity_builders_tests.cpp | Accept | Tests for a date on the start and dates out of order. |
+| 12 | Second basket member in another currency | trade_population_planner.cpp | Accept | Both members are in one currency that has a funding index. |
+| 13 | Planner loop easy to misread | trade_population_planner.cpp | Accept | A helper returns the two members and the funding index. |
+| 14 | Month-end clamping of observation dates | trade_population_planner.cpp | Decline | Each date steps from the start, so a clamp never carries into the next date. |
 
 * Result
 

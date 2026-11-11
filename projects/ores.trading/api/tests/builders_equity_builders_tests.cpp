@@ -55,6 +55,22 @@ md::market_reference libor_3m() {
     return *parsed;
 }
 
+/// Conventions defining the LIBOR index a basket funds on; static, as the builder keeps a
+/// reference.
+const conv::convention_lookup& basket_conventions() {
+    static const conv::convention_lookup lookup = [] {
+        ores::refdata::domain::ibor_index_convention libor;
+        libor.id = "USD-LIBOR";
+        libor.fixing_calendar = "US";
+        libor.settlement_days = 2;
+        libor.day_count_fraction = "A360";
+        libor.business_day_convention = "MF";
+        libor.oresmd_uri = "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR";
+        return conv::convention_lookup(conv::convention_set{.ibor_indices = {libor}});
+    }();
+    return lookup;
+}
+
 equity_option_terms spx_call() {
     return {.underlying = spx(),
             .currency = std::string("USD"),
@@ -173,6 +189,7 @@ TEST_CASE("a_worst_of_basket_states_its_members_as_equities", equity_tags) {
     REQUIRE(ndx);
     const auto basket =
         equity_worst_of_basket_swap_builder(
+            basket_conventions(),
             {.basket = std::vector<equity_basket_member>{{spx(), equity_amount("5000")},
                                                          {*ndx, equity_amount("18000")}},
              .observation_dates = std::vector<year_month_day>{2026y / 4 / 5},
@@ -199,6 +216,7 @@ TEST_CASE("a_worst_of_basket_schedule_holds_one_more_date_than_its_periods", equ
     REQUIRE(ndx);
     const auto basket =
         equity_worst_of_basket_swap_builder(
+            basket_conventions(),
             {.basket = std::vector<equity_basket_member>{{spx(), equity_amount("5000")},
                                                          {*ndx, equity_amount("18000")}},
              .observation_dates = std::vector<year_month_day>{2026y / 7 / 5, 2027y / 1 / 5},
@@ -220,6 +238,58 @@ TEST_CASE("a_worst_of_basket_schedule_holds_one_more_date_than_its_periods", equ
     }
 }
 
+std::expected<ores::trading::domain::equity_instrument_data, build_error>
+basket_observing(std::vector<year_month_day> observations, md::market_reference funding) {
+    auto other = md::market_index::make(md::index_family::equity, ".NDX", {});
+    REQUIRE(other);
+    auto ndx = md::market_reference::of(std::move(*other));
+    REQUIRE(ndx);
+    return equity_worst_of_basket_swap_builder(
+               basket_conventions(),
+               {.basket = std::vector<equity_basket_member>{{spx(), equity_amount("5000")},
+                                                            {*ndx, equity_amount("18000")}},
+                .observation_dates = std::move(observations),
+                .funding_index = std::move(funding),
+                .currency = std::string("USD"),
+                .notional = equity_amount("1000000"),
+                .start = 2026y / 1 / 5,
+                .maturity = 2027y / 1 / 5,
+                .position = option_position::long_option})
+        .build();
+}
+
+TEST_CASE("a_worst_of_basket_observing_on_its_start_fails", equity_tags) {
+    const auto basket = basket_observing({2026y / 1 / 5, 2027y / 1 / 5}, libor_3m());
+    REQUIRE_FALSE(basket.has_value());
+    CHECK(basket.error().term == "observation_dates");
+}
+
+TEST_CASE("a_worst_of_basket_observing_out_of_order_fails", equity_tags) {
+    const auto basket = basket_observing({2026y / 7 / 5, 2026y / 4 / 5}, libor_3m());
+    REQUIRE_FALSE(basket.has_value());
+    CHECK(basket.error().term == "observation_dates");
+}
+
+TEST_CASE("a_worst_of_basket_funding_in_another_currency_fails", equity_tags) {
+    auto euribor =
+        md::market_reference::parse("oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=3M");
+    REQUIRE(euribor);
+    const auto basket = basket_observing({2027y / 1 / 5}, *euribor);
+    REQUIRE_FALSE(basket.has_value());
+    CHECK(basket.error().term == "funding_index");
+}
+
+TEST_CASE("a_worst_of_basket_accrues_as_its_funding_index_defines", equity_tags) {
+    const auto basket = basket_observing({2027y / 1 / 5}, libor_3m());
+    REQUIRE(basket.has_value());
+    const auto* row =
+        std::get_if<ores::trading::domain::equity_swap_instrument>(&basket->instrument);
+    REQUIRE(row != nullptr);
+    CHECK(row->floating_day_count_fraction == "A360");
+    for (const auto& schedule : basket->schedules)
+        CHECK(schedule.calendar == "US");
+}
+
 TEST_CASE("a_worst_of_basket_observing_after_maturity_fails", equity_tags) {
     auto other = md::market_index::make(md::index_family::equity, ".NDX", {});
     REQUIRE(other);
@@ -227,6 +297,7 @@ TEST_CASE("a_worst_of_basket_observing_after_maturity_fails", equity_tags) {
     REQUIRE(ndx);
     const auto basket =
         equity_worst_of_basket_swap_builder(
+            basket_conventions(),
             {.basket = std::vector<equity_basket_member>{{spx(), equity_amount("5000")},
                                                          {*ndx, equity_amount("18000")}},
              .observation_dates = std::vector<year_month_day>{2027y / 4 / 5},
@@ -304,6 +375,7 @@ TEST_CASE("the_registry_names_every_equity_builder", equity_tags) {
 TEST_CASE("a_basket_holding_one_equity_twice_fails_and_names_the_term", equity_tags) {
     const auto basket =
         equity_worst_of_basket_swap_builder(
+            basket_conventions(),
             {.basket = std::vector<equity_basket_member>{{spx(), equity_amount("5000")},
                                                          {spx(), equity_amount("5000")}},
              .observation_dates = std::vector<year_month_day>{2026y / 4 / 5},

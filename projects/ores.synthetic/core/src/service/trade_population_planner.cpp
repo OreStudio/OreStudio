@@ -2110,6 +2110,39 @@ funding_index_in(const domain::trade_generation_scope& scope, const std::string&
     return std::nullopt;
 }
 
+/// Two distinct equities in one currency, and the index that funds a basket of them.
+struct basket_members final {
+    const domain::equity_underlying_reference& first;
+    const domain::equity_underlying_reference& second;
+    ores::marketdata::datum::market_reference funding;
+};
+
+/*
+ * A worst-of basket is in one currency and funds in it, so it takes the first
+ * equity from the slot on whose currency the tenant's swap conventions name an
+ * index, and the next equity in that currency.
+ */
+basket_members basket_members_of(const domain::trade_generation_scope& scope, std::uint32_t slot) {
+    const auto& underlyings = scope.equity_underlyings;
+    const auto currency_of = [](const domain::equity_underlying_reference& equity) {
+        return equity.currency.empty() ? std::string("USD") : equity.currency;
+    };
+    for (std::size_t i = 0; i < underlyings.size(); ++i) {
+        const auto& first = underlyings[(slot + i) % underlyings.size()];
+        auto funding = funding_index_in(scope, currency_of(first));
+        if (!funding)
+            continue;
+        for (std::size_t j = 1; j < underlyings.size(); ++j) {
+            const auto& second = underlyings[(slot + i + j) % underlyings.size()];
+            if (second.code != first.code && currency_of(second) == currency_of(first))
+                return {first, second, std::move(*funding)};
+        }
+    }
+    throw trade_population_error("No two equity underlyings of the tenant share a currency its "
+                                 "swap conventions name an index in, so no worst-of basket swap "
+                                 "can be drawn.");
+}
+
 ores::trading::domain::instrument_batch
 equity_batch_of(std::expected<ores::trading::domain::equity_instrument_data,
                               ores::trading::builders::build_error> built,
@@ -2247,38 +2280,20 @@ build_equity_trade(const domain::trade_generation_scope& scope,
         if (scope.equity_underlyings.size() < 2)
             throw trade_population_error("A worst-of basket names two distinct equities, and the "
                                          "tenant holds fewer than two equity underlyings.");
-        /*
-         * The basket is in its first member's currency and funds in it, so it
-         * starts at the first underlying whose currency the tenant's swap
-         * conventions name an index in.
-         */
-        std::optional<ores::marketdata::datum::market_reference> funding;
-        std::string basket_currency;
-        std::uint32_t first = slot;
-        for (std::uint32_t i = 0; i < scope.equity_underlyings.size() && !funding; ++i) {
-            const auto& candidate = equity_for(scope, slot + i);
-            basket_currency = candidate.currency.empty() ? std::string("USD") : candidate.currency;
-            funding = funding_index_in(scope, basket_currency);
-            first = slot + i;
-        }
-        if (!funding)
-            throw trade_population_error("No equity underlying of the tenant is in a currency its "
-                                         "swap conventions name an index in, so no worst-of "
-                                         "basket swap can state its funding.");
-        std::vector<tb::equity_basket_member> basket;
-        for (std::uint32_t member = 0; member < 2; ++member)
-            basket.push_back(
-                {.underlying = equity_address_of(equity_for(scope, first + member).code),
-                 .initial_price = money(level * (1.0 + 0.1 * member))});
-        // The basket observes quarterly, and its last period ends at maturity.
+        const auto& [first, second, funding] = basket_members_of(scope, slot);
+        const auto basket_currency = first.currency.empty() ? std::string("USD") : first.currency;
+        std::vector<tb::equity_basket_member> basket{
+            {.underlying = equity_address_of(first.code), .initial_price = money(level)},
+            {.underlying = equity_address_of(second.code), .initial_price = money(level * 1.1)}};
         std::vector<year_month_day> observations;
         for (int months = 3; add_months(start, months) < end; months += 3)
             observations.push_back(add_months(start, months));
         observations.push_back(end);
         return built(
-            tb::equity_worst_of_basket_swap_builder({.basket = std::move(basket),
+            tb::equity_worst_of_basket_swap_builder(conventions,
+                                                    {.basket = std::move(basket),
                                                      .observation_dates = std::move(observations),
-                                                     .funding_index = std::move(*funding),
+                                                     .funding_index = funding,
                                                      .currency = basket_currency,
                                                      .notional = money(notional),
                                                      .start = start,

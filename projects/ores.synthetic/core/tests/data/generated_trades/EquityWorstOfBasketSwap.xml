@@ -22,7 +22,7 @@
       </InitialPrices>
       <FloatingPeriodSchedule>
         <Dates>
-          <Calendar>TARGET</Calendar>
+          <Calendar>US,UK</Calendar>
           <Convention>MF</Convention>
           <Dates>
             <Date>2025-10-02</Date>
@@ -47,7 +47,7 @@
       </FloatingPeriodSchedule>
       <FloatingPayDates>
         <Dates>
-          <Calendar>TARGET</Calendar>
+          <Calendar>US,UK</Calendar>
           <Convention>MF</Convention>
           <Dates>
             <Date>2025-10-02</Date>
@@ -134,7 +134,7 @@
       </InitialPrices>
       <FloatingPeriodSchedule>
         <Dates>
-          <Calendar>TARGET</Calendar>
+          <Calendar>US,UK</Calendar>
           <Convention>MF</Convention>
           <Dates>
             <Date>2025-12-02</Date>
@@ -163,7 +163,7 @@
       </FloatingPeriodSchedule>
       <FloatingPayDates>
         <Dates>
-          <Calendar>TARGET</Calendar>
+          <Calendar>US,UK</Calendar>
           <Convention>MF</Convention>
           <Dates>
             <Date>2025-12-02</Date>

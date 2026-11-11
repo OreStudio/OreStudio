@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-transport-routes
-#+pr:
+#+pr: 4580
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4580][#4580]] | [http] Serve the liveness, site and client log routes from C++ |
 
 * Review
 

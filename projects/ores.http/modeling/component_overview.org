@@ -12,7 +12,7 @@
 #+full_name: ores.http
 #+brief: HTTP gateway
 #+component_kind: composite
-#+parts: api assets client core iam refdata server synthetic
+#+parts: api assets client core iam nats refdata server synthetic
 
 * Summary
 

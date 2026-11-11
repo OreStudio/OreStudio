@@ -4,12 +4,13 @@
 #+title: ores.http.nats
 #+description: The HTTP gateway's forwarding step: one HTTP request sent to a service over NATS as the caller, and each failure stated as an HTTP refusal.
 #+type: ores.codegen.component
-#+component_kind: adapter
+#+component_kind: core
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :http:rest:nats:component:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+name: nats
+#+name: http.nats
 #+full_name: ores.http.nats
 #+brief: HTTP gateway forwarding over NATS
 
@@ -47,8 +48,9 @@ table.
 A failure that is not the caller's to act on is logged with its detail, and
 the body states a fixed sentence.
 
-The part declares =#+component_kind: adapter=. Its =CMakeLists.txt= files are
-hand-authored, and codegen writes only the two =component_files.cmake= lists.
+The part declares =#+component_kind: core=, as =ores.http.core= does: it owns
+its include root, and codegen writes its build files from this model. It hides
+its symbols by default and exports the functions its header declares.
 
 * Inputs
 
@@ -72,28 +74,18 @@ hand-authored, and codegen writes only the two =component_files.cmake= lists.
 - =ores.utility= -- the wire codecs.
 - =ores.logging= -- logger factory.
 
+The core profile's baseline links the first three; the model adds only
+=ores.logging=.
+
 * See also
 
 - [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]] -- the process that hosts the routes.
 - [[id:1EBDA080-07F6-496D-AA4A-72899E65641C][ores.cpp.http-route]] -- the facet whose units forward through this part.
-- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] -- the composite and adapter kinds.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] -- the composite and core kinds.
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.http.api.lib
-        ores.nats.lib
-        ores.logging.lib
-    PRIVATE
-        ores.utility.lib)
+        ores.logging.lib)
 #+end_src
 
-#+begin_src cmake :name extra_test_dependencies
-target_link_libraries(${tests_target_name}
-    PRIVATE
-        ${lib_target_name}
-        ores.testing.lib
-        Catch2::Catch2
-        ores.openssl_cleanup
-        Threads::Threads)
-#+end_src

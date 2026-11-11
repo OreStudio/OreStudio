@@ -25,5 +25,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.nats/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.nats/forwarding.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.nats/ores.http.nats.hpp"
 )

@@ -9,38 +9,56 @@
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
-# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_core_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.http.nats")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
-set(ORES_HTTP_NATS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
-# ores.http is an application-internal component: its parts are linked into
-# ores.http.server.exe and are not useful as redistributable artifacts. Keep
-# static, so the parts share no import/export macro.
-add_library(${lib_target_name} STATIC ${files} ${HEADERS})
+set(lib_files ${files})
+add_library(${lib_target_name} ${lib_files})
+target_compile_definitions(${lib_target_name} PRIVATE ORES_HTTP_NATS_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${ORES_HTTP_NATS_DIR}/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.http.api.lib
         ores.nats.lib
-        ores.logging.lib
     PRIVATE
-        ores.utility.lib)
+        ores.service.lib
+        ores.platform.lib
+        ores.utility.lib
+        ores.security.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
 
-if(NOT WIN32)
-    install(TARGETS ${lib_target_name} ARCHIVE DESTINATION lib)
-endif()
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+# Appending to the target rather than replacing the profile keeps the
+# baseline honest for every other component.
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.logging.lib)
+
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

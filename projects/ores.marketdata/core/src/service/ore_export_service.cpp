@@ -21,15 +21,20 @@
 #include "ores.marketdata.api/datum/ore_index_codec.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.core/repository/fx_vol_surface_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_fixing_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.ore.core/market/market_data_serializer.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
+#include <expected>
+#include <iterator>
 #include <map>
 #include <optional>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -67,6 +72,42 @@ ores::ore::market::market_datum to_datum(const domain::market_observation& o,
     d.value = o.value;
     d.key = *key;
     return d;
+}
+
+/**
+ * @brief The ORE quote a point of a published surface is written as: an FX option volatility at
+ * the point's expiry, its strike a delta label, such as 25P for DEL/Spot/Put/25, or ATM.
+ *
+ * ORE reads a surface from quotes and from the volatility configuration that names their deltas,
+ * so the delta type of the point's strike belongs to that configuration and not to the quote.
+ */
+std::expected<datum::market_datum, std::string> fx_option_quote_of(const datum::market_datum& point) {
+    const auto* unit = point.get<datum::field::unit_ccy>();
+    const auto* ccy = point.get<datum::field::ccy>();
+    const auto* expiry = point.get<datum::field::expiry>();
+    const auto* strike = point.get<datum::field::strike>();
+    if (!unit || !ccy || !expiry || !strike)
+        return std::unexpected(std::string("the surface point names no pair, expiry or strike"));
+    std::string label;
+    if (std::holds_alternative<datum::atm_strike>(strike->which())) {
+        label = "ATM";
+    } else if (const auto* delta = std::get_if<datum::delta_strike>(&strike->which())) {
+        label = delta->delta.text() + (delta->option_type == "Call" ? "C" : "P");
+    } else {
+        return std::unexpected("the strike " + strike->text() + " is neither ATM nor a delta");
+    }
+    return datum::oresmd_uri_codec::read("oresmd://fx/" + datum::text_of(datum::value(*unit)) +
+                                         "?type=quote&instrument=fx_option&quote=rate_lnvol&ccy=" +
+                                         datum::text_of(datum::value(*ccy)) + "&expiry=" + expiry->text() +
+                                         "&strike_label=" + label);
+}
+
+/// The part of an FX option key up to its pair, such as FX_OPTION/RATE_LNVOL/EUR/USD/.
+std::string pair_prefix_of(const std::string& key) {
+    std::size_t at = 0;
+    for (int slash = 0; slash < 4 && at != std::string::npos; ++slash)
+        at = key.find('/', at == 0 ? 0 : at + 1);
+    return at == std::string::npos ? key : key.substr(0, at + 1);
 }
 
 /**
@@ -120,6 +161,7 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
     repository::market_series_repository series_repo;
     repository::market_observation_repository obs_repo;
     repository::market_fixing_repository fixings_repo;
+    repository::fx_vol_surface_publish_repository surface_repo;
 
     const auto series = series_repo.read_latest(ctx_);
     BOOST_LOG_SEV(lg(), info) << "market data export: read " << series.size() << " series in "
@@ -151,11 +193,16 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
 
     std::vector<ores::ore::market::market_datum> data;
     std::vector<ores::ore::market::fixing> fixings;
+    // The option quotes of a pair with a published surface are that surface's points: the pair's
+    // raw quotes share their keys, and ORE must read one value for each.
+    std::set<std::string> surface_pairs;
+    std::vector<ores::ore::market::market_datum> surface_points;
     for (const auto& s : series) {
         // A quote series has a URI the datum codec reads and a fixing series one
         // the index codec reads. A series neither reads is a data-integrity error
         // and names both reasons.
-        if (const auto quote_series = datum::oresmd_uri_codec::read(s.oresmd_uri); !quote_series) {
+        const auto quote_series = datum::oresmd_uri_codec::read(s.oresmd_uri);
+        if (!quote_series) {
             const auto index = datum::oresmd_uri_codec::read_index(s.oresmd_uri);
             if (!index)
                 throw std::runtime_error(
@@ -168,6 +215,41 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
             continue;
         }
         auto observations = std::move(latest[s.id]);
+        if (quote_series->type() == datum::instrument_type::fx_vol_surface) {
+            // A surface reaches ORE only as it was published: the newest published set at or before
+            // the close, each point an FX option quote. A candidate is never written.
+            if (s.derivation_config_id.is_nil())
+                continue;
+            const auto published = surface_repo.read_published_for_blueprint(ctx_, s.derivation_config_id);
+            const auto set = std::ranges::find_if(published, [&](const auto& p) {
+                return !date || p.as_of <= close;
+            });
+            if (set == published.end())
+                continue;
+            for (const auto& o : observations) {
+                if (o.observation_datetime != set->as_of)
+                    continue;
+                const auto point = datum::oresmd_uri_codec::read(o.oresmd_uri);
+                if (!point)
+                    throw std::runtime_error("market data export: surface point " + boost::uuids::to_string(o.id) +
+                                             " does not read: " + point.error());
+                const auto quote = fx_option_quote_of(*point);
+                if (!quote)
+                    throw std::runtime_error("market data export: surface point " + boost::uuids::to_string(o.id) +
+                                             " has no ORE quote: " + quote.error());
+                const auto key = datum::ore_key_codec::write(*quote);
+                if (!key)
+                    throw std::runtime_error("market data export: surface point " + boost::uuids::to_string(o.id) +
+                                             " has no ORE key: " + key.error());
+                ores::ore::market::market_datum d;
+                d.date = date ? *date : std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(set->as_of)};
+                d.value = o.value;
+                d.key = *key;
+                surface_pairs.insert(pair_prefix_of(d.key));
+                surface_points.push_back(std::move(d));
+            }
+            continue;
+        }
         if (date) {
             // The history stays, because an analytic may read several dates. The lines of the
             // valuation date are replaced by the value each datum had at its close, which is
@@ -190,6 +272,10 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
         for (const auto& o : observations)
             data.push_back(to_datum(o, std::nullopt));
     }
+    std::erase_if(data, [&](const ores::ore::market::market_datum& d) {
+        return std::ranges::any_of(surface_pairs, [&](const std::string& pair) { return d.key.starts_with(pair); });
+    });
+    std::ranges::move(surface_points, std::back_inserter(data));
     BOOST_LOG_SEV(lg(), info) << "market data export: built " << data.size() << " datum(s) and "
                               << fixings.size() << " fixing(s) in " << lapped() << " ms";
 

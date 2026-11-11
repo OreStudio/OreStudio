@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C
+:END:
+#+title: Story: Draw only swap indices with one convention
+#+description: Provisioning stops at generate_trades: the swap builder refuses an index that several swap conventions name. Treat aliases with the same terms as one convention, and draw only indices the lookup answers.
+#+type: story
+#+level: s2
+#+filetags: :trading:synthetic:conventions:sprint_30:v0:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-11                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FE619375-32C0-4997-92C5-4167FBEB15BA][Scaffold story: Draw only swap indices with one convention]] | DONE | 2026-11-11 | 2026-11-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F803A3DD-3D53-4BDF-8E92-81AFB914D7E1][Treat alias swap conventions as one]] | STARTED | 2026-11-11 | | Initial task for: Draw only swap indices with one convention |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -241,3 +241,19 @@ TEST_CASE("the_registry_names_every_fx_builder", fx_tags) {
                              "FxAccumulator"})
         CHECK(types.contains(type));
 }
+
+TEST_CASE("a_touch_with_a_strike_fails_and_names_the_term", fx_tags) {
+    const auto touch = fx_digital_option_builder<fx_digital_product::touch>(
+                           {.foreign_currency = std::string("EUR"),
+                            .domestic_currency = std::string("USD"),
+                            .payoff_amount = fx_amount("100000"),
+                            .kind = option_kind::call,
+                            .expiry = 2027y / 1 / 5,
+                            .position = option_position::long_option,
+                            .strike = fx_amount("1.1"),
+                            .barriers = {{"UpAndIn", {fx_amount("1.2")}}},
+                            .fx_index = eur_usd()})
+                           .build();
+    REQUIRE_FALSE(touch.has_value());
+    CHECK(touch.error().term == "strike");
+}

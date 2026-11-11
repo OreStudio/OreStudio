@@ -94,8 +94,13 @@ void add_underlying(domain::fx_instrument_data& out,
     out.instrument_underlyings.push_back(std::move(row));
 }
 
-/// A monthly schedule from @p start to @p end, kept as the product's own.
-void add_monthly_schedule(domain::fx_instrument_data& out, std::string role, ymd start, ymd end) {
+/*
+ * A schedule kept as the product's own, from @p start to @p end every @p tenor.
+ * Every generated FX schedule observes on the TARGET calendar, rolling forward,
+ * as ORE's samples do.
+ */
+void add_schedule(
+    domain::fx_instrument_data& out, std::string role, std::string tenor, ymd start, ymd end) {
     domain::instrument_schedule row;
     row.owner_role = "option";
     row.owner_number = 1;
@@ -104,11 +109,24 @@ void add_monthly_schedule(domain::fx_instrument_data& out, std::string role, ymd
     row.schedule_kind = "rules";
     row.start_date = start;
     row.end_date = end;
-    row.tenor = "1M";
+    row.tenor = std::move(tenor);
     row.calendar = "TARGET";
     row.convention = "F";
     row.rule = "Forward";
     out.schedules.push_back(std::move(row));
+}
+
+/// Fixings below the strike are taken twice, those above it once.
+std::vector<domain::range_bound> strike_leverage_bounds(decimal strike) {
+    domain::range_bound below;
+    below.sequence_number = 1;
+    below.range_to = strike;
+    below.leverage = 2.0;
+    domain::range_bound above;
+    above.sequence_number = 2;
+    above.range_from = strike;
+    above.leverage = 1.0;
+    return {below, above};
 }
 
 bool is_single_type(std::string_view type) {
@@ -275,9 +293,11 @@ fx_result fx_generic_barrier_option_builder::build() const {
     row.expiry_date = option.expiry.get();
     row.settlement = "Cash";
     row.quantity = option.exchange.bought_amount.get().to_double();
-    row.strike = decimal::from_double(option.exchange.sold_amount.get().to_double() /
-                                      option.exchange.bought_amount.get().to_double())
-                     .value_or(decimal{});
+    const auto strike = decimal::from_double(option.exchange.sold_amount.get().to_double() /
+                                             option.exchange.bought_amount.get().to_double());
+    if (!strike)
+        return std::unexpected(build_error{"strike", "the exchange states no rate a strike holds"});
+    row.strike = *strike;
     set_barrier_columns(row, barriers);
     domain::fx_instrument_data out;
     out.barrier_options.push_back(std::move(row));
@@ -285,19 +305,7 @@ fx_result fx_generic_barrier_option_builder::build() const {
     add_underlying(out, terms_.fx_index.get());
     add_barriers(out, barriers);
 
-    domain::instrument_schedule watched;
-    watched.owner_role = "option";
-    watched.owner_number = 1;
-    watched.schedule_role = "barrier_schedule";
-    watched.sequence_number = 1;
-    watched.schedule_kind = "rules";
-    watched.start_date = terms_.monitoring_start.get();
-    watched.end_date = option.expiry.get();
-    watched.tenor = "1D";
-    watched.calendar = "TARGET";
-    watched.convention = "F";
-    watched.rule = "Forward";
-    out.schedules.push_back(std::move(watched));
+    add_schedule(out, "barrier_schedule", "1D", terms_.monitoring_start.get(), option.expiry.get());
     return out;
 }
 
@@ -311,6 +319,8 @@ fx_result fx_digital_option_builder<Product>::build() const {
         Product == fx_digital_product::digital || Product == fx_digital_product::digital_barrier;
     if (struck && !(terms_.strike && *terms_.strike > decimal{}))
         return std::unexpected(build_error{"strike", "must be positive"});
+    if (!struck && terms_.strike)
+        return std::unexpected(build_error{"strike", "a touch pays on its barrier, not a strike"});
     if constexpr (Product == fx_digital_product::digital) {
         if (!terms_.barriers.empty())
             return std::unexpected(build_error{"barriers", "must be none"});
@@ -330,6 +340,7 @@ fx_result fx_digital_option_builder<Product>::build() const {
     row.identity.trade_type_code = std::string(trade_type);
     row.foreign_currency = terms_.foreign_currency.get();
     row.domestic_currency = terms_.domestic_currency.get();
+    // Paid in the domestic currency, as ORE's samples pay.
     row.payoff_currency = terms_.domestic_currency.get();
     row.payoff_amount = terms_.payoff_amount.get();
     row.option_type = option_type_of(terms_.kind.get());
@@ -373,8 +384,7 @@ fx_result fx_average_forward_builder::build() const {
     row.fixed_payer = false;
     domain::fx_instrument_data out;
     out.asian_forwards.push_back(std::move(row));
-    add_monthly_schedule(
-        out, "observation_schedule", terms_.start.get(), terms_.payment_date.get());
+    add_schedule(out, "observation_schedule", "1M", terms_.start.get(), terms_.payment_date.get());
     return out;
 }
 
@@ -401,17 +411,8 @@ fx_result fx_tarf_builder::build() const {
     add_underlying(out, terms_.fx_index.get());
     out.options.push_back(
         option_row(terms_.position.get(), std::nullopt, std::string("TargetExact")));
-    add_monthly_schedule(out, "product_schedule", terms_.start.get(), terms_.end.get());
-    // Below the strike the fixing is doubled; above it, taken once.
-    domain::range_bound below;
-    below.sequence_number = 1;
-    below.range_to = terms_.strike.get();
-    below.leverage = 2.0;
-    domain::range_bound above;
-    above.sequence_number = 2;
-    above.range_from = terms_.strike.get();
-    above.leverage = 1.0;
-    out.range_bounds = {below, above};
+    add_schedule(out, "product_schedule", "1M", terms_.start.get(), terms_.end.get());
+    out.range_bounds = strike_leverage_bounds(terms_.strike.get());
     add_barriers(out, {fx_barrier{"CumulatedProfitCap", {terms_.target_amount.get()}}});
     return out;
 }
@@ -467,16 +468,8 @@ fx_result fx_accumulator_builder::build() const {
     add_underlying(out, terms_.fx_index.get());
     out.options.push_back(
         option_row(terms_.position.get(), std::nullopt, std::string("Accumulator")));
-    add_monthly_schedule(out, "observation_schedule", terms_.start.get(), terms_.end.get());
-    domain::range_bound below;
-    below.sequence_number = 1;
-    below.range_to = terms_.strike.get();
-    below.leverage = 2.0;
-    domain::range_bound above;
-    above.sequence_number = 2;
-    above.range_from = terms_.strike.get();
-    above.leverage = 1.0;
-    out.range_bounds = {below, above};
+    add_schedule(out, "observation_schedule", "1M", terms_.start.get(), terms_.end.get());
+    out.range_bounds = strike_leverage_bounds(terms_.strike.get());
     add_barriers(out, {fx_barrier{"UpAndOut", {terms_.knock_out.get()}}});
     return out;
 }

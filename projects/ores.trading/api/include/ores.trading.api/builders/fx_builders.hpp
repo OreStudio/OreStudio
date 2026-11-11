@@ -40,6 +40,11 @@
  * Every FX trade names its pair by an FX index address; the ORE projection
  * writes it as ORE spells an index or an underlying. No convention is read: an
  * FX product states its own dates and amounts.
+ *
+ * The builders fix what the generator does not draw: an option settles in cash
+ * and a swap physically, an average forward is bought, and every schedule
+ * observes on the TARGET calendar. A caller that needs another choice extends
+ * the terms.
  */
 namespace ores::trading::builders {
 

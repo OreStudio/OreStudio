@@ -93,6 +93,10 @@ TEST_CASE("a_malformed_bcb_answer_is_an_error_and_not_a_fixing", "[domain][bcb]"
     CHECK_FALSE(
         parse_bcb_series(R"([{"data":"31/11/2026","valor":"13.65"}])", cdi_key).has_value());
     CHECK_FALSE(
+        parse_bcb_series(R"([{"data":"06/11/-123","valor":"13.65"}])", cdi_key).has_value());
+    CHECK_FALSE(
+        parse_bcb_series(R"([{"data":"6a/11/2026","valor":"13.65"}])", cdi_key).has_value());
+    CHECK_FALSE(
         parse_bcb_series(R"([{"data":"06/11/2026","valor":"13,65"}])", cdi_key).has_value());
 }
 

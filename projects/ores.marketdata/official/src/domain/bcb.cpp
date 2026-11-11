@@ -39,7 +39,13 @@ std::expected<std::chrono::year_month_day, std::string> bcb_date_of(std::string_
     unsigned d = 0;
     unsigned m = 0;
     int y = 0;
-    if (text.size() != 10 || text[2] != '/' || text[5] != '/' ||
+    const auto digits_only = [&] {
+        for (std::size_t i = 0; i < text.size(); ++i)
+            if (i != 2 && i != 5 && (text[i] < '0' || text[i] > '9'))
+                return false;
+        return true;
+    };
+    if (text.size() != 10 || text[2] != '/' || text[5] != '/' || !digits_only() ||
         std::from_chars(text.data(), text.data() + 2, d).ec != std::errc{} ||
         std::from_chars(text.data() + 3, text.data() + 5, m).ec != std::errc{} ||
         std::from_chars(text.data() + 6, text.data() + 10, y).ec != std::errc{})

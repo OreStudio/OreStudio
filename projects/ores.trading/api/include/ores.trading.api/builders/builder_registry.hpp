@@ -104,7 +104,13 @@ using all_builders =
                commodity_digital_average_price_option_builder,
                commodity_position_builder,
                commodity_spread_option_builder,
-               intraday_power_forward_builder>;
+               intraday_power_forward_builder,
+               commodity_asian_option_builder,
+               commodity_accumulator_builder,
+               commodity_tarf_builder,
+               commodity_generic_barrier_option_builder,
+               commodity_strike_resettable_option_builder,
+               commodity_forward_volatility_agreement_builder>;
 
 namespace detail {
 

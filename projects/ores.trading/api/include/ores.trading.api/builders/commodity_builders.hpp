@@ -349,6 +349,166 @@ private:
     intraday_power_forward_terms terms_;
 };
 
+/*
+ * The scripted products on one commodity. ORE prices each with a script over
+ * the commodity's observed prices, so each states the dates it observes as a
+ * monthly schedule from its start to its expiry.
+ */
+
+/// An option on the commodity's arithmetic average price, observed monthly.
+struct commodity_asian_option_terms final {
+    commodity_option_terms option;
+    required<std::chrono::year_month_day> averaging_start;
+};
+
+class ORES_TRADING_API_EXPORT commodity_asian_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityAsianOption";
+    explicit commodity_asian_option_builder(commodity_asian_option_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_asian_option_terms terms_;
+};
+
+/**
+ * @brief Buys a fixing amount of the commodity at the strike each month, twice
+ * the amount when the price is below the strike, until the price rises to the
+ * knock out.
+ */
+struct commodity_accumulator_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    required<std::string> currency;
+    required<utility::decimal::decimal> fixing_amount;
+    required<utility::decimal::decimal> strike;
+    required<utility::decimal::decimal> knock_out;
+    required<std::chrono::year_month_day> start;
+    required<std::chrono::year_month_day> expiry;
+    required<option_position> position;
+    /// The unit the fixing amount counts, as the catalogue states it; empty when unstated.
+    std::string unit;
+};
+
+class ORES_TRADING_API_EXPORT commodity_accumulator_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityAccumulator";
+    explicit commodity_accumulator_builder(commodity_accumulator_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_accumulator_terms terms_;
+};
+
+/**
+ * @brief Buys a fixing amount of the commodity at the strike each month, twice
+ * the amount when the price is below the strike, until the gains reach the
+ * target amount.
+ */
+struct commodity_tarf_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    required<std::string> currency;
+    required<utility::decimal::decimal> fixing_amount;
+    required<utility::decimal::decimal> strike;
+    required<utility::decimal::decimal> target_amount;
+    required<std::chrono::year_month_day> start;
+    required<std::chrono::year_month_day> expiry;
+    required<option_position> position;
+    /// The unit the fixing amount counts, as the catalogue states it; empty when unstated.
+    std::string unit;
+};
+
+class ORES_TRADING_API_EXPORT commodity_tarf_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityTaRF";
+    explicit commodity_tarf_builder(commodity_tarf_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_tarf_terms terms_;
+};
+
+/// The way a barrier's level is crossed and what crossing it does.
+enum class barrier_kind { up_and_in, up_and_out, down_and_in, down_and_out };
+
+/**
+ * @brief An option with one barrier on the commodity's price, monitored monthly
+ * from a start to the expiry.
+ */
+struct commodity_generic_barrier_option_terms final {
+    commodity_option_terms option;
+    required<barrier_kind> barrier;
+    required<utility::decimal::decimal> barrier_level;
+    required<std::chrono::year_month_day> monitoring_start;
+};
+
+class ORES_TRADING_API_EXPORT commodity_generic_barrier_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityGenericBarrierOption";
+    explicit commodity_generic_barrier_option_builder(commodity_generic_barrier_option_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_generic_barrier_option_terms terms_;
+};
+
+/// Whether a trigger fires when the price rises to it or falls to it.
+enum class trigger_direction { up, down };
+
+/**
+ * @brief An option whose strike resets when the commodity's price reaches the
+ * trigger on an observation date, observed monthly from a start to the expiry.
+ */
+struct commodity_strike_resettable_option_terms final {
+    commodity_option_terms option;
+    required<utility::decimal::decimal> reset_strike;
+    required<trigger_direction> trigger;
+    required<utility::decimal::decimal> trigger_price;
+    required<std::chrono::year_month_day> observation_start;
+    required<std::chrono::year_month_day> settlement;
+    required<utility::decimal::decimal> premium;
+    required<std::chrono::year_month_day> premium_date;
+};
+
+class ORES_TRADING_API_EXPORT commodity_strike_resettable_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityStrikeResettableOption";
+    explicit commodity_strike_resettable_option_builder(
+        commodity_strike_resettable_option_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_strike_resettable_option_terms terms_;
+};
+
+/**
+ * @brief Agrees on the FVA date to buy or sell a straddle that expires later,
+ * struck at the implied volatility.
+ */
+struct commodity_forward_volatility_agreement_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    required<std::string> currency;
+    required<utility::decimal::decimal> quantity;
+    required<std::chrono::year_month_day> fva_date;
+    required<std::chrono::year_month_day> expiry;
+    required<std::chrono::year_month_day> settlement;
+    required<std::chrono::year_month_day> premium_date;
+    required<utility::decimal::decimal> implied_vol_strike;
+    required<option_position> position;
+    /// The unit the quantity counts, as the catalogue states it; empty when unstated.
+    std::string unit;
+};
+
+class ORES_TRADING_API_EXPORT commodity_forward_volatility_agreement_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityForwardVolatilityAgreement";
+    explicit commodity_forward_volatility_agreement_builder(
+        commodity_forward_volatility_agreement_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_forward_volatility_agreement_terms terms_;
+};
+
 }
 
 #endif

@@ -778,6 +778,20 @@ construct_commodity_batch(const std::string& trade_type_code,
     return batch;
 }
 
+/// The barrier a drawn barrier type names, as the builder takes it.
+ores::trading::builders::barrier_kind commodity_barrier_kind_of(const std::string& type) {
+    namespace tb = ores::trading::builders;
+    if (type == "UpAndIn")
+        return tb::barrier_kind::up_and_in;
+    if (type == "UpAndOut")
+        return tb::barrier_kind::up_and_out;
+    if (type == "DownAndIn")
+        return tb::barrier_kind::down_and_in;
+    if (type == "DownAndOut")
+        return tb::barrier_kind::down_and_out;
+    throw trade_population_error("The barrier type " + type + " is not one a builder takes.");
+}
+
 /// The oresmd address of a commodity the catalogue names, which the projection writes as ORE names
 /// it.
 ores::marketdata::datum::market_reference commodity_address_of(const std::string& code) {
@@ -944,6 +958,76 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                           .delivery_date = year_month_day{sys_days{end} + days{7}},
                           .delivery_start = hour * 3600,
                           .delivery_end = (hour + 1) * 3600,
+                          .position = position,
+                          .unit = drawn.unit})
+                         .build());
+    }
+    if (type == "CommodityAsianOption")
+        return built(
+            tb::commodity_asian_option_builder({.option = option, .averaging_start = start})
+                .build());
+    if (type == "CommodityAccumulator")
+        return built(tb::commodity_accumulator_builder(
+                         {.underlying = underlying,
+                          .currency = currency,
+                          .fixing_amount = money(drawn.accumulation_amount.value_or(0.0)),
+                          .strike = strike,
+                          .knock_out = money(drawn.knock_out_barrier.value_or(0.0)),
+                          .start = start,
+                          .expiry = end,
+                          .position = position,
+                          .unit = drawn.unit})
+                         .build());
+    if (type == "CommodityTaRF") {
+        // The gains stop at a quarter of one fixing's value.
+        const auto fixing_amount = drawn.accumulation_amount.value_or(0.0);
+        return built(tb::commodity_tarf_builder(
+                         {.underlying = underlying,
+                          .currency = currency,
+                          .fixing_amount = money(fixing_amount),
+                          .strike = strike,
+                          .target_amount = money(fixing_amount * strike.to_double() * 0.25),
+                          .start = start,
+                          .expiry = end,
+                          .position = position,
+                          .unit = drawn.unit})
+                         .build());
+    }
+    if (type == "CommodityGenericBarrierOption")
+        return built(tb::commodity_generic_barrier_option_builder(
+                         {.option = option,
+                          .barrier = commodity_barrier_kind_of(drawn.barrier_type),
+                          .barrier_level = money(drawn.lower_barrier.value_or(0.0)),
+                          .monitoring_start = start})
+                         .build());
+    if (type == "CommodityStrikeResettableOption") {
+        // A call resets lower when the price falls, a put higher when it rises.
+        const bool call = kind == tb::option_kind::call;
+        const auto reset = money(strike.to_double() * (call ? 0.9 : 1.1));
+        return built(tb::commodity_strike_resettable_option_builder(
+                         {.option = option,
+                          .reset_strike = reset,
+                          .trigger = call ? tb::trigger_direction::down : tb::trigger_direction::up,
+                          .trigger_price = reset,
+                          .observation_start = start,
+                          .settlement = year_month_day{sys_days{end} + days{2}},
+                          .premium = money(quantity.to_double() * strike.to_double() * 0.02),
+                          .premium_date = year_month_day{sys_days{start} + days{2}}})
+                         .build());
+    }
+    if (type == "CommodityForwardVolatilityAgreement") {
+        // The volatility fixes halfway to the expiry, which the straddle runs to.
+        const auto fva_date =
+            year_month_day{sys_days{start} + (sys_days{end} - sys_days{start}) / 2};
+        return built(tb::commodity_forward_volatility_agreement_builder(
+                         {.underlying = underlying,
+                          .currency = currency,
+                          .quantity = quantity,
+                          .fva_date = fva_date,
+                          .expiry = end,
+                          .settlement = year_month_day{sys_days{end} + days{2}},
+                          .premium_date = year_month_day{sys_days{fva_date} + days{2}},
+                          .implied_vol_strike = money(0.2 + 0.2 * draw(name, 12)),
                           .position = position,
                           .unit = drawn.unit})
                          .build());
@@ -1122,8 +1206,9 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
             case commodity_shape::accumulator:
             case commodity_shape::target_redemption:
                 terms.option_type = "Call";
+                terms.strike_price = strike;
                 terms.accumulation_amount = std::round(terms.quantity / 12.0 * 100.0) / 100.0;
-                terms.knock_out_barrier = std::round(price * 1.1 * 100.0) / 100.0;
+                terms.knock_out_barrier = std::round(strike * 1.2 * 100.0) / 100.0;
                 break;
             case commodity_shape::spread_option:
                 terms.option_type = "Call";

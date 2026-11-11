@@ -194,6 +194,105 @@ domain::commodity_instrument commodity_digital_row_of(std::string_view trade_typ
  */
 constexpr int commodity_seconds_in_a_day = 86400;
 
+/// The commodity a product names in its Underlying block.
+void commodity_add_underlying(domain::commodity_instrument_data& out,
+                              const marketdata::datum::market_reference& underlying,
+                              std::optional<double> weight = std::nullopt) {
+    domain::instrument_underlying row{};
+    row.underlying_role = "underlying";
+    row.sequence_number = 1;
+    row.underlying_type = "Commodity";
+    row.name = underlying.uri();
+    row.weight = weight;
+    out.instrument_underlyings.push_back(std::move(row));
+}
+
+/// A scripted product's monthly dates from @p start to @p end, kept as its own.
+domain::instrument_schedule commodity_scripted_schedule(std::string role, ymd start, ymd end) {
+    domain::instrument_schedule row{};
+    row.owner_role = "option";
+    row.owner_number = 1;
+    row.schedule_role = std::move(role);
+    row.sequence_number = 1;
+    row.schedule_kind = "rules";
+    row.start_date = start;
+    row.end_date = end;
+    row.tenor = "1M";
+    row.calendar = "US-NYSE";
+    row.convention = "F";
+    row.rule = "Forward";
+    return row;
+}
+
+/// Fixings below the strike are taken twice, those above it once.
+std::vector<domain::range_bound> commodity_strike_bounds(decimal strike) {
+    domain::range_bound below{};
+    below.sequence_number = 1;
+    below.range_to = strike;
+    below.leverage = 2.0;
+    domain::range_bound above{};
+    above.sequence_number = 2;
+    above.range_from = strike;
+    above.leverage = 1.0;
+    return {below, above};
+}
+
+/// One barrier of one level, kept as the product's own.
+void commodity_add_barrier(domain::commodity_instrument_data& out,
+                           std::string type,
+                           decimal level) {
+    domain::instrument_barrier barrier{};
+    barrier.barrier_role = "barrier";
+    barrier.sequence_number = 1;
+    barrier.barrier_type = std::move(type);
+    out.barriers.push_back(std::move(barrier));
+    domain::instrument_barrier_level row{};
+    row.barrier_role = "barrier";
+    row.barrier_sequence_number = 1;
+    row.sequence_number = 1;
+    row.level = level;
+    out.barrier_levels.push_back(std::move(row));
+}
+
+std::string commodity_barrier_type_of(barrier_kind kind) {
+    switch (kind) {
+    case barrier_kind::up_and_in:
+        return "UpAndIn";
+    case barrier_kind::up_and_out:
+        return "UpAndOut";
+    case barrier_kind::down_and_in:
+        return "DownAndIn";
+    case barrier_kind::down_and_out:
+        return "DownAndOut";
+    }
+    return {};
+}
+
+std::optional<build_error> commodity_fixing_refusal(const std::string& currency,
+                                                    decimal fixing_amount,
+                                                    decimal strike,
+                                                    ymd start,
+                                                    ymd expiry) {
+    if (currency.empty())
+        return build_error{"currency", "must not be empty"};
+    if (strike <= decimal{} || fixing_amount <= decimal{})
+        return build_error{"amounts", "the strike and fixing amount must be positive"};
+    return refusals::period(start, expiry);
+}
+
+/// An accumulating product's row keeps its fixing amount, and its quantity is none.
+domain::commodity_instrument commodity_fixing_row_of(std::string_view trade_type,
+                                                     const marketdata::datum::market_reference& u,
+                                                     const std::string& currency,
+                                                     decimal fixing_amount,
+                                                     decimal strike,
+                                                     const std::string& unit) {
+    auto row = commodity_row_of(trade_type, u, currency, decimal{}, unit);
+    row.accumulation_amount = fixing_amount;
+    row.strike_price = strike;
+    return row;
+}
+
 }
 
 commodity_forward_builder::commodity_forward_builder(commodity_forward_terms terms)
@@ -433,13 +532,7 @@ commodity_result commodity_position_builder::build() const {
                                       terms_.currency.get(),
                                       terms_.quantity.get(),
                                       terms_.unit);
-    domain::instrument_underlying underlying{};
-    underlying.underlying_role = "underlying";
-    underlying.sequence_number = 1;
-    underlying.underlying_type = "Commodity";
-    underlying.name = terms_.underlying.get().uri();
-    underlying.weight = 1.0;
-    out.instrument_underlyings.push_back(std::move(underlying));
+    commodity_add_underlying(out, terms_.underlying.get(), 1.0);
     return out;
 }
 
@@ -509,6 +602,177 @@ commodity_result intraday_power_forward_builder::build() const {
     row.delivery_end = end;
     domain::commodity_instrument_data out{};
     out.instrument = std::move(row);
+    return out;
+}
+
+commodity_asian_option_builder::commodity_asian_option_builder(commodity_asian_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_asian_option_builder::build() const {
+    const auto& option = terms_.option;
+    if (auto refusal = commodity_option_refusal(option))
+        return std::unexpected(std::move(*refusal));
+    if (auto refusal = refusals::period(terms_.averaging_start.get(), option.expiry.get()))
+        return std::unexpected(std::move(*refusal));
+    domain::commodity_instrument_data out{};
+    out.instrument = commodity_option_row_of(trade_type, option);
+    out.options.push_back(commodity_option_row(option.position.get(), std::string("Asian")));
+    out.schedules.push_back(commodity_scripted_schedule(
+        "observation_schedule", terms_.averaging_start.get(), option.expiry.get()));
+    commodity_add_underlying(out, option.underlying.get());
+    return out;
+}
+
+commodity_accumulator_builder::commodity_accumulator_builder(commodity_accumulator_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_accumulator_builder::build() const {
+    if (auto refusal = commodity_fixing_refusal(terms_.currency.get(),
+                                                terms_.fixing_amount.get(),
+                                                terms_.strike.get(),
+                                                terms_.start.get(),
+                                                terms_.expiry.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.knock_out.get() <= terms_.strike.get())
+        return std::unexpected(build_error{"knock_out", "must be above the strike"});
+    domain::commodity_instrument_data out{};
+    out.instrument = commodity_fixing_row_of(trade_type,
+                                             terms_.underlying.get(),
+                                             terms_.currency.get(),
+                                             terms_.fixing_amount.get(),
+                                             terms_.strike.get(),
+                                             terms_.unit);
+    out.instrument.start_date = terms_.start.get();
+    domain::instrument_option option{};
+    option.long_short = long_short_of(terms_.position.get());
+    option.payoff_type = "Accumulator";
+    out.options.push_back(std::move(option));
+    out.schedules.push_back(commodity_scripted_schedule(
+        "observation_schedule", terms_.start.get(), terms_.expiry.get()));
+    out.range_bounds = commodity_strike_bounds(terms_.strike.get());
+    commodity_add_barrier(out, "UpAndOut", terms_.knock_out.get());
+    commodity_add_underlying(out, terms_.underlying.get());
+    return out;
+}
+
+commodity_tarf_builder::commodity_tarf_builder(commodity_tarf_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_tarf_builder::build() const {
+    if (auto refusal = commodity_fixing_refusal(terms_.currency.get(),
+                                                terms_.fixing_amount.get(),
+                                                terms_.strike.get(),
+                                                terms_.start.get(),
+                                                terms_.expiry.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.target_amount.get() <= decimal{})
+        return std::unexpected(build_error{"target_amount", "must be positive"});
+    domain::commodity_instrument_data out{};
+    out.instrument = commodity_fixing_row_of(trade_type,
+                                             terms_.underlying.get(),
+                                             terms_.currency.get(),
+                                             terms_.fixing_amount.get(),
+                                             terms_.strike.get(),
+                                             terms_.unit);
+    out.instrument.target_amount = terms_.target_amount.get();
+    domain::instrument_option option{};
+    option.long_short = long_short_of(terms_.position.get());
+    option.payoff_type = "TargetExact";
+    out.options.push_back(std::move(option));
+    out.schedules.push_back(
+        commodity_scripted_schedule("product_schedule", terms_.start.get(), terms_.expiry.get()));
+    out.range_bounds = commodity_strike_bounds(terms_.strike.get());
+    commodity_add_barrier(out, "CumulatedProfitCap", terms_.target_amount.get());
+    commodity_add_underlying(out, terms_.underlying.get());
+    return out;
+}
+
+commodity_generic_barrier_option_builder::commodity_generic_barrier_option_builder(
+    commodity_generic_barrier_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_generic_barrier_option_builder::build() const {
+    const auto& option = terms_.option;
+    if (auto refusal = commodity_option_refusal(option))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.barrier_level.get() <= decimal{})
+        return std::unexpected(build_error{"barrier_level", "must be positive"});
+    if (auto refusal = refusals::period(terms_.monitoring_start.get(), option.expiry.get()))
+        return std::unexpected(std::move(*refusal));
+    domain::commodity_instrument_data out{};
+    out.instrument = commodity_option_row_of(trade_type, option);
+    out.options.push_back(commodity_option_row(option.position.get()));
+    commodity_add_barrier(
+        out, commodity_barrier_type_of(terms_.barrier.get()), terms_.barrier_level.get());
+    out.schedules.push_back(commodity_scripted_schedule(
+        "barrier_schedule", terms_.monitoring_start.get(), option.expiry.get()));
+    commodity_add_underlying(out, option.underlying.get());
+    return out;
+}
+
+commodity_strike_resettable_option_builder::commodity_strike_resettable_option_builder(
+    commodity_strike_resettable_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_strike_resettable_option_builder::build() const {
+    const auto& option = terms_.option;
+    if (auto refusal = commodity_option_refusal(option))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.reset_strike.get() <= decimal{})
+        return std::unexpected(build_error{"reset_strike", "must be positive"});
+    if (terms_.trigger_price.get() <= decimal{})
+        return std::unexpected(build_error{"trigger_price", "must be positive"});
+    if (terms_.premium.get() < decimal{})
+        return std::unexpected(build_error{"premium", "must not be negative"});
+    if (auto refusal = refusals::period(terms_.observation_start.get(), option.expiry.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.settlement.get() < option.expiry.get())
+        return std::unexpected(build_error{"settlement", "must not be before the expiry"});
+    auto row = commodity_option_row_of(trade_type, option);
+    // The product states no OptionData, so the row keeps no exercise style.
+    row.exercise_type.clear();
+    row.position = long_short_of(option.position.get());
+    row.reset_strike = terms_.reset_strike.get();
+    row.trigger_type = terms_.trigger.get() == trigger_direction::up ? "Up" : "Down";
+    row.trigger_price = terms_.trigger_price.get();
+    row.settlement_date = terms_.settlement.get();
+    row.premium_amount = terms_.premium.get();
+    row.premium_date = terms_.premium_date.get();
+    domain::commodity_instrument_data out{};
+    out.instrument = std::move(row);
+    out.schedules.push_back(commodity_scripted_schedule(
+        "observation_schedule", terms_.observation_start.get(), option.expiry.get()));
+    commodity_add_underlying(out, option.underlying.get());
+    return out;
+}
+
+commodity_forward_volatility_agreement_builder::commodity_forward_volatility_agreement_builder(
+    commodity_forward_volatility_agreement_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_forward_volatility_agreement_builder::build() const {
+    if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.quantity.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.implied_vol_strike.get() <= decimal{})
+        return std::unexpected(build_error{"implied_vol_strike", "must be positive"});
+    if (!(terms_.fva_date.get() < terms_.expiry.get()))
+        return std::unexpected(build_error{"fva_date", "must be before the expiry"});
+    if (terms_.settlement.get() < terms_.expiry.get())
+        return std::unexpected(build_error{"settlement", "must not be before the expiry"});
+    auto row = commodity_row_of(trade_type,
+                                terms_.underlying.get(),
+                                terms_.currency.get(),
+                                terms_.quantity.get(),
+                                terms_.unit);
+    row.maturity_date = terms_.expiry.get();
+    row.position = long_short_of(terms_.position.get());
+    row.fva_date = terms_.fva_date.get();
+    row.settlement_date = terms_.settlement.get();
+    row.premium_date = terms_.premium_date.get();
+    row.implied_vol_strike = terms_.implied_vol_strike.get();
+    domain::commodity_instrument_data out{};
+    out.instrument = std::move(row);
+    commodity_add_underlying(out, terms_.underlying.get());
     return out;
 }
 

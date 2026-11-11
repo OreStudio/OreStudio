@@ -43,9 +43,23 @@ Every equity trade type the generator books is built by its trade builder, and t
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- One builder per booked equity type, in =equity_builders.hpp=, following the
+  FX builders: a builder fills =equity_instrument_data= with the product's row
+  and the shared rows ORE needs, the option block with its style and payoff
+  type, schedules, range bounds, barriers, underlyings and legs. Products of
+  one shape share a header template, defined in the header so nothing is
+  exported or instantiated by hand.
+- The ORE errors that are the trade's: the accumulator's payoff type, the Asian
+  option's averaging schedule, the cliquet's missing node, the digital's
+  option style, the swap's floating leg, the TaRF's range bounds, the touch
+  option's equity index, and the worst-of basket's underlying type, which
+  states =share= where ORE wants =Equity=. The rest are equity curves and
+  spots the Products example lacks, which belong to the market data task.
+- An underlying is an oresmd equity address the projection's underlying mapper
+  writes; no builder or planner spells an ORE name.
+- The =construct_equity_*= functions, their terms and the plan's =equity_terms=
+  are deleted. The round-trip known list loses the equity lines the builders
+  settle.
 
 * Measurements
 

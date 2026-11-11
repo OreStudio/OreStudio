@@ -481,6 +481,10 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 if (auto record = sessions_->touch(*identifier); record.has_value()) {
                     claims = std::move(record->claims);
                     session_proof = true;
+                    // A route forwards the caller's token; a browser holds only an
+                    // identifier, so the request carries the session's token.
+                    if (!record->token.empty())
+                        domain_req.headers["authorization"] = "Bearer " + record->token;
                 } else {
                     /*
                      * The browser holds a session this server no longer has, so the

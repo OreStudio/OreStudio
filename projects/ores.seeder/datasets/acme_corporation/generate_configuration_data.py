@@ -21,9 +21,13 @@ Usage:
 """
 import json
 import os
+import sys
 import uuid
 
 import generate_party_data as parties
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "fx_vol_surfaces"))
+import generate_sql as surfaces  # noqa: E402
 
 NAMESPACE = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -457,8 +461,18 @@ def fx_pairs(company):
     return pairs
 
 
+def fx_volatility_pairs(company):
+    """The pairs the system calibrates a surface for whose two currencies the entity builds
+    a curve for, in market quoting order. A surface needs both curves to turn a delta into
+    a strike."""
+    currencies = ENTITY_CURRENCIES[company]
+    return [(base, quote) for base, quote, _delta in surfaces.PAIRS
+            if base in currencies and quote in currencies]
+
+
 def todays_market():
-    """One configuration, default, that discounts every trade on its own overnight curve."""
+    """One configuration, default, that discounts every trade on its own overnight curve and
+    reads each FX volatility surface the entity calibrates."""
     headers, collections, entries, configurations, bindings = [], [], [], [], []
     for company in ENTITY_CURRENCIES:
         header_id = new_uuid(f"todays_market:{company}")
@@ -488,6 +502,9 @@ def todays_market():
                    [(OVERNIGHT[c][0], f"Yield/{c}/{c}1D") for c in currencies])
         collection(2, "FxSpots", "default",
                    [(f"{b}{q}", f"FX/{b}/{q}") for b, q in fx_pairs(company)])
+        collection(3, "FxVolatilities", "default",
+                   [(f"{b}{q}", f"FXVolatility/{b}/{q}/{b}{q}")
+                    for b, q in fx_volatility_pairs(company)])
 
         configuration_id = new_uuid(f"todays_market:{company}:configuration:default")
         configurations.append(row(
@@ -495,7 +512,7 @@ def todays_market():
             configuration_id="default", position=0))
         for index, (kind, reference) in enumerate(
                 [("DiscountingCurves", "ois"), ("IndexForwardingCurves", "default"),
-                 ("FxSpots", "default")]):
+                 ("FxSpots", "default"), ("FxVolatilities", "default")]):
             bindings.append(row(
                 company, id=new_uuid(f"todays_market:{company}:binding:{kind}"),
                 todays_market_configuration_id=configuration_id, collection=kind,
@@ -585,6 +602,49 @@ def inflation_curve_configuration():
     return definitions, configs
 
 
+# The deltas an FX volatility curve reads, one per strike of the surface grid the system
+# publishes: the 10 and 25 delta puts, ATM, and the 25 and 10 delta calls.
+FX_VOLATILITY_DELTAS = "10P,25P,ATM,25C,10C"
+
+
+def fx_volatility_configuration():
+    """An FX volatility curve of dimension Smile and smile type Delta for each pair the
+    entity calibrates a surface for. It reads the published grid as ORE quotes: the
+    surface's expiries by FX_VOLATILITY_DELTAS, under the pair's FX option convention,
+    with the pair's spot and the two overnight curves of the entity. The calendar and the
+    day counter are left to ORE, which takes the pair's joint calendar and A365."""
+    definitions, configs, smiles = [], [], []
+    for company in ENTITY_CURRENCIES:
+        for position, (base, quote) in enumerate(fx_volatility_pairs(company)):
+            curve_id = f"{base}{quote}"
+            definition_id = new_uuid(f"fx_volatility_configuration:{company}:{curve_id}")
+            definitions.append(row(
+                company, id=definition_id,
+                curve_configuration_id=new_uuid(f"curve_configuration:{company}"),
+                section_code="FXVolatilities", curve_id=curve_id,
+                description=f"{base}/{quote} volatility surface, read from the published "
+                            f"{curve_id}_SSVI grid",
+                position=position))
+            config_id = new_uuid(f"fx_volatility_configuration:{company}:{curve_id}:config")
+            configs.append(row(
+                company, id=config_id, curve_definition_id=definition_id,
+                dimension="Smile", deltas=FX_VOLATILITY_DELTAS,
+                conventions=f"{base}-{quote}-FXOPTION",
+                expiries=",".join(surfaces.EXPIRIES),
+                fx_spot_id=f"FX/{base}/{quote}",
+                fx_foreign_curve_id=f"Yield/{base}/{base}1D",
+                fx_domestic_curve_id=f"Yield/{quote}/{quote}1D",
+                calendar=None, day_counter=None, fx_index_tag=None,
+                base_volatility_1=None, base_volatility_2=None))
+            smiles.append(row(
+                company, id=new_uuid(f"fx_volatility_configuration:{company}:{curve_id}:smile"),
+                fx_volatility_config_id=config_id,
+                smile_type="Delta", smile_interpolation="Cubic", smile_delta=None,
+                smile_extrapolation="Flat", time_interpolation="V", time_weighting=None,
+                butterfly_error_tolerance=0.01))
+    return definitions, configs, smiles
+
+
 def main():
     headers, products, parameters = pricing_engines()
     write("pricing_model_configs", headers)
@@ -602,10 +662,13 @@ def main():
              "curve_segment_conventions", "curve_quotes")
     records = list(curve_configuration())
     inflation_definitions, inflation_configs = inflation_curve_configuration()
-    records[1] = records[1] + inflation_definitions
+    volatility_definitions, volatility_configs, volatility_smiles = fx_volatility_configuration()
+    records[1] = records[1] + inflation_definitions + volatility_definitions
     for name, rows in zip(names, records):
         write(name, rows)
     write("inflation_curve_configs", inflation_configs)
+    write("fx_volatility_configs", volatility_configs)
+    write("fx_volatility_smiles", volatility_smiles)
 
 
 if __name__ == "__main__":

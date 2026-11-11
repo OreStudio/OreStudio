@@ -16,6 +16,12 @@
             "description": "Counterparty netting data for the ACME legal entities: master agreements, netting sets and credit support annexes, built from the shape of the ORE samples and made realistic",
             "url": "https://en.wikipedia.org/wiki/Acme_Corporation",
             "steps_file": "netting_methodology.txt"
+        },
+        {
+            "name": "ACME Market Configuration Methodology",
+            "description": "The market each ACME legal entity marks its trades on: its overnight discount curves, its inflation curves, its FX volatility surfaces and the today's market that names them, with the source of each choice",
+            "url": "https://github.com/OreStudio/OreStudio/tree/main/projects/ores.seeder/datasets/acme_corporation",
+            "steps_file": "market_configuration_methodology.txt"
         }
     ],
     "catalogs": [

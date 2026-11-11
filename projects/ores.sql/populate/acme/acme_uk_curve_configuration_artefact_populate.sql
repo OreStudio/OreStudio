@@ -81,7 +81,17 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'YieldCurves', 'ILS1D', 'ILS discount curve bootstrapped from ILS-TELBORON swap rates', 16),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '9519b9b5-4803-55cf-81e5-2afb2db9248b', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'InflationCurves', 'UKRPIX', 'GBP zero coupon inflation curve on UKRPIX', 0),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'd3a2cef3-d406-5135-9238-6c66c7b681e7', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'InflationCurves', 'BECPIHL', 'EUR zero coupon inflation curve on BECPIHL', 1),
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'd8344edc-dc11-5729-9a1d-148a3b7ffe15', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'InflationCurves', 'USCPIA', 'USD zero coupon inflation curve on USCPIA', 2);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'd8344edc-dc11-5729-9a1d-148a3b7ffe15', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'InflationCurves', 'USCPIA', 'USD zero coupon inflation curve on USCPIA', 2),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'd2069938-42f8-57ae-b5cd-ca49988e882c', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'FXVolatilities', 'EURUSD', 'EUR/USD volatility surface, read from the published EURUSD_SSVI grid', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '3b0c8179-7c12-5848-b31d-f11c105196ec', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'FXVolatilities', 'GBPUSD', 'GBP/USD volatility surface, read from the published GBPUSD_SSVI grid', 1),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'b343c6e0-66b6-5b32-8c87-36e043d8fff2', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'FXVolatilities', 'USDJPY', 'USD/JPY volatility surface, read from the published USDJPY_SSVI grid', 2),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '00861984-f286-5594-af2f-3928fe8d397c', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'FXVolatilities', 'USDCHF', 'USD/CHF volatility surface, read from the published USDCHF_SSVI grid', 3),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '0bb7fe3b-6a3f-5735-886f-f8e0c1f40f66', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'FXVolatilities', 'AUDUSD', 'AUD/USD volatility surface, read from the published AUDUSD_SSVI grid', 4),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '83f6c9e0-24e8-55a2-9855-21b1e2a7419f', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'FXVolatilities', 'USDCAD', 'USD/CAD volatility surface, read from the published USDCAD_SSVI grid', 5),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'b20b0b52-a8a8-5ae0-b8a3-8813933c313f', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'FXVolatilities', 'NZDUSD', 'NZD/USD volatility surface, read from the published NZDUSD_SSVI grid', 6),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '8b69b2b3-015d-53c8-9662-1eb41a39bb9f', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'FXVolatilities', 'EURGBP', 'EUR/GBP volatility surface, read from the published EURGBP_SSVI grid', 7),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '1b6f8d56-6cfc-5f58-811e-b7aedbb3f6ef', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'FXVolatilities', 'EURJPY', 'EUR/JPY volatility surface, read from the published EURJPY_SSVI grid', 8),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '54fb263a-7d3f-5852-b396-52956ebe5877', '04fb9b73-c17d-536f-ab92-afe92a42cd64', 'FXVolatilities', 'EURCHF', 'EUR/CHF volatility surface, read from the published EURCHF_SSVI grid', 9);
 
     delete from ores_dq_yield_curve_configs_artefact_tbl
     where dataset_id = v_dataset_id;
@@ -380,4 +390,40 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '329bb19c-6720-5703-974f-a20b2c68b68d', '9519b9b5-4803-55cf-81e5-2afb2db9248b', 'GBP1D', 'ZC', 'UKRPIX_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, 'ZeroRate', 'Linear'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'e2c0fdbf-0445-519d-86e9-2a42cdcafbdb', 'd3a2cef3-d406-5135-9238-6c66c7b681e7', 'EUR1D', 'ZC', 'BECPIHL_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, 'ZeroRate', 'Linear'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'a461be34-3be2-5eb0-8840-76adeb66b86d', 'd8344edc-dc11-5729-9a1d-148a3b7ffe15', 'USD1D', 'ZC', 'USCPIA_INFLATIONSWAP', false, 'TARGET', 'A365', '3M', 'Monthly', 0.02, 1e-12, false, 'ZeroRate', 'Linear');
+
+    delete from ores_dq_fx_volatility_configs_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_fx_volatility_configs_artefact_tbl (
+        dataset_id, tenant_id, version, party_id, id, curve_definition_id, dimension, deltas, conventions, expiries, fx_spot_id, fx_foreign_curve_id, fx_domestic_curve_id, calendar, day_counter, fx_index_tag, base_volatility_1, base_volatility_2
+    )
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '8f7e3fbd-b703-5979-b87d-58253d1de31c', 'd2069938-42f8-57ae-b5cd-ca49988e882c', 'Smile', '10P,25P,ATM,25C,10C', 'EUR-USD-FXOPTION', '1W,1M,2M,3M,6M,9M,1Y', 'FX/EUR/USD', 'Yield/EUR/EUR1D', 'Yield/USD/USD1D', null, null, null, null, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '64cd65c3-d259-5de1-b7d8-ea37c6924519', '3b0c8179-7c12-5848-b31d-f11c105196ec', 'Smile', '10P,25P,ATM,25C,10C', 'GBP-USD-FXOPTION', '1W,1M,2M,3M,6M,9M,1Y', 'FX/GBP/USD', 'Yield/GBP/GBP1D', 'Yield/USD/USD1D', null, null, null, null, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '4bdd1eed-703c-5a98-a4c3-c96a37f705e2', 'b343c6e0-66b6-5b32-8c87-36e043d8fff2', 'Smile', '10P,25P,ATM,25C,10C', 'USD-JPY-FXOPTION', '1W,1M,2M,3M,6M,9M,1Y', 'FX/USD/JPY', 'Yield/USD/USD1D', 'Yield/JPY/JPY1D', null, null, null, null, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '1cacfaa3-e84f-5242-8c1c-830a5afc12c5', '00861984-f286-5594-af2f-3928fe8d397c', 'Smile', '10P,25P,ATM,25C,10C', 'USD-CHF-FXOPTION', '1W,1M,2M,3M,6M,9M,1Y', 'FX/USD/CHF', 'Yield/USD/USD1D', 'Yield/CHF/CHF1D', null, null, null, null, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '314d4995-d586-5f05-931a-628a6724a516', '0bb7fe3b-6a3f-5735-886f-f8e0c1f40f66', 'Smile', '10P,25P,ATM,25C,10C', 'AUD-USD-FXOPTION', '1W,1M,2M,3M,6M,9M,1Y', 'FX/AUD/USD', 'Yield/AUD/AUD1D', 'Yield/USD/USD1D', null, null, null, null, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'e4fc858b-9523-5694-8cc3-166635967031', '83f6c9e0-24e8-55a2-9855-21b1e2a7419f', 'Smile', '10P,25P,ATM,25C,10C', 'USD-CAD-FXOPTION', '1W,1M,2M,3M,6M,9M,1Y', 'FX/USD/CAD', 'Yield/USD/USD1D', 'Yield/CAD/CAD1D', null, null, null, null, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '19f95660-46fa-5b63-8a39-fc4f10c66338', 'b20b0b52-a8a8-5ae0-b8a3-8813933c313f', 'Smile', '10P,25P,ATM,25C,10C', 'NZD-USD-FXOPTION', '1W,1M,2M,3M,6M,9M,1Y', 'FX/NZD/USD', 'Yield/NZD/NZD1D', 'Yield/USD/USD1D', null, null, null, null, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '7c3f080c-6efa-58ee-9cee-28651cd17781', '8b69b2b3-015d-53c8-9662-1eb41a39bb9f', 'Smile', '10P,25P,ATM,25C,10C', 'EUR-GBP-FXOPTION', '1W,1M,2M,3M,6M,9M,1Y', 'FX/EUR/GBP', 'Yield/EUR/EUR1D', 'Yield/GBP/GBP1D', null, null, null, null, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '47c0f1a0-e2e0-525f-b570-72b61f8e232b', '1b6f8d56-6cfc-5f58-811e-b7aedbb3f6ef', 'Smile', '10P,25P,ATM,25C,10C', 'EUR-JPY-FXOPTION', '1W,1M,2M,3M,6M,9M,1Y', 'FX/EUR/JPY', 'Yield/EUR/EUR1D', 'Yield/JPY/JPY1D', null, null, null, null, null),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '9cba9500-5ffd-563e-9bc1-f439644dd4e0', '54fb263a-7d3f-5852-b396-52956ebe5877', 'Smile', '10P,25P,ATM,25C,10C', 'EUR-CHF-FXOPTION', '1W,1M,2M,3M,6M,9M,1Y', 'FX/EUR/CHF', 'Yield/EUR/EUR1D', 'Yield/CHF/CHF1D', null, null, null, null, null);
+
+    delete from ores_dq_fx_volatility_smiles_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_fx_volatility_smiles_artefact_tbl (
+        dataset_id, tenant_id, version, party_id, id, fx_volatility_config_id, smile_type, smile_interpolation, smile_delta, smile_extrapolation, time_interpolation, time_weighting, butterfly_error_tolerance
+    )
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '62ffbd27-5e2b-5a14-ab2f-2f1757b4df33', '8f7e3fbd-b703-5979-b87d-58253d1de31c', 'Delta', 'Cubic', null, 'Flat', 'V', null, 0.01),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '90fcb28f-7753-55f0-bd6e-e7610c797830', '64cd65c3-d259-5de1-b7d8-ea37c6924519', 'Delta', 'Cubic', null, 'Flat', 'V', null, 0.01),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '12d1bb69-71dd-5260-8808-898d674a1f8e', '4bdd1eed-703c-5a98-a4c3-c96a37f705e2', 'Delta', 'Cubic', null, 'Flat', 'V', null, 0.01),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '987f072e-bc3f-5e06-bf89-1e87211bd5ab', '1cacfaa3-e84f-5242-8c1c-830a5afc12c5', 'Delta', 'Cubic', null, 'Flat', 'V', null, 0.01),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '5eaab48c-4900-5f53-92bd-8827e541e601', '314d4995-d586-5f05-931a-628a6724a516', 'Delta', 'Cubic', null, 'Flat', 'V', null, 0.01),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '0b69388a-d3a4-5c74-bd74-091e6505162e', 'e4fc858b-9523-5694-8cc3-166635967031', 'Delta', 'Cubic', null, 'Flat', 'V', null, 0.01),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '12f32ed8-6167-5dc9-8211-9e1caa1162a2', '19f95660-46fa-5b63-8a39-fc4f10c66338', 'Delta', 'Cubic', null, 'Flat', 'V', null, 0.01),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'fb04cc90-c189-5185-a131-ab2e72968a63', '7c3f080c-6efa-58ee-9cee-28651cd17781', 'Delta', 'Cubic', null, 'Flat', 'V', null, 0.01),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', 'd65eb88a-6319-551f-b54c-0d5f87dcbb22', '47c0f1a0-e2e0-525f-b570-72b61f8e232b', 'Delta', 'Cubic', null, 'Flat', 'V', null, 0.01),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 0, '00000000-0000-0000-0000-000000000000', '9e3d7b3e-5781-5ea3-964f-a22c307f7ab6', '9cba9500-5ffd-563e-9bc1-f439644dd4e0', 'Delta', 'Cubic', null, 'Flat', 'V', null, 0.01);
 end $$;

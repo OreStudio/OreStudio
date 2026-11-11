@@ -160,6 +160,38 @@ ORES_HTTP_API_EXPORT std::optional<ores::utility::domain::change_intent>
 intent_of(const stated_intent& stated);
 
 /**
+ * @brief A one-row write as a screen states it: why, the version the row was
+ * read at or null for a new row, and the row.
+ */
+template <typename Write>
+struct versioned_write final {
+    stated_intent intent;
+    std::optional<std::uint32_t> version;
+    Write write;
+};
+
+template <typename Write>
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<versioned_write<Write>>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"intent", &versioned_write<Write>::intent},
+                      field{"version", &versioned_write<Write>::version},
+                      field{"write", &versioned_write<Write>::write}};
+}
+
+/**
+ * @brief A screen's write answer: the service's result whatever its outcome,
+ * and the row it wrote under the name the screen reads, or null.
+ */
+template <typename Row>
+[[nodiscard]] std::string result_with(const ores::utility::domain::result& result,
+                                      std::string_view name,
+                                      const std::optional<Row>& row) {
+    namespace json = ores::utility::codec::json;
+    return "{\"result\":" + json::write(result) + ",\"" + std::string(name) +
+           "\":" + (row ? json::write(*row) : std::string("null")) + "}";
+}
+
+/**
  * @brief Refuse with the status a refused outcome names.
  *
  * A conflict the service states no words for says what it means.

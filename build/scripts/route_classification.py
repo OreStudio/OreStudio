@@ -739,6 +739,15 @@ RULES = (
          "The conventions screen's read or write at the address and in the shape the BFF"
          " answered: each family with its count, one family's page, and the write of a family"
          " whose terms the screen draws."),
+    Rule("the tenors screen's route",
+         ("regex", r"^(POST /api/tenors/(preview-resolution|resolve|resolve-convention)"
+                   r"|GET /api/tenors/conventions/\{code\}/resolutions"
+                   r"|PUT /api/tenors/(tenors|conventions)"
+                   r"|(PUT|DELETE) /api/tenors/conventions/\{code\}/resolutions/\{tenor\})$"),
+         CPP, RESOURCE, "reference-data",
+         "The tenors screen's operation at the address and in the shape the BFF answered: the"
+         " resolution of a drafted rule and of the stored rules, one convention's membership"
+         " rows, and the writes of a tenor, a convention and a membership row."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

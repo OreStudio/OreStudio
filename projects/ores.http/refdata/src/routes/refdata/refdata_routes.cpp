@@ -79,6 +79,7 @@
 #include "ores.http/routes/refdata/party_web_routes.hpp"
 #include "ores.http/routes/refdata/payment_frequency_web_routes.hpp"
 #include "ores.http/routes/refdata/pick_list_routes.hpp"
+#include "ores.http/routes/refdata/tenor_screen_routes.hpp"
 #include "ores.http/routes/refdata/tenor_web_routes.hpp"
 #include <string>
 #include <string_view>
@@ -198,6 +199,7 @@ void refdata_routes::register_routes(
     // The counterparty onboarding screen's own reads and writes.
     counterparty_screen_routes::register_routes(router, registry, session);
     convention_screen_routes::register_routes(router, registry, session);
+    tenor_screen_routes::register_routes(router, registry, session);
 
     // The reference data lookups the synthetic screens read, under /api/synthetic.
     tenor_web_routes::register_routes(router, registry, session);

@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-reference-data-operations
-#+pr: 4618
+#+pr: 4619
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -88,6 +88,19 @@ Decisions made in the conventions group:
   =rr::stated_intent= with =rr::intent_of=, and =forwarding::forward_all=. The
   counterparty unit's copies are deleted.
 
+Decisions made in the tenors group:
+
+- =GET /api/tenors/catalogue= is a composed view with a cache policy, so
+  [[id:068865A5-2C31-4735-873E-2CB04A134EF2][Serve the tenor catalogue composed view]]
+  serves it. This group serves the other eight tenor routes.
+- A one-row write as a screen states it is =rr::versioned_write=, sent through
+  =forwarding::put_at_version=, and answered by =rr::result_with=. The
+  conventions family write uses the same three.
+- A resolution and a write answer 200 with the service's result whatever its
+  outcome, as the BFF did: a declined rule is an answer.
+- The membership write takes its convention and tenor codes from the address,
+  as the BFF did, so the body may leave them out.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -119,6 +132,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4619][#4619]] | [http] Serve the tenors screen's operations |
 | [[https://github.com/OreStudio/OreStudio/pull/4618][#4618]] | [http] Serve the conventions screen's families, page and write |
 | [[https://github.com/OreStudio/OreStudio/pull/4616][#4616]] | [http] Serve the counterparty screen's routes |
 
@@ -148,6 +162,13 @@ via its "Verifies task" field.
 | 20 | PR #4618: a write answers 200 whatever its outcome. | =convention_screen_routes.cpp= | Accepted | The route's OpenAPI description says to read =result.outcome=. |
 | 21 | PR #4618: minor points. | =convention_screen_routes.cpp= | Partly accepted | The local =written= is renamed =row=. The 26-row lookup stays; the plain families' shared flag is tested against the registry. |
 | 22 | PR #4618: run the write and a composite page against a live service. | All | Declined | The dev database is in bootstrap mode with no accounts; the switch task tests ores.web end to end. |
+| 23 | Local review: the tenor and conventions writes each built the precondition and the answer. | =record_routes.hpp=, =forwarding.hpp= | Accepted | One =rr::versioned_write=, =forwarding::put_at_version= and =rr::result_with=; the conventions unit uses them. |
+| 24 | Local review: a resolution's horizon and spot are typed dates. | =tenor_screen_routes.cpp= | Accepted | A malformed date is refused with 400 before forwarding; the BFF passed the text to the service, which refused it. |
+| 25 | PR #4619: the tenor and convention writes do not check the row's own code. | =tenor_screen_routes.cpp= | Declined | The BFF passed the row to the service, which checks it and names the field it refuses. |
+| 26 | PR #4619: every question requires a calendar code. | =tenor_screen_routes.cpp= | Declined | The BFF required a code of 1 to 100 characters on all three, and the screen always sends one. |
+| 27 | PR #4619: =decltype(Put{}.change.write)= in =put_at_version=. | =forwarding.hpp= | Declined | Every put request is default constructible, and the protocols name no write type alias. |
+| 28 | PR #4619: the membership write and removal answer only the result. | =tenor_screen_routes.cpp= | Declined | The BFF answered only the result, and the screen reads only that. |
+| 29 | PR #4619: =question_sentence= has a static initialiser. | =tenor_screen_routes.cpp= | Accepted | It is a =constexpr std::string_view=. |
 
 * Result
 
@@ -160,5 +181,6 @@ row below records a group that has merged; the task closes when all five have.
 | Conventions: families, page and write | #4618 | 3 | Merged |
 | Conventions: document and terms | | 2 | Waits for the reporting part |
 | Curve configurations | | 3 | Open |
-| Tenors | | 9 | Open |
+| Tenors | #4619 | 8 | Merged |
+| Tenor catalogue view | | 1 | Moved to the tenor catalogue view task |
 | Records, calendars and ORE currency | | 10 | Open |

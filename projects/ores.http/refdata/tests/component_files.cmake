@@ -106,6 +106,7 @@ set(files
     "tenor_anchor_classification_routes_tests.cpp"
     "tenor_kind_classification_routes_tests.cpp"
     "tenor_resolution_algorithm_classification_routes_tests.cpp"
+    "tenor_screen_routes_tests.cpp"
     "tenor_unit_classification_routes_tests.cpp"
     "tenor_web_routes_tests.cpp"
 )

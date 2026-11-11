@@ -44,10 +44,23 @@ PAIRS = [
 EXPIRIES = ["1W", "1M", "2M", "3M", "6M", "9M", "1Y"]
 LABELS = ["ATM", "25RR", "25BF", "10RR", "10BF"]
 
+# The strikes of the output grid, as (side, delta), with None for ATM.
+GRID_STRIKES = [("Put", 10), ("Put", 25), None, ("Call", 25), ("Call", 10)]
+
+
+def fx_option_convention_id(base, quote):
+    return f"{base}-{quote}-FXOPTION"
+
 
 def output_strikes(delta_type):
-    return ",".join([f"DEL/{delta_type}/Put/10", f"DEL/{delta_type}/Put/25", "ATM",
-                     f"DEL/{delta_type}/Call/25", f"DEL/{delta_type}/Call/10"])
+    return ",".join("ATM" if s is None else f"DEL/{delta_type}/{s[0]}/{s[1]}"
+                    for s in GRID_STRIKES)
+
+
+def ore_deltas():
+    """The grid's strikes as the deltas an ORE FXVolatility of smile type Delta reads,
+    such as 25P; the delta type is the convention's."""
+    return ",".join("ATM" if s is None else f"{s[1]}{s[0][0]}" for s in GRID_STRIKES)
 
 
 def new_uuid(key):
@@ -63,7 +76,7 @@ def rows():
     for base, quote, delta_type in PAIRS:
         name = f"{base}{quote}_SSVI"
         blueprint_id = new_uuid(f"blueprint:{name}")
-        blueprints.append((blueprint_id, name, base, quote, f"{base}-{quote}-FXOPTION",
+        blueprints.append((blueprint_id, name, base, quote, fx_option_convention_id(base, quote),
                            output_strikes(delta_type)))
         for expiry in EXPIRIES:
             for label in LABELS:

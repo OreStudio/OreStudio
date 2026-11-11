@@ -116,8 +116,6 @@ render_commodity_instrument_fields(const domain::commodity_instrument& v) {
                       .value = v.include_period_end ? (*v.include_period_end ? "true" : "false") :
                                                       std::string{}});
     fields.push_back({.name = "Position", .value = v.position.value_or(std::string{})});
-    fields.push_back({.name = "Digital Payoff",
-                      .value = v.digital_payoff ? v.digital_payoff->to_string() : std::string{}});
     fields.push_back({.name = "Delivery Date",
                       .value = v.delivery_date ? ores::platform::time::datetime::to_iso8601_date(
                                                      *v.delivery_date) :

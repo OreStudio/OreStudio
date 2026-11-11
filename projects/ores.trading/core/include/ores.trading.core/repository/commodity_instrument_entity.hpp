@@ -91,7 +91,6 @@ struct commodity_instrument_entity {
     std::optional<int> future_month_offset;
     std::optional<bool> include_period_end;
     std::optional<std::string> position;
-    std::optional<ores::utility::decimal::decimal> digital_payoff;
     std::optional<std::chrono::year_month_day> delivery_date;
     std::optional<int> delivery_start;
     std::optional<int> delivery_end;
@@ -149,7 +148,6 @@ struct commodity_instrument_entity {
                query_builder::bind("future_month_offset", &e::future_month_offset) |
                query_builder::bind("include_period_end", &e::include_period_end) |
                query_builder::bind("position", &e::position) |
-               query_builder::bind("digital_payoff", &e::digital_payoff) |
                query_builder::bind("delivery_date", &e::delivery_date) |
                query_builder::bind("delivery_start", &e::delivery_start) |
                query_builder::bind("delivery_end", &e::delivery_end) |

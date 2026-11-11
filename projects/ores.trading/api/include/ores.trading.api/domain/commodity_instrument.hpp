@@ -262,12 +262,6 @@ struct commodity_instrument final {
     std::optional<std::string> position;
 
     /**
-     * @brief The cash a digital option pays when it ends in the money, as Payoff or
-     * DigitalCashPayoff states it.
-     */
-    std::optional<ores::utility::decimal::decimal> digital_payoff;
-
-    /**
      * @brief The day an intraday power forward delivers on, as DeliveryDate states it.
      */
     std::optional<std::chrono::year_month_day> delivery_date;
@@ -346,7 +340,6 @@ struct commodity_instrument final {
     ores::utility::digest::append_member(out, "future_month_offset", v.future_month_offset);
     ores::utility::digest::append_member(out, "include_period_end", v.include_period_end);
     ores::utility::digest::append_member(out, "position", v.position);
-    ores::utility::digest::append_member(out, "digital_payoff", v.digital_payoff);
     ores::utility::digest::append_member(out, "delivery_date", v.delivery_date);
     ores::utility::digest::append_member(out, "delivery_start", v.delivery_start);
     ores::utility::digest::append_member(out, "delivery_end", v.delivery_end);

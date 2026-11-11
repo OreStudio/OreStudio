@@ -147,8 +147,7 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar> "
         "<moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency> "
         "<delivery_roll_days> <future_month_offset> <include_period_end> <position> "
-        "<digital_payoff> <delivery_date> <delivery_start> <delivery_end> <description> <reason> "
-        "<commentary>");
+        "<delivery_date> <delivery_start> <delivery_end> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -163,8 +162,8 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar> "
         "<moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency> "
         "<delivery_roll_days> <future_month_offset> <include_period_end> <position> "
-        "<digital_payoff> <delivery_date> <delivery_start> <delivery_end> <description> <reason> "
-        "<commentary> [--version <n>]");
+        "<delivery_date> <delivery_start> <delivery_end> <description> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -179,8 +178,7 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar> "
         "<moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency> "
         "<delivery_roll_days> <future_month_offset> <include_period_end> <position> "
-        "<digital_payoff> <delivery_date> <delivery_start> <delivery_end> <description> <reason> "
-        "<commentary>");
+        "<delivery_date> <delivery_start> <delivery_end> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -381,8 +379,8 @@ void commodity_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 42 + 2) {
-            fail(out) << "Expected " << (42 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 41 + 2) {
+            fail(out) << "Expected " << (41 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -467,8 +465,6 @@ void commodity_instrument_commands::process_add(std::ostream& out,
             req.change.write.include_period_end, parsed->positionals[next++], "include_period_end");
         commodity_instrument_read_token(
             req.change.write.position, parsed->positionals[next++], "position");
-        commodity_instrument_read_token(
-            req.change.write.digital_payoff, parsed->positionals[next++], "digital_payoff");
         commodity_instrument_read_token(
             req.change.write.delivery_date, parsed->positionals[next++], "delivery_date");
         commodity_instrument_read_token(
@@ -521,8 +517,8 @@ void commodity_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 42 + 2) {
-            fail(out) << "Expected " << (42 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 41 + 2) {
+            fail(out) << "Expected " << (41 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -607,8 +603,6 @@ void commodity_instrument_commands::process_set(std::ostream& out,
             req.change.write.include_period_end, parsed->positionals[next++], "include_period_end");
         commodity_instrument_read_token(
             req.change.write.position, parsed->positionals[next++], "position");
-        commodity_instrument_read_token(
-            req.change.write.digital_payoff, parsed->positionals[next++], "digital_payoff");
         commodity_instrument_read_token(
             req.change.write.delivery_date, parsed->positionals[next++], "delivery_date");
         commodity_instrument_read_token(
@@ -673,8 +667,8 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 42 + 2) {
-            fail(out) << "Expected " << (change_count * 42 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 41 + 2) {
+            fail(out) << "Expected " << (change_count * 41 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -761,8 +755,6 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
                 change.write.include_period_end, parsed->positionals[next++], "include_period_end");
             commodity_instrument_read_token(
                 change.write.position, parsed->positionals[next++], "position");
-            commodity_instrument_read_token(
-                change.write.digital_payoff, parsed->positionals[next++], "digital_payoff");
             commodity_instrument_read_token(
                 change.write.delivery_date, parsed->positionals[next++], "delivery_date");
             commodity_instrument_read_token(

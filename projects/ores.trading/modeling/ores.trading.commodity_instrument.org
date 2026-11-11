@@ -492,17 +492,6 @@ Whether an average price option's averaging includes its period end, as =Include
 
 Whether a commodity forward is long or short, as =Position= states it.
 
-** digital_payoff
-:PROPERTIES:
-:type:     numeric(38, 12)
-:cpp_type: std::optional<ores::utility::decimal::decimal>
-:nullable: true
-:economic: true
-:END:
-
-The cash a digital option pays when it ends in the money, as =Payoff= or
-=DigitalCashPayoff= states it.
-
 ** delivery_date
 :PROPERTIES:
 :type:     date

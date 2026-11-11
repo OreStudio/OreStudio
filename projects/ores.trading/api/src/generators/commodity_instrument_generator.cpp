@@ -79,9 +79,6 @@ generate_synthetic_commodity_instrument(utility::generation::generation_context&
                           std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                           .value();
     r.swaption_expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
-    r.digital_payoff = ores::utility::decimal::decimal::from_string(
-                           std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
-                           .value();
     r.delivery_date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.audit.modified_by = modified_by;

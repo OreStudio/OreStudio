@@ -79,7 +79,6 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     "future_month_offset" integer null,
     "include_period_end" boolean null,
     "position" text null,
-    "digital_payoff" numeric(38, 12) null,
     "delivery_date" date null,
     "delivery_start" integer null,
     "delivery_end" integer null,

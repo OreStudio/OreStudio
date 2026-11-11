@@ -51,9 +51,25 @@ builders, and the ORE engine test builds each one.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add the columns the products state to the commodity model, through
+   codegen. Only the intraday power forward needs new ones: the delivery
+   date, and the delivery start and end as seconds of that day.
+2. Keep a digital option's cash payoff in the row's quantity, as the equity
+   digital option keeps its payoff in its notional. A payoff column of its
+   own would state the same amount twice.
+3. Keep the spread option's strike in the strike column and its two legs in
+   the shared leg rows. The row names the first leg's commodity and keeps
+   the second leg's as the spread commodity.
+4. Replace the projection's three lists of trade types, option data
+   elements and readers and writers with one table of products, and add the
+   five types to it. The delivery terms land through the scalar terms
+   table, and the position's commodities through the shared underlying
+   rows.
+5. Add a builder for each type, register it, and call it from the planner.
+   A spread option draws a second commodity quoted in the first one's
+   currency, because ORE requires one currency.
+6. Record the generated trades, run the ORE engine test, and update the
+   known lists.
 
 * Measurements
 

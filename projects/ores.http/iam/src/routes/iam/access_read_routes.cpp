@@ -24,12 +24,15 @@
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <charconv>
 #include <chrono>
 #include <exception>
 #include <functional>
 #include <limits>
+#include <optional>
 #include <regex>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <vector>
@@ -160,10 +163,15 @@ std::optional<bool> flag_of(const http_request& req, const std::string& name) {
     return std::nullopt;
 }
 
+/// A query text, or nothing when it is longer than the BFF allowed. The limit
+/// counts characters, as the BFF did, so a byte of UTF-8 that continues a
+/// character is not counted.
 std::optional<std::string>
 text_of(const http_request& req, const std::string& name, std::size_t most) {
     auto text = req.get_query_param(name);
-    if (text.size() > most)
+    const auto characters =
+        std::ranges::count_if(text, [](unsigned char c) { return (c & 0xC0) != 0x80; });
+    if (static_cast<std::size_t>(characters) > most)
         return std::nullopt;
     return text;
 }

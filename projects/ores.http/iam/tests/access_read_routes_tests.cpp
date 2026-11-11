@@ -209,3 +209,21 @@ TEST_CASE("access_read_routes_answer_in_the_screen_shapes", "[access]") {
     CHECK(who.find("\"fullName\":\"Alice\"") != std::string::npos);
     CHECK(who.find("\"totalCount\":2") != std::string::npos);
 }
+
+TEST_CASE("access_read_routes_escape_what_a_holder_states", "[access]") {
+    ores::iam::messaging::role_holders_response holders;
+    holders.holders.push_back({some_id, "o\"brien", "Zoë \\ Ångström", "", "admin"});
+    const auto who = access_read_routes::holders_json(holders);
+    CHECK(who.find(R"("username":"o\"brien")") != std::string::npos);
+    CHECK(who.find("Zoë") != std::string::npos);
+    CHECK(who.find(R"(\\)") != std::string::npos);
+}
+
+TEST_CASE("access_read_routes_count_characters_not_bytes", "[access]") {
+    std::string accented;
+    for (int i = 0; i < 100; ++i)
+        accented += "é";
+    CHECK(access_read_routes::read_permission_query(access_request({{"area", accented}})));
+    CHECK_FALSE(
+        access_read_routes::read_permission_query(access_request({{"area", accented + "é"}})));
+}

@@ -267,6 +267,9 @@
 \ir ./dq_curve_security_configs_artefact_create.sql
 \ir ./dq_intraday_power_curve_configs_artefact_create.sql
 \ir ./dq_fx_volatility_configs_artefact_create.sql
+\ir ./dq_fx_vol_surface_blueprints_artefact_create.sql
+\ir ./dq_fx_vol_surface_pillars_artefact_create.sql
+\ir ./dq_fx_vol_surface_pillar_sources_artefact_create.sql
 \ir ./dq_base_correlation_configs_artefact_create.sql
 \ir ./dq_curve_correlation_configs_artefact_create.sql
 \ir ./dq_curve_report_configurations_artefact_create.sql

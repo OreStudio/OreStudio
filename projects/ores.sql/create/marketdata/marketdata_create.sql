@@ -30,6 +30,8 @@
 -- The series a published curve configuration states, which is what the
 -- validator above reads.
 \ir ./marketdata_curve_series_create.sql
+-- The series a published surface blueprint names.
+\ir ./marketdata_surface_series_create.sql
 \ir ./marketdata_series_axes_create.sql
 \ir ./marketdata_series_axis_values_create.sql
 \ir ./marketdata_series_identity_views_create.sql

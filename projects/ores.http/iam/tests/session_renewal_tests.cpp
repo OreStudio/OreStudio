@@ -39,7 +39,8 @@ TEST_CASE("session_renewal_reads_iam_s_answer", "[session_renewal]") {
     CHECK(session_renewal::outcome_of("max_session_exceeded", false, {}, std::nullopt).result ==
           outcome::refused);
     CHECK(session_renewal::outcome_of({}, false, {}, std::nullopt).result == outcome::refused);
-    CHECK(session_renewal::outcome_of({}, true, "", claims).result == outcome::refused);
+    // A success that carries no token is malformed, so the current token is kept.
+    CHECK(session_renewal::outcome_of({}, true, "", claims).result == outcome::unavailable);
 
     // A token that does not verify is not used, and the current one is kept.
     CHECK(session_renewal::outcome_of({}, true, "t2", std::nullopt).result == outcome::unavailable);

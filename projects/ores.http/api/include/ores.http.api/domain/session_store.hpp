@@ -152,8 +152,12 @@ public:
      */
     bool begin_renewal(const std::string& identifier);
 
-    /// Gives up a claim begin_renewal() granted.
-    void end_renewal(const std::string& identifier);
+    /**
+     * @brief Gives up a claim begin_renewal() granted. A renewal that could not
+     * be made holds the next attempt back for half a minute, so an outage costs
+     * one attempt in that time rather than one for every request.
+     */
+    void end_renewal(const std::string& identifier, bool failed = false);
 
     /**
      * @brief Ends a session.
@@ -195,6 +199,7 @@ private:
         session_record record;
         std::chrono::system_clock::time_point expires;
         bool renewing = false;
+        std::chrono::system_clock::time_point renew_after{};
     };
 
     [[nodiscard]] bool expired(const entry& kept) const;

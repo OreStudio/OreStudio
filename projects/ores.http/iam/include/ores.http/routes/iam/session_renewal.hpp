@@ -21,11 +21,13 @@
 #define ORES_HTTP_ROUTES_IAM_SESSION_RENEWAL_HPP
 
 #include "ores.http.api/domain/session_store.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include <functional>
 #include <memory>
 #include <string>
+#include <string_view>
 
 namespace ores::http::routes::iam {
 
@@ -38,6 +40,15 @@ namespace ores::http::routes::iam {
  * token that does not verify is a renewal that cannot be made now.
  */
 class session_renewal final {
+private:
+    inline static std::string_view logger_name = "ores.http.routes.iam.session_renewal";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     using verifier_finder =
         std::function<std::shared_ptr<ores::security::jwt::jwt_authenticator>()>;

@@ -116,6 +116,12 @@ via its "Verifies task" field.
 | 2 | Local review: renewing after a refusal would make one request fail and retry. | =http_session.cpp= | Accepted | The gateway renews before expiry, at three quarters of the token's life. |
 | 3 | Local review: a renewed token that does not verify. | =session_renewal.cpp= | Accepted | It is not used; the current token is kept and a later request renews again. |
 | 4 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 5 | PR review: the renewal claim is not given up when the coroutine is cancelled. | =http_session.cpp= | Accepted | A scope guard gives the claim up on every path out. |
+| 6 | PR review: the old token stays valid after a renewal. | =session_renewal.cpp= | Declined | Tokens are stateless JWTs. IAM's refresh does not revoke the old one, and the gateway no longer sends it. |
+| 7 | PR review: a success that carries no token ends the session. | =session_renewal.cpp= | Accepted | That answer is malformed, so it is now a renewal that cannot be made now, and the current token is kept. |
+| 8 | PR review: an IAM outage makes every request try to renew. | =session_store.cpp= | Accepted | A failed renewal holds the next attempt for the session back for 30 seconds. |
+| 9 | PR review: a token with no positive lifetime is renewed on every request. | =http_session.cpp= | Accepted | Renewal is skipped when the lifetime is not positive. |
+| 10 | PR review: minor points (misplaced cookie comment, refusal not logged, captured client lifetime). | =http_server.hpp=, =session_renewal.cpp= | Accepted | The comment is back on =set_cookie_settings=, the X-Error value is logged at info, and the capture is commented. |
 
 * Result
 

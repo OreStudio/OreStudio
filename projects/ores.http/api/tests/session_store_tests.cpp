@@ -222,3 +222,19 @@ TEST_CASE("one_request_at_a_time_renews_a_session", "[session_store]") {
     CHECK(store.begin_renewal(identifier));
     CHECK_FALSE(store.begin_renewal("no-such-session"));
 }
+
+TEST_CASE("a_failed_renewal_waits_before_the_next_attempt", "[session_store]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that an outage costs one attempt in half a minute";
+
+    test_clock clock;
+    session_store store(1h, [&clock] { return clock.now(); });
+    const auto identifier = store.open(a_record());
+    REQUIRE(store.begin_renewal(identifier));
+    store.end_renewal(identifier, true);
+    CHECK_FALSE(store.begin_renewal(identifier));
+    clock.advance(29s);
+    CHECK_FALSE(store.begin_renewal(identifier));
+    clock.advance(1s);
+    CHECK(store.begin_renewal(identifier));
+}

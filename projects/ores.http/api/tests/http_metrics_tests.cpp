@@ -420,9 +420,11 @@ TEST_CASE("a_session_near_its_expiry_is_renewed_once", "[session_cookie][http_me
             CHECK(second->body() == R"({"token":"the-next-token"})");
             CHECK(calls == 1);
         } else if (result == outcome::unavailable) {
-            // The current token is still valid, so the request goes on with it.
+            // The current token is still valid, so the request goes on with it, and
+            // the failed renewal holds the next attempt back.
             CHECK(first->body() == R"({"token":"the-token"})");
-            CHECK(calls == 2);
+            CHECK(second->body() == R"({"token":"the-token"})");
+            CHECK(calls == 1);
         } else {
             CHECK(first->result_int() == 401);
             CHECK(first->at(http::field::set_cookie).find("Max-Age=0") != std::string::npos);

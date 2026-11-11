@@ -64,7 +64,6 @@ public:
         return sessions_;
     }
 
-    /// How this deployment names and protects the cookie a session rides in.
     /**
      * @brief Renews a browser session's token before it expires. The session
      * path knows no service, so the application gives it this.
@@ -73,6 +72,7 @@ public:
         renewer_ = std::move(renewer);
     }
 
+    /// How this deployment names and protects the cookie a session rides in.
     void set_cookie_settings(domain::cookie_settings settings) {
         cookie_ = std::move(settings);
     }

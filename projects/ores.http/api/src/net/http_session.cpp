@@ -110,6 +110,16 @@ struct discard_unless_published final {
     }
 };
 
+/// Gives up a renewal claim on every path out, cancellation included.
+struct renewal_claim final {
+    domain::session_store& store;
+    const std::string& identifier;
+    bool failed = true;
+    ~renewal_claim() {
+        store.end_renewal(identifier, failed);
+    }
+};
+
 /// A session's renewal, as the worker pool runs it: it blocks on IAM.
 struct run_token_renewal final {
     const domain::token_renewer& renew;
@@ -396,9 +406,12 @@ asio::awaitable<bool> http_session::renew_if_due(const std::string& identifier,
     const auto now = std::chrono::system_clock::now();
     const auto lifetime = record.claims.expires_at - record.claims.issued_at;
     const auto remaining = record.claims.expires_at - now;
-    if (remaining > lifetime / 4 || !sessions_->begin_renewal(identifier))
+    // A token whose life is not positive states nothing to renew by.
+    if (lifetime <= decltype(lifetime)::zero() || remaining > lifetime / 4 ||
+        !sessions_->begin_renewal(identifier))
         co_return true;
 
+    renewal_claim claim{*sessions_, identifier};
     const auto token = record.token;
     domain::token_renewal renewal;
     try {
@@ -407,15 +420,16 @@ asio::awaitable<bool> http_session::renew_if_due(const std::string& identifier,
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "A session's token was not renewed: " << e.what();
     }
-    sessions_->end_renewal(identifier);
 
     using outcome = domain::token_renewal::outcome;
     if (renewal.result == outcome::refused) {
         BOOST_LOG_SEV(lg(), info) << "IAM refused to renew a session's token; the session ends";
+        claim.failed = false;
         sessions_->close(identifier);
         co_return false;
     }
     if (renewal.result == outcome::renewed && renewal.claims) {
+        claim.failed = false;
         sessions_->update(identifier, [&](domain::session_record& r) {
             r.token = renewal.token;
             r.claims = *renewal.claims;

@@ -38,15 +38,17 @@ token_renewal session_renewal::outcome_of(const std::string& x_error,
     using outcome = token_renewal::outcome;
     // IAM states a session past its maximum, or a token it will not renew, as a
     // refusal: either in the X-Error header or as an answer that is not a success.
-    if (!x_error.empty() || !success || token.empty())
+    if (!x_error.empty() || !success)
         return token_renewal{outcome::refused, {}, std::nullopt};
-    if (!claims)
+    // A success that carries no token is a malformed answer, not a refusal.
+    if (token.empty() || !claims)
         return token_renewal{outcome::unavailable, {}, std::nullopt};
     return token_renewal{outcome::renewed, token, std::move(claims)};
 }
 
 ores::http::domain::token_renewer
 session_renewal::renewer(ores::nats::service::nats_client& session, verifier_finder find_verifier) {
+    // The client is the application's, which outlives the server that calls this.
     return [&session, find_verifier = std::move(find_verifier)](const std::string& token) {
         using request_type = ores::iam::messaging::refresh_request;
         try {
@@ -57,8 +59,11 @@ session_renewal::renewer(ores::nats::service::nats_client& session, verifier_fin
             const auto reply = session.transport().request_sync(
                 request_type::nats_subject, wire, std::move(headers));
             const auto error = reply.headers.find(std::string(ores::nats::headers::x_error));
-            if (error != reply.headers.end())
+            if (error != reply.headers.end()) {
+                using namespace ores::logging;
+                BOOST_LOG_SEV(lg(), info) << "IAM refused to renew a session: " << error->second;
                 return outcome_of(error->second, false, {}, std::nullopt);
+            }
             const auto decoded =
                 ores::nats::default_wire_codec().decode<request_type::response_type>(reply.data);
             if (!decoded)

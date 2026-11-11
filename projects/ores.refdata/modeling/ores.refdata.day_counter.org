@@ -1,10 +1,16 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 971124D8-FE93-422C-AE6F-742BAF83FD7A
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.day_counter
 #+description: Codegen entity model for the refdata =day_counter= table. The day counter spellings ORE accepts.
 #+type: ores.codegen.entity
+#+web_classification: day-counter
+#+web_classification_topic: products
+#+web_classification_read_only: true
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+brief: One spelling of a day counter that an ORE document may write.

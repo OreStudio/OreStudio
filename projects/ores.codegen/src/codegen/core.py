@@ -863,11 +863,15 @@ def _resolve_web_entity(pattern, model, singular):
     placeholder does not resolve and the generator skips the archetype rather
     than writing an empty unit.
     """
-    if '{web_entity}' not in pattern:
-        return pattern
-    if not (model.get('web_resource') or '').strip():
-        raise KeyError('web_entity')
-    return pattern.replace('{web_entity}', f'{singular}_web')
+    if '{web_entity}' in pattern:
+        if not (model.get('web_resource') or '').strip():
+            raise KeyError('web_entity')
+        pattern = pattern.replace('{web_entity}', f'{singular}_web')
+    if '{web_classification_entity}' in pattern:
+        if not (model.get('web_classification') or '').strip():
+            raise KeyError('web_classification_entity')
+        pattern = pattern.replace('{web_classification_entity}', f'{singular}_classification')
+    return pattern
 
 
 def resolve_output_path(output_pattern, model_data, model_type):
@@ -6510,6 +6514,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _column_name,
             entity_shell_plan,
             entity_http_route_plan,
+            entity_web_classification_plan,
             entity_web_records_plan,
             http_recipe_document,
             open_reads_of,
@@ -6717,6 +6722,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The record routes a screen reads the entity through, when its model
         # names the screen's resource key; None renders nothing.
         domain_entity['web_records'] = entity_web_records_plan(domain_entity)
+        domain_entity['web_classification'] = entity_web_classification_plan(domain_entity)
         # A recipe is a view of the unit the model renders, so it is built from
         # that same plan rather than from a second reading of the model: a
         # command the unit gains arrives in the document that documents it.
@@ -6908,6 +6914,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_events,
             entity_http_route_plan,
             entity_shell_plan,
+            entity_web_classification_plan,
             entity_web_records_plan,
             http_recipe_document,
             junction_entity_shape,
@@ -6992,6 +6999,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _shape['shell'] = entity_shell_plan(_shape)
             _shape['http_route'] = entity_http_route_plan(_shape)
             _shape['web_records'] = entity_web_records_plan(_shape)
+            _shape['web_classification'] = entity_web_classification_plan(_shape)
             if target_template == _SHELL_RECIPE_TEMPLATE:
                 data['shell_recipe'] = shell_recipe_document(
                     _shape.get('component', ''),

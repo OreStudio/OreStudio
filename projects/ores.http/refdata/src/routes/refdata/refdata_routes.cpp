@@ -34,6 +34,7 @@
 #include "ores.http/routes/refdata/calendar_rule_routes.hpp"
 #include "ores.http/routes/refdata/calendar_rule_web_routes.hpp"
 #include "ores.http/routes/refdata/calendar_web_routes.hpp"
+#include "ores.http/routes/refdata/classification_routes.hpp"
 #include "ores.http/routes/refdata/counterparty_routes.hpp"
 #include "ores.http/routes/refdata/counterparty_web_routes.hpp"
 #include "ores.http/routes/refdata/country_routes.hpp"
@@ -83,7 +84,7 @@ namespace ores::http::routes::refdata {
 namespace {
 
 /// The catalogue of the resources the screens name, built from each unit's own entry.
-std::string catalogue_body(const ores::http::domain::http_request& req) {
+std::string resource_catalogue_body(const ores::http::domain::http_request& req) {
     const std::string entries[] = {
         business_centre_web_routes::catalogue_entry(req),
         business_unit_web_routes::catalogue_entry(req),
@@ -183,6 +184,9 @@ void refdata_routes::register_routes(
     party_id_scheme_web_routes::register_routes(router, registry, session);
     party_identifier_web_routes::register_routes(router, registry, session);
 
+    // The classification screen's code lists, its catalogue and the label catalogue.
+    classification_routes::register_routes(router, registry, session);
+
     // The reference data lookups the synthetic screens read, under /api/synthetic.
     tenor_web_routes::register_routes(router, registry, session);
     instrument_code_web_routes::register_routes(router, registry, session);
@@ -190,16 +194,17 @@ void refdata_routes::register_routes(
 
     // The screens read which resources they may name, and what each states,
     // from one catalogue rather than from a list of their own.
-    auto catalogue = router->get("/api/refdata")
-                         .summary("List the reference data resources a screen may name")
-                         .description("Each resource's key, key fields, search, sortable "
-                                      "fields, events and permissions.")
-                         .tags({"refdata"})
-                         .auth_required()
-                         .handler([](const ores::http::domain::http_request& req)
-                                      -> boost::asio::awaitable<ores::http::domain::http_response> {
-                             co_return ores::http::domain::http_response::json(catalogue_body(req));
-                         });
+    auto catalogue =
+        router->get("/api/refdata")
+            .summary("List the reference data resources a screen may name")
+            .description("Each resource's key, key fields, search, sortable "
+                         "fields, events and permissions.")
+            .tags({"refdata"})
+            .auth_required()
+            .handler([](const ores::http::domain::http_request& req)
+                         -> boost::asio::awaitable<ores::http::domain::http_response> {
+                co_return ores::http::domain::http_response::json(resource_catalogue_body(req));
+            });
     const auto catalogue_built = catalogue.build();
     router->add_route(catalogue_built);
     registry->register_route(catalogue_built);

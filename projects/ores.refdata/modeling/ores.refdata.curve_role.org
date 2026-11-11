@@ -1,10 +1,15 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: D9A9B2C5-2C22-456A-851F-B458E0568CD3
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.curve_role
 #+description: Reference data table classifying an instrument_code by its role when deriving a rate from a curve: deposit, fra, swap, or NONE for non-curve instruments.
 #+type: ores.codegen.entity
+#+web_classification: curve-role
+#+web_classification_topic: products
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: curve_role

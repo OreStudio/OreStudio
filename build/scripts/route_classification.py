@@ -224,6 +224,22 @@ RULES = (
          BFF, NOT_API, NO_AREA,
          "Every label and the labels each code domain uses: translated copy for display,"
          " which the design puts in the client."),
+    Rule("the classification catalogue route",
+         ("exact", "GET /api/classifications"),
+         CPP, NOT_API, NO_AREA,
+         "The catalogue the BFF answered, built from each list unit's own entry with its"
+         " count, so the classification screen works when the BFF goes."),
+    Rule("the classification list routes",
+         ("regex", r"^(GET|POST|PUT|DELETE) /api/classifications/[a-z-]+"
+                   r"(/rows(/\{code\}(/label)?)?|/order)?$"),
+         CPP, NOT_API, NO_AREA,
+         "The classification router's addresses, one generated unit per code list in the"
+         " BFF's shapes, kept so the screen works when the BFF goes."),
+    Rule("the label catalogue route",
+         ("exact", "GET /api/labels"),
+         CPP, NOT_API, NO_AREA,
+         "The label catalogue the BFF answered, kept so the screens draw their codes when"
+         " the BFF goes."),
     Rule("the generic history read",
          ("exact", "GET /api/history"),
          BFF, NOT_API, NO_AREA,

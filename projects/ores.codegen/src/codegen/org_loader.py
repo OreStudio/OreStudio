@@ -1412,6 +1412,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         "brief", "entity_singular", "entity_plural", "entity_title",
         "http_area", "web_resource", "web_list_by", "web_area", "web_writes",
         "web_parent_filter", "web_read_only_because", "web_key_read",
+        "web_classification", "web_classification_topic",
     ):
         if k in fm:
             de[k] = fm[k]
@@ -1419,7 +1420,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     # Boolean + string scalars carried in the frontmatter of unified entity
     # org files (these keys come from the table pathway during Step 5 migration).
     for k in ("has_tenant_id", "image_id", "has_artefact_insert_fn", "web_read_only",
-              "web_system_owned"):
+              "web_system_owned", "web_classification_read_only"):
         if k in fm:
             de[k] = _parse_typed(fm[k])
     if "coding_scheme" in fm:
@@ -5983,6 +5984,72 @@ def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
         "events_component": put["subject"].split(".")[0],
         "resource_name": resource_name,
         "read_permission": f"{component}::{resource_name}:read",
+        "write_permission": f"{component}::{resource_name}:write",
+        "delete_permission": f"{component}::{resource_name}:delete",
+    }
+
+
+def entity_web_classification_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
+    """The routes the classification screen maintains one code list through, or None.
+
+    The screen names a list by a key in the address, such as
+    ``/api/classifications/monetary-nature``, and reads every row with the
+    label the label catalogue paints its code with. An entity joins that
+    registry by stating its key with ``#+web_classification:`` and the topic
+    the screen files it under with ``#+web_classification_topic:``. A list of
+    spellings an ORE document must write exactly states
+    ``#+web_classification_read_only: true``.
+
+    The list's shape follows from its write record: a list whose rows have a
+    name is ``named``, one with only a display order is ``ordered``, and one
+    with neither is ``plain``. Only an ordered or named list can be reordered.
+
+    Raises:
+        ValueError: if the entity does not state a topic, or its key is not
+            a single code field.
+    """
+    key = (entity.get("web_classification") or "").strip()
+    if not key:
+        return None
+    singular = entity.get("entity_singular", "")
+    topic = (entity.get("web_classification_topic") or "").strip()
+    if not topic:
+        raise ValueError(f"{singular}: #+web_classification: needs a topic")
+    commands = entity_shell_plan(entity)["commands"]
+
+    def _command(kind: str) -> dict[str, Any]:
+        found = next((c for c in commands if c["kind"] == kind), None)
+        if found is None:
+            raise ValueError(f"{singular}: #+web_classification: needs a {kind} verb")
+        return found
+
+    paged, put = _command("paged"), _command("put")
+    put_many, delete = _command("put_many"), _command("delete")
+    key_fields = key_record_fields(entity)
+    if [f["name"] for f in key_fields] != ["code"]:
+        raise ValueError(f"{singular}: a classification list is keyed by its code alone")
+    written = {f["name"] for f in write_record_for(entity)}
+    has_name = "name" in written
+    has_order = "display_order" in written
+    component = entity.get("component", "")
+    plural = entity.get("entity_plural", singular + "s")
+    resource_name = put["subject"].split(".")[2]
+    return {
+        "key": key,
+        "unit": f"{singular}_classification",
+        "base": f"/api/classifications/{key}",
+        "topic": topic,
+        "entity_type": f"ores.{component}.{singular}",
+        "shape": "named" if has_name else "ordered" if has_order else "plain",
+        "has_name": has_name,
+        "has_order": has_order,
+        "editable": entity.get("web_classification_read_only") is not True,
+        "code_domain": singular,
+        "rows_member": entity.get("entity_plural_short") or plural,
+        "list_request": paged["request"],
+        "put_request": put["request"],
+        "put_many_request": put_many["request"],
+        "delete_request": delete["request"],
         "write_permission": f"{component}::{resource_name}:write",
         "delete_permission": f"{component}::{resource_name}:delete",
     }

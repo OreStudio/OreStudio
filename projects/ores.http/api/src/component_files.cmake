@@ -49,6 +49,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/domain/session_store.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/messaging/http_info_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/classification_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/http_server.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/http_server_options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/http_session.hpp"

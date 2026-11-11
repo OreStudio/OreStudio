@@ -1,10 +1,15 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 28587424-CF9B-40C6-A48C-F26B83861124
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.tenor_resolution_algorithm
 #+description: Codegen entity model for the refdata tenor_resolution_algorithm table: how a tenor_convention resolves a tenor's anchor/offset (fixed anchor offset vs IMM-quarter roll).
 #+type: ores.codegen.entity
+#+web_classification: tenor-resolution-algorithm
+#+web_classification_topic: tenors
 #+component: refdata
 #+filetags: :model:entity:refdata:tenor:
 #+entity_singular: tenor_resolution_algorithm

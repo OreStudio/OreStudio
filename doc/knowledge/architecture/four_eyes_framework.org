@@ -327,6 +327,8 @@ The work splits so each piece is usable and reviewable alone:
 
 * See also
 
+
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]] — completes: when a raised request closes without a person.
 - [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record this note extends.
 - [[id:C6D6A0C2-1A62-4C52-8DED-D431E410E89F][Implement four-eyes authorisation framework]] — the deferred item this answers.

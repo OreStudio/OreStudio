@@ -1460,6 +1460,47 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'marketdata.v1.fx_vol_surface_calibrations.list': {
+        asOf: true,
+        filter: ['party_id', 'id_one_of', 'party_id_one_of'],
+        rows: ['calibrations'],
+    },
+    'marketdata.v1.fx_vol_surface_calibrations_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'marketdata.v1.fx_vol_surface_publishes.list': {
+        asOf: true,
+        filter: [
+            'request_id',
+            'party_id',
+            'blueprint_id',
+            'id_one_of',
+            'request_id_one_of',
+            'party_id_one_of',
+            'blueprint_id_one_of',
+        ],
+        rows: ['publishes'],
+    },
+    'marketdata.v1.fx_vol_surface_publishes.list_by_request_id': {
+        asOf: false,
+        filter: [
+            'request_id',
+            'party_id',
+            'blueprint_id',
+            'id_one_of',
+            'request_id_one_of',
+            'party_id_one_of',
+            'blueprint_id_one_of',
+        ],
+        rows: [],
+    },
+    'marketdata.v1.fx_vol_surface_publishes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'marketdata.v1.market_calibration_values.list': {
         asOf: true,
         filter: [

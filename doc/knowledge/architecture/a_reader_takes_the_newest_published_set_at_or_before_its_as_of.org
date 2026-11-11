@@ -43,6 +43,8 @@ Screens, the ORE export of a run, a report's market binding ([[id:FB8F701C-E56A-
 
 * See also
 
+
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][A derived market object is published through one lifecycle]]
 - [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]
 - [[id:E474FB93-2ACE-4981-9761-33E214B3D268][A published set is withdrawn through a request of its own]]

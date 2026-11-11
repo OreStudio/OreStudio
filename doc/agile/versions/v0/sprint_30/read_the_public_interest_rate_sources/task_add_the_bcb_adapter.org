@@ -69,7 +69,7 @@ task and name that file in the Command column.
 
 * Notes
 
-- The provisioning run of the fresh environment failed at =publish_system_curves=, because =ores.marketdata.service= exited at startup with no log line and was restarting when the step sent its request. The CDI feed is in the system tenant and stored its fixings first. [[id:04D014E6-E34F-4F77-A748-6E7AB5B2342B][Say why a service exits at startup]] records it.
+- Two provisioning runs failed at =publish_system_curves=. =ores.marketdata.service= died at its first curve request with a symbol lookup error, because this worktree's publish directory mixed libraries of two builds after a rebase. A rebuild of the service fixed it. The CDI feed stored its fixings first. [[id:04D014E6-E34F-4F77-A748-6E7AB5B2342B][Refuse to start services from a mixed build]] records it.
 - The note records the owner's judgement of 2026-11-10 that the use is academic and not commercial, and that B3 was not asked.
 
 Confirm that series 4389 is the annualised CDI on base 252, and record that B3 computes the CDI and the BCB republishes it.
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 | 3 | An unknown series' error should name it | =bcb.cpp= | No change | =read_window='s error quotes both addresses, and each holds the series number. |
 | 4 | Terms point to B3 | catalogue seeds | No change | The note already says B3's terms must be read before any commercial use. |
 | 5 | Hardcoded UUIDs | catalogue seeds | No change | They are deterministic, from the same rule as the other feeds. |
-| 6 | Re-run provisioning before merge | | Done | The result is in the Notes. |
+| 6 | Re-run provisioning before merge | | Done | After a rebuild of the stale =ores.marketdata.service=, a fresh provisioning completed every step but =generate_trades=, which fails on main's duplicate GBP swap convention: [[id:9137921C-B9C9-4C9F-84B6-847A07B61F28][Name GBP LIBOR 3M in one swap convention]]. |
 
 * Result
 

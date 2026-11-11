@@ -291,18 +291,23 @@ std::optional<boost::uuids::uuid> approval_lifecycle::system_actor_account_id() 
     return found.front().id;
 }
 
+// The kinds are the system tenant's, and every tenant reads them, so they are
+// read on this context, inside a unit of work or outside one, and only the
+// system tenant's rows are kept.
 std::optional<domain::approval_kind> approval_lifecycle::kind(const std::string& code) {
     repository::approval_kind_repository repo;
-    const auto system_ctx = ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor());
-    const auto found = repo.read_latest(system_ctx, code);
-    if (found.empty())
-        return std::nullopt;
-    return found.front();
+    for (auto& k : repo.read_latest(ctx_, code)) {
+        if (k.tenant_id.is_system())
+            return std::move(k);
+    }
+    return std::nullopt;
 }
 
 std::vector<domain::approval_kind> approval_lifecycle::kinds() {
     repository::approval_kind_repository repo;
-    return repo.read_latest(ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.actor()));
+    auto found = repo.read_latest(ctx_);
+    std::erase_if(found, [](const auto& k) { return !k.tenant_id.is_system(); });
+    return found;
 }
 
 std::optional<domain::approval_request> approval_lifecycle::request(const std::string& id) {
@@ -313,10 +318,26 @@ std::optional<domain::approval_request> approval_lifecycle::request(const std::s
     return found.front();
 }
 
-domain::approval_request approval_lifecycle::raise(const domain::approval_kind& kind,
-                                                   const std::string& reason,
-                                                   const boost::uuids::uuid& requested_by,
-                                                   const std::vector<std::string>& part_codes) {
+raise_policy approval_lifecycle::policy_for(const domain::approval_kind& kind, bool names_parts) {
+    // A raise a policy covers is closed by the system in the same act, so the
+    // account that closes it is resolved before the request is written: a
+    // request left waiting on nobody is one no person can answer.
+    raise_policy policy;
+    policy.mode = approvals_mode();
+    policy.rule = auto_approval_of(kind, names_parts);
+    if (policy.rule) {
+        policy.system_actor = system_actor_account_id();
+        if (!policy.system_actor)
+            throw std::runtime_error("A " + kind.code +
+                                     " request is closed by policy, and no system account is named "
+                                     "to close it with.");
+    }
+    return policy;
+}
+
+namespace {
+
+std::vector<std::string> distinct_part_codes(const std::vector<std::string>& part_codes) {
     std::vector<std::string> codes;
     for (const auto& code : part_codes) {
         if (code.empty())
@@ -324,24 +345,35 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
         if (std::ranges::find(codes, code) == codes.end())
             codes.push_back(code);
     }
+    return codes;
+}
 
-    // A raise a policy covers is closed by the system in the same act, so the
-    // account that closes it is resolved before the request is written: a
-    // request left waiting on nobody is one no person can answer.
-    const auto rule = auto_approval_of(kind, !codes.empty());
+}
+
+domain::approval_request approval_lifecycle::raise(const domain::approval_kind& kind,
+                                                   const std::string& reason,
+                                                   const boost::uuids::uuid& requested_by,
+                                                   const std::vector<std::string>& part_codes) {
+    const auto codes = distinct_part_codes(part_codes);
+    return raise_under(policy_for(kind, !codes.empty()), kind, reason, requested_by, codes);
+}
+
+domain::approval_request approval_lifecycle::raise_under(const raise_policy& policy,
+                                                         const domain::approval_kind& kind,
+                                                         const std::string& reason,
+                                                         const boost::uuids::uuid& requested_by,
+                                                         const std::vector<std::string>& part_codes) {
+    const auto codes = distinct_part_codes(part_codes);
+    const auto& rule = policy.rule;
+    if (rule && !codes.empty())
+        throw std::logic_error("A request that names parts is decided by its parts, so no policy "
+                               "closes it; read the policy with the parts named.");
     if (!rule && kind.approvals_required <= 0)
         throw std::logic_error("The " + kind.code +
                                " kind asks for no approvals and names no policy, so a request of "
                                "it could only ever wait. State which raises close without a "
                                "person, or ask for one.");
-    std::optional<boost::uuids::uuid> system_actor;
-    if (rule) {
-        system_actor = system_actor_account_id();
-        if (!system_actor)
-            throw std::runtime_error("A " + kind.code +
-                                     " request is closed by policy, and no system account is named "
-                                     "to close it with.");
-    }
+    const auto& system_actor = policy.system_actor;
 
     const auto now = std::chrono::system_clock::now();
 
@@ -406,7 +438,7 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
         return *written;
 
     try {
-        return close_without_approval(*written, kind, *system_actor, *rule);
+        return close_without_approval(*written, kind, *system_actor, *rule, policy.mode);
     } catch (...) {
         // A request a policy closes waits on nobody, so one whose close failed
         // must not stay open: it is withdrawn in the asker's own name, which is
@@ -472,7 +504,8 @@ domain::approval_request
 approval_lifecycle::close_without_approval(const domain::approval_request& request,
                                            const domain::approval_kind& kind,
                                            const boost::uuids::uuid& system_actor,
-                                           auto_approval_rule rule) {
+                                           auto_approval_rule rule,
+                                           const approvals_mode_state& mode) {
     BOOST_LOG_SEV(lg(), info) << "Closing " << kind.code << " request "
                               << boost::uuids::to_string(request.id)
                               << " approved by policy: " << code_of(rule);
@@ -480,7 +513,7 @@ approval_lifecycle::close_without_approval(const domain::approval_request& reque
                           request.version,
                           "approve",
                           system_actor,
-                          policy_words(rule, kind.code, approvals_mode()));
+                          policy_words(rule, kind.code, mode));
     if (r.outcome != "ok")
         throw std::runtime_error("A " + kind.code +
                                  " request a policy closes was not closed: " + r.message);

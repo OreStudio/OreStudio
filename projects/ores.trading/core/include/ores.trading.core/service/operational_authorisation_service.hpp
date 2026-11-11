@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.inbox.api/domain/approval_kind.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
+#include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -38,6 +39,17 @@ namespace ores::trading::service {
 struct raised_authorisation {
     ores::inbox::domain::approval_kind kind;
     ores::inbox::domain::approval_request request;
+};
+
+/**
+ * @brief What a raise needs that is read before the caller's unit of work
+ * opens: the kind, and the policy that says whether a person decides.
+ *
+ * The kind is absent when the installation holds none, and a raise then fails.
+ */
+struct authorisation_policy {
+    std::optional<ores::inbox::domain::approval_kind> kind;
+    ores::inbox::service::raise_policy policy;
 };
 
 /**
@@ -66,6 +78,14 @@ public:
     explicit operational_authorisation_service(context ctx);
 
     /**
+     * @brief Reads the kind and the raise's policy.
+     *
+     * Call it on a context bound to no transaction, before the unit of work
+     * that books or executes the trade opens.
+     */
+    authorisation_policy prepare();
+
+    /**
      * @brief Raises a request for the trade when it awaits authorisation.
      *
      * An actual trade awaits it once it is live. A
@@ -75,7 +95,8 @@ public:
      *
      * @return The request raised, or nothing when the trade awaits none.
      */
-    std::optional<raised_authorisation> raise_if_awaiting(const boost::uuids::uuid& trade_id);
+    std::optional<raised_authorisation> raise_if_awaiting(const boost::uuids::uuid& trade_id,
+                                                          const authorisation_policy& prepared);
 
     /**
      * @brief Tells the deciders that the request waits.

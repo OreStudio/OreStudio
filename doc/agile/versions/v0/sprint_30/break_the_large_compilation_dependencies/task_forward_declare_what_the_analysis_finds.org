@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: DEA440DD-F4B6-4D37-9083-5F3BB33F1018
+:END:
+#+title: Task: Forward-declare what the analysis finds
+#+description: Apply the decisions of the header analysis to every other heavy header it names, one header family per PR, each with its measured effect.
+#+type: task
+#+level: s1
+#+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+[[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]] names the headers that couple the build and records a decision for each type in them. This task carries out those decisions for every header except the database context, which [[id:908E710A-C9A3-433E-AC93-92B67FB76B6C][Pass the database context by reference behind a forward declaration]] handles.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- Every header the analysis names is changed per its decision, in the order of gain the analysis gives, one header family per PR.
+- Each PR states its measured effect: the objects that depend on the header, and the rebuild time after the header is touched, before and after, at named commits.
+- Where the analysis puts a decision in a generated header, the codegen template changes and the code is regenerated.
+- A check runs in CI and fails when a header includes the full definition of a type it only names, for the types the analysis marked forward-declarable. It runs from a list kept with the check, so a new type joins by adding a line. Where a tool such as include-what-you-use does this better than a script, the task uses it and records why.
+- The analysis script reruns at the end, and its result is recorded beside the first run.
+- No behaviour changes. Every test suite passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+A decision that turns out wrong while it is applied, such as a type that cannot be forward-declared because an inline function uses it in full, goes back into the analysis with the reason, so the record stays true.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

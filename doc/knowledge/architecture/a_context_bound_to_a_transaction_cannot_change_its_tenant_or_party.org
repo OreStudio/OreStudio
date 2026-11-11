@@ -11,7 +11,7 @@
 
 * Summary
 
-A transaction's tenant, party and visible parties are fixed when it opens ([[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]). A context bound to a transaction therefore refuses to be narrowed or widened to another tenant or party: =with_tenant= and =with_party= throw on it. A read that needs another tenant or another party's view, such as the approvals mode or the system tenant's approval kinds, runs on a context that is not bound to the transaction, before the transaction opens or beside it.
+A transaction's tenant, party and visible parties are fixed when it opens ([[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]). A context bound to a transaction therefore refuses to be narrowed or widened to another tenant or party: =with_tenant= and =with_party= throw on it. A read that needs another tenant or another party's view, such as the approvals mode or the system tenant's approval kinds, is made before the unit of work opens, and its result is handed to the work inside it.
 
 * Detail
 
@@ -28,7 +28,17 @@ The settings of a transaction are sent once, with its first statement ([[id:37D0
 
 ** What a caller does instead
 
-A caller that needs a configuration read, such as [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]] reading the approvals mode, makes it on its own context before it opens the unit of work, or on a context with no bound transaction. Everything written inside the unit of work acts for the transaction's tenant and party.
+A caller that needs a configuration read, such as [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]] reading the approvals mode, makes it on its own context before it opens the unit of work, and hands the result to the work inside it: the inbox reads a raise's policy with =policy_for= and raises with it through =raise_under=. Everything inside the unit of work acts for the transaction's tenant and party.
+
+Every service that raises inside a unit of work follows the same shape: the book and counterparty proposals, the engine settings proposal, a cut take, a trade's operational authorisation and the surface publish read the kind and the policy first, and raise with =raise_under= inside. A raise outside any unit of work calls =raise=, which reads its own policy.
+
+A read of rows every tenant may see needs no change of tenant at all. The approval kinds are the system tenant's, and both row-level security and the kind repository let any tenant read them, so the inbox reads a kind on the context it has, inside a unit of work or outside one, and keeps the system tenant's row.
+
+** Why not beside the transaction
+
+A unit of work holds its connection from the moment it opens. A read made beside it, on a second connection, takes a second lease from the service's pool while the first is held. With a bounded pool, two units of work doing so at once each hold one connection and wait for another that never comes free, until the acquire timeout fails both ([[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]]). So no read is made beside a transaction: it is made before, or it is part of the transaction's own tenant and party.
+
+The same holds after the transaction ends. A unit of work returns its connection to the pool when it commits, not when it goes out of scope, so a notice told or a row read back after the commit takes the connection the commit freed. The context the unit of work handed out refuses every statement once the transaction has ended.
 
 * See also
 
@@ -37,3 +47,4 @@ A caller that needs a configuration read, such as [[id:71146F3F-B884-4E61-BA8B-A
 - [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]
 - [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]]
 - [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]]
+- [[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]]

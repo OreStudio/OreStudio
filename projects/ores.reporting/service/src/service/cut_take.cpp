@@ -259,6 +259,17 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
     // the draft promises when the gaps are closed.
     domain::cut cut;
     std::string request_id;
+    // What a raise needs is read before the unit of work opens, because a
+    // context bound to a transaction cannot read for another tenant or party.
+    std::optional<ores::inbox::domain::approval_kind> approval_kind;
+    std::optional<ores::inbox::service::raise_policy> policy;
+    if (assembly.complete() && kind.approval_kind_code) {
+        ores::inbox::service::approval_lifecycle lifecycle(ctx_);
+        approval_kind = lifecycle.kind(*kind.approval_kind_code);
+        if (!approval_kind)
+            throw std::runtime_error("No such kind of request: " + *kind.approval_kind_code);
+        policy = lifecycle.policy_for(*approval_kind, false);
+    }
     {
         // The body, its gaps, the request and the cut's detail land together or
         // not at all: a take that wrote the body and then failed to raise the
@@ -308,15 +319,13 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
         if (!assembly.complete())
             cut.taken_at = std::nullopt;
 
-        if (assembly.complete() && kind.approval_kind_code) {
+        if (policy) {
             ores::inbox::service::approval_lifecycle lifecycle(ctx);
-            const auto approval_kind = lifecycle.kind(*kind.approval_kind_code);
-            if (!approval_kind)
-                throw std::runtime_error("No such kind of request: " + *kind.approval_kind_code);
             const auto me = lifecycle.actor_account_id();
             if (!me)
                 throw std::runtime_error("The signed-in account was not found.");
-            const auto raised = lifecycle.raise(*approval_kind, request.reason, *me);
+            const auto raised =
+                lifecycle.raise_under(*policy, *approval_kind, request.reason, *me);
             request_id = boost::uuids::to_string(raised.id);
             cut.approval_request_id = raised.id;
         }

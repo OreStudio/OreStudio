@@ -677,6 +677,14 @@ engine_settings_proposal_service::raise(
         return response;
     }
 
+    // The kind and the raise's policy are read with the parts, before the unit
+    // of work opens, for the same reason.
+    ores::inbox::service::approval_lifecycle outside(ctx_);
+    const auto kind = outside.kind(std::string(kind_code));
+    if (!kind)
+        throw std::runtime_error("No such kind of request: " + std::string(kind_code));
+    const auto policy = outside.policy_for(*kind, !parts.empty());
+
     boost::uuids::uuid request_id{};
     {
         // One unit of work reads the configuration, the values in force and the
@@ -754,14 +762,11 @@ engine_settings_proposal_service::raise(
         }
 
         ores::inbox::service::approval_lifecycle lifecycle(ctx);
-        const auto kind = lifecycle.kind(std::string(kind_code));
-        if (!kind)
-            throw std::runtime_error("No such kind of request: " + std::string(kind_code));
         const auto me = lifecycle.actor_account_id();
         if (!me)
             throw std::runtime_error("The signed-in account was not found.");
 
-        const auto raised = lifecycle.raise(*kind, request.reason, *me, parts);
+        const auto raised = lifecycle.raise_under(policy, *kind, request.reason, *me, parts);
         request_id = raised.id;
 
         std::vector<domain::engine_settings_change> rows;
@@ -791,11 +796,9 @@ engine_settings_proposal_service::raise(
 
     // The request stands whether or not anybody is told, so the telling happens
     // after the commit and a failure there is only logged.
-    ores::inbox::service::approval_lifecycle lifecycle(ctx_);
-    const auto kind = lifecycle.kind(std::string(kind_code));
-    const auto raised = lifecycle.request(boost::uuids::to_string(request_id));
-    if (kind && raised)
-        ores::inbox::service::approval_announcer(ctx_).tell_open_parts(lifecycle, *kind, *raised);
+    const auto raised = outside.request(boost::uuids::to_string(request_id));
+    if (raised)
+        ores::inbox::service::approval_announcer(ctx_).tell_open_parts(outside, *kind, *raised);
 
     response.request_id = boost::uuids::to_string(request_id);
     response.result = refusal_of(outcome::ok, {});

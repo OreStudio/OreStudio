@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 43D4AFA3-00CC-4BA1-ACAD-6BC26EF4647B
+:END:
+#+title: Task: Retire the raw query helpers
+#+description: Move every caller of the raw query helpers in bitemporal_operations onto the transaction-aware query_builder API, and delete the helpers, so every statement runs through the pool and its transaction.
+#+type: task
+#+level: s1
+#+filetags: :database:data_path:clean_up:data_model_clean_up:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:14807059-043D-4866-974D-B835151D61E8][Data model clean up]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every statement a service runs goes through the pool and a transaction, as [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] states. The seven raw helpers in =ores.database/src/repository/bitemporal_operations.cpp= (=execute_raw_string_query=, =execute_raw_grouped_query=, =execute_raw_multi_column_query=, =execute_raw_command=, =execute_parameterized_string_query=, =execute_parameterized_command=, =execute_parameterized_multi_column_query=) are retired: each caller moves to the transaction-aware =query_builder= API, and the helpers are deleted in the same change.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:14807059-043D-4866-974D-B835151D61E8][Data model clean up]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- =query_builder= offers every shape a caller needs, on =transact=: rows, a string column, a command, with parameters or without.
+- Every caller of a raw helper calls the =query_builder= API instead. The move is a scripted codemod, kept with the task, so it reruns.
+- The raw helpers, and =execute_raw_grouped_query=, which has no caller, are deleted.
+- No statement connects per call ([[id:729F746E-36DD-40A2-A592-6972239E31F0][A service holds a few long-lived connections and never connects per query]]), and none sets a session-level setting: the tenant, party and actor are transaction-local ([[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]).
+- A statement made with a context bound to a unit of work runs on its transaction ([[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]]); the stopgap that routes the raw helpers onto a bound transaction goes with them.
+- Every test suite passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Found while fixing auto-approval inside a unit of work: the inbox decided a request through =repository::execute_parameterized_multi_column_query=, which opened its own connection and could not see the request its caller's transaction had just written. The publish lifecycle task routes the raw helpers onto a bound transaction as a stopgap; this task removes them. At the stopgap's commit the seven helpers had about 195 call sites, a few of which already resolve to =query_builder=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -123,6 +123,7 @@ private:
      * @return The request raised, when the trade started waiting on Operations.
      */
     std::optional<raised_authorisation> execute_within(context ctx,
+                                                       const authorisation_policy& authorisation,
                                                        const boost::uuids::uuid& trade_id,
                                                        const std::string& change_reason_code,
                                                        const std::string& change_commentary,

@@ -43,7 +43,8 @@ The order follows dependency: each page needs the one before it.
 4. [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]] — the only way code reaches a connection, built on the two pages
    before it.
 5. [[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][A context bound to a transaction cannot change its tenant or party]] — why a context bound to that transaction cannot be
-   narrowed or widened, and where a read for another tenant or party runs instead.
+   narrowed or widened, and why a read for another tenant or party is made before the
+   unit of work opens and never beside it.
 6. [[id:E8369409-2A7B-4258-9D3C-6D37A46F4603][A hand-written statement is declared once, typed both ways and prepared once]] — what runs inside that transaction when no generated repository
    fits.
 7. [[id:E11DB09A-328A-476A-A71B-8E303A68D07D][A store error says whether a retry can succeed]] — what comes back out of it, and what the caller does about it.

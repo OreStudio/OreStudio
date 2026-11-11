@@ -24,10 +24,13 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
+#include <stdexcept>
 
 namespace {
 
@@ -107,6 +110,21 @@ TEST_CASE("a unit of work binds its transaction to the context it hands out", "[
     uow.commit();
 }
 
+TEST_CASE("a context bound to a transaction refuses another tenant or party", "[unit_of_work]") {
+    ores::testing::scoped_database_helper h;
+    unit_of_work uow(h.context());
+    const auto& tx = uow.ctx();
+    const auto party = boost::uuids::random_generator()();
+
+    CHECK_THROWS_AS(tx.with_tenant(ores::utility::uuid::tenant_id::system(), tx.actor()),
+                    std::logic_error);
+    CHECK_THROWS_AS(tx.with_party(tx.tenant_id(), party, {party}, tx.actor()), std::logic_error);
+    REQUIRE_FALSE(tx.party_id());
+    REQUIRE(tx.visible_party_ids().empty());
+    CHECK_NOTHROW(tx.with_tenant(tx.tenant_id(), "another actor"));
+    uow.commit();
+}
+
 TEST_CASE("a unit of work that is not committed frees its connection", "[unit_of_work]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
@@ -120,6 +138,32 @@ TEST_CASE("a unit of work that is not committed frees its connection", "[unit_of
     // finds a usable connection rather than one left in a transaction.
     const auto rows = execute_raw_multi_column_query(h.context(), "select 1", lg, "probe");
     REQUIRE(rows.size() == 1);
+}
+
+TEST_CASE("a committed unit of work returns its connection before it goes out of scope",
+          "[unit_of_work]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    // The factory opens its pool at once, so the context is built here to open
+    // a pool of one on first use.
+    const auto opened = ores::testing::test_database_manager::make_context();
+    ores::database::context ctx(opened.connection_options(),
+                                opened.tenant_id(),
+                                opened.actor(),
+                                opened.service_account());
+    ctx.set_pq_pool_size(1);
+
+    unit_of_work first(ctx);
+    execute_raw_multi_column_query(first.ctx(), "select 1", lg, "probe");
+    first.commit();
+
+    // The pool holds one connection. Were it still the first unit of work's,
+    // the second would wait out the acquire timeout and fail.
+    unit_of_work second(ctx);
+    const auto rows = execute_raw_multi_column_query(second.ctx(), "select 1", lg, "probe");
+    REQUIRE(rows.size() == 1);
+    second.commit();
+    CHECK_THROWS_WITH(execute_raw_multi_column_query(first.ctx(), "select 1", lg, "probe"),
+                      "The transaction has ended");
 }
 
 TEST_CASE("a raw insert through a unit of work is rolled back", "[unit_of_work]") {
@@ -345,18 +389,28 @@ TEST_CASE("a failed statement aborts the unit of work, and nothing before it is 
     CHECK(committed_count(code) == "0");
 }
 
-TEST_CASE("a raw helper inside a unit of work runs on its own connection, as it always did",
-          "[unit_of_work]") {
+TEST_CASE("a raw helper inside a unit of work runs on its transaction", "[unit_of_work]") {
     auto lg(ores::logging::make_logger(test_suite));
     ores::testing::scoped_database_helper h;
-    const auto code = probe_code();
+    const auto dropped = probe_code();
     {
         unit_of_work uow(h.context());
         ores::database::repository::execute_raw_command(
-            uow.ctx(), probe_insert(uow.ctx(), code), lg, "Raw insert beside a unit of work");
+            uow.ctx(), probe_insert(uow.ctx(), dropped), lg, "Raw insert in a unit of work");
+        const auto seen = ores::database::repository::execute_raw_multi_column_query(
+            uow.ctx(), probe_count(dropped), lg, "Counting inside the unit of work");
+        CHECK(seen.at(0).at(0).value_or("") == "1");
     }
+    CHECK(committed_count(dropped) == "0");
 
-    CHECK(committed_count(code) == "1");
+    const auto kept = probe_code();
+    {
+        unit_of_work uow(h.context());
+        ores::database::repository::execute_raw_command(
+            uow.ctx(), probe_insert(uow.ctx(), kept), lg, "Raw insert in a unit of work");
+        uow.commit();
+    }
+    CHECK(committed_count(kept) == "1");
 }
 
 TEST_CASE("a context re-scoped on a unit of work writes on its transaction", "[unit_of_work]") {

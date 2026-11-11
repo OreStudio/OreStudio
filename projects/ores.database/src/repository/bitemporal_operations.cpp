@@ -19,6 +19,9 @@
  */
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/pq/store_error.hpp"
+#include "ores.database/pq/text.hpp"
+#include "ores.database/pq/transaction.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <array>
@@ -32,6 +35,45 @@ namespace ores::database::repository {
 using namespace ores::logging;
 
 namespace {
+
+/**
+ * @brief Runs a statement on the transaction a context is bound to, and returns its rows
+ * as text.
+ *
+ * A context bound to a unit of work runs every statement on that unit's transaction, so a
+ * statement sees what the transaction wrote and commits or rolls back with it. The
+ * helpers below open a connection of their own only for a context bound to none.
+ */
+std::vector<std::vector<std::optional<std::string>>>
+rows_on_transaction(pq::transaction& tx,
+                    const std::string& sql,
+                    const std::vector<std::optional<std::string>>& params) {
+    std::vector<pq::param> encoded;
+    encoded.reserve(params.size());
+    for (const auto& v : params)
+        encoded.push_back(pq::to_text(v));
+    const auto r = tx.run(query_builder::detail::prepared(sql), encoded, pq::text_result);
+    std::vector<std::vector<std::optional<std::string>>> out(static_cast<std::size_t>(r.rows()));
+    for (int row = 0; row < r.rows(); ++row)
+        for (int column = 0; column < r.columns(); ++column)
+            out[static_cast<std::size_t>(row)].push_back(
+                pq::from_text<std::optional<std::string>>(r, row, column));
+    return out;
+}
+
+std::vector<std::optional<std::string>> as_optional(const std::vector<std::string>& params) {
+    return {params.begin(), params.end()};
+}
+
+std::vector<std::string> first_column(
+    const std::vector<std::vector<std::optional<std::string>>>& rows) {
+    std::vector<std::string> out;
+    for (const auto& row : rows)
+        if (!row.empty() && row.front())
+            out.push_back(*row.front());
+    return out;
+}
+
 
 /// A failed query, carrying the SQLSTATE the server stated, so a caller can tell
 /// one refusal from another without reading the server's words.
@@ -217,8 +259,9 @@ std::vector<std::string> execute_raw_string_query(context ctx,
                                                   const std::string& sql,
                                                   logging::logger_t& lg,
                                                   const std::string& operation_desc) {
-
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
+    if (auto* tx = ctx.active_transaction())
+        return first_column(rows_on_transaction(*tx, sql, {}));
 
     std::vector<std::string> result;
 
@@ -260,8 +303,14 @@ std::vector<std::string> execute_raw_string_query(context ctx,
 
 std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
     context ctx, const std::string& sql, logging::logger_t& lg, const std::string& operation_desc) {
-
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
+    if (auto* tx = ctx.active_transaction()) {
+        std::map<std::string, std::vector<std::string>> grouped;
+        for (const auto& row : rows_on_transaction(*tx, sql, {}))
+            if (row.size() >= 2 && row[0] && row[1])
+                grouped[*row[0]].push_back(*row[1]);
+        return grouped;
+    }
 
     std::map<std::string, std::vector<std::string>> result;
 
@@ -309,8 +358,9 @@ std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
 
 std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
     context ctx, const std::string& sql, logging::logger_t& lg, const std::string& operation_desc) {
-
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
+    if (auto* tx = ctx.active_transaction())
+        return rows_on_transaction(*tx, sql, {});
 
     std::vector<std::vector<std::optional<std::string>>> result;
 
@@ -363,8 +413,11 @@ void execute_raw_command(context ctx,
                          const std::string& sql,
                          logging::logger_t& lg,
                          const std::string& operation_desc) {
-
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
+    if (auto* tx = ctx.active_transaction()) {
+        rows_on_transaction(*tx, sql, {});
+        return;
+    }
 
     // A connection of its own, with the context's connection options
     const auto conn_str = build_connection_string(ctx.connection_options());
@@ -419,9 +472,10 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
                                                             const std::vector<std::string>& params,
                                                             logging::logger_t& lg,
                                                             const std::string& operation_desc) {
-
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
                              << " parameters";
+    if (auto* tx = ctx.active_transaction())
+        return first_column(rows_on_transaction(*tx, sql, as_optional(params)));
 
     std::vector<std::string> result;
 
@@ -482,9 +536,12 @@ void execute_parameterized_command(context ctx,
                                    const std::vector<std::string>& params,
                                    logging::logger_t& lg,
                                    const std::string& operation_desc) {
-
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
                              << " parameters";
+    if (auto* tx = ctx.active_transaction()) {
+        rows_on_transaction(*tx, sql, as_optional(params));
+        return;
+    }
 
     // A connection of its own, with the context's connection options
     const auto conn_str = build_connection_string(ctx.connection_options());
@@ -556,9 +613,10 @@ execute_parameterized_multi_column_query(context ctx,
                                          const std::vector<std::optional<std::string>>& params,
                                          logging::logger_t& lg,
                                          const std::string& operation_desc) {
-
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
                              << " parameters";
+    if (auto* tx = ctx.active_transaction())
+        return rows_on_transaction(*tx, sql, params);
 
     std::vector<std::vector<std::optional<std::string>>> result;
 

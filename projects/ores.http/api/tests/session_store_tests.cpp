@@ -182,3 +182,30 @@ TEST_CASE("what_has_expired_is_evicted_and_what_has_not_is_kept", "[session_stor
     REQUIRE(store.touch(fresh).has_value());
     REQUIRE(!store.touch(old_one).has_value());
 }
+
+TEST_CASE("a_session_is_changed_in_place_and_kept_alive", "[session_store]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a change replaces what the session holds";
+
+    test_clock clock;
+    session_store store(1h, [&clock] { return clock.now(); });
+    const auto identifier = store.open(a_record());
+
+    clock.advance(50min);
+    REQUIRE(store.update(identifier, [](session_record& r) {
+        r.token = "the-next-token";
+        r.view = R"({"party":"chosen"})";
+    }));
+    const auto changed = store.find(identifier);
+    REQUIRE(changed.has_value());
+    CHECK(changed->token == "the-next-token");
+    CHECK(changed->view == R"({"party":"chosen"})");
+
+    // The change slid the expiry, so the session outlives its first hour.
+    clock.advance(50min);
+    CHECK(store.find(identifier).has_value());
+
+    CHECK_FALSE(store.update("no-such-session", [](session_record&) {}));
+    clock.advance(2h);
+    CHECK_FALSE(store.update(identifier, [](session_record&) {}));
+}

@@ -738,6 +738,11 @@ RULES = (
          "The deployment's tenants as system administration reads them, each joined with the"
          " run that set it up, at the address and in the shape the BFF answered, refused"
          " without the deployment read."),
+    Rule("the browser's session route",
+         ("regex", r"^((GET|POST|DELETE) /api/session|POST /api/session/(party|switch-party))$"),
+         CPP, RESOURCE, "auth",
+         "The browser's session at the address and in the shape the BFF answered: sign in,"
+         " read, sign out, choose the party a login waits on, and move to another party."),
     Rule("the account door's route",
          ("regex", r"^(POST /api/(signup|account/password)|GET /api/password-policy)$"),
          CPP, RESOURCE, "auth",

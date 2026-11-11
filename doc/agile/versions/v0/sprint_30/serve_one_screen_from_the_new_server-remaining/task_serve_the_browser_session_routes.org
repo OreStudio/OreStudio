@@ -8,12 +8,12 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-browser-session-routes
-#+pr:
+#+pr: 4614
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Serve POST, GET and DELETE /api/session, /api/session/party and /api/session/swi
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -49,6 +49,33 @@ password-reset flag and the access lifetime. The session record grows to hold
 them, and the existing sign-in in =auth_session_routes= is the starting point.
 The credential policy limits the sign-in, as it does the generic one; the BFF
 answered a throttled sign-in with 401, and the C++ server answers 429.
+
+The BFF's client also renewed the token when it expired. The C++ gateway does
+not, so a browser session would end at thirty minutes; that is
+[[id:7D194F8C-6352-4F0B-AA9B-D1D8E716A7AC][Renew a browser session's token]], and the switch to the C++ server waits for it.
+
+** What was built
+
+- =session_record= gains =view=, the browser's session as JSON, which the store
+  keeps and never reads, so =ores.http.api= names nothing of IAM. The store
+  gains =update=, which changes a record under its lock and slides its expiry.
+- =browser_session= in the IAM part is the session the browser reads, a codec
+  struct in the BFF's field order, with =session_of= from a login answer and
+  =party_choice_json= for a login that waits on a party.
+- =browser_session_routes= in the IAM part, registered by the application beside
+  =auth_session_routes=: =POST /api/session= (open, credential policy) checks
+  bootstrap mode, signs in, opens a record and sets the cookie, answering the
+  session or the party choice; =GET /api/session= reads the record, refuses a
+  login that waits on a party, and releases the tenant setup rail once the
+  tenant's run is complete; =DELETE /api/session= ends the IAM session best
+  effort, closes the record and clears the cookie; =POST /api/session/party= and
+  =POST /api/session/switch-party= need a session, so the CSRF guard covers
+  them, exchange the token and update the record; the switch reads the tenant's
+  parties through =tenant_parties=, now shared with provisioning.
+- =POST /api/account/password= moved here from =account_door_routes=, so it
+  clears the session's reset flag after a change, as the BFF did.
+- ores.web sends =X-Ores-Request= on every request. The C++ server refuses a
+  cookie write without it; the BFF ignores it, so the browser works with both.
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -85,12 +112,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4614][#4614]] | [http] Serve the browser's session routes from C++ |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: ores.web sends no =X-Ores-Request=, so the C++ server would refuse every cookie write at the switch. | =transport.ts= | Accepted | The browser's request wrapper sends it on every request, files included; tests prove it, and the whole browser suite passes. |
+| 2 | Local review: the C++ gateway never renews a session's token, so a browser session ends at thirty minutes. | =http_session.cpp= | Deferred | Its own task, which the switch to the C++ server now waits for. |
+| 3 | Local review: the browser's session fields would put IAM's vocabulary into =ores.http.api=. | =session_store.hpp= | Accepted | The record holds them as opaque JSON that the IAM routes own. |
+| 4 | Local review: the switch's party reader repeated provisioning's. | =tenant_parties.*= | Accepted | One shared reader. |
+| 5 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 6 | PR review: the session read wrote its whole snapshot back after a network read, which could undo a party chosen meanwhile. | =browser_session_routes.cpp= | Accepted | It now changes only the flag, read again under the store's lock. The party moves write token, claims and view together, which a comment states. |
+| 7 | PR review: a sign-in left the browser's previous session alive. | =browser_session_routes.cpp= | Accepted | A sign-in closes the session the cookie named before it opens the next. |
+| 8 | PR review: an unreadable view sends the browser to sign in with no trace. | =browser_session_routes.cpp= | Accepted | It is logged as a warning. |
+| 9 | PR review: a selected party the login does not list is untested. | =browser_session_routes_tests.cpp= | Accepted | A test proves the login then answers the party choice. |
+| 10 | PR review: does ores.web handle a 429 on sign-in? | =SignInPage.tsx= | Declined | The page shows the server's own message, which says to wait a minute. |
+| 11 | PR review: a failed password change is 409; a party chosen twice replaces the first. | =browser_session_routes.cpp= | Declined | The BFF answered a failed operation with 409, and IAM refuses a second selection, since only the login's single-use token may choose. |
+| 12 | PR review: does the shared party reader page to the end? | =tenant_parties.cpp= | Declined | It reads pages until it holds the total or a page is empty. |
 
 * Result
+
+The C++ server answers the browser's session routes at the BFF's addresses and
+in its shapes: sign in, read the session, sign out, choose a party and switch
+party, and a password change clears the session's reset flag. The browser
+marks its requests so the C++ server accepts its cookie writes. Tests compare
+the login answers and the session view exactly, prove the session read and
+sign-out against a real store, the refusals before any forward, and which
+routes need a session.

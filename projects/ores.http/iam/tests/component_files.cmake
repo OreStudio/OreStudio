@@ -34,6 +34,7 @@ set(files
     "authorization_routes_tests.cpp"
     "bootstrap_routes_tests.cpp"
     "bootstrap_screen_routes_tests.cpp"
+    "browser_session_routes_tests.cpp"
     "geo_operations_routes_tests.cpp"
     "login_info_routes_tests.cpp"
     "login_routes_tests.cpp"

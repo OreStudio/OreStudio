@@ -56,6 +56,12 @@ struct ORES_HTTP_API_EXPORT session_record final {
 
     /// When it was last used, which is what the expiry slides from.
     std::chrono::system_clock::time_point last_used;
+    /**
+     * @brief What the session's own read answers, as the routes that opened it
+     * stated it: a JSON object the browser reads. The store keeps it and never
+     * reads it, so the gateway's session holds no product's vocabulary.
+     */
+    std::string view;
 };
 
 /**
@@ -104,6 +110,17 @@ public:
      * @brief Finds a session without sliding its expiry.
      */
     [[nodiscard]] std::optional<session_record> find(const std::string& identifier) const;
+
+    /**
+     * @brief Changes a session in place, and slides its expiry.
+     *
+     * A party chosen or switched replaces the token and its claims, and a read of
+     * the session can change what it states, so the change is made under the
+     * store's lock rather than as a read and a later write that could cross.
+     *
+     * @returns whether there was a live session to change.
+     */
+    bool update(const std::string& identifier, const std::function<void(session_record&)>& change);
 
     /**
      * @brief Ends a session.

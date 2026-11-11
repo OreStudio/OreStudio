@@ -40,6 +40,7 @@ Move the one switch that sends the requests of ores.web to the C++ server, and t
 - A rollback to the BFF is one switch, and it is tested.
 - The ores.http.server service names the site configuration the BFF reads, through =--site-config= or =ORES_WEB_SITE_CONFIG=, so =/api/site= and =/api/site/deployment= answer.
 - [[id:D4460ECD-7832-4F2B-AD71-4688684D2F26][Rate limit the HTTP API]] is done: every route runs under a rate policy, and the routes the BFF limited keep at least its limits.
+- [[id:7D194F8C-6352-4F0B-AA9B-D1D8E716A7AC][Renew a browser session's token]] is done: a browser session outlives its first access token.
 - The local gate is green.
 
 * Plan

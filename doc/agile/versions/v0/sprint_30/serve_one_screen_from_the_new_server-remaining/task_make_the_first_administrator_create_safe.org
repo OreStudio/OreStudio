@@ -103,6 +103,11 @@ via its "Verifies task" field.
 | 3 | =entity-writes=, =er-diagram=: main's FX volatility surface work added two publish writers and changed the schema diagrams. | =entity_table_writes_baseline.json=, =ores_schema*.puml= | Accepted | Both writers follow accepted families and are recorded; the diagrams are regenerated, keeping only the ones whose model changed. |
 | 4 | pgTAP: =refdata_overnight_curve_configs_test= fails on a fresh database because =MXN-TIIE= has no overnight index convention. | =refdata_ir_curve_overnight_configs_populate.sql= | Declined | Main's =0a9fd1944f= is reworking the MXN TIIE mapping in another story, so a fix here would collide with it. |
 | 5 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 6 | PR review: a missing bootstrap flag let the create through. | =iam_system_provisioner_create.sql= | Accepted | A missing flag now refuses: the guard of an anonymous SuperAdmin grant fails closed. |
+| 7 | PR review: the second create's read relies on READ COMMITTED. | =iam_system_provisioner_create.sql= | Accepted | Every caller's transaction runs at the default READ COMMITTED; the function's comment states the assumption. |
+| 8 | PR review: the input refusal is not tested through the real function; the test builds SQL by concatenation. | =messaging_initial_admin_guard_tests.cpp= | Accepted in part | A test proves an empty principal is refused with =22023=. The values are the test's own, so the statement stays plain text. |
+| 9 | PR review: the lock key shares the database's key space. | =iam_system_provisioner_create.sql= | Declined | The key is the function's own name, hashed to 64 bits; a collision would only serialise two features, never let a create through. |
+| 10 | PR review: one message lacked its final period. | =bootstrap_handler.hpp= | Accepted | Every message ends with a period; no client matches the text. |
 
 * Result
 

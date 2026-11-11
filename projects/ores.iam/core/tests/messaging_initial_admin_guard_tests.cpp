@@ -105,9 +105,22 @@ TEST_CASE("initial_admin_create_refuses_outside_bootstrap_mode", "[initial_admin
     CHECK(refused == std::optional<std::string>("55000"));
 }
 
+TEST_CASE("initial_admin_create_refuses_an_empty_principal", "[initial_admin_guard]") {
+    ores::testing::database_helper h;
+    std::optional<std::string> refused;
+    CHECK_THROWS_AS(ores::database::transact(system_context(h),
+                                             [&](transaction& tx) {
+                                                 set_bootstrap_mode(tx, true);
+                                                 refused = create_admin(tx, "");
+                                                 throw initial_admin_guard_rolled_back{};
+                                             }),
+                    initial_admin_guard_rolled_back);
+    CHECK(refused == std::optional<std::string>("22023"));
+}
+
 TEST_CASE("initial_admin_create_answers_fixed_words", "[initial_admin_guard]") {
     using ores::iam::messaging::bootstrap_handler;
-    CHECK(bootstrap_handler::create_refusal("55000") == "System is not in bootstrap mode");
+    CHECK(bootstrap_handler::create_refusal("55000") == "System is not in bootstrap mode.");
     CHECK(bootstrap_handler::create_refusal("22023") ==
           "A username, an email address and a password are required.");
     CHECK(bootstrap_handler::create_refusal("23505") == "That username is already taken.");

@@ -128,7 +128,7 @@ public:
                 reply(nats_,
                       msg,
                       create_initial_admin_response{
-                          .success = false, .error_message = "System is not in bootstrap mode"});
+                          .success = false, .error_message = "System is not in bootstrap mode."});
                 return;
             }
         }
@@ -198,7 +198,7 @@ public:
      */
     [[nodiscard]] static std::string create_refusal(std::string_view sqlstate) {
         if (sqlstate == "55000")
-            return "System is not in bootstrap mode";
+            return "System is not in bootstrap mode.";
         if (sqlstate == "22023")
             return "A username, an email address and a password are required.";
         if (sqlstate == "23505")

@@ -72,29 +72,43 @@ namespace ores::http::forwarding {
 [[noreturn]] void refuse_lapsed(const ores::nats::service::session_expired_error& e);
 
 /**
- * @brief Send one canonical request as the caller, and answer its decoded reply.
+ * @brief Send one canonical request as the caller on a subject named at run time.
  *
+ * A request whose subject depends on what it asks for, such as the history of
+ * an entity whose component owns its subject, states no subject of its own.
  * The caller's own token travels as a delegation, so the service checks that
  * caller's permission. A refusal, a lapsed session or a reply that does not
  * decode is thrown as a record_routes::refusal. A transport failure propagates,
  * so the handler answers it as the service not answering.
  */
 template <typename Request>
-typename Request::response_type forward(const ores::http::domain::http_request& req,
-                                        ores::nats::service::nats_client& session,
-                                        const Request& msg) {
+typename Request::response_type forward_on(const ores::http::domain::http_request& req,
+                                           ores::nats::service::nats_client& session,
+                                           std::string_view subject,
+                                           const Request& msg) {
     auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
     try {
-        auto reply = ores::nats::service::request_and_decode(
-            delegated, msg, ores::nats::service::default_request_timeout, true);
+        auto reply =
+            ores::nats::service::authenticated_request_and_decode<typename Request::response_type>(
+                delegated, subject, msg, ores::nats::service::default_request_timeout);
         if (!reply)
-            refuse_undecodable(Request::nats_subject, reply.error().what());
+            refuse_undecodable(subject, reply.error().what());
         return std::move(*reply);
     } catch (const ores::nats::service::request_refused_error& e) {
         refuse_refused(e);
     } catch (const ores::nats::service::session_expired_error& e) {
         refuse_lapsed(e);
     }
+}
+
+/**
+ * @brief Send one canonical request as the caller on its own subject, and answer its decoded reply.
+ */
+template <typename Request>
+typename Request::response_type forward(const ores::http::domain::http_request& req,
+                                        ores::nats::service::nats_client& session,
+                                        const Request& msg) {
+    return forward_on(req, session, Request::nats_subject, msg);
 }
 
 /**

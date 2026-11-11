@@ -69,6 +69,8 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.security.lib
         ores.database.lib
-        ores.dq.api.lib)
+        ores.dq.api.lib
+        ores.history.api.lib
+        ores.http.nats.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -98,6 +98,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:942D892C-FB59-46D7-BFF6-04DDECC67C3B][Share the gateway's forwarding step]] | DONE | 2026-11-11 | 2026-11-11 | Every HTTP route unit carries its own copy of the step that forwards an HTTP request to a service over NATS. Share it: the typed NATS call in ores.nats, the HTTP mapping in a new ores.http.nats part. |
 | [[id:9CC70D14-AA6A-4092-AF6D-0C4F68E09C93][Refuse a tenant's write to a shared catalogue in the service]] | DONE | 2026-11-11 | 2026-11-11 | Five synthetic catalogues every tenant shares are written only from the system tenant, but only the gateway checks it, as the BFF did. The service must refuse the write itself. |
 | [[id:B773B120-7C5D-47C2-A44E-484E13BEEFF7][Model the gateway's forwarding part so codegen owns it]] | DONE | 2026-11-11 | 2026-11-11 | The ores.http.nats part is missing from ores.http's #+parts: and states the adapter kind, though it owns its own include root. |
+| [[id:F0162D2F-B6AA-4A6F-941D-661501280BED][Carry a browser session's token to the services]] | STARTED | 2026-11-11 | | A request signed in with the session cookie reaches its route with the session's claims but no token, so every forward delegates an empty token. The server must hand the session's token to the forward step. |
 
 * Decisions
 

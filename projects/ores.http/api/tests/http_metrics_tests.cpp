@@ -263,6 +263,47 @@ TEST_CASE("a_session_cookie_authenticates_a_request_without_a_token",
     REQUIRE(answered->body().find("the-token") == std::string::npos);
 }
 
+TEST_CASE("a_session_request_forwards_the_token_the_session_keeps",
+          "[session_cookie][http_metrics]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a cookie request carries its session's token";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    metrics_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->get("/forwarding")
+                          .summary("Something that forwards the caller's token")
+                          .auth_required()
+                          .handler([](const http_request& req) -> asio::awaitable<http_response> {
+                              const auto token = req.get_bearer_token();
+                              co_return http_response::json(
+                                  token == std::optional<std::string>("the-token") ?
+                                      R"({"carried":true})" :
+                                      R"({"carried":false})");
+                          })
+                          .build());
+
+    cookie_settings settings;
+    settings.name = "ores_web_session_test";
+    fixture.server().set_cookie_settings(settings);
+
+    session_record record;
+    record.token = "the-token";
+    record.claims.subject = "the-account";
+    const auto identifier = fixture.server().sessions()->open(record);
+
+    const auto answered = metrics_send_with(
+        fixture.port(), http::verb::get, "/forwarding", settings.name + "=" + identifier);
+
+    REQUIRE(answered.has_value());
+    REQUIRE(answered->result_int() == 200);
+    REQUIRE(answered->body() == R"({"carried":true})");
+}
+
 TEST_CASE("a_session_the_server_does_not_know_is_refused_and_the_cookie_cleared",
           "[session_cookie][http_metrics]") {
     auto lg(make_logger(test_suite));

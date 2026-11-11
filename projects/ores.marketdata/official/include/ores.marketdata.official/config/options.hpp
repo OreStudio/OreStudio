@@ -82,6 +82,10 @@ struct options final {
      */
     std::string rba_url;
     /**
+     * @brief The address of the Banco Central do Brasil's API site, which serves its SGS API.
+     */
+    std::string bcb_url;
+    /**
      * @brief The sources the adapter hosts.
      */
     std::vector<domain::hosted_source> sources;
@@ -108,6 +112,7 @@ struct options final {
         ::ores::utility::codec::field{"norges_bank_url", &options::norges_bank_url},
         ::ores::utility::codec::field{"riksbank_url", &options::riksbank_url},
         ::ores::utility::codec::field{"rba_url", &options::rba_url},
+        ::ores::utility::codec::field{"bcb_url", &options::bcb_url},
         ::ores::utility::codec::field{"sources", &options::sources},
         ::ores::utility::codec::field{"backfill_days", &options::backfill_days},
         ::ores::utility::codec::field{"poll_minutes", &options::poll_minutes},

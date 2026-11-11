@@ -70,6 +70,11 @@ values
      'The statistical tables of the Reserve Bank of Australia, among them AONIA, the interbank overnight cash rate, published each Australian business day.',
      35, 'https://www.rba.gov.au/copyright/',
      'Source: RBA', true, '',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'bcb', 0, 'Banco Central do Brasil', 'reference',
+     'The time series of the Banco Central do Brasil, among them the annualised CDI that B3 computes, published each Brazilian business day.',
+     36, 'https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/consultas/mercado-de-derivativos/indicadores/indicadores-financeiros/',
+     'Source: B3, through the Banco Central do Brasil', true, '',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -88,7 +93,8 @@ insert into t_overnight_inventory (provider_code, id_scheme, external_id, field,
     ('boj', 'boj_stat', 'FM01.STRDCLUCON', 'VALUES', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR'),
     ('norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R', 'OBS_VALUE', 'oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA'),
     ('riksbank', 'riksbank_swestr', 'SWESTR', 'rate', 'oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR'),
-    ('rba', 'rba_table', 'f1.FIRMMCRID', 'value', 'oresmd://ir/AUD?type=fixing&index=ibor&name=AONIA');
+    ('rba', 'rba_table', 'f1.FIRMMCRID', 'value', 'oresmd://ir/AUD?type=fixing&index=ibor&name=AONIA'),
+    ('bcb', 'bcb_sgs', '4389', 'valor', 'oresmd://ir/BRL?type=fixing&index=ibor&name=CDI');
 
 insert into ores_marketdata_market_data_vendor_instruments_tbl (
     id, tenant_id, version, provider_code, id_scheme, external_id, field, minted, deviation_note,
@@ -177,6 +183,11 @@ values
      'rba', 'rba_table', 'production', 'https://www.rba.gov.au', '',
      '{"url":"https://www.rba.gov.au","backfill_days":400,"poll_minutes":60}', true,
      'The session that reads the series of the RBA statistical tables.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('bcb-sgs', ores_utility_system_tenant_id_fn(), 0, 'BCB SGS',
+     'bcb', 'bcb_sgs', 'production', 'https://api.bcb.gov.br', '',
+     '{"url":"https://api.bcb.gov.br","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the Banco Central do Brasil SGS API.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -218,6 +229,10 @@ values
     ('bff157c2-bc49-5ef0-8cf6-745fe868f43c', ores_utility_system_tenant_id_fn(), 0,
      'rba-aonia', 'rba', 'rba-statistics', 'end_of_day', 'f1.FIRMMCRID', true,
      'AONIA as the RBA publishes it, read from its statistical table F1 by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('2f903f0d-259c-59a8-9867-c632dd1af018', ores_utility_system_tenant_id_fn(), 0,
+     'bcb-cdi', 'bcb', 'bcb-sgs', 'end_of_day', '4389', true,
+     'The annualised CDI as the Banco Central do Brasil publishes it, read from its SGS API by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -238,7 +253,8 @@ from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR'),
              ('boj-tona', 'boj', 'boj_stat', 'FM01.STRDCLUCON'),
              ('norgesbank-nowa', 'norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R'),
              ('riksbank-swestr', 'riksbank', 'riksbank_swestr', 'SWESTR'),
-             ('rba-aonia', 'rba', 'rba_table', 'f1.FIRMMCRID'))
+             ('rba-aonia', 'rba', 'rba_table', 'f1.FIRMMCRID'),
+             ('bcb-cdi', 'bcb', 'bcb_sgs', '4389'))
      as s(feed, provider, scheme, external_id)
 join ores_marketdata_feeds_tbl f
   on f.tenant_id = ores_utility_system_tenant_id_fn()
@@ -400,5 +416,23 @@ begin
         'bff157c2-bc49-5ef0-8cf6-745fe868f43c',
         current_user, current_user, 'system.initial_load',
         'The system party reads AONIA from Reserve Bank of Australia'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'ff89d5fb-738e-5fab-8b3d-7c68af56091c', ores_utility_system_tenant_id_fn(), 0, v_party, 'bcb',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes the CDI of Banco Central do Brasil for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'a9299cfc-2a37-5c09-8372-9b1dc2da2649', ores_utility_system_tenant_id_fn(), 0, v_party, 'bcb', 'interest_rates',
+        '2f903f0d-259c-59a8-9867-c632dd1af018',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads the CDI from Banco Central do Brasil'
     ) on conflict do nothing;
 end $$;

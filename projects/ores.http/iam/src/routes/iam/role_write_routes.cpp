@@ -247,6 +247,8 @@ role_write_routes::permissions_json(std::vector<ores::iam::domain::permission> p
     return out + "]}";
 }
 
+// The code is one the route has read as area::resource:action, so its area is
+// what precedes the first double colon.
 bool role_write_routes::grants(const role_summary& role, const std::string& code) {
     const auto area = code.substr(0, code.find("::")) + "::*";
     return std::ranges::any_of(role.permission_codes, [&](const std::string& held) {

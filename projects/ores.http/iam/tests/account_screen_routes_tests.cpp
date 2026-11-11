@@ -182,6 +182,10 @@ TEST_CASE("account_screen_routes_serve_a_picture_as_the_bff_did", "[account_scre
     CHECK(picture.headers.at("Cache-Control") == "private, max-age=300");
     CHECK(picture.headers.at("X-Content-Type-Options") == "nosniff");
     CHECK(picture.headers.at("Content-Security-Policy") == "default-src 'none'; sandbox");
+    image.mime_type = "image/png";
+    CHECK(account_screen_routes::picture_of(image).content_type == "image/png");
+    image.mime_type = "text/html";
+    CHECK(account_screen_routes::picture_of(image).content_type == "application/octet-stream");
 }
 
 TEST_CASE("account_screen_routes_refuse_a_reporting_line_with_no_target", "[account_screen]") {

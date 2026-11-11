@@ -154,7 +154,11 @@ std::string account_screen_routes::tree_json(const messaging::get_reporting_tree
 http_response account_screen_routes::picture_of(const ores::assets::domain::image& image) {
     http_response resp;
     resp.status = http_status::ok;
-    resp.content_type = image.mime_type.empty() ? "image/svg+xml" : image.mime_type;
+    // A stored media type is served only when it names an image, so a stored
+    // type that names a document is never read as one.
+    resp.content_type = image.mime_type.empty()               ? "image/svg+xml" :
+                        image.mime_type.starts_with("image/") ? image.mime_type :
+                                                                "application/octet-stream";
     resp.body.assign(image.data.begin(), image.data.end());
     resp.headers["Cache-Control"] = "private, max-age=300";
     resp.headers["X-Content-Type-Options"] = "nosniff";

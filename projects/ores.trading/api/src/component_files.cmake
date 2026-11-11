@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "builders/bond_builders.cpp"
+    "builders/commodity_builders.cpp"
     "builders/credit_builders.cpp"
     "builders/equity_builders.cpp"
     "builders/fx_builders.cpp"
@@ -817,6 +818,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/build_error.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/builder_registry.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/cadence.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/commodity_builders.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/credit_builders.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/equity_builders.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/fx_builder_rows.hpp"

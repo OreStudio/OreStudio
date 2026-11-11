@@ -21,6 +21,7 @@
 #define ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 
 #include "ores.trading.api/builders/bond_builders.hpp"
+#include "ores.trading.api/builders/commodity_builders.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
@@ -90,7 +91,15 @@ using all_builders =
                equity_accumulator_builder,
                equity_tarf_builder,
                equity_position_builder,
-               equity_option_position_builder>;
+               equity_option_position_builder,
+               commodity_forward_builder,
+               commodity_option_builder,
+               commodity_average_price_option_builder,
+               commodity_option_strip_builder,
+               commodity_swap_builder,
+               commodity_swaption_builder,
+               commodity_variance_swap_builder,
+               commodity_basket_option_builder>;
 
 namespace detail {
 

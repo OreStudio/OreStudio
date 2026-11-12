@@ -102,6 +102,7 @@ def parse_deps(text: str, build_dir: Path):
     """
     dependents = defaultdict(set)
     obj_target = {}
+    object_deps = defaultdict(set)
     objects = []
     current = None
     for line in text.splitlines():
@@ -113,7 +114,10 @@ def parse_deps(text: str, build_dir: Path):
                 continue
             if not os.path.isabs(dep):
                 dep = str(build_dir / dep)
-            dependents[os.path.normpath(dep)].add(current)
+            normalised = os.path.normpath(dep)
+            dependents[normalised].add(current)
+            if os.path.splitext(normalised)[1] in (".cpp", ".cxx", ".cc"):
+                object_deps[current].add(normalised)
             continue
         current = line.split(":", 1)[0].strip()
         if not current:
@@ -125,7 +129,7 @@ def parse_deps(text: str, build_dir: Path):
             continue
         objects.append(current)
         obj_target[current] = match.group(1)
-    return dependents, obj_target, objects
+    return dependents, obj_target, objects, object_deps
 
 
 GENERATED_MARKER = "AUTO-GENERATED FILE"
@@ -293,6 +297,94 @@ def include_chain_back(edges, target: str, limit: int = 6, max_nodes: int = 400)
     return chains
 
 
+def objects_naming(header: str, dependents, object_deps, source_includes,
+                   root: Path):
+    """Split the objects that read a header into those that name it and those
+    that only receive it through another header.
+
+    An object that compiles a source which includes the header directly keeps
+    the dependency whatever else changes. An object that reads the header while
+    none of its own sources include it is a candidate to lose the dependency
+    when the header that drags it in stops including it. That second number is
+    the rebuild saving a forward declaration can actually reach, so it is the
+    number the work should be ordered by.
+    """
+    direct = source_includes.get(header, set())
+    direct_names = {str(path) for path in direct}
+    readers = dependents.get(header, set())
+    naming = set()
+    dragged = set()
+    for obj in readers:
+        sources = object_deps.get(obj, ())
+        if direct_names & sources:
+            naming.add(obj)
+        else:
+            dragged.add(obj)
+    return naming, dragged
+
+
+def reachable(roots, edges) -> set[str]:
+    """Every project header reachable from a set of source files."""
+    seen = set()
+    stack = [str(root) for root in roots if str(root) in edges or True]
+    while stack:
+        node = stack.pop()
+        if node in seen:
+            continue
+        seen.add(node)
+        for child in edges.get(Path(node), ()):
+            text = str(child)
+            if text not in seen:
+                stack.append(text)
+    return seen
+
+
+def cut_table(cuts, edges, object_deps, root: Path):
+    """Objects that stop depending on a header when one include edge is cut.
+
+    The dependency record says which objects read a header today. The source
+    scan says how they reach it. Removing one edge and recomputing the reach
+    from each object's own sources answers the question the story asks: if this
+    include goes, how much of the build stops rebuilding when the included
+    header changes.
+    """
+    resolved = {}
+    for base in include_roots(root):
+        for path in base.rglob("*"):
+            if path.is_file():
+                resolved.setdefault(
+                    str(path)[len(str(base)) + 1:], path)
+
+    by_path = {}
+    for source, targets in edges.items():
+        by_path[source] = targets
+
+    rows = []
+    for spec in cuts:
+        includer_name, _, included_name = spec.partition(":")
+        includer = resolved.get(includer_name)
+        included = resolved.get(included_name)
+        if includer is None or included is None:
+            rows.append((spec, None, None, None))
+            continue
+        before = after = 0
+        for obj, sources in object_deps.items():
+            roots = [Path(s) for s in sources]
+            if not roots:
+                continue
+            if str(included) not in reachable(roots, by_path):
+                continue
+            before += 1
+            reduced = {source: {child for child in targets
+                                if not (source == includer
+                                        and child == included)}
+                       for source, targets in by_path.items()}
+            if str(included) in reachable(roots, reduced):
+                after += 1
+        rows.append((spec, before, after, before - after))
+    return rows
+
+
 def rel(path, root: Path) -> str:
     text = str(path)
     return text[len(str(root)) + 1:] if text.startswith(str(root)) else text
@@ -316,6 +408,10 @@ def main() -> int:
     parser.add_argument("--watch", action="append", default=None)
     parser.add_argument("--json", default=None)
     parser.add_argument("--no-scan", action="store_true")
+    parser.add_argument("--cut", action="append", default=None,
+                        metavar="INCLUDER:INCLUDED",
+                        help="report the objects that stop reading INCLUDED "
+                             "when INCLUDER stops including it")
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[7]
@@ -324,7 +420,7 @@ def main() -> int:
     watch = args.watch or DEFAULT_WATCH
 
     text = run_ninja_deps(build_dir)
-    dependents, obj_target, objects = parse_deps(text, build_dir)
+    dependents, obj_target, objects, object_deps = parse_deps(text, build_dir)
     total_targets = len(set(obj_target.values()))
 
     print(f"build dir    : {build_dir}")
@@ -439,6 +535,23 @@ def main() -> int:
                 for chain in include_chain_back(edges, leaf, limit=2):
                     print(f"    {name} <- " + " <- ".join(rel(c, root) for c in chain))
         print()
+
+        source_includes = defaultdict(set)
+        for source, targets in edges.items():
+            for target in targets:
+                source_includes[str(target)].add(str(source))
+
+        if args.cut:
+            print("== cutting one include edge: objects that stop reading the "
+                  "included header")
+            print(f"{'before':>7} {'after':>6} {'saved':>6}  edge")
+            for spec, before, after, saved in cut_table(
+                    args.cut, edges, object_deps, root):
+                if before is None:
+                    print(f"{'?':>7} {'?':>6} {'?':>6}  {spec}  (not resolved)")
+                    continue
+                print(f"{before:>7} {after:>6} {saved:>6}  {spec}")
+            print()
 
         cycles = find_cycles(edges)
         print(f"== include cycles among project headers: {len(cycles)}")

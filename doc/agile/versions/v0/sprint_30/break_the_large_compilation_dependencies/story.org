@@ -60,11 +60,21 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
   =boost/uuid/uuid.hpp= carry into most objects, and the logging chain opened by
   =make_logger.hpp=. The work goes in that order, not in order of the database
   context.
-- The database context is expensive for a different reason than this story
-  assumed. =libpq-fe.h= costs 0.04 s. The bulk behind =context.hpp= is
-  =pq/transaction.hpp= → =pq/codec.hpp= → =decimal.hpp=, and
-  =tenant_id.hpp= → =boost/uuid/uuid.hpp= → =<chrono>=. The forward declarations
-  stay right, and they are the smaller half of the gain in that header.
+- Rebuild radius and parse cost are separate measures, and this story is about
+  the first. Forward declarations and constant references reach only the types
+  held by pointer or reference: for =context= itself that count is zero, because
+  its users hold it by value, and 0 of 10 sampled pass-through includers failed
+  to compile without the definition. A =const context&= parameter changes no
+  include edge.
+- The rebuild saving is inside =context.hpp=, not in its users. Four files
+  include =pq/pool.hpp= and 365 objects rebuild when it changes, because
+  =context.hpp= is the door. Cutting that edge takes 147 objects off
+  =pq/pool.hpp= and =pq/transaction.hpp= each. =pq/connection.hpp= moves only
+  with =pq/pool.hpp= and =pq/statement.hpp=, because each of those reaches it.
+- =libpq-fe.h= costs 0.04 s to parse and still sits under 375 objects. It is a
+  blast-radius problem, not a parse-time problem.
+- The rest of the header cost is parse time, in three shapes: the codec chain,
+  =<chrono>=, and Boost.Log. It is real and it is a different task's leverage.
 
 * Out of scope
 

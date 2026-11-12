@@ -86,6 +86,14 @@ The two false starts and their fixes are recorded in the investigation's
 | Trace sample | 12 valid units of 14, 448.0 s frontend | =header_cost.py sample --count 14= | =27cad5a0c6= |
 | Tree frontend estimate | about 24342 s over 652 compiles | =header_cost.py sample --count 14= | =27cad5a0c6= |
 | Dead include in =tenant_id.hpp= | 0.69 s on 837 objects | =header_cost.py compare --runs 4= | =27cad5a0c6= |
+| =pq/pool.hpp= blast radius | 365 objects rebuilt by 4 files that include it | =header_blast_radius.py= | =27cad5a0c6= |
+| =context.hpp= blast radius | 365 objects rebuilt by 4497 files that include it | =header_blast_radius.py= | =27cad5a0c6= |
+| Objects saved by cutting =context.hpp= → =pq/pool.hpp= | 147 of 321 | =header_blast_radius.py --cut= | =27cad5a0c6= |
+| Objects saved by cutting =context.hpp= → =pq/transaction.hpp= | 147 of 321 | =header_blast_radius.py --cut= | =27cad5a0c6= |
+| Objects saved by cutting =json_codec.hpp= → =text_form.hpp= | 183 of 498 | =header_blast_radius.py --cut= | =27cad5a0c6= |
+| Objects saved by cutting =text_form.hpp= → =decimal.hpp= | 219 of 654 | =header_blast_radius.py --cut= | =27cad5a0c6= |
+| =context= usages, syntactic | 471 only named, 4021 in full | =type_usage.py= | =27cad5a0c6= |
+| =context= forward declaration, verified | 0 of 10 sampled includers compile | =type_usage.py --verify= | =27cad5a0c6= |
 
 The full tables are in
 [[id:AF6C4DA7-903E-4848-8807-73EA4E49E9CA][Investigation: The headers that couple the build]].
@@ -128,7 +136,16 @@ What it found:
 - One unused include in =tenant_id.hpp= costs 0.69 s on 837 objects and needs
   no design decision.
 - No cycles and no cross-component detail includes, so no decision is blocked.
+- Rebuild radius and parse cost are different measures, and the forward
+  declarations the story asked for reach only the types held by pointer or
+  reference. For =context= that is zero verified includers; the saving is inside
+  =context.hpp=, where cutting =pq/pool.hpp= and =pq/transaction.hpp= takes 147
+  objects off each. The type-level decisions, with the per-type counts and the
+  objects each cut saves, are in the investigation's * Rebuild blast radius.
 
 The decisions and the order of work are in the investigation's * Decisions and
-* Order of work. The first change is the codec headers: =text_form.hpp= moved
-out of line, then =protocol_codec.hpp= and =json_codec.hpp=.
+* Order of work, in two lists because the story has two objectives. For rebuild
+cycles the first change is the database family: =context.hpp= stops including
+=pq/pool.hpp= and =pq/transaction.hpp= and takes the two options types from a
+small header. For parse cost the first change is the codec chain: =text_form.hpp=
+moved out of line, then =protocol_codec.hpp= and =json_codec.hpp=.

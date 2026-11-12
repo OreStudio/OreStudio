@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: A4D0E305-CEF6-4684-ABBA-0D09657479F1
+:END:
+#+title: Story: Keep workflow steps alive while they work, and off iam
+#+description: A provisioning step times out only when it stops reporting progress, a request does bounded work, and each step runs in the service that owns its work, so iam stays off the critical path of everything that is not identity.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Provisioning completes on a busy host. A step reports its progress as a heartbeat and fails only when that heartbeat stalls, never on elapsed time. No request does work that grows with the data. Each step runs in the service that owns its work, so iam carries only identity work and no workflow that is not about identity waits on it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start the heartbeat task.              |
+| Last touched  | 2026-11-12                               |
+
+* Acceptance
+
+- A step that keeps reporting progress is never failed for taking long, and a step whose heartbeat stops fails within a bounded time.
+- The shell shows each running step's progress from its heartbeat.
+- No request handler does work that grows with the tenant's data inside one request.
+- Every provisioning step that is not identity work runs outside ores.iam, and ores.iam links no synthetic, marketdata or reporting core library.
+- Acme provisioning completes on a loaded host, and a check books every generated trade type through the database.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1023FD3C-A6ED-400A-BA75-422788B9FBE6][Report a step's progress as its heartbeat]] | BACKLOG | | | A step states its progress on the heartbeat it already renews, the engine fails a step only when that heartbeat stalls, and the shell shows the progress. |
+| [[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]] | BACKLOG | | | No request handler does work that grows with the data inside one request: such work is paged, or runs as a step with its own heartbeat. |
+| [[id:C1048693-F5A5-40F2-9BCA-186D7E6B84B7][Run each step in the service that owns it]] | BACKLOG | | | Each provisioning step is dispatched to the service that owns its work, so iam runs only identity steps and links no synthetic, marketdata or reporting core library. |
+| [[id:E96AA88B-1355-4957-996E-D0544735F092][Book every generated trade type through the database]] | BACKLOG | | | A check books one trade of every generated type through the real tables, so a refused value fails the check rather than provisioning. |
+| [[id:4B6D5F00-12DD-4B73-8430-EE04316A7278][Let a database recreate wait for connections to drain]] | BACKLOG | | | compass db recreate waits for the stopped services' connections to close, instead of refusing while they drain. |
+
+* Decisions
+
+- *Iam stays off the critical path of non-identity work, 2026-11-12.* The
+  user's rule: a key service like iam must not be anywhere near the critical
+  path of a workflow whose activity is not identity. Today every provisioning
+  step is dispatched to =iam.v1.ops.provision_tenant_step=, so iam generates
+  trades, publishes curves, attaches photos and schedules reports, and links
+  the synthetic, marketdata and reporting libraries to do so. Its step
+  consumer runs one step at a time, so the parallel steps queue: a run on
+  this branch waited two minutes before iam took =set_staff_passwords=.
+- *A step fails when it stalls, not when it is slow, 2026-11-12.* The user's
+  rule: a fixed timeout makes no sense while a step is working; the step
+  reports progress as a heartbeat, and only a stalled heartbeat times out.
+  The claim lease a step holder renews is already a heartbeat, but the
+  engine also applies a fixed per-step deadline, and a step's own requests
+  run under the fixed 30 second request deadline with no progress channel.
+- *The evidence, 2026-11-12.* Acme provisioning failed with "NATS request
+  timed out" because =set_staff_passwords= reset 74 passwords in one request,
+  about 30 seconds of hashing on a busy host. A page of eight unblocked it
+  (PR 4648); that is the bounded-request rule applied where it failed, not
+  the redesign. The same run showed =compass db recreate -k= refusing while
+  the stopped services' connections still drained, for about 15 seconds.
+- *Builds on running steps concurrently, 2026-11-12.* The story
+  [[id:1D550641-953B-4F17-BFA4-B1DB1EFBE62C][Run a service's steps concurrently]] gave a service a pool of step
+  workers. That shortens the queue inside one service; this story removes
+  the reason the queue forms in iam.
+
+* Out of scope
+
+- Changing what provisioning provisions: the steps, the profile and the data
+  stay as they are; only where and how a step runs changes.

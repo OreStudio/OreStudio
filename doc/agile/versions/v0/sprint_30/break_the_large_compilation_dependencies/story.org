@@ -61,11 +61,17 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
   =make_logger.hpp=. The work goes in that order, not in order of the database
   context.
 - Rebuild radius and parse cost are separate measures, and this story is about
-  the first. Forward declarations and constant references reach only the types
-  held by pointer or reference: for =context= itself that count is zero, because
-  its users hold it by value, and 0 of 10 sampled pass-through includers failed
-  to compile without the definition. A =const context&= parameter changes no
-  include edge.
+  the first. Forward declarations reach only the types held by pointer or
+  reference.
+- The copies are real and come from codegen: 21874 by-value =context=
+  parameters, 11141 of them emitted by the =repository= and =service=
+  archetypes. Changing them to =const&= is worth doing for run time and for the
+  one synchronous reference capture in =feed_kind_registry.cpp:492=, but it does
+  not shorten rebuilds.
+- =context.hpp='s radius is structural: cutting the include from all 1738
+  repository headers saves one object, and cutting every header in the tree
+  still leaves 179 of 365 objects reading it. The only lever on the radius is
+  splitting the type, which needs its own task.
 - The rebuild saving is inside =context.hpp=, not in its users. Four files
   include =pq/pool.hpp= and 365 objects rebuild when it changes, because
   =context.hpp= is the door. Cutting that edge takes 147 objects off

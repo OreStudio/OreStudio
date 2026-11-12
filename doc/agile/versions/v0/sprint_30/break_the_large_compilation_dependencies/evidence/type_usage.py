@@ -125,24 +125,62 @@ def strip_noise(text: str) -> str:
 
 
 def classify_uses(text: str, name: str):
-    """Per occurrence of ``name``: 'named' or 'full'."""
+    """Per occurrence of ``name``: how the includer uses the type.
+
+    The kinds separate the two things a "used in full" count hides:
+
+    - ``named``   a reference or a pointer: only the declaration is needed.
+    - ``param``   a parameter by value: the definition is needed today, and a
+                  constant reference removes both the copy and the need.
+    - ``member``  a non-parameter declaration by value: a class member, a local,
+                  a return value. A reference does not help here; only a pointer,
+                  a pimpl or a redesign does.
+    - ``construct`` a temporary or a construction in place.
+    - ``template-arg`` a =std::vector<T>=, =std::optional<T>= and the like.
+    - ``alias``   =using context = ores::database::context;=. A type alias
+                  names the type and needs no definition, so it must not be
+                  counted as a use in full. Every generated header carries one.
+    """
     body = strip_noise(text)
+    CONTAINERS = ("vector", "optional", "map", "unordered_map", "set",
+                  "unordered_set", "expected", "deque", "list", "array",
+                  "variant", "tuple", "pair", "span")
     verdicts = []
     for match in re.finditer(rf"\b{re.escape(name)}\b", body):
-        before = body[max(0, match.start() - 40):match.start()]
-        after = body[match.end():match.end() + 4]
+        before = body[max(0, match.start() - 60):match.start()]
+        after = body[match.end():match.end() + 6]
         tail = after.lstrip()
+
+        # The declaration segment this occurrence sits in: a parameter list is
+        # the only place an unbalanced "(" can come from.
+        segment_start = max(body.rfind(";", 0, match.start()),
+                            body.rfind("{", 0, match.start()),
+                            body.rfind("}", 0, match.start()))
+        segment = body[segment_start + 1:match.start()]
+        in_parameters = segment.count("(") > segment.count(")")
+
+        if re.search(r"\b(using|typedef)\b", segment) and (
+                re.search(r"\busing\s+$", segment)
+                or re.search(r"=\s*[\w:]*$", segment)):
+            verdicts.append("alias")
+            continue
         if tail[:1] in ("&", "*"):
             verdicts.append("named")
             continue
-        # A smart pointer holding the type needs only the declaration when the
-        # pointer is a member or a parameter; unique_ptr<T> and shared_ptr<T>
-        # accept an incomplete type at that point.
-        under = re.search(r"(\w+)<\s*(?:const\s+)?$", before)
-        if under and under.group(1) in SMART_POINTERS:
+        under = re.search(r"(\w+)\s*<\s*(?:const\s+)?$", before)
+        if under and under.group(1) in ("unique_ptr", "shared_ptr", "weak_ptr"):
             verdicts.append("named")
             continue
-        verdicts.append("full")
+        if under and under.group(1) in CONTAINERS:
+            verdicts.append("template-arg")
+            continue
+        if tail[:1] in ("(", "{"):
+            verdicts.append("construct")
+            continue
+        if re.match(r"\s*[A-Za-z_]\w*\s*[;=,){]", after):
+            verdicts.append("param" if in_parameters else "member")
+            continue
+        verdicts.append("member")
     return verdicts
 
 
@@ -237,21 +275,32 @@ def main() -> int:
 
     for entry in types:
         named = []
+        fixable = []
         full = []
+        kinds = defaultdict(int)
         for includer in direct:
             verdicts = classify_uses(
                 includer.read_text(encoding="utf-8", errors="replace"),
                 entry["name"])
+            for verdict in set(verdicts):
+                kinds[verdict] += 1
             if not verdicts:
                 continue
-            if all(verdict == "named" for verdict in verdicts):
+            if all(verdict in ("named", "alias") for verdict in verdicts):
                 named.append(includer)
+            elif set(verdicts) <= {"named", "param", "alias"}:
+                fixable.append(includer)
             else:
                 full.append(includer)
         print(f"== {entry['kind']} {entry['namespace']}::{entry['name']} "
               f"({entry['kind']})")
-        print(f"   only named : {len(named)} includers")
-        print(f"   in full    : {len(full)} includers")
+        print(f"   only named          : {len(named)} includers")
+        print(f"   fixable by const&   : {len(fixable)} includers "
+              f"(by-value parameters only)")
+        print(f"   definition required : {len(full)} includers")
+        print(f"   use kinds           : " + ", ".join(
+            f"{kind} {count}" for kind, count in
+            sorted(kinds.items(), key=lambda kv: -kv[1])))
         print(f"   declaration: {forward_declaration(entry)}")
         for includer in named[:6]:
             print(f"      {blast.rel(includer, root)}")
@@ -261,6 +310,8 @@ def main() -> int:
             "name": entry["name"], "kind": entry["kind"],
             "namespace": entry["namespace"],
             "only_named": [blast.rel(i, root) for i in named],
+            "fixable_by_const_ref": [blast.rel(i, root) for i in fixable],
+            "kind_counts": dict(kinds),
             "in_full": [blast.rel(i, root) for i in full],
             "declaration": forward_declaration(entry),
         })
@@ -282,7 +333,7 @@ def main() -> int:
             for entry in report["types"]:
                 # A spread across the set, not the first N: the first N tend to
                 # be one family of files that behave alike.
-                candidates = entry["only_named"]
+                candidates = entry["only_named"] + entry["fixable_by_const_ref"]
                 if len(candidates) > args.limit:
                     step = len(candidates) / args.limit
                     candidates = [candidates[int(i * step)]

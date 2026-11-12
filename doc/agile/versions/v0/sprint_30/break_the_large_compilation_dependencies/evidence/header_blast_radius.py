@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from fnmatch import fnmatch
 import os
 import re
 import subprocess
@@ -385,6 +386,51 @@ def cut_table(cuts, edges, object_deps, root: Path):
     return rows
 
 
+def cut_set_table(specs, edges, object_deps, root: Path):
+    """Objects that stop reading a header when a whole set of files drops it.
+
+    A single edge rarely closes a door: one generated header family can be
+    thousands of files, and the objects that read the header through any of them
+    stop only when all of them drop it. The spec is ``header:glob``, where the
+    glob selects the includers to cut, matched against the path under
+    ``projects/``.
+    """
+    resolved = {}
+    for base in include_roots(root):
+        for path in base.rglob("*"):
+            if path.is_file():
+                resolved.setdefault(str(path)[len(str(base)) + 1:], path)
+
+    rows = []
+    for spec in specs:
+        header_name, _, pattern = spec.partition(":")
+        included = resolved.get(header_name)
+        if included is None:
+            rows.append((spec, None, None, None, 0))
+            continue
+        matching = {source for source in edges
+                    if fnmatch(str(source), f"*/{pattern}")
+                    or fnmatch(str(source), pattern)}
+        reduced = {}
+        for source, targets in edges.items():
+            if source in matching:
+                reduced[source] = {child for child in targets
+                                   if child != included}
+            else:
+                reduced[source] = targets
+        before = after = 0
+        for obj, sources in object_deps.items():
+            roots = [Path(s) for s in sources]
+            if not roots:
+                continue
+            if str(included) in reachable(roots, edges):
+                before += 1
+            if str(included) in reachable(roots, reduced):
+                after += 1
+        rows.append((spec, before, after, before - after, len(matching)))
+    return rows
+
+
 def rel(path, root: Path) -> str:
     text = str(path)
     return text[len(str(root)) + 1:] if text.startswith(str(root)) else text
@@ -412,6 +458,10 @@ def main() -> int:
                         metavar="INCLUDER:INCLUDED",
                         help="report the objects that stop reading INCLUDED "
                              "when INCLUDER stops including it")
+    parser.add_argument("--cut-set", action="append", default=None,
+                        metavar="INCLUDED:GLOB",
+                        help="report the objects that stop reading INCLUDED "
+                             "when every file matching GLOB drops it")
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[7]
@@ -540,6 +590,18 @@ def main() -> int:
         for source, targets in edges.items():
             for target in targets:
                 source_includes[str(target)].add(str(source))
+
+        if args.cut_set:
+            print("== cutting a set of include edges: objects that still read "
+                  "the header")
+            print(f"{'before':>7} {'after':>6} {'saved':>6} {'files':>6}  set")
+            for spec, before, after, saved, matched in cut_set_table(
+                    args.cut_set, edges, object_deps, root):
+                if before is None:
+                    print(f"{'?':>7} {'?':>6} {'?':>6} {matched:>6}  {spec}")
+                    continue
+                print(f"{before:>7} {after:>6} {saved:>6} {matched:>6}  {spec}")
+            print()
 
         if args.cut:
             print("== cutting one include edge: objects that stop reading the "

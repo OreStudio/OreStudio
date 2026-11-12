@@ -92,8 +92,13 @@ The two false starts and their fixes are recorded in the investigation's
 | Objects saved by cutting =context.hpp= → =pq/transaction.hpp= | 147 of 321 | =header_blast_radius.py --cut= | =27cad5a0c6= |
 | Objects saved by cutting =json_codec.hpp= → =text_form.hpp= | 183 of 498 | =header_blast_radius.py --cut= | =27cad5a0c6= |
 | Objects saved by cutting =text_form.hpp= → =decimal.hpp= | 219 of 654 | =header_blast_radius.py --cut= | =27cad5a0c6= |
-| =context= usages, syntactic | 471 only named, 4021 in full | =type_usage.py= | =27cad5a0c6= |
-| =context= forward declaration, verified | 0 of 10 sampled includers compile | =type_usage.py --verify= | =27cad5a0c6= |
+| =context= usage patterns | 1172 alias, 1054 named, 3570 by-value parameter, 1305 member, 420 construction (files; a file can match several) | =type_usage.py= | =27cad5a0c6= |
+| =context= by-value parameters | 21874 across the tree, 11141 in generated headers | =grep -rn "context ctx[,)]"= | =27cad5a0c6= |
+| =context= includers grouped by need | 472 only name it, 2268 need only a by-value parameter, 1752 need the definition | =type_usage.py= | =27cad5a0c6= |
+| =context= with every repository header cut | 321 objects before, 320 after | =header_blast_radius.py --cut-set= | =27cad5a0c6= |
+| =context= with every service header cut | 321 before, 301 after | =header_blast_radius.py --cut-set= | =27cad5a0c6= |
+| =context= with every header cut | 321 before, 179 after | =header_blast_radius.py --cut-set= | =27cad5a0c6= |
+| Lifetime-sensitive captures of a context | 1, synchronous (=feed_kind_registry.cpp:492=); 0 by value, 0 reference members | =grep= | =27cad5a0c6= |
 
 The full tables are in
 [[id:AF6C4DA7-903E-4848-8807-73EA4E49E9CA][Investigation: The headers that couple the build]].
@@ -136,12 +141,20 @@ What it found:
 - One unused include in =tenant_id.hpp= costs 0.69 s on 837 objects and needs
   no design decision.
 - No cycles and no cross-component detail includes, so no decision is blocked.
-- Rebuild radius and parse cost are different measures, and the forward
+- Rebuild radius and parse cost are different measures. The forward
   declarations the story asked for reach only the types held by pointer or
-  reference. For =context= that is zero verified includers; the saving is inside
-  =context.hpp=, where cutting =pq/pool.hpp= and =pq/transaction.hpp= takes 147
-  objects off each. The type-level decisions, with the per-type counts and the
-  objects each cut saves, are in the investigation's * Rebuild blast radius.
+  reference.
+- The copies are systemic and come from the codegen templates: 11141 of 21874
+  by-value =context= parameters. Changing them to =const&= is worth doing for run
+  time, with one synchronous reference capture to re-check, but it does not
+  shorten rebuilds: cutting the include from all 1738 repository headers saves
+  one object.
+- =context.hpp='s radius is structural. Cutting every header in the tree still
+  leaves 179 of 365 objects reading it, because the =.cpp= files that construct
+  a context need the definition. The only change that moves the radius is the
+  split of the type, which needs its own task.
+- The decisions, the pattern table and the objects each cut saves are in the
+  investigation's * Rebuild blast radius and * Order of work.
 
 The decisions and the order of work are in the investigation's * Decisions and
 * Order of work, in two lists because the story has two objectives. For rebuild

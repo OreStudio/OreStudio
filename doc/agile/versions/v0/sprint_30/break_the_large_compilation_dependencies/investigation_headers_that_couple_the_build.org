@@ -176,37 +176,74 @@ upstream can be cut: its 365 objects are its own readers. That is why forward
 declarations in the *users* of =context.hpp= cannot help, and why the useful
 work is inside =context.hpp= itself.
 
-** Per type, for the database family
+** The usage patterns of =context=
 
-=evidence/type_usage.py= lists the types a header defines at namespace scope,
-then classifies every use in every direct includer as *only named* (a reference,
-a pointer, a smart-pointer member) or *in full* (a value member, a value
-parameter, a construction, a template argument). The counts are syntactic, so
-they are a candidate list, and the next step settles them.
+=context= is the type the story is about, so the patterns are worth counting in
+full. 4497 files include its header. Across the tree there are 21874 by-value
+=context= parameters, of which 11141 sit in generated headers: the =repository=
+template emits =void write(context ctx, ...)= for every method of every entity,
+and the =service= template emits =explicit service(context ctx)= plus a member.
 
-| Header | Type | Only named | In full |
-|--------|------|-----------:|--------:|
-| =domain/context.hpp= | =context= | 471 | 4021 |
-| =pq/connection.hpp= | =connection_options= | 1 | 5 |
-| =pq/connection.hpp= | =connection= | 1 | 4 |
-| =pq/connection.hpp= | =result= | 1 | 2 |
-| =pq/pool.hpp= | =pool= | 1 | 3 |
-| =pq/pool.hpp= | =open_policy= | 0 | 2 |
-| =pq/transaction.hpp= | =transaction= | 1 | 5 |
-| =pq/transaction.hpp= | =session_context= | 1 | 2 |
+| Pattern | Files | Occurrences | What it means |
+|---------|------:|------------:|---------------|
+| =using context = ores::database::context;= | 1172 | 1172 | a type alias: names the type and needs no definition |
+| reference or pointer | 1054 | - | forward-declarable today |
+| by-value parameter | 3570 | 21874 | a copy per call; a =const&= removes the copy |
+| member by value (=ctx_=) | 1305 | 1305 | stored for the service's lifetime |
+| construction | 420 | 420 | =context(options, tenant, ...)= in an application or handler |
 
-=context= is not a forward-declaration candidate for its users, and the check
-proves it. Ten sampled includers that the scan called *only named* were compiled
-with =context.hpp= replaced by a forward declaration of =context= that kept every
-include the header has: *0 of 10 compiled*. The definition is needed
-transitively, because the service headers those units include hold
-=context ctx_= by value. The syntactic count of 471 is an upper bound that the
-compiler rejects.
+A file can match several patterns. Grouping the 4497 by what the file needs:
+472 only name the type, 2268 need only a by-value parameter, and 1752 need the
+definition for a member, a construction or both.
 
-The =pq= types are different. One file names each of them without using it in
-full, and inside =context.hpp= they are held as =unique_ptr<pq::pool>=, a
-=pq::transaction*>= and by-value-in-declaration returns. Those are the cases a
-forward declaration and a pointer to an incomplete type actually reach.
+So the answer to "why so many copies" is the codegen templates, not hand-written
+code: 11141 of the 21874 parameters come from =repository= and =service=
+archetypes. The pattern is systemic, and so is any fix.
+
+** Can a reference or a pointer improve it?
+
+Per pattern, on the two axes that matter: does the call get cheaper, and does
+the rebuild radius fall.
+
+| Pattern | A =const context&= | Verdict |
+|---------|---------------------|---------|
+| by-value parameter in a synchronous call | removes a copy; the reference lives for the call | *Do it.* Strictly better, no lifetime risk. |
+| by-value parameter in a header | lets the header drop the include | *Does not help rebuilds*: see the ceiling below |
+| member =context ctx_= | a reference member dangles as soon as the service outlives its caller; a =shared_ptr= adds an allocation, nullability and an ownership story to a type that is copied today | *Keep the copy.* A copy costs a few small strings and one atomic increment on the shared pool slot, which is nothing beside a database round trip. |
+| construction | the caller builds the object and needs the definition | *Keep.* |
+| type alias | needs no definition already | *No change.* |
+
+The lifetime risk is currently absent, and it must stay that way. No header
+stores a =context&; no lambda captures a context at all. There is exactly one
+reference capture in the tree,
+=projects/ores.synthetic/service/src/feed_kind_registry.cpp:492=, and it is a
+=std::ranges::all_of= inside a synchronous function, so the reference cannot
+outlive the call. That file is the list to re-check when a copy becomes a
+reference, because a compile does not find a dangling reference.
+
+** The ceiling on cutting headers
+
+If 2268 includers could drop the include, the rebuild radius should fall. It does
+not, and this is the measurement that settles the story's premise. Cut the
+include from every file that matches a pattern, recompute the reach from each
+object's own sources:
+
+| Cut | Objects reading =context.hpp= | Saved | Files cut |
+|-----|------------------------------:|------:|----------:|
+| all 1738 repository headers | 320 of 321 | 1 | 1738 |
+| all 1357 service headers | 301 | 20 | 1357 |
+| every header in the tree | 179 | 142 | 8687 |
+
+Cutting the include from all 1738 repository headers saves *one* object. The
+reason is the shape of the dependency, not the count: an object is a unity unit
+compiling up to sixteen sources, and if any one of them, or any header it
+includes, needs the definition, the object depends on =context.hpp=. Every
+service =.cpp= constructs or holds a context, so no header-level cut reaches it.
+
+Even cutting every header in the tree leaves 179 of 365 objects reading the
+header: those are the =.cpp= files that build a context or store one. The type's
+blast radius is structural. It is not a header-hygiene problem, and no amount of
+forward declaration fixes it.
 
 ** What cutting one edge saves
 
@@ -433,7 +470,9 @@ the 638 outputs.
 | =ores.logging/make_logger.hpp= | *Split*: hold the logger behind a small handle, so the typedef does not need Boost.Log's sources | One typedef pulls 3.58 s into 565 objects. The call sites already go through a macro. |
 | =ores.utility/uuid/tenant_id.hpp= | *Move*: drop the unused =<boost/uuid/string_generator.hpp>= include | Nothing in the header uses it; the =.cpp= already includes it itself. Measured saving 0.69 s on 837 objects. |
 | =ores.utility/serialization/error_code.hpp= | *Move* the two inline functions that call =magic_enum= into the =.cpp= | =operator<<= and =to_string= are the only users. Removing the include alone does not compile, which the A/B run proved: the fix is to move the code, not the line. |
-| =ores.database/domain/context.hpp=, type =context= | *Keep* the type complete for its users; the declaration reaches none of them | 4021 of 4492 includers use it in full and 0 of 10 sampled "only named" includers compiled without the definition, because the service headers they include hold =context ctx_= by value. A =const context&= parameter changes copies, not include edges, so it does not reduce rebuilds. |
+| =ores.database/domain/context.hpp=, type =context=, by-value parameters | *Change* to =const context&= in the codegen templates first, then the hand-written code | 21874 copies of a type that is only read, 11141 of them emitted by the =repository= and =service= archetypes. Strictly better at run time and free of lifetime risk while the call is synchronous. It does not reduce rebuilds: see the ceiling. |
+| =ores.database/domain/context.hpp=, type =context=, member =ctx_= | *Keep* by value | A reference member dangles when the service outlives its caller, and a pointer adds ownership and nullability to a type that costs a few strings and one atomic increment to copy. |
+| =ores.database/domain/context.hpp=, the type itself | *Split*, in its own task | This is the only change that moves the header's own radius. The connection and pool part changes rarely; the per-request identity part is what 1305 services store. |
 | =ores.database/domain/context.hpp=, its includes | *Forward-declare* =pq::pool=, =pq::transaction= and =pq::session_context=; *move* =connection_options= and =open_policy= to a small header without libpq; *hide* =pq_slot= behind a pointer to an incomplete type defined in the =.cpp= | This is where the rebuild saving is: cutting =pq/pool.hpp= and =pq/transaction.hpp= from this one header takes 147 objects each off their blast radius. =pq/connection.hpp= moves only together with =pq/pool.hpp= and =pq/statement.hpp=, because each of those reaches it. |
 | =ores.database/pq/connection.hpp=, type =connection_options= | *Move* to the small options header | It has no libpq dependency of its own: =<string>=, =<cstdint>=, =<chrono>=. Held by value in =context=, so the type must stay complete, but not the =PGconn= half. |
 | =ores.database/pq/connection.hpp=, types =connection=, =result= | *Keep*; forward-declare where only named | Each has one includer that only names it, and both need libpq to name =PGconn=, so they stay in this header. |
@@ -449,18 +488,18 @@ the 638 outputs.
 * Order of work
 
 Two objectives, two orders. The story's goal is rebuild cycles, so the
-blast-radius cuts come first and the parse-cost work follows. The two overlap in
-the codec chain, which is why steps 5 and 6 appear in both lists.
+blast-radius work comes first and the parse-cost work follows. They overlap in
+the codec chain, which is why the codec change appears in both.
 
 ** For rebuild cycles
 
-Ordered by the objects that stop rebuilding, and grouped so each group closes a
-door that a single cut cannot close:
+Ordered by the objects that stop rebuilding, largest first, and grouped so each
+group closes a door that one cut cannot close:
 
 1. =context.hpp= stops including =pq/pool.hpp= and =pq/transaction.hpp=, and
-   takes =connection_options= and =open_policy= from a new small header: 147
-   objects each off the =pq= family's blast radius, and libpq, =<mutex>= and
-   =<condition_variable>= out of 365 objects' dependency records.
+   takes =connection_options= and =open_policy= from a new small header without
+   libpq: 147 objects each off the =pq= family's blast radius, and libpq,
+   =<mutex>= and =<condition_variable>= out of 365 objects' dependency records.
 2. =pq/pool.hpp= and =pq/statement.hpp= stop reaching =pq/connection.hpp=, or
    =connection_options= moves out of it, so the cut in step 1 is not undone by
    the other path.
@@ -468,27 +507,38 @@ door that a single cut cannot close:
    183 objects off =text_form.hpp=.
 4. =text_form.hpp= stops including =decimal.hpp=: 219 objects off
    =decimal.hpp=.
+5. Split =context= into the connection part and the per-request part, and give
+   the 1305 services the per-request part only. This is the only step that moves
+   =context.hpp='s own radius, and it needs its own task and its own design: it
+   changes what a service stores, and it must keep =with_tenant=, =with_party=,
+   =with_roles= and =with_transaction= returning complete copies.
+
+Step 5 is not a header change and must not be dressed as one. The measurement is
+blunt about it: cutting every header in the tree still leaves 179 of 365 objects
+reading =context.hpp=.
 
 ** For parse cost
 
-5. =text_form.hpp=: move the text-form definitions into a =.cpp=. This is the
-   same change as step 3 and 4, seen from the other side: 3568 object-seconds
+6. =text_form.hpp=: move the text-form definitions into a =.cpp=. This is the
+   same change as steps 3 and 4 seen from the other side: 3568 object-seconds
    and the drag on =decimal.hpp= at once.
-6. =protocol_codec.hpp= and =json_codec.hpp=: declare only what they must, once
+7. =protocol_codec.hpp= and =json_codec.hpp=: declare only what they must, once
    the forms are out of line.
-7. =tenant_id.hpp=: delete the unused include. 0.69 s on 837 objects, no design
+8. =tenant_id.hpp=: delete the unused include. 0.69 s on 837 objects, no design
    change, so it rides in the same PR as anything else.
-8. =error_code.hpp=: move the two =magic_enum= users to the =.cpp=.
-9. =make_logger.hpp=: split the logger handle. This needs its own task, because
-   it changes every call site.
-10. =decimal.hpp=: only after its own measurement of the pointer-indirection
+9. =error_code.hpp=: move the two =magic_enum= users to the =.cpp=.
+10. =make_logger.hpp=: split the logger handle. This needs its own task, because
+    it changes every call site.
+11. =decimal.hpp=: only after its own measurement of the pointer-indirection
     cost. The exactness is a domain requirement, so this is a trade-off and not
     a clean win.
 
-Steps 1 and 2 belong to [[id:908E710A-C9A3-433E-AC93-92B67FB76B6C][Pass the database context by reference behind a
-forward declaration]], which must be re-scoped: the reference change and the
-forward declarations of =context= in its users buy run time and correctness of
-ownership, not rebuild cycles. Steps 3 and 4 belong to
+Steps 1, 2 and 5 belong to [[id:908E710A-C9A3-433E-AC93-92B67FB76B6C][Pass the database context by reference behind a
+forward declaration]], which must be re-scoped. Its reference change is worth
+doing for run time: 21874 copies disappear, and the only reference capture in
+the tree is synchronous. Its forward declarations in the users of =context= buy
+nothing for rebuilds, and its acceptance should say so instead of promising
+them. Steps 3 and 4 belong to
 [[id:DEA440DD-F4B6-4D37-9083-5F3BB33F1018][Forward-declare what the analysis finds]].
 
 * Paths taken
@@ -531,8 +581,14 @@ ownership, not rebuild cycles. Steps 3 and 4 belong to
   logging chain opened by =make_logger.hpp=.
 - Rebuild radius and parse cost are separate, and the story's lever is the
   first. Forward declarations reach the types that are held by pointer or
-  reference and nothing else: for =context= itself the count is zero, because
-  its users hold it by value. A constant reference changes no include edge.
+  reference and nothing else.
+- The copies are real and systemic: 21874 by-value =context= parameters, 11141
+  of them from two codegen templates. The copy is cheap, so this is a run-time
+  tidy-up and not a rebuild fix.
+- =context.hpp='s radius is structural. Cutting the include from all 1738
+  repository headers saves one object; cutting every header in the tree still
+  leaves 179 of 365 objects reading it, because the =.cpp= files that build a
+  context need the definition whatever the headers do.
 - The story is right about the rebuild fix and wrong about the parse cost.
   libpq costs 0.04 s to parse, yet it sits under 375 objects. Keeping it out of
   =context.hpp= is a blast-radius fix worth 147 to 375 objects; it is not a parse

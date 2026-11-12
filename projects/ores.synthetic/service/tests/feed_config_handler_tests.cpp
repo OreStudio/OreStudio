@@ -466,12 +466,16 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id",
     CHECK_FALSE(fx_run->start->from_fixing);
     CHECK(fx_run->start->item.empty());
     CHECK(fx_run->start->value == "1.08");
-    // A curve starts from no published value, so its run carries no start.
+    // The curve's config states a fixed price, so its run kept its initial rate and states the
+    // level it kept, as the FX run does.
     const auto ir_run = std::ranges::find_if(list.running_feeds, [&](const auto& one) {
         return one.source_name == seeds.ir_enabled_source;
     });
     REQUIRE(ir_run != list.running_feeds.end());
-    CHECK_FALSE(ir_run->start.has_value());
+    REQUIRE(ir_run->start.has_value());
+    CHECK_FALSE(ir_run->start->from_fixing);
+    CHECK(ir_run->start->item.empty());
+    CHECK(ir_run->start->value == "0.025");
 
     // Stop the IR feed by config_id: the server resolves it to the
     // config's source_name.

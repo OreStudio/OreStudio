@@ -846,8 +846,8 @@ ores::marketdata::datum::market_reference commodity_address_of(const std::string
  * its constructor until the projection writes it; the builders task deletes
  * that path when the last type moves.
  */
-std::optional<ores::marketdata::datum::market_reference>
-funding_index_in(const domain::trade_generation_scope& scope, const std::string& currency);
+std::optional<swap_choice> funding_index_in(const domain::trade_generation_scope& scope,
+                                            const std::string& currency);
 
 std::optional<ores::trading::domain::instrument_batch>
 built_commodity_trade(const domain::trade_generation_scope& scope,
@@ -1153,7 +1153,7 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                          conventions,
                          {.basket = std::move(basket),
                           .observation_dates = std::move(observations),
-                          .funding_index = *funding,
+                          .funding_index = funding->index,
                           .currency = currency,
                           .quantity = quantity,
                           .fixed_rate = money(0.03 + 0.04 * draw(name, 14)),

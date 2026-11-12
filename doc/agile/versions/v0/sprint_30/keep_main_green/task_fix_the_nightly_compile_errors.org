@@ -56,10 +56,10 @@ The nightly run 43163241266 (Linux), 43190100783 (macOS) and 43178285478
 4. clang-cl: =std::getenv= is deprecated. =application.cpp= now reads the
    site environment through =ores::platform::environment=.
 
-Each job stops at its first failing file, so more errors can follow. Until the
-three builds are clean, the gcc, macOS and Windows nightlies pass
-=warnings_as_errors=0=, which sets the new =ORES_WARNINGS_AS_ERRORS= option
-off. Linux clang keeps warnings as errors.
+Each job stops at its first failing file, so more errors can follow. The new
+=ORES_WARNINGS_AS_ERRORS= option sets =-Werror= and =/WX=. It is off on every
+build until all platforms build clean of warnings; then it goes back on.
+A CTest script can still set it with =warnings_as_errors=1=.
 
 * Measurements
 

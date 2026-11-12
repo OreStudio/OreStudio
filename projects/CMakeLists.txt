@@ -54,9 +54,9 @@ endif()
 # The designated-initializer variant is Clang's alone, hence the
 # separate guard.
 #
-# ORES_WARNINGS_AS_ERRORS turns -Werror and /WX off. The nightly builds on
-# compilers that the continuous build does not use set it off, so a warning
-# there still reaches CDash as a warning and the tests still run.
+# ORES_WARNINGS_AS_ERRORS sets -Werror and /WX. It is off until every
+# platform builds clean of warnings, so a warning reaches CDash as a warning
+# and the tests still run.
 add_compile_options(
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall>
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wextra>

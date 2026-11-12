@@ -299,9 +299,14 @@ if(USE_MEMCHECK)
     set(cmake_args ${cmake_args} "-DWITH_MEMCHECK=ON")
 endif()
 
-# warnings_as_errors=0 builds with warnings left as warnings.
-if(DEFINED warnings_as_errors AND NOT warnings_as_errors)
-    set(cmake_args ${cmake_args} "-DORES_WARNINGS_AS_ERRORS=OFF")
+# warnings_as_errors=1 or 0 sets ORES_WARNINGS_AS_ERRORS; without it the
+# project default applies.
+if(DEFINED warnings_as_errors)
+    if(warnings_as_errors)
+        set(cmake_args ${cmake_args} "-DORES_WARNINGS_AS_ERRORS=ON")
+    else()
+        set(cmake_args ${cmake_args} "-DORES_WARNINGS_AS_ERRORS=OFF")
+    endif()
 endif()
 
 # Hosted Linux Debug builds can exhaust disk while linking full DWARF into

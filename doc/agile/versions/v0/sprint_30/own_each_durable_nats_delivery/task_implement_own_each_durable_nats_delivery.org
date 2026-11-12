@@ -108,7 +108,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Shutdown may wait the drain budget for open deliveries | client.cpp | Accepted | The leak log names how many deliveries were still open. The budget stays: a shorter one would free memory a delivery still answers through. |
+| 2 | =on_tick= that waits on the settling thread deadlocks | delivery.hpp | Accepted | The =keep_alive= doc states the rule. |
+| 3 | The renew tick refers to the client | delivery.hpp | Accepted | The =keep_alive= doc states the lifetime chain. |
+| 4 | =msg= refers into a moved delivery | step_command_stream.hpp | Accepted | The subject is copied once at the top and read after the move. |
+| 5 | =rollback_after= repeats =settle= | delivery.cpp | Accepted | =settle= takes the answer as a callable; every settlement uses it. |
+| 6 | A thrown step handler naks at once | step_command_stream.hpp | Declined | A throw costs one delivery from the budget, and the redelivery takes the busy path with its hold-off. |
 
 * Result
 

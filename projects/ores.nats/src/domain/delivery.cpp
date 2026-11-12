@@ -27,12 +27,19 @@ struct delivery::keeper {
     ores::platform::concurrency::jthread thread;
 };
 
+template <typename Answer>
+void delivery::settle(Answer answer) noexcept {
+    stop_keep_alive();
+    if (auto settler = std::move(settler_))
+        answer(*settler);
+}
+
 delivery::delivery(message msg, std::unique_ptr<delivery_settler> settler)
     : msg_(std::move(msg))
     , settler_(std::move(settler)) {}
 
 delivery::~delivery() {
-    settle(&delivery_settler::nak);
+    settle([](delivery_settler& s) { s.nak(); });
 }
 
 delivery::delivery(delivery&& other) noexcept
@@ -42,7 +49,7 @@ delivery::delivery(delivery&& other) noexcept
 
 delivery& delivery::operator=(delivery&& other) noexcept {
     if (this != &other) {
-        settle(&delivery_settler::nak);
+        settle([](delivery_settler& s) { s.nak(); });
         msg_ = std::move(other.msg_);
         settler_ = std::move(other.settler_);
         keeper_ = std::move(other.keeper_);
@@ -51,21 +58,19 @@ delivery& delivery::operator=(delivery&& other) noexcept {
 }
 
 void delivery::commit() && noexcept {
-    settle(&delivery_settler::ack);
+    settle([](delivery_settler& s) { s.ack(); });
 }
 
 void delivery::rollback() && noexcept {
-    settle(&delivery_settler::nak);
+    settle([](delivery_settler& s) { s.nak(); });
 }
 
 void delivery::rollback_after(std::chrono::milliseconds delay) && noexcept {
-    stop_keep_alive();
-    if (auto settler = std::move(settler_))
-        settler->nak_after(delay);
+    settle([delay](delivery_settler& s) { s.nak_after(delay); });
 }
 
 void delivery::reject() && noexcept {
-    settle(&delivery_settler::term);
+    settle([](delivery_settler& s) { s.term(); });
 }
 
 void delivery::keep_alive(std::chrono::milliseconds interval, std::function<bool()> on_tick) {
@@ -84,12 +89,6 @@ void delivery::keep_alive(std::chrono::milliseconds interval, std::function<bool
                     return;
             }
         });
-}
-
-void delivery::settle(void (delivery_settler::*answer)() noexcept) noexcept {
-    stop_keep_alive();
-    if (auto settler = std::move(settler_))
-        ((*settler).*answer)();
 }
 
 void delivery::stop_keep_alive() noexcept {

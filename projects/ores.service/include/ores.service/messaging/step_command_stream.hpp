@@ -278,8 +278,11 @@ private:
         service_name,
         [by_subject, &nats, claim_owner](ores::nats::delivery delivery) {
             const auto& msg = delivery.msg();
+            // A copy, because msg refers into the delivery, which the handler
+            // takes below.
+            const std::string served = msg.subject;
             for (const auto& [subject, handler] : *by_subject) {
-                if (msg.subject != subject)
+                if (served != subject)
                     continue;
 
                 /*
@@ -390,7 +393,6 @@ private:
                 }
 
                 const auto started = std::chrono::steady_clock::now();
-                const auto served = msg.subject;
                 const auto ran_for = [&started] {
                     return std::chrono::duration<double>(std::chrono::steady_clock::now() - started)
                         .count();
@@ -423,7 +425,7 @@ private:
             // nothing can ever serve it and the server would otherwise
             // redeliver it until the bound.
             BOOST_LOG_SEV(detail::lg(), error)
-                << "No step-command handler for delivered subject " << msg.subject;
+                << "No step-command handler for delivered subject " << served;
             std::move(delivery).reject();
         },
         stream,

@@ -121,11 +121,18 @@ public:
      * the reports, which lets the server redeliver once its ack wait passes.
      * The thread ends before the delivery is settled or dropped, so no tick
      * touches a delivery that is gone. Calling it again replaces the reports.
+     *
+     * Settling joins the thread, so @p on_tick must never wait on the thread
+     * that settles the delivery, nor settle the delivery itself. Whatever
+     * @p on_tick refers to, such as the client it renews a claim through, must
+     * outlive the delivery; the client outlives its subscriptions, and a
+     * subscription outlives its open deliveries.
      */
     void keep_alive(std::chrono::milliseconds interval, std::function<bool()> on_tick);
 
 private:
-    void settle(void (delivery_settler::*answer)() noexcept) noexcept;
+    template <typename Answer>
+    void settle(Answer answer) noexcept;
     void stop_keep_alive() noexcept;
 
     struct keeper;

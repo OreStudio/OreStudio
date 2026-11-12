@@ -89,9 +89,11 @@ public:
             none_.notify_all();
     }
 
-    [[nodiscard]] bool wait_until_none(std::chrono::milliseconds budget) {
+    /// @return the deliveries still open when the budget ran out, or zero.
+    [[nodiscard]] std::size_t wait_until_none(std::chrono::milliseconds budget) {
         std::unique_lock lock(mutex_);
-        return none_.wait_for(lock, budget, [this] { return count_ == 0; });
+        none_.wait_for(lock, budget, [this] { return count_ == 0; });
+        return count_;
     }
 
 private:
@@ -514,11 +516,13 @@ static void drain_and_release(subscription::impl* impl) noexcept {
     // through the subscription, so the subscription waits for it.
     const auto open = impl->closure->open;
     impl->closure.reset();
-    if (!open->wait_until_none(std::chrono::milliseconds(drain_budget_ms))) {
+    if (const auto still_open = open->wait_until_none(std::chrono::milliseconds(drain_budget_ms));
+        still_open != 0) {
         try {
             BOOST_LOG_SEV(lg(), error)
-                << "A NATS delivery was still open when its subscription ended; leaking the "
-                   "subscription rather than freeing memory the delivery answers through.";
+                << still_open
+                << " NATS deliveries were still open when their subscription ended; leaking the "
+                   "subscription rather than freeing memory the deliveries answer through.";
         } catch (...) {
             // Boost.Log may already be torn down on a NATS internal thread.
         }

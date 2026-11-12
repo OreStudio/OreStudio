@@ -657,6 +657,7 @@ named with the adapter that reads it.
 - --source bcb-cdi:bcb:bcb_sgs:4389
 - --source banxico-tiie-fondeo:banxico:banxico_sie:SF331451
 - --source bcch-camara:bcch:bcch_bde:F022.TIB.TIP.D001.NO.Z.D
+- --source cnb-czeonia:cnb:cnb_czeonia:CZEONIA
 
 * ores.compute.wrapper
 :PROPERTIES:

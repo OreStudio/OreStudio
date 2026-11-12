@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-the-cnb-adapter
+#+pr: 4646
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-10
-#+updated: 2026-11-10
+#+updated: 2026-11-12
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,18 +20,18 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-CZEONIA is stored as fixings in the system tenant, with its history, read from the Czech National Bank through the ARAD API, with a free key. The adapter is specialised: it reads the Czech National Bank alone, and it supplies only its fetcher to the shared half of the official adapter.
+CZEONIA is stored as fixings in the system tenant, with its history, read from the yearly files the Czech National Bank publishes, which need no key. CZEONIA is not in the ARAD API. The adapter is specialised: it reads the Czech National Bank alone, and it supplies only its fetcher to the shared half of the official adapter.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
-| Waiting on   | A person registers a Czech National Bank ARAD API key; the key goes to the credential store. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-10                               |
+| Now          | Implemented and verified.              |
+| Waiting on   | Nothing.                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-11-12                             |
 
 * Acceptance
 
@@ -60,7 +60,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| CZEONIA fixings stored on a fresh environment | 273, from 2025-10-08 to 2026-11-11, values 0.0251 to 0.0381 | count over =ores_marketdata_market_fixings_tbl= joined to its series | 9eccf06e07 |
+| Time from service start to the fixings sent | about 1.7 minutes (08:52:14 to 08:53:58) | =ores.marketdata.official= log: "Sent 273 fixing(s) of 'cnb-czeonia'" | 9eccf06e07 |
+| History the route serves | from 2002-01-02, one file a year; 252 rates in 2002 | GET of the 2002 file | 2026-11-12 |
+| ores.marketdata.official.tests | 113 cases pass, 6 of them new | =ores.marketdata.official.tests= | 9eccf06e07 |
+| Catalogue pgTAP suite | 5 of 5 pass | =run_tests.sh marketdata_overnight_rates_catalogue_test.sql= | 9eccf06e07 |
 
 * Notes
 
@@ -81,12 +85,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4646][#4646]] | [marketdata] Add the Czech National Bank adapter |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The error counts rows from the first data line | cnb.cpp | Declined | The count is of data rows, as the message says. |
+| 2 | One malformed year fails the whole window | cnb.cpp | Declined | Calibration data takes no partial history; the read is tried again on the next poll. |
+| 3 | Years are read one after another, and a year before 2002 is not checked | cnb.cpp | Declined | A first demand reads 400 days, two files; a year the bank does not hold answers empty, which is no fixing. |
+| 4 | from after to returns no fixing | cnb.cpp | Declined | The shared adapter never asks for an empty window; an empty answer is safe. |
+| 5 | Extra cells are ignored | cnb.cpp | Declined | Tolerating an added column is intended. |
+| 6 | Record a real file as a fixture | domain_cnb_tests.cpp | Already done | The fixtures are lines of the 2026, 2025 and 2027 files as the bank sent them on 2026-11-12. |
 
 * Result
+
+The adapter reads CZEONIA from the yearly text files the Czech National Bank
+publishes, one request a calendar year, with no key. CZEONIA is not in the
+ARAD API, so the key the owner registered is not needed for it. The fetcher
+supplies only its parse and its requests to the shared official adapter. The
+bank is a supplier in the catalogue, its series maps to the CZK-CZEONIA item,
+and a session and a feed scoped to that item are seeded in the system tenant.
+
+On a fresh environment the service sent 273 fixings about 1.7 minutes after
+it started. Each is the decimal of the published percent, with the credit
+Source: CNB. The files reach back to 2002-01-02; the calibration sources note
+records the route and its depth. Unit tests parse recorded files and refuse a
+malformed one. The system and Acme provisioned to completion.
+

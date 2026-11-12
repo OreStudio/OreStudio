@@ -26,6 +26,7 @@
 #include "ores.marketdata.official/domain/boc.hpp"
 #include "ores.marketdata.official/domain/boe.hpp"
 #include "ores.marketdata.official/domain/boj.hpp"
+#include "ores.marketdata.official/domain/cnb.hpp"
 #include "ores.marketdata.official/domain/ecb.hpp"
 #include "ores.marketdata.official/domain/frankfurter.hpp"
 #include "ores.marketdata.official/domain/norges_bank.hpp"
@@ -68,6 +69,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << "BCB         : " << cfg.bcb_url;
     BOOST_LOG_SEV(lg(), info) << "Banxico     : " << cfg.banxico_url;
     BOOST_LOG_SEV(lg(), info) << "BCCh        : " << cfg.bcch_url;
+    BOOST_LOG_SEV(lg(), info) << "CNB         : " << cfg.cnb_url;
     BOOST_LOG_SEV(lg(), info) << "Sources     : " << cfg.sources.size();
     BOOST_LOG_SEV(lg(), info) << "Backfill    : " << cfg.backfill_days << " days";
     BOOST_LOG_SEV(lg(), info) << "Poll        : every " << cfg.poll_minutes << " minutes";
@@ -105,6 +107,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         return domain::bcch_account{std::move(*user), std::move(*password)};
     };
     domain::bcch_fetcher bcch(transport, cfg.bcch_url, bcch_account());
+    domain::cnb_fetcher cnb(transport, cfg.cnb_url);
     adapter_timing timing;
     timing.poll_interval = std::chrono::minutes(cfg.poll_minutes);
     official_adapter adapter(nats,
@@ -120,7 +123,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                               &rba,
                               &bcb,
                               &banxico,
-                              &bcch},
+                              &bcch,
+                              &cnb},
                              static_cast<int>(cfg.backfill_days),
                              timing);
 

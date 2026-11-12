@@ -8,7 +8,7 @@
 #+filetags: :database:data_path:clean_up:data_model_clean_up:sprint_30:v0:
 #+owner: marco
 #+branch: feature/retire-the-raw-query-helpers
-#+pr:
+#+pr: 4633
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4633][#4633]] | [database] Retire the raw query helpers |
 
 * Review
 

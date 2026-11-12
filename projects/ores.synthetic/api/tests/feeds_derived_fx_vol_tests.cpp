@@ -513,6 +513,23 @@ TEST_CASE("a_feed_given_a_pair_limit_keeps_one_pair_a_call", derived_tags) {
     CHECK(feed.persist(day, 1) == 0);
 }
 
+TEST_CASE("a_demand_that_replaces_one_not_yet_taken_keeps_both_images", derived_tags) {
+    ores::marketdata::messaging::adapter_demand_request earlier;
+    earlier.ids = {{"derived", "first", "rate"}};
+    earlier.image = {{"derived", "first", "rate"}};
+    ores::marketdata::messaging::adapter_demand_request later;
+    later.ids = {{"derived", "first", "rate"}, {"derived", "second", "rate"}};
+    later.image = {{"derived", "second", "rate"}};
+
+    const auto held = coalesce_demands(earlier, later);
+
+    CHECK(held.ids.size() == 2u);
+    std::set<std::string> imaged;
+    for (const auto& id : held.image)
+        imaged.insert(id.external_id);
+    CHECK(imaged == std::set<std::string>{"first", "second"});
+}
+
 TEST_CASE("a_feed_with_no_store_keeps_nothing", derived_tags) {
     const auto fixings = derived_fixings(200, 31);
     derived_fx_vol_feed feed("derived-fx-vol", "derived", derived_readers_of(fixings));

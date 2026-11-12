@@ -155,6 +155,17 @@ private:
     std::map<std::string, std::pair<std::string, std::set<std::chrono::year_month_day>>> kept_;
 };
 
+/**
+ * @brief The demand a source holds when @p later arrives before it took @p earlier.
+ *
+ * The later demand states the ids, since each demand states them all. Its image does
+ * not: an id is named for an image only in the demand where a party first needs it, so
+ * the images of both are kept, or a party subscribing in a burst never gets its value.
+ */
+[[nodiscard]] ORES_SYNTHETIC_API_EXPORT marketdata::messaging::adapter_demand_request
+coalesce_demands(marketdata::messaging::adapter_demand_request earlier,
+                 marketdata::messaging::adapter_demand_request later);
+
 }
 
 #endif

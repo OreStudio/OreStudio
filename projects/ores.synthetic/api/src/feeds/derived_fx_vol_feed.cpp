@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include <algorithm>
 #include <chrono>
+#include <iterator>
 #include <ranges>
 #include <string>
 #include <utility>
@@ -89,6 +90,14 @@ derived_fx_vol_feed::answer(const mm::adapter_demand_request& request) const {
             response.rejected.push_back({id, "unknown"});
     }
     return response;
+}
+
+mm::adapter_demand_request coalesce_demands(mm::adapter_demand_request earlier,
+                                            mm::adapter_demand_request later) {
+    later.image.insert(later.image.end(),
+                       std::make_move_iterator(earlier.image.begin()),
+                       std::make_move_iterator(earlier.image.end()));
+    return later;
 }
 
 mm::adapter_demand_response derived_fx_vol_feed::demand(const mm::adapter_demand_request& request) {

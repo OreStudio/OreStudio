@@ -340,7 +340,8 @@ void derived_fx_vol_adapter::demand_message(const ores::nats::message& msg) {
     } else {
         response = feed_.answer(*request);
         std::lock_guard lock(mu_);
-        pending_ = std::move(*request);
+        pending_ = pending_ ? feed::coalesce_demands(std::move(*pending_), std::move(*request)) :
+                              std::move(*request);
     }
     ores::service::messaging::reply(nats_, msg, response);
 }

@@ -31,6 +31,7 @@ set(files
     "domain_cnb_tests.cpp"
     "domain_ecb_tests.cpp"
     "domain_frankfurter_tests.cpp"
+    "domain_mas_tests.cpp"
     "domain_norges_bank_tests.cpp"
     "domain_nyfed_tests.cpp"
     "domain_rba_tests.cpp"

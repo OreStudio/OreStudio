@@ -50,6 +50,15 @@ struct response final {
 };
 
 /**
+ * @brief @p url with what may hold a secret masked, so it can be logged or stored: the user
+ * and password of the address, and the value of every query parameter whose name holds
+ * "key", "token", "secret", "pass" or "user", in any case. A user name is masked as well, since
+ * it is often a person's address. A key put in the path or the
+ * fragment is not found: an adapter passes a key as a query parameter.
+ */
+[[nodiscard]] ORES_HTTP_CLIENT_EXPORT std::string redacted(std::string_view url);
+
+/**
  * @brief Why a request got no answer.
  */
 enum class failure_kind { bad_url, network, tls, timeout, too_large };
@@ -75,6 +84,23 @@ public:
      */
     [[nodiscard]] virtual std::expected<response, failure>
     get(std::string_view url, const request_limits& limits = {}) = 0;
+
+    /**
+     * @brief Sends @p body, of @p content_type, to @p url within @p limits.
+     *
+     * A transport that only reads refuses it, so a test transport for a reader overrides
+     * get alone.
+     */
+    [[nodiscard]] virtual std::expected<response, failure> post(std::string_view url,
+                                                                std::string_view content_type,
+                                                                std::string body,
+                                                                const request_limits& limits = {}) {
+        (void)content_type;
+        (void)body;
+        (void)limits;
+        return std::unexpected(
+            failure{failure_kind::network, redacted(url) + ": this transport only reads"});
+    }
 };
 
 /**
@@ -105,18 +131,20 @@ public:
     [[nodiscard]] std::expected<response, failure> get(std::string_view url,
                                                        const request_limits& limits = {}) override;
 
+    [[nodiscard]] std::expected<response, failure> post(std::string_view url,
+                                                        std::string_view content_type,
+                                                        std::string body,
+                                                        const request_limits& limits = {}) override;
+
 private:
+    [[nodiscard]] std::expected<response, failure> send(bool posting,
+                                                        std::string_view url,
+                                                        std::string_view content_type,
+                                                        std::string body,
+                                                        const request_limits& limits);
+
     options options_;
 };
-
-/**
- * @brief @p url with what may hold a secret masked, so it can be logged or stored: the user
- * and password of the address, and the value of every query parameter whose name holds
- * "key", "token", "secret", "pass" or "user", in any case. A user name is masked as well, since
- * it is often a person's address. A key put in the path or the
- * fragment is not found: an adapter passes a key as a query parameter.
- */
-[[nodiscard]] ORES_HTTP_CLIENT_EXPORT std::string redacted(std::string_view url);
 
 }
 

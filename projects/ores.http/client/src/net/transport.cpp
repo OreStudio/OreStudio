@@ -96,7 +96,7 @@ template <typename Stream>
 std::expected<response, failure> exchange(asio::io_context& io,
                                           Stream& stream,
                                           beast::tcp_stream& layer,
-                                          const bhttp::request<bhttp::empty_body>& request,
+                                          const bhttp::request<bhttp::string_body>& request,
                                           const request_limits& limits,
                                           std::chrono::steady_clock::time_point deadline,
                                           std::string_view url) {
@@ -133,6 +133,21 @@ beast_transport::beast_transport(options o)
 
 std::expected<response, failure> beast_transport::get(std::string_view url,
                                                       const request_limits& limits) {
+    return send(false, url, {}, {}, limits);
+}
+
+std::expected<response, failure> beast_transport::post(std::string_view url,
+                                                       std::string_view content_type,
+                                                       std::string body,
+                                                       const request_limits& limits) {
+    return send(true, url, content_type, std::move(body), limits);
+}
+
+std::expected<response, failure> beast_transport::send(bool posting,
+                                                       std::string_view url,
+                                                       std::string_view content_type,
+                                                       std::string body,
+                                                       const request_limits& limits) {
     const auto parsed = boost::urls::parse_absolute_uri(url);
     if (!parsed)
         return std::unexpected(failed(failure_kind::bad_url, url, parsed.error().message()));
@@ -152,10 +167,16 @@ std::expected<response, failure> beast_transport::get(std::string_view url,
     if (target.empty())
         target = "/";
 
-    bhttp::request<bhttp::empty_body> request{bhttp::verb::get, target, 11};
+    bhttp::request<bhttp::string_body> request{
+        posting ? bhttp::verb::post : bhttp::verb::get, target, 11};
     request.set(bhttp::field::host, std::string(u.encoded_host_and_port()));
     request.set(bhttp::field::user_agent, options_.user_agent);
     request.set(bhttp::field::accept, "*/*");
+    if (posting) {
+        request.set(bhttp::field::content_type, std::string(content_type));
+        request.body() = std::move(body);
+        request.prepare_payload();
+    }
 
     const auto deadline = std::chrono::steady_clock::now() + limits.timeout;
     asio::io_context io;

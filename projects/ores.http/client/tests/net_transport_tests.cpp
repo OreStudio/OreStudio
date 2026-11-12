@@ -113,6 +113,8 @@ std::filesystem::path written(const std::string& pem) {
 struct reply {
     std::string body = "hello";
     std::chrono::milliseconds delay{0};
+    /// Answers with the request's method, content type and body instead of @c body.
+    bool echo = false;
 };
 
 /// One connection to the local server: reads a request, waits, then answers it.
@@ -150,7 +152,10 @@ private:
 
     void answer() {
         response_.set(bhttp::field::content_type, "application/json");
-        response_.body() = reply_.body;
+        response_.body() = reply_.echo ? std::string(request_.method_string()) + " " +
+                                             std::string(request_[bhttp::field::content_type]) +
+                                             " " + request_.body() :
+                                         reply_.body;
         response_.prepare_payload();
         bhttp::async_write(
             stream_,
@@ -263,6 +268,28 @@ TEST_CASE("a_get_over_http_returns_the_status_type_and_body", "[net][transport]"
     CHECK(out->status == 200);
     CHECK(out->content_type == "application/json");
     CHECK(out->body == R"({"rates":[]})");
+}
+
+TEST_CASE("a_post_sends_its_body_and_its_content_type", "[net][transport]") {
+    local_server server({.echo = true});
+    beast_transport sut;
+
+    const auto out =
+        sut.post(server.url("http", "127.0.0.1"), "application/x-www-form-urlencoded", "a=1&b=2");
+
+    REQUIRE(out.has_value());
+    CHECK(out->status == 200);
+    CHECK(out->body == "POST application/x-www-form-urlencoded a=1&b=2");
+}
+
+TEST_CASE("a_get_sends_no_body", "[net][transport]") {
+    local_server server({.echo = true});
+    beast_transport sut;
+
+    const auto out = sut.get(server.url("http", "127.0.0.1"));
+
+    REQUIRE(out.has_value());
+    CHECK(out->body == "GET  ");
 }
 
 TEST_CASE("a_body_over_the_limit_is_refused", "[net][transport]") {

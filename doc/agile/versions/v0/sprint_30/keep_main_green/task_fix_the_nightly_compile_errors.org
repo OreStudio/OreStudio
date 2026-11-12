@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: AC551901-58D0-4F99-8C4E-AABC7BF70858
+:END:
+#+title: Task: Fix the nightly compile errors
+#+description: Fix the gcc, macOS and Windows compile errors that stop the nightly builds, and keep warnings as warnings on those compilers until they are clean.
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: feature/fix-the-nightly-compile-errors
+#+pr: 4651
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The nightly builds on gcc, macOS and Windows compile main and run its tests,
+so CDash shows their results. The continuous build compiles with Linux clang
+only, so an error that only these compilers see reaches main unchecked.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Fixes for the four compile errors raised as a PR. |
+| Waiting on   | Nothing.                               |
+| Next         | Run the three nightlies on main after merge and fix what they find. |
+| Last touched | 2026-11-12                               |
+
+* Acceptance
+
+- The gcc, macOS and Windows nightlies get past the compile and submit test
+  results to CDash.
+
+* Plan
+
+The nightly run 43163241266 (Linux), 43190100783 (macOS) and 43178285478
+(Windows) on 2026-11-12 stopped at these errors:
+
+1. gcc, =-Wsubobject-linkage=: the generated web record routes keep a
+   =key_of= lambda in the =handle_delete= coroutine frame. The template now
+   emits a =<unit>_key_of= function in the anonymous namespace; 16 route files
+   are regenerated.
+2. macOS: =step_workers::run= takes =std::move_only_function=, which Apple's
+   libc++ does not have. =run= is now a template over the step.
+3. MSVC C4459: in =calendar_screen_routes.cpp= the local =last= hides
+   =std::chrono::last=. The locals are now =year_start= and =year_end=.
+4. clang-cl: =std::getenv= is deprecated. =application.cpp= now reads the
+   site environment through =ores::platform::environment=.
+
+Each job stops at its first failing file, so more errors can follow. Until the
+three builds are clean, the gcc, macOS and Windows nightlies pass
+=warnings_as_errors=0=, which sets the new =ORES_WARNINGS_AS_ERRORS= option
+off. Linux clang keeps warnings as errors.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4651][#4651]] | [build] Fix the nightly compile errors on gcc, macOS and Windows |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

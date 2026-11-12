@@ -53,14 +53,18 @@ endif()
 #
 # The designated-initializer variant is Clang's alone, hence the
 # separate guard.
+#
+# ORES_WARNINGS_AS_ERRORS turns -Werror and /WX off. The nightly builds on
+# compilers that the continuous build does not use set it off, so a warning
+# there still reaches CDash as a warning and the tests still run.
 add_compile_options(
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall>
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wextra>
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wno-missing-field-initializers>
     $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-designated-field-initializers>
-    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Werror>
+    $<$<AND:$<BOOL:${ORES_WARNINGS_AS_ERRORS}>,$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>>:-Werror>
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
-    $<$<CXX_COMPILER_ID:MSVC>:/WX>
+    $<$<AND:$<BOOL:${ORES_WARNINGS_AS_ERRORS}>,$<CXX_COMPILER_ID:MSVC>>:/WX>
     # C4251 fires on every exported class that carries a std::string or a
     # container, which is most of them. Every consumer is an in-tree target
     # built by this same toolchain against these same headers, so the ABI

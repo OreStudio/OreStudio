@@ -24,7 +24,6 @@
 #include <boost/asio/thread_pool.hpp>
 #include <condition_variable>
 #include <cstddef>
-#include <functional>
 #include <mutex>
 #include <utility>
 
@@ -69,9 +68,11 @@ public:
      * @brief Runs @p step on a free worker, waiting for one when all are busy.
      *
      * The step must not throw: it runs on a worker, where nothing could answer
-     * the exception.
+     * the exception. It may be move-only. A template, not
+     * std::move_only_function, because Apple's libc++ does not have that.
      */
-    void run(std::move_only_function<void()> step) {
+    template <typename Step>
+    void run(Step step) {
         if (workers_ == 1) {
             step();
             return;
@@ -83,8 +84,11 @@ public:
         }
         try {
             boost::asio::post(pool_, [this, step = std::move(step)]() mutable noexcept {
-                step();
-                step = nullptr;
+                {
+                    // What the step holds goes before its worker is freed.
+                    auto running = std::move(step);
+                    running();
+                }
                 release();
             });
         } catch (...) {

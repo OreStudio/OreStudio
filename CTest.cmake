@@ -299,6 +299,11 @@ if(USE_MEMCHECK)
     set(cmake_args ${cmake_args} "-DWITH_MEMCHECK=ON")
 endif()
 
+# warnings_as_errors=0 builds with warnings left as warnings.
+if(DEFINED warnings_as_errors AND NOT warnings_as_errors)
+    set(cmake_args ${cmake_args} "-DORES_WARNINGS_AS_ERRORS=OFF")
+endif()
+
 # Hosted Linux Debug builds can exhaust disk while linking full DWARF into
 # every executable and shared library. Opt in to lossless compression at link
 # time, preserving compile/cache inputs, debug symbols and coverage data.

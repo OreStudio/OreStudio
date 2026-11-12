@@ -113,8 +113,10 @@ void calendar_screen_routes::register_routes(
                         rr::invalid("The days are read one year at a time, between 1900 and 2200.");
 
                     using namespace std::chrono;
-                    const year_month_day first{std::chrono::year{requested_year}, January, day{1}};
-                    const year_month_day last{std::chrono::year{requested_year}, December, day{31}};
+                    const year_month_day year_start{
+                        std::chrono::year{requested_year}, January, day{1}};
+                    const year_month_day year_end{
+                        std::chrono::year{requested_year}, December, day{31}};
                     messaging::list_by_calendar_code_calendar_dates_request msg;
                     msg.calendar_code = code;
                     msg.scope = ores::utility::domain::scope::direct;
@@ -132,7 +134,7 @@ void calendar_screen_routes::register_routes(
                         if (reply.result.outcome != ores::utility::domain::outcome::ok)
                             operation_failed(reply.result.message);
                         for (const auto& row : reply.calendar_dates) {
-                            if (row.date < first || row.date > last)
+                            if (row.date < year_start || row.date > year_end)
                                 continue;
                             days += days.size() == 1 ? "{" : ",{";
                             days += "\"date\":" + json::write(row.date);
@@ -141,7 +143,7 @@ void calendar_screen_routes::register_routes(
                             days += ",\"source\":" + json::write(row.source) + "}";
                         }
                         if (reply.calendar_dates.size() < calendar_screen_page ||
-                            reply.calendar_dates.back().date > last)
+                            reply.calendar_dates.back().date > year_end)
                             break;
                     }
                     return http_response::json("{\"days\":" + days + "]}");

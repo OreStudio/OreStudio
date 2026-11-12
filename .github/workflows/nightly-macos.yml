@@ -270,7 +270,10 @@ jobs:
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
           export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
           export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          export cmake_args="build_group=Nightly,preset=${preset}"
+          # Continuous builds Linux only, so macOS warnings reach main
+          # unchecked. Keep them warnings here until the build is clean, so
+          # its tests still run and CDash still shows them.
+          export cmake_args="build_group=Nightly,preset=${preset},warnings_as_errors=0"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
       - name: Show sccache statistics

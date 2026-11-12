@@ -49,8 +49,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # The baseline of compass env install-packages, plus the tools that the GitHub
 # runner image has and the build uses: a C compiler for the vcpkg ports, git,
-# archive tools, Python for the scripts, sudo for the scripts that call it, and
-# libraries that the vcpkg ports link against. Clang takes the C++ standard
+# archive tools, Python for the scripts, sudo for the scripts that call it,
+# valgrind for the nightly memcheck, and libraries that the vcpkg ports link
+# against. Clang takes the C++ standard
 # library of the newest GCC it finds; g++-${GCC_MAJOR} gives it the same
 # libstdc++ as the runner image.
 RUN apt-get update -q -o Acquire::Retries=3 \
@@ -58,7 +59,16 @@ RUN apt-get update -q -o Acquire::Retries=3 \
         autoconf autoconf-archive automake bison build-essential \
         ca-certificates curl file flex "g++-${GCC_MAJOR}" gnupg gperf git libltdl-dev libssl-dev \
         libtool linux-libc-dev lsb-release nasm openssl pkg-config python3 \
-        python3-pip python3-venv sudo tar unzip xz-utils zip zstd \
+        procps python3-pip python3-venv sudo tar tzdata unzip valgrind xz-utils zip zstd \
+ && rm -rf /var/lib/apt/lists/*
+
+# The cache steps of the build jobs call the GitHub API with gh.
+RUN curl -fsSL -o /usr/share/keyrings/githubcli-archive-keyring.gpg \
+        https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+ && echo "deb [signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+        > /etc/apt/sources.list.d/github-cli.list \
+ && apt-get update -q -o Acquire::Retries=3 \
+ && apt-get install -y -q -o Acquire::Retries=3 --no-install-recommends gh \
  && rm -rf /var/lib/apt/lists/*
 
 COPY build/scripts/install_llvm.sh /tmp/install_llvm.sh
@@ -77,7 +87,9 @@ RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-l
         | tar -xJ -C /opt \
  && ln -s "/opt/node-v${NODE_VERSION}-linux-x64/bin/"* /usr/local/bin/
 
-# The same PGDG repository and packages as setup_postgres_extensions.sh.
+# The same PGDG repository and packages as setup_postgres_extensions.sh. The
+# package creates the main cluster, and build/scripts/start_ci_postgres.sh
+# starts it in the build jobs.
 RUN curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
         | gpg --batch --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg \
  && echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
@@ -86,5 +98,7 @@ RUN curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
  && apt-get install -y -q -o Acquire::Retries=3 --no-install-recommends \
         "postgresql-${PG_MAJOR}" "postgresql-${PG_MAJOR}-timescaledb" \
         "postgresql-client-${PG_MAJOR}" libpq-dev \
- && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/* \
+ && echo "shared_preload_libraries = 'timescaledb'" \
+        > "/etc/postgresql/${PG_MAJOR}/main/conf.d/timescaledb.conf"
 ENV PATH=/usr/lib/postgresql/${PG_MAJOR}/bin:${PATH}

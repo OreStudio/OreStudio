@@ -80,6 +80,7 @@ fi
 "${engine}" run --rm "${ref}" bash -euo pipefail -c "
     clang++ --version | head -n 1 | grep -F ' ${LLVM_MAJOR}.'
     llvm-cov --version | grep -F ' ${LLVM_MAJOR}.'
+    clang-tidy --version | grep -F ' ${LLVM_MAJOR}.'
     cmake --version | head -n 1 | grep -F '${CMAKE_VERSION}'
     ninja --version | grep -xF '${NINJA_VERSION}'
     node --version | grep -xF 'v${NODE_VERSION}'
@@ -88,6 +89,9 @@ fi
     g++-${GCC_MAJOR} --version | head -n 1
     git --version
     python3 --version
+    valgrind --version
+    gh --version | head -n 1
+    test -f /etc/postgresql/${PG_MAJOR}/main/conf.d/timescaledb.conf
     printf '#include <print>\nint main() { std::println(\"C++23 ok\"); }\n' > /tmp/t.cpp
     clang++ -std=c++23 -v /tmp/t.cpp -o /tmp/t 2>&1 | grep -F 'Selected GCC installation' | grep -F '/${GCC_MAJOR}'
     /tmp/t

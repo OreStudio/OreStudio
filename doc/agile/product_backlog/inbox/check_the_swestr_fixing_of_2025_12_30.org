@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 05DA24C9-7A5E-4601-A23C-0C7C504B8279
+:END:
+#+title: Check the SWESTR fixing of 2025-12-30
+#+description: A fresh environment stores SWESTR for 2025-12-30 as -0.0603, between 0.01649 and 0.01675 on the days beside it.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:data_quality:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Find out whether the Riksbank published SWESTR for 2025-12-30 as -6.03 per
+cent, or whether the Riksbank adapter stored a wrong value. If the adapter is
+wrong, fix its parse and add a recorded response for that day to its tests. If
+the Riksbank published it, decide whether the fixing stays or the calibration
+leaves it out.
+
+* Why
+
+On 2026-11-12 a fresh environment stored these SWESTR fixings:
+
+#+begin_example
+2025-12-29  0.01649
+2025-12-30 -0.0603
+2026-01-02  0.01675
+#+end_example
+
+The synthetic IR feeds calibrate from these fixings, so one outlier of eight
+points distorts the volatility the calibration finds for SEK. Every other
+overnight rate in the system tenant stays in a plausible range.
+
+* References
+
+- =ores_marketdata_market_fixings_tbl=, series =oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR=
+- =doc/knowledge/domain/synthetic_calibration_sources.org=
+
+* See also
+
+-

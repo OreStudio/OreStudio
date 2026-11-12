@@ -167,10 +167,10 @@ struct ir_curve_generation_config final {
     bool auto_start = false;
 
     /**
-     * @brief Where this curve's starting short rate comes from. The one source is "fixed": the
-     * initial_rate parameter value as entered in the parameter rows. No public source fixes rates
-     * curves yet; when one does, the curve reads it as an FX feed reads its fixings, and this
-     * column names it.
+     * @brief Where this curve's starting short rate comes from. "fixed" is the initial_rate
+     * parameter value as entered in the parameter rows. "fixing" is the newest public overnight
+     * rate of the curve's currency, read under the IR class's calibration policy; a curve whose
+     * currency no source publishes keeps its initial_rate, and its start record says why.
      */
     std::string price_source = "fixed";
 

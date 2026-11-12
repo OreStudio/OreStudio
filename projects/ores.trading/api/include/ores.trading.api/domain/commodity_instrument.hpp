@@ -70,7 +70,9 @@ struct commodity_instrument final {
     std::string currency;
 
     /**
-     * @brief Contract quantity. Must be positive.
+     * @brief Contract quantity. Must be positive, except on an accumulating product such as an
+     * accumulator or a TaRF: it states its size per fixing in accumulation_amount, and its quantity
+     * is zero.
      */
     double quantity = 0.0;
 

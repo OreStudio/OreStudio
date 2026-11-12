@@ -109,6 +109,18 @@ task and name that file in the Command column.
 
 * Notes
 
+- actions/cache puts the cache path in the cache version, and a container
+  job sees the workspace as =/__w/OreStudio/OreStudio=, not
+  =/home/runner/work/OreStudio/OreStudio=. Run 43137261612 computed version
+  3349367a..., the hash of the =/__w= path with zstd, and missed both the
+  sccache and the vcpkg entries that main saved on the runner. The first
+  container build on main is cold, and later container builds hit. Phase 1
+  already makes that build cold, because the apt.llvm.org clang is a
+  different binary from the release tarball.
+- In run 43137261612 the setup before CTest took about 2 min in the image:
+  container start 20 to 31 s, checkout 36 to 39 s, PostgreSQL 4 to 7 s,
+  database 40 to 45 s. On the runner it took about 8 min.
+
 - Phase 1 keeps clang 19.1.7 but takes the binary from apt.llvm.org, not
   from the LLVM release tarball. sccache keys hash the compiler binary, so the
   first run of each variant after the merge compiles cold.

@@ -235,6 +235,20 @@ endif()
 #
 # Step: start the build
 #
+# Only this repository submits to the OreStudio CDash project. A fork runs
+# the same scheduled workflows on its own code, and its results would sit
+# beside main's as if they were main's. ORES_CDASH_NOSUBMIT=1 skips it too.
+set(cdash_submit ON)
+if("$ENV{ORES_CDASH_NOSUBMIT}" STREQUAL "1")
+    set(cdash_submit OFF)
+    message(STATUS "ORES_CDASH_NOSUBMIT=1: skipping CDash submission.")
+elseif(DEFINED ENV{GITHUB_REPOSITORY}
+        AND NOT "$ENV{GITHUB_REPOSITORY}" STREQUAL "OreStudio/OreStudio")
+    set(cdash_submit OFF)
+    message(STATUS "Repository $ENV{GITHUB_REPOSITORY} is not OreStudio/OreStudio: "
+        "skipping CDash submission.")
+endif()
+
 ctest_start(${build_group})
 
 # Read custom files. This must be called after ctest_start() but before other
@@ -374,9 +388,11 @@ endif()
 # that does: a suite that hangs under valgrind can hold the step until the job
 # limit. Sending these parts now keeps the build on CDash whatever the tests do.
 # Two quick retries: the tests wait on this, and the final submit retries in full.
-ctest_submit(PARTS Start Configure Build
-    RETRY_COUNT 2 RETRY_DELAY 30
-    RETURN_VALUE early_submit_result)
+if(cdash_submit)
+    ctest_submit(PARTS Start Configure Build
+        RETRY_COUNT 2 RETRY_DELAY 30
+        RETURN_VALUE early_submit_result)
+endif()
 if(early_submit_result)
     message(WARNING "CDash submission of the build failed "
         "(exit code: ${early_submit_result}).")
@@ -436,8 +452,10 @@ endif()
 #
 # Always attempt to submit results to CDash, even if there were failures.
 # Capture the return value so that CDash being unreachable does not fail CI.
-ctest_submit(RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay}
-    RETURN_VALUE submit_result)
+if(cdash_submit)
+    ctest_submit(RETRY_COUNT ${retry_count} RETRY_DELAY ${retry_delay}
+        RETURN_VALUE submit_result)
+endif()
 if(submit_result)
     message(WARNING "CDash submission failed (exit code: ${submit_result}). "
         "Build and test results are unaffected.")

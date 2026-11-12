@@ -83,8 +83,9 @@ Second round, 2026-11-12, from every failed run on main:
   =CMakeLists.txt= by hand; it now comes from the component model.
 - Agent component and CPU evaluation: 157 of 305 backend contract sources had
   changed, many through the flat field list. The codec probe passed 23
-  operations and 45 cases against main at =46f7c82339=, and the evidence is
-  recorded at that revision.
+  operations and 45 cases. The export change below touched ten of the
+  sources again, so the evidence is recorded at the branch head
+  =2629842861=.
 - Unity batch measurement (run 43216466419): smaller batches and the
   non-unity build found two missing includes, in
   =dataset_dependency_json_io.cpp= and the =role_product_type= junction model.

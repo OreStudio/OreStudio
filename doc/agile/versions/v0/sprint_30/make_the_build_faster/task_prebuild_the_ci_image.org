@@ -8,7 +8,7 @@
 #+filetags: :ci:build:make_the_build_faster:sprint_30:v0:
 #+owner: marco
 #+branch: feature/prebuild-the-ci-image
-#+pr: 4638
+#+pr: 4649
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -154,6 +154,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4649][#4649]] | [ci] Run the container steps with bash, as on the runner |
 | [[https://github.com/OreStudio/OreStudio/pull/4638][#4638]] | [ci] Point the vcpkg and sccache caches at the container workspace |
 | [[https://github.com/OreStudio/OreStudio/pull/4632][#4632]] | [ci] Run the Linux build jobs in the CI image |
 | [[https://github.com/OreStudio/OreStudio/pull/4617][#4617]] | [ci] Add the Linux CI image and cut the continuous build setup |

@@ -94,6 +94,12 @@ RULES = (
     # The IAM composed views ores.http answers, ahead of the rules for the screen
     # routes they share a part with; each keeps the BFF's view name, so its
     # obligations are stated once.
+    Rule("the tenor catalogue",
+         ("exact", "GET /api/tenors/catalogue"),
+         CPP, COMPOSED, "reference-data",
+         "The tenors in their own order with their conventions and schedules, answered by"
+         " ores.http from three whole list reads at the address and in the shape the BFF"
+         " answered."),
     Rule("the deployment overview",
          ("exact", "GET /api/overview"),
          CPP, COMPOSED, "tenancy",
@@ -1466,7 +1472,8 @@ VIEWS = {
     "the tenor catalogue": (
         "ores.refdata",
         "the tenors with their conventions and schedules, three collection reads",
-        "ETag on the whole view, stale after 5 min"),
+        "ETag on the whole view, revalidated at each read, because the tenors screen's"
+        " writes change it"),
     "the market data catalogue": (
         "ores.marketdata",
         "the providers and the feeds that serve them, two collection reads",

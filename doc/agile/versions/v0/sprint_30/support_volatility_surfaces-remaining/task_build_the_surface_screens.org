@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
-#+updated: 2026-11-09
+#+updated: 2026-11-12
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -38,6 +38,12 @@ A person can calibrate a surface, see the candidate and its errors, send it to p
 - A person starts a calibrate from a blueprint and an as-of, and sees each pillar's error and the arbitrage results.
 - A person raises the publish of a candidate from that screen.
 - A published surface shows as a heatmap and as slices through =SurfacePanel=.
+- A published surface also reads as a solid that the person turns: a drag or the
+  arrow keys rotate it, the expiry and strike labels stay legible at every
+  angle, and the view is part of the URL. The heatmap and the slices stay one
+  control away. The
+  [[id:C5564FE4-258E-4807-B3FD-DBBAB086EA67][surface slices prototype]] variant
+  =d= is the argument for it.
 - The Evolution page shows a party's published surface, and how it moved over a range, through =SurfacePanel=. A surface is a party's derived data, so it shows there; the raw market vols show on the synthetic screen.
 - A candidate is always labelled as a candidate.
 - The published surface has a record page at =market-data/published-surfaces/<series>=, where the surface publish notice links.

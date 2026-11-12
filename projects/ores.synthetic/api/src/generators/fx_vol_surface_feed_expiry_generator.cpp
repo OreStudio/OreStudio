@@ -49,7 +49,12 @@ generate_synthetic_fx_vol_surface_feed_expiry(utility::generation::generation_co
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
     r.feed_id = ctx.generate_uuid();
-    r.tenor = std::string("3M") + "-" + std::to_string(idx);
+    r.tenor = // no_generator_suffix: a tenor must read as a count and a unit, so the row cycles
+              // through real tenors.
+        [idx] {
+            static constexpr const char* tenors[] = {"1W", "1M", "2M", "3M", "6M", "9M", "1Y"};
+            return std::string(tenors[idx % std::size(tenors)]);
+        }();
     r.variance_reversion = 2.0;
     r.variance_volatility = 0.08;
     r.modified_by = modified_by;

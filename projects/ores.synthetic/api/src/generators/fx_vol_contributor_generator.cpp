@@ -48,7 +48,13 @@ generate_synthetic_fx_vol_contributor(utility::generation::generation_context& c
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.provider_code = std::string("synthetic-broker-a") + "-" + std::to_string(idx);
+    r.provider_code = // no_generator_suffix: the column is validated against the provider
+                      // catalogue, so the row cycles through providers it holds.
+        [idx] {
+            static constexpr const char* providers[] = {
+                "bloomberg", "lseg", "ice", "tradeweb", "demo", "derived", "ore", "composite"};
+            return std::string(providers[idx % std::size(providers)]);
+        }();
     r.noise = 0.002;
     r.wing_widening = 1.0;
     r.expiry_widening = 0.5;

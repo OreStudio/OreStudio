@@ -496,6 +496,25 @@ auto read_commodity_option_strip(const record_reader& trade) -> commodity_instru
     return result;
 }
 
+/// The basket an Underlyings block states, as constituent rows in its order.
+auto read_commodity_basket(const record_reader& data) -> std::vector<commodity_basket_constituent> {
+    std::vector<commodity_basket_constituent> constituents;
+    const auto underlyings = data.child("Underlyings");
+    if (!underlyings)
+        return constituents;
+    int sequence_number = 1;
+    for (const auto& underlying : underlyings->children("Underlying")) {
+        commodity_basket_constituent row;
+        row.sequence_number = sequence_number++;
+        row.underlying_code =
+            commodity_address_of(commodity_instrument_projection_text_of(underlying, "Name"));
+        row.weight = decimal_as_double(underlying, "Weight");
+        stamp_columns(row);
+        constituents.push_back(std::move(row));
+    }
+    return constituents;
+}
+
 auto read_commodity_basket_option(const record_reader& trade) -> commodity_instrument_data {
     auto inst = make_row("CommodityBasketOption");
     std::vector<commodity_basket_constituent> constituents;
@@ -508,23 +527,9 @@ auto read_commodity_basket_option(const record_reader& trade) -> commodity_instr
         inst.exercise_type = exercise_style_of(data->child("OptionData"));
         inst.maturity_date = first_exercise_date_of(data->child("OptionData"));
 
-        std::vector<record_reader> rows;
-        if (const auto underlyings = data->child("Underlyings"))
-            rows = underlyings->children("Underlying");
-        if (!rows.empty())
-            inst.commodity_code =
-                commodity_address_of(commodity_instrument_projection_text_of(rows.front(), "Name"));
-
-        int sequence_number = 1;
-        for (const auto& underlying : rows) {
-            commodity_basket_constituent row;
-            row.sequence_number = sequence_number++;
-            row.underlying_code =
-                commodity_address_of(commodity_instrument_projection_text_of(underlying, "Name"));
-            row.weight = decimal_as_double(underlying, "Weight");
-            stamp_columns(row);
-            constituents.push_back(std::move(row));
-        }
+        constituents = read_commodity_basket(*data);
+        if (!constituents.empty())
+            inst.commodity_code = constituents.front().underlying_code;
     }
     return commodity_instrument_data{std::move(inst), std::move(constituents)};
 }
@@ -640,6 +645,142 @@ auto read_commodity_forward_volatility_agreement(const record_reader& trade)
     r.strike_price = optional_decimal_of(*data, "UnderlyingStrike");
     r.maturity_date = optional_date_of(*data, "OptionExpiry");
     return r;
+}
+
+// ---------------------------------------------------------------------------
+// Reading: the scripted products on a basket of commodities
+// ---------------------------------------------------------------------------
+
+/// A basket product names its first constituent as the row's commodity.
+void name_first_constituent(commodity_instrument_data& result) {
+    if (!result.constituents.empty())
+        result.instrument.commodity_code = result.constituents.front().underlying_code;
+}
+
+auto read_commodity_rainbow_option(const record_reader& trade) -> commodity_instrument_data {
+    commodity_instrument_data result{make_row("CommodityRainbowOption"), {}};
+    const auto data = trade.child("CommodityRainbowOptionData");
+    if (!data)
+        return result;
+    auto& r = result.instrument;
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
+    r.quantity = decimal_as_double(*data, "Notional").value_or(0.0);
+    r.strike_price = optional_decimal_of(*data, "Strike");
+    read_option_summary(r, data->child("OptionData"));
+    result.constituents = read_commodity_basket(*data);
+    name_first_constituent(result);
+    return result;
+}
+
+/// A squared payoff is a variance swap's, and the row keeps it as its moment type.
+auto read_commodity_basket_variance_swap(const record_reader& trade) -> commodity_instrument_data {
+    commodity_instrument_data result{make_row("CommodityBasketVarianceSwap"), {}};
+    const auto data = trade.child("CommodityBasketVarianceSwapData");
+    if (!data)
+        return result;
+    auto& r = result.instrument;
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
+    r.quantity = decimal_as_double(*data, "Notional").value_or(0.0);
+    r.variance_strike = decimal_as_double(*data, "Strike");
+    if (const auto squared = data->flag("SquaredPayoff"))
+        r.moment_type = *squared ? "Variance" : "Volatility";
+    result.constituents = read_commodity_basket(*data);
+    name_first_constituent(result);
+    return result;
+}
+
+auto read_commodity_best_entry_option(const record_reader& trade) -> commodity_instrument {
+    auto r = make_row("CommodityBestEntryOption");
+    const auto data = trade.child("CommodityBestEntryOptionData");
+    if (!data)
+        return r;
+    r.commodity_code = scripted_commodity_of(*data);
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
+    r.quantity = decimal_as_double(*data, "Notional").value_or(0.0);
+    r.strike_price = optional_decimal_of(*data, "Strike");
+    r.maturity_date = optional_date_of(*data, "ExpiryDate");
+    return r;
+}
+
+/*
+ * A worst-of basket swap pays a floating funding leg against fixed coupons on
+ * the basket. ORE states both flat on the trade, and they land in the shared
+ * leg rows: the funding leg is leg one, with its spread as a rate, and the
+ * coupon leg is leg two, with its fixed rate.
+ */
+constexpr int commodity_funding_leg = 1;
+constexpr int commodity_coupon_leg = 2;
+
+void append_commodity_leg_rate(commodity_instrument_data& result,
+                               int leg_number,
+                               std::string_view role,
+                               const decimal& value) {
+    trading::domain::swap_leg_rate row;
+    row.leg_number = leg_number;
+    row.rate_role = std::string(role);
+    row.sequence_number = 1;
+    row.value = value;
+    option_block::stamp_row(row);
+    result.leg_rates.push_back(std::move(row));
+}
+
+auto read_commodity_worst_of_basket_swap(const record_reader& trade) -> commodity_instrument_data {
+    commodity_instrument_data result{make_row("CommodityWorstOfBasketSwap"), {}};
+    const auto data = trade.child("CommodityWorstOfBasketSwapData");
+    if (!data)
+        return result;
+    auto& r = result.instrument;
+    r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
+    r.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
+    result.constituents = read_commodity_basket(*data);
+    name_first_constituent(result);
+
+    // The lists run beside the basket and the schedule: a price per
+    // constituent, and a level per determination date.
+    const auto levels = [&data](std::string_view element, std::string_view leaf) {
+        if (const auto rows = data->child(element))
+            return rows->decimals(leaf);
+        return std::vector<decimal>{};
+    };
+    const auto prices = levels("InitialPrices", "InitialPrice");
+    for (std::size_t i = 0; i < prices.size() && i < result.constituents.size(); ++i)
+        result.constituents[i].initial_price = prices[i];
+    const auto knock_outs = levels("KnockOutLevels", "KnockOutLevel");
+    const auto triggers = levels("FixedTriggerLevels", "FixedTriggerLevel");
+    const auto period_count = std::max(knock_outs.size(), triggers.size());
+    for (std::size_t i = 0; i < period_count; ++i) {
+        trading::domain::basket_swap_period row;
+        row.sequence_number = static_cast<int>(i + 1);
+        if (i < knock_outs.size())
+            row.knock_out_level = knock_outs[i].to_double();
+        if (i < triggers.size())
+            row.fixed_trigger_level = triggers[i].to_double();
+        option_block::stamp_row(row);
+        result.periods.push_back(std::move(row));
+    }
+
+    trading::domain::swap_leg funding;
+    funding.identity.leg_number = commodity_funding_leg;
+    funding.leg_type_code = "Floating";
+    funding.currency = r.currency;
+    funding.floating_index_code =
+        address_of(commodity_instrument_projection_text_of(*data, "FloatingIndex"));
+    funding.day_count_fraction_code =
+        commodity_instrument_projection_spelling_of(*data, "FloatingDayCountFraction");
+    leg_block::stamp_leg(funding);
+    result.legs.push_back(std::move(funding));
+    if (const auto spread = data->decimal("FloatingSpread"))
+        append_commodity_leg_rate(result, commodity_funding_leg, "spread", *spread);
+
+    trading::domain::swap_leg coupon;
+    coupon.identity.leg_number = commodity_coupon_leg;
+    coupon.leg_type_code = "Fixed";
+    coupon.currency = r.currency;
+    leg_block::stamp_leg(coupon);
+    result.legs.push_back(std::move(coupon));
+    if (const auto rate = data->decimal("FixedRate"))
+        append_commodity_leg_rate(result, commodity_coupon_leg, "fixed", *rate);
+    return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -896,16 +1037,9 @@ void write_commodity_option_strip(record_writer& trade, const commodity_instrume
                             v.strip_frequency_code);
 }
 
-void write_commodity_basket_option(record_writer& trade, const commodity_instrument_data& carrier) {
-    const auto& v = carrier.instrument;
-    const auto& rows = carrier.constituents;
-    auto data = trade.child("CommodityBasketOptionData");
-    data.set_spelling("Currency", v.currency, "currency");
-    set_decimal_from_double(data, "Notional", v.quantity);
-    if (v.strike_price)
-        data.set_decimal("Strike", *v.strike_price);
-    write_option_terms(data.child("OptionData"), v, v.maturity_date);
-
+/// The constituents in the order the document states them.
+auto ordered_constituents(const std::vector<commodity_basket_constituent>& rows)
+    -> std::vector<const commodity_basket_constituent*> {
     std::vector<const commodity_basket_constituent*> ordered;
     ordered.reserve(rows.size());
     for (const auto& row : rows)
@@ -913,7 +1047,13 @@ void write_commodity_basket_option(record_writer& trade, const commodity_instrum
     std::sort(ordered.begin(), ordered.end(), [](const auto* a, const auto* b) {
         return a->sequence_number < b->sequence_number;
     });
+    return ordered;
+}
 
+/// The Underlyings block a basket states, from its constituent rows.
+void write_commodity_basket(record_writer& data,
+                            const std::vector<commodity_basket_constituent>& rows) {
+    const auto ordered = ordered_constituents(rows);
     if (ordered.empty())
         return;
     auto underlyings = data.child("Underlyings");
@@ -924,6 +1064,18 @@ void write_commodity_basket_option(record_writer& trade, const commodity_instrum
         if (row->weight)
             set_decimal_from_double(underlying, "Weight", *row->weight);
     }
+}
+
+void write_commodity_basket_option(record_writer& trade, const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
+    const auto& rows = carrier.constituents;
+    auto data = trade.child("CommodityBasketOptionData");
+    data.set_spelling("Currency", v.currency, "currency");
+    set_decimal_from_double(data, "Notional", v.quantity);
+    if (v.strike_price)
+        data.set_decimal("Strike", *v.strike_price);
+    write_option_terms(data.child("OptionData"), v, v.maturity_date);
+    write_commodity_basket(data, rows);
 }
 
 // ---------------------------------------------------------------------------
@@ -1032,6 +1184,127 @@ void write_commodity_forward_volatility_agreement(record_writer& trade,
 }
 
 // ---------------------------------------------------------------------------
+// Writing: the scripted products on a basket of commodities
+// ---------------------------------------------------------------------------
+
+void write_commodity_rainbow_option(record_writer& trade,
+                                    const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
+    auto data = trade.child("CommodityRainbowOptionData");
+    data.set_spelling("Currency", v.currency, "currency");
+    set_decimal_from_double(data, "Notional", v.quantity);
+    data.set_decimal("Strike", v.strike_price.value_or(decimal{}));
+    write_commodity_basket(data, carrier.constituents);
+    write_option_terms(data.child("OptionData"), v, v.maturity_date);
+}
+
+void write_commodity_basket_variance_swap(record_writer& trade,
+                                          const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
+    auto data = trade.child("CommodityBasketVarianceSwapData");
+    data.set_spelling("LongShort", "Long", "long short");
+    set_decimal_from_double(data, "Strike", v.variance_strike.value_or(0.0));
+    set_decimal_from_double(data, "Notional", v.quantity);
+    write_commodity_basket(data, carrier.constituents);
+    option_block::write_product_schedule(
+        data, carrier, "ValuationSchedule", "valuation_schedule");
+    data.set_flag("SquaredPayoff", v.moment_type.value_or("Variance") != "Volatility");
+    data.set_spelling("Currency", v.currency, "currency");
+}
+
+void write_commodity_best_entry_option(record_writer& trade,
+                                       const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
+    auto data = trade.child("CommodityBestEntryOptionData");
+    data.set_spelling("LongShort", "Long", "long short");
+    data.set_spelling("Currency", v.currency, "currency");
+    set_decimal_from_double(data, "Notional", v.quantity);
+    data.set_decimal("Strike", v.strike_price.value_or(decimal{}));
+    data.set_text("ExpiryDate", commodity_instrument_projection_to_ore_date(v.maturity_date));
+    option_block::write_product_schedule(
+        data, carrier, "StrikeObservationDates", "observation_schedule");
+    write_scripted_underlying(data, carrier);
+}
+
+void write_commodity_levels(record_writer& data,
+                            std::string_view element,
+                            std::string_view leaf,
+                            const std::vector<decimal>& values) {
+    if (values.empty())
+        return;
+    auto list = data.child(element);
+    for (const auto& value : values)
+        list.append_decimal(leaf, value);
+}
+
+const trading::domain::swap_leg* commodity_leg_of(const commodity_instrument_data& carrier,
+                                                  int leg_number) {
+    for (const auto& leg : carrier.legs)
+        if (leg.identity.leg_number == leg_number)
+            return &leg;
+    return nullptr;
+}
+
+std::optional<decimal> commodity_leg_rate_of(const commodity_instrument_data& carrier,
+                                             int leg_number,
+                                             std::string_view role) {
+    for (const auto& rate : carrier.leg_rates)
+        if (rate.leg_number == leg_number && rate.rate_role == role)
+            return rate.value;
+    return std::nullopt;
+}
+
+void write_commodity_worst_of_basket_swap(record_writer& trade,
+                                          const commodity_instrument_data& carrier) {
+    const auto& v = carrier.instrument;
+    auto data = trade.child("CommodityWorstOfBasketSwapData");
+    data.set_spelling("LongShort", "Long", "long short");
+    data.set_spelling("Currency", v.currency, "currency");
+    set_decimal_from_double(data, "Quantity", v.quantity);
+    write_commodity_basket(data, carrier.constituents);
+
+    std::vector<decimal> prices;
+    for (const auto* row : ordered_constituents(carrier.constituents))
+        if (row->initial_price)
+            prices.push_back(*row->initial_price);
+    write_commodity_levels(data, "InitialPrices", "InitialPrice", prices);
+
+    option_block::write_product_schedule(
+        data, carrier, "FloatingPeriodSchedule", "floating_period_schedule");
+    option_block::write_product_schedule(
+        data, carrier, "FloatingPayDates", "floating_pay_schedule");
+    option_block::write_product_schedule(
+        data, carrier, "FloatingFixingSchedule", "floating_fixing_schedule");
+
+    auto periods = carrier.periods;
+    std::sort(periods.begin(), periods.end(), [](const auto& a, const auto& b) {
+        return a.sequence_number < b.sequence_number;
+    });
+    std::vector<decimal> knock_outs;
+    std::vector<decimal> triggers;
+    for (const auto& period : periods) {
+        if (period.knock_out_level)
+            knock_outs.push_back(decimal::from_double(*period.knock_out_level).value());
+        if (period.fixed_trigger_level)
+            triggers.push_back(decimal::from_double(*period.fixed_trigger_level).value());
+    }
+    write_commodity_levels(data, "KnockOutLevels", "KnockOutLevel", knock_outs);
+    write_commodity_levels(data, "FixedTriggerLevels", "FixedTriggerLevel", triggers);
+
+    data.set_decimal("FixedRate",
+                     commodity_leg_rate_of(carrier, commodity_coupon_leg, "fixed")
+                         .value_or(decimal{}));
+    const auto* funding = commodity_leg_of(carrier, commodity_funding_leg);
+    if (funding != nullptr) {
+        data.set_text("FloatingIndex", ore_name_of(funding->floating_index_code));
+        data.set_spelling(
+            "FloatingDayCountFraction", funding->day_count_fraction_code, "day counter");
+    }
+    if (const auto spread = commodity_leg_rate_of(carrier, commodity_funding_leg, "spread"))
+        data.set_decimal("FloatingSpread", *spread);
+}
+
+// ---------------------------------------------------------------------------
 // The products the family states
 // ---------------------------------------------------------------------------
 
@@ -1118,6 +1391,19 @@ constexpr commodity_product commodity_products[] = {
      commodity_row_only<read_commodity_forward_volatility_agreement>,
      write_commodity_forward_volatility_agreement,
      false},
+    {"CommodityRainbowOption", read_commodity_rainbow_option, write_commodity_rainbow_option, true},
+    {"CommodityBasketVarianceSwap",
+     read_commodity_basket_variance_swap,
+     write_commodity_basket_variance_swap,
+     false},
+    {"CommodityBestEntryOption",
+     commodity_row_only<read_commodity_best_entry_option>,
+     write_commodity_best_entry_option,
+     false},
+    {"CommodityWorstOfBasketSwap",
+     read_commodity_worst_of_basket_swap,
+     write_commodity_worst_of_basket_swap,
+     false},
 };
 
 const commodity_product* commodity_product_of(std::string_view trade_type) {
@@ -1152,6 +1438,11 @@ constexpr scalar_terms::term<commodity_instrument> commodity_terms[] = {
     {"TriggerType", &commodity_instrument::trigger_type},
     {"TriggerPrice", &commodity_instrument::trigger_price},
     {"Premium", &commodity_instrument::premium_amount},
+    {"Multiplier", &commodity_instrument::multiplier},
+    {"Cap", &commodity_instrument::cap},
+    {"TriggerLevel", &commodity_instrument::trigger_level},
+    {"ResetMinimum", &commodity_instrument::reset_minimum},
+    {"StrikeDate", &commodity_instrument::strike_date},
 };
 
 /// Where a commodity product states its underlyings.
@@ -1164,6 +1455,7 @@ constexpr underlying_block::underlying_holder commodity_underlying_holders[] = {
     {"CommodityGenericBarrierOption", "", "Underlying", "underlying"},
     {"CommodityStrikeResettableOption", "", "Underlying", "underlying"},
     {"CommodityForwardVolatilityAgreement", "", "Underlying", "underlying"},
+    {"CommodityBestEntryOption", "", "Underlying", "underlying"},
 };
 
 /// Where a commodity product states its barriers.
@@ -1180,6 +1472,11 @@ constexpr option_block::product_schedule commodity_product_schedules[] = {
     {"CommodityAccumulator", "PricingDates", "pricing_schedule"},
     {"CommodityTaRF", "ScheduleData", "product_schedule"},
     {"CommodityStrikeResettableOption", "ObservationDates", "observation_schedule"},
+    {"CommodityBasketVarianceSwap", "ValuationSchedule", "valuation_schedule"},
+    {"CommodityBestEntryOption", "StrikeObservationDates", "observation_schedule"},
+    {"CommodityWorstOfBasketSwap", "FloatingPeriodSchedule", "floating_period_schedule"},
+    {"CommodityWorstOfBasketSwap", "FloatingPayDates", "floating_pay_schedule"},
+    {"CommodityWorstOfBasketSwap", "FloatingFixingSchedule", "floating_fixing_schedule"},
 };
 
 /// The products that pay on range bounds.

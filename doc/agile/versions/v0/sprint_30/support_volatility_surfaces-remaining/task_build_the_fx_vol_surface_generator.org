@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-fx-vol-surface-generator
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
 #+updated: 2026-11-08
-#+environment: prime_origin
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Synthetic FX volatility quotes move through the day with spot. A generator of ki
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -43,9 +43,11 @@ Synthetic FX volatility quotes move through the day with spot. A generator of ki
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Three PRs, each ending in a check.
+
+1. *The engine, in =ores.analytics.quant=.* =fx_vol_surface_generator= starts from a fitted SSVI surface and steps its state: a forward variance per expiry segment, each a Cox-Ingersoll-Ross process with a floor, and an Ornstein-Uhlenbeck driver each for the skew and the curvature, every process reverting to the start. The shocks are joined to spot's by the lower Cholesky factor of one correlation matrix with spot first, so the spot shock a step reads is the one the spot feed drew. =fx_vol_surface_quotes= reads ATM, risk reversals and butterflies from a surface in each expiry's convention, through =read_smile=, as the calibration does. =observe_fx_vol_point= turns a clean point into a contributor's observation under a noise profile; the profile with every field zero is the clean contributor.
+2. *The feed.* Codegen entities for the =fx_vol_surface= feed configuration and its child rows (template points, process parameters, correlations, contributors), and the feed built and registered under the kind =fx_vol_surface=, with its permission and grant.
+3. *The catalogue and the routing.* A provider for each contributor, vendor instruments and mappings in the system bundle, and a live check that a blueprint reading contributor quotes calibrates through the same operation as one reading derived quotes.
 
 * Measurements
 
@@ -59,7 +61,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Steps of the EUR/USD test surface free of static arbitrage | 5000 of 5000 | =ores.analytics.quant.tests "[fx_vol_surface_generator]"= | d6bd94f50e plus PR 1 |
+| Correlation of spot with the 1W ATM level and with the skew, configured 0.3 and -0.4 | within 0.03 of each over 20000 steps | the same | d6bd94f50e plus PR 1 |
 
 * Notes
 

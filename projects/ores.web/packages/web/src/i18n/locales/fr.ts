@@ -3845,6 +3845,13 @@ const fr: SourceCatalogue = {
         'Give each party its surface blueprints': 'Donner à chaque partie ses modèles de nappes',
         "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, and the step fails.":
             "Donne à chaque partie qu'elle nomme sa propre copie des modèles de nappes de volatilité FX du système, en lisant les cotations de volatilité que les abonnements de la partie fournissent. Un modèle dont les cotations n'arrivent pas à temps est nommé avec sa partie, et l'étape échoue.",
+        "Publish each party's FX forwards": 'Publier les changes à terme de chaque partie',
+        'Publishes a forward set for every currency pair convention each party it names can build from its spot and its published funding curves. A pair the party cannot build is named with the reason. A forward that does not publish is named with its party, and the step fails.':
+            "Publie un ensemble de changes à terme pour chaque convention de paire de devises que chaque partie qu'elle nomme peut construire à partir de son spot et de ses courbes de financement publiées. Une paire que la partie ne peut pas construire est nommée avec la raison. Un change à terme qui ne se publie pas est nommé avec sa partie, et l'étape échoue.",
+        "Publish each party's volatility surfaces":
+            'Publier les nappes de volatilité de chaque partie',
+        "Calibrates each surface blueprint of each party it names from the party's volatility quotes and published forward sets, and publishes it. A surface that fails its arbitrage or error checks is named and left unpublished. A surface that cannot be calibrated or does not publish is named with its party, and the step fails.":
+            "Calibre chaque modèle de nappe de chaque partie qu'elle nomme à partir des cotations de volatilité de la partie et de ses ensembles de changes à terme publiés, et la publie. Une nappe qui échoue à ses contrôles d'arbitrage ou d'erreur est nommée et laissée non publiée. Une nappe qui ne peut pas être calibrée ou ne se publie pas est nommée avec sa partie, et l'étape échoue.",
         'Generate the trades': 'Générer les transactions',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             "Enregistre une configuration de génération de transactions pour chaque partie que le point de départ nomme, et écrit la population qu'il indique dans les livres propres de cette partie.",

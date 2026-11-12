@@ -3801,6 +3801,12 @@ export const en: SourceCatalogue = {
         'Give each party its surface blueprints': 'Give each party its surface blueprints',
         "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, and the step fails.":
             "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, and the step fails.",
+        "Publish each party's FX forwards": "Publish each party's FX forwards",
+        'Publishes a forward set for every currency pair convention each party it names can build from its spot and its published funding curves. A pair the party cannot build is named with the reason. A forward that does not publish is named with its party, and the step fails.':
+            'Publishes a forward set for every currency pair convention each party it names can build from its spot and its published funding curves. A pair the party cannot build is named with the reason. A forward that does not publish is named with its party, and the step fails.',
+        "Publish each party's volatility surfaces": "Publish each party's volatility surfaces",
+        "Calibrates each surface blueprint of each party it names from the party's volatility quotes and published forward sets, and publishes it. A surface that fails its arbitrage or error checks is named and left unpublished. A surface that cannot be calibrated or does not publish is named with its party, and the step fails.":
+            "Calibrates each surface blueprint of each party it names from the party's volatility quotes and published forward sets, and publishes it. A surface that fails its arbitrage or error checks is named and left unpublished. A surface that cannot be calibrated or does not publish is named with its party, and the step fails.",
         'Generate the trades': 'Generate the trades',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.",

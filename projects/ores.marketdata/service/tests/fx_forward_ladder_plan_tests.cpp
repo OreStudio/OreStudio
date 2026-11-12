@@ -225,9 +225,9 @@ TEST_CASE("a cross forward equals the ratio of its USD-leg forwards on the same 
           "[fx_forward_ladder]") {
     namespace quant = ores::analytics::quant::service;
     const auto flat = [](double rate) {
-        const auto far = year_month_day{sys_days(monday) + days{4000}};
+        const auto far_day = year_month_day{sys_days(monday) + days{4000}};
         return std::vector<quant::bootstrapped_point>{
-            {"", monday, 1.0}, {"LONG", far, std::exp(-rate * 4000 / 365.0)}};
+            {"", monday, 1.0}, {"LONG", far_day, std::exp(-rate * 4000 / 365.0)}};
     };
     const auto dates = ladder(2);
     const auto forwards = [&](double spot, double base_rate, double quote_rate) {

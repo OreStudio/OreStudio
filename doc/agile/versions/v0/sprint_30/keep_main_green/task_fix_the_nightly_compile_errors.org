@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: feature/fix-the-nightly-compile-errors
-#+pr: 4653
+#+pr: 4659
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
@@ -77,6 +77,34 @@ task and name that file in the Command column.
 
 * Notes
 
+Second round, 2026-11-12, from every failed run on main:
+
+- Codegen drift: =ores.platform.lib= was added to the generated server
+  =CMakeLists.txt= by hand; it now comes from the component model.
+- Agent component and CPU evaluation: 157 of 305 backend contract sources had
+  changed, many through the flat field list. The codec probe passed 23
+  operations and 45 cases. The export change below touched ten of the
+  sources again, so the evidence is recorded at the branch head
+  =2629842861=.
+- Unity batch measurement (run 43216466419): smaller batches and the
+  non-unity build found two missing includes, in
+  =dataset_dependency_json_io.cpp= and the =role_product_type= junction model.
+  The duplicate =seed_person= in =curve_publish_fixture.hpp= was already
+  inline on main. Batch 16 hit the workflow's 30 min step limit.
+- Nightly Linux debug: the coverage link failed in the CI image, which has no
+  =libclang_rt.profile=. =install_llvm.sh= now installs
+  =libclang-rt-19-dev=, and image =...-320bbcb1308a= is published.
+- Nightly Windows clang: =windows.h= defines =near= as an empty macro, which
+  broke a test helper of that name.
+- Nightly macOS: three suites fail because an exception thrown in one library
+  is not caught as its type in another. The import macro was empty outside
+  Windows, so each library held a hidden =type_info=, and libc++ compares
+  them by address. The export template now imports with
+  =BOOST_SYMBOL_VISIBLE=. Not yet run on macOS.
+- CDash: the fork alexhock/OreStudio runs the scheduled workflows on three-day
+  old code and submitted rows with 16 failed shell suites. The CTest scripts
+  now submit only from =OreStudio/OreStudio=.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -92,6 +120,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4659][#4659]] | [build] Fix the failing checks on main |
 | [[https://github.com/OreStudio/OreStudio/pull/4653][#4653]] | [build] Leave warnings as warnings on every build |
 | [[https://github.com/OreStudio/OreStudio/pull/4651][#4651]] | [build] Fix the nightly compile errors on gcc, macOS and Windows |
 

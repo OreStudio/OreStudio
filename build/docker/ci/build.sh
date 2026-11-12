@@ -95,6 +95,7 @@ fi
     printf '#include <print>\nint main() { std::println(\"C++23 ok\"); }\n' > /tmp/t.cpp
     clang++ -std=c++23 -v /tmp/t.cpp -o /tmp/t 2>&1 | grep -F 'Selected GCC installation' | grep -F '/${GCC_MAJOR}'
     /tmp/t
+    clang++ -std=c++23 -fprofile-arcs -ftest-coverage /tmp/t.cpp -o /tmp/t-coverage
 "
 
 echo "${ref}"

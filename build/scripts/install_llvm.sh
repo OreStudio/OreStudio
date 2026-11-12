@@ -14,10 +14,12 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# Installs clang, clang-tidy and the LLVM tools of one major version from
-# apt.llvm.org on Ubuntu. The Ubuntu archive has an older point release of the
-# same major. apt.llvm.org gives the newest point release of the major, so a
-# change of the major needs a commit but a new point release does not.
+# Installs clang, clang-tidy, the compiler runtime and the LLVM tools of one
+# major version from apt.llvm.org on Ubuntu. The runtime holds the profile
+# library that coverage builds link. The Ubuntu archive has an older point
+# release of the same major. apt.llvm.org gives the newest point release of the
+# major, so a change of the major needs a commit but a new point release does
+# not.
 #
 # The CI image runs this script. A machine without the image can run it to get
 # the compiler the CI builds use.
@@ -48,6 +50,7 @@ echo "deb [signed-by=${keyring}] https://apt.llvm.org/${codename}/ llvm-toolchai
     | ${sudo_cmd} tee "/etc/apt/sources.list.d/llvm-${major}.list" > /dev/null
 
 ${sudo_cmd} apt-get update -q -o Acquire::Retries=3
-${sudo_cmd} apt-get install "${apt_opts[@]}" "clang-${major}" "clang-tidy-${major}" "llvm-${major}"
+${sudo_cmd} apt-get install "${apt_opts[@]}" "clang-${major}" "clang-tidy-${major}" "llvm-${major}" \
+    "libclang-rt-${major}-dev"
 
 "/usr/lib/llvm-${major}/bin/clang++" --version

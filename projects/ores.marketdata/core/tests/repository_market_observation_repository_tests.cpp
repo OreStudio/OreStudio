@@ -737,10 +737,12 @@ TEST_CASE("write_manual_point_leaves_neither_row_when_the_annex_write_fails", "[
 
 namespace {
 
-// Whether two instants are within a second of each other. A record time comes
-// back from the database as text and the test only needs to know which write it
-// names, not the microseconds.
-bool near(std::chrono::system_clock::time_point a, std::chrono::system_clock::time_point b) {
+// Whether two instants are within two seconds of each other. A record time
+// comes back from the database as text and the test only needs to know which
+// write it names, not the microseconds. Not "near": windows.h defines near as
+// an empty macro.
+bool is_close_in_time(std::chrono::system_clock::time_point a,
+                      std::chrono::system_clock::time_point b) {
     const auto delta = a > b ? a - b : b - a;
     return delta < std::chrono::seconds(2);
 }
@@ -773,8 +775,8 @@ TEST_CASE("read_as_of_records_carries_the_row_record_time", "[repository]") {
         // The point's own instant is the one it was written at, and its record
         // time is when that write landed -- not the instant the snapshot is
         // read at.
-        CHECK(near(record.observation.observation_datetime, t0));
-        CHECK(near(record.recorded_at, written_at));
+        CHECK(is_close_in_time(record.observation.observation_datetime, t0));
+        CHECK(is_close_in_time(record.recorded_at, written_at));
     }
 }
 

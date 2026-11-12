@@ -10,11 +10,20 @@
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-11-12
 
 Per-component shared-library export/import macros. All component profiles.
 Components built as static libraries on Windows omit DLL annotations there;
 their shared-library visibility on other platforms is unchanged.
+
+A library that only uses another component's type imports it with default
+visibility (=BOOST_SYMBOL_VISIBLE=). The libraries build with
+=-fvisibility=hidden=, and =BOOST_SYMBOL_IMPORT= is empty outside Windows, so
+without it each library holds a hidden copy of the type's =type_info=. libc++
+on macOS compares =type_info= by address, so an exception thrown in one library
+then does not match a =catch= of the same type in another. libstdc++ compares
+names, which is why Linux never showed it. On Windows =BOOST_SYMBOL_VISIBLE= is
+empty and the import stays =dllimport=.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -42,7 +51,7 @@ The full template source. Edit here and re-tangle with
 #ifdef {{full_name_upper}}_LIBRARY
 #  define {{full_name_upper}}_EXPORT BOOST_SYMBOL_EXPORT
 #else
-#  define {{full_name_upper}}_EXPORT BOOST_SYMBOL_IMPORT
+#  define {{full_name_upper}}_EXPORT BOOST_SYMBOL_IMPORT BOOST_SYMBOL_VISIBLE
 #endif
 {{#win32_static_library}}
 #endif

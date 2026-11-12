@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch: feature/export-a-published-surface-to-ore-3
+#+branch: feature/export-a-published-surface-to-ore-4
 #+pr: 4600
 #+blocked_on:
 #+blocked_since:
@@ -26,12 +26,12 @@ Pricing reads the surface. A report binds to a published surface as it binds to 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | STARTED                                |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing: 2c runs against the current projection, and the native model task reprojects it. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Now          | 2c ran once: ORE refuses the FX volatility curve for want of FX conventions. |
+| Waiting on   | [[id:F7171FEA-3402-4B19-BCB3-02F3BFC33C1A][Keep each FX convention's ORE id]], so a run writes the FX conventions its option conventions name. |
+| Next         | Write the scripted ORE check once ORE builds the volatility curve. |
+| Last touched | 2026-11-12                             |
 
 * Acceptance
 
@@ -54,6 +54,14 @@ Two parts.
 - *2c. The ORE check.* A scripted check runs the ORE binary of the ORE build (=App/ore=) on the exported quotes and that configuration with an FX option at a test strike, inverts the NPV to a volatility, and compares it with the SSVI surface at that strike within a stated tolerance. It sits beside =projects/ores.ore/scripts/quantlib_fx_dates=.
 
 The data model of 2b is wrong, and is replaced. The FX volatility configuration it curated is a stored image of ORE's =FXVolatility= element: lists in columns, ORE reference strings, and a repeat of the blueprint's grid. [[id:E4380005-BE99-42F3-AB06-C7A6212FDE25][One native model for the stored ORE documents]], in the [[id:14807059-043D-4866-974D-B835151D61E8][Data model clean up]] story, replaces every stored ORE document in one go. 2c runs now, against the current projection, and checks the =curveconfig.xml= a run reads with the exported quotes through the ORE binary. That check is the contract the native model's projection must keep, so it carries over. Until then this story adds no column to the image tables, and one helper reads the blueprint's grid lists.
+
+*2c, first run (2026-11-12).* The run inputs of ACCOUK's NPV report were exported as a run takes them: the run configuration with =ore export-run=, the market with =marketdata export --date=. ORE 1.8.17.0 built ACCOUK's EUR and USD curves from them and refused the EUR/USD volatility curve, so no option priced. The run found three things.
+
+- The market export wrote every party's copy of each series a session can see. A session acting for one party of several wrote four values for each of the 490 surface keys of the day, and ORE reads one. The export now writes only the session party's series; a run prices for one party. This PR fixes it.
+- The run's =conventions.xml= has no =FX= convention at all. =read_conventions= in the ORE service says FX conventions have no store, so the package's FX list is empty, and ORE refuses every FX volatility curve: =Convention 'EUR-USD-FX' not found=.
+- An FX convention would be written as =EUR-USD-FX-CONVENTIONS=, and 151 FX option conventions in the seed name =X-Y-FX=. [[id:F7171FEA-3402-4B19-BCB3-02F3BFC33C1A][Keep each FX convention's ORE id]] in the backlog story Complete the ORE report configuration stores each FX convention under its own id, and is what 2c waits on.
+
+The scripted check is written when ORE can build the volatility curve, so it states a result and not a refusal.
 
 Realism is outside this task. The derived quotes have plausible ATM levels (3% to 10%), but their smiles are near flat: a 25-delta risk reversal of 0.01 to 0.17 vol points against a market 0.3 to 1.5, a 25-delta butterfly under 0.02 against 0.15 to 0.3. The derived source infers skew from daily fixings, which carry little of it. Realistic initial surfaces need curated smile levels in the synthetic generator task.
 

@@ -203,7 +203,13 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
     // raw quotes share their keys, and ORE must read one value for each.
     std::set<std::string> surface_pairs;
     std::vector<ores::ore::market::market_datum> surface_points;
+    // A run prices for one party, and every party holds its own series of each item it receives
+    // or derives. A session that sees several parties would otherwise write each party's copy of
+    // one key, and ORE would read several values for it.
+    const auto party = ctx_.party_id();
     for (const auto& s : series) {
+        if (party && s.party_id != *party)
+            continue;
         // A quote series has a URI the datum codec reads and a fixing series one
         // the index codec reads. A series neither reads is a data-integrity error
         // and names both reasons.

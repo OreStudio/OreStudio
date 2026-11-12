@@ -28,6 +28,7 @@ set(files
     "request_context_tests.cpp"
     "run_token_cache_tests.cpp"
     "standard_service_options_tests.cpp"
+    "step_workers_tests.cpp"
     "systemd_notify_tests.cpp"
     "workflow_helpers_tests.cpp"
 )

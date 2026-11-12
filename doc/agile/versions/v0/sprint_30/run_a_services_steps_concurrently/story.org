@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 1D550641-953B-4F17-BFA4-B1DB1EFBE62C
+:END:
+#+title: Story: Run a service's steps concurrently
+#+description: A service runs its workflow steps one at a time, so a long step, such as generate_trades, holds back every step dispatched beside it until the workflow fails them as unclaimed. Serve step commands on a bounded set of workers.
+#+type: story
+#+level: s2
+#+filetags: :service:workflow:nats:sprint_30:v0:
+#+created: 2026-11-11
+#+updated: 2026-11-12
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A provisioning run whose steps run side by side completes, however long one of
+them takes. A service serves its workflow steps on a bounded set of workers,
+which it chooses for the work its steps do, so a step that waits for many
+minutes on another service no longer holds back the steps dispatched beside it
+until the workflow fails them as unclaimed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | All tasks done.                        |
+| Waiting on    | Nothing.                               |
+| Next          | Merge the PR.                          |
+| Last touched  | 2026-11-12                             |
+
+* Acceptance
+
+- A service can serve its step commands on more than one worker; one, the
+  default, keeps today's behaviour.
+- The IAM service serves its provisioning steps on four workers.
+- The workers wait for every running step when the service stops.
+- The service token provider is safe to call from several threads.
+- Unit tests prove that steps run at once, that a step waits for a free
+  worker, and that the workers wait for running steps.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B1C04AE1-3EAA-41E4-9E5A-F380760EFD73][Scaffold story: Run a service's steps concurrently]] | DONE | 2026-11-11 | 2026-11-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:95498D9D-291D-4C41-A0E5-4C876181F150][Serve step commands on a bounded set of workers]] | DONE | 2026-11-11 | 2026-11-12 | Initial task for: Run a service's steps concurrently |
+
+* Decisions
+
+* Out of scope
+
+-

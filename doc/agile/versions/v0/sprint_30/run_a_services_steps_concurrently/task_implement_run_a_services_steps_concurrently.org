@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: 95498D9D-291D-4C41-A0E5-4C876181F150
+:END:
+#+title: Task: Serve step commands on a bounded set of workers
+#+description: Initial task for: Run a service's steps concurrently
+#+type: task
+#+level: s1
+#+filetags: :run_a_services_steps_concurrently:sprint_30:v0:
+#+owner: marco
+#+branch: feature/run-a-services-steps-concurrently
+#+pr: 4642
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-12
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D550641-953B-4F17-BFA4-B1DB1EFBE62C][Run a service's steps concurrently]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=serve_step_commands= runs a service's steps on a number of workers it is
+given, and the IAM service runs its provisioning steps on four.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:1D550641-953B-4F17-BFA4-B1DB1EFBE62C][Run a service's steps concurrently]] |
+| Now          | Implemented and verified.              |
+| Waiting on   | Nothing.                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-11-12                             |
+
+* Acceptance
+
+- =serve_step_commands= takes a worker count, one by default, so every other
+  service is unchanged.
+- =step_workers= waits for a free worker rather than queueing, and its
+  destructor joins the running steps.
+- A delivery moves to its worker, which settles it; a step that throws on a
+  worker is logged and its delivery rolls back.
+- The IAM provisioning steps run on four workers, and the service token
+  provider takes a lock.
+- A fresh environment provisions the system and Acme to completion with no
+  service crash.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+
+The provisioning run of the conventions story stopped at attach_photos: the
+IAM service ran its steps one at a time on the delivery thread of its step
+subscription, generate_trades took about 25 minutes, and attach_photos,
+set_staff_passwords and schedule_reports waited behind it until the workflow
+failed attach_photos as unclaimed after twenty minutes.
+
+1. Audit the step handlers of the fourteen services that serve steps for
+   state a call changes. Their members are references, database contexts,
+   configuration, and caches that lock or read wait-free, with one
+   exception: the service token provider caches its token with no lock, and
+   handlers on several subscriptions already call it at once.
+2. Add =step_workers=, a fixed set of threads that waits for a free worker
+   rather than queueing, so a command not yet taken stays with the server.
+3. Give =serve_step_commands= a number of workers, one by default, and run
+   the IAM provisioning steps on four. Steps that hold a database connection
+   for long, such as the data quality publishes, stay on one: more workers
+   than the pool's two connections would starve the service's other handlers.
+4. Lock the service token provider.
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4642][#4642]] | [service] Run a service's provisioning steps on several workers |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A delivery waiting for a worker is not kept alive and spends its budget | step_command_stream.hpp | Accepted | The claim and the keep-alive are taken on the delivery thread; only the handler call goes to the worker. |
+| 2 | Shutdown waits for running steps | step_workers.hpp | Accepted as designed | The class comment states it; a step that outlives the stop is ended by its claim's lease. |
+| 3 | A throw from post leaks a worker slot | step_workers.hpp | Accepted | The slot is restored when post throws, and the posted task is noexcept. |
+| 4 | Handlers now run side by side | registrar.cpp | Accepted | The plan's audit found only the token provider; the provisioning run found the two derived FX vol defects the hotfix fixes. |
+| 5 | The one-worker bypass duplicates run() | step_command_stream.hpp | Accepted | A comment says why the bypass stays. |
+| 6 | The token provider holds its lock across a renewal | service_token_provider.cpp | Accepted | The comment says the waiting callers reuse the renewed token. |
+| 7 | No test of serve_step_commands with several workers | step_command_stream.hpp | Declined | ores.service.tests has no live NATS harness to build one on; the fresh provisioning run exercises it end to end, with four workers. |
+| 8 | The step_workers comment still says a waiting command stays with the server | step_workers.hpp | Accepted | It says the waiting step's caller keeps its delivery alive. |
+| 9 | Keep-alive while waiting has no test | step_command_stream.hpp | Declined | domain_delivery_tests already pins that a kept-alive delivery keeps reporting on another thread; the wait adds no new behaviour to the delivery. |
+
+* Result
+
+=serve_step_commands= runs a service's steps on the number of workers it is
+given, and IAM runs its provisioning steps on four. The branch was rebased on
+/Own each durable NATS delivery with one RAII transaction/: a step's delivery
+moves to its worker, so the double free that crashed IAM when this branch
+first ran cannot happen. =step_workers::run= takes a
+=std::move_only_function=, because a delivery cannot be copied.
+
+All acceptance points are met. =ores.service.tests= (63 cases, including the
+four =step_workers= cases), =ores.nats.tests= (65), =ores.iam.service.tests=
+(13) and =ores.iam.core.tests= (341) pass.
+
+A fresh environment provisioned the system (3 of 3 steps) and Acme (17 of 17)
+to completion with this branch merged with the hotfix /Publish one curated
+convention set and provision to completion/, with no failed unit and no
+crash in the journal. The steps now run side by side, which exposed two
+defects in the derived FX vol source that the hotfix fixes. Without the
+hotfix, provisioning stops at =generate_trades= on the convention defect it
+names.
+

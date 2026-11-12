@@ -8,7 +8,7 @@
 #+filetags: :build:make_the_build_faster:sprint_30:v0:
 #+owner: marco
 #+branch: feature/split-the-slowest-compile-units
-#+pr:
+#+pr: 4631
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4631][#4631]] | [utility] Build wire fields as a flat list, not a std::tuple |
 
 * Review
 

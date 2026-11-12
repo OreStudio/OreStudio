@@ -57,6 +57,12 @@ jobs:
     runs-on: ubuntu-24.04
     container:
       image: ${{ needs.image.outputs.ref }}
+    # A container job runs its steps with sh, but the runner runs them with
+    # bash -e. The steps use [[ and process substitution, which sh does not
+    # have. Plain "bash" would also add pipefail, which the steps do not expect.
+    defaults:
+      run:
+        shell: bash -e {0}
 
     steps:
       - uses: actions/checkout@v7

@@ -20,6 +20,7 @@
 #include "ores.http/routes/refdata/tenor_screen_routes.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.api/net/view_answer.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.refdata.api/domain/tenor_codec.hpp"
 #include "ores.refdata.api/domain/tenor_convention_codec.hpp"
@@ -27,14 +28,18 @@
 #include "ores.refdata.api/messaging/tenor_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_convention_resolution_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
+#include "ores.refdata.api/messaging/tenor_schedule_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/asio/awaitable.hpp>
+#include <algorithm>
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace ores::http::routes::refdata {
 
@@ -103,6 +108,16 @@ rr::versioned_write<Write> write_of(std::string_view text) {
 
 }
 
+tenor_catalogue
+tenor_screen_routes::catalogue_of(std::vector<ores::refdata::domain::tenor> tenors,
+                                  std::vector<ores::refdata::domain::tenor_convention> conventions,
+                                  std::vector<ores::refdata::domain::tenor_schedule> schedules) {
+    // The service will not order a tenor list by its sort order, so the view
+    // puts O/N before T/N before 1M here, as the BFF did.
+    std::ranges::stable_sort(tenors, {}, &ores::refdata::domain::tenor::sort_order);
+    return {std::move(tenors), std::move(conventions), std::move(schedules)};
+}
+
 void tenor_screen_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
@@ -113,6 +128,37 @@ void tenor_screen_routes::register_routes(
         router->add_route(built);
         registry->register_route(built);
     };
+
+    add(router->get("/api/tenors/catalogue")
+            .summary("The tenor catalogue")
+            .description("A composed view owned by the reference data service: every tenor in "
+                         "its own order, with every convention and every schedule, three whole "
+                         "list reads. The answer carries an ETag and is revalidated at each "
+                         "read, because the tenors screen's own writes change it.")
+            .response<tenor_catalogue>()
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<messaging::list_tenors_request>([&] {
+                    auto tenors = forwarding::forward_all(req,
+                                                          session,
+                                                          messaging::list_tenors_request{},
+                                                          &messaging::list_tenors_response::tenors);
+                    auto conventions = forwarding::forward_all(
+                        req,
+                        session,
+                        messaging::list_tenor_conventions_request{},
+                        &messaging::list_tenor_conventions_response::conventions);
+                    auto schedules = forwarding::forward_all(
+                        req,
+                        session,
+                        messaging::list_tenor_schedules_request{},
+                        &messaging::list_tenor_schedules_response::schedules);
+                    return ores::http::net::view_answer(
+                        req,
+                        json::write(catalogue_of(
+                            std::move(tenors), std::move(conventions), std::move(schedules))),
+                        ores::http::net::view_cache_policy::revalidated());
+                });
+            }));
 
     add(router->post("/api/tenors/preview-resolution")
             .summary("Resolve a drafted tenor rule to a date before it is written")

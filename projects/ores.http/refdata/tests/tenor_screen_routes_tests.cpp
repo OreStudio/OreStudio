@@ -32,6 +32,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <string>
+#include <vector>
 
 using ores::http::domain::http_method;
 using ores::http::domain::http_request;
@@ -165,4 +166,41 @@ TEST_CASE("tenor_routes_forward_a_well_formed_request", "[tenor_screen]") {
                             "/api/tenors/conventions/STD/resolutions/1M",
                             tenor_body("{" + stated_reason + R"(,"version":2})"),
                             membership));
+}
+
+TEST_CASE("tenor_catalogue_puts_the_tenors_in_their_own_order", "[tenor_screen]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the tenor catalogue's order and shape";
+
+    const auto tenor_at = [](std::string code, int order) {
+        ores::refdata::domain::tenor t;
+        t.code = std::move(code);
+        t.sort_order = order;
+        return t;
+    };
+    ores::refdata::domain::tenor_convention convention;
+    convention.code = "money_market";
+    const auto catalogue = tenor_screen_routes::catalogue_of(
+        {tenor_at("1M", 30), tenor_at("ON", 10), tenor_at("TN", 20), tenor_at("SN", 20)},
+        {convention},
+        {});
+    std::vector<std::string> codes;
+    for (const auto& t : catalogue.tenors)
+        codes.push_back(t.code);
+    CHECK(codes == std::vector<std::string>{"ON", "TN", "SN", "1M"});
+
+    const auto text = ores::utility::codec::json::write(catalogue);
+    CHECK(text.starts_with(R"({"tenors":[)"));
+    CHECK(text.find(R"("conventions":[{)") != std::string::npos);
+    CHECK(text.find(R"("code":"money_market")") != std::string::npos);
+    CHECK(text.ends_with(R"("schedules":[]})"));
+}
+
+TEST_CASE("tenor_catalogue_is_a_view_the_screen_reads_with_a_session", "[tenor_screen]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the tenor catalogue's route";
+
+    const auto answer = answer_at<tenor_screen_routes>(
+        http_method::get, "/api/tenors/catalogue", http_request{}, "/api/tenors/catalogue");
+    CHECK(answer.status == http_status::bad_gateway);
 }

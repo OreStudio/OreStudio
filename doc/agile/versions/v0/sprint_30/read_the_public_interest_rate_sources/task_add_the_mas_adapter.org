@@ -92,7 +92,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | hidden_value needs name before value in the tag | mas.cpp | Declined | The page writes them in that order; a change fails safely with an error and no fixing. |
+| 2 | A blank line before the footer could fail a row | mas.cpp | Checked | lines_of returns only lines that are not empty. |
+| 3 | Each read fetches the page and posts the form | mas.cpp | Declined | The adapter reads one window a poll; two requests an hour is light. |
+| 4 | A redirect is an error | mas.cpp | Declined | The transport follows no redirect, and any status but 200 is an error with no fixing. |
+| 5 | The SORA column index is brittle | mas.cpp | Checked | The parser refuses a download whose fifth column is not SORA. |
+| 6 | The credit must match the licence | marketdata_overnight_rates_catalogue_populate.sql | Checked | The licence asks for a notice naming the dataset and its source; the credit names both. |
 
 * Result
 

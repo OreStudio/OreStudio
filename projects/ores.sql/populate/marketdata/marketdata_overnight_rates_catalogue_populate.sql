@@ -80,6 +80,11 @@ values
      'The economic information system of Banco de Mexico, among them the TIIE de Fondeo, the overnight funding rate, published each Mexican business day.',
      37, 'https://www.banxico.org.mx/footer-en/terms-and-conditions-banco-mexico-s-website.html',
      'Source: Banco de Mexico, https://www.banxico.org.mx', true, 'env:ORES_MARKETDATA_BANXICO_API_KEY',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'bcch', 0, 'Banco Central de Chile', 'reference',
+     'The statistical database of the Banco Central de Chile, among them the average overnight interbank rate on which the Camara index is built, published each Chilean business day. Its account is ORES_MARKETDATA_BCCH_USER and the password it names.',
+     38, 'https://si3.bcentral.cl/estadisticas/Principal1/Web_Services/terminos_condiciones_en.html',
+     'Source: Banco Central de Chile', true, 'env:ORES_MARKETDATA_BCCH_PASSWORD',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -100,7 +105,8 @@ insert into t_overnight_inventory (provider_code, id_scheme, external_id, field,
     ('riksbank', 'riksbank_swestr', 'SWESTR', 'rate', 'oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR'),
     ('rba', 'rba_table', 'f1.FIRMMCRID', 'value', 'oresmd://ir/AUD?type=fixing&index=ibor&name=AONIA'),
     ('bcb', 'bcb_sgs', '4389', 'valor', 'oresmd://ir/BRL?type=fixing&index=ibor&name=CDI'),
-    ('banxico', 'banxico_sie', 'SF331451', 'dato', 'oresmd://ir/MXN?type=fixing&index=ibor&name=FTIIE');
+    ('banxico', 'banxico_sie', 'SF331451', 'dato', 'oresmd://ir/MXN?type=fixing&index=ibor&name=FTIIE'),
+    ('bcch', 'bcch_bde', 'F022.TIB.TIP.D001.NO.Z.D', 'value', 'oresmd://ir/CLP?type=fixing&index=ibor&name=CAMARA');
 
 insert into ores_marketdata_market_data_vendor_instruments_tbl (
     id, tenant_id, version, provider_code, id_scheme, external_id, field, minted, deviation_note,
@@ -199,6 +205,11 @@ values
      'banxico', 'banxico_sie', 'production', 'https://www.banxico.org.mx', '',
      '{"url":"https://www.banxico.org.mx","backfill_days":400,"poll_minutes":60}', true,
      'The session that reads the series of the Banco de Mexico SIE API.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('bcch-bde', ores_utility_system_tenant_id_fn(), 0, 'BCCh BDE',
+     'bcch', 'bcch_bde', 'production', 'https://si3.bcentral.cl', '',
+     '{"url":"https://si3.bcentral.cl","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the Banco Central de Chile BDE web service.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -248,6 +259,10 @@ values
     ('5d31da1a-16cc-52b8-9d6e-8b3c77c6e5ab', ores_utility_system_tenant_id_fn(), 0,
      'banxico-tiie-fondeo', 'banxico', 'banxico-sie', 'end_of_day', 'SF331451', true,
      'The TIIE de Fondeo as Banco de Mexico publishes it, read from its SIE API by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('c2418b97-6603-5306-a00c-226b84671227', ores_utility_system_tenant_id_fn(), 0,
+     'bcch-camara', 'bcch', 'bcch-bde', 'end_of_day', 'F022.TIB.TIP.D001.NO.Z.D', true,
+     'The average overnight interbank rate as the Banco Central de Chile publishes it, read from its BDE web service by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -270,7 +285,8 @@ from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR'),
              ('riksbank-swestr', 'riksbank', 'riksbank_swestr', 'SWESTR'),
              ('rba-aonia', 'rba', 'rba_table', 'f1.FIRMMCRID'),
              ('bcb-cdi', 'bcb', 'bcb_sgs', '4389'),
-             ('banxico-tiie-fondeo', 'banxico', 'banxico_sie', 'SF331451'))
+             ('banxico-tiie-fondeo', 'banxico', 'banxico_sie', 'SF331451'),
+             ('bcch-camara', 'bcch', 'bcch_bde', 'F022.TIB.TIP.D001.NO.Z.D'))
      as s(feed, provider, scheme, external_id)
 join ores_marketdata_feeds_tbl f
   on f.tenant_id = ores_utility_system_tenant_id_fn()
@@ -468,5 +484,23 @@ begin
         '5d31da1a-16cc-52b8-9d6e-8b3c77c6e5ab',
         current_user, current_user, 'system.initial_load',
         'The system party reads the TIIE de Fondeo from Banco de Mexico'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'a3544d97-a532-52c7-835c-b225f16bf9b8', ores_utility_system_tenant_id_fn(), 0, v_party, 'bcch',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes the overnight interbank rate of Banco Central de Chile for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '77a91fa3-1218-569e-957d-9c25091d813c', ores_utility_system_tenant_id_fn(), 0, v_party, 'bcch', 'interest_rates',
+        'c2418b97-6603-5306-a00c-226b84671227',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads the overnight interbank rate from Banco Central de Chile'
     ) on conflict do nothing;
 end $$;

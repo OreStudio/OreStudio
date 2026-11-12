@@ -68,6 +68,7 @@ service maps and stores what it sends.
 - =rba_fetcher=, the fetcher that reads a series of an RBA statistical table, such as AONIA.
 - =bcb_fetcher=, the fetcher that reads a series of the Banco Central do Brasil's SGS API, such as the annualised CDI.
 - =banxico_fetcher=, the fetcher that reads a series of Banco de Mexico's SIE API, such as the TIIE de Fondeo, with a token from the environment.
+- =bcch_fetcher=, the fetcher that reads a series of the Banco Central de Chile's BDE web service, such as the average overnight interbank rate, with an account from the environment.
 - =published_text=, the date, number and HTTP helpers that every fetcher shares.
 - =source_feed=, which serves one source through its fetcher.
 - =official_adapter=, which hosts every source and gives each the fetcher of its adapter.

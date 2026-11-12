@@ -241,7 +241,7 @@ The steps for a key:
    whose publisher also serves callers without a key, such as the Riksbank,
    reads without it.
 5. A fetcher puts the key in a query parameter whose name holds =key=,
-   =token=, =secret= or =password=, so =redacted= masks it in every logged
+   =token=, =secret=, =pass= or =user=, so =redacted= masks it in every logged
    address and error.
 6. The gate check =no-committed-credentials= fails when a file that git would
    commit holds the value of a key or password of =.env=.

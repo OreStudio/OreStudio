@@ -31,8 +31,8 @@ std::ostream& operator<<(std::ostream& s, const options& v) {
       << ", boj_url: " << v.boj_url << ", norges_bank_url: " << v.norges_bank_url
       << ", riksbank_url: " << v.riksbank_url << ", rba_url: " << v.rba_url
       << ", bcb_url: " << v.bcb_url << ", banxico_url: " << v.banxico_url
-      << ", sources: " << v.sources.size() << ", backfill_days: " << v.backfill_days
-      << ", poll_minutes: " << v.poll_minutes << " }";
+      << ", bcch_url: " << v.bcch_url << ", sources: " << v.sources.size()
+      << ", backfill_days: " << v.backfill_days << ", poll_minutes: " << v.poll_minutes << " }";
     return s;
 }
 

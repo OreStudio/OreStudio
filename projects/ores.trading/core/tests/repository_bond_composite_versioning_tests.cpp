@@ -18,7 +18,6 @@
  *
  */
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/make_logger.hpp"

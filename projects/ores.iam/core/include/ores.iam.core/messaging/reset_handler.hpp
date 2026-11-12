@@ -21,7 +21,7 @@
 #define ORES_IAM_MESSAGING_RESET_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/messaging/reset_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -79,10 +79,9 @@ public:
             }
 
             using ores::database::service::tenant_context;
-            using ores::database::repository::execute_parameterized_multi_column_query;
 
             auto sys_ctx = tenant_context::with_system_tenant(ctx_);
-            execute_parameterized_multi_column_query(
+            ores::database::query_builder::execute_parameterized_multi_column_query(
                 sys_ctx,
                 "SELECT ores_iam_reset_tenant_bootstrap_fn($1, $2)",
                 {req->tenant_code, ctx_expected->actor()},
@@ -117,14 +116,14 @@ public:
             }
 
             using ores::database::service::tenant_context;
-            using ores::database::repository::execute_parameterized_multi_column_query;
 
             auto sys_ctx = tenant_context::with_system_tenant(ctx_);
-            execute_parameterized_multi_column_query(sys_ctx,
-                                                     "SELECT ores_iam_reset_system_fn()",
-                                                     {},
-                                                     reset_handler_lg(),
-                                                     "reset_system");
+            ores::database::query_builder::execute_parameterized_multi_column_query(
+                sys_ctx,
+                "SELECT ores_iam_reset_system_fn()",
+                {},
+                reset_handler_lg(),
+                "reset_system");
 
             BOOST_LOG_SEV(reset_handler_lg(), info) << "System bootstrap reset complete";
             reply(nats_,

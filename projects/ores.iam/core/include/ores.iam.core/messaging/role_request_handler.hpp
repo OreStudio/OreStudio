@@ -21,7 +21,7 @@
 #define ORES_IAM_CORE_MESSAGING_ROLE_REQUEST_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/domain/permission_codes.hpp"
 #include "ores.iam.api/domain/role_grant_request.hpp"
 #include "ores.iam.api/domain/role_grant_request_role.hpp"
@@ -309,7 +309,7 @@ private:
         for (const auto& id : req.role_ids)
             parsed.push_back(boost::uuids::to_string(parse(id)));
         const auto ids = array_literal(parsed);
-        const auto held = ores::database::repository::execute_parameterized_string_query(
+        const auto held = ores::database::query_builder::execute_parameterized_string_query(
             ctx,
             "select role_id::text from ores_iam_account_roles_tbl"
             " where account_id = $1::uuid and role_id = any($2::uuid[])"
@@ -321,7 +321,7 @@ private:
             return role_request_result(
                 outcome::conflict, "already_held", "You already hold a role you asked for.");
 
-        const auto waiting = ores::database::repository::execute_parameterized_string_query(
+        const auto waiting = ores::database::query_builder::execute_parameterized_string_query(
             ctx,
             "select role_id::text from ores_iam_open_role_grant_requests_fn($1::uuid, $2::uuid[])",
             {boost::uuids::to_string(*me), ids},

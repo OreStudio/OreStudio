@@ -210,8 +210,12 @@ std::vector<Entity> select(context ctx, const condition& statement) {
 }
 
 /**
- * @brief Runs hand-written SQL, numbered $1.. already, with text parameters, and
- * returns every row as text, a missing value as nothing.
+ * @brief Runs one statement of hand-written SQL, numbered $1.. already, with
+ * text parameters, and returns every row as text, a missing value as nothing.
+ *
+ * The statement runs on the transaction of the unit of work the context is
+ * bound to, or in a transaction of its own on a pooled connection. A failure
+ * throws repository_exception with the server's SQLSTATE.
  */
 ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>>
 execute_parameterized_multi_column_query(context ctx,
@@ -222,7 +226,7 @@ execute_parameterized_multi_column_query(context ctx,
 
 /**
  * @brief Runs hand-written SQL with text parameters and returns the first
- * column of each row.
+ * column of each row, leaving out a row whose first column is missing.
  */
 ORES_DATABASE_EXPORT std::vector<std::string>
 execute_parameterized_string_query(context ctx,
@@ -239,6 +243,29 @@ execute_raw_multi_column_query(context ctx,
                                const std::string& sql,
                                logging::logger_t& lg,
                                const std::string& operation_desc);
+
+/**
+ * @brief The first column of each row, for SQL with no parameters.
+ */
+ORES_DATABASE_EXPORT std::vector<std::string> execute_raw_string_query(
+    context ctx, const std::string& sql, logging::logger_t& lg, const std::string& operation_desc);
+
+/**
+ * @brief Runs hand-written SQL with text parameters for its effect.
+ */
+ORES_DATABASE_EXPORT void execute_parameterized_command(context ctx,
+                                                        const std::string& sql,
+                                                        const std::vector<std::string>& params,
+                                                        logging::logger_t& lg,
+                                                        const std::string& operation_desc);
+
+/**
+ * @brief The same, for SQL with no parameters.
+ */
+ORES_DATABASE_EXPORT void execute_raw_command(context ctx,
+                                              const std::string& sql,
+                                              logging::logger_t& lg,
+                                              const std::string& operation_desc);
 
 /**
  * @brief The text of the insert a repository writes, for its sql().

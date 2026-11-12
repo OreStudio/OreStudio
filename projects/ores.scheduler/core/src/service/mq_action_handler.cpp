@@ -18,7 +18,7 @@
  *
  */
 #include "ores.scheduler.core/service/mq_action_handler.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.core/service/action_payloads.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
@@ -65,11 +65,12 @@ mq_action_handler::execute(const action_context& ctx) {
         const std::string sql = "SELECT ores_mq_messages_send_fn("
                                 "$1::uuid, $2, $3::jsonb, 0::integer)::bigint";
 
-        execute_parameterized_command(ctx.db_ctx,
-                                      sql,
-                                      {fields.queue_id, fields.message_type, fields.payload},
-                                      lg(),
-                                      "Sending MQ message from scheduler.");
+        ores::database::query_builder::execute_parameterized_command(
+            ctx.db_ctx,
+            sql,
+            {fields.queue_id, fields.message_type, fields.payload},
+            lg(),
+            "Sending MQ message from scheduler.");
 
         BOOST_LOG_SEV(lg(), info) << "MQ action succeeded for job: " << ctx.job.job_name;
         co_return std::expected<void, std::string>{};

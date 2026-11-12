@@ -18,7 +18,7 @@
  *
  */
 #include "ores.geo/service/geolocation_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include <boost/system/error_code.hpp>
 
 namespace ores::geo::service {
@@ -35,7 +35,7 @@ geolocation_service::lookup(const boost::asio::ip::address& ip) const {
          * parameter rather than as text spliced into the statement.
          */
         const auto ip_str = ip.to_string();
-        const auto rows = database::repository::execute_parameterized_multi_column_query(
+        const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
             ctx_,
             "SELECT country_code FROM ores_geo_ip2country_lookup_fn($1::uuid, $2::inet)",
             {ctx_.tenant_id().to_string(), ip_str},
@@ -60,7 +60,7 @@ geolocation_service::lookup(const boost::asio::ip::address& ip) const {
 
         return geo_result;
 
-    } catch (const std::runtime_error&) {
+    } catch (const std::exception&) {
         return std::unexpected(geolocation_error::lookup_failed);
     }
 }

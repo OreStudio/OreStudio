@@ -195,7 +195,6 @@ telemetry_repository::query(context ctx, const messaging::telemetry_query& q) {
 
     BOOST_LOG_SEV(lg(), trace) << "Executing query: " << sql;
 
-    // Use raw SQL execution via bitemporal_operations helper
     auto rows =
         query_builder::execute_raw_multi_column_query(ctx, sql, lg(), "Querying telemetry logs");
 
@@ -246,7 +245,6 @@ std::uint64_t telemetry_repository::count(context ctx, const messaging::telemetr
 
     BOOST_LOG_SEV(lg(), trace) << "Executing count: " << sql;
 
-    // Use raw SQL execution via bitemporal_operations helper
     auto results = query_builder::execute_parameterized_string_query(
         ctx, sql, {}, lg(), "Counting telemetry logs");
 

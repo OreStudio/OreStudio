@@ -18,7 +18,7 @@
  *
  */
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.trading.api/domain/trade_authorisation_request.hpp"
@@ -61,7 +61,7 @@ operational_authorisation_service::raise_if_awaiting(const boost::uuids::uuid& t
         return std::nullopt;
 
     // The status machine is reference data and already committed.
-    const auto live = ores::database::repository::execute_parameterized_string_query(
+    const auto live = ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "select ores_trading_status_is_live_fn($1::uuid)::text",
         {boost::uuids::to_string(states.front().status_id)},

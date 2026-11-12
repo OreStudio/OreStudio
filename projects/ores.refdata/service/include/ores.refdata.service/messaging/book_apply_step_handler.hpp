@@ -21,7 +21,7 @@
 #define ORES_REFDATA_SERVICE_MESSAGING_BOOK_APPLY_STEP_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.inbox.api/workflow/apply_step_command.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
@@ -140,7 +140,7 @@ private:
     ores::database::context context_of(const std::string& tenant_id,
                                        const std::string& request_id) const {
         const auto tenant = ores::database::service::tenant_context::with_tenant(ctx_, tenant_id);
-        const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
             tenant,
             "select p::text from ores_refdata_book_change_parties_fn($1::uuid) as p",
             {request_id},

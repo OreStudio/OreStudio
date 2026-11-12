@@ -24,7 +24,7 @@
 #include "ores.compute.core/repository/workflow_batch_link_repository.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
 #include "ores.nats/domain/wire_codec.hpp"

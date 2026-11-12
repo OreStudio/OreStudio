@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
@@ -117,7 +117,7 @@ void insert_many_ticks(const owned_series& o,
                        std::chrono::system_clock::time_point first,
                        int count) {
     auto lg(ores::logging::make_logger("ores.marketdata.core.tests"));
-    ores::database::repository::execute_parameterized_multi_column_query(
+    ores::database::query_builder::execute_parameterized_multi_column_query(
         o.owner,
         "WITH ins AS ("
         "  INSERT INTO ores_marketdata_ticks_tbl "

@@ -24,7 +24,7 @@
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 #include "ores.compute.core/repository/grid_sample_repository.hpp"
 #include "ores.compute.core/repository/node_sample_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -84,7 +84,7 @@ public:
     ~sample_cleanup() {
         for (const auto& step : steps_) {
             try {
-                ores::database::repository::execute_parameterized_command(
+                ores::database::query_builder::execute_parameterized_command(
                     h_.context().with_tenant(step.tenant, h_.db_user()),
                     step.sql,
                     step.params,
@@ -486,7 +486,7 @@ TEST_CASE("grid_series_of_a_session_in_the_system_party_sums_every_party", "[rep
     // The tenant's system party administers it. A test tenant may have none, and then
     // there is nothing to act in.
     auto lg = ores::logging::make_logger(test_suite);
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         h.context(),
         "SELECT id::text FROM ores_refdata_read_system_party_fn(ores_iam_current_tenant_id_fn())",
         {},

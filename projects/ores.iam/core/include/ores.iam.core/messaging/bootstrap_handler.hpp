@@ -21,8 +21,8 @@
 #define ORES_IAM_MESSAGING_BOOTSTRAP_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/pq/store_error.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
+#include "ores.database/repository/repository_exception.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.core/messaging/principal.hpp"
@@ -134,7 +134,6 @@ public:
         }
 
         try {
-            using ores::database::repository::execute_parameterized_string_query;
 
             // Hash the password in C++ — pgcrypto is not required in the DB.
             const auto password_hash = ores::security::crypto::password_hasher::hash(req->password);
@@ -144,7 +143,7 @@ public:
             // audit columns take the username, which is the part of the
             // principal before the hostname.
             const auto username = username_of(req->principal);
-            const auto results = execute_parameterized_string_query(
+            const auto results = ores::database::query_builder::execute_parameterized_string_query(
                 ctx_,
                 "SELECT ores_iam_create_initial_admin_fn($1, $2, $3, $4)::text",
                 {username, req->email, password_hash, username},
@@ -174,7 +173,7 @@ public:
                   create_initial_admin_response{.success = true,
                                                 .account_id = account_id_str,
                                                 .tenant_id = ctx_.tenant_id().to_string()});
-        } catch (const ores::database::pq::store_error& e) {
+        } catch (const ores::database::repository::repository_exception& e) {
             BOOST_LOG_SEV(bootstrap_handler_lg(), error)
                 << msg.subject << " failed (" << e.sqlstate() << "): " << e.what();
             reply(nats_,

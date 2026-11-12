@@ -42,8 +42,9 @@ service, built on libpq, the PostgreSQL C client.
 - Generated repositories state their queries with =query_builder= and run
   them through its =execute_*= helpers, binding and reading each column in
   the binary format, in its own C++ type. Hand-written SQL runs through the
-  raw helpers of =repository/bitemporal_operations.hpp=, on the same pool and
-  the same unit of work as the repositories.
+  text helpers of the same =query_builder= header, one statement at a time,
+  on the same pool and the same unit of work as the repositories. A failure
+  throws =repository_exception= with the server's SQLSTATE.
 - A =health_monitor= probes the database, and a =postgres_listener_service=
   holds a direct connection to PostgreSQL for LISTEN/NOTIFY, which needs a
   session that transaction pooling does not give.

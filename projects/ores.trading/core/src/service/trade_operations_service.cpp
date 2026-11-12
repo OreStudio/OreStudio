@@ -18,7 +18,7 @@
  *
  */
 #include "ores.trading.core/service/trade_operations_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
@@ -454,7 +454,7 @@ trade_operations_service::execute_trade(const messaging::execute_trade_request& 
         response.result.message = "Trade " + id + " has no state to execute.";
         return response;
     }
-    const auto draft = ores::database::repository::execute_parameterized_string_query(
+    const auto draft = ores::database::query_builder::execute_parameterized_string_query(
         ctx,
         "select ores_trading_status_is_draft_fn($1::uuid)::text",
         {boost::uuids::to_string(held.front().status_id)},
@@ -562,7 +562,7 @@ trade_operations_service::complete_structure(const messaging::complete_structure
             response.result.message = "Trade " + leg_id + " has no state to complete.";
             return response;
         }
-        const auto draft = ores::database::repository::execute_parameterized_string_query(
+        const auto draft = ores::database::query_builder::execute_parameterized_string_query(
             ctx,
             "select ores_trading_status_is_draft_fn($1::uuid)::text",
             {boost::uuids::to_string(state.front().status_id)},
@@ -574,7 +574,7 @@ trade_operations_service::complete_structure(const messaging::complete_structure
          * Operations, and drafts that have not. A leg in any other state is a
          * deal that ended, and a structure does not hold those.
          */
-        const auto live = ores::database::repository::execute_parameterized_string_query(
+        const auto live = ores::database::query_builder::execute_parameterized_string_query(
             ctx,
             "select ores_trading_status_is_live_fn($1::uuid)::text",
             {boost::uuids::to_string(state.front().status_id)},
@@ -632,7 +632,7 @@ trade_operations_service::complete_structure(const messaging::complete_structure
         // A leg that is already live has asked its own question; only a draft
         // is taken live here.
         const auto held_state = states.read_latest(ctx, boost::uuids::to_string(leg.trade_id));
-        const auto still_draft = ores::database::repository::execute_parameterized_string_query(
+        const auto still_draft = ores::database::query_builder::execute_parameterized_string_query(
             ctx,
             "select ores_trading_status_is_draft_fn($1::uuid)::text",
             {boost::uuids::to_string(held_state.front().status_id)},

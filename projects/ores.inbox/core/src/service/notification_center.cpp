@@ -18,7 +18,7 @@
  *
  */
 #include "ores.inbox.core/service/notification_center.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/notification_kind_repository.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -31,8 +31,6 @@
 namespace ores::inbox::service {
 
 using namespace ores::logging;
-using ores::database::repository::execute_parameterized_multi_column_query;
-using ores::database::repository::execute_parameterized_string_query;
 
 namespace {
 
@@ -87,7 +85,7 @@ std::vector<std::string> notification_center::holders_of(const std::string& perm
     // Each person's effective codes in one read, then the same wildcard rule
     // a handler's permission check applies: a holder of iam::* or * holds
     // iam::roles:assign.
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select a.id::text, e.code "
         "from ores_iam_accounts_tbl a "
@@ -123,7 +121,7 @@ raise_result notification_center::raise(const messaging::raise_notification_requ
 
     BOOST_LOG_SEV(lg(), info) << "Raising a " << req.kind_code << " notification for "
                               << recipient_ids.size() << " recipient(s)";
-    const auto id = execute_parameterized_string_query(
+    const auto id = ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "select ores_inbox_raise_notification_fn($1, $2, $3, $4, $5::uuid, $6, "
         "$7::text[], $8::text[], $9::uuid[])::text",
@@ -159,7 +157,7 @@ notification_page notification_center::mine(const boost::uuids::uuid& account_id
         unread_clause;
 
     notification_page page;
-    page.total = first_int(execute_parameterized_string_query(
+    page.total = first_int(ores::database::query_builder::execute_parameterized_string_query(
         ctx_, "select count(*)::text" + from, {me}, lg(), "Counting a person's notifications"));
 
     const std::string select =
@@ -176,7 +174,7 @@ notification_page notification_center::mine(const boost::uuids::uuid& account_id
         " where r.account_id = $1::uuid and r.cleared_at is null"
         " and r.valid_to = ores_utility_infinity_timestamp_fn()";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         select + unread_clause + " order by n.raised_at desc offset $2::integer limit $3::integer",
         {me,
@@ -206,7 +204,7 @@ notification_page notification_center::mine(const boost::uuids::uuid& account_id
     if (ids.empty())
         return page;
 
-    const auto args = execute_parameterized_multi_column_query(
+    const auto args = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select notification_id::text, name, value"
         " from ores_inbox_notification_arguments_tbl"
@@ -227,7 +225,7 @@ notification_page notification_center::mine(const boost::uuids::uuid& account_id
 }
 
 int notification_center::unread(const boost::uuids::uuid& account_id) {
-    return first_int(execute_parameterized_string_query(
+    return first_int(ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "select count(*)::text from ores_inbox_notification_recipients_tbl"
         " where account_id = $1::uuid and read_at is null and cleared_at is null"
@@ -239,7 +237,7 @@ int notification_center::unread(const boost::uuids::uuid& account_id) {
 
 int notification_center::mark_read(const boost::uuids::uuid& account_id,
                                    const std::vector<std::string>& ids) {
-    return first_int(execute_parameterized_string_query(
+    return first_int(ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "select ores_inbox_mark_notifications_read_fn($1::uuid, $2::uuid[], $3)::text",
         {boost::uuids::to_string(account_id), array_literal(ids), ctx_.actor()},
@@ -249,7 +247,7 @@ int notification_center::mark_read(const boost::uuids::uuid& account_id,
 
 int notification_center::clear(const boost::uuids::uuid& account_id,
                                const std::vector<std::string>& ids) {
-    return first_int(execute_parameterized_string_query(
+    return first_int(ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "select ores_inbox_clear_notifications_fn($1::uuid, $2::uuid[], $3)::text",
         {boost::uuids::to_string(account_id), array_literal(ids), ctx_.actor()},

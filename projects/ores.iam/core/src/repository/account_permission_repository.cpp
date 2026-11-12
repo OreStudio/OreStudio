@@ -18,7 +18,7 @@
  *
  */
 #include "ores.iam.core/repository/account_permission_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -41,7 +41,8 @@ account_permission_repository::read_effective_permissions(const boost::uuids::uu
     const std::string sql =
         "SELECT code FROM ores_iam_get_effective_permissions_fn('" + account_id_str + "'::uuid)";
 
-    return execute_raw_string_query(ctx_, sql, lg(), "Reading effective permissions for account");
+    return ores::database::query_builder::execute_raw_string_query(
+        ctx_, sql, lg(), "Reading effective permissions for account");
 }
 
 std::vector<domain::role>
@@ -56,8 +57,8 @@ account_permission_repository::read_roles_with_permissions(const boost::uuids::u
                             "FROM ores_iam_get_account_roles_with_permissions_fn('" +
                             account_id_str + "'::uuid)";
 
-    const auto rows =
-        execute_raw_multi_column_query(ctx_, sql, lg(), "Reading roles with permissions");
+    const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
+        ctx_, sql, lg(), "Reading roles with permissions");
 
     std::vector<domain::role> result;
     result.reserve(rows.size());

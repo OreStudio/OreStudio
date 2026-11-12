@@ -18,7 +18,7 @@
  *
  */
 #include "approval_fixture.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.api/domain/approval_kind.hpp"
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
@@ -103,7 +103,7 @@ public:
 
     ~test_kind() {
         try {
-            ores::database::repository::execute_parameterized_command(
+            ores::database::query_builder::execute_parameterized_command(
                 ctx_,
                 "delete from ores_inbox_approval_kinds_tbl where code = $1",
                 {code_},
@@ -124,7 +124,7 @@ public:
 
 private:
     void seed_permission() {
-        const auto rows = ores::database::repository::execute_parameterized_string_query(
+        const auto rows = ores::database::query_builder::execute_parameterized_string_query(
             ctx_,
             "select code from ores_iam_permissions_tbl"
             " where tenant_id = ores_utility_system_tenant_id_fn()"
@@ -159,7 +159,7 @@ public:
 
     ~approvals_mode() {
         try {
-            ores::database::repository::execute_parameterized_command(
+            ores::database::query_builder::execute_parameterized_command(
                 ctx_,
                 "delete from ores_variability_system_settings_tbl"
                 " where name = 'system.approvals.mode' and tenant_id = $1::uuid",
@@ -180,14 +180,14 @@ private:
         // A tenant provisioned by the harness already holds the installation's
         // copy of the setting, so the test states its own over it rather than
         // writing a second row.
-        ores::database::repository::execute_parameterized_command(
+        ores::database::query_builder::execute_parameterized_command(
             ctx_,
             "delete from ores_variability_system_settings_tbl"
             " where name = 'system.approvals.mode' and tenant_id = $1::uuid",
             {ctx_.tenant_id().to_string()},
             test_lg(),
             "Clearing the approvals mode for a test");
-        ores::database::repository::execute_parameterized_command(
+        ores::database::query_builder::execute_parameterized_command(
             ctx_,
             "insert into ores_variability_system_settings_tbl ("
             "  id, tenant_id, party_id, name, value, data_type, description,"
@@ -211,7 +211,7 @@ private:
 /// The decisions on one request, as the record holds them.
 std::vector<std::vector<std::optional<std::string>>>
 decisions_on(ores::testing::scoped_database_helper& h, const std::string& request_id) {
-    return ores::database::repository::execute_parameterized_multi_column_query(
+    return ores::database::query_builder::execute_parameterized_multi_column_query(
         acting(h),
         "select decision_code, decided_by::text, comment"
         " from ores_inbox_approval_decisions_tbl"

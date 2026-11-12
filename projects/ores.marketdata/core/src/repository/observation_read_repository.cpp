@@ -17,7 +17,7 @@
  *
  */
 #include "ores.marketdata.core/repository/observation_read_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.marketdata.core/repository/stored_text.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
@@ -27,7 +27,6 @@
 namespace ores::marketdata::repository {
 
 using namespace ores::logging;
-using ores::database::repository::execute_parameterized_multi_column_query;
 
 
 std::vector<stored_observation>
@@ -40,7 +39,7 @@ observation_read_repository::between(context ctx,
         std::chrono::year_month_day{std::chrono::sys_days{to} + std::chrono::days{1}};
     // The time as whole microseconds since the epoch, which parse back without a rounding
     // step; the window is half open in UTC so the last day is read to its end.
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         "SELECT (extract(epoch FROM o.observation_datetime) * 1000000)::bigint::text, "
         "o.oresmd_uri, o.value, coalesce(o.source, '') "

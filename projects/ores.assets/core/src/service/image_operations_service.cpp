@@ -19,7 +19,7 @@
  */
 #include "ores.assets.core/service/image_operations_service.hpp"
 #include "ores.assets.core/validation/image_upload_validator.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -114,7 +114,7 @@ image_operations_service::ensure_image(const messaging::ensure_image_request& re
     // The system tenant carries the templates an installation ships. Reading it
     // is a cross-tenant read, so it goes through the function that owns that
     // read rather than the tenant-scoped repository.
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "SELECT description, mime_type, data FROM ores_assets_get_template_image_fn($1)",
         {request.code},

@@ -21,7 +21,7 @@
 #define ORES_SERVICE_MESSAGING_APPROVAL_GATE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <stdexcept>
 #include <string>
@@ -83,7 +83,7 @@ inline gate_verdict gate_verdict_of(const ores::database::context& ctx,
         list += (i ? ",\"" : "\"") + columns[i] + "\"";
     list += "}";
 
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         "select ores_inbox_gate_fn($1, $2, $3::text[], nullif($4, ''))",
         {entity_type, operation, list, request_id},

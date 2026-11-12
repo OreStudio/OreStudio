@@ -90,8 +90,8 @@ pq::result detail::run(pq::transaction& tx,
 void detail::refused(const pq::store_error& e, logging::logger_t& lg) {
     using namespace ores::logging;
     BOOST_LOG_SEV(lg, error) << e.what();
-    BOOST_THROW_EXCEPTION(
-        repository::repository_exception(std::format("Repository error: {}", e.what())));
+    BOOST_THROW_EXCEPTION(repository::repository_exception(
+        std::format("Repository error: {}", e.what()), e.sqlstate()));
 }
 
 void detail::finished(logging::logger_t& lg,
@@ -113,15 +113,19 @@ execute_parameterized_multi_column_query(context ctx,
                                          logging::logger_t& lg,
                                          const std::string& operation_desc) {
     using namespace ores::logging;
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
+                             << " parameters";
     const auto began = std::chrono::steady_clock::now();
     std::vector<pq::param> encoded;
     encoded.reserve(params.size());
     for (const auto& v : params)
         encoded.push_back(pq::to_text(v));
+    // Hand-written SQL often joins its literals into the text, so it runs
+    // unnamed: a prepared statement per distinct text would never be freed.
+    const pq::fixed_statement statement({}, sql);
     try {
         auto rows = database::transact(ctx, [&](pq::transaction& tx) {
-            const auto r = tx.run(detail::prepared(sql), encoded);
+            const auto r = tx.run(statement, encoded, pq::text_result);
             std::vector<std::vector<std::optional<std::string>>> out(
                 static_cast<std::size_t>(r.rows()));
             for (int row = 0; row < r.rows(); ++row)
@@ -151,8 +155,31 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
     std::vector<std::string> out;
     for (const auto& row :
          execute_parameterized_multi_column_query(ctx, sql, values, lg, operation_desc))
-        out.push_back(row.empty() ? std::string() : row.front().value_or(std::string()));
+        if (!row.empty() && row.front())
+            out.push_back(*row.front());
     return out;
 }
 
+std::vector<std::string> execute_raw_string_query(context ctx,
+                                                  const std::string& sql,
+                                                  logging::logger_t& lg,
+                                                  const std::string& operation_desc) {
+    return execute_parameterized_string_query(ctx, sql, {}, lg, operation_desc);
+}
+
+void execute_parameterized_command(context ctx,
+                                   const std::string& sql,
+                                   const std::vector<std::string>& params,
+                                   logging::logger_t& lg,
+                                   const std::string& operation_desc) {
+    std::vector<std::optional<std::string>> values(params.begin(), params.end());
+    execute_parameterized_multi_column_query(ctx, sql, values, lg, operation_desc);
+}
+
+void execute_raw_command(context ctx,
+                         const std::string& sql,
+                         logging::logger_t& lg,
+                         const std::string& operation_desc) {
+    execute_parameterized_multi_column_query(ctx, sql, {}, lg, operation_desc);
+}
 }

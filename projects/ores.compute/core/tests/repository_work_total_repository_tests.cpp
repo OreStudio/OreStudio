@@ -18,7 +18,7 @@
  *
  */
 #include "ores.compute.core/repository/work_total_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -49,7 +49,7 @@ struct written_totals {
     ~written_totals() {
         try {
             static auto lg = ores::logging::make_logger("ores.compute.tests.work_total");
-            ores::database::repository::execute_parameterized_command(
+            ores::database::query_builder::execute_parameterized_command(
                 system(),
                 "DELETE FROM ores_compute_work_totals_tbl WHERE sampled_at = "
                 "to_timestamp(4102444800)",

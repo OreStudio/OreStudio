@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.core/repository/tick_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.marketdata.core/repository/pg_array.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -29,7 +29,6 @@
 namespace ores::marketdata::repository {
 
 using namespace ores::logging;
-using ores::database::repository::execute_parameterized_multi_column_query;
 
 std::vector<tick> tick_repository::read_range(context ctx,
                                               const boost::uuids::uuid& stream_id,
@@ -71,7 +70,8 @@ std::vector<tick> tick_repository::read_range(context ctx,
     // filter that names no datum of the stream reads nothing.
     std::vector<std::string> numbers;
     if (!coordinates.empty()) {
-        for (const auto& row : execute_parameterized_multi_column_query(
+        for (const auto& row :
+             ores::database::query_builder::execute_parameterized_multi_column_query(
                  ctx,
                  "SELECT coord::text FROM ores_marketdata_tick_coords_tbl "
                  "WHERE stream_id = $1::uuid AND oresmd_uri = ANY($2::text[])",
@@ -85,19 +85,19 @@ std::vector<tick> tick_repository::read_range(context ctx,
             return {};
     }
 
-    const auto rows =
-        numbers.empty() ?
-            execute_parameterized_multi_column_query(ctx,
-                                                     statement("", 4),
-                                                     {stream, from_text, to_text, limit_text},
-                                                     lg(),
-                                                     "reading the ticks of a stream") :
-            execute_parameterized_multi_column_query(
-                ctx,
-                statement(" AND t.coord = ANY($4::smallint[])", 5),
-                {stream, from_text, to_text, pg_array(numbers), limit_text},
-                lg(),
-                "reading the ticks of a stream by coordinate");
+    const auto rows = numbers.empty() ?
+                          ores::database::query_builder::execute_parameterized_multi_column_query(
+                              ctx,
+                              statement("", 4),
+                              {stream, from_text, to_text, limit_text},
+                              lg(),
+                              "reading the ticks of a stream") :
+                          ores::database::query_builder::execute_parameterized_multi_column_query(
+                              ctx,
+                              statement(" AND t.coord = ANY($4::smallint[])", 5),
+                              {stream, from_text, to_text, pg_array(numbers), limit_text},
+                              lg(),
+                              "reading the ticks of a stream by coordinate");
 
     std::vector<tick> ticks;
     ticks.reserve(rows.size());

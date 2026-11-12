@@ -18,7 +18,7 @@
  *
  */
 #include "book_proposal_fixtures.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/approval_policy_repository.hpp"
@@ -506,7 +506,7 @@ TEST_CASE("the_parties_of_a_request_are_found_without_a_party_scope", "[book_pro
     // the lines. The function reads past the party policy for the parties alone.
     const auto tenant_only = h.context().with_tenant(h.tenant_id(), "");
     auto lg = ores::logging::make_logger("ores.refdata.tests");
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         tenant_only,
         "select p::text from ores_refdata_book_change_parties_fn($1::uuid) as p",
         {id},
@@ -531,7 +531,7 @@ TEST_CASE("another_tenant_is_told_no_parties_for_a_request_it_does_not_own", "[b
 
     auto lg = ores::logging::make_logger("ores.refdata.tests");
     const auto other = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         other,
         "select p::text from ores_refdata_book_change_parties_fn($1::uuid) as p",
         {id},

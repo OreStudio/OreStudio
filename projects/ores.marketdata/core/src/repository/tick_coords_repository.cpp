@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.core/repository/tick_coords_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.marketdata.core/repository/pg_array.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -30,7 +30,6 @@
 namespace ores::marketdata::repository {
 
 using namespace ores::logging;
-using ores::database::repository::execute_parameterized_multi_column_query;
 
 namespace {
 
@@ -81,7 +80,8 @@ tick_coords_repository::resolve_all(context ctx, const std::vector<tick_datum>& 
     constexpr int attempts = 3;
     for (int attempt = 0; attempt < attempts; ++attempt) {
         std::map<datum_key, std::int16_t> known;
-        for (const auto& row : execute_parameterized_multi_column_query(
+        for (const auto& row :
+             ores::database::query_builder::execute_parameterized_multi_column_query(
                  ctx, read_sql, {stream_array}, lg(), "reading tick coordinates")) {
             if (row.size() >= 3 && row[0] && row[1] && row[2])
                 known[{*row[0], *row[1]}] = static_cast<std::int16_t>(std::stoi(*row[2]));
@@ -106,11 +106,12 @@ tick_coords_repository::resolve_all(context ctx, const std::vector<tick_datum>& 
         if (complete)
             return result;
 
-        execute_parameterized_multi_column_query(ctx,
-                                                 insert_sql,
-                                                 {pg_array(streams), pg_array(uris)},
-                                                 lg(),
-                                                 "assigning tick coordinates");
+        ores::database::query_builder::execute_parameterized_multi_column_query(
+            ctx,
+            insert_sql,
+            {pg_array(streams), pg_array(uris)},
+            lg(),
+            "assigning tick coordinates");
     }
     throw std::runtime_error("The tick coordinates of " + std::to_string(wanted.size()) +
                              " datum(s) cannot be assigned");

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
@@ -729,7 +729,7 @@ TEST_CASE("a_refused_completion_leaves_every_leg_a_draft_and_writes_no_member", 
         const auto states = ores::trading::repository::trade_state_repository().read_latest(
             f.ctx, boost::uuids::to_string(id));
         REQUIRE(states.size() == 1);
-        const auto draft = ores::database::repository::execute_parameterized_string_query(
+        const auto draft = ores::database::query_builder::execute_parameterized_string_query(
             f.ctx,
             "select ores_trading_status_is_draft_fn($1::uuid)::text",
             {boost::uuids::to_string(states.front().status_id)},

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/curve_notices.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -133,7 +133,7 @@ std::vector<std::string> readers_of(const ores::database::context& ctx,
     std::set<std::string> readers;
 
     if (!party_id.is_nil()) {
-        const auto rows = ores::database::repository::execute_parameterized_string_query(
+        const auto rows = ores::database::query_builder::execute_parameterized_string_query(
             ctx,
             "select distinct a.id::text"
             " from ores_iam_account_parties_tbl ap"

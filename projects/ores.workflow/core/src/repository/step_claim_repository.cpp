@@ -18,7 +18,7 @@
  *
  */
 #include "ores.workflow.core/repository/step_claim_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <string>
@@ -51,15 +51,15 @@ std::optional<int> step_claim_repository::claim(context ctx,
             WHERE ores_workflow_step_claims_tbl.lease_expires_at <= now()
         RETURNING step_id, attempts
     )";
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx,
-                                                 sql,
-                                                 {boost::uuids::to_string(step_id),
-                                                  boost::uuids::to_string(work_tenant_id),
-                                                  owner,
-                                                  std::to_string(lease.count())},
-                                                 lg(),
-                                                 "claiming a workflow step");
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {boost::uuids::to_string(step_id),
+         boost::uuids::to_string(work_tenant_id),
+         owner,
+         std::to_string(lease.count())},
+        lg(),
+        "claiming a workflow step");
     // No row is a lost race, which the caller answers by returning the delivery
     // to the queue. It is not an error, so it is not an exception.
     if (rows.empty() || rows.front().size() < 2 || !rows.front()[1])
@@ -77,7 +77,7 @@ bool step_claim_repository::renew(context ctx,
             WHERE step_id = $1::uuid AND owner = $2::text
         RETURNING step_id
     )";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {boost::uuids::to_string(step_id), owner, std::to_string(lease.count())},
@@ -100,12 +100,12 @@ bool step_claim_repository::release(context ctx, const boost::uuids::uuid& step_
         )
         SELECT count(*) FROM released
     )";
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx,
-                                                 sql,
-                                                 {boost::uuids::to_string(step_id)},
-                                                 lg(),
-                                                 "releasing the claim on a workflow step");
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {boost::uuids::to_string(step_id)},
+        lg(),
+        "releasing the claim on a workflow step");
     return !rows.empty() && !rows.front().empty() && rows.front().front() &&
            std::stoll(*rows.front().front()) > 0;
 }
@@ -114,7 +114,7 @@ std::optional<std::chrono::system_clock::time_point>
 step_claim_repository::claimed_at(context ctx, const boost::uuids::uuid& step_id) {
     static const std::string sql =
         "SELECT claimed_at FROM ores_workflow_step_claims_tbl WHERE step_id = $1::uuid";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {boost::uuids::to_string(step_id)}, lg(), "reading when a step was claimed");
     if (rows.empty() || rows.front().empty() || !rows.front().front())
         return std::nullopt;
@@ -125,7 +125,7 @@ std::optional<std::string> step_claim_repository::holder(context ctx,
                                                          const boost::uuids::uuid& step_id) {
     static const std::string sql =
         "SELECT owner FROM ores_workflow_step_claims_tbl WHERE step_id = $1::uuid";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {boost::uuids::to_string(step_id)}, lg(), "reading the holder of a step claim");
     if (rows.empty() || rows.front().empty() || !rows.front().front())
         return std::nullopt;

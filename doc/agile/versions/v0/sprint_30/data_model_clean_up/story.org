@@ -41,7 +41,7 @@ One data-oriented, consistent model of the system's persisted data. A document a
 | [[id:547323C3-0563-4E7F-AA3C-4B22BF26B148][Scaffold story: Data model clean up]] | DONE | 2026-11-11 | 2026-11-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:A633E777-6E06-4542-98F0-5302318C7DC2][Close the document-shaped loophole in the data-oriented design rules]] | BACKLOG | | | No model may persist a document tree, a list or a serialised payload, whatever it calls itself. |
 | [[id:E4380005-BE99-42F3-AB06-C7A6212FDE25][One native model for the stored ORE documents]] | BACKLOG | | | Replace every stored ORE document image with one native model, in one go, and project ORE XML at export. |
-| [[id:43D4AFA3-00CC-4BA1-ACAD-6BC26EF4647B][Retire the raw query helpers]] | BACKLOG | | | Move every caller of the raw query helpers onto the transaction-aware query_builder API, and delete them. |
+| [[id:43D4AFA3-00CC-4BA1-ACAD-6BC26EF4647B][Retire the raw query helpers]] | DONE | 2026-11-11 | 2026-11-12 | Move every caller of the raw query helpers onto the transaction-aware query_builder API, and delete them. |
 
 * Decisions
 

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.scheduler.core/service/sql_action_handler.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::scheduler::service {
@@ -40,7 +40,7 @@ sql_action_handler::execute(const action_context& ctx) {
     BOOST_LOG_SEV(sql_action_handler_lg(), debug)
         << "Executing SQL action for job: " << ctx.job.job_name;
     try {
-        execute_parameterized_command(
+        ores::database::query_builder::execute_parameterized_command(
             ctx.db_ctx, ctx.job.command, {}, sql_action_handler_lg(), "executing scheduled SQL");
         BOOST_LOG_SEV(sql_action_handler_lg(), info)
             << "SQL action succeeded for job: " << ctx.job.job_name;

@@ -19,7 +19,6 @@
  */
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.trading.core/repository/bond_forward_entity.hpp"
 #include "ores.trading.core/repository/bond_forward_mapper.hpp"

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.iam.core/service/tenant_session_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.core/repository/auth_event_log.hpp"
 #include "ores.iam.core/repository/tenant_lookups.hpp"
@@ -175,22 +175,21 @@ tenant_session_service::enter(const tenant_session_caller& caller,
 std::optional<tenant_session_service::inside_party>
 tenant_session_service::party_inside(const utility::uuid::tenant_id& target,
                                      const std::string& username) const {
-    using ores::database::repository::execute_parameterized_multi_column_query;
-    using ores::database::repository::execute_parameterized_string_query;
     const auto target_id = target.to_string();
     const auto target_ctx = ctx_.with_tenant(target, username);
-    const auto system_party = execute_parameterized_multi_column_query(
-        target_ctx,
-        "SELECT id::text, full_name FROM ores_refdata_read_system_party_fn($1::uuid)",
-        {target_id},
-        tenant_session_service_lg(),
-        "Reading the system party of the tenant acted inside");
+    const auto system_party =
+        ores::database::query_builder::execute_parameterized_multi_column_query(
+            target_ctx,
+            "SELECT id::text, full_name FROM ores_refdata_read_system_party_fn($1::uuid)",
+            {target_id},
+            tenant_session_service_lg(),
+            "Reading the system party of the tenant acted inside");
     if (system_party.empty() || system_party.front().size() < 2 || !system_party.front()[0])
         return std::nullopt;
     inside_party r;
     r.party_id = *system_party.front()[0];
     r.party_name = system_party.front()[1].value_or("");
-    r.visible = execute_parameterized_string_query(
+    r.visible = ores::database::query_builder::execute_parameterized_string_query(
         target_ctx,
         "SELECT unnest(ores_refdata_visible_party_ids_fn($1::uuid, $2::uuid))::text",
         {target_id, r.party_id},

@@ -21,7 +21,7 @@
 #define ORES_DQ_CORE_MESSAGING_LEI_ENTITY_SUMMARY_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -97,7 +97,7 @@ public:
             if (req.country_filter.empty()) {
                 const std::string sql =
                     "SELECT * FROM ores_dq_lei_entities_distinct_countries_fn()";
-                auto rows = execute_raw_multi_column_query(
+                auto rows = ores::database::query_builder::execute_raw_multi_column_query(
                     ctx, sql, dq_lei_entity_summary_handler_lg(), "listing LEI countries");
                 for (const auto& row : rows) {
                     if (!row.empty() && row[0])
@@ -106,7 +106,7 @@ public:
             } else {
                 const std::string sql =
                     "SELECT * FROM ores_dq_lei_entities_summary_by_country_fn($1, $2, $3)";
-                auto rows = execute_parameterized_multi_column_query(
+                auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
                     ctx,
                     sql,
                     {req.country_filter, std::to_string(req.limit), std::to_string(req.offset)},
@@ -156,14 +156,15 @@ public:
         try {
             using namespace ores::database::repository;
             const std::string sql = "SELECT * FROM ores_dq_lei_entities_search_fn($1, $2, $3, $4)";
-            auto rows = execute_parameterized_multi_column_query(ctx,
-                                                                 sql,
-                                                                 {req.search,
-                                                                  req.country_filter,
-                                                                  std::to_string(req.limit),
-                                                                  std::to_string(req.offset)},
-                                                                 dq_lei_entity_summary_handler_lg(),
-                                                                 "searching LEI entities");
+            auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+                ctx,
+                sql,
+                {req.search,
+                 req.country_filter,
+                 std::to_string(req.limit),
+                 std::to_string(req.offset)},
+                dq_lei_entity_summary_handler_lg(),
+                "searching LEI entities");
             for (const auto& row : rows) {
                 if (row.size() >= 5)
                     resp.entities.push_back({.lei = row[0].value_or(""),

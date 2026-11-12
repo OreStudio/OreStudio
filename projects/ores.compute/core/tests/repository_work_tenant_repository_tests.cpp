@@ -18,7 +18,7 @@
  *
  */
 #include "ores.compute.core/repository/work_tenant_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -45,7 +45,7 @@ struct noted_tenant {
     ~noted_tenant() {
         try {
             static auto lg = ores::logging::make_logger("ores.compute.tests.work_tenant");
-            ores::database::repository::execute_parameterized_command(
+            ores::database::query_builder::execute_parameterized_command(
                 system(),
                 "DELETE FROM ores_compute_work_tenants_tbl WHERE work_tenant_id = $1::uuid",
                 {boost::uuids::to_string(id)},

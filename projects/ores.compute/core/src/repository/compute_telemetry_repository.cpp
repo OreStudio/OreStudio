@@ -18,7 +18,7 @@
  *
  */
 #include "ores.compute.core/repository/compute_telemetry_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include <boost/lexical_cast.hpp>
@@ -58,8 +58,8 @@ std::vector<domain::node_sample> compute_telemetry_repository::latest_node_sampl
         ORDER BY host_id, sampled_at DESC
     )";
 
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx, sql, {}, lg(), "reading latest node samples");
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx, sql, {}, lg(), "reading latest node samples");
 
     std::vector<domain::node_sample> result;
     result.reserve(rows.size());
@@ -93,7 +93,7 @@ domain::grid_sample compute_telemetry_repository::compute_grid_stats(
     static const std::string sql = "SELECT * FROM ores_compute_grid_stats_fn($1::uuid, "
                                    "nullif($2::text, '')::uuid, $3::boolean)";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {tid, party ? boost::uuids::to_string(*party) : std::string{}, fleet ? "true" : "false"},
@@ -190,7 +190,7 @@ compute_telemetry_repository::parties_with_work(context ctx) {
         ) p
         WHERE party_id IS NOT NULL
     )";
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {}, lg(), "listing the parties with work");
     std::vector<std::optional<boost::uuids::uuid>> parties;
     parties.emplace_back(std::nullopt);
@@ -286,7 +286,7 @@ compute_telemetry_repository::grid_series_in_range(context ctx,
         FROM job_buckets j FULL JOIN fleet_buckets f ON f.b = j.b
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {std::to_string(axis.first_s), std::to_string(axis.end_s), std::to_string(bucket_seconds)},
@@ -378,8 +378,8 @@ grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
         ORDER BY sum(results) DESC, k
     )";
 
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx, sql, {}, lg(), "reading the grid usage");
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx, sql, {}, lg(), "reading the grid usage");
 
     grid_usage usage;
     usage.group_kind = "party";
@@ -435,7 +435,7 @@ compute_telemetry_repository::node_series_in_range(context ctx,
         GROUP BY 1, 2
     )";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {std::to_string(axis.first_s), std::to_string(axis.end_s), std::to_string(bucket_seconds)},

@@ -22,24 +22,35 @@
 
 #include <boost/exception/info.hpp>
 #include <string>
+#include <utility>
 
 namespace ores::database::repository {
 
 /**
  * @brief A fatal error has occurred whilst reading or writing to the
  * repository.
+ *
+ * A failure the server reported carries its SQLSTATE, so a caller can tell one
+ * refusal from another without reading the server's words. It is empty for a
+ * failure the server did not report.
  */
 class repository_exception : public virtual std::exception, public virtual boost::exception {
 public:
-    explicit repository_exception(std::string_view message = "")
-        : message_(message) {}
+    explicit repository_exception(std::string_view message = "", std::string sqlstate = "")
+        : message_(message)
+        , sqlstate_(std::move(sqlstate)) {}
 
     [[nodiscard]] const char* what() const noexcept override {
         return message_.c_str();
     }
 
+    [[nodiscard]] const std::string& sqlstate() const noexcept {
+        return sqlstate_;
+    }
+
 private:
     std::string message_;
+    std::string sqlstate_;
 };
 
 }

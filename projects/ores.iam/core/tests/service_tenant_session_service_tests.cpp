@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.core/service/tenant_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -58,7 +58,7 @@ tenant_session_caller administrator(std::vector<std::string> permissions = {"*"}
 std::vector<std::string> events_for(scoped_database_helper& h,
                                     const boost::uuids::uuid& account_id) {
     auto lg(ores::logging::make_logger("ores.iam.tests"));
-    return ores::database::repository::execute_parameterized_string_query(
+    return ores::database::query_builder::execute_parameterized_string_query(
         h.context(),
         "SELECT event_type FROM ores_iam_auth_events_tbl "
         "WHERE tenant_id = $1 AND account_id = $2 ORDER BY event_time",

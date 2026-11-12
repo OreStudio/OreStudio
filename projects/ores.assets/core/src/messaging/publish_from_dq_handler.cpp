@@ -18,7 +18,7 @@
  *
  */
 #include "ores.assets.core/messaging/publish_from_dq_handler.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -111,7 +111,7 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
             fn_name);
         const std::string params_json = cmd.params_json.empty() ? "{}" : cmd.params_json;
 
-        auto rows = execute_parameterized_multi_column_query(
+        auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
             tenant_ctx, sql, {cmd.dataset_id, cmd.tenant_id, cmd.mode, params_json}, lg(), fn_name);
 
         ores::dq::messaging::publish_from_dq_result result;

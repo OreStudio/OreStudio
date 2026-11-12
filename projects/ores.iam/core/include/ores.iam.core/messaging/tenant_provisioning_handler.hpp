@@ -23,7 +23,7 @@
 #include "ores.assets.api/messaging/image_operations_protocol.hpp"
 #include "ores.assets.api/messaging/image_protocol.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
@@ -156,9 +156,6 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using ores::service::messaging::log_handler_entry;
 using ores::database::service::tenant_context;
-using ores::database::repository::execute_parameterized_string_query;
-using ores::database::repository::execute_parameterized_command;
-using ores::database::repository::execute_parameterized_multi_column_query;
 using ores::iam::service::internal_impersonation_service;
 using ores::iam::service::internal_request_client;
 using namespace ores::logging;
@@ -506,14 +503,14 @@ public:
             }
             const auto found =
                 wanted_id ?
-                    execute_parameterized_string_query(
+                    ores::database::query_builder::execute_parameterized_string_query(
                         tenant_ctx,
                         "SELECT id::text FROM ores_refdata_parties_tbl WHERE tenant_id = $1::uuid "
                         "AND valid_to = ores_utility_infinity_timestamp_fn() AND id = $2::uuid",
                         {tenant_id, boost::uuids::to_string(*wanted_id)},
                         tenant_provisioning_handler_lg(),
                         "provision_party") :
-                    execute_parameterized_string_query(
+                    ores::database::query_builder::execute_parameterized_string_query(
                         tenant_ctx,
                         "SELECT id::text FROM ores_refdata_parties_tbl WHERE tenant_id = $1::uuid "
                         "AND valid_to = ores_utility_infinity_timestamp_fn() "
@@ -538,13 +535,14 @@ public:
             // own code and hostname beside the identifier.
             auto code = tenant_id;
             auto hostname = std::string{};
-            const auto tenant_row = execute_parameterized_multi_column_query(
-                sys_ctx,
-                "SELECT code, hostname FROM ores_iam_tenants_tbl WHERE id = $1::uuid "
-                "AND valid_to = ores_utility_infinity_timestamp_fn()",
-                {tenant_id},
-                tenant_provisioning_handler_lg(),
-                "provision_party");
+            const auto tenant_row =
+                ores::database::query_builder::execute_parameterized_multi_column_query(
+                    sys_ctx,
+                    "SELECT code, hostname FROM ores_iam_tenants_tbl WHERE id = $1::uuid "
+                    "AND valid_to = ores_utility_infinity_timestamp_fn()",
+                    {tenant_id},
+                    tenant_provisioning_handler_lg(),
+                    "provision_party");
             if (!tenant_row.empty() && tenant_row.front().size() >= 2 && tenant_row.front()[0] &&
                 tenant_row.front()[1]) {
                 code = *tenant_row.front()[0];
@@ -2749,11 +2747,12 @@ private:
         const auto actor = resolve_step_actor(command);
 
         auto sys_ctx = tenant_context::with_system_tenant(ctx_);
-        execute_parameterized_command(sys_ctx,
-                                      "SELECT ores_iam_mark_tenant_active_fn($1::uuid, $2)",
-                                      {command.tenant_id, actor.username},
-                                      tenant_provisioning_handler_lg(),
-                                      "complete_provisioning_step");
+        ores::database::query_builder::execute_parameterized_command(
+            sys_ctx,
+            "SELECT ores_iam_mark_tenant_active_fn($1::uuid, $2)",
+            {command.tenant_id, actor.username},
+            tenant_provisioning_handler_lg(),
+            "complete_provisioning_step");
         BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "Tenant marked active: " << command.tenant_id;
 
@@ -3186,7 +3185,7 @@ private:
     /// is the rule the bootstrap service uses to find the deployment's
     /// administrators.
     static std::vector<std::string> super_admin_account_ids(ores::database::context& sys_ctx) {
-        return execute_parameterized_string_query(
+        return ores::database::query_builder::execute_parameterized_string_query(
             sys_ctx,
             "SELECT DISTINCT a.id::text FROM ores_iam_accounts_tbl a "
             "JOIN ores_iam_account_roles_tbl ar ON ar.account_id = a.id "
@@ -3421,7 +3420,7 @@ private:
         auto account_ids_for = [&](const std::string& office_code,
                                    const std::string& business_unit_code,
                                    const std::optional<std::string>& role) {
-            auto dataset = execute_parameterized_string_query(
+            auto dataset = ores::database::query_builder::execute_parameterized_string_query(
                 ctx,
                 "SELECT id::text FROM ores_dq_datasets_tbl WHERE code = $1 "
                 "AND valid_to = ores_utility_infinity_timestamp_fn()",
@@ -3431,14 +3430,14 @@ private:
             if (dataset.empty())
                 return std::vector<std::string>{};
             auto usernames =
-                role ? execute_parameterized_string_query(
+                role ? ores::database::query_builder::execute_parameterized_string_query(
                            ctx,
                            "SELECT username FROM ores_dq_accounts_artefact_tbl WHERE dataset_id = "
                            "$1::uuid AND business_unit_code = $2 AND role = $3",
                            {dataset.front(), business_unit_code, *role},
                            tenant_provisioning_handler_lg(),
                            "grant_cross_entity_access") :
-                       execute_parameterized_string_query(
+                       ores::database::query_builder::execute_parameterized_string_query(
                            ctx,
                            "SELECT username FROM ores_dq_accounts_artefact_tbl WHERE dataset_id = "
                            "$1::uuid AND business_unit_code = $2",
@@ -3447,7 +3446,7 @@ private:
                            "grant_cross_entity_access");
             std::vector<std::string> account_ids;
             for (const auto& u : usernames) {
-                auto acct = execute_parameterized_string_query(
+                auto acct = ores::database::query_builder::execute_parameterized_string_query(
                     ctx,
                     "SELECT id::text FROM ores_iam_accounts_tbl WHERE tenant_id = $1::uuid "
                     "AND username = $2 AND valid_to = ores_utility_infinity_timestamp_fn()",
@@ -3461,7 +3460,7 @@ private:
         };
 
         auto grant = [&](const std::string& account_id, const std::string& party_id) {
-            execute_parameterized_command(
+            ores::database::query_builder::execute_parameterized_command(
                 ctx,
                 "INSERT INTO ores_iam_account_parties_tbl (account_id, tenant_id, party_id, "
                 "version, modified_by, performed_by, change_reason_code, change_commentary) "

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.iam.core/repository/database_info_lookups.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::iam::repository {
@@ -38,7 +38,7 @@ static auto& lg() {
 
 messaging::database_info read_database_info(const ores::database::context& ctx) {
     try {
-        const auto rows = ores::database::repository::execute_raw_multi_column_query(
+        const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
             ctx,
             "select schema_fingerprint, build_environment, git_commit, created_at "
             "from ores_database_info_tbl order by created_at desc limit 1",

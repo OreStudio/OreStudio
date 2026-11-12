@@ -18,7 +18,7 @@
  *
  */
 #include "ores.iam.core/service/role_grant_applier.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -35,7 +35,7 @@ role_grant_applier::role_grant_applier(ores::database::context ctx,
 int role_grant_applier::apply() {
     std::lock_guard lock(mutex_);
 
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select tenant_id::text, request_id::text, account_id::text, role_id::text,"
         " approved_by, held::text from ores_iam_unapplied_role_grants_fn()",
@@ -70,7 +70,7 @@ int role_grant_applier::apply() {
                                           << account_id << " for request " << request_id;
             }
 
-            ores::database::repository::execute_parameterized_command(
+            ores::database::query_builder::execute_parameterized_command(
                 ctx,
                 "insert into ores_iam_role_grant_request_roles_tbl (tenant_id, request_id,"
                 " role_id, version, applied_at, modified_by, performed_by, change_reason_code,"

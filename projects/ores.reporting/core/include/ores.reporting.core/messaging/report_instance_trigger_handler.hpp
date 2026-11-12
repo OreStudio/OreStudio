@@ -21,7 +21,7 @@
 #define ORES_REPORTING_CORE_MESSAGING_REPORT_INSTANCE_TRIGGER_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -614,7 +614,7 @@ private:
      */
     std::optional<std::string> find_in_flight(const std::string& tenant,
                                               const std::string& definition_id) {
-        const auto rows = ores::database::repository::execute_parameterized_string_query(
+        const auto rows = ores::database::query_builder::execute_parameterized_string_query(
             ctx_,
             "SELECT coalesce(ores_reporting_in_flight_instance_fn($1::uuid, $2::uuid)::text, '')",
             {tenant, definition_id},

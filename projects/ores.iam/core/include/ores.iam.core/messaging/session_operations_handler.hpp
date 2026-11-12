@@ -21,7 +21,7 @@
 #define ORES_IAM_MESSAGING_SESSION_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.iam.api/messaging/session_statistics_operations_protocol.hpp"
@@ -218,22 +218,23 @@ public:
                                       std::optional(ores::platform::time::datetime::to_iso8601_utc(
                                           *request->to_time)) :
                                       std::nullopt;
-            const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
-                req_ctx,
-                "select day::text, account_id, session_count, avg_duration_seconds, "
-                "total_bytes_sent, total_bytes_received, avg_bytes_sent, avg_bytes_received, "
-                "unique_countries "
-                "from ores_iam_session_stats_for_tenant_fn("
-                "$1::uuid, $2::text, $3::timestamp with time zone, "
-                "$4::timestamp with time zone, $5::integer, $6::integer)",
-                std::vector<std::optional<std::string>>{req_ctx.tenant_id().to_string(),
-                                                        request->account_id,
-                                                        from_bound,
-                                                        to_bound,
-                                                        std::to_string(request->limit),
-                                                        std::to_string(request->offset)},
-                session_handler_lg(),
-                "Reading session statistics");
+            const auto rows =
+                ores::database::query_builder::execute_parameterized_multi_column_query(
+                    req_ctx,
+                    "select day::text, account_id, session_count, avg_duration_seconds, "
+                    "total_bytes_sent, total_bytes_received, avg_bytes_sent, avg_bytes_received, "
+                    "unique_countries "
+                    "from ores_iam_session_stats_for_tenant_fn("
+                    "$1::uuid, $2::text, $3::timestamp with time zone, "
+                    "$4::timestamp with time zone, $5::integer, $6::integer)",
+                    std::vector<std::optional<std::string>>{req_ctx.tenant_id().to_string(),
+                                                            request->account_id,
+                                                            from_bound,
+                                                            to_bound,
+                                                            std::to_string(request->limit),
+                                                            std::to_string(request->offset)},
+                    session_handler_lg(),
+                    "Reading session statistics");
 
             std::vector<session_statistics_row> stats;
             stats.reserve(rows.size());

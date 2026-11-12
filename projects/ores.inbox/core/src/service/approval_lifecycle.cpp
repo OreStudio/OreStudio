@@ -18,7 +18,7 @@
  *
  */
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/approval_kind_part_repository.hpp"
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
@@ -528,7 +528,7 @@ std::vector<part_progress> approval_lifecycle::progress_of(const std::string& re
     const auto open = open_parts_of(request_id);
 
     // A refusal ends the request, so a part has at most one answer that counts.
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select part_code, decision_code, decided_by::text, decided_at, comment "
         "from ores_inbox_approval_decisions_tbl "
@@ -608,7 +608,7 @@ std::vector<std::string> approval_lifecycle::part_codes_of_kind(const std::strin
 }
 
 std::vector<domain::approval_part> approval_lifecycle::parts_of(const std::string& request_id) {
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select rp.part_code "
         "from ores_inbox_approval_request_parts_tbl rp "
@@ -635,7 +635,7 @@ std::vector<domain::approval_part> approval_lifecycle::parts_of(const std::strin
 
 std::vector<domain::approval_part>
 approval_lifecycle::open_parts_of(const std::string& request_id) {
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         open_parts_query + " and request_id = $1::uuid"
                            " order by display_order, part_code",
@@ -661,7 +661,7 @@ decision_result approval_lifecycle::decide(const std::string& request_id,
                                            const std::string& part_code,
                                            const std::string& hold_reason_code) {
     BOOST_LOG_SEV(lg(), info) << "Deciding request " << request_id << ": " << decision_code;
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select outcome, message, state_code, version::text "
         "from ores_inbox_decide_approval_request_fn($1::uuid, $2::integer, $3, $4::uuid, $5, $6, "
@@ -690,7 +690,7 @@ decision_result approval_lifecycle::decide(const std::string& request_id,
 decision_result approval_lifecycle::fail_apply(const std::string& request_id,
                                                const std::string& reason) {
     BOOST_LOG_SEV(lg(), info) << "Request " << request_id << " could not be applied: " << reason;
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select outcome, message, state_code, version::text "
         "from ores_inbox_fail_apply_fn($1::uuid, $2, $3)",
@@ -721,7 +721,7 @@ request_page approval_lifecycle::queue(const decidable_scope& scope,
                                                                joined(scope.kind_codes),
                                                                joined(scope.part_codes)};
 
-    const auto counted = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto counted = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select count(*)::text from (" + decidable_requests_query + ") decidable",
         scope_params,
@@ -738,7 +738,7 @@ request_page approval_lifecycle::queue(const decidable_scope& scope,
     auto params = scope_params;
     params.push_back(std::to_string(std::max(offset, 0)));
     params.push_back(std::to_string(clamp_limit(limit)));
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         decidable_requests_query + " order by r.requested_at, r.id"
                                    " offset $5::int limit $6::int",
@@ -770,7 +770,7 @@ approval_lifecycle::recently_answered(const decidable_scope& scope,
     if (window <= std::chrono::seconds::zero())
         return {};
 
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select r.id::text"
         " from ores_inbox_approval_requests_tbl r"
@@ -833,7 +833,7 @@ std::vector<expired_request> approval_lifecycle::expire_overdue() {
     // actor to name. The store still requires one, because the row it writes
     // records who closed the request, and the honest answer is the service that
     // ran the sweep.
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select request_id::text, tenant_id::text, kind_code, requested_by::text"
         " from ores_inbox_expire_approval_requests_fn($1)",
@@ -863,7 +863,7 @@ approval_lifecycle::stalled_applies(std::chrono::system_clock::time_point as_of)
     // Seconds as a double hold a moment to well under a millisecond, which is
     // far finer than a window counted in hours.
     const auto epoch_seconds = std::chrono::duration<double>(as_of.time_since_epoch()).count();
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select request_id::text, tenant_id::text, kind_code, requested_by::text,"
         " apply_workflow_type, approved_at::text, over_window::text"
@@ -899,7 +899,7 @@ std::vector<expiring_request> approval_lifecycle::remind_expiring(std::chrono::s
     // crosses every tenant and touches no row, so it needs no actor; the notice
     // it raises needs one, and the service that ran the sweep is the honest
     // answer.
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select request_id::text, tenant_id::text, kind_code, requested_by::text,"
         " expires_at::text from ores_inbox_remind_expiring_approval_requests_fn($1::double "

@@ -1057,19 +1057,19 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
         // The volatility fixes halfway to the expiry, which the straddle runs to.
         const auto fva_date =
             year_month_day{sys_days{start} + (sys_days{end} - sys_days{start}) / 2};
-        return built(tb::commodity_forward_volatility_agreement_builder(
-                         {.underlying = underlying,
-                          .currency = currency,
-                          .quantity = quantity,
-                          .fva_date = fva_date,
-                          .expiry = end,
-                          .settlement = year_month_day{sys_days{end} + days{2}},
-                          .premium_date = year_month_day{sys_days{fva_date} + days{2}},
-                          .implied_vol_strike =
-                              std::round((0.2 + 0.2 * draw(name, 12)) * 100.0) / 100.0,
-                          .position = position,
-                          .unit = drawn.unit})
-                         .build());
+        return built(
+            tb::commodity_forward_volatility_agreement_builder(
+                {.underlying = underlying,
+                 .currency = currency,
+                 .quantity = quantity,
+                 .fva_date = fva_date,
+                 .expiry = end,
+                 .settlement = year_month_day{sys_days{end} + days{2}},
+                 .premium_date = year_month_day{sys_days{fva_date} + days{2}},
+                 .implied_vol_strike = std::round((0.2 + 0.2 * draw(name, 12)) * 100.0) / 100.0,
+                 .position = position,
+                 .unit = drawn.unit})
+                .build());
     }
     // A basket holds each drawn commodity once, equally weighted.
     const auto distinct_basket = [&]() {
@@ -1135,13 +1135,15 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
         const auto funding = funding_index_in(scope, currency);
         if (!funding)
             throw trade_population_error("A commodity worst-of basket swap funds on an index in " +
-                                         currency + ", and the tenant's swap conventions name none.");
+                                         currency +
+                                         ", and the tenant's swap conventions name none.");
         // Each member starts from the drawn price, stepped so no two start equal.
         std::vector<tb::commodity_worst_of_member> basket;
         for (const auto& member : distinct_basket())
-            basket.push_back({.underlying = member.underlying,
-                              .initial_price = money(price.to_double() *
-                                                     (1.0 + 0.1 * static_cast<double>(basket.size())))});
+            basket.push_back(
+                {.underlying = member.underlying,
+                 .initial_price =
+                     money(price.to_double() * (1.0 + 0.1 * static_cast<double>(basket.size())))});
         std::vector<year_month_day> observations;
         for (int months = 3; add_months(start, months) < end; months += 3)
             observations.push_back(add_months(start, months));

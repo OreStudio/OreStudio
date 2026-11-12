@@ -1206,8 +1206,7 @@ void write_commodity_basket_variance_swap(record_writer& trade,
     set_decimal_from_double(data, "Strike", v.variance_strike.value_or(0.0));
     set_decimal_from_double(data, "Notional", v.quantity);
     write_commodity_basket(data, carrier.constituents);
-    option_block::write_product_schedule(
-        data, carrier, "ValuationSchedule", "valuation_schedule");
+    option_block::write_product_schedule(data, carrier, "ValuationSchedule", "valuation_schedule");
     data.set_text("SquaredPayoff",
                   commodity_instrument_projection_flag_text(v.moment_type.value_or("Variance") !=
                                                             "Volatility"));
@@ -1293,9 +1292,9 @@ void write_commodity_worst_of_basket_swap(record_writer& trade,
     write_commodity_levels(data, "KnockOutLevels", "KnockOutLevel", knock_outs);
     write_commodity_levels(data, "FixedTriggerLevels", "FixedTriggerLevel", triggers);
 
-    data.set_decimal("FixedRate",
-                     commodity_leg_rate_of(carrier, commodity_coupon_leg, "fixed")
-                         .value_or(decimal{}));
+    data.set_decimal(
+        "FixedRate",
+        commodity_leg_rate_of(carrier, commodity_coupon_leg, "fixed").value_or(decimal{}));
     const auto* funding = commodity_leg_of(carrier, commodity_funding_leg);
     if (funding != nullptr) {
         data.set_text("FloatingIndex", ore_name_of(funding->floating_index_code));

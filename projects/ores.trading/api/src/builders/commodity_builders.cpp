@@ -283,8 +283,8 @@ std::optional<build_error> commodity_fixing_refusal(
     return refusals::period(start, expiry);
 }
 
-std::optional<build_error> commodity_basket_refusal(
-    const std::vector<commodity_basket_member>& basket) {
+std::optional<build_error>
+commodity_basket_refusal(const std::vector<commodity_basket_member>& basket) {
     if (basket.size() < 2)
         return build_error{"basket", "must hold at least two commodities"};
     for (std::size_t i = 0; i < basket.size(); ++i) {

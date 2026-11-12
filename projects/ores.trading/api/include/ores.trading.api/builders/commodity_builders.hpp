@@ -517,7 +517,12 @@ private:
  */
 
 /// What a rainbow option pays on its basket.
-enum class rainbow_payoff { best_of_asset_or_cash, worst_of_asset_or_cash, max_rainbow, min_rainbow };
+enum class rainbow_payoff {
+    best_of_asset_or_cash,
+    worst_of_asset_or_cash,
+    max_rainbow,
+    min_rainbow
+};
 
 /// An option on the best or worst performer of a basket of commodities.
 struct commodity_rainbow_option_terms final {

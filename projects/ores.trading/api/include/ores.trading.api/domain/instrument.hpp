@@ -22,6 +22,7 @@
 
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
+#include "ores.trading.api/domain/basket_swap_period.hpp"
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
@@ -33,7 +34,6 @@
 #include "ores.trading.api/domain/equity_basket_constituent.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
-#include "ores.trading.api/domain/basket_swap_period.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"

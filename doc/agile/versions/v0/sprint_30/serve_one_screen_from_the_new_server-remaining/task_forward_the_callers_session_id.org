@@ -29,11 +29,11 @@ through the C++ server act on the person signed in, as they do through the BFF.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
@@ -122,3 +122,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+IAM's account handlers read the caller's own token through =caller_token=, the
+delegated token first, as the request context does. Proved live on Acme: a
+tenant administrator's party switch through the C++ server answered 200 and
+moved the session to Acme Corporation Plc, where it had answered 401. The
+ores.service suite, the four IAM suites and the nine ores.http suites pass.
+
+Component audit: the task touched ores.service (one helper) and ores.iam (its
+handlers' token read) and ores.http.nats (the session id). No component
+changed shape.
+

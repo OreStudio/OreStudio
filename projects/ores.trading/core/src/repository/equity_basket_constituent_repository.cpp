@@ -390,4 +390,24 @@ void equity_basket_constituent_repository::remove(
 }
 
 
+std::vector<domain::equity_basket_constituent>
+equity_basket_constituent_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<equity_basket_constituent_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                                            "valid_to"_c == max) |
+                       query_builder::order_by("trade_id"_c, "sequence_number"_c);
+    return query_builder::execute_read_query<equity_basket_constituent_entity,
+                                             domain::equity_basket_constituent>(
+        ctx,
+        query,
+        [](const auto& entities) { return equity_basket_constituent_mapper::map(entities); },
+        lg(),
+        "Reading equity basket constituents for multiple instruments.");
+}
+
 }

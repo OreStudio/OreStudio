@@ -199,6 +199,8 @@ public:
                 const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& sequence_numbers);
 
+    std::vector<domain::equity_basket_constituent>
+    read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
 
 private:
     /**

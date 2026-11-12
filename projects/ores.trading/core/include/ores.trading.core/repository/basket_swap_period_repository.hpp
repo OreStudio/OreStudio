@@ -210,6 +210,8 @@ public:
                 const std::vector<std::string>& trade_activity_ids,
                 const std::vector<std::string>& sequence_numbers);
 
+    std::vector<domain::basket_swap_period>
+    read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
 
 private:
     /**

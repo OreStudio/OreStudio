@@ -28,10 +28,10 @@ Decide how the synthetic feeds share one correlated market (open decision OD-1),
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-12                               |
+| Now          | The investigation is written and recommends shared Brownian factors in simulated time. |
+| Waiting on   | The owner's decision on the approach and its four open points. |
+| Next         | Write the story the chosen approach needs. |
+| Last touched | 2026-11-12                             |
 
 * Acceptance
 
@@ -83,6 +83,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The bridge's fixed depth makes increments exact only at its nodes | investigation | Fix | A section states the resolution (3.4 microseconds of simulated time at a cell of an hour and a depth of 30), the error between nodes (a quarter of the finest step at most) and that no tick falls below it at the default speed; the first step tests two ticks inside one finest step. |
+| 2 | Business-time variance makes the factor depend on the regime | investigation | Fix | The exogenous chain keeps the noise independent of who ticks; a loading that includes the endogenous heat does not, which bounds R4 and is stated. |
+| 3 | Loadings at a regime switch | investigation | Fix | Loadings apply per piece of an interval, at the chain's switch times, which is exact. |
+| 4 | The zero-loading identity constrains the driven step's API | investigation | Fix | The series' own increment is drawn from its existing price stream in the same order, and the step receives the Gaussian it would have drawn. |
+| 5 | How the surface's three correlations become loadings | investigation | Fix | A block member loads on its anchor's whole driver, so its correlation with spot is exactly the stated one; a set that is not a correlation is refused, never projected. |
+| 6 | Measure the bridge's cost and the feed count | investigation | Dismiss | No code exists to measure; both are stated as unmeasured, and the story's first step measures them. |
+| 7 | The task's status, result and empty measurement row | task | Fix | Status and result state the investigation's outcome and the pending decision; the measurement table is the template's and stays empty, since nothing was measured. |
+| 8 | "b within a" and the independence of the factors | investigation | Fix | Written as option b inside option a; the factors and each series' own noise are stated independent. |
 
 * Result
+
+[[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][How the synthetic market is generated jointly]] recommends shared Brownian factors in the market's simulated time: low rank and hierarchical, read by each series as increments of its own driver, exact to the bridge's resolution under any sampling. It leaves four decisions to the owner, who chooses the approach from it.

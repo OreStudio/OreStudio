@@ -141,7 +141,8 @@ motion in the run's simulated time. Every series =i= has a driver
 
   W_i(t) = sum_k b_ik F_k(t) + d_i E_i(t),   with  sum_k b_ik^2 + d_i^2 = 1
 
-where =E_i= is the series' own Brownian motion and =b_i= its loadings. When the
+where =E_i= is the series' own Brownian motion, =b_i= its loadings, and every =F_k=
+and every =E_i= are independent of each other. When the
 series ticks at time =T= after its last tick at =t_i=, its process is stepped with
 the increment =W_i(T) - W_i(t_i)=, already scaled to the interval, in place of the
 normal it draws today. The process keeps its law: the mixture still picks its
@@ -203,6 +204,53 @@ How it meets each requirement:
 - Named pair-to-pair contagion and activity exciting volatility (the bivariate
   Hawkes) stay out of scope, as the arrival and volatility notes leave them.
 
+** What Path F must state before it is built
+
+Five points the design has to fix, because the requirements above hold only to
+the extent they are settled:
+
+- *Resolution of the bridge (R2, R4).* A factor's path is exact at its keyed nodes:
+  the cell boundaries and the dyadic points of a bridge refined to a fixed depth
+  =D= inside each cell. A query between two finest nodes is interpolated linearly,
+  which has the right mean and a variance short by at most a quarter of the finest
+  step. So an increment is exact to that resolution, not below it. With a cell of
+  one simulated hour and =D = 30=, the finest step is about 3.4 microseconds of
+  simulated time. At the default speed one millisecond of wall time is 1.44
+  simulated seconds, so no tick, burst or not, falls below the resolution. The
+  depth is a parameter with that bound beside it, and the first step's tests include
+  two ticks inside one finest step, to pin the stated behaviour.
+- *Business time and the heat (R3, R4).* If the volatility loading reaches the
+  noise, a factor's cell increment is scaled by the loading integrated over the
+  cell, so the path is a function of the seed and the /regime's/ path. The
+  calm/active chain is exogenous and seeded by the market stream, so with it alone
+  the noise stays independent of who ticks. The heat is endogenous: every event of
+  every series feeds it. A loading that includes the heat makes the noise depend
+  on all events, so adding a series changes another's prices. That is contagion
+  doing what it is for, and it bounds R4: the determinism holds for the noise and
+  for the exogenous regime, and a run with the heat in the loading is reproducible
+  by seed but not invariant to adding a feed. A test states which it checks.
+- *Loadings at a regime change (R3).* With per-regime loadings, a driver is the
+  integral of its loadings in force against the factors: an increment over an
+  interval that spans a switch is the sum of the increments of its pieces, each
+  under the loadings of its regime. The switch times are the chain's, which the
+  scheduler already holds, so this is exact, and loadings apply per piece, not per
+  tick.
+- *The identity of a series with no loadings (step 2).* "Bit-identical to today"
+  holds only if the series' own increment =E_i= is drawn from the series' existing
+  price stream, in the same order and the same number as the process draws today.
+  So the driven step does not draw for the process: it receives the Gaussian the
+  process would have drawn, and the latent market draws it from the series' own
+  stream. That fixes the step's API: one standard normal in, scaled by the process
+  as before.
+- *How a block's correlations become loadings (R1).* A block member loads on its
+  anchor's whole driver: a surface factor's driver is =rho W_spot + sqrt(1 - rho^2)
+  G=, with =G= the block's own noise. Its correlation with spot is then exactly
+  =rho=, whatever spot's global loadings are, and the block's internal
+  correlations, such as neighbouring forward variances, are the Cholesky factor of
+  the block's own matrix. A set of numbers that is not a correlation is refused,
+  as the surface engine already refuses a matrix that is not positive definite. It
+  is never projected, since a projected value is not the one a person stated.
+
 * Conclusions
 
 - OD-1's three options are not alternatives in the live simulator. Option a's
@@ -216,7 +264,7 @@ How it meets each requirement:
   generalise the rank-one design the arrival regime already chose, compose with the
   regime, the heat, the speed, the volatility channel and the tail tilt, and keep a
   feed a feed. A regime that carries its own loadings is the joint GMM's components
-  in continuous time, which answers OD-1 as "b within a", and the joint GMM's
+  in continuous time, which answers OD-1 as option b inside option a, and the joint GMM's
   fitting (Phase 5) becomes calibrating the loadings.
 - Determinism under any sampling (R4) is the one property that needs care, and the
   counter-based stream already in the library gives it.

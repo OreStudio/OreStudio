@@ -846,6 +846,9 @@ ores::marketdata::datum::market_reference commodity_address_of(const std::string
  * its constructor until the projection writes it; the builders task deletes
  * that path when the last type moves.
  */
+std::optional<ores::marketdata::datum::market_reference>
+funding_index_in(const domain::trade_generation_scope& scope, const std::string& currency);
+
 std::optional<ores::trading::domain::instrument_batch>
 built_commodity_trade(const domain::trade_generation_scope& scope,
                       const domain::trade_population_slot& entry,
@@ -1067,7 +1070,8 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                           .unit = drawn.unit})
                          .build());
     }
-    if (type == "CommodityBasketOption") {
+    // A basket holds each drawn commodity once, equally weighted.
+    const auto distinct_basket = [&]() {
         std::vector<tb::commodity_basket_member> basket;
         for (const auto& member : drawn.basket)
             if (std::ranges::none_of(basket, [&](const auto& held) {
@@ -1079,7 +1083,84 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                                          "the tenant holds fewer than two.");
         for (auto& member : basket)
             member.weight = 1.0 / static_cast<double>(basket.size());
-        return built(tb::commodity_basket_option_builder({.basket = std::move(basket),
+        return basket;
+    };
+    if (type == "CommodityRainbowOption") {
+        constexpr tb::rainbow_payoff payoffs[] = {tb::rainbow_payoff::best_of_asset_or_cash,
+                                                  tb::rainbow_payoff::worst_of_asset_or_cash,
+                                                  tb::rainbow_payoff::max_rainbow,
+                                                  tb::rainbow_payoff::min_rainbow};
+        return built(tb::commodity_rainbow_option_builder(
+                         {.basket = distinct_basket(),
+                          .currency = currency,
+                          .notional = quantity,
+                          .kind = kind,
+                          .payoff = payoffs[static_cast<std::size_t>(draw(name, 13) * 4.0)],
+                          .strike = strike,
+                          .expiry = end,
+                          .position = position})
+                         .build());
+    }
+    if (type == "CommodityBasketVarianceSwap")
+        return built(tb::commodity_basket_variance_swap_builder(
+                         {.basket = distinct_basket(),
+                          .currency = currency,
+                          .notional = quantity,
+                          .variance_strike = drawn.variance_strike.value_or(0.0),
+                          .start = start,
+                          .maturity = end,
+                          .settlement = year_month_day{sys_days{end} + days{2}},
+                          .position = position})
+                         .build());
+    if (type == "CommodityBestEntryOption")
+        return built(tb::commodity_best_entry_option_builder(
+                         {.underlying = underlying,
+                          .currency = currency,
+                          .notional = quantity,
+                          .strike = strike,
+                          .multiplier = money(1.0),
+                          .cap = money(0.5),
+                          .trigger_level = money(0.9),
+                          .reset_minimum = money(0.8),
+                          .premium = money(quantity.to_double() * strike.to_double() * 0.03),
+                          .premium_date = year_month_day{sys_days{start} + days{2}},
+                          .strike_date = start,
+                          .expiry = end,
+                          .settlement = year_month_day{sys_days{end} + days{2}},
+                          .position = position,
+                          .unit = drawn.unit})
+                         .build());
+    if (type == "CommodityWorstOfBasketSwap") {
+        const auto funding = funding_index_in(scope, currency);
+        if (!funding)
+            throw trade_population_error("A commodity worst-of basket swap funds on an index in " +
+                                         currency + ", and the tenant's swap conventions name none.");
+        // Each member starts from the drawn price, stepped so no two start equal.
+        std::vector<tb::commodity_worst_of_member> basket;
+        for (const auto& member : distinct_basket())
+            basket.push_back({.underlying = member.underlying,
+                              .initial_price = money(price.to_double() *
+                                                     (1.0 + 0.1 * static_cast<double>(basket.size())))});
+        std::vector<year_month_day> observations;
+        for (int months = 3; add_months(start, months) < end; months += 3)
+            observations.push_back(add_months(start, months));
+        observations.push_back(end);
+        const ores::marketdata::conventions::convention_lookup conventions(scope.conventions);
+        return built(tb::commodity_worst_of_basket_swap_builder(
+                         conventions,
+                         {.basket = std::move(basket),
+                          .observation_dates = std::move(observations),
+                          .funding_index = *funding,
+                          .currency = currency,
+                          .quantity = quantity,
+                          .fixed_rate = money(0.03 + 0.04 * draw(name, 14)),
+                          .start = start,
+                          .maturity = end,
+                          .position = position})
+                         .build());
+    }
+    if (type == "CommodityBasketOption") {
+        return built(tb::commodity_basket_option_builder({.basket = distinct_basket(),
                                                           .currency = currency,
                                                           .notional = quantity,
                                                           .kind = kind,
@@ -1261,6 +1342,14 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
                 break;
             case commodity_shape::variance_swap:
                 terms.variance_strike = price_from(name, 8, 0.01, 0.2);
+                if (type.code == "CommodityBasketVarianceSwap") {
+                    for (std::uint32_t member = 0; member < 3; ++member) {
+                        const auto& drawn_member =
+                            scope.commodities[(slot + member) % scope.commodities.size()];
+                        terms.basket.push_back(
+                            domain::commodity_basket_member{drawn_member.code, 1.0 / 3.0});
+                    }
+                }
                 break;
             case commodity_shape::swap:
                 terms.fixed_price = price;

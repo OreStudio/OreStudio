@@ -22,7 +22,9 @@
 #include "refusals.hpp"
 #include <cmath>
 #include <optional>
+#include <tuple>
 #include <utility>
+#include <variant>
 
 namespace ores::trading::builders {
 
@@ -281,6 +283,33 @@ std::optional<build_error> commodity_fixing_refusal(
     return refusals::period(start, expiry);
 }
 
+std::optional<build_error> commodity_basket_refusal(
+    const std::vector<commodity_basket_member>& basket) {
+    if (basket.size() < 2)
+        return build_error{"basket", "must hold at least two commodities"};
+    for (std::size_t i = 0; i < basket.size(); ++i) {
+        if (!(basket[i].weight > 0.0) || !std::isfinite(basket[i].weight))
+            return build_error{"basket", "weights must be positive"};
+        for (std::size_t j = i + 1; j < basket.size(); ++j)
+            if (basket[i].underlying == basket[j].underlying)
+                return build_error{"basket", "must not hold a commodity twice"};
+    }
+    return std::nullopt;
+}
+
+/// The basket's constituents in its order.
+void commodity_add_basket(domain::commodity_instrument_data& out,
+                          const std::vector<commodity_basket_member>& basket) {
+    int number = 0;
+    for (const auto& member : basket) {
+        domain::commodity_basket_constituent constituent{};
+        constituent.sequence_number = ++number;
+        constituent.underlying_code = member.underlying.uri();
+        constituent.weight = member.weight;
+        out.constituents.push_back(std::move(constituent));
+    }
+}
+
 /// An accumulating product's row keeps its fixing amount, and its quantity is none.
 domain::commodity_instrument commodity_fixing_row_of(std::string_view trade_type,
                                                      const marketdata::datum::market_reference& u,
@@ -453,15 +482,8 @@ commodity_result commodity_basket_option_builder::build() const {
     if (terms_.strike.get() <= decimal{})
         return std::unexpected(build_error{"strike", "must be positive"});
     const auto& basket = terms_.basket.get();
-    if (basket.size() < 2)
-        return std::unexpected(build_error{"basket", "must hold at least two commodities"});
-    for (std::size_t i = 0; i < basket.size(); ++i) {
-        if (!(basket[i].weight > 0.0) || !std::isfinite(basket[i].weight))
-            return std::unexpected(build_error{"basket", "weights must be positive"});
-        for (std::size_t j = i + 1; j < basket.size(); ++j)
-            if (basket[i].underlying == basket[j].underlying)
-                return std::unexpected(build_error{"basket", "must not hold a commodity twice"});
-    }
+    if (auto refusal = commodity_basket_refusal(basket))
+        return std::unexpected(std::move(*refusal));
 
     /*
      * The row names the basket's first member, so it states a commodity as
@@ -476,14 +498,7 @@ commodity_result commodity_basket_option_builder::build() const {
     row.maturity_date = terms_.expiry.get();
     domain::commodity_instrument_data out{};
     out.instrument = std::move(row);
-    int number = 0;
-    for (const auto& member : basket) {
-        domain::commodity_basket_constituent constituent{};
-        constituent.sequence_number = ++number;
-        constituent.underlying_code = member.underlying.uri();
-        constituent.weight = member.weight;
-        out.constituents.push_back(std::move(constituent));
-    }
+    commodity_add_basket(out, basket);
     out.options.push_back(commodity_option_row(terms_.position.get(), "Vanilla"));
     return out;
 }
@@ -774,6 +789,249 @@ commodity_result commodity_forward_volatility_agreement_builder::build() const {
     domain::commodity_instrument_data out{};
     out.instrument = std::move(row);
     commodity_add_underlying(out, terms_.underlying.get());
+    return out;
+}
+
+namespace {
+
+std::string commodity_rainbow_payoff_of(rainbow_payoff payoff) {
+    switch (payoff) {
+        case rainbow_payoff::best_of_asset_or_cash:
+            return "BestOfAssetOrCash";
+        case rainbow_payoff::worst_of_asset_or_cash:
+            return "WorstOfAssetOrCash";
+        case rainbow_payoff::max_rainbow:
+            return "MaxRainbow";
+        case rainbow_payoff::min_rainbow:
+            return "MinRainbow";
+    }
+    return {};
+}
+
+}
+
+commodity_rainbow_option_builder::commodity_rainbow_option_builder(
+    commodity_rainbow_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_rainbow_option_builder::build() const {
+    if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.notional.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.strike.get() <= decimal{})
+        return std::unexpected(build_error{"strike", "must be positive"});
+    const auto& basket = terms_.basket.get();
+    if (auto refusal = commodity_basket_refusal(basket))
+        return std::unexpected(std::move(*refusal));
+    // The members may count different units, so the row states none.
+    auto row = commodity_row_of(
+        trade_type, basket.front().underlying, terms_.currency.get(), terms_.notional.get(), {});
+    row.option_type = option_type_of(terms_.kind.get());
+    row.strike_price = terms_.strike.get();
+    row.exercise_type = "European";
+    row.maturity_date = terms_.expiry.get();
+    domain::commodity_instrument_data out{};
+    out.instrument = std::move(row);
+    commodity_add_basket(out, basket);
+    out.options.push_back(commodity_option_row(terms_.position.get(),
+                                               commodity_rainbow_payoff_of(terms_.payoff.get())));
+    return out;
+}
+
+commodity_basket_variance_swap_builder::commodity_basket_variance_swap_builder(
+    commodity_basket_variance_swap_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_basket_variance_swap_builder::build() const {
+    if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.notional.get()))
+        return std::unexpected(std::move(*refusal));
+    if (!(terms_.variance_strike.get() > 0.0))
+        return std::unexpected(build_error{"variance_strike", "must be positive"});
+    if (auto refusal = refusals::period(terms_.start.get(), terms_.maturity.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.settlement.get() < terms_.maturity.get())
+        return std::unexpected(build_error{"settlement", "must not be before the maturity"});
+    const auto& basket = terms_.basket.get();
+    if (auto refusal = commodity_basket_refusal(basket))
+        return std::unexpected(std::move(*refusal));
+    auto row = commodity_row_of(
+        trade_type, basket.front().underlying, terms_.currency.get(), terms_.notional.get(), {});
+    row.variance_strike = terms_.variance_strike.get();
+    row.moment_type = "Variance";
+    row.start_date = terms_.start.get();
+    row.maturity_date = terms_.maturity.get();
+    row.settlement_date = terms_.settlement.get();
+    row.position = long_short_of(terms_.position.get());
+    domain::commodity_instrument_data out{};
+    out.instrument = std::move(row);
+    commodity_add_basket(out, basket);
+    out.schedules.push_back(commodity_scripted_schedule(
+        "valuation_schedule", terms_.start.get(), terms_.maturity.get()));
+    return out;
+}
+
+commodity_best_entry_option_builder::commodity_best_entry_option_builder(
+    commodity_best_entry_option_terms terms)
+    : terms_(std::move(terms)) {}
+
+commodity_result commodity_best_entry_option_builder::build() const {
+    if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.notional.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.strike.get() <= decimal{})
+        return std::unexpected(build_error{"strike", "must be positive"});
+    if (terms_.multiplier.get() <= decimal{} || terms_.cap.get() <= decimal{})
+        return std::unexpected(build_error{"cap", "the multiplier and cap must be positive"});
+    const decimal one = *decimal::from_string("1");
+    for (const auto& [term, value] : {std::pair{"trigger_level", terms_.trigger_level.get()},
+                                      std::pair{"reset_minimum", terms_.reset_minimum.get()}})
+        if (value <= decimal{} || one < value)
+            return std::unexpected(
+                build_error{term, "must be a fraction of the initial price above zero"});
+    if (terms_.premium.get() < decimal{})
+        return std::unexpected(build_error{"premium", "must not be negative"});
+    if (auto refusal = refusals::period(terms_.strike_date.get(), terms_.expiry.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.settlement.get() < terms_.expiry.get())
+        return std::unexpected(build_error{"settlement", "must not be before the expiry"});
+    auto row = commodity_row_of(trade_type,
+                                terms_.underlying.get(),
+                                terms_.currency.get(),
+                                terms_.notional.get(),
+                                terms_.unit);
+    row.strike_price = terms_.strike.get();
+    row.maturity_date = terms_.expiry.get();
+    row.position = long_short_of(terms_.position.get());
+    row.multiplier = terms_.multiplier.get();
+    row.cap = terms_.cap.get();
+    row.trigger_level = terms_.trigger_level.get();
+    row.reset_minimum = terms_.reset_minimum.get();
+    row.premium_amount = terms_.premium.get();
+    row.premium_date = terms_.premium_date.get();
+    row.strike_date = terms_.strike_date.get();
+    row.settlement_date = terms_.settlement.get();
+    domain::commodity_instrument_data out{};
+    out.instrument = std::move(row);
+    out.schedules.push_back(commodity_scripted_schedule(
+        "observation_schedule", terms_.strike_date.get(), terms_.expiry.get()));
+    commodity_add_underlying(out, terms_.underlying.get());
+    return out;
+}
+
+commodity_worst_of_basket_swap_builder::commodity_worst_of_basket_swap_builder(
+    const marketdata::conventions::convention_lookup& conventions,
+    commodity_worst_of_basket_swap_terms terms)
+    : conventions_(conventions)
+    , terms_(std::move(terms)) {}
+
+commodity_result commodity_worst_of_basket_swap_builder::build() const {
+    const auto& basket = terms_.basket.get();
+    if (basket.size() < 2)
+        return std::unexpected(build_error{"basket", "must hold at least two commodities"});
+    for (std::size_t i = 0; i < basket.size(); ++i) {
+        if (basket[i].initial_price <= decimal{})
+            return std::unexpected(build_error{"basket", "initial prices must be positive"});
+        for (std::size_t j = i + 1; j < basket.size(); ++j)
+            if (basket[i].underlying == basket[j].underlying)
+                return std::unexpected(build_error{"basket", "must not hold a commodity twice"});
+    }
+    if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.quantity.get()))
+        return std::unexpected(std::move(*refusal));
+    if (terms_.fixed_rate.get() < decimal{})
+        return std::unexpected(build_error{"fixed_rate", "must not be negative"});
+    if (auto refusal = refusals::period(terms_.start.get(), terms_.maturity.get()))
+        return std::unexpected(std::move(*refusal));
+    const auto& observations = terms_.observation_dates.get();
+    if (observations.empty())
+        return std::unexpected(build_error{"observation_dates", "must state at least one date"});
+    for (std::size_t i = 0; i < observations.size(); ++i) {
+        const auto previous = i == 0 ? terms_.start.get() : observations[i - 1];
+        if (observations[i] <= previous || observations[i] > terms_.maturity.get())
+            return std::unexpected(build_error{
+                "observation_dates", "must ascend after the start and end no later than maturity"});
+    }
+    const auto& funding = terms_.funding_index.get();
+    if (funding.index() == nullptr || funding.index()->subject() != terms_.currency.get())
+        return std::unexpected(build_error{"funding_index", "must be an index in the currency"});
+    const auto definition = conventions_.index_definition_of(funding);
+    if (!definition)
+        return std::unexpected(build_error{
+            "funding_index", definition.error().reference + ": " + definition.error().reason});
+    // The funding leg accrues and rolls as its index's convention defines.
+    const auto [day_count, calendar, adjustment] = std::visit(
+        [](const auto& index) {
+            std::string rolls = "MF";
+            if constexpr (requires { index.business_day_convention; })
+                rolls = index.business_day_convention;
+            return std::tuple{index.day_count_fraction, index.fixing_calendar, rolls};
+        },
+        *definition);
+
+    auto row = commodity_row_of(
+        trade_type, basket.front().underlying, terms_.currency.get(), terms_.quantity.get(), {});
+    row.start_date = terms_.start.get();
+    row.maturity_date = terms_.maturity.get();
+    row.position = long_short_of(terms_.position.get());
+    domain::commodity_instrument_data out{};
+    out.instrument = std::move(row);
+    int number = 0;
+    for (const auto& member : basket) {
+        domain::commodity_basket_constituent constituent{};
+        constituent.sequence_number = ++number;
+        constituent.underlying_code = member.underlying.uri();
+        constituent.weight = 1.0 / static_cast<double>(basket.size());
+        constituent.initial_price = member.initial_price;
+        out.constituents.push_back(std::move(constituent));
+    }
+
+    // The funding leg floats on its index; the coupon leg pays the fixed rate.
+    auto funding_leg = rows::swap_leg(1, true, "Floating", terms_.currency.get());
+    funding_leg.floating_index_code = funding.uri();
+    funding_leg.day_count_fraction_code = day_count;
+    out.legs.push_back(std::move(funding_leg));
+    out.legs.push_back(rows::swap_leg(2, false, "Fixed", terms_.currency.get()));
+    domain::swap_leg_rate coupon{};
+    coupon.leg_number = 2;
+    coupon.rate_role = "fixed";
+    coupon.sequence_number = 1;
+    coupon.value = terms_.fixed_rate.get();
+    out.leg_rates.push_back(std::move(coupon));
+
+    /*
+     * ORE accrues between consecutive schedule dates and reads one level per
+     * accrual period, so both schedules are the start then each period's end.
+     */
+    for (const auto* role : {"floating_period_schedule", "floating_pay_schedule"}) {
+        domain::instrument_schedule schedule{};
+        schedule.owner_role = "option";
+        schedule.owner_number = 1;
+        schedule.schedule_role = role;
+        schedule.sequence_number = 1;
+        schedule.schedule_kind = "dates";
+        schedule.calendar = calendar;
+        schedule.convention = adjustment;
+        out.schedules.push_back(std::move(schedule));
+        int date_number = 0;
+        std::vector<ymd> dates{terms_.start.get()};
+        dates.insert(dates.end(), observations.begin(), observations.end());
+        for (const auto& when : dates) {
+            domain::instrument_schedule_date date{};
+            date.owner_role = "option";
+            date.owner_number = 1;
+            date.schedule_role = role;
+            date.schedule_sequence_number = 1;
+            date.sequence_number = ++date_number;
+            date.schedule_date = when;
+            out.schedule_dates.push_back(std::move(date));
+        }
+    }
+    number = 0;
+    for (const auto& when : observations) {
+        domain::basket_swap_period period{};
+        period.sequence_number = ++number;
+        period.period_date = when;
+        period.knock_out_level = 1.0;
+        period.fixed_trigger_level = 0.75;
+        out.periods.push_back(std::move(period));
+    }
     return out;
 }
 

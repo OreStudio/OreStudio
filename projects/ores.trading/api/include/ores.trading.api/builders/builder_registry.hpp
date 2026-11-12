@@ -110,7 +110,11 @@ using all_builders =
                commodity_tarf_builder,
                commodity_generic_barrier_option_builder,
                commodity_strike_resettable_option_builder,
-               commodity_forward_volatility_agreement_builder>;
+               commodity_forward_volatility_agreement_builder,
+               commodity_rainbow_option_builder,
+               commodity_basket_variance_swap_builder,
+               commodity_best_entry_option_builder,
+               commodity_worst_of_basket_swap_builder>;
 
 namespace detail {
 

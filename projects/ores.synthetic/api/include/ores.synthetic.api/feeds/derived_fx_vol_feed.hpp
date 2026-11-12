@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <expected>
 #include <functional>
+#include <limits>
 #include <map>
 #include <optional>
 #include <set>
@@ -118,8 +119,13 @@ public:
      * the fixings cover; a later call writes only the days since. A pair that cannot be
      * kept is named in failures() and tried again on the next call. Returns how many days
      * were written. Without a store it keeps nothing.
+     *
+     * A fresh history takes many minutes to write, so a caller that must keep answering
+     * between pairs passes @p pair_limit: the call returns once that many pairs have had
+     * days written, and the next call goes on with the rest.
      */
-    std::size_t persist(std::chrono::year_month_day today);
+    std::size_t persist(std::chrono::year_month_day today,
+                        std::size_t pair_limit = std::numeric_limits<std::size_t>::max());
 
     /// Why each pair left out of the last refresh was left out.
     [[nodiscard]] const std::vector<std::string>& failures() const {

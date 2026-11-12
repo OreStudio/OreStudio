@@ -490,6 +490,29 @@ TEST_CASE("the_feed_keeps_every_pair_of_its_universe_and_names_one_it_cannot", d
     CHECK_FALSE(memory.held[derived_fx_series_uri({.base = "USD", .quote = "JPY"})].empty());
 }
 
+TEST_CASE("a_feed_given_a_pair_limit_keeps_one_pair_a_call", derived_tags) {
+    const auto fixings = derived_fixings(200, 43);
+    derived_memory_store memory;
+    derived_fx_vol_feed feed(
+        "derived-fx-vol", "derived", derived_readers_of(fixings), {}, memory.store());
+    auto universe = derived_ids_of({.base = "EUR", .quote = "USD"});
+    const auto usdjpy = derived_ids_of({.base = "USD", .quote = "JPY"});
+    universe.insert(universe.end(), usdjpy.begin(), usdjpy.end());
+    feed.set_universe(universe);
+    const auto day = fixings.at(ecb_fixing_item("USD")).dates.back();
+    const auto eurusd = derived_fx_series_uri({.base = "EUR", .quote = "USD"});
+    const auto usdjpy_series = derived_fx_series_uri({.base = "USD", .quote = "JPY"});
+
+    CHECK(feed.persist(day, 1) > 0);
+    CHECK(memory.held[eurusd].empty() != memory.held[usdjpy_series].empty());
+
+    CHECK(feed.persist(day, 1) > 0);
+    CHECK_FALSE(memory.held[eurusd].empty());
+    CHECK_FALSE(memory.held[usdjpy_series].empty());
+
+    CHECK(feed.persist(day, 1) == 0);
+}
+
 TEST_CASE("a_feed_with_no_store_keeps_nothing", derived_tags) {
     const auto fixings = derived_fixings(200, 31);
     derived_fx_vol_feed feed("derived-fx-vol", "derived", derived_readers_of(fixings));

@@ -401,8 +401,6 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
         feed_.demand(*taken);
         next_refresh_ = now;
     }
-    if (now < next_refresh_)
-        return;
 
     const auto today = std::chrono::year_month_day{
         std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())};
@@ -411,26 +409,42 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
     // The latest quotes go out before the history is kept: a party's series of a derived
     // quote exists only once a quote reaches it, and a fresh history takes many minutes
     // to write, during which provisioning waits for those series.
+    if (now >= next_refresh_) {
+        try {
+            const auto sent = feed_.refresh(today, [&](const mm::adapter_tick& tick) {
+                nats_.publish(subjects::adapter_ingress_subject(source_name_, tick.external_id),
+                              ores::nats::default_wire_codec().encode(tick));
+            });
+            for (const auto& failure : feed_.failures())
+                BOOST_LOG_SEV(lg(), warn) << "The derived source left out " << failure;
+            if (sent > 0)
+                BOOST_LOG_SEV(lg(), info)
+                    << "Sent " << sent << " derived quote(s) of '" << source_name_ << "'";
+            history_pending_ = true;
+            next_refresh_ = now + timing_.refresh_interval;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to refresh '" << source_name_ << "': " << e.what();
+            next_refresh_ = now + timing_.retry_interval;
+            return;
+        }
+    }
+    if (!history_pending_ || now < next_history_)
+        return;
+    // One pair a pass, so a demand that arrives while the history is written, such as a
+    // party subscribing during provisioning, is answered on the next pass rather than
+    // after every pair.
     try {
-        const auto sent = feed_.refresh(today, [&](const mm::adapter_tick& tick) {
-            nats_.publish(subjects::adapter_ingress_subject(source_name_, tick.external_id),
-                          ores::nats::default_wire_codec().encode(tick));
-        });
-        for (const auto& failure : feed_.failures())
-            BOOST_LOG_SEV(lg(), warn) << "The derived source left out " << failure;
-        if (sent > 0)
-            BOOST_LOG_SEV(lg(), info)
-                << "Sent " << sent << " derived quote(s) of '" << source_name_ << "'";
-        const auto kept = feed_.persist(today);
+        const auto kept = feed_.persist(today, 1);
         for (const auto& failure : feed_.failures())
             BOOST_LOG_SEV(lg(), warn) << "The derived history left out " << failure;
         if (kept > 0)
             BOOST_LOG_SEV(lg(), info)
                 << "Kept " << kept << " day(s) of derived quotes of '" << source_name_ << "'";
-        next_refresh_ = now + timing_.refresh_interval;
+        history_pending_ = kept > 0;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to refresh '" << source_name_ << "': " << e.what();
-        next_refresh_ = now + timing_.retry_interval;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to keep the history of '" << source_name_
+                                  << "': " << e.what();
+        next_history_ = now + timing_.retry_interval;
     }
 }
 

@@ -166,7 +166,8 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     return ticks;
 }
 
-std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
+std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
+                                         std::size_t pair_limit) {
     if (!store_)
         return 0;
     failures_.clear();
@@ -185,7 +186,10 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
         << "Keeping the derived history of " << pairs.size() << " pair(s) up to " << today;
 
     std::size_t written = 0;
+    std::size_t pairs_written = 0;
     for (const auto& [key, pair] : pairs) {
+        if (pairs_written >= pair_limit)
+            break;
         auto kept = kept_.find(key);
         if (kept == kept_.end()) {
             auto started = std::chrono::steady_clock::now();
@@ -277,6 +281,7 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
         for (const auto& d : missing->days)
             held.insert(d.day);
         written += missing->days.size();
+        ++pairs_written;
     }
     BOOST_LOG_SEV(derived_fx_feed_lg(), info)
         << "Kept the derived history of " << pairs.size() << " pair(s) in "

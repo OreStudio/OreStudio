@@ -100,6 +100,12 @@ struct commodity_basket_constituent final {
     std::optional<double> weight;
 
     /**
+     * @brief The constituent's price when a worst-of basket swap starts, which its performance is
+     * measured against, as InitialPrice states it.
+     */
+    std::optional<ores::utility::decimal::decimal> initial_price;
+
+    /**
      * @brief Username of the person who last modified this commodity basket constituent.
      */
     std::string modified_by;

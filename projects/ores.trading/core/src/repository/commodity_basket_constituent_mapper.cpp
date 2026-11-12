@@ -28,10 +28,12 @@
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/commodity_basket_constituent_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -52,6 +54,7 @@ commodity_basket_constituent_mapper::map(const commodity_basket_constituent_enti
     r.trade_activity_id = v.trade_activity_id;
     r.underlying_code = v.underlying_code;
     r.weight = v.weight;
+    r.initial_price = v.initial_price;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -74,6 +77,7 @@ commodity_basket_constituent_mapper::map(const domain::commodity_basket_constitu
     r.trade_activity_id = v.trade_activity_id;
     r.underlying_code = v.underlying_code;
     r.weight = v.weight;
+    r.initial_price = v.initial_price;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

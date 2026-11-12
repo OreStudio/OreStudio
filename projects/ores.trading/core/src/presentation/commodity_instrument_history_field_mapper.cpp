@@ -149,6 +149,17 @@ render_commodity_instrument_fields(const domain::commodity_instrument& v) {
                       .value = v.premium_amount ? v.premium_amount->to_string() : std::string{}});
     fields.push_back({.name = "Target Amount",
                       .value = v.target_amount ? v.target_amount->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Multiplier", .value = v.multiplier ? v.multiplier->to_string() : std::string{}});
+    fields.push_back({.name = "Cap", .value = v.cap ? v.cap->to_string() : std::string{}});
+    fields.push_back({.name = "Trigger Level",
+                      .value = v.trigger_level ? v.trigger_level->to_string() : std::string{}});
+    fields.push_back({.name = "Reset Minimum",
+                      .value = v.reset_minimum ? v.reset_minimum->to_string() : std::string{}});
+    fields.push_back({.name = "Strike Date",
+                      .value = v.strike_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.strike_date) :
+                                   std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

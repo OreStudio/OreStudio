@@ -331,6 +331,33 @@ struct commodity_instrument final {
     std::optional<ores::utility::decimal::decimal> target_amount;
 
     /**
+     * @brief The multiple of its gain a best entry option pays, as Multiplier states it.
+     */
+    std::optional<ores::utility::decimal::decimal> multiplier;
+
+    /**
+     * @brief The most a best entry option's gain can reach, as Cap states it.
+     */
+    std::optional<ores::utility::decimal::decimal> cap;
+
+    /**
+     * @brief The fraction of the initial price that, when the price falls to it, lets a best entry
+     * option reset its strike, as TriggerLevel states it.
+     */
+    std::optional<ores::utility::decimal::decimal> trigger_level;
+
+    /**
+     * @brief The lowest fraction of the initial price a best entry option's strike can reset to, as
+     * ResetMinimum states it.
+     */
+    std::optional<ores::utility::decimal::decimal> reset_minimum;
+
+    /**
+     * @brief The day a best entry option fixes its initial strike, as StrikeDate states it.
+     */
+    std::optional<std::chrono::year_month_day> strike_date;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -404,6 +431,11 @@ struct commodity_instrument final {
     ores::utility::digest::append_member(out, "trigger_price", v.trigger_price);
     ores::utility::digest::append_member(out, "premium_amount", v.premium_amount);
     ores::utility::digest::append_member(out, "target_amount", v.target_amount);
+    ores::utility::digest::append_member(out, "multiplier", v.multiplier);
+    ores::utility::digest::append_member(out, "cap", v.cap);
+    ores::utility::digest::append_member(out, "trigger_level", v.trigger_level);
+    ores::utility::digest::append_member(out, "reset_minimum", v.reset_minimum);
+    ores::utility::digest::append_member(out, "strike_date", v.strike_date);
     out.push_back('}');
     return out;
 }

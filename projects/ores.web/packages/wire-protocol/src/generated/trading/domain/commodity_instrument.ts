@@ -80,6 +80,11 @@ export interface CommodityInstrument {
     trigger_price: string | null;
     premium_amount: string | null;
     target_amount: string | null;
+    multiplier: string | null;
+    cap: string | null;
+    trigger_level: string | null;
+    reset_minimum: string | null;
+    strike_date: string | null;
     description: string;
     audit: AuditRecord;
 }

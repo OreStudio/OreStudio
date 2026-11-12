@@ -40,6 +40,7 @@ export interface CommodityBasketConstituentWrite {
     trade_activity_id: string;
     underlying_code: string;
     weight: number | null;
+    initial_price: string | null;
 }
 
 export interface CommodityBasketConstituentChange {

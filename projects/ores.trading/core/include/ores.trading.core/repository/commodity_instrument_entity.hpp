@@ -103,6 +103,11 @@ struct commodity_instrument_entity {
     std::optional<ores::utility::decimal::decimal> trigger_price;
     std::optional<ores::utility::decimal::decimal> premium_amount;
     std::optional<ores::utility::decimal::decimal> target_amount;
+    std::optional<ores::utility::decimal::decimal> multiplier;
+    std::optional<ores::utility::decimal::decimal> cap;
+    std::optional<ores::utility::decimal::decimal> trigger_level;
+    std::optional<ores::utility::decimal::decimal> reset_minimum;
+    std::optional<std::chrono::year_month_day> strike_date;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -169,6 +174,11 @@ struct commodity_instrument_entity {
                query_builder::bind("trigger_price", &e::trigger_price) |
                query_builder::bind("premium_amount", &e::premium_amount) |
                query_builder::bind("target_amount", &e::target_amount) |
+               query_builder::bind("multiplier", &e::multiplier) |
+               query_builder::bind("cap", &e::cap) |
+               query_builder::bind("trigger_level", &e::trigger_level) |
+               query_builder::bind("reset_minimum", &e::reset_minimum) |
+               query_builder::bind("strike_date", &e::strike_date) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

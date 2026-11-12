@@ -109,6 +109,7 @@ commodity_basket_constituent_to_domain(const messaging::commodity_basket_constit
     v.trade_activity_id = write.trade_activity_id;
     v.underlying_code = write.underlying_code;
     v.weight = write.weight;
+    v.initial_price = write.initial_price;
     return v;
 }
 

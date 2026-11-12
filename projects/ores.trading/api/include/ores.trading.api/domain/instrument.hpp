@@ -226,6 +226,11 @@ struct commodity_instrument_data {
      * shared rows the FX and equity accumulators use.
      */
     std::vector<range_bound> range_bounds;
+    /**
+     * @brief The determination periods of a commodity worst-of basket swap, in
+     * the rows every family's worst-of basket swap shares.
+     */
+    std::vector<basket_swap_period> periods;
 };
 
 // A credit trade states its legs as rows of the shared leg tables, and an index
@@ -768,6 +773,7 @@ inline void stamp_ids(commodity_instrument_data& data,
     stamp_one(data.instrument_underlyings);
     stamp_one(data.strikes);
     stamp_one(data.range_bounds);
+    stamp_one(data.periods);
 }
 
 inline void stamp_ids(credit_instrument_data& data,

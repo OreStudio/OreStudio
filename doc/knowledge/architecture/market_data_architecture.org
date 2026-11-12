@@ -226,6 +226,9 @@ and at saying which parts of a new asset class are config and which are code.
   asset constraints.
 - [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI, synthetic market data generation]].
   The source record that anchors the GMM choice.
+- [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]].
+  How feeds on their own clocks share one correlated market without reading
+  each other.
 - [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]]. Contradicts the adapter identity: scheduled work acts as
   a tenant, and an adapter acts as none.
 

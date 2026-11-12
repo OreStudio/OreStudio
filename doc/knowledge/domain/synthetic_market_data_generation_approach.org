@@ -335,13 +335,15 @@ fixed step in =ores.analytics.quant=, so a surface feed ticks periodically.
 |-------------+-----------------+-------------------+-------|
 | Pairwise correlation | =CORRELATION/RATE= (IR CMS-CMS, FX, equity) | *Derived* from jointly generated return vectors | Well-defined only if asset classes share a joint GMM |
 
-Correlation is not generated directly.  It is derived as the Pearson
-correlation coefficient of the jointly sampled return pairs from the GMM draw
-across asset classes.  This requires IR, FX, and equity to be included in the
-same joint GMM (or linked via a copula layer).  If asset classes are generated
-with independent GMMs, all pairwise correlations are zero by construction
-and must be injected separately.  The joint GMM architecture — block-diagonal,
-hierarchical, or copula-based — is open design decision OD-1.
+Correlation is not generated directly.  Every series draws the Gaussian that
+drives its process from shared Brownian factors in the run's simulated time, so
+two series correlate by the inner product of their factor loadings, signed and
+exact whatever their tick times.  A daily batch of snapshots reads the same
+factors at the day's grid, which is the joint draw of a joint GMM.  The
+=CORRELATION/RATE= quotes are derived from those inner products.  The design,
+its proofs and its scope are in
+[[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]];
+it resolves OD-1.
 
 * Cross-asset consistency constraints
 :PROPERTIES:
@@ -914,10 +916,11 @@ Commodity carry check passes for gold.
 
 ** Phase 5 — Full joint GMM and correlation
 
-*Scope:* Joint GMM across all active asset classes with block-diagonal or
-hierarchical covariance (resolve OD-1); realised correlation surfaces
-(=CORRELATION/RATE=) derived from joint draws; static base correlations for
-CDX.NA.IG.
+*Scope:* Global shared Brownian factors across all active asset classes, their
+loadings per regime calibrated from public fixings by EM and principal
+components; realised correlation surfaces (=CORRELATION/RATE=) derived from
+the inner products of the loadings; static base correlations for CDX.NA.IG.
+Block factors, which the FX volatility surface needs, come before this phase.
 
 *Priced products:* Basket equity products, CMS spread options, CDX/iTraxx
 tranches.
@@ -951,7 +954,7 @@ begins.
 
 | # | Decision | Options | Impacts |
 |---+----------+---------+---------|
-| OD-1 | *Joint GMM architecture* | (a) single joint GMM with block-diagonal covariance; (b) hierarchical GMM conditioned on shared latent regime; (c) independent GMMs per asset class + post-hoc copula | Determines whether constraints 6, 7, 8, 16 (from intermediate analysis) are satisfied by construction or require post-generation correction; affects Phase 5 |
+| OD-1 | *Joint GMM architecture* | Resolved: shared Brownian factors in simulated time, hierarchical (global and block factors), per-regime loadings as the continuous-time form of the mixture's components | See [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]]; block factors first, global factors in Phase 5 |
 | OD-2 | *Clock function for frozen pool* | Linear clock =s = (t − t₀)/(t₁ − t₀)= vs variance clock =s = (Var(t) − Var₀)/(Var₁ − Var₀)= | Affects smoothness of ATM total variance interpolation between swaption and capfloor pillars; must be validated on ORE example datasets |
 | OD-3 | *SABR/SVI to normal mixture density conversion recipe* | Fit Gaussian mixture to ∂²C_SABR/∂K² via EM; number of components (working assumption: 3–5); fitting objective (KL divergence vs MSE on call prices); strike grid extent | Required before frozen pool applies to swaption/capfloor surfaces; gates Phase 3 |
 | OD-6 | *Dimensionality reduction for swaption cube* | Number of PCA components to retain (working assumption: 10–15 for >99% variance explained); positivity enforcement on normal vols after back-projection from PCA space | Required before full swaption cube GMM can be implemented; gates Phase 3 smile generation |

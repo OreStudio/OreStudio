@@ -26,11 +26,11 @@ Decide how the synthetic feeds share one correlated market (open decision OD-1),
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | The investigation is written and recommends shared Brownian factors in simulated time. |
-| Waiting on   | The owner's decision on the approach and its four open points. |
-| Next         | Write the story the chosen approach needs. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-12                             |
 
 * Acceptance
@@ -61,6 +61,21 @@ task and name that file in the Command column.
 * Notes
 
 Raised by the generator task's runtime PR: the surface must move with spot by a configured correlation, and reaching into the spot feed for its shock was rejected. The investigation is [[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][How the synthetic market is generated jointly]]; it recommends shared Brownian factors in the market's simulated time, and leaves four decisions to the owner.
+
+The owner answered with a technical report that formalises Path F. Its content
+went into the knowledge base as atomic notes, not as a copy of the report:
+[[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]],
+[[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]],
+[[id:9B577C48-A237-445B-A331-AD0CB42FAAE1][Counter-based random number generators]] and
+[[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Tick-to-tick returns understate a correlation that holds exactly]].
+Reading the report against the code corrected nine statements before they
+reached the notes: the bridge resolution at depth 16 (about 55 ms, not
+microseconds), the driver as a stochastic integral when loadings change with
+the regime, the correlation of increments over unequal intervals (the Epps
+effect), the condition that tick times be independent of the noise, business
+time in the standardisation, the heat's bound on R4, who holds static
+arbitrage (the generator, not ORE), the non-cryptographic status of Philox and
+Threefry, and the cost ($O(KD)$ a tick). The approach note's OD-1 is resolved.
 
 * Test Scenarios
 
@@ -94,4 +109,8 @@ via its "Verifies task" field.
 
 * Result
 
-[[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][How the synthetic market is generated jointly]] recommends shared Brownian factors in the market's simulated time: low rank and hierarchical, read by each series as increments of its own driver, exact to the bridge's resolution under any sampling. It leaves four decisions to the owner, who chooses the approach from it.
+[[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][How the synthetic market is generated jointly]] recommends shared Brownian factors in the market's simulated time: low rank and hierarchical, read by each series as increments of its own driver, exact to the bridge's resolution under any sampling. The owner chose it, with the report's answers to the four decisions: Path F;
+block factors first and global factors in Phase 5; static loadings first,
+regime loadings later; the surface's forward from the published spot and
+curves. The build is
+[[id:9331995E-79ED-40B3-923D-524975949FB5][Build the latent market of shared Brownian factors]].

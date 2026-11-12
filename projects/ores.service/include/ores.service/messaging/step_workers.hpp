@@ -39,9 +39,9 @@ namespace ores::service::messaging {
  * dispatched beside it waiting until the workflow gives them up as unclaimed.
  *
  * run() hands a step to a free worker, and when every worker is busy it waits for
- * one, so a command not yet taken stays with the server, where its redelivery is
- * bounded, rather than in a queue of this process. With one worker a step runs on
- * the calling thread.
+ * one rather than queueing it. The waiting step's caller holds its delivery and
+ * keeps it alive, and the commands behind it stay with the server. With one worker
+ * a step runs on the calling thread.
  *
  * The destructor waits for every running step, so no step outlives the
  * subscription that took it, nor the handlers it calls.

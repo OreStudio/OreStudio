@@ -116,6 +116,8 @@ via its "Verifies task" field.
 | 5 | The one-worker bypass duplicates run() | step_command_stream.hpp | Accepted | A comment says why the bypass stays. |
 | 6 | The token provider holds its lock across a renewal | service_token_provider.cpp | Accepted | The comment says the waiting callers reuse the renewed token. |
 | 7 | No test of serve_step_commands with several workers | step_command_stream.hpp | Declined | ores.service.tests has no live NATS harness to build one on; the fresh provisioning run exercises it end to end, with four workers. |
+| 8 | The step_workers comment still says a waiting command stays with the server | step_workers.hpp | Accepted | It says the waiting step's caller keeps its delivery alive. |
+| 9 | Keep-alive while waiting has no test | step_command_stream.hpp | Declined | domain_delivery_tests already pins that a kept-alive delivery keeps reporting on another thread; the wait adds no new behaviour to the delivery. |
 
 * Result
 

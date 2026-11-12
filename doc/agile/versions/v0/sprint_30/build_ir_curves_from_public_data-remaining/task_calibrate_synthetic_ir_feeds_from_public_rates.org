@@ -8,7 +8,7 @@
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/calibrate-synthetic-ir-feeds-from-public-rates
-#+pr:
+#+pr: 4661
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4661][#4661]] | [synthetic] Start each IR curve from the newest public overnight rate |
 
 * Review
 

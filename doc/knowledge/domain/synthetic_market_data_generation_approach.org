@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :market_data:synthetic:approach:sprint_21:knowledge:
 #+created: 2026-06-25
-#+updated: 2026-11-03
+#+updated: 2026-11-12
 
 * Purpose and scope
 
@@ -282,8 +282,11 @@ reverts to where it was calibrated.
 *** Correlation with spot
 
 The shocks of spot and of every surface parameter are joined by one
-correlation matrix, whose square root =psd_matrix_square_root= computes.  Two of
-its entries carry the economics.  The correlation of spot with the ATM level
+correlation matrix, built from three numbers the feed states: the correlation of
+spot with every forward variance, of spot with the skew, and of neighbouring
+forward variances, which falls by that factor for each segment between two of
+them.  Its lower Cholesky factor, with spot first, joins them, so a step reads
+the spot shock the spot feed drew.  Two of its entries carry the economics.  The correlation of spot with the ATM level
 has no universal sign in FX, because a crisis lifts the volatility of a pair in
 whichever direction its safe-haven currency moves; it is a parameter per pair.
 The correlation of spot with the skew moves the risk reversal toward the side

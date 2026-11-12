@@ -29,6 +29,10 @@
 #include "ores.http/routes/synthetic/feed_tick_routes.hpp"
 #include "ores.http/routes/synthetic/folder_web_routes.hpp"
 #include "ores.http/routes/synthetic/fx_spot_generation_config_web_routes.hpp"
+#include "ores.http/routes/synthetic/fx_vol_contributor_web_routes.hpp"
+#include "ores.http/routes/synthetic/fx_vol_surface_feed_contributor_web_routes.hpp"
+#include "ores.http/routes/synthetic/fx_vol_surface_feed_expiry_web_routes.hpp"
+#include "ores.http/routes/synthetic/fx_vol_surface_feed_web_routes.hpp"
 #include "ores.http/routes/synthetic/gmm_component_web_routes.hpp"
 #include "ores.http/routes/synthetic/ir_curve_generation_config_process_parameter_value_web_routes.hpp"
 #include "ores.http/routes/synthetic/ir_curve_generation_config_web_routes.hpp"
@@ -68,6 +72,10 @@ std::string catalogue_body(const ores::http::domain::http_request& req) {
         variance_calibration_web_routes::catalogue_entry(req),
         variance_calibration_input_web_routes::catalogue_entry(req),
         variance_calibration_input_point_web_routes::catalogue_entry(req),
+        fx_vol_contributor_web_routes::catalogue_entry(req),
+        fx_vol_surface_feed_web_routes::catalogue_entry(req),
+        fx_vol_surface_feed_expiry_web_routes::catalogue_entry(req),
+        fx_vol_surface_feed_contributor_web_routes::catalogue_entry(req),
         yield_curve_process_type_web_routes::catalogue_entry(req),
         yield_curve_process_parameter_definition_web_routes::catalogue_entry(req),
         ores::http::routes::refdata::tenor_web_routes::catalogue_entry(req),
@@ -108,6 +116,10 @@ void synthetic_routes::register_routes(
     variance_calibration_web_routes::register_routes(router, registry, session);
     variance_calibration_input_web_routes::register_routes(router, registry, session);
     variance_calibration_input_point_web_routes::register_routes(router, registry, session);
+    fx_vol_contributor_web_routes::register_routes(router, registry, session);
+    fx_vol_surface_feed_web_routes::register_routes(router, registry, session);
+    fx_vol_surface_feed_expiry_web_routes::register_routes(router, registry, session);
+    fx_vol_surface_feed_contributor_web_routes::register_routes(router, registry, session);
     yield_curve_process_type_web_routes::register_routes(router, registry, session);
     yield_curve_process_parameter_definition_web_routes::register_routes(router, registry, session);
     feed_key_routes::register_routes(router, registry, session);

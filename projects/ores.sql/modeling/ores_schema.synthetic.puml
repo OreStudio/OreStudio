@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: synthetic
-Tables: 21
+Tables: 25
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -299,6 +299,151 @@ package "synthetic" #F9FBE7 {
     key it produces, the starting price, the tick cadence, and the price process.
     The price process is a Gaussian Mixture Model whose components are held
     separately as gmm_component rows. Scoped to a tenant and a party.
+    end note
+
+    entity ores_synthetic_fx_vol_contributors_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * provider_code : text
+        * noise : double
+        * wing_widening : double
+        * expiry_widening : double
+        * quote_step : double
+        * missing_probability : double
+        * stale_probability : double
+        * outlier_probability : double
+        * outlier_size : double
+        * bias : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_fx_vol_contributors_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Contributor Table
+    A synthetic contributor, a provider of the simulator that quotes FX volatility
+    as a broker does. Its noise profile is its own, whatever pair it quotes, so it
+    is held once here and fx_vol_surface_feed_contributor says which pairs it
+    quotes. A profile of zeros is the clean contributor, whose quotes are the truth.
+    The noise of a point is noise, widened on the wings by
+    1 + wing_widening * (0.5 - delta) and for long expiries by
+    1 + expiry_widening * (years - 1) past one year.
+    end note
+
+    entity ores_synthetic_fx_vol_surface_feed_contributors_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * feed_id : uuid <<FK>>
+        * contributor_id : uuid <<FK>>
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_fx_vol_surface_feed_contributors_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Surface Feed Contributor Table
+    Says that a contributor quotes a feed's surface. A feed with several
+    contributors gives a tenant several broker quotes of one market; the clean
+    contributor among them gives the truth.
+    end note
+
+    entity ores_synthetic_fx_vol_surface_feed_expiries_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * feed_id : uuid <<FK>>
+        * tenor : text
+        * variance_reversion : double
+        * variance_volatility : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_fx_vol_surface_feed_expiries_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Surface Feed Expiry Table
+    One expiry an fx_vol_surface_feed quotes. The feed orders its expiries by
+    length, so the row carries no position. The forward variance of the segment that
+    ends at this expiry, from the expiry before it, is a Cox-Ingersoll-Ross process
+    with this row's reversion and volatility.
+    end note
+
+    entity ores_synthetic_fx_vol_surface_feeds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * config_id : uuid <<FK>>
+        * base_currency_code : text
+        * quote_currency_code : text
+        * source_name : text
+        * ticks_per_hour : integer
+        * enabled : boolean
+        * auto_start : boolean
+          folder_id : uuid <<FK>>
+        * asset_class_code : text
+        * arrival_mode : text
+        * branching_ratio : double
+        * decay : double
+        * sensitivity : double
+        * skew_reversion : double
+        * skew_volatility : double
+        * curvature_reversion : double
+        * curvature_volatility : double
+        * spot_variance_correlation : double
+        * spot_skew_correlation : double
+        * segment_correlation : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_synthetic_fx_vol_surface_feeds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    FX Volatility Surface Feed Table
+    A synthetic volatility surface of one currency pair, as
+    [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]
+    describes. The surface is SSVI with gamma fixed at one half. Its state is the
+    forward variance of each segment between the feed's expiries, which the
+    fx_vol_surface_feed_expiry rows hold, a skew driver and a curvature driver,
+    each reverting to where the surface started.
+    The correlation of the shocks is three numbers, and the feed builds the matrix
+    from them: spot with every forward variance, spot with the skew, and how strongly
+    neighbouring forward variances move together, which falls by that factor for each
+    segment between them. Every other shock is independent of spot. The surface is
+    quoted by the contributors fx_vol_surface_feed_contributor names.
     end note
 
     entity ores_synthetic_gmm_components_tbl <<temporal>> #C6F0D8 {
@@ -903,6 +1048,11 @@ ores_synthetic_fx_spot_generation_configs_tbl ||--o{ ores_synthetic_fx_spot_fixi
 ores_synthetic_market_data_generation_configs_tbl ||--o{ ores_synthetic_fx_spot_generation_configs_tbl : "has"
 ores_synthetic_folders_tbl ||--o{ ores_synthetic_fx_spot_generation_configs_tbl : "has"
 ores_synthetic_variance_calibrations_tbl ||--o{ ores_synthetic_fx_spot_generation_configs_tbl : "has"
+ores_synthetic_fx_vol_surface_feeds_tbl ||--o{ ores_synthetic_fx_vol_surface_feed_contributors_tbl : "has"
+ores_synthetic_fx_vol_contributors_tbl ||--o{ ores_synthetic_fx_vol_surface_feed_contributors_tbl : "has"
+ores_synthetic_fx_vol_surface_feeds_tbl ||--o{ ores_synthetic_fx_vol_surface_feed_expiries_tbl : "has"
+ores_synthetic_market_data_generation_configs_tbl ||--o{ ores_synthetic_fx_vol_surface_feeds_tbl : "has"
+ores_synthetic_folders_tbl ||--o{ ores_synthetic_fx_vol_surface_feeds_tbl : "has"
 ores_synthetic_fx_spot_generation_configs_tbl ||--o{ ores_synthetic_gmm_components_tbl : "has"
 ores_synthetic_ir_curve_generation_configs_tbl ||--o{ ores_synthetic_config_process_parameter_values_tbl : "has"
 ores_synthetic_process_parameter_definitions_tbl ||--o{ ores_synthetic_config_process_parameter_values_tbl : "has"

@@ -1826,6 +1826,18 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:read',   'View variance calibration input points');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:write',  'Create and modify variance calibration input points');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibration_input_points:delete', 'Delete variance calibration input points');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:read',   'View FX volatility contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:write',  'Create and modify FX volatility contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_contributors:delete', 'Delete FX volatility contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:read',   'View FX volatility surface feeds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:write',  'Create and modify FX volatility surface feeds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feeds:delete', 'Delete FX volatility surface feeds');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_expiries:read',   'View FX volatility surface feed expiries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_expiries:write',  'Create and modify FX volatility surface feed expiries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_expiries:delete', 'Delete FX volatility surface feed expiries');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_contributors:read',   'View FX volatility surface feed contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_contributors:write',  'Create and modify FX volatility surface feed contributors');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::fx_vol_surface_feed_contributors:delete', 'Delete FX volatility surface feed contributors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:read',   'View variance calibrations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:write',  'Create and modify variance calibrations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'synthetic::variance_calibrations:delete', 'Delete variance calibrations');

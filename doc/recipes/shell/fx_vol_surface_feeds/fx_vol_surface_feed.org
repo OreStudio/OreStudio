@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 55B302A7-4C28-5734-A290-65B5FA10629F
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_vol_surface_feeds commands from the shell?
+#+description: Every command the fx_vol_surface_feeds submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_vol_surface_feeds:
+
+This file documents the fx_vol_surface_feeds resource at the shell, one section per command. Every command is a subcommand of =fx_vol_surface_feeds=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: CEDF1B21-9F81-53E3-9C89-9269EB84883E
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feeds list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feeds.list=.
+
+#+name: fx_vol_surface_feeds-list
+#+begin_src ores-shell :tangle fx_vol_surface_feeds-list.ores :exports none
+fx_vol_surface_feeds list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 5E5C54A5-D8AF-5411-BF5D-C7CB94B26534
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feeds get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feeds.get=.
+
+#+name: fx_vol_surface_feeds-get
+#+begin_src ores-shell :tangle fx_vol_surface_feeds-get.ores :exports none
+fx_vol_surface_feeds get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 1E86CA4D-C30D-50E8-8A6F-4CAE074425C9
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feeds get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feeds.get_many=.
+
+#+name: fx_vol_surface_feeds-get-many
+#+begin_src ores-shell :tangle fx_vol_surface_feeds-get-many.ores :exports none
+fx_vol_surface_feeds get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 26FB3EAE-3CCC-5E10-92AA-E3424A360D39
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feeds add <config_id> <base_currency_code> <quote_currency_code> <source_name> <ticks_per_hour> <enabled> <auto_start> <folder_id> <asset_class_code> <arrival_mode> <branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility> <curvature_reversion> <curvature_volatility> <spot_variance_correlation> <spot_skew_correlation> <segment_correlation> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feeds.put=.
+
+#+name: fx_vol_surface_feeds-add
+#+begin_src ores-shell :tangle fx_vol_surface_feeds-add.ores :exports none
+fx_vol_surface_feeds add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 false false - __none__ __none__ 0 0 0 0 0 0 0 0 0 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 48EDA299-90D4-5FAE-9002-72D5E2CD251A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feeds set <id> <config_id> <base_currency_code> <quote_currency_code> <source_name> <ticks_per_hour> <enabled> <auto_start> <folder_id> <asset_class_code> <arrival_mode> <branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility> <curvature_reversion> <curvature_volatility> <spot_variance_correlation> <spot_skew_correlation> <segment_correlation> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feeds.put=.
+
+#+name: fx_vol_surface_feeds-set
+#+begin_src ores-shell :tangle fx_vol_surface_feeds-set.ores :exports none
+fx_vol_surface_feeds set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 false false - __none__ __none__ 0 0 0 0 0 0 0 0 0 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: CACF1B03-B80E-5EAA-9A6F-ED3E870D62F0
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feeds put-many --count <n> <id> <config_id> <base_currency_code> <quote_currency_code> <source_name> <ticks_per_hour> <enabled> <auto_start> <folder_id> <asset_class_code> <arrival_mode> <branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility> <curvature_reversion> <curvature_volatility> <spot_variance_correlation> <spot_skew_correlation> <segment_correlation> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feeds.put_many=.
+
+#+name: fx_vol_surface_feeds-put-many
+#+begin_src ores-shell :tangle fx_vol_surface_feeds-put-many.ores :exports none
+fx_vol_surface_feeds put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 false false - __none__ __none__ 0 0 0 0 0 0 0 0 0 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 79B4CAC0-FB4B-5683-BAA8-18930733169D
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feeds delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feeds.delete=.
+
+#+name: fx_vol_surface_feeds-delete
+#+begin_src ores-shell :tangle fx_vol_surface_feeds-delete.ores :exports none
+fx_vol_surface_feeds delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: C3A7370E-5E43-57A1-8477-EBFC5753EC19
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feeds delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feeds.delete_many=.
+
+#+name: fx_vol_surface_feeds-delete-many
+#+begin_src ores-shell :tangle fx_vol_surface_feeds-delete-many.ores :exports none
+fx_vol_surface_feeds delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 4AC3F6AA-8D1F-5E34-B0F4-7F8A80ADA6D7
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feeds versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feeds_versions.list=.
+
+#+name: fx_vol_surface_feeds-versions
+#+begin_src ores-shell :tangle fx_vol_surface_feeds-versions.ores :exports none
+fx_vol_surface_feeds versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A4D93F02-F8BF-5739-B819-CFBDB2FC94D7
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feeds version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feeds_versions.get=.
+
+#+name: fx_vol_surface_feeds-version
+#+begin_src ores-shell :tangle fx_vol_surface_feeds-version.ores :exports none
+fx_vol_surface_feeds version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

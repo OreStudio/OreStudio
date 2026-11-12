@@ -93,7 +93,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The new function's comment orphans the class comment | =fx_vol_surface_publish_service.hpp= | Fix | The function and its comment come first; the class comment sits on the class again. |
+| 2 | The hold-back rule repeats the service's arbitrage check | =party_surface_hold_back.hpp= | Fix | The rule says that arbitrage is refused by the service as well and that a change to one changes the other. One takes the calibrate response, the other the stored calibration, so they stay two functions. |
+| 3 | A held-back surface completes the step silently | =tenant_provisioning_handler.hpp= | Dismiss | It is the intended behaviour: provisioning has no decider, so it publishes only clean surfaces and names the rest in =surfaces_held_back= and a warning in the step log. The screens that show a request's rule are the lifecycle task's. |
+| 4 | Say what the read before a raise finds on a rerun | =tenant_provisioning_handler.hpp= | Fix | The comment says a surface an earlier run published is found even when a newer publish has superseded it. |
+| 5 | The hold-back rule has no unit test | =party_surface_hold_back.hpp= | Fix | The rule is a free function, =party_surface_hold_back=, with four tests: clean, arbitrage, no convergence, pillars beyond the tolerance. |
+| 6 | Two adjacent string literals joined by =+= | =party_surface_hold_back.hpp= | Fix | One literal. |
 
 * Result
 

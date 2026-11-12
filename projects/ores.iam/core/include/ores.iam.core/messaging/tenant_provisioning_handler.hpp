@@ -36,6 +36,7 @@
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.iam.core/messaging/party_curve_blueprints.hpp"
 #include "ores.iam.core/messaging/party_surface_blueprints.hpp"
+#include "ores.iam.core/messaging/party_surface_hold_back.hpp"
 #include "ores.iam.core/messaging/population_knobs.hpp"
 #include "ores.iam.core/messaging/provision_step_arguments.hpp"
 #include "ores.iam.core/messaging/report_schedule_selection.hpp"
@@ -1623,26 +1624,6 @@ private:
         wf.complete(ores::utility::codec::json::write(result), step_log);
     }
 
-    /// Why a calibration is not one provisioning publishes without a person, or nothing.
-    static std::optional<std::string>
-    held_back_reason(const ores::marketdata::messaging::calibrate_fx_vol_surface_response& c) {
-        if (!c.violations.empty()) {
-            std::string out =
-                "breaks " + std::to_string(c.violations.size()) + " arbitrage condition(s):";
-            for (const auto& v : c.violations)
-                out += " " + v.kind + " at " + v.expiry + ";";
-            return out;
-        }
-        if (!c.converged)
-            return std::string("the fit did not converge");
-        const auto beyond = std::ranges::count_if(
-            c.pillars, [](const auto& pillar) { return pillar.beyond_tolerance; });
-        if (beyond > 0)
-            return std::to_string(beyond) + " pillar(s) are beyond the tolerance, the largest " +
-                   "error " + std::to_string(c.max_abs_error);
-        return std::nullopt;
-    }
-
     /**
      * @brief Calibrates and publishes each party's volatility surfaces.
      *
@@ -1696,7 +1677,8 @@ private:
                 const auto line = party_name + ": " + blueprint.name;
 
                 // The read answers the newest published surface at or before the as-of, so a
-                // surface an earlier run published is found by a later one.
+                // surface an earlier run published is found by a later one, even when a newer
+                // publish has since superseded it: the blueprint has a surface either way.
                 ores::marketdata::messaging::get_published_fx_vol_surface_request read;
                 read.blueprint_id = id;
                 read.as_of = as_of;
@@ -1713,7 +1695,7 @@ private:
                     result.surfaces_not_published.push_back(line + ": " + calibrated.message);
                     continue;
                 }
-                if (const auto reason = held_back_reason(calibrated)) {
+                if (const auto reason = party_surface_hold_back(calibrated)) {
                     result.surfaces_held_back.push_back(line + ": " + *reason);
                     continue;
                 }

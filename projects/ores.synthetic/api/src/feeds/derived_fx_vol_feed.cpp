@@ -170,7 +170,8 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     for (const auto& expiry : derivation->expiries)
         if (!expiry)
             failures_.push_back(key_of(pair) + " " + expiry.error());
-    auto ticks = derived_fx_ticks(pair, *derivation, day, sequence_);
+    auto ticks =
+        derived_fx_ticks(pair, *derivation, day, sequence_, std::chrono::system_clock::now());
     std::erase_if(ticks, [&](const mm::adapter_tick& t) { return !owed.contains(t.external_id); });
     return ticks;
 }

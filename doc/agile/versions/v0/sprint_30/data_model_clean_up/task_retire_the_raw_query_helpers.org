@@ -26,11 +26,11 @@ Every statement a service runs goes through the pool and a transaction, as [[id:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:14807059-043D-4866-974D-B835151D61E8][Data model clean up]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -104,3 +104,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The raw helpers and =bitemporal_operations= are gone. Every hand-written statement runs through =query_builder= on the pool and the unit of work, as one unnamed statement, and a failure throws =repository_exception= with the server's SQLSTATE. The codemod =retire_raw_query_helpers.py= moved 98 files and reruns as a no-op. The full suite passes on a fresh database (88 suites); the stale =ores.trading.core.digest.tests= binary, which is not a build target, still segfaults as before. The change also clears the codegen drift on main.

@@ -8,7 +8,7 @@
 #+filetags: :own_each_durable_nats_delivery:sprint_30:v0:
 #+owner: marco
 #+branch: feature/own-each-durable-nats-delivery
-#+pr:
+#+pr: 4636
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4636][#4636]] | [nats] Own each durable NATS delivery with one RAII transaction |
 
 * Review
 

@@ -28,6 +28,7 @@ set(files
     "domain_boc_tests.cpp"
     "domain_boe_tests.cpp"
     "domain_boj_tests.cpp"
+    "domain_cnb_tests.cpp"
     "domain_ecb_tests.cpp"
     "domain_frankfurter_tests.cpp"
     "domain_norges_bank_tests.cpp"

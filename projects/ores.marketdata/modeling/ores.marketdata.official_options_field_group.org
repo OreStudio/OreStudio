@@ -127,6 +127,13 @@ The address of Banco de Mexico's site, which serves its SIE API.
 
 The address of the Banco Central de Chile's statistical site, which serves its BDE web service.
 
+** cnb_url
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The address of the Czech National Bank's site, which serves its yearly CZEONIA files.
+
 ** sources
 :PROPERTIES:
 :cpp_type: std::vector<domain::hosted_source>

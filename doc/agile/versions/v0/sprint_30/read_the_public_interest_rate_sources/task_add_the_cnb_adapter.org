@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-the-cnb-adapter
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,16 +20,16 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-CZEONIA is stored as fixings in the system tenant, with its history, read from the Czech National Bank through the ARAD API, with a free key. The adapter is specialised: it reads the Czech National Bank alone, and it supplies only its fetcher to the shared half of the official adapter.
+CZEONIA is stored as fixings in the system tenant, with its history, read from the yearly files the Czech National Bank publishes, which need no key. CZEONIA is not in the ARAD API. The adapter is specialised: it reads the Czech National Bank alone, and it supplies only its fetcher to the shared half of the official adapter.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
 | Now          | Not yet started.                       |
-| Waiting on   | A person registers a Czech National Bank ARAD API key; the key goes to the credential store. |
+| Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-10                               |
 

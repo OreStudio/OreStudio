@@ -53,7 +53,7 @@ create table if not exists "ores_synthetic_fx_vol_surface_feed_expiries_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("tenor" ~ '^[1-9][0-9]*[DWMY]$'),
+    check ("tenor" ~ '^[1-9][0-9]?[DWMY]$'),
     check ("variance_reversion" >= 0 and "variance_reversion" < 'Infinity'),
     check ("variance_volatility" >= 0 and "variance_volatility" < 'Infinity')
 );

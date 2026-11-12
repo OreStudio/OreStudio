@@ -254,7 +254,10 @@ namespace {
 
 // One FX spot series with one observation, stored with the URIs given and no key:
 // the export must take each key from the datum URI the row stores.
-void write_fx_row(export_tenant& t, const std::string& series_uri, const std::string& datum_uri) {
+void write_fx_row(export_tenant& t,
+                  const std::string& series_uri,
+                  const std::string& datum_uri,
+                  const std::string& value = "1.132337") {
     ores::marketdata::repository::market_series_repository series_repo;
     ores::marketdata::repository::market_observation_repository obs_repo;
     boost::uuids::random_generator gen;
@@ -281,10 +284,9 @@ void write_fx_row(export_tenant& t, const std::string& series_uri, const std::st
     o.observation_datetime =
         std::chrono::sys_days{std::chrono::year{2016} / std::chrono::February / 5};
     o.oresmd_uri = datum_uri;
-    o.value = "1.132337";
+    o.value = value;
     obs_repo.insert(t.ctx, o);
 }
-
 }
 
 TEST_CASE("export_writes_each_key_from_the_datum_uri_the_row_stores", "[service][ore_export]") {
@@ -656,4 +658,48 @@ TEST_CASE("export_at_a_date_before_the_publish_leaves_the_surface_out", "[servic
     const ore_export_service exporter(t.ctx);
     const auto result = exporter.write_all(std::string("2026-11-10"));
     CHECK_FALSE(result.market_data.contains("FX_OPTION/RATE_LNVOL/EUR/USD/1Y/25P"));
+}
+
+TEST_CASE("export_for_a_party_writes_its_own_series_and_no_other_party_s",
+          "[service][ore_export]") {
+    auto lg(make_logger(test_suite));
+
+    export_tenant t;
+    ores::testing::database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
+    std::vector<boost::uuids::uuid> parties;
+    for (int i = 0; i < 2; ++i) {
+        auto party = ores::refdata::generators::generate_synthetic_party(gen_ctx);
+        party.tenant_id = t.ctx.tenant_id();
+        for (const auto& existing :
+             ores::refdata::repository::party_repository().read_latest(t.ctx)) {
+            party.parent_party_id = existing.id;
+            break;
+        }
+        ores::refdata::repository::party_repository{}.write(t.ctx, party);
+        parties.push_back(party.id);
+    }
+    const auto as_party = [&](const boost::uuids::uuid& party) {
+        return t.ctx.with_party(t.ctx.tenant_id(), party, parties, t.ctx.actor());
+    };
+
+    const auto base = t.ctx;
+    const std::vector<std::string> values{"1.10", "1.20"};
+    for (std::size_t i = 0; i < parties.size(); ++i) {
+        t.ctx = as_party(parties[i]);
+        write_fx_row(t,
+                     "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD",
+                     "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD",
+                     values[i]);
+    }
+    t.ctx = base;
+
+    for (std::size_t i = 0; i < parties.size(); ++i) {
+        const auto market = ore_export_service(as_party(parties[i])).write_all().market_data;
+        CHECK(std::ranges::count(body_keys(market), std::string("FX/RATE/EUR/USD")) == 1);
+        CHECK(market.contains("FX/RATE/EUR/USD\t" + values[i]));
+    }
+
+    const auto every_party = body_keys(ore_export_service(t.ctx).write_all().market_data);
+    CHECK(std::ranges::count(every_party, std::string("FX/RATE/EUR/USD")) == 2);
 }

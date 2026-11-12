@@ -127,5 +127,11 @@ via its "Verifies task" field.
 | 18 | #4600: are the smile rows' party_id set | =fx_volatility_smiles.json= | No change | =row()= stamps the placeholder party on every staged row, and the publish writes the target party. |
 | 19 | #4600: is the smile artefact table generated | =dq_fx_volatility_smiles_artefact_create.sql= | No change | It comes from the model flag alone, through =--address ores.sql.schema=. |
 | 20 | #4600: the pricing engine outputs are stale on main | =pricing_model_product_parameters.json= | Captured | =acme_pricing_engine_outputs_are_stale=. |
+| 21 | PR #4640: a session with no party still writes every series | =ore_export_service.cpp= | Dismiss | Both export handlers refuse a session that names no party before the export runs (=ore_export_handler=, =market_series_handler=), so only a test reaches that path. |
+| 22 | PR #4640: another collection may mix parties | =ore_export_service.cpp= | Dismiss | Fixings, quotes and surface points are all read per series inside the filtered loop; nothing else is read by party. |
+| 23 | PR #4640: show the kept value is the requested party's | =service_ore_export_tests.cpp= | Fixed | The two parties hold different values, and each party's export carries its own. |
+| 24 | PR #4640: take the parent party without a loop and break | =service_ore_export_tests.cpp= | Dismiss | The test copies the fixture's existing way of naming a parent; one style in the file. |
+| 25 | PR #4640: restore the context with a guard | =service_ore_export_tests.cpp= | Dismiss | The context is local to one test case, which ends on a throw either way. |
+| 26 | PR #4640: run the whole marketdata core suite | task | Fixed | Run before merge; the result is in the PR reply. |
 
 * Result

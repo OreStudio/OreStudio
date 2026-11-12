@@ -254,7 +254,10 @@ namespace {
 
 // One FX spot series with one observation, stored with the URIs given and no key:
 // the export must take each key from the datum URI the row stores.
-void write_fx_row(export_tenant& t, const std::string& series_uri, const std::string& datum_uri) {
+void write_fx_row(export_tenant& t,
+                  const std::string& series_uri,
+                  const std::string& datum_uri,
+                  const std::string& value = "1.132337") {
     ores::marketdata::repository::market_series_repository series_repo;
     ores::marketdata::repository::market_observation_repository obs_repo;
     boost::uuids::random_generator gen;
@@ -281,10 +284,9 @@ void write_fx_row(export_tenant& t, const std::string& series_uri, const std::st
     o.observation_datetime =
         std::chrono::sys_days{std::chrono::year{2016} / std::chrono::February / 5};
     o.oresmd_uri = datum_uri;
-    o.value = "1.132337";
+    o.value = value;
     obs_repo.insert(t.ctx, o);
 }
-
 }
 
 TEST_CASE("export_writes_each_key_from_the_datum_uri_the_row_stores", "[service][ore_export]") {
@@ -682,17 +684,21 @@ TEST_CASE("export_for_a_party_writes_its_own_series_and_no_other_party_s",
     };
 
     const auto base = t.ctx;
-    for (const auto& party : parties) {
-        t.ctx = as_party(party);
+    const std::vector<std::string> values{"1.10", "1.20"};
+    for (std::size_t i = 0; i < parties.size(); ++i) {
+        t.ctx = as_party(parties[i]);
         write_fx_row(t,
                      "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD",
-                     "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
+                     "oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD",
+                     values[i]);
     }
     t.ctx = base;
 
-    const auto keys =
-        body_keys(ore_export_service(as_party(parties.front())).write_all().market_data);
-    CHECK(std::ranges::count(keys, std::string("FX/RATE/EUR/USD")) == 1);
+    for (std::size_t i = 0; i < parties.size(); ++i) {
+        const auto market = ore_export_service(as_party(parties[i])).write_all().market_data;
+        CHECK(std::ranges::count(body_keys(market), std::string("FX/RATE/EUR/USD")) == 1);
+        CHECK(market.contains("FX/RATE/EUR/USD\t" + values[i]));
+    }
 
     const auto every_party = body_keys(ore_export_service(t.ctx).write_all().market_data);
     CHECK(std::ranges::count(every_party, std::string("FX/RATE/EUR/USD")) == 2);

@@ -1546,14 +1546,18 @@ private:
                 make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
 
             std::size_t published = 0;
+            std::size_t held = 0;
             for (const auto& pair : pairs) {
                 const auto as_of = std::chrono::system_clock::now();
                 const auto line = party_name + ": " + pair;
 
+                // The read answers the newest set at or before the as-of, so a set an
+                // earlier run published is found by a later one.
                 ores::marketdata::messaging::get_published_fx_forward_request read;
                 read.pair_code = pair;
                 read.as_of = as_of;
                 if (party_client.request(read).success) {
+                    ++held;
                     result.forwards_already_published.push_back(line);
                     continue;
                 }
@@ -1580,6 +1584,11 @@ private:
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "publish_party_forwards: " << party_name << ": published " << published << " of "
                 << pairs.size() << " pair(s)";
+            // A refusal reads as a skip, so a service that refuses every pair for a reason of
+            // its own, such as a permission, would otherwise pass the step with nothing published.
+            if (published == 0 && held == 0)
+                result.forwards_not_published.push_back(
+                    party_name + ": no pair could be built, and the party holds no forward set");
             result.parties.push_back(boost::uuids::to_string(party->id));
         }
 

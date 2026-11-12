@@ -68,6 +68,7 @@ task and name that file in the Command column.
 | Requests and the rule that closed them | 156, all =tenant=, approved | the same | 6d8df1bf3a plus this change |
 | Pairs skipped, with the service's reason | 560 (140 per party, of 179 conventions) | the step's =forwards_skipped= | 6d8df1bf3a plus this change |
 | Cross conventions published of those held | 22 of 26; HUF, NOK and PLN have no funding curve | the same | 6d8df1bf3a plus this change |
+| Duration of the step | 1 min 39 s | =completed_at - started_at= of the step row | 6d8df1bf3a plus this change |
 
 * Notes
 
@@ -94,7 +95,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The as-of is taken per pair; does a rerun's later as-of find the set an earlier run published? | =tenant_provisioning_handler.hpp= | Dismiss | =fx_forward_publish_service::read= answers the newest published set whose as-of is at or before the asked one, so a later as-of finds it. A comment now says so at the read. |
+| 2 | The "rerun is safe" message rests on point 1 | =tenant_provisioning_handler.hpp= | Dismiss | Point 1 holds. |
+| 3 | The convention paging trusts the service's total | =tenant_provisioning_handler.hpp= | Dismiss | A page with no conventions also ends the loop, so it never spins; a total below the real count is a service defect the convention list would show everywhere. |
+| 4 | A refusal for a reason other than the pair, such as a permission, reads as a skip and passes the step | =tenant_provisioning_handler.hpp= | Fix | A party that ends with no forward set at all, published or held, fails the step. |
+| 5 | Note the step's measured duration | task | Fix | 1 min 39 s live for 4 parties and 179 conventions, beside 1 min 5 s for the party curves. |
+| 6 | Test the new kind's dependency | =workflow_provision_tenant_workflow_tests.cpp= | Fix | A case checks that the forwards step waits for the party curves. |
+| 7 | Blank line before the closing namespace | =provision_step_arguments.hpp= | Fix | |
 
 * Result
 

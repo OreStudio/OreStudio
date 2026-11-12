@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/export-a-published-surface-to-ore-4
-#+pr: 4600
+#+pr: 4640
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -98,6 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4640][#4640]] | [marketdata] Export only the session party's series to ORE |
 | [[https://github.com/OreStudio/OreStudio/pull/4600][#4600]] | [refdata] Curate each Acme party's FX volatility configuration through DQ |
 | [[https://github.com/OreStudio/OreStudio/pull/4596][#4596]] | [refdata] Curate a surface blueprint for every quoted pair through DQ |
 | [[https://github.com/OreStudio/OreStudio/pull/4577][#4577]] | [marketdata] Export a published surface as ORE option quotes |

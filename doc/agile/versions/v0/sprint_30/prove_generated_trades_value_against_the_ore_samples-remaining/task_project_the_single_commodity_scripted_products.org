@@ -26,11 +26,11 @@ The scripted commodity products on one commodity are written and read by the pro
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -82,9 +82,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trading API tests | 4418 test cases pass | =ores.trading.api.tests -r compact= | =5c1749f8c7= |
+| Synthetic tests against ORE | 130 test cases pass | =ores.synthetic.core.tests -r compact=, with the ORE engine set | =b582251e58= |
+| Of the six types, the ones ORE builds | 5 | =ores.synthetic.core.tests '[generated]'= | =b582251e58= |
 
 * Notes
+
+- The Asian option parses in ORE and does not build. The engine test runs
+  on the Products example's configuration, which names no pricing engine
+  for =CommodityAsianOptionArithmeticPrice=. The story's market data task
+  owns that configuration.
+- An accumulator or TaRF row keeps its fixing amount as its accumulation
+  amount, and its quantity is zero, so the row states each amount once.
+- The terms table now reads and writes =LongShort= as the row's position.
+  The recorded variance swaps did not change.
 
 * Test Scenarios
 
@@ -110,3 +121,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The projection writes and reads six of the seven single commodity scripted
+products: the Asian option, the accumulator, the TaRF, the generic barrier
+option, the strike resettable option and the forward volatility agreement.
+Each has a builder in the registry, and the planner calls it. The carrier
+holds the range bounds, and the row gained the flat terms these products
+state, through the codegen model. ORE builds five of the six; the Asian
+option stays in the known errors for the reason in the notes.
+
+The window barrier option is not done, so that acceptance line is not met.
+ORE's engine reads =CommodityWindowBarrierOptionData=, but ORE's XSD does
+not declare it, and the generated schema refuses an element it does not
+declare. It needs a way to supplement ORE's schemas, which is a task of its
+own, and it stays a passthrough until then.

@@ -12,18 +12,13 @@ BondPosition	Error building trade for context 'analytic/PRICING'	Build failed fo
 BondPosition	Error building trade for context 'analytic/PRICING'	Build failed for underlying Bond (POPZLGWDZBWA7): BondFactory: could not build bond 'POPZLGWDZBWA7': no reference data given or no suitable builder registered. Check if bond is set up in the reference data and that there is a builder for the reference data type.
 CallableBond	Error during trade pricing	empty Handle cannot be dereferenced
 CallableBond	Error during trade pricing (additional results)	empty Handle cannot be dereferenced
-CommodityAccumulator	Error parsing Trade XML	CommodityAccumulatorData node not found
-CommodityAsianOption	Error parsing Trade XML	No CommodityAsianOptionData node found.
+CommodityAsianOption	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type CommodityAsianOptionArithmeticPrice
 CommodityBasketVarianceSwap	Error parsing Trade XML	BasketVarianceSwapData node not found
 CommodityBestEntryOption	Error parsing Trade XML	BestEntryOptionData node not found
-CommodityForwardVolatilityAgreement	Error parsing Trade XML	ForwardVolatilityAgreementData node not found
-CommodityGenericBarrierOption	Error parsing Trade XML	CommodityGenericBarrierOptionData node not found
 CommodityPairwiseVarianceSwap	Error parsing Trade XML	TradeFactory::getBuilder(CommodityPairwiseVarianceSwap): no builder found
 CommodityRainbowOption	Error parsing Trade XML	CommodityRainbowOptionData node not found
 CommoditySpreadOption	Error building trade for context 'analytic/PRICING'	did not find object COMM-NYMEX:CL/COMM-NYMEX:NG in CorrelationCurves
 CommoditySpreadOption	Error building trade for context 'analytic/PRICING'	did not find object COMM-NYMEX:NG/COMM-NYMEX:CL in CorrelationCurves
-CommodityStrikeResettableOption	Error parsing Trade XML	StrikeResettableOptionData node not found
-CommodityTaRF	Error parsing Trade XML	CommodityTaRFData node not found
 CommodityWindowBarrierOption	Error parsing Trade XML	CommodityWindowBarrierOptionData node not found
 CommodityWorstOfBasketSwap	Error parsing Trade XML	WorstOfBasketSwapData node not found
 ConvertibleBond	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'

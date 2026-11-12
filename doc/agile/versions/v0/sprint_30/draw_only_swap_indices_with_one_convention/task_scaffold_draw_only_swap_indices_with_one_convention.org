@@ -83,3 +83,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its two tasks and its sprint row are scaffolded, and the story
+ships in PR #4643 with the implementation task.

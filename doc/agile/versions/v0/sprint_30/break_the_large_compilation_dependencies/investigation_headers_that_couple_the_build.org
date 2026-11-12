@@ -221,6 +221,52 @@ reference capture in the tree,
 outlive the call. That file is the list to re-check when a copy becomes a
 reference, because a compile does not find a dangling reference.
 
+** How to decide between a reference and a pointer
+
+The choice is a lifetime question, not a style question, and compile time cannot
+make it: every form below lets the header forward-declare. Only a by-value
+member needs the definition. So the decision runs on one question and then one
+more.
+
+1. *Does the callee need the object after the call returns?* That is a stored
+   member, a captured lambda, a thread or any deferred task, a container, or a
+   returned reference. If the answer is no, the parameter is a
+   =const context&= . The caller guarantees the lifetime, and the callee promises
+   not to keep it. This covers 2268 of the 4497 files and most of the 21874
+   parameters.
+2. *If yes, who guarantees the lifetime?*
+   - The callee owns it: a value, or =unique_ptr= to an =impl= when the
+     definition must leave the header. That is the 1752 files that hold a
+     =ctx_= or build a context.
+   - Another object owns it and structurally outlives the callee: a non-owning
+     =T*=, with the owner named in a comment. The in-tree precedent is
+     =pq::transaction* active_transaction_= in =context=: the unit of work owns
+     the transaction and outlives every context copy, which =with_transaction=
+     documents.
+   - No single owner: =shared_ptr<const T>=, and only then.
+3. *Never*: a reference that is stored or captured outlives its guarantee, and a
+   raw pointer whose owner nothing enforces. A =const context& ctx_= member, or
+   =[&ctx]= in a handler that may outlive the call, is a bug the compiler will
+   not report.
+
+The operational form is three questions about one parameter, all greppable:
+is it stored, is it captured, is it returned? Three times no means =const&=.
+
+=evidence/type_usage.py= now applies this rule to every direct includer and
+prints the recommended form per file, so the decision is checkable instead of
+remembered:
+
+| Recommended form | Files |
+|------------------|------:|
+| borrow: =const context&= | 2268 |
+| own: a value, or a pimpl | 1752 |
+| names only: a forward declaration is enough | 472 |
+| share: =shared_ptr<const context>= | 0 |
+| unsafe: a stored or captured reference | 0 |
+
+The last two rows are the point of the exercise. There is nothing to fix today,
+and the rule now has a tool that will say so on the day there is.
+
 ** Pointer, shared pointer, or pimpl
 
 A pointer is a different question from a reference, and it only makes sense for
@@ -654,6 +700,10 @@ them. Steps 3 and 4 belong to
   for rebuilds: at most 186 objects stop parsing a 6.6 s header, and about 20
   stop rebuilding. The three options compile alike, so ownership decides, and a
   raw pointer is the one that makes the code worse.
+- The reference-or-pointer rule is a lifetime rule in three questions: does the
+  callee need it after the call; if yes, who owns it; is that owner structural.
+  Compile time cannot decide between the forms, because each of them lets the
+  header forward-declare.
 - The story is right about the rebuild fix and wrong about the parse cost.
   libpq costs 0.04 s to parse, yet it sits under 375 objects. Keeping it out of
   =context.hpp= is a blast-radius fix worth 147 to 375 objects; it is not a parse
@@ -674,12 +724,17 @@ them. Steps 3 and 4 belong to
   states the effect.
 - Re-run both scripts after each step and record the result beside this one, so
   the ranking stays a measurement and not a memory.
-- Keep [[id:908E710A-C9A3-433E-AC93-92B67FB76B6C][Pass the database context by reference behind a forward declaration]] as
-  written, and add the codec chain behind =pq/transaction.hpp= to its scope. On
-  the measured numbers the forward declarations are the smaller half of its
-  gain.
+- Re-scope [[id:908E710A-C9A3-433E-AC93-92B67FB76B6C][Pass the database context by reference behind a forward declaration]].
+  Keep the =const context&= change for run time, drop the claim that it shortens
+  rebuilds, and add the codec chain behind =pq/transaction.hpp= and the storage
+  decision for the 1305 services to that task's scope.
 - Make the forward-declaration check that the story asks for read the type list
   this analysis produced. A type joins the check by adding a line.
+- Move the reference-or-pointer rule into a knowledge page under
+  =doc/knowledge/= and have the check enforce it, because 21874 sites will be
+  touched by it and a rule that lives only in an investigation gets forgotten.
+  =type_usage.py= already applies the rule; the check needs only to fail on an
+  =unsafe= outcome.
 - Do not change =decimal.hpp= before measuring what the pointer indirection
   costs at run time. It is the only decision here that trades correctness risk
   for compile time.

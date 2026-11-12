@@ -184,6 +184,44 @@ def classify_uses(text: str, name: str):
     return verdicts
 
 
+REFERENCE_CAPTURE_RE = re.compile(r"\[\s*&\s*(?:ctx|context)\b")
+STORED_REFERENCE_RE = re.compile(r"\bconst\s+context\s*&\s*\w+\s*;")
+
+# The rule this tool applies, one line per outcome. It is a lifetime rule and
+# not a style rule: the compile cost is the same for every form below, because
+# each one lets the header forward-declare. Only a by-value member needs the
+# definition, and only a value can be copied.
+ADVICE = {
+    "name": "names only: a forward declaration is enough today",
+    "borrow": "borrow: const context& for the duration of the call",
+    "own": "own: a value, or a pimpl if the definition must leave the header",
+    "share": "share: shared_ptr<const context>, and only if the lifetime is "
+             "genuinely shared",
+    "unsafe": "unsafe: a reference that is stored or captured outlives its "
+              "guarantee; take a copy or a shared_ptr",
+}
+
+
+def advise(path: Path, kinds: set[str]) -> str:
+    """Which form a file's use of a type calls for, by lifetime and ownership.
+
+    The order matters. A stored reference or a reference capture outlives the
+    call, so it cannot stay a borrow whatever else the file does. A member or a
+    construction means the file needs the object, so it owns it or shares it.
+    Anything else is a call-scoped borrow.
+    """
+    text = path.read_text(encoding="utf-8", errors="replace")
+    if STORED_REFERENCE_RE.search(text) or REFERENCE_CAPTURE_RE.search(text):
+        return "unsafe"
+    if kinds and kinds <= {"named", "alias"}:
+        return "name"
+    if "member" in kinds or "construct" in kinds:
+        return "own"
+    if "param" in kinds:
+        return "borrow"
+    return "name"
+
+
 def stub_for(header: Path, declarations: list[str]) -> str:
     """A header that keeps the original includes and drops the definitions.
 
@@ -306,12 +344,32 @@ def main() -> int:
             print(f"      {blast.rel(includer, root)}")
         if len(named) > 6:
             print(f"      ... {len(named) - 6} more")
+        advice = defaultdict(int)
+        advice_files = defaultdict(list)
+        for includer in direct:
+            verdicts = set(classify_uses(
+                includer.read_text(encoding="utf-8", errors="replace"),
+                entry["name"]))
+            if not verdicts:
+                continue
+            outcome = advise(includer, verdicts)
+            advice[outcome] += 1
+            advice_files[outcome].append(includer)
+        print("   recommended form, by lifetime:")
+        for outcome, count in sorted(advice.items(), key=lambda kv: -kv[1]):
+            print(f"      {count:>5}  {ADVICE[outcome]}")
+        for outcome in ("share", "unsafe"):
+            for includer in advice_files.get(outcome, [])[:5]:
+                print(f"             {blast.rel(includer, root)}")
+        print()
         report["types"].append({
             "name": entry["name"], "kind": entry["kind"],
             "namespace": entry["namespace"],
             "only_named": [blast.rel(i, root) for i in named],
             "fixable_by_const_ref": [blast.rel(i, root) for i in fixable],
             "kind_counts": dict(kinds),
+            "advice": {outcome: [blast.rel(i, root) for i in files]
+                       for outcome, files in advice_files.items()},
             "in_full": [blast.rel(i, root) for i in full],
             "declaration": forward_declaration(entry),
         })

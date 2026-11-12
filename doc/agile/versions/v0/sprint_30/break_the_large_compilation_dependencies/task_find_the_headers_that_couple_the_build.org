@@ -105,6 +105,7 @@ The two false starts and their fixes are recorded in the investigation's
 | Objects depending on a service or repository header | 512, of which 364 read =context.hpp= | =header_blast_radius.py= | =27cad5a0c6= |
 | Service header with =shared_ptr<context>= and a forward declaration | compiles, rc 0 | shadow compile, =clang++ -fsyntax-only= | =27cad5a0c6= |
 | Repository header with =const context&= and a forward declaration | compiles, rc 0 | shadow compile, =clang++ -fsyntax-only= | =27cad5a0c6= |
+| Sites the reference-or-pointer rule sorts | 2268 borrow, 1752 own, 472 names only, 0 share, 0 unsafe | =type_usage.py= | =27cad5a0c6= |
 
 The full tables are in
 [[id:AF6C4DA7-903E-4848-8807-73EA4E49E9CA][Investigation: The headers that couple the build]].

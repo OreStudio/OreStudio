@@ -47,6 +47,9 @@ cluster is fundamentally about.
 - [[id:EED46603-D1E7-42BD-AA5A-B0C477F76B24][Wiener Process]] — continuous-time
   Brownian motion, $dW$, the source of randomness every process below
   is driven by.
+- [[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]] —
+  how the synthetic market evaluates a Wiener process at any time, in any
+  order, with the same result.
 - [[id:BBF2D2A7-B504-4426-94E1-96DD95E31603][Ito's Lemma]] — the
   stochastic chain rule, needed to derive e.g. a bond-price SDE from a
   short-rate SDE.

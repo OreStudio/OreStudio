@@ -118,6 +118,10 @@ this, including the risk premium the third limitation leaves out, is in
    over longer horizons than $1/n$ implies, so the scaling above understates
    long-dated butterflies. A GARCH model of the daily variance implies its own
    term structure of kurtosis, which would be the better scaling.
+   The option vol surfaces section of
+   [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
+   adopts it, reading each expiry's law from the spot model, and states what
+   this smile can and cannot give a synthetic surface.
 
 * See also
 

@@ -303,6 +303,95 @@ derived source that infers ATM, RR and BF from the pair's spot fixings, as
 [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Synthetic prices are calibrated from free public sources]]
 describes.  A real vol source, where one is available, ranks above it.
 
+*** Where the skew and curvature parameters come from
+
+The skew and curvature processes need a level to revert to, a speed of
+reversion and a volatility.  Their form is settled: Andrès, Boumezoued and
+Jourdain (2023) find that the ATM parameters of SSVI follow past returns and
+squared returns while $\rho$ and $\eta$ do not, and model those two as bounded
+mean-reverting (Jacobi) processes, as the maps above do.  The same finding says
+that the path of spot cannot set their parameters: curvature, quoted as the
+butterfly, is the option market's price of large moves, a $Q$ quantity.  The
+project holds no private market data and FX option quotes are not public, so the
+parameters cannot be fitted to option prices.  Three public routes exist.
+
+- *Route 1: published estimates as stated priors.*  Take the parameters from
+  studies of smile dynamics, such as Carr and Wu (2007) on the stochastic skew
+  of currency options and Andrès, Boumezoued and Jourdain (2023).  The studies
+  use proprietary data, mostly equity index options, and report pooled or
+  illustrative values, not one per pair.  A value taken from them cannot be
+  checked against data the project holds.
+- *Route 2: the spot model's own distribution plus a stated premium.*  Read each
+  expiry's smile from the distribution of the spot return over that expiry,
+  through the Gram-Charlier smile of
+  [[id:DCB34BC0-8125-43A1-B99F-074BC280975D][Backus, Foresi, Li and Wu]]:
+  skewness tilts it and excess kurtosis bends it.  A stated premium per pair
+  scales the result, as the multiplier already scales the ATM level.  The
+  derived source does this today for each day of a pair's history
+  ([[id:099697A6-8526-48E0-A63D-DB3932C06468][Derivation of FX volatility quotes from historical fixings]]).
+- *Route 3: prices regulators publish.*  US swap data repositories disseminate
+  swap trades under CFTC Part 43, and FX options are reportable swaps.  Whether
+  the records carry strike, expiry and premium has not been checked against the
+  CFTC technical specification (CFTC, 2023).  They are trades, not quotes:
+  sparse across strikes and expiries, irregular in time, with large notionals
+  capped, and under the repositories' terms of use.  At best they give occasional
+  observations to check another route against.
+
+Route 2 is the chosen route.  Every input is data the project holds or an
+assumption with a name; the curvature is consistent with the spot the same run
+publishes, because both come from one model; and a real source of option
+quotes, should the project hold one, ranks above it with no change to any
+consumer.  Route 1 supplies the priors route 2 shrinks toward, and route 3, if
+its fields exist, a spot check.
+
+Route 2 reaches the dynamics in two steps.  First, the distribution at each
+expiry comes from the spot model, not from independent days.  Today the excess
+kurtosis is scaled to an $n$-day expiry as $\gamma_2/n$; under GARCH the kurtosis
+of an aggregated return decays much more slowly (Drost and Nijman, 1993), so the
+expiry's law is read from the spot model's mixture and GJR-GARCH variance, by
+simulation or by a density surrogate of the kind
+[[id:3F849D36-022B-49CC-AD71-791481F36581][van den Berg (2026)]] trains.  Second,
+that law depends on the current variance relative to its long-run level, so it
+changes from day to day: calibrating SSVI to each day's derived quotes gives a
+daily series of $\rho$ and $\eta$, to which the reversion and volatility of
+their processes are fitted.
+
+Route 2 has these limits.
+
+1. *Real-world, not risk-neutral.*  Risk-neutral kurtosis exceeds physical
+   kurtosis (Bakshi, Kapadia and Madan, 2003), and currencies carry a volatility
+   risk premium (Della Corte, Ramadorai and Sarno, 2016).  Without a premium the
+   butterflies are biased low, and no public data calibrates the premium: it is
+   an assumption, not a measurement.
+2. *No anticipation.*  An option market prices an election or a central bank
+   meeting before it happens; a model of past returns and a constant premium
+   cannot.  Event bumps in the term structure of curvature are absent.
+3. *The term structure until the first step is built.*  The butterfly falls as
+   $1/t$, so smiles beyond a few weeks are nearly flat, which is what the
+   surfaces published from the derived source show.
+4. *Model risk.*  The curvature is a function of the spot model's tails, and
+   inherits any misfit in them.  The Gram-Charlier smile is first order in the
+   moments and accurate within about $|d| < 1.5$, and the moments are held
+   inside the region where the expansion is a density (Jondeau and Rockinger,
+   2001), which caps the curvature it can express.
+5. *Estimation noise.*  Sample kurtosis has a standard error near
+   $\sqrt{24/n}$ for normal data and more for fat tails, and a few days dominate
+   it.  The shrinkage toward an authored prior answers the noise; on a short
+   history the prior, a route 1 value, dominates.
+6. *The dynamics are the model's.*  A curvature driven by the variance state
+   moves with spot's volatility by construction; its correlation with spot and
+   with the ATM level is the model's, not the market's.
+7. *No external check.*  Without option data, tests can show that the
+   curvature is consistent, bounded and free of static arbitrage, not that it
+   is realistic.
+
+So the synthetic surfaces suit valuation, risk and screens that need a
+plausible, arbitrage-free smile with stated provenance.  They do not suit
+studies whose answer depends on the market's real curvature, such as the
+realism of vanna and volga hedging or of smile risk limits.  The shocks these
+processes read are shared with spot through
+[[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]].
+
 *** From state to quotes
 
 At each step the generator advances the state, builds each expiry's slice, and
@@ -335,13 +424,15 @@ fixed step in =ores.analytics.quant=, so a surface feed ticks periodically.
 |-------------+-----------------+-------------------+-------|
 | Pairwise correlation | =CORRELATION/RATE= (IR CMS-CMS, FX, equity) | *Derived* from jointly generated return vectors | Well-defined only if asset classes share a joint GMM |
 
-Correlation is not generated directly.  It is derived as the Pearson
-correlation coefficient of the jointly sampled return pairs from the GMM draw
-across asset classes.  This requires IR, FX, and equity to be included in the
-same joint GMM (or linked via a copula layer).  If asset classes are generated
-with independent GMMs, all pairwise correlations are zero by construction
-and must be injected separately.  The joint GMM architecture — block-diagonal,
-hierarchical, or copula-based — is open design decision OD-1.
+Correlation is not generated directly.  Every series draws the Gaussian that
+drives its process from shared Brownian factors in the run's simulated time, so
+two series correlate by the inner product of their factor loadings, signed and
+exact whatever their tick times.  A daily batch of snapshots reads the same
+factors at the day's grid, which is the joint draw of a joint GMM.  The
+=CORRELATION/RATE= quotes are derived from those inner products.  The design,
+its proofs and its scope are in
+[[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]];
+it resolves OD-1.
 
 * Cross-asset consistency constraints
 :PROPERTIES:
@@ -914,10 +1005,11 @@ Commodity carry check passes for gold.
 
 ** Phase 5 — Full joint GMM and correlation
 
-*Scope:* Joint GMM across all active asset classes with block-diagonal or
-hierarchical covariance (resolve OD-1); realised correlation surfaces
-(=CORRELATION/RATE=) derived from joint draws; static base correlations for
-CDX.NA.IG.
+*Scope:* Global shared Brownian factors across all active asset classes, their
+loadings per regime calibrated from public fixings by EM and principal
+components; realised correlation surfaces (=CORRELATION/RATE=) derived from
+the inner products of the loadings; static base correlations for CDX.NA.IG.
+Block factors, which the FX volatility surface needs, come before this phase.
 
 *Priced products:* Basket equity products, CMS spread options, CDX/iTraxx
 tranches.
@@ -951,11 +1043,39 @@ begins.
 
 | # | Decision | Options | Impacts |
 |---+----------+---------+---------|
-| OD-1 | *Joint GMM architecture* | (a) single joint GMM with block-diagonal covariance; (b) hierarchical GMM conditioned on shared latent regime; (c) independent GMMs per asset class + post-hoc copula | Determines whether constraints 6, 7, 8, 16 (from intermediate analysis) are satisfied by construction or require post-generation correction; affects Phase 5 |
+| OD-1 | *Joint GMM architecture* | Resolved: shared Brownian factors in simulated time, hierarchical (global and block factors), per-regime loadings as the continuous-time form of the mixture's components | See [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]]; block factors first, global factors in Phase 5 |
 | OD-2 | *Clock function for frozen pool* | Linear clock =s = (t − t₀)/(t₁ − t₀)= vs variance clock =s = (Var(t) − Var₀)/(Var₁ − Var₀)= | Affects smoothness of ATM total variance interpolation between swaption and capfloor pillars; must be validated on ORE example datasets |
 | OD-3 | *SABR/SVI to normal mixture density conversion recipe* | Fit Gaussian mixture to ∂²C_SABR/∂K² via EM; number of components (working assumption: 3–5); fitting objective (KL divergence vs MSE on call prices); strike grid extent | Required before frozen pool applies to swaption/capfloor surfaces; gates Phase 3 |
 | OD-6 | *Dimensionality reduction for swaption cube* | Number of PCA components to retain (working assumption: 10–15 for >99% variance explained); positivity enforcement on normal vols after back-projection from PCA space | Required before full swaption cube GMM can be implemented; gates Phase 3 smile generation |
 | OD-8 | *Skew term structure of option vol surfaces* | (a) SSVI with one ρ for all expiries; (b) extended SSVI with a ρ per expiry (Hendriks and Martini, 2019) | Whether the generated risk reversals can follow a term structure other than 1/√T; (b) adds a process per expiry and a calendar condition on the ρ curve |
+
+* References
+
+Cited in the option vol surfaces section on where the skew and curvature
+parameters come from.
+
+- Andrès, H., Boumezoued, A., and Jourdain, B. (2023). The implied volatility
+  surface (also) is path-dependent. arXiv preprint.
+  [[https://arxiv.org/abs/2312.15950][arXiv:2312.15950]].
+- Bakshi, G., Kapadia, N., and Madan, D. (2003). Stock return characteristics,
+  skew laws, and the differential pricing of individual equity options.
+  /Review of Financial Studies/, 16(1), 101-143.
+  [[https://doi.org/10.1093/rfs/16.1.0101][doi:10.1093/rfs/16.1.0101]].
+- Carr, P., and Wu, L. (2007). Stochastic skew in currency options. /Journal of
+  Financial Economics/, 86(1), 213-247.
+  [[https://doi.org/10.1016/j.jfineco.2006.03.010][doi:10.1016/j.jfineco.2006.03.010]].
+- Commodity Futures Trading Commission (2023). Parts 43 and 45 technical
+  specification, version 3.3, 13 December 2023.
+  [[https://cftc.gov/media/9921/Part43_45TechnicalSpecification12132023CLEAN/download][cftc.gov]].
+- Della Corte, P., Ramadorai, T., and Sarno, L. (2016). Volatility risk premia
+  and exchange rate predictability. /Journal of Financial Economics/, 120(1),
+  21-40. [[https://doi.org/10.1016/j.jfineco.2016.02.015][doi:10.1016/j.jfineco.2016.02.015]].
+- Drost, F. C., and Nijman, T. E. (1993). Temporal aggregation of GARCH
+  processes. /Econometrica/, 61(4), 909-927.
+  [[https://doi.org/10.2307/2951767][doi:10.2307/2951767]].
+- Jondeau, E., and Rockinger, M. (2001). Gram-Charlier densities. /Journal of
+  Economic Dynamics and Control/, 25(10), 1457-1483.
+  [[https://doi.org/10.1016/S0165-1889(99)00082-2][doi:10.1016/S0165-1889(99)00082-2]].
 
 * See also
 

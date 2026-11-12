@@ -1,0 +1,359 @@
+:PROPERTIES:
+:ID: 25C467BE-07A3-432C-8CB8-6B194E748570
+:END:
+#+title: Shared Brownian factors give every synthetic series a signed correlation
+#+description: The design of the latent market: each series' Gaussian is the increment of a driver built from shared Brownian factors in simulated time and the series' own noise, so any two series correlate by the inner product of their loadings.
+#+type: knowledge
+#+level: cross
+#+filetags: :market_data:synthetic:correlation:stochastic_processes:knowledge:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+* Summary
+
+Each synthetic series draws the Gaussian that drives its process from a
+/latent market/. The latent market holds a small number $K$ of independent
+Brownian motions, the /factors/, in the run's simulated time. A series' driver
+is a fixed mix of the factors and of its own Brownian motion, with weights whose
+squares sum to one. So the driver is itself a standard Brownian motion, and two
+drivers correlate by the inner product of their factor weights, signed, over
+any interval and whatever the sampling times. The process keeps its law: the
+mixture still picks its component, GARCH still sets the variance and the tail
+tilt still shapes the shock. Only the Gaussian it scales is shared. This page
+states the design and its proofs; the comparison of options that chose it is
+recorded in
+[[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][Investigation: How the synthetic market is generated jointly]].
+
+* Detail
+
+** What the design must meet
+
+| #  | Requirement | Why |
+|----+-------------+-----|
+| R1 | Any two series correlate by a stated, signed amount | a surface's skew against spot; rates against FX; what Phase 5 prices |
+| R2 | Exact under irregular sampling | series tick at their own times, by Poisson or Hawkes, at their own rates |
+| R3 | Composes with the regime, the heat, the speed, the volatility channel and the tail tilt | they exist, and a person drives them from the Market regime tab |
+| R4 | A series' path does not depend on which other series exist or when they tick | adding a feed, or a burst on another feed, must not move this feed's prices |
+| R5 | Cost linear in the series | tens of thousands of feeds on one loop |
+| R6 | A feed stays a feed | the latent market emits noise, not prices, so a vendor can replace a publisher |
+| R7 | Generic across asset classes | short-rate factors, SSVI and SABR state, equity, commodity, credit, inflation, scenarios |
+| R8 | Measurable | a test states a correlation and measures it under irregular sampling |
+
+A joint draw on a common grid meets R1 and fails R2, R4 and R5: the series share
+no grid, a burst on one would force a draw for all, and the set of series is the
+dimension of the draw. Correlating through the regime alone gives co-movement of
+magnitude, not sign, and fails R1. The shared factors below meet all eight,
+within the two bounds stated under Determinism.
+
+** From the joint mixture to continuous time
+
+Kienitz fits a joint Gaussian mixture to daily change vectors, one component a
+regime with its own mean and covariance
+([[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI]]).
+The design keeps that structure and moves it into continuous time. The
+components become the states of the regime chain $S(t)$; each component's
+covariance becomes a low-rank set of loadings $b_{ik}(s)$; and the vector draw
+becomes the increments of Brownian factors read at each series' own ticks. Fitting
+the mixture becomes calibrating the loadings.
+
+** Time
+
+The scheduler advances one operational time $\tau$, and the run's speed $v$
+maps it to simulated market time $t = v\tau$
+([[id:F135B9AF-902F-46C5-847C-0820D8C92D28][One scheduler draws every feed's gaps from its arrival law]]).
+The factors live in $t$. So every feed, whatever its arrival law, reads one
+noise in one time base. That shared time base is what the three options of the
+approach note's OD-1 lacked
+([[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]).
+
+** The driver of a series
+
+Let $F_1, \dots, F_K$ be independent standard Brownian motions and, for each
+series $i$, let $E_i$ be a standard Brownian motion independent of every factor
+and of every other $E_j$. Let $S(t)$ be the exogenous regime state of
+[[id:7A6E2C55-3F1B-4E8D-9C7A-2B5E8D4F1A63][Market Arrival Regime]]. The driver of
+series $i$ is the stochastic integral
+
+\[
+W_i(t) = \sum_{k=1}^{K} \int_0^t b_{ik}(S(s))\, dF_k(s) + \int_0^t d_i(S(s))\, dE_i(s),
+\qquad
+\sum_{k=1}^{K} b_{ik}(s)^2 + d_i(s)^2 = 1 \text{ for every state } s.
+\]
+
+The integral form matters when the loadings depend on the regime. The form
+$\sum_k b_{ik}(S(t)) F_k(t)$ is not a Brownian motion: at a switch it jumps by
+$\sum_k (b_{ik}(s') - b_{ik}(s)) F_k(t)$, a term that grows with the time the
+run has lived. With constant loadings the two forms agree.
+
+*Each driver is a standard Brownian motion.* $W_i$ is a continuous local
+martingale with quadratic variation
+$\langle W_i \rangle_t = \int_0^t (\sum_k b_{ik}^2 + d_i^2)\, ds = t$, so by
+Lévy's characterisation it is a standard Brownian motion (Karatzas and Shreve,
+1991, Theorem 3.3.16). A process that read a standard normal before reads one
+now.
+
+*Two drivers correlate by their loadings.* For $i \ne j$ the cross variation is
+$d\langle W_i, W_j \rangle_t = \mathbf{b}_i(S(t)) \cdot \mathbf{b}_j(S(t))\, dt$,
+because the idiosyncratic motions are independent. The instantaneous
+correlation of the two drivers is $\mathbf{b}_i \cdot \mathbf{b}_j$, signed.
+
+** Increments under irregular sampling
+
+Let series $i$ tick at the ends of the interval $I_i$ and series $j$ at the ends
+of $I_j$, with the regime constant on both. The increments are jointly Gaussian
+with
+
+\[
+\operatorname{Cov}(\Delta W_i, \Delta W_j) = (\mathbf{b}_i \cdot \mathbf{b}_j)\, |I_i \cap I_j|,
+\qquad
+\operatorname{Corr}(\Delta W_i, \Delta W_j) = (\mathbf{b}_i \cdot \mathbf{b}_j)\,
+\frac{|I_i \cap I_j|}{\sqrt{|I_i|\,|I_j|}}.
+\]
+
+The covariance is exact for any two intervals. The correlation of the two
+increments equals $\mathbf{b}_i \cdot \mathbf{b}_j$ only when the intervals
+coincide; otherwise it is smaller in magnitude, by the overlap ratio. This is
+the Epps effect, and it is a property of the measurement, not of the noise:
+the noise carries the stated correlation exactly, and an estimator that sums
+over overlapping intervals recovers it
+([[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Tick-to-tick returns understate a correlation that holds exactly]]).
+
+When series $i$ ticks at $T$ after its last tick at $t_i$, the latent market
+returns
+
+\[
+Z_i = \frac{W_i(T) - W_i(t_i)}{\sqrt{T - t_i}}.
+\]
+
+$Z_i$ is standard normal given the tick times, and independent of every earlier
+$Z_i$, under one condition: the tick times are independent of the factors and of
+$E_i$. That holds while arrival laws read the regime, the heat and their own
+draws but no price. An arrival law that reads a price would make a tick time a
+stopping time of the noise, and $Z_i$ would no longer be Gaussian in general. So
+no arrival law may read a price while it is driven by this noise. The scheduler pins it by type: an arrival law is given the regime, the heat
+and its own stream, and no price reaches its interface.
+
+The noise runs in simulated time $t$, and the factors are keyed on cells of
+$t$. The volatility channel's business time
+([[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]])
+does not reach the noise: the latent market returns the standard $Z_i$ above,
+and the process scales its variance by the channel's loading, as it does
+today. The two alternatives each break something. Keying the cells on business
+time $\beta(t) = \int_0^t \lambda(u)\, du$ makes the grid a function of the
+regime's path, and of every event when the loading reads the heat. Dividing a
+simulated-time increment by $\sqrt{\beta(T) - \beta(t_i)}$ does not give a
+standard normal. Scaling the variance in the process is exact when the loading
+is constant over the interval between two ticks. When it varies inside the
+interval, the shared Gaussian weights the interval's parts by time and not by
+loading. The loading is common to every series, so the correlation of two
+drivers over their overlap is unchanged, and the cost is a first-order error in
+how the interval's variance is spread inside it.
+
+** Regime changes
+
+With per-regime loadings, an increment over an interval that spans a switch is
+the sum of the increments of its pieces, each under the loadings of its regime.
+The switch times are those of the regime chain, which the scheduler holds and
+which is exogenous, so the sum is exact. The latent market records the factor
+values at each switch, which is all the pieces need.
+
+** Hierarchy and blocks
+
+The factors are of two kinds. /Global/ factors are shared across asset classes.
+/Block/ factors are scoped to a group of series that must correlate beyond what
+the global factors carry, such as a currency pair's spot and its volatility
+surface. The model stays low rank: $K$ is the number of global factors plus the
+block factors.
+
+A block member loads on its anchor's /whole/ driver. A surface state variable
+with correlation $\rho$ to spot has the driver
+$\rho\, W_{\text{spot}} + \sqrt{1 - \rho^2}\, G$, where $G$ is built from the
+block's own factors. Its correlation with spot is then exactly $\rho$, whatever
+spot's global loadings are. In factor terms the anchor's idiosyncratic motion is
+promoted to a block factor. So an anchor's $E$ is not drawn from its price
+stream: a member ticks at its own times and needs the anchor's increment over
+any interval, so the anchor's idiosyncratic motion is a keyed path like any
+factor. An anchor's draws therefore change once it has a block, and the
+identity of a series with no loadings holds for non-anchors only. The block's internal correlations, such as
+neighbouring forward variances, come from the lower Cholesky factor of the
+block's correlation matrix with the anchor first. That matrix is the one the
+synthetic FX surface engine already builds from its three stated correlations
+([[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]],
+"Correlation with spot"). A set of numbers that is not a correlation matrix is
+refused, never projected, because a projected value is not the one a person
+stated.
+
+** Determinism
+
+A factor's value at a time is a pure function of the run seed, the factor and
+the time; it does not depend on which series asked or when
+([[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]]).
+So a series' path is invariant to the presence, absence and tick times of any
+other series. A series that anchors no block draws its own $E_i$ from its own
+price stream, so it depends only on its own ticks, as its noise does today. An
+anchor's $E_i$ is a keyed path, a function of the seed and time alone.
+
+Two things bound that invariance. The keyed path is exact to the resolution of
+its bridge, not below it. And the heat of the arrival regime is endogenous:
+every event of every series feeds it. A volatility loading that reads the heat
+makes the noise depend on all events, so a run with the heat in the loading is
+reproducible by seed but not invariant to adding a feed. That is contagion doing
+what it is for; a test states which of the two properties it checks.
+
+** A series with no loadings
+
+A series with every loading zero has $d_i = 1$ and its driver is its own
+$E_i$. The latent market draws $E_i$ from the series' existing price stream, in
+the order and number the process draws today. So the driven step takes one
+standard normal in and scales it as before, and a series with no loadings
+reproduces today's path for the same seed bit for bit. Bit for bit needs a
+branch, not only $d_i = 1$: $d_i\sqrt{\Delta t}\,g/\sqrt{\Delta t}$ need not equal
+$g$ in floating point, so a series with every loading zero is handed the drawn
+$g$ unscaled. That identity is the migration test: nothing changes until
+loadings are set. It holds for a series that anchors no block; an anchor's own
+noise is a keyed path, as Hierarchy and blocks states.
+
+** Cost
+
+A tick reads $K$ factors at the current time, each through at most $D$ levels
+of the bridge, so it costs $O(KD)$ and does not depend on the number of series
+$N$. The latent market keeps each series' driver value at its last tick, so it
+never reads a factor in the past. With static loadings that value is the
+driver itself, $\sum_k b_{ik} F_k(t_i) + d_i E_i(t_i)$; with per-regime loadings
+it is the $K$ factor values at the last tick, because the piece after a switch
+needs them. Memory is the loadings, $O(NK)$, plus one value a series with
+static loadings or $K$ with per-regime ones. A run's total cost is linear in its ticks, which generalises the
+rank-one result of the arrival regime from one factor to $K$.
+
+** What the correlation reaches
+
+The loadings fix the correlation of the /drivers/. A published return is the
+driver's Gaussian transformed by its process. Two effects separate the two
+numbers.
+
+- *Scaling.* If $r_i = \sigma_i Z_i$ and $r_j = \sigma_j Z_j$, where the scales
+  are set by past information and by draws independent of the current
+  Gaussians (GARCH variance, the mixture component), then
+  $\operatorname{Corr}(r_i, r_j) = \rho_{ij}\, E[\sigma_i \sigma_j] / \sqrt{E[\sigma_i^2]\,E[\sigma_j^2]}$.
+  The sign is kept, and the magnitude is at most $|\rho_{ij}|$ by the
+  Cauchy-Schwarz inequality.
+- *Non-linear maps.* The tail tilt maps $Z$ through a monotone function. For a
+  bivariate normal pair, no pair of functions has a correlation larger in
+  magnitude than $|\rho|$ (Lancaster, 1957), so the tilt can only lower the
+  magnitude.
+
+So the stated number is an upper bound on the correlation of published returns,
+reached when the scales move together and the tilt is off. A test of the
+design measures the drivers; a test of a feed's published correlation states
+the bound.
+
+** Measures
+
+The drivers are noise under the real-world measure $P$. Spot and curves are $P$
+quantities. The SSVI state of a volatility surface is a $Q$ parameterisation
+driven by $P$ noise, as the approach note accepts
+([[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]]).
+Each emitted surface is free of static arbitrage because the generator keeps its
+SSVI parameters inside the bounds of Gatheral and Jacquier
+([[id:3C43D0CC-3E74-45CA-BC85-A2303D0ADEDC][Paper summary: arbitrage-free SVI volatility surfaces]]).
+Nothing in the noise excludes dynamic arbitrage between one day's surface and
+the next.
+
+The generator holds static arbitrage itself, so the guarantee does not depend
+on what a pricing engine later does with the surface. The mixture-preserving
+interpolation of van den Berg
+([[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Paper summary: mixture-preserving, arbitrage-free vol-surface interpolation]])
+is studied here but not part of this design.
+
+** Scope
+
+The first implementation holds block factors only: an FX pair's spot and its
+surface. Static loadings come first; per-regime loadings follow. A surface's
+strikes are solved against the forward $F(t, T) = S(t)\, P_f(t, T) / P_d(t, T)$
+built from the spot and the two discount curves last published.
+
+** Later work
+
+- *Global factors and calibration.* Global factors link asset classes: FX spot
+  with rate differentials, equity indices with credit spreads, commodity curves
+  with inflation. Their loadings per regime are fitted from public fixings, by EM
+  on regime-segmented mixtures as Kienitz fits his, and by principal components
+  of regime-segmented daily changes. This is Phase 5 of the approach note.
+- *Derived correlation quotes.* With global loadings in place, the generator
+  emits =CORRELATION/RATE= quotes from $\mathbf{b}_i \cdot \mathbf{b}_j$ for
+  basket and hybrid products.
+- *Regime loadings and stress.* Loadings that rise toward one in the active
+  regime model correlations that converge in a panic. Factor jumps placed on the
+  cell grid give reproducible stress scenarios.
+- *Heavier tails.* Kienitz's stretched Gaussian and Student-t mixtures (Kienitz,
+  2026b) would change a component's marginal, not the shared noise.
+- *Dynamic arbitrage.* For multi-year XVA paths, the $P$ increments would need
+  martingale-corrected $Q$ drifts, for example an arbitrage-free dynamic SSVI.
+
+** Open questions
+
+1. *The parameters of the smile's curvature.* The curvature already evolves:
+   the generator moves the SSVI curvature $\eta$ by a bounded logistic of an
+   Ornstein-Uhlenbeck driver, and the skew $\rho$ by a hyperbolic tangent of
+   another. The published model closest to this is Andrès, Boumezoued and
+   Jourdain (2023), who fit a four-parameter SSVI to historical surfaces, find
+   that the two ATM parameters follow past returns and squared returns, find
+   that $\rho$ and $\eta$ do not, and so model those two as bounded Jacobi
+   processes. That result says two things. Bounded mean-reverting processes are
+   the published answer for the dynamics. And the path of spot cannot set
+   their level, reversion or volatility: curvature is a $Q$ quantity, the
+   market's price of tail risk. Where those numbers come from, with no private
+   market data, is answered in
+   the option vol surfaces section of
+   [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]],
+   "Where the skew and curvature parameters come from": of three public
+   routes, the spot model's own distribution at each expiry plus a stated
+   premium, with its limits. Kienitz (2026a) generates whole
+   surfaces from a mixture fitted to surface history, which needs that history
+   and so is not open to this project. El Amrani, Jacquier and Martini (2019) show the
+   limit of any such dynamics: no Itô dynamics beyond the trivial keeps an
+   uncorrelated SSVI smile free of dynamic arbitrage up to expiry.
+2. *Calibration data for surfaces.* Public fixings exist for rates and spot.
+   This project has no private market data source and FX option quotes are not
+   public, so the loadings of a surface's state variables cannot be fitted from
+   data the project holds.
+3. *Bridge depth at scale.* The cost of depth 30 a tick at tens of thousands of
+   feeds is unmeasured. Step 1 of
+   [[id:9331995E-79ED-40B3-923D-524975949FB5][Build the latent market of shared Brownian factors]]
+   measures it.
+
+** References
+
+- Andrès, H., Boumezoued, A., and Jourdain, B. (2023). The implied volatility
+  surface (also) is path-dependent. arXiv preprint.
+  [[https://arxiv.org/abs/2312.15950][arXiv:2312.15950]].
+- El Amrani, M., Jacquier, A., and Martini, C. (2019). Dynamics of symmetric
+  SSVI smiles and implied volatility bubbles.
+  [[https://arxiv.org/abs/1909.10272][arXiv:1909.10272]], revised February 2021.
+- Karatzas, I., and Shreve, S. E. (1991). /Brownian Motion and Stochastic
+  Calculus/, 2nd ed. Graduate Texts in Mathematics 113. Springer.
+  Theorem 3.3.16 (Lévy's characterisation).
+  [[https://doi.org/10.1007/978-1-4612-0949-2][doi:10.1007/978-1-4612-0949-2]]
+  (the 1998 printing of the second edition).
+- Kienitz, J. (2026a). Gaussian generation of implied volatility surfaces:
+  GenAI the Gaussian way, part 2. /Wilmott/, July 2026.
+  [[https://doi.org/10.54946/wilm.12250][doi:10.54946/wilm.12250]]. The DOI
+  resolves to a Kienitz article in the July 2026 issue; the title is as the
+  author's citation gives it, unchecked behind the publisher's login.
+- Kienitz, J. (2026b). Tailoring tails within the mixture model framework.
+  /Risk/, Cutting Edge, 9 July 2026.
+- Lancaster, H. O. (1957). Some properties of the bivariate normal distribution
+  considered in the form of a contingency table. /Biometrika/, 44(1/2), 289-292.
+  [[https://doi.org/10.2307/2333274][doi:10.2307/2333274]].
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] -- the structure note that orders this cluster, and where to read this page in it.
+- [[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][Investigation: How the synthetic market is generated jointly]] -- answers: the options compared and why this one was chosen.
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] -- answers: its open decision OD-1.
+- [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI]] -- completes: per-regime loadings are the continuous-time form of the joint GMM's components.
+- [[id:7A6E2C55-3F1B-4E8D-9C7A-2B5E8D4F1A63][Market Arrival Regime]] -- completes: extends its rank-one shared factor from activity to signed noise.
+- [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]] -- completes: its business time is the time the noise runs in.
+- [[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]] -- how a factor is evaluated.
+- [[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Tick-to-tick returns understate a correlation that holds exactly]] -- how the correlation is measured.
+- [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][Correlation management]] -- an improbable neighbour: once two pairs' spots load on shared factors, $\mathbf{b}_i \cdot \mathbf{b}_j$ is the correlation that fixes their cross's ATM volatility, so a synthetic cross surface that ignores it contradicts its legs.

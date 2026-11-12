@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: 9331995E-79ED-40B3-923D-524975949FB5
+:END:
+#+title: Task: Build the latent market of shared Brownian factors
+#+description: A latent market in ores.analytics.quant that gives every synthetic series the increment of a driver built from shared Brownian factors in simulated time, with block factors first, so the FX volatility surface correlates with its spot exactly.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every synthetic feed draws its noise alone, so every pair of synthetic prices is
+uncorrelated. This task builds the latent market that ends that: a set of
+shared Brownian factors in the run's simulated time, from which each series
+reads the increment of its own driver at its own ticks. The first user is the
+synthetic FX volatility surface, whose skew must lean with spot by a stated
+correlation
+([[id:67D0F734-5703-43DF-BF16-F5513C85A01F][Build the synthetic FX volatility surface generator]]).
+Only block factors are built: a pair's spot and its surface. Global factors and
+their calibration stay in Phase 5 of the approach note.
+
+The design is settled; build it as the notes state it:
+
+- [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]]
+  -- the driver, the requirements R1 to R8, the block rule, determinism and its
+  two bounds, the zero-loading identity, the cost, and the measures.
+- [[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]]
+  -- the cell grid, the dyadic bridge, the node addressing and the resolution
+  bound.
+- [[id:9B577C48-A237-445B-A331-AD0CB42FAAE1][Counter-based random number generators]]
+  -- the Philox stream the nodes are drawn from.
+- [[id:92644AAC-BE5F-43B6-96E4-084226CDA094][Tick-to-tick returns understate a correlation that holds exactly]]
+  -- how the tests measure the correlation.
+
+The comparison of options that chose this design is
+[[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][Investigation: How the synthetic market is generated jointly]];
+the decision is OD-1 of
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Step 1, the keyed path.                |
+| Last touched | 2026-11-12                               |
+
+* Acceptance
+
+- A =latent_market= in =ores.analytics.quant=, owned by the scheduler and
+  touched only on its thread, holds named block factors, per-series loadings and
+  a keyed path per factor, and returns a series' standardised increment
+  between its last tick and now.
+- Two drivers sampled at independent irregular times show the stated
+  correlation within a stated tolerance, measured by the Hayashi-Yoshida
+  estimator, not by tick-to-tick returns.
+- A series' increments are identical to the last bit when another series is
+  added, removed or bursts, for a run without the heat in the loading.
+- A factor queried at the same time in two different orders returns the same
+  value; two ticks inside one finest bridge step behave as the keyed path note
+  states.
+- A set of loadings that is not a correlation is refused, never projected.
+- =i_stochastic_process= takes one standard normal in for a driven step. A
+  series with every loading zero that anchors no block reproduces today's path
+  bit for bit for the same seed. A process that cannot take an external normal refuses loadings.
+- The FX spot feed and the FX volatility surface read their drivers from the
+  tick context; the surface's three correlations become its block's loadings,
+  and its strikes are solved against the forward from the published spot and
+  curves.
+- The factors and loadings are typed configuration tables, shown on the Market
+  regime tab and set from the shell.
+- No arrival law reads a price: the arrival interface takes no price, and a
+  test pins it.
+
+* Plan
+
+One PR a step, in this order; each ends in its test. Steps 1 and 2 change no
+published price.
+
+1. *The keyed path.* A factor's value at a time from keyed cells and a dyadic
+   bridge, through direct Philox block access at a draw index. Tests: the
+   bridge's law at its nodes, order independence, the resolution bound, a jump
+   over many cells, and Random123's known-answer vectors for the block function
+   if =rng_stream= does not already carry them. Record the cost of a read at
+   depths 16 and 30 in the Measurements table, and the licence of every source
+   copied.
+2. *The latent market.* Block factors, loadings, the anchor rule (a member loads
+   on its anchor's whole driver), the per-series last driver value, and the
+   increment. Tests: Hayashi-Yoshida correlation under irregular sampling;
+   isolation when a series is added or bursts; reproducible by seed.
+3. *The driven step.* =i_stochastic_process= takes the normal it would draw; the
+   latent market draws a series' own noise from its existing price stream, and
+   hands a series with every loading zero its drawn normal unscaled. Test: zero
+   loadings reproduce today's path bit for bit, for a series that anchors no
+   block. An anchor's own noise is a keyed path, so its draws change once it
+   anchors a block, and the test says so.
+4. *The tick context carries the market.* FX spot moves onto its driver.
+5. *Configuration.* Factor and loading tables through codegen, the Market regime
+   tab and the shell.
+6. *The FX volatility surface.* Its feed declares its block with its spot; this
+   resumes the generator task's runtime PR.
+
+Static loadings only. Per-regime loadings, global factors, calibration and
+derived =CORRELATION/RATE= quotes are later work, as the design note's
+"Later work" section lists them.
+
+** Open-source work to copy from
+
+Copy the approach, and the code where its licence allows, before writing our
+own. Each entry names what to take.
+
+| Project | Licence | What to take | Step |
+|---------+---------+--------------+------|
+| [[https://github.com/DEShawResearch/random123][Random123]] (D. E. Shaw Research; Salmon et al., 2011) | BSD-3-Clause | The reference Philox4x32-10 and Threefry, and their known-answer test vectors, to pin our block function. | 1 |
+| [[https://cppreference.com/w/cpp/numeric/random/philox_engine.html][std::philox_engine]] (C++26, WG21 P2075R6) | standard | The counter and key layout and the naming, so our engine can be swapped for the standard one when the compilers ship it. | 1 |
+| [[https://docs.kidger.site/diffrax/api/brownian][Diffrax VirtualBrownianTree]] (Kidger; Jelinčič, Foster and Kidger, 2024, [[https://arxiv.org/abs/2405.06464][arXiv:2405.06464]]) | Apache-2.0 | The single-seed Brownian path: a path fixed by the seed alone, queried in any order, refined by bisection to a tolerance. Its tolerance and query algorithm are the reference for our cell and depth. | 1 |
+| [[https://github.com/google-research/torchsde][torchsde]] BrownianTree and BrownianInterval (Li, Wong, Chen and Duvenaud, 2020; Kidger, Foster, Li and Lyons, 2021) | Apache-2.0 | The same construction in PyTorch, and the Brownian Interval's cache of recently read nodes, for the cost of repeated queries near now. | 1, 2 |
+| [[https://github.com/lballabio/QuantLib][QuantLib]] =BrownianBridge= (=ql/methods/montecarlo/brownianbridge.hpp=) | BSD-style (QuantLib licence) | The bridge weights on a fixed grid, for a daily batch that reads the factors at the day's grid. Already a dependency through ORE. | 2 |
+| [[https://cran.r-project.org/package=highfrequency][highfrequency]] =rHYCov= and [[https://cran.r-project.org/package=yuima][yuima]] =cce= | GPL | The Hayashi-Yoshida estimator, as the reference our test helper is checked against. Read, do not copy: the licence is GPL. | 2 |
+| [[https://github.com/sitmo/cgmm][cgmm]] (van den Berg) | BSD-3-Clause | Conditional Gaussian mixtures; not for this task, but the reference for fitting per-regime loadings in Phase 5. See [[id:5D68C073-D58D-4873-8EFE-C81CD94E91F6][Investigate sitmo/cgmm for market data simulator]]. | later |
+
+Check each licence at the version copied, and name the source in the file that
+carries the copied code.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

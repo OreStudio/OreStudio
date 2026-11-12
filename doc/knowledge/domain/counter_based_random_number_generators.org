@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 9B577C48-A237-445B-A331-AD0CB42FAAE1
+:END:
+#+title: Counter-based random number generators
+#+description: A generator that is a keyed bijection of a counter, such as Philox or Threefry: any draw is addressed by key and index, with no state carried from the draws before it.
+#+type: knowledge
+#+level: cross
+#+filetags: :random_numbers:stochastic_processes:knowledge:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+* Summary
+
+A conventional generator, such as the Mersenne Twister, carries a state and
+steps it once a draw, so the $n$-th draw is reachable only by the $n - 1$ draws
+before it. A counter-based generator is a function $f(\text{key}, \text{counter})$
+that maps each counter to random bits through a keyed bijection. The $n$-th draw
+is $f(\text{key}, n)$, computed directly. Two consequences follow. Streams are
+independent by construction, one per key or per range of counters, with no
+seeding procedure to get wrong. And a draw can be /addressed/: its value
+depends on its coordinates, not on how many draws came before. ORE Studio's
+synthetic market uses the first property for every feed and needs the second for
+its shared factors.
+
+* Detail
+
+** The generators
+
+Salmon, Moraes, Dror and Shaw (2011) introduced three families. /Threefry/
+reduces the rounds of the Threefish block cipher. /ARS/ uses the AES round
+instructions. /Philox/ is a new design built from multiplications whose high and
+low halves are mixed, chosen for speed on CPUs and GPUs. The authors report that
+all pass the BigCrush battery of TestU01 with margin. The designs borrow from
+cryptography, but the reduced-round generators make no claim of cryptographic
+security; they are statistical generators.
+
+Philox4x32-10 maps a 128-bit counter, four 32-bit words, under a 64-bit key in
+ten rounds, and yields four 32-bit words a block.
+
+** In ORE Studio
+
+=rng_stream= (=ores.analytics.quant=, =math/rng_stream.hpp=) is Philox4x32-10. The
+run seed is the key. The series and the =draw_purpose= (=arrival=, =price=,
+=market=) hash to a 64-bit stream id in the high half of the counter, and the
+draw index fills the low half. So a stream's draws depend on its key alone, not
+on the thread, the order the streams were made in or how many exist. A stream
+reads its draws in order; the block function =philox4x32_10= is a free function,
+so a caller that needs a draw at an index computes that block directly. The
+keyed Brownian path does this
+([[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]]).
+
+** Other implementations
+
+Thijs van den Berg's Threefry engine for C++11 is distributed in the =sitmo=
+package for R, which carries his header (MIT licence, 2014-2015) with the
+=sitmo= and =vandercorput= engines (Balamuta, van den Berg and Stubner, 2021).
+
+** References
+
+- Salmon, J. K., Moraes, M. A., Dror, R. O., and Shaw, D. E. (2011). Parallel
+  random numbers: as easy as 1, 2, 3. /Proceedings of the International
+  Conference for High Performance Computing, Networking, Storage and Analysis
+  (SC11)/, ACM. [[https://doi.org/10.1145/2063384.2063405][doi:10.1145/2063384.2063405]].
+- Balamuta, J., van den Berg, T., and Stubner, R. (2021). /sitmo: Parallel
+  Pseudo Random Number Generator (PPRNG) 'sitmo' Header Files/, version 2.0.2.
+  [[https://cran.r-project.org/package=sitmo][CRAN]].
+
+* See also
+
+- [[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]] -- the use that needs addressed draws.
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][One scheduler draws every feed's gaps from its arrival law]] -- the use that needs independent streams.
+- [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]] -- why the factors must not depend on who asks.

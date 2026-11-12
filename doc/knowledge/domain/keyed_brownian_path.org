@@ -104,9 +104,14 @@ the bisection is: the same build reproduces it bit for bit.
 ** References
 
 - Glasserman, P. (2003). /Monte Carlo Methods in Financial Engineering/.
-  Springer. Section 3.1, the Brownian bridge construction.
+  Stochastic Modelling and Applied Probability 53. Springer. Section 3.1, the
+  Brownian bridge construction.
+  [[https://doi.org/10.1007/978-0-387-21617-1][doi:10.1007/978-0-387-21617-1]].
 - Karatzas, I., and Shreve, S. E. (1991). /Brownian Motion and Stochastic
-  Calculus/, 2nd ed. Springer. Section 2.3, the Lévy-Ciesielski construction.
+  Calculus/, 2nd ed. Graduate Texts in Mathematics 113. Springer. Section 2.3,
+  the Lévy-Ciesielski construction.
+  [[https://doi.org/10.1007/978-1-4612-0949-2][doi:10.1007/978-1-4612-0949-2]]
+  (the 1998 printing of the second edition).
 - Salmon, J. K., Moraes, M. A., Dror, R. O., and Shaw, D. E. (2011). Parallel
   random numbers: as easy as 1, 2, 3. /Proceedings of SC11/, ACM.
   [[https://doi.org/10.1145/2063384.2063405][doi:10.1145/2063384.2063405]].

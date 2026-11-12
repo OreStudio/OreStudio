@@ -70,8 +70,10 @@ measures count correlation; this measures signed correlation of the noise.
 
 - Epps, T. W. (1979). Comovements in stock prices in the very short run.
   /Journal of the American Statistical Association/, 74(366), 291-298.
+  [[https://doi.org/10.2307/2286325][doi:10.2307/2286325]].
 - Hayashi, T., and Yoshida, N. (2005). On covariance estimation of
   non-synchronously observed diffusion processes. /Bernoulli/, 11(2), 359-379.
+  [[https://doi.org/10.3150/bj/1116340299][doi:10.3150/bj/1116340299]].
 
 * See also
 

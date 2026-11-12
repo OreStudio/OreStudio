@@ -278,14 +278,15 @@ built from the spot and the two discount curves last published.
    processes. That result says two things. Bounded mean-reverting processes are
    the published answer for the dynamics. And the path of spot cannot set
    their level, reversion or volatility: curvature is a $Q$ quantity, the
-   market's price of tail risk. What is open is where those numbers come from.
-   This project has no private market data source, so they cannot be fitted to
-   option quotes. Three public routes remain: published estimates of smile
-   dynamics as stated priors; the spot model's own return distribution at each
-   expiry, whose mixture implies a convex smile, plus a stated risk premium;
-   and any FX option prices regulators publish, which need checking. Kienitz
-   (2026a) generates whole surfaces from a mixture fitted to surface history,
-   which needs that history. El Amrani, Jacquier and Martini (2019) show the
+   market's price of tail risk. Where those numbers come from, with no private
+   market data, is answered in
+   the option vol surfaces section of
+   [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]],
+   "Where the skew and curvature parameters come from": of three public
+   routes, the spot model's own distribution at each expiry plus a stated
+   premium, with its limits. Kienitz (2026a) generates whole
+   surfaces from a mixture fitted to surface history, which needs that history
+   and so is not open to this project. El Amrani, Jacquier and Martini (2019) show the
    limit of any such dynamics: no Itô dynamics beyond the trivial keeps an
    uncorrelated SSVI smile free of dynamic arbitrage up to expiry.
 2. *Calibration data for surfaces.* Public fixings exist for rates and spot.
@@ -298,13 +299,16 @@ built from the spot and the two discount curves last published.
 ** References
 
 - Andrès, H., Boumezoued, A., and Jourdain, B. (2023). The implied volatility
-  surface (also) is path-dependent. [[https://arxiv.org/abs/2312.15950][arXiv:2312.15950]],
-  revised October 2025.
+  surface (also) is path-dependent. arXiv preprint.
+  [[https://arxiv.org/abs/2312.15950][arXiv:2312.15950]].
 - El Amrani, M., Jacquier, A., and Martini, C. (2019). Dynamics of symmetric
   SSVI smiles and implied volatility bubbles.
   [[https://arxiv.org/abs/1909.10272][arXiv:1909.10272]], revised February 2021.
 - Karatzas, I., and Shreve, S. E. (1991). /Brownian Motion and Stochastic
-  Calculus/, 2nd ed. Springer. Theorem 3.3.16 (Lévy's characterisation).
+  Calculus/, 2nd ed. Graduate Texts in Mathematics 113. Springer.
+  Theorem 3.3.16 (Lévy's characterisation).
+  [[https://doi.org/10.1007/978-1-4612-0949-2][doi:10.1007/978-1-4612-0949-2]]
+  (the 1998 printing of the second edition).
 - Kienitz, J. (2026a). Gaussian generation of implied volatility surfaces:
   GenAI the Gaussian way, part 2. /Wilmott/, July 2026.
   [[https://doi.org/10.54946/wilm.12250][doi:10.54946/wilm.12250]]. The DOI
@@ -314,6 +318,7 @@ built from the spot and the two discount curves last published.
   /Risk/, Cutting Edge, 9 July 2026.
 - Lancaster, H. O. (1957). Some properties of the bivariate normal distribution
   considered in the form of a contingency table. /Biometrika/, 44(1/2), 289-292.
+  [[https://doi.org/10.2307/2333274][doi:10.2307/2333274]].
 
 * See also
 

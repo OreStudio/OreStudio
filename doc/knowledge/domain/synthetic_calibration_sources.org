@@ -178,7 +178,7 @@ The inference reads the Gram-Charlier smile of [[id:DCB34BC0-8125-43A1-B99F-074B
 
 The computation is native to =ores.analytics.quant=. =math/return_moments.hpp= holds the moments, the shrinkage, the region and the term scaling; =math/fx_delta.hpp= the deltas and strikes of the four delta conventions and the ATM strike; =math/fx_smile_quotes.hpp= the smile and its quotes in a convention, the broker butterfly solved so that the broker strangle prices on the smile as it does at the single volatility; and =math/fx_vol_derivation.hpp= the one entry point from a pair's daily returns and its expiries to its quotes.
 
-The quotes are plausible and not observed. A spot path carries no view of the events an option market prices, no risk premium beyond the authored multiplier, and, with clustered returns, more kurtosis at long horizons than the independent-day scaling gives.
+The quotes are plausible and not observed. A spot path carries no view of the events an option market prices, no risk premium beyond the authored multiplier, and, with clustered returns, more kurtosis at long horizons than the independent-day scaling gives. Why the curvature still comes from the spot model, the routes weighed against it and its limits are in the option vol surfaces section of [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]].
 
 ** How derived values relate to their sources
 

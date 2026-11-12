@@ -76,16 +76,6 @@ inline auto& auth_handler_lg() {
     return instance;
 }
 
-inline std::string auth_extract_bearer_token(const ores::nats::message& msg) {
-    auto it = msg.headers.find(std::string(ores::nats::headers::authorization));
-    if (it == msg.headers.end())
-        return {};
-    const auto& val = it->second;
-    if (!val.starts_with(ores::nats::headers::bearer_prefix))
-        return {};
-    return val.substr(ores::nats::headers::bearer_prefix.size());
-}
-
 /**
  * @brief Why refresh refuses a token, or nothing when it may be refreshed.
  *
@@ -1022,7 +1012,7 @@ public:
 
     void logout(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
-        auto token = auth_extract_bearer_token(msg);
+        auto token = ores::service::messaging::caller_token(msg);
         try {
             if (!token.empty()) {
                 auto claims_result = signer_.validate(token);
@@ -1084,7 +1074,7 @@ public:
     void refresh(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(auth_handler_lg(), msg);
 
-        const auto token = auth_extract_bearer_token(msg);
+        const auto token = ores::service::messaging::caller_token(msg);
         if (token.empty()) {
             reply(nats_,
                   msg,

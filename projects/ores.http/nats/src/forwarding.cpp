@@ -24,6 +24,21 @@
 
 namespace ores::http::forwarding {
 
+std::optional<std::string> caller_session_id(const ores::http::domain::http_request& req) {
+    const auto& user = req.authenticated_user;
+    if (!user || !user->session_id || user->session_id->empty())
+        return std::nullopt;
+    return user->session_id;
+}
+
+ores::nats::service::nats_client caller_client(const ores::http::domain::http_request& req,
+                                               ores::nats::service::nats_client& session) {
+    auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
+    if (const auto id = caller_session_id(req))
+        return delegated.with_session_id(*id);
+    return delegated;
+}
+
 using namespace ores::logging;
 using ores::http::domain::http_response;
 using ores::http::domain::http_status;

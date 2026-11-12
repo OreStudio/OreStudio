@@ -104,21 +104,30 @@ inline constexpr std::string_view update = "system.update";
 } // namespace change_reasons
 
 /**
- * @brief The bearer token an inbound message carries, or an empty string.
+ * @brief The token of the caller an inbound message speaks for, or an empty
+ * string.
  *
- * A handler that has to know its caller's account validates this token itself.
- * The request context names who the caller is in words -- the actor's name and
- * the tenant and party the session is in -- and an account identifier is not
- * among them, so a handler that needs one reads the token's subject.
+ * A service that forwards a caller's request sends its own token as the
+ * Authorization and the caller's as the X-Delegated-Authorization, so the
+ * delegated token names the caller when the message carries one, as
+ * make_request_context reads it. A delegated header that is not a bearer token
+ * names nobody. A handler that has to know its caller's account validates this
+ * token itself: the request context names the caller in words -- the actor's
+ * name and the tenant and party the session is in -- and an account identifier
+ * is not among them, so a handler that needs one reads the token's subject.
  */
-inline std::string bearer_token(const ores::nats::message& msg) {
+inline std::string caller_token(const ores::nats::message& msg) {
+    const auto token_of = [](const std::string& value) {
+        return value.starts_with(ores::nats::headers::bearer_prefix) ?
+                   value.substr(ores::nats::headers::bearer_prefix.size()) :
+                   std::string();
+    };
+    const auto delegated =
+        msg.headers.find(std::string(ores::nats::headers::delegated_authorization));
+    if (delegated != msg.headers.end())
+        return token_of(delegated->second);
     const auto found = msg.headers.find(std::string(ores::nats::headers::authorization));
-    if (found == msg.headers.end())
-        return {};
-    const auto& value = found->second;
-    if (!value.starts_with(ores::nats::headers::bearer_prefix))
-        return {};
-    return value.substr(ores::nats::headers::bearer_prefix.size());
+    return found == msg.headers.end() ? std::string() : token_of(found->second);
 }
 
 /**

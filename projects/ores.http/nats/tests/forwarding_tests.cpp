@@ -86,3 +86,22 @@ TEST_CASE("forwarding_keeps_a_transport_failure_out_of_the_body", "[forwarding]"
     CHECK(response.body.find("socket detail") == std::string::npos);
     CHECK(response.body.find("\"code\":\"internal\"") != std::string::npos);
 }
+
+TEST_CASE("forwarding_names_the_session_the_callers_token_states", "[forwarding]") {
+    ores::http::domain::http_request req;
+    CHECK_FALSE(ores::http::forwarding::caller_session_id(req).has_value());
+
+    ores::security::jwt::jwt_claims claims;
+    claims.subject = "tenant_admin";
+    req.authenticated_user = claims;
+    CHECK_FALSE(ores::http::forwarding::caller_session_id(req).has_value());
+
+    claims.session_id = "";
+    req.authenticated_user = claims;
+    CHECK_FALSE(ores::http::forwarding::caller_session_id(req).has_value());
+
+    claims.session_id = "f07ae806-ca59-4355-8086-121dd7d6ff03";
+    req.authenticated_user = claims;
+    CHECK(ores::http::forwarding::caller_session_id(req) ==
+          std::optional<std::string>("f07ae806-ca59-4355-8086-121dd7d6ff03"));
+}

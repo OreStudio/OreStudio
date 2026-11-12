@@ -410,7 +410,7 @@ public:
             // caller in words -- its name, its tenant and its party -- and no
             // account identifier, so the identifier comes from the token's
             // subject, which is the session's account.
-            const auto claims = signer_.validate(ores::service::messaging::bearer_token(msg));
+            const auto claims = signer_.validate(ores::service::messaging::caller_token(msg));
             if (!claims) {
                 refuse("The authorization token could not be read.");
                 return;

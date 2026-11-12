@@ -682,8 +682,8 @@ auto read_commodity_basket_variance_swap(const record_reader& trade) -> commodit
     r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
     r.quantity = decimal_as_double(*data, "Notional").value_or(0.0);
     r.variance_strike = decimal_as_double(*data, "Strike");
-    if (const auto squared = data->flag("SquaredPayoff"))
-        r.moment_type = *squared ? "Variance" : "Volatility";
+    if (const auto squared = data->text("SquaredPayoff"))
+        r.moment_type = *squared == "true" ? "Variance" : "Volatility";
     result.constituents = read_commodity_basket(*data);
     name_first_constituent(result);
     return result;
@@ -1208,7 +1208,9 @@ void write_commodity_basket_variance_swap(record_writer& trade,
     write_commodity_basket(data, carrier.constituents);
     option_block::write_product_schedule(
         data, carrier, "ValuationSchedule", "valuation_schedule");
-    data.set_flag("SquaredPayoff", v.moment_type.value_or("Variance") != "Volatility");
+    data.set_text("SquaredPayoff",
+                  commodity_instrument_projection_flag_text(v.moment_type.value_or("Variance") !=
+                                                            "Volatility"));
     data.set_spelling("Currency", v.currency, "currency");
 }
 

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.compute.core/repository/work_total_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <string>
@@ -61,23 +61,24 @@ void work_total_repository::write(context ctx, const work_totals& totals) {
             $8::int, $9::int, $10::int,
             $11::int, $12::int, $13::int)
     )";
-    execute_parameterized_command(ctx,
-                                  sql,
-                                  {boost::uuids::to_string(boost::uuids::random_generator()()),
-                                   std::to_string(micros_of(totals.sampled_at)),
-                                   std::to_string(totals.tenants_counted),
-                                   std::to_string(totals.results_inactive),
-                                   std::to_string(totals.results_unsent),
-                                   std::to_string(totals.results_in_progress),
-                                   std::to_string(totals.results_done),
-                                   std::to_string(totals.total_workunits),
-                                   std::to_string(totals.total_batches),
-                                   std::to_string(totals.active_batches),
-                                   std::to_string(totals.outcomes_success),
-                                   std::to_string(totals.outcomes_client_error),
-                                   std::to_string(totals.outcomes_no_reply)},
-                                  lg(),
-                                  "writing the work totals of the grid");
+    ores::database::query_builder::execute_parameterized_command(
+        ctx,
+        sql,
+        {boost::uuids::to_string(boost::uuids::random_generator()()),
+         std::to_string(micros_of(totals.sampled_at)),
+         std::to_string(totals.tenants_counted),
+         std::to_string(totals.results_inactive),
+         std::to_string(totals.results_unsent),
+         std::to_string(totals.results_in_progress),
+         std::to_string(totals.results_done),
+         std::to_string(totals.total_workunits),
+         std::to_string(totals.total_batches),
+         std::to_string(totals.active_batches),
+         std::to_string(totals.outcomes_success),
+         std::to_string(totals.outcomes_client_error),
+         std::to_string(totals.outcomes_no_reply)},
+        lg(),
+        "writing the work totals of the grid");
 }
 
 std::optional<work_totals> work_total_repository::read_newest(context ctx) {
@@ -90,8 +91,8 @@ std::optional<work_totals> work_total_repository::read_newest(context ctx) {
         ORDER BY sampled_at DESC
         LIMIT 1
     )";
-    const auto rows =
-        execute_parameterized_multi_column_query(ctx, sql, {}, lg(), "reading the work totals");
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx, sql, {}, lg(), "reading the work totals");
     if (rows.empty() || rows.front().size() < 12)
         return std::nullopt;
 

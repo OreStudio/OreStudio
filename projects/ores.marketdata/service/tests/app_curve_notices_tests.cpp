@@ -18,7 +18,7 @@
  *
  */
 #include "curve_publish_fixture.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
@@ -102,7 +102,7 @@ public:
              {"delete from ores_iam_account_parties_tbl where account_id = $1::uuid",
               "delete from ores_iam_accounts_tbl where id = $1::uuid"}) {
             try {
-                ores::database::repository::execute_parameterized_string_query(
+                ores::database::query_builder::execute_parameterized_string_query(
                     ctx_,
                     statement,
                     {boost::uuids::to_string(account_.id)},

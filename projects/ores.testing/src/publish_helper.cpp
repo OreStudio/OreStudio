@@ -18,7 +18,7 @@
  *
  */
 #include "ores.testing/publish_helper.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <string>
 #include <vector>
@@ -43,7 +43,7 @@ bool publish_dataset(const ores::database::context& ctx,
     // The dataset row and the function's result rows are cross-joined, so the
     // count is zero exactly when the tree carries no such dataset. The function
     // itself runs as a side effect whether or not it returns rows.
-    const auto counts = ores::database::repository::execute_parameterized_string_query(
+    const auto counts = ores::database::query_builder::execute_parameterized_string_query(
         ctx,
         "SELECT count(*)::text FROM ores_dq_datasets_tbl d, " + publish_function +
             "(d.id, $1::uuid) p WHERE d.code = $2"

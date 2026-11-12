@@ -18,7 +18,7 @@
  *
  */
 #include "report_instance_test_fixture.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.reporting.api/generators/report_instance_generator.hpp"
@@ -68,7 +68,7 @@ write_party_and_scope_context(ores::testing::scoped_database_helper& h,
 
 std::map<std::string, boost::uuids::uuid> lifecycle_states(const ores::database::context& ctx,
                                                            ores::logging::logger_t& lg) {
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         "SELECT s.name, s.id::text"
         " FROM ores_dq_fsm_states_tbl s"

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <stdexcept>
 
@@ -44,16 +44,15 @@ bool tenant_context::is_uuid(const std::string& str) {
 utility::uuid::tenant_id tenant_context::lookup_by_code(const context& ctx,
                                                         const std::string& code) {
     using namespace ores::logging;
-    using ores::database::repository::execute_parameterized_string_query;
 
     BOOST_LOG_SEV(tenant_context_lg(), debug) << "Looking up tenant by code: " << code;
 
-    const auto results =
-        execute_parameterized_string_query(ctx,
-                                           "SELECT ores_iam_tenant_by_code_fn($1)::text",
-                                           {code},
-                                           tenant_context_lg(),
-                                           "Looking up tenant by code");
+    const auto results = ores::database::query_builder::execute_parameterized_string_query(
+        ctx,
+        "SELECT ores_iam_tenant_by_code_fn($1)::text",
+        {code},
+        tenant_context_lg(),
+        "Looking up tenant by code");
 
     if (results.empty()) {
         throw std::runtime_error("No active tenant found with code: " + code);
@@ -72,16 +71,15 @@ utility::uuid::tenant_id tenant_context::lookup_by_code(const context& ctx,
 utility::uuid::tenant_id tenant_context::lookup_by_hostname(const context& ctx,
                                                             const std::string& hostname) {
     using namespace ores::logging;
-    using ores::database::repository::execute_parameterized_string_query;
 
     BOOST_LOG_SEV(tenant_context_lg(), debug) << "Looking up tenant by hostname: " << hostname;
 
-    const auto results =
-        execute_parameterized_string_query(ctx,
-                                           "SELECT ores_iam_tenant_by_hostname_fn($1)::text",
-                                           {hostname},
-                                           tenant_context_lg(),
-                                           "Looking up tenant by hostname");
+    const auto results = ores::database::query_builder::execute_parameterized_string_query(
+        ctx,
+        "SELECT ores_iam_tenant_by_hostname_fn($1)::text",
+        {hostname},
+        tenant_context_lg(),
+        "Looking up tenant by hostname");
 
     if (results.empty()) {
         throw std::runtime_error("No active tenant found with hostname: " + hostname);
@@ -100,17 +98,16 @@ utility::uuid::tenant_id tenant_context::lookup_by_hostname(const context& ctx,
 std::string tenant_context::lookup_name(const context& ctx,
                                         const utility::uuid::tenant_id& tenant_id) {
     using namespace ores::logging;
-    using ores::database::repository::execute_parameterized_string_query;
 
     const auto tenant_id_str = tenant_id.to_string();
     BOOST_LOG_SEV(tenant_context_lg(), debug) << "Looking up tenant name by ID: " << tenant_id_str;
 
-    const auto results =
-        execute_parameterized_string_query(ctx,
-                                           "SELECT ores_iam_tenant_name_by_id_fn($1::uuid)",
-                                           {tenant_id_str},
-                                           tenant_context_lg(),
-                                           "Looking up tenant name by ID");
+    const auto results = ores::database::query_builder::execute_parameterized_string_query(
+        ctx,
+        "SELECT ores_iam_tenant_name_by_id_fn($1::uuid)",
+        {tenant_id_str},
+        tenant_context_lg(),
+        "Looking up tenant name by ID");
 
     if (results.empty()) {
         throw std::runtime_error("No active tenant found with ID: " + tenant_id_str);

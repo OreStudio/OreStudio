@@ -18,7 +18,7 @@
  *
  */
 #include "book_proposal_fixtures.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
@@ -161,7 +161,7 @@ TEST_CASE("the_refdata_service_user_reads_who_holds_a_permission", "[book_propos
     CHECK_NOTHROW(center.holders_of("inbox::approvals:decide_operations"));
 
     auto lg = ores::logging::make_logger("ores.refdata.tests");
-    CHECK_NOTHROW(ores::database::repository::execute_parameterized_multi_column_query(
+    CHECK_NOTHROW(ores::database::query_builder::execute_parameterized_multi_column_query(
         service_ctx,
         "select code from ores_iam_get_effective_permissions_fn($1::uuid)",
         {"00000000-0000-4000-8000-000000000001"},

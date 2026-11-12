@@ -18,7 +18,7 @@
  *
  */
 #include "ores.variability.core/service/system_settings_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.variability.api/domain/system_settings.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -28,7 +28,6 @@
 namespace ores::variability::service {
 
 using namespace ores::logging;
-using ores::database::repository::execute_parameterized_multi_column_query;
 
 namespace {
 
@@ -83,18 +82,19 @@ std::vector<domain::system_setting> system_settings_service::get_all() {
     BOOST_LOG_SEV(lg(), debug) << "Reading system settings for tenant " << tenant_id_ << " party "
                                << (party_id_.empty() ? "(system)" : party_id_);
 
-    const auto rows =
-        party_id_.empty() ?
-            execute_parameterized_multi_column_query(ctx_,
-                                                     tenant_scope_sql,
-                                                     {tenant_id_},
-                                                     lg(),
-                                                     "Reading system settings for one tenant") :
-            execute_parameterized_multi_column_query(ctx_,
-                                                     party_scope_sql,
-                                                     {tenant_id_, party_id_},
-                                                     lg(),
-                                                     "Reading system settings for one party");
+    const auto rows = party_id_.empty() ?
+                          ores::database::query_builder::execute_parameterized_multi_column_query(
+                              ctx_,
+                              tenant_scope_sql,
+                              {tenant_id_},
+                              lg(),
+                              "Reading system settings for one tenant") :
+                          ores::database::query_builder::execute_parameterized_multi_column_query(
+                              ctx_,
+                              party_scope_sql,
+                              {tenant_id_, party_id_},
+                              lg(),
+                              "Reading system settings for one party");
 
     std::vector<domain::system_setting> settings;
     settings.reserve(rows.size());

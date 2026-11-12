@@ -18,7 +18,7 @@
  *
  */
 #include "ores.testing/database_helper.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/party_context.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.testing/test_database_manager.hpp"
@@ -104,7 +104,7 @@ void database_helper::seed_rbac() {
 
     for (const auto& sql : statements) {
         try {
-            ores::database::repository::execute_raw_command(
+            ores::database::query_builder::execute_raw_command(
                 context_, sql, lg(), "Seeding RBAC data");
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Failed to seed RBAC data: " << e.what();

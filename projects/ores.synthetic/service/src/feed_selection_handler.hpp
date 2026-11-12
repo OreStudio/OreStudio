@@ -25,7 +25,7 @@
 #include "generator_fleet.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -177,7 +177,7 @@ private:
     matching_ids(const ores::database::context& ctx,
                  const ores::synthetic::feed::feed_filter& filter) const {
         const auto running = generators_.running_source_names();
-        const auto rows = ores::database::repository::execute_raw_multi_column_query(
+        const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
             ctx,
             "select id from (" + ores::synthetic::feed::feeds_query() + ") f where " +
                 ores::synthetic::feed::where_clause(

@@ -18,7 +18,7 @@
  *
  */
 #include "corpus_files.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/ore_index_codec.hpp"
@@ -153,8 +153,8 @@ std::vector<dated_value> triples_of(ores::database::context ctx,
                                     const std::string& tag,
                                     const std::string& what) {
     auto lg(ores::logging::make_logger(test_suite));
-    const auto rows =
-        ores::database::repository::execute_parameterized_string_query(ctx, sql, {tag}, lg, what);
+    const auto rows = ores::database::query_builder::execute_parameterized_string_query(
+        ctx, sql, {tag}, lg, what);
     std::vector<dated_value> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.scheduler.core/repository/job_instance_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.scheduler.core/repository/job_instance_mapper.hpp"
 #include <boost/lexical_cast.hpp>
@@ -91,7 +91,7 @@ std::int64_t job_instance_repository::write_started(context ctx, const domain::j
         "   $6::timestamptz, $7::timestamptz) "
         "RETURNING id";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         insert_sql,
         {tenant_id, party_id, job_def_id, inst.action_type, status, triggered_at, started_at},
@@ -129,11 +129,12 @@ void job_instance_repository::write_completed(
         "WHERE id = $4::bigint "
         "  AND triggered_at = $5::timestamptz";
 
-    execute_parameterized_command(ctx,
-                                  update_sql,
-                                  {status_str, completed_at, error, id_str, triggered_at_str},
-                                  lg(),
-                                  "Updating job instance completion.");
+    ores::database::query_builder::execute_parameterized_command(
+        ctx,
+        update_sql,
+        {status_str, completed_at, error, id_str, triggered_at_str},
+        lg(),
+        "Updating job instance completion.");
 }
 
 std::vector<domain::job_instance> job_instance_repository::read_latest(
@@ -152,7 +153,7 @@ std::vector<domain::job_instance> job_instance_repository::read_latest(
                             "ORDER BY triggered_at DESC "
                             "LIMIT $2::bigint";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {job_def_id_str, limit_str}, lg(), "Reading latest job instances.");
 
     auto result = parse_rows(rows);
@@ -175,7 +176,7 @@ std::vector<domain::job_instance> job_instance_repository::read_all_latest(conte
                             "ORDER BY triggered_at DESC "
                             "LIMIT $1::bigint";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {limit_str}, lg(), "Reading all latest job instances.");
 
     auto result = parse_rows(rows);
@@ -195,7 +196,7 @@ job_instance_repository::last_run_at(context ctx, const boost::uuids::uuid& job_
                             "ORDER BY triggered_at DESC "
                             "LIMIT 1";
 
-    const auto rows = execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, {job_def_id_str}, lg(), "Querying last_run_at for job definition.");
 
     if (rows.empty() || rows[0].empty() || !rows[0][0])

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_counterparty.hpp"
@@ -77,7 +77,7 @@ std::vector<boost::uuids::uuid> compute_visible_parties(ores::database::context&
                                                         const ores::utility::uuid::tenant_id& tid,
                                                         const boost::uuids::uuid& party_id) {
     auto lg(make_logger(test_suite));
-    auto rows = ores::database::repository::execute_parameterized_string_query(
+    auto rows = ores::database::query_builder::execute_parameterized_string_query(
         ctx,
         "SELECT unnest(ores_refdata_visible_party_ids_fn("
         "$1::uuid, $2::uuid))::text",

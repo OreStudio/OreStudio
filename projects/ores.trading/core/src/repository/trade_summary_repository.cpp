@@ -24,7 +24,6 @@
  */
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/range_bound.hpp"
 #include "ores.logging/boost_severity.hpp"
@@ -648,7 +647,7 @@ std::vector<std::pair<std::string, std::uint64_t>> trade_summary_repository::cou
                                     "'.");
     }
 
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx, sql, params, lg(), "Counting the blotter's rail by " + dimension);
 
     std::vector<std::pair<std::string, std::uint64_t>> counts;

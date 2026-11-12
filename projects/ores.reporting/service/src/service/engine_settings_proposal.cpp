@@ -21,7 +21,7 @@
 #include "ores.database/domain/context_transact.hpp"
 #include "ores.database/pq/statement.hpp"
 #include "ores.database/pq/transaction.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
@@ -171,7 +171,7 @@ void validate(const ores::database::context& ctx,
     const std::string sql = "select found::text, value_set_code, source_kind, is_in_set::text"
                             " from ores_reporting_setting_value_verdict_fn($1, $2)";
 
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
         {"Setup:" + setting.ore_name, value},

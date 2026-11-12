@@ -18,7 +18,7 @@
  *
  */
 #include "ores.refdata.service/service/book_proposal.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"

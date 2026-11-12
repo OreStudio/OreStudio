@@ -21,7 +21,7 @@
 #define ORES_IAM_MESSAGING_AUTH_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.iam.api/domain/role_codec.hpp"

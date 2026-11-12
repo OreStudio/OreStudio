@@ -20,7 +20,7 @@
 #ifndef ORES_REFDATA_CORE_TESTS_BOOK_PROPOSAL_FIXTURES_HPP
 #define ORES_REFDATA_CORE_TESTS_BOOK_PROPOSAL_FIXTURES_HPP
 
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/approval_policy_repository.hpp"

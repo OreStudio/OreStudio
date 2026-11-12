@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :database:data_path:clean_up:data_model_clean_up:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/retire-the-raw-query-helpers
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Every statement a service runs goes through the pool and a transaction, as [[id:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:14807059-043D-4866-974D-B835151D61E8][Data model clean up]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -44,9 +44,14 @@ Every statement a service runs goes through the pool and a transaction, as [[id:
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=query_builder= already has three of the shapes, with the same names and arguments as the raw helpers. It gains the other three: =execute_raw_string_query=, =execute_raw_command= and =execute_parameterized_command=. The move is then a change of namespace, which a script makes.
+
+- Every shape runs one unnamed statement with text results inside =transact=. A context bound to a unit of work runs on its transaction; a free context takes a pooled connection. An unnamed statement is not cached, so SQL that joins literals into its text does not grow the prepared-statement cache, which the shared =prepared()= cache would.
+- An unnamed statement is one statement. No caller sends two, sets a session setting or controls its transaction; a grep of the callers' SQL found none.
+- A string query skips a NULL row, as both raw string helpers did. The eight callers already on =query_builder= read columns that are never NULL.
+- A failure throws =repository_exception=, as the generated repositories' reads and writes do. It carries the SQLSTATE and its class from =pq::store_error=, so the first administrator create still answers fixed words by SQLSTATE.
+- The script =retire_raw_query_helpers.py= beside this task rewrites every call to its =ores::database::query_builder= name, drops the using-declarations of the old names and adds the =query_builder= include where it is missing. The codegen templates already call =query_builder=.
+- The raw helpers, the transaction stopgap and =execute_raw_grouped_query= are deleted from =bitemporal_operations=.
 
 * Measurements
 
@@ -60,11 +65,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files the codemod changes | 98 | =python3 retire_raw_query_helpers.py .= | 0e95997062 |
+| Files a second run changes | 0 | =python3 retire_raw_query_helpers.py .= | 0e95997062 plus the first run |
+| Calls to the hand-written SQL shapes outside =ores.database= | 215 | =grep -rnE '\bexecute_(raw\|parameterized)_[a-z_]+\(' projects --include=*.cpp --include=*.hpp \| grep -v /ores.database/ \| wc -l= | 0e95997062 plus this change |
+| Components whose generated files differ from their models | 0 | =python3 projects/ores.codegen/scripts/check_component_drift.py --all= | 0e95997062 plus this change |
 
 * Notes
 
 Found while fixing auto-approval inside a unit of work: the inbox decided a request through =repository::execute_parameterized_multi_column_query=, which opened its own connection and could not see the request its caller's transaction had just written. The publish lifecycle task routes the raw helpers onto a bound transaction as a stopgap; this task removes them. At the stopgap's commit the seven helpers had about 195 call sites, a few of which already resolve to =query_builder=.
+
+The stopgap ran its statements through the shared =prepared()= cache, which names one server-side statement per distinct SQL text and never frees it; hand-written SQL that joins literals into its text grows it without bound. The shapes here run unnamed, which removes that.
+
+Every failure now throws =repository_exception=. The first administrator create read the SQLSTATE from =pq::store_error=, so =repository_exception= now carries the SQLSTATE and the handler catches it. The geolocation lookup caught =std::runtime_error= to answer =lookup_failed=; it now catches =repository_exception=. A caller further up that catches =std::runtime_error= around a repository call is not visible to a grep; the full suite exercises those paths.
+
+The same change fixes the codegen drift the publish lifecycle's first PR left on main: the trading core links the inbox core publicly, and the market observation model carries the manual-point order, its comments and the all-series merge that the generated repository already had.
 
 * Test Scenarios
 

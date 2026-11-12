@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -65,7 +65,7 @@ messaging::withdraw_curve_response refuse(std::string why) {
  */
 bool request_already_ended_a_set(const ores::database::context& ctx,
                                  const std::string& request_id) {
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         "select count(*)::text"
         " from ores_marketdata_curve_publishes_tbl"

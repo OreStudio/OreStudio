@@ -18,7 +18,7 @@
  *
  */
 #include "ores.dq.core/service/publish_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -328,7 +328,8 @@ void publish_service::record_publication(const domain::publication_result& resul
         published_by);
 
     try {
-        execute_raw_command(ctx_, sql, lg(), "Recording publication");
+        ores::database::query_builder::execute_raw_command(
+            ctx_, sql, lg(), "Recording publication");
         BOOST_LOG_SEV(lg(), debug) << "Publication recorded successfully";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to record publication: " << e.what();
@@ -361,7 +362,7 @@ publish_service::call_populate_function(const domain::dataset& dataset,
                                  mode_str);
 
     try {
-        auto rows = execute_raw_multi_column_query(
+        auto rows = ores::database::query_builder::execute_raw_multi_column_query(
             ctx_, sql, lg(), std::format("Calling {}", function_name));
 
         // Aggregate results from the function
@@ -464,7 +465,7 @@ publish_service::list_bundle_publishable_datasets(const std::string& bundle_code
     const auto sql = "SELECT dataset_id, optional FROM ores_dq_bundle_datasets_list_fn($1) "
                      "WHERE dataset_id IS NOT NULL ORDER BY display_order";
 
-    auto rows = execute_parameterized_multi_column_query(
+    auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_, sql, {bundle_code}, lg(), std::format("Listing bundle members for {}", bundle_code));
 
     std::vector<boost::uuids::uuid> member_ids;

@@ -23,7 +23,7 @@
 #include "feed_kind_registry.hpp"
 #include "generator_fleet.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -227,7 +227,7 @@ private:
     }
 
     rows_t query(const ores::database::context& ctx, const std::string& sql) const {
-        return ores::database::repository::execute_raw_multi_column_query(
+        return ores::database::query_builder::execute_raw_multi_column_query(
             ctx, sql, feed_overview_handler_lg(), "Reading the feed folders");
     }
 

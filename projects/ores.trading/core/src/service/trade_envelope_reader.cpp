@@ -18,7 +18,7 @@
  *
  */
 #include "ores.trading.core/service/trade_envelope_reader.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "shared_helpers.hpp"
 #include <algorithm>
 #include <optional>
@@ -37,7 +37,6 @@ trade_envelope_reader::trade_envelope_reader(context ctx)
 
 std::unordered_map<std::string, domain::trade_envelope_data>
 trade_envelope_reader::read_envelopes(const std::vector<std::string>& trade_ids) const {
-    using database::repository::execute_parameterized_multi_column_query;
 
     std::unordered_map<std::string, domain::trade_envelope_data> result;
     if (trade_ids.empty())
@@ -50,7 +49,7 @@ trade_envelope_reader::read_envelopes(const std::vector<std::string>& trade_ids)
     std::unordered_map<std::string, std::vector<std::string>> portfolio_names;
 
     const auto ids = to_uuid_array(trade_ids);
-    for (const auto& row : execute_parameterized_multi_column_query(
+    for (const auto& row : ores::database::query_builder::execute_parameterized_multi_column_query(
              ctx_,
              "SELECT trade_id::text, counter_party, netting_set_id, counterparty_name, "
              "counterparty_lei, counterparty_alias, netting_set_code, netting_set_alias, "
@@ -72,7 +71,7 @@ trade_envelope_reader::read_envelopes(const std::vector<std::string>& trade_ids)
     if (result.empty())
         return result;
 
-    for (const auto& row : execute_parameterized_multi_column_query(
+    for (const auto& row : ores::database::query_builder::execute_parameterized_multi_column_query(
              ctx_,
              "SELECT trade_id::text, portfolio_id::text, name "
              "FROM ores_trading_trade_portfolio_names_fn($1::uuid[])",
@@ -89,7 +88,7 @@ trade_envelope_reader::read_envelopes(const std::vector<std::string>& trade_ids)
         portfolio_names[*row[0]].push_back(row[2].value_or(""));
     }
 
-    for (const auto& row : execute_parameterized_multi_column_query(
+    for (const auto& row : ores::database::query_builder::execute_parameterized_multi_column_query(
              ctx_,
              "SELECT trade_id::text, name, value FROM ores_trading_trade_additional_fields_tbl "
              "WHERE tenant_id = ores_iam_current_tenant_id_fn() "
@@ -132,5 +131,4 @@ trade_envelope_reader::read_envelopes(const std::vector<std::string>& trade_ids)
     BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " trade envelopes.";
     return result;
 }
-
 }

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include "ores.telemetry.core/messaging/nats_samples_protocol.hpp"
@@ -308,13 +308,13 @@ TEST_CASE("list_service_roster_states_every_expected_instance", "[repository]") 
         "INSERT INTO ores_telemetry_expected_services_tbl "
         "(service_name, replicas, display_name, description, service_account) "
         "VALUES ($1, $2::integer, $3, $4, nullif($5, ''))";
-    ores::database::repository::execute_parameterized_command(
+    ores::database::query_builder::execute_parameterized_command(
         h.context(),
         insert_expected,
         {reporting, "2", "Roster Test Service", "Reports for the test.", "roster_test_user"},
         lg,
         "Expecting the reporting service");
-    ores::database::repository::execute_parameterized_command(
+    ores::database::query_builder::execute_parameterized_command(
         h.context(),
         insert_expected,
         {silent, "1", "Silent Test Service", "Never reports.", ""},
@@ -370,7 +370,7 @@ TEST_CASE("list_service_roster_states_every_expected_instance", "[repository]") 
     CHECK_FALSE(silent_slots[0].instance_id.has_value());
     CHECK_FALSE(silent_slots[0].sampled_at.has_value());
 
-    ores::database::repository::execute_parameterized_command(
+    ores::database::query_builder::execute_parameterized_command(
         h.context(),
         "DELETE FROM ores_telemetry_expected_services_tbl WHERE service_name IN ($1, $2)",
         {reporting, silent},

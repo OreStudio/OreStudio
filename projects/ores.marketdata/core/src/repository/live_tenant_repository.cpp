@@ -18,17 +18,16 @@
  *
  */
 #include "ores.marketdata.core/repository/live_tenant_repository.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include <boost/uuid/string_generator.hpp>
 
 namespace ores::marketdata::repository {
 
-using ores::database::repository::execute_parameterized_multi_column_query;
 
 std::set<boost::uuids::uuid> live_tenant_repository::read(context ctx) {
     std::set<boost::uuids::uuid> live;
     const boost::uuids::string_generator parse;
-    for (const auto& row : execute_parameterized_multi_column_query(
+    for (const auto& row : ores::database::query_builder::execute_parameterized_multi_column_query(
              ctx, "select id from ores_iam_live_tenant_ids_fn()", {}, lg(), "Reading live tenants"))
         if (!row.empty() && row[0])
             live.insert(parse(*row[0]));

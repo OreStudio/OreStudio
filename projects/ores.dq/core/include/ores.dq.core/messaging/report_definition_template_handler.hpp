@@ -21,7 +21,7 @@
 #define ORES_DQ_CORE_MESSAGING_REPORT_DEFINITION_TEMPLATE_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -82,21 +82,22 @@ public:
         list_dq_report_definition_templates_response resp;
         try {
             using namespace ores::database::repository;
-            const auto rows = execute_parameterized_multi_column_query(
-                sys_ctx,
-                "SELECT a.name, a.description, a.report_type,"
-                "       a.schedule_expression, a.concurrency_policy, a.display_order"
-                " FROM ores_dq_report_definitions_artefact_tbl a"
-                " JOIN ores_dq_datasets_tbl d ON d.id = a.dataset_id"
-                "   AND d.valid_to = ores_utility_infinity_timestamp_fn()"
-                "   AND d.tenant_id = ores_utility_system_tenant_id_fn()"
-                " JOIN ores_dq_dataset_bundle_members_tbl m ON m.dataset_code = d.code"
-                "   AND m.tenant_id = ores_utility_system_tenant_id_fn()"
-                " WHERE m.bundle_code = $1"
-                " ORDER BY a.display_order, a.name",
-                {req->bundle_code},
-                dq_report_definition_template_handler_lg(),
-                "listing report definition templates for bundle: " + req->bundle_code);
+            const auto rows =
+                ores::database::query_builder::execute_parameterized_multi_column_query(
+                    sys_ctx,
+                    "SELECT a.name, a.description, a.report_type,"
+                    "       a.schedule_expression, a.concurrency_policy, a.display_order"
+                    " FROM ores_dq_report_definitions_artefact_tbl a"
+                    " JOIN ores_dq_datasets_tbl d ON d.id = a.dataset_id"
+                    "   AND d.valid_to = ores_utility_infinity_timestamp_fn()"
+                    "   AND d.tenant_id = ores_utility_system_tenant_id_fn()"
+                    " JOIN ores_dq_dataset_bundle_members_tbl m ON m.dataset_code = d.code"
+                    "   AND m.tenant_id = ores_utility_system_tenant_id_fn()"
+                    " WHERE m.bundle_code = $1"
+                    " ORDER BY a.display_order, a.name",
+                    {req->bundle_code},
+                    dq_report_definition_template_handler_lg(),
+                    "listing report definition templates for bundle: " + req->bundle_code);
             for (const auto& row : rows) {
                 dq_report_definition_template t;
                 if (row.size() > 0 && row[0])

@@ -19,7 +19,7 @@
 #ifndef ORES_IAM_CORE_TESTS_TEST_HELPERS_HPP_
 #define ORES_IAM_CORE_TESTS_TEST_HELPERS_HPP_
 
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "test_suite.hpp"
@@ -63,7 +63,7 @@ inline auto& test_helpers_lg() {
 inline void run(ores::testing::scoped_database_helper& h,
                 const std::string& sql,
                 const std::vector<std::string>& params) {
-    ores::database::repository::execute_parameterized_command(
+    ores::database::query_builder::execute_parameterized_command(
         acting(h), sql, params, test_helpers_lg(), sql);
 }
 

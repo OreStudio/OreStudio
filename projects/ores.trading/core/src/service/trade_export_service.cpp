@@ -18,7 +18,7 @@
  *
  */
 #include "ores.trading.core/service/trade_export_service.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_notional_repository.hpp"
@@ -558,8 +558,7 @@ trade_export_service::export_node(const std::string& node_id,
                                   std::uint32_t offset,
                                   std::uint32_t limit,
                                   domain::instrument_batch& instruments) const {
-    using database::repository::execute_parameterized_string_query;
-    const auto trade_ids = execute_parameterized_string_query(
+    const auto trade_ids = ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "SELECT b.trade_id::text FROM ores_trading_trade_bookings_tbl b "
         "WHERE b.tenant_id = $1::uuid "
@@ -579,10 +578,9 @@ trade_export_service::export_books(const std::vector<std::string>& book_ids,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    domain::instrument_batch& instruments) const {
-    using database::repository::execute_parameterized_string_query;
     if (book_ids.empty())
         return {};
-    const auto trade_ids = execute_parameterized_string_query(
+    const auto trade_ids = ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "SELECT b.trade_id::text FROM ores_trading_trade_bookings_tbl b "
         "WHERE b.tenant_id = $1::uuid "
@@ -601,8 +599,6 @@ trade_export_service::export_books(const std::vector<std::string>& book_ids,
 std::vector<trade_export_item>
 trade_export_service::export_trades(const std::vector<std::string>& page_ids,
                                     domain::instrument_batch& instruments) const {
-    using database::repository::execute_parameterized_multi_column_query;
-    using database::repository::execute_parameterized_string_query;
     if (page_ids.empty())
         return {};
 
@@ -614,7 +610,7 @@ trade_export_service::export_trades(const std::vector<std::string>& page_ids,
      * and the writer leaves it out of this one.
      */
     auto trade_ids = page_ids;
-    for (auto& id : execute_parameterized_string_query(
+    for (auto& id : ores::database::query_builder::execute_parameterized_string_query(
              ctx_,
              "SELECT DISTINCT component.trade_id::text "
              "FROM ores_trading_structure_members_tbl composite "
@@ -634,7 +630,7 @@ trade_export_service::export_trades(const std::vector<std::string>& page_ids,
             trade_ids.push_back(std::move(id));
 
     std::unordered_map<std::string, std::string> ore_ids;
-    for (const auto& row : execute_parameterized_multi_column_query(
+    for (const auto& row : ores::database::query_builder::execute_parameterized_multi_column_query(
              ctx_,
              "SELECT trade_id::text, id_value FROM ores_trading_trade_identifiers_tbl "
              "WHERE tenant_id = ores_iam_current_tenant_id_fn() AND id_type = 'ORE' "
@@ -661,5 +657,4 @@ trade_export_service::export_trades(const std::vector<std::string>& page_ids,
     BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " trades.";
     return items;
 }
-
 }

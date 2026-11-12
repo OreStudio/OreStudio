@@ -19,7 +19,6 @@
  */
 #include "ores.database/domain/context_transact.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -29,8 +28,9 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_string.hpp>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace {
 
@@ -84,9 +84,20 @@ std::string probe_count(const std::string& code) {
 std::string committed_count(const std::string& code) {
     auto lg(ores::logging::make_logger(test_suite));
     auto fresh = ores::testing::test_database_manager::make_context();
-    const auto rows = ores::database::repository::execute_raw_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
         fresh, probe_count(code), lg, "probe");
     return rows.at(0).at(0).value_or("?");
+}
+
+/// The SQLSTATE a failed statement reports, or "none" when nothing throws.
+template <typename Statement>
+std::string sqlstate_of(Statement statement) {
+    try {
+        statement();
+    } catch (const ores::database::repository::repository_exception& e) {
+        return e.sqlstate();
+    }
+    return "none";
 }
 
 void pq_execute(const ores::database::context& ctx, const std::string& sql) {
@@ -96,7 +107,6 @@ void pq_execute(const ores::database::context& ctx, const std::string& sql) {
 
 }
 
-using ores::database::repository::execute_raw_multi_column_query;
 using ores::database::repository::unit_of_work;
 
 TEST_CASE("a unit of work binds its transaction to the context it hands out", "[unit_of_work]") {
@@ -136,7 +146,8 @@ TEST_CASE("a unit of work that is not committed frees its connection", "[unit_of
 
     // The destructor rolled the transaction back, so the next acquisition
     // finds a usable connection rather than one left in a transaction.
-    const auto rows = execute_raw_multi_column_query(h.context(), "select 1", lg, "probe");
+    const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
+        h.context(), "select 1", lg, "probe");
     REQUIRE(rows.size() == 1);
 }
 
@@ -153,17 +164,38 @@ TEST_CASE("a committed unit of work returns its connection before it goes out of
     ctx.set_pq_pool_size(1);
 
     unit_of_work first(ctx);
-    execute_raw_multi_column_query(first.ctx(), "select 1", lg, "probe");
+    ores::database::query_builder::execute_raw_multi_column_query(
+        first.ctx(), "select 1", lg, "probe");
     first.commit();
 
     // The pool holds one connection. Were it still the first unit of work's,
     // the second would wait out the acquire timeout and fail.
     unit_of_work second(ctx);
-    const auto rows = execute_raw_multi_column_query(second.ctx(), "select 1", lg, "probe");
+    const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
+        second.ctx(), "select 1", lg, "probe");
     REQUIRE(rows.size() == 1);
     second.commit();
-    CHECK_THROWS_WITH(execute_raw_multi_column_query(first.ctx(), "select 1", lg, "probe"),
-                      "The transaction has ended");
+    CHECK(sqlstate_of([&] {
+              ores::database::query_builder::execute_raw_multi_column_query(
+                  first.ctx(), "select 1", lg, "probe");
+          }) == "25000");
+}
+
+TEST_CASE("a failed hand-written statement reports the server's SQLSTATE", "[unit_of_work]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    ores::testing::scoped_database_helper h;
+    CHECK(sqlstate_of([&] {
+              ores::database::query_builder::execute_raw_string_query(
+                  h.context(), "select (1 / 0)::text", lg, "probe");
+          }) == "22012");
+}
+
+TEST_CASE("a string query leaves out a row whose value is missing", "[unit_of_work]") {
+    auto lg(ores::logging::make_logger(test_suite));
+    ores::testing::scoped_database_helper h;
+    const auto values = ores::database::query_builder::execute_parameterized_string_query(
+        h.context(), "select v from (values (null::text), ($1)) as t(v)", {"kept"}, lg, "probe");
+    CHECK(values == std::vector<std::string>{"kept"});
 }
 
 TEST_CASE("a raw insert through a unit of work is rolled back", "[unit_of_work]") {
@@ -183,7 +215,7 @@ TEST_CASE("a raw insert through a unit of work is rolled back", "[unit_of_work]"
     }
 
     auto fresh = ores::testing::test_database_manager::make_context();
-    const auto rows = execute_raw_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
         fresh,
         "select count(*) from ores_geo_ip2country_tbl where country_code = '" + code + "'",
         lg,
@@ -210,7 +242,7 @@ TEST_CASE("a raw insert through a committed unit of work is kept", "[unit_of_wor
     }
 
     auto fresh = ores::testing::test_database_manager::make_context();
-    const auto rows = execute_raw_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
         fresh,
         "select count(*) from ores_geo_ip2country_tbl where country_code = '" + code + "'",
         lg,
@@ -236,7 +268,7 @@ TEST_CASE("an entity insert through a unit of work is rolled back", "[unit_of_wo
     }
 
     auto fresh = ores::testing::test_database_manager::make_context();
-    const auto rows = execute_raw_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
         fresh,
         "select count(*) from ores_geo_ip2country_tbl where country_code = '" + code + "'",
         lg,
@@ -266,7 +298,7 @@ TEST_CASE("a failed insert leaves no earlier row in the unit of work", "[unit_of
     }
 
     auto fresh = ores::testing::test_database_manager::make_context();
-    const auto rows = execute_raw_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
         fresh,
         "select count(*) from ores_geo_ip2country_tbl where country_code = '" + code + "G'",
         lg,
@@ -306,7 +338,7 @@ TEST_CASE("a read inside a unit of work does not commit it", "[unit_of_work]") {
     }
 
     auto fresh = ores::testing::test_database_manager::make_context();
-    const auto rows = execute_raw_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_raw_multi_column_query(
         fresh,
         "select count(*) from ores_geo_ip2country_tbl where country_code = '" + code + "'",
         lg,
@@ -395,9 +427,9 @@ TEST_CASE("a raw helper inside a unit of work runs on its transaction", "[unit_o
     const auto dropped = probe_code();
     {
         unit_of_work uow(h.context());
-        ores::database::repository::execute_raw_command(
+        ores::database::query_builder::execute_raw_command(
             uow.ctx(), probe_insert(uow.ctx(), dropped), lg, "Raw insert in a unit of work");
-        const auto seen = ores::database::repository::execute_raw_multi_column_query(
+        const auto seen = ores::database::query_builder::execute_raw_multi_column_query(
             uow.ctx(), probe_count(dropped), lg, "Counting inside the unit of work");
         CHECK(seen.at(0).at(0).value_or("") == "1");
     }
@@ -406,7 +438,7 @@ TEST_CASE("a raw helper inside a unit of work runs on its transaction", "[unit_o
     const auto kept = probe_code();
     {
         unit_of_work uow(h.context());
-        ores::database::repository::execute_raw_command(
+        ores::database::query_builder::execute_raw_command(
             uow.ctx(), probe_insert(uow.ctx(), kept), lg, "Raw insert in a unit of work");
         uow.commit();
     }

@@ -23,7 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/context_transact.hpp"
 #include "ores.database/pq/store_error.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -90,7 +90,7 @@ inline std::vector<std::string> policy_parts(const ores::database::context& ctx,
     list += "}";
 
     std::vector<std::string> codes;
-    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx,
         "select p from ores_inbox_policy_parts_fn($1, $2, $3::text[]) as p",
         {entity_type, operation, list},

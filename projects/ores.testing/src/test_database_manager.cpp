@@ -18,7 +18,7 @@
  *
  */
 #include "ores.testing/test_database_manager.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.platform/environment/environment.hpp"
@@ -149,7 +149,6 @@ std::string test_database_manager::provision_test_tenant(database::context& ctx,
                                                          const std::string& tenant_code,
                                                          const std::string& description) {
     using database::service::tenant_context;
-    using database::repository::execute_parameterized_string_query;
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     BOOST_LOG_SEV(lg(), info) << "Provisioning test tenant: " << tenant_code << " (" << description
@@ -158,7 +157,7 @@ std::string test_database_manager::provision_test_tenant(database::context& ctx,
     ctx = tenant_context::with_system_tenant(ctx);
 
     // Call the provisioner function - extract tenant_id from multi-OUT result
-    const auto results = execute_parameterized_string_query(
+    const auto results = ores::database::query_builder::execute_parameterized_string_query(
         ctx,
         "SELECT tenant_id::text"
         " FROM ores_iam_provision_tenant_fn($1, $2, $3, $4, $5)",
@@ -190,7 +189,6 @@ std::string test_database_manager::provision_test_tenant(database::context& ctx,
 void test_database_manager::terminate_test_tenant(database::context& ctx,
                                                   const std::string& tenant_id) {
     using database::service::tenant_context;
-    using database::repository::execute_parameterized_command;
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     BOOST_LOG_SEV(lg(), info) << "Terminating test tenant: " << tenant_id;
@@ -205,11 +203,12 @@ void test_database_manager::terminate_test_tenant(database::context& ctx,
 
     // Call terminator - marks tenant as terminated but preserves all data
     try {
-        execute_parameterized_command(ctx,
-                                      "SELECT ores_iam_terminate_tenant_fn($1::uuid)",
-                                      {tenant_id},
-                                      lg(),
-                                      "Terminating test tenant");
+        ores::database::query_builder::execute_parameterized_command(
+            ctx,
+            "SELECT ores_iam_terminate_tenant_fn($1::uuid)",
+            {tenant_id},
+            lg(),
+            "Terminating test tenant");
 
         BOOST_LOG_SEV(lg(), info) << "Successfully terminated test tenant: " << tenant_id
                                   << ". Data preserved for analysis.";
@@ -222,7 +221,6 @@ void test_database_manager::terminate_test_tenant(database::context& ctx,
 
 void test_database_manager::close_orphaned_synthetic_rows(
     database::context& ctx, const std::vector<std::string>& table_names) {
-    using database::repository::execute_parameterized_command;
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     for (const auto& table_name : table_names) {
@@ -233,11 +231,12 @@ void test_database_manager::close_orphaned_synthetic_rows(
                          " AND performed_by = current_user"
                          " AND valid_to = ores_utility_infinity_timestamp_fn()";
         try {
-            execute_parameterized_command(ctx,
-                                          sql,
-                                          {std::string(system_tenant_id)},
-                                          lg(),
-                                          "Closing orphaned synthetic rows in " + table_name);
+            ores::database::query_builder::execute_parameterized_command(
+                ctx,
+                sql,
+                {std::string(system_tenant_id)},
+                lg(),
+                "Closing orphaned synthetic rows in " + table_name);
             BOOST_LOG_SEV(lg(), info) << "Closed orphaned synthetic rows in " << table_name;
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn)

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
@@ -213,7 +213,7 @@ TEST_CASE("an_approved_cut_authorisation_is_stamped_on_the_cut", "[cut_authorisa
     CHECK(cut.refusal_comment == "");
     // The act is stamped with the decision's own instant and not with the run's
     // clock, so a second run cannot move it.
-    const auto decisions = ores::database::repository::execute_parameterized_multi_column_query(
+    const auto decisions = ores::database::query_builder::execute_parameterized_multi_column_query(
         w.ctx,
         "select decided_at::text from ores_inbox_approval_decisions_tbl"
         " where request_id = $1::uuid and decision_code = 'approve'"

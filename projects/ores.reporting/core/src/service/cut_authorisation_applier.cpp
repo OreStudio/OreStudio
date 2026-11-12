@@ -18,7 +18,7 @@
  *
  */
 #include "ores.reporting.core/service/cut_authorisation_applier.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.core/repository/cut_approval_detail_repository.hpp"
@@ -119,7 +119,7 @@ cut_authorisation_applier::cut_authorisation_applier(ores::database::context ctx
 int cut_authorisation_applier::apply() {
     std::lock_guard lock(mutex_);
 
-    const auto rows = db::execute_parameterized_multi_column_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         "select tenant_id::text, request_id::text, detail_id::text, cut_id::text,"
         " approval_kind_code, decision_code, decided_by, decided_at::text, comment"

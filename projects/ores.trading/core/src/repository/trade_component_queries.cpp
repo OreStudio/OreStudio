@@ -19,7 +19,6 @@
  */
 #include "ores.trading.core/repository/trade_component_queries.hpp"
 #include "ores.database/query_builder/execute.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/economic_digest.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"

@@ -19,7 +19,7 @@
  */
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/run_grant_operations_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
@@ -187,9 +187,8 @@ std::optional<boost::uuids::uuid> find_fsm_state_id(const ores::database::contex
                                                     logging::logger_t& log,
                                                     const std::string& state_name,
                                                     const std::string& fn_name) {
-    using ores::database::repository::execute_parameterized_string_query;
     const auto sql = "SELECT " + fn_name + "()::text";
-    const auto rows = execute_parameterized_string_query(
+    const auto rows = ores::database::query_builder::execute_parameterized_string_query(
         ctx, sql, {}, log, "Looking up report_definition_lifecycle " + state_name + " state");
     if (rows.empty() || rows.front().empty()) {
         BOOST_LOG_SEV(log, warn) << "report_definition_lifecycle " << state_name

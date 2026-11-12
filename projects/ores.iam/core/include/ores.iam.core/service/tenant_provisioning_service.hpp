@@ -21,7 +21,7 @@
 #define ORES_IAM_SERVICE_TENANT_PROVISIONING_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.core/export.hpp"
@@ -123,7 +123,6 @@ public:
                                                const std::string& admin_email,
                                                const std::string& admin_password,
                                                bool force_password_change = false) const {
-        using ores::database::repository::execute_parameterized_multi_column_query;
         using ores::database::service::tenant_context;
 
         /*
@@ -149,7 +148,7 @@ public:
          * a sentence about it. The insert would refuse it too, but with a
          * constraint violation no person can act on.
          */
-        const auto taken = execute_parameterized_multi_column_query(
+        const auto taken = ores::database::query_builder::execute_parameterized_multi_column_query(
             sys_ctx,
             "SELECT code, hostname FROM ores_iam_tenants_tbl"
             " WHERE valid_to = ores_utility_infinity_timestamp_fn()"
@@ -166,7 +165,7 @@ public:
                                      "' already exists. Choose another hostname.");
         }
 
-        const auto rows = execute_parameterized_multi_column_query(
+        const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
             sys_ctx,
             "SELECT tenant_id::text, system_party_id::text"
             " FROM ores_iam_provision_tenant_fn($1, $2, $3, $4, $5, $6)",

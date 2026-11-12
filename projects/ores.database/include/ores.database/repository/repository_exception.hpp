@@ -22,6 +22,7 @@
 
 #include <boost/exception/info.hpp>
 #include <string>
+#include <utility>
 
 namespace ores::database::repository {
 

@@ -60,7 +60,7 @@ geolocation_service::lookup(const boost::asio::ip::address& ip) const {
 
         return geo_result;
 
-    } catch (const ores::database::repository::repository_exception&) {
+    } catch (const std::exception&) {
         return std::unexpected(geolocation_error::lookup_failed);
     }
 }

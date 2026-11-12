@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-tenor-catalogue-view
-#+pr:
+#+pr: 4647
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4647][#4647]] | [http] Serve the tenor catalogue composed view |
 
 * Review
 

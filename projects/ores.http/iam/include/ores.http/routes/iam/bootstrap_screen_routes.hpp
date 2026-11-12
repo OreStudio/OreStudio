@@ -27,13 +27,46 @@
 #include "ores.iam.api/messaging/registration_policy_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.utility/codec/shaped_wire_traits.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace ores::http::routes::iam {
+
+/**
+ * @brief The bootstrap status: whether the deployment still needs its first
+ * administrator, whether it has a tenant, whether the system and the tenant
+ * finished their first-run setup, and who is asking.
+ */
+struct bootstrap_status final {
+    bool isInBootstrapMode = false;
+    bool hasTenant = false;
+    bool onboardingComplete = false;
+    bool onboardingTenantComplete = false;
+    std::string accountId;
+    bool sessionPresent = false;
+    std::string message;
+    std::string version;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bootstrap_status>) {
+    using ores::utility::codec::field;
+    using b = bootstrap_status;
+    return ::ores::utility::codec::field_list{
+        field{"isInBootstrapMode", &b::isInBootstrapMode},
+        field{"hasTenant", &b::hasTenant},
+        field{"onboardingComplete", &b::onboardingComplete},
+        field{"onboardingTenantComplete", &b::onboardingTenantComplete},
+        field{"accountId", &b::accountId},
+        field{"sessionPresent", &b::sessionPresent},
+        field{"message", &b::message},
+        field{"version", &b::version}};
+}
 
 /**
  * @brief The setup screens' routes: what the deployment says about its own
@@ -108,5 +141,9 @@ private:
 };
 
 }
+
+template <>
+struct ores::utility::codec::wire_traits<ores::http::routes::iam::bootstrap_status>
+    : shaped_wire_traits<ores::http::routes::iam::bootstrap_status> {};
 
 #endif

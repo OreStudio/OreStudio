@@ -21,6 +21,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.api/net/view_answer.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
@@ -267,13 +268,11 @@ role_write_routes::ways_to_hold(const std::string& code,
 }
 
 std::string role_write_routes::ways_json(const std::vector<role_summary>& roles) {
-    std::string out = "{\"roles\":[";
-    for (std::size_t i = 0; i < roles.size(); ++i)
-        out += (i == 0 ? "" : ",") + std::string("{\"id\":") +
-               json::write(boost::uuids::to_string(roles[i].role.id)) +
-               ",\"name\":" + json::write(roles[i].role.name) +
-               ",\"description\":" + json::write(roles[i].role.description) + "}";
-    return out + "]}";
+    ways_to_hold_view view;
+    view.roles.reserve(roles.size());
+    for (const auto& r : roles)
+        view.roles.push_back({boost::uuids::to_string(r.role.id), r.role.name, r.role.description});
+    return json::write(view);
 }
 
 void role_write_routes::register_routes(
@@ -444,8 +443,15 @@ void role_write_routes::register_routes(
             });
         });
 
-    add(router->get("/api/me/ways-to-hold"),
-        "Read the roles the caller could ask for that would give a permission",
+    add(router->get("/api/me/ways-to-hold")
+            .description("A composed view owned by the IAM service: the roles of the catalogue "
+                         "that grant the permission and the caller does not hold yet. Two "
+                         "reads, the caller's roles and the catalogue with what each grants. A "
+                         "failed read answers no ways, as the BFF did. The answer carries an "
+                         "ETag and is revalidated at each read, because a role granted to the "
+                         "caller changes it.")
+            .response<ways_to_hold_view>(),
+        "The principal's ways to hold",
         [&session](const http_request& req) {
             static const std::regex code_form("^[a-z][a-z0-9_]*::[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$");
             const auto code = req.get_query_param("permission");
@@ -462,10 +468,13 @@ void role_write_routes::register_routes(
                 std::unordered_set<std::string> held;
                 for (const auto& r : mine.roles)
                     held.insert(boost::uuids::to_string(r.role.id));
-                return http_response::json(
-                    ways_json(ways_to_hold(code, read_roles(req, session), held)));
+                return ores::http::net::view_answer(
+                    req,
+                    ways_json(ways_to_hold(code, read_roles(req, session), held)),
+                    ores::http::net::view_cache_policy::revalidated());
             } catch (...) {
-                return http_response::json(R"({"roles":[]})");
+                return ores::http::net::view_answer(
+                    req, ways_json({}), ores::http::net::view_cache_policy::revalidated());
             }
         });
 }

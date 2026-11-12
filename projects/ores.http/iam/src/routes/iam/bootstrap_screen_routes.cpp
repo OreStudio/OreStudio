@@ -21,6 +21,7 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/rate_limiter.hpp"
 #include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.api/net/view_answer.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/iam/tenancy_screen_shapes.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -93,14 +94,14 @@ std::string bootstrap_screen_routes::status_json(const messaging::bootstrap_stat
                                                  bool onboarding_tenant_complete,
                                                  const std::string& account_id,
                                                  bool session_present) {
-    return "{\"isInBootstrapMode\":" + json::write(status.is_in_bootstrap_mode) +
-           ",\"hasTenant\":" + json::write(status.has_tenant) +
-           ",\"onboardingComplete\":" + json::write(onboarding_complete) +
-           ",\"onboardingTenantComplete\":" + json::write(onboarding_tenant_complete) +
-           ",\"accountId\":" + json::write(account_id) +
-           ",\"sessionPresent\":" + json::write(session_present) +
-           ",\"message\":" + json::write(status.message) +
-           ",\"version\":" + json::write(status.version) + "}";
+    return json::write(bootstrap_status{status.is_in_bootstrap_mode,
+                                        status.has_tenant,
+                                        onboarding_complete,
+                                        onboarding_tenant_complete,
+                                        account_id,
+                                        session_present,
+                                        status.message,
+                                        status.version});
 }
 
 std::string bootstrap_screen_routes::policy_json(const messaging::registration_policy_response& p) {
@@ -133,7 +134,14 @@ void bootstrap_screen_routes::register_routes(
 
     const auto status =
         router->get("/api/bootstrap")
-            .summary("Read whether the deployment is set up, as a visitor or a signed-in browser")
+            .summary("The bootstrap status")
+            .description("A composed view owned by the IAM service: whether the deployment "
+                         "still needs its first administrator and has a tenant, from the IAM "
+                         "answer, and whether the system and the tenant finished their "
+                         "first-run setup, from two settings a failed read leaves false. Read "
+                         "as a visitor or a signed-in browser. The answer carries an ETag and "
+                         "is revalidated at each read, because setup changes it.")
+            .response<bootstrap_status>()
             .tags({"setup"})
             .auth_optional()
             .handler([&session,
@@ -142,13 +150,16 @@ void bootstrap_screen_routes::register_routes(
                     const auto reply = ores::http::forwarding::forward(
                         req, session, messaging::bootstrap_status_request{});
                     const auto& claims = req.authenticated_user;
-                    return http_response::json(status_json(
-                        reply,
-                        wizard_finished(req, session, onboarding_system_setting),
-                        wizard_finished(req, session, onboarding_tenant_setting),
-                        claims ? claims->subject : std::string(),
-                        ores::http::domain::session_cookie::read(req.get_header("cookie"), cookie)
-                            .has_value()));
+                    return ores::http::net::view_answer(
+                        req,
+                        status_json(reply,
+                                    wizard_finished(req, session, onboarding_system_setting),
+                                    wizard_finished(req, session, onboarding_tenant_setting),
+                                    claims ? claims->subject : std::string(),
+                                    ores::http::domain::session_cookie::read(
+                                        req.get_header("cookie"), cookie)
+                                        .has_value()),
+                        ores::http::net::view_cache_policy::revalidated());
                 });
             })
             .build();

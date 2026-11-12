@@ -312,7 +312,9 @@ void market_regime_routes::register_routes(
                                        "The synthetic service refused the trace read." :
                                        reply.message);
                     return ores::http::net::view_answer(
-                        req, json::write(trace_of(reply)), {std::chrono::seconds(10)});
+                        req,
+                        json::write(trace_of(reply)),
+                        ores::http::net::view_cache_policy::fresh_for(std::chrono::seconds(10)));
                 });
             }));
 

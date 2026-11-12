@@ -58,7 +58,7 @@ std::string entity_tag(std::string_view body) {
 
 domain::http_response
 view_answer(const domain::http_request& req, std::string body, const view_cache_policy& policy) {
-    if (!policy.stale_after) {
+    if (!policy.kept()) {
         auto resp = domain::http_response::json(std::move(body));
         resp.headers["Cache-Control"] = "no-store";
         return resp;
@@ -73,7 +73,9 @@ view_answer(const domain::http_request& req, std::string body, const view_cache_
     resp.headers["ETag"] = tag;
     // The answer depends on the caller's credential, so a cache keys it by that too.
     resp.headers["Vary"] = "Authorization, Cookie";
-    resp.headers["Cache-Control"] = std::format("private, max-age={}", policy.stale_after->count());
+    const auto fresh = policy.stale_after().count();
+    resp.headers["Cache-Control"] =
+        fresh == 0 ? std::string("private, no-cache") : std::format("private, max-age={}", fresh);
     return resp;
 }
 

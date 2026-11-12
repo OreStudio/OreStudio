@@ -24,21 +24,51 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/export.hpp"
 #include <chrono>
-#include <optional>
 #include <string>
 #include <string_view>
 
 namespace ores::http::net {
 
 /**
- * @brief How long a composed view's answer stays fresh in the caller's own
- * cache, or nothing for a view computed again at each read.
+ * @brief How a composed view's answer is kept by the caller.
  *
- * A view is cached only by the caller, because each caller's session decides
- * what the view holds.
+ * A view is kept only by the caller, because each caller's session decides what
+ * the view holds. A view the caller's own writes change is revalidated at each
+ * read, so a screen never shows the view from before its own write; only a view
+ * no write of the caller changes stays fresh for a while.
  */
-struct view_cache_policy final {
-    std::optional<std::chrono::seconds> stale_after;
+class view_cache_policy final {
+public:
+    /// Not kept: computed and sent whole at each read.
+    static view_cache_policy not_stored() {
+        return view_cache_policy(false, std::chrono::seconds(0));
+    }
+
+    /// Kept, and asked about at each read: an unchanged view answers 304.
+    static view_cache_policy revalidated() {
+        return view_cache_policy(true, std::chrono::seconds(0));
+    }
+
+    /// Kept, and used without asking for this long; then as revalidated.
+    static view_cache_policy fresh_for(std::chrono::seconds stale_after) {
+        return view_cache_policy(true, stale_after);
+    }
+
+    [[nodiscard]] bool kept() const {
+        return kept_;
+    }
+
+    [[nodiscard]] std::chrono::seconds stale_after() const {
+        return stale_after_;
+    }
+
+private:
+    view_cache_policy(bool kept, std::chrono::seconds stale_after)
+        : kept_(kept)
+        , stale_after_(stale_after) {}
+
+    bool kept_;
+    std::chrono::seconds stale_after_;
 };
 
 /**
@@ -53,10 +83,9 @@ ORES_HTTP_API_EXPORT std::string entity_tag(std::string_view body);
 /**
  * @brief A composed view's JSON answer under its cache policy.
  *
- * A view with a freshness rule carries its entity tag and stays fresh in the
- * caller's private cache for that long, varying by the caller's credential; a
- * request whose If-None-Match names the tag answers 304 with no body. A view
- * with no freshness rule is not stored.
+ * A kept view carries its entity tag, is kept privately and varies by the
+ * caller's credential; a request whose If-None-Match names the tag answers 304
+ * with no body. A view that is not kept is sent whole and not stored.
  */
 ORES_HTTP_API_EXPORT domain::http_response
 view_answer(const domain::http_request& req, std::string body, const view_cache_policy& policy);

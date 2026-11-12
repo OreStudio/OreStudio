@@ -291,8 +291,8 @@ void feed_operation_routes::register_routes(
             .description("A composed view owned by the synthetic service: the children of one "
                          "folder, or the roots, with the feeds under each at any depth and how "
                          "many of each kind, so no screen reads the feeds. One folder call; the "
-                         "service counts. The answer carries an ETag and stays fresh for 60 "
-                         "seconds.")
+                         "service counts. The answer carries an ETag and is revalidated at each "
+                         "read, because the caller's own folder writes change it.")
             .response<feed_folder_tree>()
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::list_feed_folders_request>([&] {
@@ -311,7 +311,7 @@ void feed_operation_routes::register_routes(
                     return ores::http::net::view_answer(
                         req,
                         json::write(feed_folder_tree{std::move(reply.folders)}),
-                        {std::chrono::seconds(60)});
+                        ores::http::net::view_cache_policy::revalidated());
                 });
             }));
 

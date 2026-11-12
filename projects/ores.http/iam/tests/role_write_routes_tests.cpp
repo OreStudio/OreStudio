@@ -215,3 +215,20 @@ TEST_CASE("role_write_routes_refuse_a_permission_that_is_not_one", "[role_write]
     CHECK(none.status == http_status::ok);
     CHECK(none.body == R"({"roles":[]})");
 }
+
+TEST_CASE("role_write_routes_answer_the_ways_to_hold_as_a_revalidated_view", "[role_write]") {
+    nats_client session;
+    http_request req;
+    req.query_params["permission"] = "trading::trades:read";
+    const auto first = role_call(session, http_method::get, "/api/me/ways-to-hold", req);
+    REQUIRE(first.status == http_status::ok);
+    REQUIRE(first.headers.contains("ETag"));
+    CHECK(first.headers.at("Cache-Control") == "private, no-cache");
+    CHECK(first.headers.at("Vary") == "Authorization, Cookie");
+
+    req.headers["if-none-match"] = first.headers.at("ETag");
+    const auto again = role_call(session, http_method::get, "/api/me/ways-to-hold", req);
+    CHECK(again.status == http_status::not_modified);
+    CHECK(again.body.empty());
+    CHECK(again.headers.at("ETag") == first.headers.at("ETag"));
+}

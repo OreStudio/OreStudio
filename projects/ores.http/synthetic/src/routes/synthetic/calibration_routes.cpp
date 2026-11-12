@@ -427,7 +427,7 @@ void calibration_routes::register_routes(
                         req,
                         json::write(
                             calibration_of(asset_class, std::move(reply), version, writable)),
-                        {});
+                        ores::http::net::view_cache_policy::not_stored());
                 });
             }));
 

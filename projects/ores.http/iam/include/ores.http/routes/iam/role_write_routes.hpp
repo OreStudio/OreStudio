@@ -26,13 +26,43 @@
 #include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.utility/codec/shaped_wire_traits.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <unordered_set>
 #include <vector>
 
 namespace ores::http::routes::iam {
+
+/// One role the caller could ask for that would give the permission.
+struct way_to_hold final {
+    std::string id;
+    std::string name;
+    std::string description;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<way_to_hold>) {
+    using ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{field{"id", &way_to_hold::id},
+                                              field{"name", &way_to_hold::name},
+                                              field{"description", &way_to_hold::description}};
+}
+
+/**
+ * @brief The principal's ways to hold a permission: the roles of the catalogue
+ * that grant it and the caller does not hold yet.
+ */
+struct ways_to_hold_view final {
+    std::vector<way_to_hold> roles;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ways_to_hold_view>) {
+    using ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{field{"roles", &ways_to_hold_view::roles}};
+}
 
 /**
  * @brief The access screens' role and lock writes, and the catalogues they pick
@@ -131,5 +161,13 @@ public:
 };
 
 }
+
+template <>
+struct ores::utility::codec::wire_traits<ores::http::routes::iam::way_to_hold>
+    : shaped_wire_traits<ores::http::routes::iam::way_to_hold> {};
+
+template <>
+struct ores::utility::codec::wire_traits<ores::http::routes::iam::ways_to_hold_view>
+    : shaped_wire_traits<ores::http::routes::iam::ways_to_hold_view> {};
 
 #endif

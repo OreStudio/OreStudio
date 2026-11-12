@@ -236,8 +236,8 @@ TEST_CASE("an expiry longer than the history is refused alone, naming itself",
     CHECK_FALSE(derive_fx_quotes(std::vector<double>{0.01, -0.01, 0.02}, expiries, {}));
     const std::vector<fx_expiry> absurd{
         {.label = "1E9Y", .years = 1e9, .convention = derivation_convention()}};
-    const auto far = derive_fx_quotes(returns, absurd, {});
-    REQUIRE(far);
-    CHECK_FALSE(far->expiries[0].has_value());
+    const auto far_quotes = derive_fx_quotes(returns, absurd, {});
+    REQUIRE(far_quotes);
+    CHECK_FALSE(far_quotes->expiries[0].has_value());
     CHECK_FALSE(derive_fx_quotes(returns, expiries, {.trading_days_per_year = 0.0}));
 }

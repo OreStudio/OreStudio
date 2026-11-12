@@ -276,8 +276,8 @@ auto read_fx_swap(const record_reader& trade) -> fx_forward_instrument {
     r.bought_amount = fx_instrument_projection_decimal_of(*data, "NearBoughtAmount");
     r.sold_currency = fx_instrument_projection_spelling_of(*data, "NearSoldCurrency");
     r.sold_amount = fx_instrument_projection_decimal_of(*data, "NearSoldAmount");
-    if (const auto far = data->text("FarDate"))
-        r.far_date = fx_instrument_projection_to_optional_domain_date(*far);
+    if (const auto far_date_text = data->text("FarDate"))
+        r.far_date = fx_instrument_projection_to_optional_domain_date(*far_date_text);
     r.far_bought_amount = data->decimal("FarBoughtAmount");
     r.far_sold_amount = data->decimal("FarSoldAmount");
     r.settlement = fx_instrument_projection_spelling_of(*data, "Settlement");

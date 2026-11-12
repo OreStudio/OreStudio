@@ -746,6 +746,7 @@ bool is_close_in_time(std::chrono::system_clock::time_point a,
     const auto delta = a > b ? a - b : b - a;
     return delta < std::chrono::seconds(2);
 }
+
 }
 
 TEST_CASE("read_as_of_records_carries_the_row_record_time", "[repository]") {

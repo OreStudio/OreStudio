@@ -613,3 +613,87 @@ TEST_CASE("the default market speed keeps a curve at one tick a minute stepping 
     // The speed decides how fast its calendar runs: a tenth of the speed is a tenth of the step.
     CHECK(curve_step_years(144.0, 60.0) == Catch::Approx(1.0 / 3650.0).epsilon(1e-12));
 }
+
+TEST_CASE("a_curve_started_from_a_fixing_records_it_and_takes_its_rate", "[feed_factory]") {
+    auto ctx = make_build_context();
+    const auto f = make_ir_fixture();
+    ores::synthetic::feed::ir_curve_start start;
+    start.source.from_fixing = true;
+    start.source.item = "oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR";
+    start.source.provider_code = "riksbank";
+    start.source.value = *ores::utility::decimal::decimal::from_string("-0.0005");
+    start.rate = -0.0005;
+
+    const auto feed = ores::synthetic::feed::make_ir_curve_feed(
+        ctx.nats, f.config, f.entries, f.values, f.definitions, f.refctx, ctx.scheduler, {}, start);
+
+    const auto recorded = feed->start_source();
+    REQUIRE(recorded.has_value());
+    CHECK(recorded->from_fixing);
+    CHECK(recorded->provider_code == "riksbank");
+    CHECK(recorded->value.to_string() == "-0.0005");
+}
+
+TEST_CASE("a_curve_with_no_fixing_records_the_fixed_rate_it_kept_and_why", "[feed_factory]") {
+    auto ctx = make_build_context();
+    const auto f = make_ir_fixture();
+    ores::synthetic::feed::ir_curve_start start;
+    start.source.note = "No series of the class policy publishes an overnight rate in CHF";
+
+    const auto feed = ores::synthetic::feed::make_ir_curve_feed(
+        ctx.nats, f.config, f.entries, f.values, f.definitions, f.refctx, ctx.scheduler, {}, start);
+
+    const auto recorded = feed->start_source();
+    REQUIRE(recorded.has_value());
+    CHECK_FALSE(recorded->from_fixing);
+    CHECK(recorded->value.to_string() == "0.04");
+    CHECK(recorded->note.find("CHF") != std::string::npos);
+}
+
+TEST_CASE("a_curve_the_policy_refuses_to_start_without_a_fixing_does_not_start", "[feed_factory]") {
+    auto ctx = make_build_context();
+    const auto f = make_ir_fixture();
+    ores::synthetic::feed::ir_curve_start start;
+    start.refused = true;
+    start.source.note = "No overnight rate has a fixing";
+
+    CHECK_THROWS_AS(ores::synthetic::feed::make_ir_curve_feed(ctx.nats,
+                                                              f.config,
+                                                              f.entries,
+                                                              f.values,
+                                                              f.definitions,
+                                                              f.refctx,
+                                                              ctx.scheduler,
+                                                              {},
+                                                              start),
+                    std::runtime_error);
+}
+
+TEST_CASE("a_curve_whose_series_cannot_be_read_keeps_its_fixed_rate_and_says_why",
+          "[feed_factory]") {
+    auto ctx = make_build_context();
+    const auto f = make_ir_fixture();
+    const ores::synthetic::feed::calibration_policy policy;
+
+    const auto start =
+        ores::synthetic::feed::resolve_ir_start(ctx.auth_nats, f.config, policy, nullptr);
+
+    CHECK_FALSE(start.refused);
+    CHECK_FALSE(start.rate.has_value());
+    CHECK_FALSE(start.source.from_fixing);
+    CHECK(start.source.note.find("could not be read") != std::string::npos);
+}
+
+TEST_CASE("a_curve_the_policy_refuses_when_its_series_cannot_be_read_is_refused",
+          "[feed_factory]") {
+    auto ctx = make_build_context();
+    const auto f = make_ir_fixture();
+    ores::synthetic::feed::calibration_policy policy;
+    policy.fallback_code = "refuse";
+
+    const auto start =
+        ores::synthetic::feed::resolve_ir_start(ctx.auth_nats, f.config, policy, nullptr);
+
+    CHECK(start.refused);
+    CHECK(start.source.note.find("refuses to start without a fixing") != std::string::npos);
+}

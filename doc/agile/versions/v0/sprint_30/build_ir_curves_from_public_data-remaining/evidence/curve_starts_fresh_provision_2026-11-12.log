@@ -1,0 +1,48 @@
+2026-11-12 20:46:38.403187 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.audaonia starts at 0.0485 from oresmd://ir/AUD?type=fixing&index=ibor&name=AONIA (rba)
+2026-11-12 20:46:38.460230 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.brlcdi starts at 0.1365 from oresmd://ir/BRL?type=fixing&index=ibor&name=CDI (bcb)
+2026-11-12 20:46:38.484655 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.cadcorra starts at 0.0252 from oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA (boc)
+2026-11-12 20:46:38.499753 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.chfsaron starts at 0.01, its fixed initial rate
+2026-11-12 20:46:38.523507 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.clpcamara starts at 0.045 from oresmd://ir/CLP?type=fixing&index=ibor&name=CAMARA (bcch)
+2026-11-12 20:46:38.540128 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.cnhhibor starts at 0.018, its fixed initial rate. No series of the class policy publishes an overnight rate in CNH, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.560631 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.cnyshibor starts at 0.018, its fixed initial rate. No series of the class policy publishes an overnight rate in CNY, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.576152 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.copibr starts at 0.09, its fixed initial rate. No series of the class policy publishes an overnight rate in COP, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.597612 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.czkczeonia starts at 0.0365 from oresmd://ir/CZK?type=fixing&index=ibor&name=CZEONIA (cnb)
+2026-11-12 20:46:38.615333 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.dkkdestr starts at 0.028, its fixed initial rate. No series of the class policy publishes an overnight rate in DKK, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.641488 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.eurestr starts at 0.02439 from oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER (ecb)
+2026-11-12 20:46:38.682532 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.gbpsonia starts at 0.039837 from oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA (boe)
+2026-11-12 20:46:38.723117 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.hkdhonia starts at 0.045, its fixed initial rate. No series of the class policy publishes an overnight rate in HKD, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.736731 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.hufbuboron starts at 0.065, its fixed initial rate. No series of the class policy publishes an overnight rate in HUF, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.752777 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.ilstelboron starts at 0.0425, its fixed initial rate. No series of the class policy publishes an overnight rate in ILS, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.767264 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.inrmibor starts at 0.065, its fixed initial rate. No series of the class policy publishes an overnight rate in INR, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.788833 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.jpytona starts at 0.01227 from oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR (boj)
+2026-11-12 20:46:38.806010 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.krwkofr starts at 0.028, its fixed initial rate. No series of the class policy publishes an overnight rate in KRW, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.825967 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.mxntiie starts at 0.0626 from oresmd://ir/MXN?type=fixing&index=ibor&name=FTIIE (banxico)
+2026-11-12 20:46:38.845587 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.noknowa starts at 0.045 from oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA (norgesbank)
+2026-11-12 20:46:38.859709 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.nzdnzonia starts at 0.04, its fixed initial rate. No series of the class policy publishes an overnight rate in NZD, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.891139 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.plnpolonia starts at 0.055, its fixed initial rate. No series of the class policy publishes an overnight rate in PLN, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.909858 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.sekswestr starts at 0.01893 from oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR (riksbank)
+2026-11-12 20:46:38.927263 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.sgdsora starts at 0.015992 from oresmd://ir/SGD?type=fixing&index=ibor&name=SORA (mas)
+2026-11-12 20:46:38.947714 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.trytlref starts at 0.38, its fixed initial rate. No series of the class policy publishes an overnight rate in TRY, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.964245 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.twdtaibor starts at 0.02, its fixed initial rate. No series of the class policy publishes an overnight rate in TWD, so the curve keeps its fixed initial rate
+2026-11-12 20:46:38.983524 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.usdsofr starts at 0.0389 from oresmd://ir/USD?type=fixing&index=ibor&name=SOFR (nyfed)
+2026-11-12 20:46:39.278607 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.bloomberg.zarzaronia starts at 0.075, its fixed initial rate. No series of the class policy publishes an overnight rate in ZAR, so the curve keeps its fixed initial rate
+2026-11-12 20:46:39.321583 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.audaonia starts at 0.043, its fixed initial rate
+2026-11-12 20:46:39.328912 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.cadcorra starts at 0.035, its fixed initial rate
+2026-11-12 20:46:39.336346 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.chfsaron starts at 0.01, its fixed initial rate
+2026-11-12 20:46:39.344180 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.cnyshibor starts at 0.018, its fixed initial rate
+2026-11-12 20:46:39.352375 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.dkkdestr starts at 0.028, its fixed initial rate
+2026-11-12 20:46:39.361563 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.eurestr starts at 0.03, its fixed initial rate
+2026-11-12 20:46:39.369944 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.gbpsonia starts at 0.045, its fixed initial rate
+2026-11-12 20:46:39.379141 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.hkdhonia starts at 0.045, its fixed initial rate
+2026-11-12 20:46:39.387819 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.inrmibor starts at 0.065, its fixed initial rate
+2026-11-12 20:46:39.395515 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.jpytona starts at 0.0025, its fixed initial rate
+2026-11-12 20:46:39.403345 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.krwkofr starts at 0.028, its fixed initial rate
+2026-11-12 20:46:39.410424 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.mxntiie starts at 0.1, its fixed initial rate
+2026-11-12 20:46:39.417008 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.noknowa starts at 0.04, its fixed initial rate
+2026-11-12 20:46:39.424445 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.nzdnzonia starts at 0.04, its fixed initial rate
+2026-11-12 20:46:39.431110 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.plnpolonia starts at 0.055, its fixed initial rate
+2026-11-12 20:46:39.438064 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.sekswestr starts at 0.025, its fixed initial rate
+2026-11-12 20:46:39.444622 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.sgdsora starts at 0.03, its fixed initial rate
+2026-11-12 20:46:39.451087 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.twdtaibor starts at 0.02, its fixed initial rate
+2026-11-12 20:46:39.462842 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.usdsofr starts at 0.04, its fixed initial rate
+2026-11-12 20:46:39.469859 [INFO] [ores.synthetic.api.ir_curve_feed] Curve synthetic.demo.zarzaronia starts at 0.075, its fixed initial rate

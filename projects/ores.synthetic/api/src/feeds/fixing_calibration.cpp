@@ -141,6 +141,46 @@ std::optional<int> provider_rank(const std::vector<std::string>& order,
 
 } // namespace
 
+std::optional<std::string> overnight_currency_of(const std::string& item) {
+    static const std::regex form(R"(^oresmd://ir/([A-Z]{3})\?(.*)$)");
+    std::smatch m;
+    if (!std::regex_match(item, m, form))
+        return std::nullopt;
+    const auto query = "&" + m[2].str() + "&";
+    if (query.find("&type=fixing&") == std::string::npos ||
+        query.find("&index=ibor&") == std::string::npos ||
+        query.find("&tenor=") != std::string::npos)
+        return std::nullopt;
+    return m[1].str();
+}
+
+std::vector<calibration_candidate>
+derive_overnight_items(const calibration_policy& policy,
+                       const std::string& currency,
+                       const std::vector<calibration_candidate>& candidates) {
+    std::vector<std::pair<int, calibration_candidate>> kept;
+    for (const auto& candidate : candidates) {
+        if (overnight_currency_of(candidate.item) != currency)
+            continue;
+        const auto rank = provider_rank(policy.provider_order, candidate.provider_code);
+        if (!rank)
+            continue;
+        kept.emplace_back(*rank, candidate);
+    }
+    std::ranges::sort(kept, [](const auto& a, const auto& b) {
+        if (a.first != b.first)
+            return a.first < b.first;
+        if (a.second.provider_code != b.second.provider_code)
+            return a.second.provider_code < b.second.provider_code;
+        return a.second.item < b.second.item;
+    });
+    std::vector<calibration_candidate> out;
+    out.reserve(kept.size());
+    for (auto& [rank, candidate] : kept)
+        out.push_back(std::move(candidate));
+    return out;
+}
+
 std::vector<ores::synthetic::domain::fx_spot_fixing_item>
 derive_fixing_items(const calibration_policy& policy,
                     const std::string& base,

@@ -271,10 +271,11 @@ faker::datatype::boolean()
 :default_value: "fixed"
 :END:
 
-Where this curve's starting short rate comes from. The one source is
-"fixed": the =initial_rate= parameter value as entered in the parameter
-rows. No public source fixes rates curves yet; when one does, the curve
-reads it as an FX feed reads its fixings, and this column names it.
+Where this curve's starting short rate comes from. "fixed" is the
+=initial_rate= parameter value as entered in the parameter rows. "fixing" is
+the newest public overnight rate of the curve's currency, read under the IR
+class's calibration policy; a curve whose currency no source publishes keeps
+its =initial_rate=, and its start record says why.
 
 #+begin_src cpp :name generator
 std::string("fixed")
@@ -602,7 +603,7 @@ How strongly a market-wide regime moves this row, where one is the average.
 | "source_name" <> ''                                       |
 | "source_name" like 'synthetic.%'                          |
 | "ticks_per_hour" > 0                                       |
-| "price_source" in ('fixed')                               |
+| "price_source" in ('fixed', 'fixing')                    |
 
 * Foreign keys
 

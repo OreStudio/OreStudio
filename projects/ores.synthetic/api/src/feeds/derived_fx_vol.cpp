@@ -143,9 +143,10 @@ std::vector<marketdata::messaging::adapter_tick>
 derived_fx_ticks(const derived_fx_pair& pair,
                  const qm::fx_derivation& derivation,
                  std::chrono::year_month_day day,
-                 std::uint64_t first_sequence) {
+                 std::uint64_t first_sequence,
+                 std::chrono::system_clock::time_point sent_at) {
     using namespace std::chrono;
-    const auto stamp = sys_days{day} + hours(17);
+    const auto stamp = std::min<system_clock::time_point>(sys_days{day} + hours(17), sent_at);
     std::vector<marketdata::messaging::adapter_tick> out;
     auto sequence = first_sequence;
     for (const auto& expiry : derivation.expiries) {

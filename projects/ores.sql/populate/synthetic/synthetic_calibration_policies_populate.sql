@@ -32,6 +32,10 @@
  * and an average reaction, alpha plus half of gamma, of at least 0.01, is
  * approved, and the fits that fail these rules wait for a person.
  *
+ * It also seeds the IR calibration policy: the thirteen publishers of an
+ * overnight rate, a curve of price source 'fixing' starting from the newest
+ * rate of its currency, and the fixed initial rate kept when none publishes one.
+ *
  * This script is idempotent: it inserts the policy only when the class has
  * none, and the order only when the policy has none. The order is seeded
  * whole or not at all, so a provider added to the list below reaches a fresh
@@ -76,6 +80,50 @@ begin
            current_user, current_user, 'system.initial_load',
            'Initial population of the FX calibration provider order'
     from (values ('ecb', 1), ('imf', 2), ('boc', 3), ('tcmb', 4)) as o(provider_code, rank)
+    where not exists (
+        select 1 from ores_synthetic_calibration_provider_orders_tbl x
+        where x.tenant_id = v_tenant_id
+          and x.policy_id = v_policy_id
+          and x.valid_to = ores_utility_infinity_timestamp_fn()
+    );
+
+    -- The IR class: each curve of price source 'fixing' starts from the newest overnight
+    -- rate of its currency. A currency has one publisher as a rule, so the order decides
+    -- only when two fix one. Variance calibration does not apply to the curves; the rules
+    -- are the FX ones, so the row states every column.
+    v_policy_id := null;
+    select id into v_policy_id
+    from ores_synthetic_calibration_policies_tbl
+    where tenant_id = v_tenant_id
+      and asset_class_code = 'interest_rates'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    if v_policy_id is null then
+        v_policy_id := gen_random_uuid();
+        insert into ores_synthetic_calibration_policies_tbl (
+            id, tenant_id, version, asset_class_code, window_days, allow_inverse,
+            fallback_code, variance_approval_mode, variance_min_returns,
+            variance_require_starts_agree, variance_min_persistence,
+            variance_max_persistence, variance_min_reaction,
+            modified_by, performed_by, change_reason_code, change_commentary
+        )
+        values (
+            v_policy_id, v_tenant_id, 0, 'interest_rates', 90, false, 'keep_fixed',
+            'auto', 250, true, 0.80, 0.995, 0.01,
+            current_user, current_user, 'system.initial_load',
+            'Initial population of the IR calibration policy'
+        );
+    end if;
+    insert into ores_synthetic_calibration_provider_orders_tbl (
+        id, tenant_id, version, policy_id, provider_code, rank,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select gen_random_uuid(), v_tenant_id, 0, v_policy_id, o.provider_code, o.rank,
+           current_user, current_user, 'system.initial_load',
+           'Initial population of the IR calibration provider order'
+    from (values ('nyfed', 1), ('ecb', 2), ('boe', 3), ('boc', 4), ('boj', 5),
+                 ('norgesbank', 6), ('riksbank', 7), ('rba', 8), ('bcb', 9),
+                 ('banxico', 10), ('bcch', 11), ('cnb', 12), ('mas', 13))
+         as o(provider_code, rank)
     where not exists (
         select 1 from ores_synthetic_calibration_provider_orders_tbl x
         where x.tenant_id = v_tenant_id

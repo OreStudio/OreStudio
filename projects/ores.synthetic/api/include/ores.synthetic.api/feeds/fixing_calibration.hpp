@@ -157,6 +157,27 @@ struct calibration_candidate final {
 };
 
 /**
+ * @brief The currency of an overnight rate's fixing, such as =USD= for
+ * =oresmd://ir/USD?type=fixing&index=ibor&name=SOFR=, or nothing when @p item is not one.
+ *
+ * An overnight index names no tenor, which tells it from a term index such as EURIBOR 6M.
+ */
+ORES_SYNTHETIC_API_EXPORT std::optional<std::string> overnight_currency_of(const std::string& item);
+
+/**
+ * @brief The overnight rate fixings of @p currency among @p candidates, in the policy's
+ * provider order, then by item.
+ *
+ * A provider that is not in a stated order is left out; an empty order keeps every provider.
+ * A currency has one overnight rate as a rule, so the order decides only when two publishers
+ * fix one.
+ */
+ORES_SYNTHETIC_API_EXPORT std::vector<calibration_candidate>
+derive_overnight_items(const calibration_policy& policy,
+                       const std::string& currency,
+                       const std::vector<calibration_candidate>& candidates);
+
+/**
  * @brief Derive a feed's fixing items from a policy and the covering series.
  *
  * Keeps the series that quote @p base / @p quote directly, and, when the policy allows it,

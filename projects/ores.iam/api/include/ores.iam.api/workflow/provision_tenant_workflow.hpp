@@ -587,9 +587,12 @@ make_step(const provision_tenant_workflow_request& run,
     // A party's surface blueprints read the volatility quotes its subscriptions deliver.
     if (kind == give_party_surface_blueprints_step_kind)
         return {subscribe_market_data_step_kind};
-    // A forward set reads the party's spot and the funding curves it has published.
+    // A forward set reads the party's spot and the funding curves it has published. It lays out
+    // its ladder on the business days of its pair's calendars, so the calendars must be built:
+    // a calendar still being materialised reads as a calendar with no dates, and the pair is
+    // refused for a reason that disappears a moment later.
     if (kind == publish_party_forwards_step_kind)
-        return {publish_party_curves_step_kind};
+        return {publish_party_curves_step_kind, build_calendars_step_kind};
     // A surface reads the party's own blueprints and the forward sets it has published.
     if (kind == publish_party_surfaces_step_kind)
         return {publish_party_forwards_step_kind, give_party_surface_blueprints_step_kind};

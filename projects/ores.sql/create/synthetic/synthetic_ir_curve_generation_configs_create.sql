@@ -83,7 +83,7 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check ("source_name" <> ''),
     check ("source_name" like 'synthetic.%'),
     check ("ticks_per_hour" > 0),
-    check ("price_source" in ('fixed'))
+    check ("price_source" in ('fixed', 'fixing'))
 );
 
 -- Composite natural key: unique combination for active records

@@ -67,6 +67,9 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_fx_spot(const feed_build
 std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_build_context& ctx,
                                                                  const feed_build_input& input) {
     const auto& in = std::get<ir_curve_feed_build_input>(input);
+    std::optional<ir_curve_start> start;
+    if (in.config.price_source == "fixing")
+        start = resolve_ir_start(ctx.auth_nats, in.config, in.policy, ctx.clock.get());
     return make_ir_curve_feed(ctx.nats,
                               in.config,
                               in.entries,
@@ -74,7 +77,8 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_buil
                               in.definitions,
                               in.refctx,
                               ctx.scheduler,
-                              in.adapter_targets);
+                              in.adapter_targets,
+                              std::move(start));
 }
 
 } // namespace

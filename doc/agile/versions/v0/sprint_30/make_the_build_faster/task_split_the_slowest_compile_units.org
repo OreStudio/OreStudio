@@ -84,7 +84,7 @@ task and name that file in the Command column.
   load of 76. The second run, at low load, passed step 11 and failed at step
   13 =generate_trades= on the duplicate GBP LIBOR 3M swap convention. That
   defect is on main and has the capture
-  [[id:9137921C-B9C9-4C9F-84B6-847A07B61F28][Name GBP LIBOR 3M in one swap convention]].
+  [[id:B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C][Publish one curated convention set and provision to completion]].
 
 * Test Scenarios
 

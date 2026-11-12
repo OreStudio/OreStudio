@@ -27,10 +27,12 @@
 #include <set>
 #include <vector>
 
+using ores::analytics::quant::math::draw_at;
 using ores::analytics::quant::math::draw_purpose;
 using ores::analytics::quant::math::philox4x32_10;
 using ores::analytics::quant::math::rng_stream;
 using ores::analytics::quant::math::series_key;
+using ores::analytics::quant::math::standard_normal_at;
 using ores::analytics::quant::math::stream_key;
 
 namespace {
@@ -159,4 +161,33 @@ TEST_CASE("rng_stream drives the standard distributions", "[rng_stream]") {
     // An exponential of rate four has a mean of a quarter and a standard
     // deviation of a quarter, so the sample mean is within five standard errors.
     CHECK(sum / n == Catch::Approx(0.25).margin(5 * 0.25 / std::sqrt(n)));
+}
+
+TEST_CASE("draw_at returns the draw a sequential stream would reach", "[rng_stream]") {
+    const stream_key key{
+        .run_seed = 99, .series = series_key("acme.fx.EURUSD"), .purpose = draw_purpose::market};
+    rng_stream stream(key);
+    for (std::uint64_t index = 0; index < 9; ++index)
+        CHECK(draw_at(key, index) == stream());
+
+    // A draw at a far index is the same whether or not the ones before it were read.
+    CHECK(draw_at(key, 1000) == draw_at(key, 1000));
+}
+
+TEST_CASE("standard_normal_at gives standard normals", "[rng_stream]") {
+    const stream_key key{
+        .run_seed = 5, .series = series_key("acme.fx.EURUSD"), .purpose = draw_purpose::market};
+    constexpr int n = 100000;
+    double sum = 0;
+    double sum_squares = 0;
+    for (int i = 0; i < n; ++i) {
+        const double x = standard_normal_at(key, static_cast<std::uint64_t>(i));
+        sum += x;
+        sum_squares += x * x;
+    }
+    const double mean = sum / n;
+    const double variance = sum_squares / n - mean * mean;
+
+    CHECK(mean == Catch::Approx(0.0).margin(5.0 / std::sqrt(n)));
+    CHECK(variance == Catch::Approx(1.0).margin(0.02));
 }

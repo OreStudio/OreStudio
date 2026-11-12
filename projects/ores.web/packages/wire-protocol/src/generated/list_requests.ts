@@ -5238,6 +5238,52 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'synthetic.v1.fx_vol_contributors.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['fx_vol_contributors'],
+    },
+    'synthetic.v1.fx_vol_contributors_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'synthetic.v1.fx_vol_surface_feed_contributors.list': {
+        asOf: true,
+        filter: [
+            'feed_id',
+            'contributor_id',
+            'id_one_of',
+            'feed_id_one_of',
+            'contributor_id_one_of',
+        ],
+        rows: ['fx_vol_surface_feed_contributors'],
+    },
+    'synthetic.v1.fx_vol_surface_feed_contributors_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'synthetic.v1.fx_vol_surface_feed_expiries.list': {
+        asOf: true,
+        filter: ['feed_id', 'id_one_of', 'feed_id_one_of'],
+        rows: ['fx_vol_surface_feed_expiries'],
+    },
+    'synthetic.v1.fx_vol_surface_feed_expiries_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'synthetic.v1.fx_vol_surface_feeds.list': {
+        asOf: true,
+        filter: ['id_one_of'],
+        rows: ['fx_vol_surface_feeds'],
+    },
+    'synthetic.v1.fx_vol_surface_feeds_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'synthetic.v1.gmm_components.list': {
         asOf: true,
         filter: ['fx_spot_config_id', 'id_one_of', 'fx_spot_config_id_one_of'],

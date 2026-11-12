@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: CF66C3E8-C2AB-5A8F-AF1C-FBB0CFB5AA65
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_vol_surface_feed_expiries commands from the shell?
+#+description: Every command the fx_vol_surface_feed_expiries submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_vol_surface_feed_expiries:
+
+This file documents the fx_vol_surface_feed_expiries resource at the shell, one section per command. Every command is a subcommand of =fx_vol_surface_feed_expiries=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 4F49836B-D50C-5265-A106-B2927DD779CD
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_expiries list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries.list=.
+
+#+name: fx_vol_surface_feed_expiries-list
+#+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-list.ores :exports none
+fx_vol_surface_feed_expiries list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: CAF50F5F-07DC-568C-BA6E-E48AB38B2D71
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_expiries get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries.get=.
+
+#+name: fx_vol_surface_feed_expiries-get
+#+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-get.ores :exports none
+fx_vol_surface_feed_expiries get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: C38B6898-2B23-5504-833F-4EC29FE27B40
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_expiries get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries.get_many=.
+
+#+name: fx_vol_surface_feed_expiries-get-many
+#+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-get-many.ores :exports none
+fx_vol_surface_feed_expiries get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 7FF1C0A1-9894-5B7A-907F-01A394B72251
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_expiries add <feed_id> <tenor> <variance_reversion> <variance_volatility> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries.put=.
+
+#+name: fx_vol_surface_feed_expiries-add
+#+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-add.ores :exports none
+fx_vol_surface_feed_expiries add 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 5EC267CB-8808-5CDD-9A34-240907E20701
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_expiries set <id> <feed_id> <tenor> <variance_reversion> <variance_volatility> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries.put=.
+
+#+name: fx_vol_surface_feed_expiries-set
+#+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-set.ores :exports none
+fx_vol_surface_feed_expiries set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 70427DBB-A6DA-5EE2-9863-F1C650E8B541
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_expiries put-many --count <n> <id> <feed_id> <tenor> <variance_reversion> <variance_volatility> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries.put_many=.
+
+#+name: fx_vol_surface_feed_expiries-put-many
+#+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-put-many.ores :exports none
+fx_vol_surface_feed_expiries put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: F3FE4CBE-9633-5257-8814-42FB31498A22
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_expiries delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries.delete=.
+
+#+name: fx_vol_surface_feed_expiries-delete
+#+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-delete.ores :exports none
+fx_vol_surface_feed_expiries delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: F6DBE84F-0424-588B-B43A-004CC037BD26
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_expiries delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries.delete_many=.
+
+#+name: fx_vol_surface_feed_expiries-delete-many
+#+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-delete-many.ores :exports none
+fx_vol_surface_feed_expiries delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 17E693F1-9141-587E-A725-C1B0AE4BCF34
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_expiries versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries_versions.list=.
+
+#+name: fx_vol_surface_feed_expiries-versions
+#+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-versions.ores :exports none
+fx_vol_surface_feed_expiries versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 924CFEF9-5C80-5B9A-85DF-B0A8C92F591C
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_feed_expiries version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries_versions.get=.
+
+#+name: fx_vol_surface_feed_expiries-version
+#+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-version.ores :exports none
+fx_vol_surface_feed_expiries version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

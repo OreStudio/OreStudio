@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:synthetic:architecture:volatility:
 #+created: 2026-11-03
-#+updated: 2026-11-03
+#+updated: 2026-11-12
 
 * Summary
 
@@ -48,12 +48,24 @@ catalogue rows for each contributor's vendor ids. The runner, the subject
 builders, the adapter contract and the ingest loop need no edit
 ([[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]]).
 
-Its config holds child rows, as
-[[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]]
-does: the pair; template rows, one per expiry and strike label; process
-parameter rows against a parameter vocabulary; correlation rows between the
-shocks, spot included; and contributor rows, each naming a provider and a noise
-profile. Its starting quotes come by rank from a real vol source or from
+Its configuration is four tables, each holding typed facts and nothing derived:
+
+| Table | One row per | Holds |
+|-------+-------------+-------|
+| =fx_vol_surface_feed= | pair | the tick rate, the skew and curvature drivers' reversion and volatility, and three correlations |
+| =fx_vol_surface_feed_expiry= | feed and quoted expiry | the tenor, and the reversion and volatility of the forward variance of the segment ending there |
+| =fx_vol_contributor= | contributor | the provider it publishes as, and its noise profile |
+| =fx_vol_surface_feed_contributor= | feed and contributor | which contributors quote which pair |
+
+The expiries are ordered by length, so no row stores a position. A contributor's
+noise is the contributor's, whatever pair it quotes, so its profile is held once.
+The correlation of the shocks is three numbers: spot with every forward variance,
+spot with the skew, and the correlation of neighbouring forward variances, which
+falls by that factor for each segment between two of them. The feed builds the
+matrix from them and refuses one that is not a correlation, so no stored matrix
+can drift out of shape. The points a feed quotes are its expiries by the 25 and
+10 delta wings, so they are not stored either. Its starting quotes come by rank
+from a real vol source or from
 [[id:099697A6-8526-48E0-A63D-DB3932C06468][the derived source]].
 
 ** Why the layer exists

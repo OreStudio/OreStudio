@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: 158E2637-5025-47F3-8CAC-C4B6DF308E1B
+:ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
+:END:
+#+title: ores.synthetic.fx_vol_surface_feed_contributor
+#+description: Codegen entity model for the synthetic fx_vol_surface_feed_contributor table; a contributor that quotes a synthetic FX volatility surface.
+#+type: ores.codegen.entity
+#+web_resource: fx-vol-surface-feed-contributors
+#+web_writes: many
+#+web_system_owned: true
+#+web_parent_filter: feed_id
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: fx_vol_surface_feed_contributor
+#+entity_plural: fx_vol_surface_feed_contributors
+#+entity_title: FX Volatility Surface Feed Contributor
+#+brief: A contributor that quotes a synthetic FX volatility surface.
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+Says that a contributor quotes a feed's surface. A feed with several
+contributors gives a tenant several broker quotes of one market; the clean
+contributor among them gives the truth.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:server_owned: true
+:END:
+
+Owning party: the system party, which runs the installation's feeds.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** feed_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:natural_key: true
+:filterable:  true
+:END:
+
+The =fx_vol_surface_feed= quoted.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** contributor_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:natural_key: true
+:filterable:  true
+:END:
+
+The =fx_vol_contributor= that quotes it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_fx_vol_surface_feed_contributors_tbl
+:END:
+
+* Foreign keys
+
+** feed_id
+:PROPERTIES:
+:table:         ores_synthetic_fx_vol_surface_feeds_tbl
+:error_message: Invalid feed_id: %. No active fx_vol_surface_feed found with this id.
+:nullable:      false
+:END:
+
+** contributor_id
+:PROPERTIES:
+:table:         ores_synthetic_fx_vol_contributors_tbl
+:error_message: Invalid contributor_id: %. No active fx_vol_contributor found with this id.
+:nullable:      false
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fx_vol_surface_feed_contributor
+:entity_plural_short:   fx_vol_surface_feed_contributors
+:entity_singular_words: FX volatility surface feed contributor
+:entity_plural_words:   FX volatility surface feed contributors
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: j
+:END:
+
+** Table display
+
+| column         | header      |
+|----------------+-------------|
+| feed_id        | Feed        |
+| contributor_id | Contributor |
+| version        | Version     |
+
+* See also
+
+- [[id:DE836AD8-09BF-4AF6-8BF6-5D4CEF227A6E][FX Volatility Surface Feed]] -- the feed quoted.

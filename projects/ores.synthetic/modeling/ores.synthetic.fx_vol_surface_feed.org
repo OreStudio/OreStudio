@@ -1,0 +1,451 @@
+:PROPERTIES:
+:ID: DE836AD8-09BF-4AF6-8BF6-5D4CEF227A6E
+:ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
+:END:
+#+title: ores.synthetic.fx_vol_surface_feed
+#+description: Codegen entity model for the synthetic fx_vol_surface_feed table; a synthetic FX volatility surface for one pair: how its SSVI state moves and how it moves with spot.
+#+type: ores.codegen.entity
+#+web_resource: fx-vol-surface-feeds
+#+web_writes: many
+#+web_system_owned: true
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: fx_vol_surface_feed
+#+entity_plural: fx_vol_surface_feeds
+#+entity_title: FX Volatility Surface Feed
+#+brief: A synthetic FX volatility surface for one pair: how its SSVI state moves and how it moves with spot.
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+A synthetic volatility surface of one currency pair, as
+[[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]
+describes. The surface is SSVI with gamma fixed at one half. Its state is the
+forward variance of each segment between the feed's expiries, which the
+=fx_vol_surface_feed_expiry= rows hold, a skew driver and a curvature driver,
+each reverting to where the surface started.
+
+The correlation of the shocks is three numbers, and the feed builds the matrix
+from them: spot with every forward variance, spot with the skew, and how strongly
+neighbouring forward variances move together, which falls by that factor for each
+segment between them. Every other shock is independent of spot. The surface is
+quoted by the contributors =fx_vol_surface_feed_contributor= names.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:server_owned: true
+:END:
+
+Owning party: the system party, which runs the installation's feeds.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** config_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:natural_key: true
+:END:
+
+Parent =market_data_generation_config= this feed belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** base_currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:natural_key: true
+:no_generator_suffix: true
+:END:
+
+The base currency of the pair, such as EUR in EUR/USD.
+
+#+begin_src cpp :name generator
+// no_generator_suffix: the column is validated against the currency table, and the parent config keeps each row unique.
+std::string("EUR")
+#+end_src
+
+** quote_currency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:natural_key: true
+:no_generator_suffix: true
+:END:
+
+The quote currency of the pair.
+
+#+begin_src cpp :name generator
+// no_generator_suffix: the column is validated against the currency table, and the parent config keeps each row unique.
+std::string("USD")
+#+end_src
+
+** source_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The source the feed publishes under, which names its subject.
+
+#+begin_src cpp :name generator
+std::string("synthetic.fx_vol.eurusd")
+#+end_src
+
+** ticks_per_hour
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many surfaces the feed emits an hour.
+
+#+begin_src cpp :name generator
+12
+#+end_src
+
+** enabled
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the feed may be started at all.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** auto_start
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the feed starts on its own when the service starts.
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** folder_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The =folder= the feed lives under, as every feed of a collection does.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** asset_class_code
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "fx"
+:END:
+
+The asset class the feed belongs to: always =fx=.
+
+#+begin_src cpp :name generator
+std::string("fx")
+#+end_src
+
+** arrival_mode
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "periodic"
+:default:       'periodic'
+:END:
+
+How the feed's ticks arrive: =periodic=, =poisson= or =hawkes=, as for every feed.
+
+#+begin_src cpp :name generator
+std::string("periodic")
+#+end_src
+
+** branching_ratio
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:default:       0.0
+:END:
+
+For =hawkes=: the expected number of further ticks per tick, below one.
+
+#+begin_src cpp :name generator
+0.0
+#+end_src
+
+** decay
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 1.0
+:default:       1.0
+:END:
+
+For =hawkes=: how fast a burst fades, per second.
+
+#+begin_src cpp :name generator
+1.0
+#+end_src
+
+** sensitivity
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 1.0
+:default:       1.0
+:END:
+
+How strongly a market-wide regime moves this feed, where one is the average.
+
+#+begin_src cpp :name generator
+1.0
+#+end_src
+
+** skew_reversion
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+How fast the skew driver reverts to its start, per year.
+
+#+begin_src cpp :name generator
+3.0
+#+end_src
+
+** skew_volatility
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The volatility of the skew driver, per square root of a year.
+
+#+begin_src cpp :name generator
+0.6
+#+end_src
+
+** curvature_reversion
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+How fast the curvature driver reverts to its start, per year.
+
+#+begin_src cpp :name generator
+3.0
+#+end_src
+
+** curvature_volatility
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The volatility of the curvature driver, per square root of a year.
+
+#+begin_src cpp :name generator
+0.4
+#+end_src
+
+** spot_variance_correlation
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The correlation of spot with every forward variance. It has no universal sign in FX: a crisis lifts the volatility of a pair whichever way its safe-haven currency moves.
+
+#+begin_src cpp :name generator
+0.3
+#+end_src
+
+** spot_skew_correlation
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The correlation of spot with the skew driver, which moves the risk reversal toward the side the market buys protection on.
+
+#+begin_src cpp :name generator
+-0.4
+#+end_src
+
+** segment_correlation
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The correlation of neighbouring forward variances; segments further apart correlate by this factor once for each step between them, so the curve mostly moves as one.
+
+#+begin_src cpp :name generator
+0.9
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_fx_vol_surface_feeds_tbl
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "base_currency_code" <> "quote_currency_code" |
+| "source_name" like 'synthetic.%' |
+| "ticks_per_hour" > 0 |
+| "arrival_mode" in ('periodic', 'poisson', 'hawkes') |
+| "branching_ratio" >= 0 and "branching_ratio" < 1 |
+| "decay" > 0 and "decay" < 'Infinity' |
+| "sensitivity" > 0 and "sensitivity" < 'Infinity' |
+| "skew_reversion" >= 0 and "skew_reversion" < 'Infinity' |
+| "skew_volatility" >= 0 and "skew_volatility" < 'Infinity' |
+| "curvature_reversion" >= 0 and "curvature_reversion" < 'Infinity' |
+| "curvature_volatility" >= 0 and "curvature_volatility" < 'Infinity' |
+| "spot_variance_correlation" > -1 and "spot_variance_correlation" < 1 |
+| "spot_skew_correlation" > -1 and "spot_skew_correlation" < 1 |
+| "segment_correlation" >= 0 and "segment_correlation" < 1 |
+
+* Foreign keys
+
+** config_id
+:PROPERTIES:
+:table:         ores_synthetic_market_data_generation_configs_tbl
+:error_message: Invalid config_id: %. No active market_data_generation_config found with this id.
+:nullable:      false
+:END:
+
+** folder_id
+:PROPERTIES:
+:table:         ores_synthetic_folders_tbl
+:error_message: Invalid folder_id: %. No active folder found with this id.
+:nullable:      true
+:END:
+
+* Insert trigger
+** Validations
+
+| column              | validation_function                       |
+|---------------------+-------------------------------------------|
+| base_currency_code  | ores_refdata_validate_currency_fn         |
+| quote_currency_code | ores_refdata_validate_currency_fn         |
+| asset_class_code    | ores_refdata_validate_asset_class_code_fn |
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fx_vol_surface_feed
+:entity_plural_short:   fx_vol_surface_feeds
+:entity_singular_words: FX volatility surface feed
+:entity_plural_words:   FX volatility surface feeds
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <optional>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: f
+:END:
+
+** Table display
+
+| column              | header       |
+|---------------------+--------------|
+| base_currency_code  | Base         |
+| quote_currency_code | Quote        |
+| source_name         | Source       |
+| ticks_per_hour      | Ticks/Hour   |
+| enabled             | Enabled      |
+| version             | Version      |
+
+* See also
+
+- [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]

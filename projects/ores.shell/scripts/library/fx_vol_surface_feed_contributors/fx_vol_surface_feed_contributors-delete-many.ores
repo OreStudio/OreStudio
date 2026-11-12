@@ -1,0 +1,6 @@
+# =delete-many=
+#
+# GENERATED from doc/recipes/shell/fx_vol_surface_feed_contributors/fx_vol_surface_feed_contributor.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+fx_vol_surface_feed_contributors delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script

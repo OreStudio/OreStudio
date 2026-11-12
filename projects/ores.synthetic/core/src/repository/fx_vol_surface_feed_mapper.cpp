@@ -1,0 +1,130 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_mapper.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.synthetic.core/repository/fx_vol_surface_feed_mapper.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.synthetic.api/domain/fx_vol_surface_feed.hpp"
+#include "ores.synthetic.api/domain/fx_vol_surface_feed_json_io.hpp" // IWYU pragma: keep.
+#include "ores.synthetic.core/repository/fx_vol_surface_feed_entity.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <optional>
+#include <vector>
+
+namespace ores::synthetic::repository {
+
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+domain::fx_vol_surface_feed fx_vol_surface_feed_mapper::map(const fx_vol_surface_feed_entity& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+
+    domain::fx_vol_surface_feed r;
+    r.version = v.version;
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
+    r.party_id = v.party_id;
+    r.config_id = v.config_id;
+    r.base_currency_code = v.base_currency_code;
+    r.quote_currency_code = v.quote_currency_code;
+    r.source_name = v.source_name;
+    r.ticks_per_hour = v.ticks_per_hour;
+    r.enabled = v.enabled;
+    r.auto_start = v.auto_start;
+    r.folder_id = v.folder_id;
+    r.asset_class_code = v.asset_class_code;
+    r.arrival_mode = v.arrival_mode;
+    r.branching_ratio = v.branching_ratio;
+    r.decay = v.decay;
+    r.sensitivity = v.sensitivity;
+    r.skew_reversion = v.skew_reversion;
+    r.skew_volatility = v.skew_volatility;
+    r.curvature_reversion = v.curvature_reversion;
+    r.curvature_volatility = v.curvature_volatility;
+    r.spot_variance_correlation = v.spot_variance_correlation;
+    r.spot_skew_correlation = v.spot_skew_correlation;
+    r.segment_correlation = v.segment_correlation;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+    r.recorded_at = v.valid_from;
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    return r;
+}
+
+fx_vol_surface_feed_entity fx_vol_surface_feed_mapper::map(const domain::fx_vol_surface_feed& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+
+    fx_vol_surface_feed_entity r;
+    r.id = v.id;
+    r.tenant_id = v.tenant_id;
+    r.version = v.version;
+    r.party_id = v.party_id;
+    r.config_id = v.config_id;
+    r.base_currency_code = v.base_currency_code;
+    r.quote_currency_code = v.quote_currency_code;
+    r.source_name = v.source_name;
+    r.ticks_per_hour = v.ticks_per_hour;
+    r.enabled = v.enabled;
+    r.auto_start = v.auto_start;
+    r.folder_id = v.folder_id;
+    r.asset_class_code = v.asset_class_code;
+    r.arrival_mode = v.arrival_mode;
+    r.branching_ratio = v.branching_ratio;
+    r.decay = v.decay;
+    r.sensitivity = v.sensitivity;
+    r.skew_reversion = v.skew_reversion;
+    r.skew_volatility = v.skew_volatility;
+    r.curvature_reversion = v.curvature_reversion;
+    r.curvature_volatility = v.curvature_volatility;
+    r.spot_variance_correlation = v.spot_variance_correlation;
+    r.spot_skew_correlation = v.spot_skew_correlation;
+    r.segment_correlation = v.segment_correlation;
+    r.modified_by = v.modified_by;
+    r.performed_by = v.performed_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    return r;
+}
+
+std::vector<domain::fx_vol_surface_feed>
+fx_vol_surface_feed_mapper::map(const std::vector<fx_vol_surface_feed_entity>& v) {
+    return map_vector<fx_vol_surface_feed_entity, domain::fx_vol_surface_feed>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "db entities");
+}
+
+std::vector<fx_vol_surface_feed_entity>
+fx_vol_surface_feed_mapper::map(const std::vector<domain::fx_vol_surface_feed>& v) {
+    return map_vector<domain::fx_vol_surface_feed, fx_vol_surface_feed_entity>(
+        v, [](const auto& ve) { return map(ve); }, lg(), "domain entities");
+}
+
+}

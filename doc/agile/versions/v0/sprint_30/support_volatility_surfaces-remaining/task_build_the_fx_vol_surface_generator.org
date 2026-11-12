@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch: feature/build-the-fx-vol-surface-generator
-#+pr: 4650
+#+branch: feature/build-the-fx-vol-surface-generator-2
+#+pr: 4655
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -85,6 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4655][#4655]] | [synthetic] Model the synthetic FX volatility surface feed |
 | [[https://github.com/OreStudio/OreStudio/pull/4650][#4650]] | [analytics] Generate a synthetic FX volatility surface from an SSVI state |
 
 * Review
@@ -100,5 +101,13 @@ via its "Verifies task" field.
 | 7 | Say the Feller condition is not enforced and a long step biases the paths | =fx_vol_surface_generator.hpp= | Fix | The class comment says both. |
 | 8 | Say a stale point's previous value is the published one | =fx_vol_surface_generator.hpp= | Fix | The parameter says so. |
 | 9 | =Eigen/Dense= in a public header; "gamma is replaced" wording | =fx_vol_surface_generator.hpp= | Fix | =Eigen/Core= and =Eigen/Cholesky=; the start's gamma is ignored. |
+| 10 | PR #4655: the matrix built from three numbers may not be positive definite | =fx_vol_surface_feed.org= | Dismiss | =fx_vol_surface_generator::make= refuses a correlation that is not positive definite; the feed's builder reports it. |
+| 11 | PR #4655: soft foreign keys leave children of a retired parent | SQL | Dismiss | The repository's soft-key pattern; the runtime reads only children of a live feed. |
+| 12 | PR #4655: the tenor accepts 99999Y | =fx_vol_surface_feed_expiry.org= | Fix | A tenor is at most two digits of its unit. |
+| 13 | PR #4655: no party cross-checks on children | SQL | Dismiss | =party_id= is server-owned and the rows are the system party's. |
+| 14 | PR #4655: bias unbounded; quote step of zero | =fx_vol_contributor.org= | Dismiss | A bias is finite; zero step means no rounding, as the model and the engine state. |
+| 15 | PR #4655: the Hawkes arrival law is not bounded | =fx_vol_surface_feed.org= | Fix | Branching below one, decay and sensitivity positive and finite. |
+| 16 | PR #4655: confirm the money check fails on main | check | Dismiss | The two failing columns are fx_forward_publish's, untouched by this branch. |
+| 17 | PR #4655: build and recreate before merge | task | Fix | A database recreated from the branch builds the four tables with row-level security, and a NaN noise is refused by its check; the C++ build is pending. |
 
 * Result

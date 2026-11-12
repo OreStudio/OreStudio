@@ -26,6 +26,10 @@
 #include "ores.synthetic.service/messaging/folder_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/fx_spot_fixing_item_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/fx_spot_generation_config_event_registrar.hpp"
+#include "ores.synthetic.service/messaging/fx_vol_contributor_event_registrar.hpp"
+#include "ores.synthetic.service/messaging/fx_vol_surface_feed_contributor_event_registrar.hpp"
+#include "ores.synthetic.service/messaging/fx_vol_surface_feed_event_registrar.hpp"
+#include "ores.synthetic.service/messaging/fx_vol_surface_feed_expiry_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/gmm_component_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/ir_curve_generation_config_event_registrar.hpp"
 #include "ores.synthetic.service/messaging/ir_curve_generation_config_process_parameter_value_event_registrar.hpp"
@@ -66,6 +70,12 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
         register_variance_calibration_input_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_variance_calibration_input_point_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_fx_vol_contributor_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_fx_vol_surface_feed_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_fx_vol_surface_feed_expiry_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_fx_vol_surface_feed_contributor_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_variance_calibration_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_calibration_provider_order_event_mapping(event_source, event_bus, nats));

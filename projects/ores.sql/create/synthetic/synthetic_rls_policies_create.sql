@@ -266,6 +266,78 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
+-- fx_vol_contributors
+-- -----------------------------------------------------------------------------
+alter table ores_synthetic_fx_vol_contributors_tbl enable row level security;
+
+drop policy if exists fx_vol_contributors_tenant_isolation_policy
+    on ores_synthetic_fx_vol_contributors_tbl;
+
+create policy fx_vol_contributors_tenant_isolation_policy
+on ores_synthetic_fx_vol_contributors_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- fx_vol_surface_feeds
+-- -----------------------------------------------------------------------------
+alter table ores_synthetic_fx_vol_surface_feeds_tbl enable row level security;
+
+drop policy if exists fx_vol_surface_feeds_tenant_isolation_policy
+    on ores_synthetic_fx_vol_surface_feeds_tbl;
+
+create policy fx_vol_surface_feeds_tenant_isolation_policy
+on ores_synthetic_fx_vol_surface_feeds_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- fx_vol_surface_feed_expiries
+-- -----------------------------------------------------------------------------
+alter table ores_synthetic_fx_vol_surface_feed_expiries_tbl enable row level security;
+
+drop policy if exists fx_vol_surface_feed_expiries_tenant_isolation_policy
+    on ores_synthetic_fx_vol_surface_feed_expiries_tbl;
+
+create policy fx_vol_surface_feed_expiries_tenant_isolation_policy
+on ores_synthetic_fx_vol_surface_feed_expiries_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- fx_vol_surface_feed_contributors
+-- -----------------------------------------------------------------------------
+alter table ores_synthetic_fx_vol_surface_feed_contributors_tbl enable row level security;
+
+drop policy if exists fx_vol_surface_feed_contributors_tenant_isolation_policy
+    on ores_synthetic_fx_vol_surface_feed_contributors_tbl;
+
+create policy fx_vol_surface_feed_contributors_tenant_isolation_policy
+on ores_synthetic_fx_vol_surface_feed_contributors_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- variance_calibrations
 -- -----------------------------------------------------------------------------
 alter table ores_synthetic_variance_calibrations_tbl enable row level security;

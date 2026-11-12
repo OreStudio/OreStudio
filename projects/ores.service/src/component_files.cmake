@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "config/standard_service_options.cpp"
+    "messaging/step_progress_board.cpp"
     "service/request_context.cpp"
     "service/systemd_notify.cpp"
 )
@@ -34,6 +35,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/authorise.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/handler_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/step_command_stream.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/step_progress_board.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/step_workers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/messaging/workflow_helpers.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.service/ores.service.hpp"

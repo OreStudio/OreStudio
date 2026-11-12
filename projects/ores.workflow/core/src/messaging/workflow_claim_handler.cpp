@@ -148,7 +148,11 @@ renew_step_claim_response renew(ores::database::context ctx,
                 .renewed = false,
                 .state = state_name,
                 .message = "The step has already left in_progress."};
-    if (!claim_repo.renew(ctx, step_uuid, req.owner, step_claim_lease))
+    std::optional<repository::step_progress> progress;
+    if (req.reports_progress)
+        progress = repository::step_progress{
+            .phase = req.progress, .done = req.progress_done, .total = req.progress_total};
+    if (!claim_repo.renew(ctx, step_uuid, req.owner, step_claim_lease, progress))
         return {.success = true,
                 .renewed = false,
                 .state = "in_progress",

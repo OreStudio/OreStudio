@@ -148,6 +148,23 @@ void print_step_log(std::ostream& out, const workflow::messaging::workflow_step_
     }
 }
 
+/**
+ * @brief A running step's progress as the shell prints it, and empty when the
+ * step reports none.
+ */
+std::string progress_line(const workflow::messaging::workflow_step_summary& step) {
+    if (step.progress.empty() && !step.progress_done)
+        return {};
+    std::string line = step.progress;
+    if (step.progress_done) {
+        line += line.empty() ? "" : " ";
+        line += std::to_string(*step.progress_done);
+        if (step.progress_total)
+            line += " of " + std::to_string(*step.progress_total);
+    }
+    return line;
+}
+
 void print_step(std::ostream& out,
                 const workflow::messaging::workflow_step_summary& step,
                 std::size_t total) {
@@ -266,6 +283,7 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
 
     const auto deadline = std::chrono::steady_clock::now() + timeout;
     std::map<int, std::string> last_status;
+    std::map<int, std::string> last_progress;
     int consecutive_failures = 0;
 
     while (true) {
@@ -322,6 +340,13 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
                 if (last != step.status) {
                     last = step.status;
                     print_step(out, step, result->steps.size());
+                }
+                // A running step's progress, each time it moves.
+                const auto progress = progress_line(step);
+                auto& shown = last_progress[step.step_index];
+                if (!progress.empty() && progress != shown) {
+                    shown = progress;
+                    out << "      progress: " << progress << std::endl;
                 }
             }
 

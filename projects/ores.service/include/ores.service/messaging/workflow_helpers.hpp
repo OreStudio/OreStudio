@@ -26,10 +26,12 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.service/messaging/step_progress_board.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_claim_messages.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <chrono>
+#include <cstdint>
 #include <optional>
 #include <span>
 #include <string>
@@ -146,6 +148,25 @@ struct workflow_step_context {
               const std::vector<ores::workflow::messaging::step_log_entry>& log) const {
         publish(
             ores::workflow::messaging::step_outcome::completed_with_warnings, result_json, "", log);
+    }
+
+    /**
+     * @brief Reports how far the step has got, as it advances.
+     *
+     * The renewal of the step's claim carries the latest report to the engine,
+     * which fails a step only when its progress stands still for the step's
+     * budget. A step that reports as it goes is therefore never failed for
+     * being slow, and the shell shows the report while the step runs.
+     *
+     * @param phase What the step is doing, in its own words.
+     * @param done  How many of its units it has finished, when it counts.
+     * @param total How many units there are, when it knows.
+     */
+    void progress(std::string phase,
+                  std::optional<std::int64_t> done = std::nullopt,
+                  std::optional<std::int64_t> total = std::nullopt) const {
+        step_progress_board::instance().report(
+            step_id, {.phase = std::move(phase), .done = done, .total = total});
     }
 
     /**
@@ -408,13 +429,21 @@ enum class step_renewal_outcome {
  *
  * @p state carries the step's state when the claim is lost, for the log line that says so.
  */
-inline step_renewal_outcome renew_step_claim(ores::nats::service::client& nats,
-                                             const std::string& step_id,
-                                             const std::string& tenant_id,
-                                             const std::string& owner,
-                                             std::string& state) {
+inline step_renewal_outcome
+renew_step_claim(ores::nats::service::client& nats,
+                 const std::string& step_id,
+                 const std::string& tenant_id,
+                 const std::string& owner,
+                 std::string& state,
+                 const std::optional<reported_progress>& progress = std::nullopt) {
     using namespace ores::workflow::messaging;
-    const renew_step_claim_request req{.step_id = step_id, .tenant_id = tenant_id, .owner = owner};
+    renew_step_claim_request req{.step_id = step_id, .tenant_id = tenant_id, .owner = owner};
+    if (progress) {
+        req.reports_progress = true;
+        req.progress = progress->phase;
+        req.progress_done = progress->done;
+        req.progress_total = progress->total;
+    }
     try {
         const auto reply_msg = nats.request_sync(renew_step_claim_request::nats_subject,
                                                  ores::nats::default_wire_codec().encode(req),

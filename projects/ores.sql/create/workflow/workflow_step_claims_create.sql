@@ -50,6 +50,15 @@ create table if not exists "ores_workflow_step_claims_tbl" (
     "claimed_at" timestamp with time zone not null default now(),
     "lease_expires_at" timestamp with time zone not null,
     "attempts" integer not null default 0,
+    -- The latest progress the holder reported: what it is doing and how far
+    -- through it is. Empty until the step reports any.
+    "progress" text null,
+    "progress_done" bigint null,
+    "progress_total" bigint null,
+    -- When the progress last changed. A step whose progress stands still for
+    -- its budget has stalled; one that never reports is measured from its
+    -- claim, as before.
+    "progressed_at" timestamp with time zone not null default now(),
     primary key (step_id)
 );
 

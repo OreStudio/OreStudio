@@ -383,6 +383,14 @@ struct workflow_step_summary {
     std::optional<std::string> completed_at;
     std::string error;
     std::vector<step_log_entry> log;
+    /**
+     * @brief The progress a running step last reported: what it is doing, and how
+     * far through it is out of how much when it counts. Empty when the step is not
+     * running or reported none.
+     */
+    std::string progress;
+    std::optional<std::int64_t> progress_done;
+    std::optional<std::int64_t> progress_total;
 
     friend bool operator==(const workflow_step_summary&, const workflow_step_summary&) = default;
 };
@@ -739,6 +747,9 @@ wire_fields(std::type_identity<list_workflow_instance_summaries_response>) {
         ::ores::utility::codec::field{"completed_at", &workflow_step_summary::completed_at},
         ::ores::utility::codec::field{"error", &workflow_step_summary::error},
         ::ores::utility::codec::field{"log", &workflow_step_summary::log},
+        ::ores::utility::codec::field{"progress", &workflow_step_summary::progress},
+        ::ores::utility::codec::field{"progress_done", &workflow_step_summary::progress_done},
+        ::ores::utility::codec::field{"progress_total", &workflow_step_summary::progress_total},
     };
 }
 

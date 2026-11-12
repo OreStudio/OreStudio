@@ -207,6 +207,23 @@ std::string describe_seconds(std::chrono::seconds value) {
 }
 
 /**
+ * @brief The progress a claimed step last reported, as a clause a log line
+ * appends, and nothing when it reported none.
+ */
+std::string progress_text(const std::optional<repository::step_claim_activity>& activity) {
+    if (!activity || !activity->progress)
+        return {};
+    const auto& progress = *activity->progress;
+    std::string text = "; it last reported: " + progress.phase;
+    if (progress.done && progress.total)
+        text +=
+            " (" + std::to_string(*progress.done) + " of " + std::to_string(*progress.total) + ")";
+    else if (progress.done)
+        text += " (" + std::to_string(*progress.done) + ")";
+    return text;
+}
+
+/**
  * @brief The component a command subject belongs to.
  *
  * Subjects are @c <component>.v1.<resource>.<verb> throughout, and a service
@@ -1305,21 +1322,24 @@ workflow_engine::last_seen_of(const std::string& subject) {
     return last_seen;
 }
 
-std::string workflow_engine::deadline_failure_text(const domain::workflow_step& step,
-                                                   std::chrono::seconds budget,
-                                                   std::chrono::seconds silent_for,
-                                                   bool claimed) {
-    std::string reason = "The step did not answer within " + describe_seconds(budget) +
-                         " of its command being published (subject " + step.command_subject +
-                         "); it has been silent for " + describe_seconds(silent_for) + ".";
+std::string workflow_engine::deadline_failure_text(
+    const domain::workflow_step& step,
+    std::chrono::seconds budget,
+    std::chrono::seconds silent_for,
+    const std::optional<repository::step_claim_activity>& activity) {
+    if (!activity)
+        return "The step did not answer within " + describe_seconds(budget) +
+               " of its command being published (subject " + step.command_subject +
+               "); it has been silent for " + describe_seconds(silent_for) +
+               ". No worker ever claimed it, so it waited in the " +
+               component_of_subject(step.command_subject) +
+               " service's queue for its whole budget and longer; the command may have had no "
+               "consumer bound to it.";
 
-    if (!claimed) {
-        reason += " No worker ever claimed it, so it waited in the " +
-                  component_of_subject(step.command_subject) +
-                  " service's queue for its whole budget and longer; the command may have had "
-                  "no consumer bound to it.";
-        return reason;
-    }
+    // A worker took the step, and its progress has not moved for the budget.
+    std::string reason = "The step's progress stood still for " + describe_seconds(silent_for) +
+                         ", past its budget of " + describe_seconds(budget) + " (subject " +
+                         step.command_subject + ")" + progress_text(activity) + ".";
 
     // What the engine knows about the service that owes this step an answer.
     // It states the evidence and stops there: a service that is running but
@@ -1426,7 +1446,8 @@ std::size_t workflow_engine::expire_overdue_steps() {
              * reporting, because then nothing is coming back for it: the
              * engine must not wait for a handler that is not there.
              */
-            const auto claimed_at = claim_repo_.claimed_at(ctx_, step.id);
+            const auto activity = claim_repo_.activity(ctx_, step.id);
+            const auto claimed_at = activity ? std::optional(activity->claimed_at) : std::nullopt;
             /*
              * A step that runs long is not yet a failure, but a reader of the log must be able to
              * see it running: which step, of which run, for how long, and whether a worker holds
@@ -1447,7 +1468,7 @@ std::size_t workflow_engine::expire_overdue_steps() {
                                 std::to_string(std::chrono::duration_cast<std::chrono::seconds>(
                                                    now - *claimed_at)
                                                    .count()) +
-                                "s ago" :
+                                "s ago" + progress_text(activity) :
                             std::string("not yet claimed: its command waits in the "
                                         "service's queue"));
             }
@@ -1462,21 +1483,24 @@ std::size_t workflow_engine::expire_overdue_steps() {
                 }
             }
             /*
-             * Silence is measured from the later of the dispatch and the claim:
-             * a worker taking the step is the first moment the work could go
-             * silent, so a command that waited in a queue still gets the whole
-             * budget once someone takes it.
+             * Silence is measured from the later of the dispatch and the last
+             * time the work moved. A worker taking the step is the first moment
+             * it could go silent, so a command that waited in a queue still gets
+             * the whole budget once someone takes it; after that, every change
+             * in the progress the step reports starts the budget again. A step
+             * is therefore failed for standing still, never for taking long, and
+             * a step that reports nothing is measured from its claim as before.
              */
-            const auto since = claimed_at && *claimed_at > *step.command_published_at ?
-                                   *claimed_at :
+            const auto moved_at = activity ? std::optional(activity->progressed_at) : std::nullopt;
+            const auto since = moved_at && *moved_at > *step.command_published_at ?
+                                   *moved_at :
                                    *step.command_published_at;
             const auto silent_for = std::chrono::duration_cast<std::chrono::seconds>(now - since);
             if (silent_for < waiting.budget) {
                 ++it;
                 continue;
             }
-            const auto reason =
-                deadline_failure_text(step, waiting.budget, silent_for, claimed_at.has_value());
+            const auto reason = deadline_failure_text(step, waiting.budget, silent_for, activity);
             BOOST_LOG_SEV(lg(), error) << "Step outlived its deadline:" << " workflow="
                                        << boost::uuids::to_string(waiting.instance_id)
                                        << " step=" << step.name << " reason=" << reason;

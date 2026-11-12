@@ -41,17 +41,30 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+# The third-party headers this analysis traced, by the name each is included
+# under. The first four are the ones the story named. The rest are the ones the
+# measurement found expensive.
 DEFAULT_WATCH = [
     "libpq-fe.h",
     "mutex",
     "condition_variable",
     "boost/asio.hpp",
+    "chrono",
+    "format",
+    "filesystem",
+    "ostream",
+    "stdexcept",
+    "boost/asio/ip/address.hpp",
     "boost/asio/io_context.hpp",
+    "boost/lexical_cast.hpp",
+    "boost/log/sources/severity_channel_logger.hpp",
     "boost/log/core.hpp",
-    "rfl.hpp",
+    "boost/multiprecision/cpp_dec_float.hpp",
+    "boost/uuid/uuid.hpp",
+    "boost/uuid/string_generator.hpp",
+    "magic_enum/magic_enum.hpp",
     "decimal.hpp",
-    "nlohmann/json.hpp",
-    "pqxx/pqxx",
+    "rfl.hpp",
 ]
 
 INCLUDE_RE = re.compile(r'^\s*#\s*include\s*([<"])([^>"]+)[>"]')

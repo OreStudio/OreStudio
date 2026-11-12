@@ -55,10 +55,11 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 - The include graph, the cost of each header and the decision for each type are
   in [[id:AF6C4DA7-903E-4848-8807-73EA4E49E9CA][Investigation: The headers that couple the build]]. Its two
   instruments live beside it in =evidence/=, and both rerun on any commit.
-- The cost is carried by three chains: the codec chain rooted in =text_form.hpp=
-  and =decimal.hpp=, the clock chain opened by =datetime.hpp= and
-  =boost/uuid/uuid.hpp=, and the logging chain opened by =make_logger.hpp=.
-  The work goes in that order, not in order of the database context.
+- The cost is carried by three shapes: the codec chain rooted in =text_form.hpp=
+  and =decimal.hpp=, the clock habit of =<chrono>= that =datetime.hpp= and
+  =boost/uuid/uuid.hpp= carry into most objects, and the logging chain opened by
+  =make_logger.hpp=. The work goes in that order, not in order of the database
+  context.
 - The database context is expensive for a different reason than this story
   assumed. =libpq-fe.h= costs 0.04 s. The bulk behind =context.hpp= is
   =pq/transaction.hpp= → =pq/codec.hpp= → =decimal.hpp=, and

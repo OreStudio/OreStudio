@@ -79,7 +79,13 @@ Two caveats belong with every number below.
   =ores.trading.service.lib= each include a file added after that build. The
   log is still the best whole-tree record available, because a fresh release
   build is the work this story is trying to make cheaper.
-- The box is shared with the other worktrees. Absolute times vary by up to
+- Threshold: a header earns a decision when more than 300 objects read it, or when
+it costs more than 1.0 s to parse on its own. 35 project headers pass the first
+test and 11 of the 18 measured pass the second; most pass both. The tables below
+show the top of each ranking. The decisions are per family, so a header that
+shares a family's shape takes the family's decision.
+
+The box is shared with the other worktrees. Absolute times vary by up to
   about 2x between runs; every figure here is the minimum of several runs, and
   the A/B comparisons alternate the two variants so a load change cannot be
   mistaken for an effect.
@@ -202,10 +208,20 @@ Everything below that inherits the chain:
 ** The clock chain
 
 =<chrono>= costs 2.32 s, and C++23 pulls =<format>= and =bits/chrono_io.h= with
-it. Two doors open it: =datetime.hpp=, which needs it by value, and
-=boost/uuid/uuid.hpp=, which includes =uuid_clock.hpp= and =<chrono>= itself. So
-every translation unit that names =boost::uuids::uuid=, which includes every one
-that reads =tenant_id.hpp=, pays it.
+it. It is not one door but a habit: 4311 files include it directly, so a reader
+of most of this tree pays it whichever header it came through.
+
+Two doors carry it into the headers this analysis ranks highest.
+=datetime.hpp= needs it by value in its own inline functions.
+=boost/uuid/uuid.hpp= includes =uuid_clock.hpp= and =<chrono>= itself, so every
+translation unit that names =boost::uuids::uuid= pays it, and that is 2826 files
+directly and every one of the 837 objects that read =tenant_id.hpp=.
+
+The fix here is narrower than the codec chain's. =datetime.hpp= cannot drop it,
+because =std::chrono= types cannot be forward-declared and its own inline
+functions use them by value. =boost/uuid/uuid.hpp= is not ours to change. What
+is left is to stop naming a =boost::uuids::uuid= in a header that most of the
+build reads.
 
 ** The logging chain
 
@@ -224,8 +240,8 @@ targets.
 | 2.81 | =boost/asio/ip/address.hpp= | =ores.utility/codec/text_form.hpp= |
 | 2.44 | =boost/uuid/string_generator.hpp= | =ores.utility/uuid/tenant_id.hpp=, where nothing uses it |
 | 2.39 | =boost/asio/detail/impl/socket_ops.ipp= | through =io_context.hpp= |
-| 2.36 | =boost/uuid/uuid.hpp= | =ores.utility/uuid/tenant_id.hpp= |
-| 2.32 | =<chrono>= | =ores.platform/time/datetime.hpp= and =boost/uuid/uuid.hpp= |
+| 2.36 | =boost/uuid/uuid.hpp= | 2826 direct includers; =ores.utility/uuid/tenant_id.hpp= is the one that reaches 837 objects |
+| 2.32 | =<chrono>= | 4311 direct includers; =ores.platform/time/datetime.hpp= and =boost/uuid/uuid.hpp= are the two that matter here |
 | 1.94 | =boost/lexical_cast.hpp= | =ores.utility/codec/text_form.hpp= |
 | 1.94 | =<filesystem>= | =ores.utility/codec/text_form.hpp= |
 | 1.49 | =<format>= | through =<chrono>= and =text_form.hpp= |
@@ -365,9 +381,10 @@ share it. Step 7 is a candidate, not a commitment.
 - Reach and cost are different questions and this build answers them with
   different headers. The most widely included headers are free; the most
   expensive ones reach a third to a half of the build; two are both.
-- The cost is carried by three chains: the codec chain rooted in
-  =text_form.hpp= and =decimal.hpp=, the clock chain opened by =datetime.hpp=
-  and =boost/uuid/uuid.hpp=, and the logging chain opened by =make_logger.hpp=.
+- The cost is carried by three shapes: the codec chain rooted in
+  =text_form.hpp= and =decimal.hpp=, the clock habit of =<chrono>=, which
+  =datetime.hpp= and =boost/uuid/uuid.hpp= carry into most objects, and the
+  logging chain opened by =make_logger.hpp=.
 - The story's premise is wrong about the cause and right about the fix. libpq
   costs 0.04 s. =context.hpp= is expensive because of the codec and clock chains
   behind =pq/transaction.hpp= and =tenant_id.hpp=.

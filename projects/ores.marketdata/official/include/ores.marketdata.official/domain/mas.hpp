@@ -51,7 +51,8 @@ parse_mas_page_state(std::string_view html);
  * The download is CSV with a title above its header and notes below its rows. The header
  * names =SORA Value Date= over three columns, the year, the month and the day, then =SORA
  * Publication Date= and =SORA=. A row states its year and its month only when they change,
- * so each carries down. The rate is in percent.
+ * so each carries down. A download that spans years states the header again above each
+ * year. The rate is in percent.
  */
 [[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT
     std::expected<std::vector<published_fixing>, std::string>

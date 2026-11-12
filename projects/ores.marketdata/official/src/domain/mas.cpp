@@ -109,6 +109,9 @@ std::expected<std::vector<published_fixing>, std::string> parse_mas_sora_csv(std
     for (auto line = std::next(header); line != lines.end(); ++line) {
         if (line->starts_with('"'))
             break;
+        // A download that spans years states the header again above each year.
+        if (line->starts_with("SORA Value Date"))
+            continue;
         const auto cells = cells_of(*line, ',');
         if (cells.size() < 5)
             return std::unexpected(std::format("a SORA row has {} cells: {}", cells.size(), *line));

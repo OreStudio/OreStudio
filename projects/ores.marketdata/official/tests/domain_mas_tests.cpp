@@ -108,6 +108,26 @@ TEST_CASE("a_sora_download_reads_as_decimal_fixings_of_its_value_dates", "[domai
     CHECK((*fixings)[4].value == "0.015992");
 }
 
+TEST_CASE("a_sora_download_across_years_reads_past_the_header_of_each_year", "[domain][mas]") {
+    // The turn of 2025 into 2026 as MAS sent it on 2026-11-12, with the first row of a month
+    // rewritten to state its year and month.
+    const std::string across_years = "SORA Value Date,,,SORA Publication Date,SORA\n"
+                                     "2025,Dec,30,31 Dec 2025,1.3212\n"
+                                     ",,31,02 Jan 2026,0.8949\n"
+                                     "\n"
+                                     "\n"
+                                     "SORA Value Date,,,SORA Publication Date,SORA\n"
+                                     "2026,Jan,02,05 Jan 2026,1.0119\n";
+
+    const auto fixings = parse_mas_sora_csv(across_years, "SORA");
+
+    REQUIRE(fixings.has_value());
+    REQUIRE(fixings->size() == 3);
+    CHECK((*fixings)[1].date == mas_day(2025, 12, 31));
+    CHECK((*fixings)[2].date == mas_day(2026, 1, 2));
+    CHECK((*fixings)[2].value == "0.010119");
+}
+
 TEST_CASE("a_malformed_sora_download_is_an_error_and_not_a_fixing", "[domain][mas]") {
     CHECK_FALSE(parse_mas_sora_csv("<html>Maintenance</html>", "SORA").has_value());
     CHECK_FALSE(parse_mas_sora_csv("SORA Value Date,,,SORA Publication Date,SORA Index\n", "SORA")

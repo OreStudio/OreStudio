@@ -1,0 +1,409 @@
+:PROPERTIES:
+:ID: AF6C4DA7-903E-4848-8807-73EA4E49E9CA
+:END:
+#+title: Investigation: The headers that couple the build
+#+description: Which headers most of the build depends on, what each costs to parse, and one decision for each type in them.
+#+type: investigation
+#+level: s1
+#+filetags: :break_the_large_compilation_dependencies:sprint_30:v0:build:compilation:headers:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+A point-in-time record of the include-graph analysis commissioned by
+[[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]]
+under the story
+[[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]].
+
+* Context
+
+A change to one header rebuilt most of the tree, and the publish lifecycle work
+found the case: =ores.database/domain/context.hpp=. It is included by most
+repositories and services. Through it each of them parsed =libpq-fe.h=, the
+pool, =<mutex>= and =<condition_variable>=, although most only pass a context
+along.
+
+The story assumed that cost came from libpq and the pool. This investigation
+measures the build's include graph and the parse cost of each header, and it
+tests that assumption. It does not hold: =libpq-fe.h= costs 0.04 s to parse and
+=context.hpp= costs 6.6 s. The bulk arrives another way, through the decimal and
+text-form codec headers that =pq/transaction.hpp= pulls in.
+
+The answer the story needs is therefore two lists, not one. A header reaches
+many objects, or it costs a lot to parse, or both; the work order must weigh
+both.
+
+* Methodology
+
+Two instruments, both kept beside this investigation in =evidence/=, and both
+driven by the build's own records so they rerun on any commit.
+
+| Instrument | What it reads | What it answers |
+|------------+---------------+-----------------|
+| =header_blast_radius.py= | =ninja -t deps=, plus the source text of every =#include= | how many objects and targets rebuild when a header changes, and through which include chain |
+| =header_cost.py= | =compile_commands.json= and clang =-ftime-trace= | what a header costs to parse, alone and inside a real translation unit |
+
+Run them with:
+
+#+begin_src sh :results verbatim
+python3 evidence/header_blast_radius.py \
+    --build-dir build/output/linux-clang-release-ninja --top 30
+
+python3 evidence/header_cost.py headers \
+    --build-dir build/output/linux-clang-release-ninja --runs 5 \
+    --header ores.database/domain/context.hpp
+
+python3 evidence/header_cost.py sample \
+    --build-dir build/output/linux-clang-release-ninja --count 14
+
+python3 evidence/header_cost.py compare \
+    --build-dir build/output/linux-clang-release-ninja --runs 4 \
+    --shadow "projects/ores.utility/include/ores.utility/uuid/tenant_id.hpp:string_generator.hpp"
+#+end_src
+
+* Measurements, and the tree they describe
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Dependency record | =ninja -t deps= of the release tree, 883 compile objects, 216 targets | =header_blast_radius.py= | =27cad5a0c6= |
+| Source include scan | 24287 files, 52075 project include edges | =header_blast_radius.py= | =27cad5a0c6= |
+| Project headers in the tree | 11243, of which 10523 are codegen output | =header_blast_radius.py= | =27cad5a0c6= |
+| Parse costs | clang 21.1.8, =-std=c++23=, flags from =compile_commands.json=, minimum of five runs | =header_cost.py headers= | =27cad5a0c6= |
+| Trace sample | 12 valid translation units of 14 attempted, 448.0 s of frontend time | =header_cost.py sample= | =27cad5a0c6= |
+
+Two caveats belong with every number below.
+
+- The dependency record describes the tree as it stood at =27cad5a0c6=, the main
+  commit at the time the release tree was configured (build.ninja dated
+  2026-11-08 18:34). The analysis ran at =06db2fb435=. Two sampled units failed
+  to compile because the tree moved under the build: =ores.trading.core.lib= and
+  =ores.trading.service.lib= each include a file added after that build. The
+  log is still the best whole-tree record available, because a fresh release
+  build is the work this story is trying to make cheaper.
+- The box is shared with the other worktrees. Absolute times vary by up to
+  about 2x between runs; every figure here is the minimum of several runs, and
+  the A/B comparisons alternate the two variants so a load change cannot be
+  mistaken for an effect.
+
+* Reach: the headers the build depends on
+
+Top of 11243 project headers, by the number of compile objects that read them.
+The tree has 883 such objects in 216 targets, so the first row is read by 95%
+of the build.
+
+| Objects | Targets | Header | Component |
+|--------+--------|--------|-----------|
+| 841 | 177 | =ores.utility/export.hpp= | ores.utility |
+| 839 | 175 | =ores.platform/export.hpp= | ores.platform |
+| 837 | 174 | =ores.utility/uuid/tenant_id.hpp= | ores.utility |
+| 835 | 172 | =ores.platform/time/datetime.hpp= | ores.platform |
+| 831 | 174 | =ores.utility/decimal/decimal.hpp= | ores.utility |
+| 813 | 186 | =ores.utility/codec/wire_fields.hpp= | ores.utility |
+| 801 | 166 | =ores.utility/serialization/error_code.hpp= | ores.utility |
+| 795 | 184 | =ores.utility/codec/member_count.hpp= | ores.utility |
+| 789 | 182 | =ores.utility/codec/wire_traits_fwd.hpp= | ores.utility |
+| 715 | 129 | =ores.utility/codec/text_form.hpp= | ores.utility |
+| 603 | 156 | =ores.utility/rfl/time_point_parser.hpp= | ores.utility |
+| 600 | 154 | =ores.utility/rfl/reflectors.hpp= | ores.utility |
+| 567 | 191 | =ores.logging/severity_level.hpp= | ores.logging |
+| 567 | 191 | =ores.logging/boost_severity.hpp= | ores.logging |
+| 565 | 189 | =ores.logging/make_logger.hpp= | ores.logging |
+| 562 | 115 | =ores.utility/domain/protocol.hpp= | ores.utility |
+| 549 | 112 | =ores.utility/domain/protocol_codec.hpp= | ores.utility |
+| 477 | 92 | =ores.utility/codec/json_codec.hpp= | ores.utility |
+| 365 | 70 | =ores.database/domain/context.hpp= | ores.database |
+| 365 | 70 | =ores.database/pq/connection.hpp= | ores.database |
+
+Not one of these is generated. All 10523 codegen headers sit below this table,
+because each is read by the few units of its own component.
+
+* Cost: what each header costs to parse
+
+The same headers, measured by the time clang needs to parse a translation unit
+whose only content is that header, minus nothing else.
+
+| Wall | Objects | Header |
+|-----|--------|--------|
+| 0.05 | 841 | =ores.utility/export.hpp= |
+| 0.05 | 839 | =ores.platform/export.hpp= |
+| 2.09 | 837 | =ores.utility/uuid/tenant_id.hpp= |
+| 2.11 | 835 | =ores.platform/time/datetime.hpp= |
+| 4.03 | 831 | =ores.utility/decimal/decimal.hpp= |
+| 0.34 | 813 | =ores.utility/codec/wire_fields.hpp= |
+| 1.89 | 801 | =ores.utility/serialization/error_code.hpp= |
+| 0.28 | 795 | =ores.utility/codec/member_count.hpp= |
+| 0.02 | 789 | =ores.utility/codec/wire_traits_fwd.hpp= |
+| 4.99 | 715 | =ores.utility/codec/text_form.hpp= |
+| 0.03 | 567 | =ores.logging/severity_level.hpp= |
+| 3.87 | 565 | =ores.logging/make_logger.hpp= |
+| 0.96 | 562 | =ores.utility/domain/protocol.hpp= |
+| 6.15 | 549 | =ores.utility/domain/protocol_codec.hpp= |
+| 4.95 | 477 | =ores.utility/codec/json_codec.hpp= |
+| 6.60 | 365 | =ores.database/domain/context.hpp= |
+| 2.08 | 365 | =ores.database/pq/connection.hpp= |
+| 2.46 | 365 | =ores.database/pq/pool.hpp= |
+
+The two rankings disagree, and the disagreement is the finding.
+
+- =export.hpp=, =severity_level.hpp= and =wire_traits_fwd.hpp= are read by most
+  of the build and cost about nothing. They rank first by reach and last by
+  cost.
+- =context.hpp=, =protocol_codec.hpp= and =json_codec.hpp= cost the most and
+  reach a third to a half of the build.
+- =decimal.hpp= and =text_form.hpp= are both.
+
+Cost and reach multiply into the figure that decides the order of work. Treat
+the product as an upper bound, not a sum: a header's standalone cost already
+contains the cost of the headers it includes, so =protocol_codec.hpp= and
+=text_form.hpp= overlap.
+
+| Object-seconds | Objects x wall | Header |
+|---------------|---------------|--------|
+| 3568 | 715 x 4.99 | =ores.utility/codec/text_form.hpp= |
+| 3376 | 549 x 6.15 | =ores.utility/domain/protocol_codec.hpp= |
+| 3349 | 831 x 4.03 | =ores.utility/decimal/decimal.hpp= |
+| 2410 | 365 x 6.60 | =ores.database/domain/context.hpp= |
+| 2361 | 477 x 4.95 | =ores.utility/codec/json_codec.hpp= |
+| 2187 | 565 x 3.87 | =ores.logging/make_logger.hpp= |
+| 1762 | 835 x 2.11 | =ores.platform/time/datetime.hpp= |
+| 1750 | 837 x 2.09 | =ores.utility/uuid/tenant_id.hpp= |
+| 1514 | 801 x 1.89 | =ores.utility/serialization/error_code.hpp= |
+| 540 | 562 x 0.96 | =ores.utility/domain/protocol.hpp= |
+| 276 | 813 x 0.34 | =ores.utility/codec/wire_fields.hpp= |
+| 234 | 795 x 0.28 | =ores.utility/codec/member_count.hpp= |
+| 42 | 841 x 0.05 | =ores.utility/export.hpp= |
+| 16 | 789 x 0.02 | =ores.utility/codec/wire_traits_fwd.hpp= |
+
+The whole tree needs about 24342 s of frontend time, estimated from the trace
+sample over 652 compiles. The table above therefore covers roughly a quarter of
+it, which fits: most of the remaining time is the translation units' own bodies
+and template instantiation.
+
+* The cost is a chain, not a list
+
+Three chains carry nearly all of the header cost. That structure, not the
+individual rows, is what the decisions must break.
+
+** The codec chain
+
+=decimal.hpp= (4.03 s, boost multiprecision) is included by =text_form.hpp=
+(4.99 s), which adds =boost/asio/ip/address.hpp=, =boost/lexical_cast.hpp=,
+=<filesystem>=, =<format>= and =magic_enum=. =protocol_codec.hpp= (6.15 s) and
+=json_codec.hpp= (4.95 s) then include =text_form.hpp= so that each text form
+can be defined inline.
+
+Everything below that inherits the chain:
+
+- 638 generated =*_protocol.hpp= headers, each of which includes
+  =protocol_codec.hpp=. In the sample a unit that reads one pays 0.5 to 1.5 s
+  for it.
+- =context.hpp=, through =pq/transaction.hpp= (145 ms own) → =pq/statement.hpp= →
+  =pq/codec.hpp= → =decimal.hpp=.
+
+** The clock chain
+
+=<chrono>= costs 2.32 s, and C++23 pulls =<format>= and =bits/chrono_io.h= with
+it. Two doors open it: =datetime.hpp=, which needs it by value, and
+=boost/uuid/uuid.hpp=, which includes =uuid_clock.hpp= and =<chrono>= itself. So
+every translation unit that names =boost::uuids::uuid=, which includes every one
+that reads =tenant_id.hpp=, pays it.
+
+** The logging chain
+
+=make_logger.hpp= (3.87 s) includes
+=boost/log/sources/severity_channel_logger.hpp= (3.58 s) to declare one typedef,
+=logger_t=. Every translation unit that logs pays it: 565 objects in 189
+targets.
+
+* Third-party headers, their cost, and who brings them in
+
+| Wall | Header | Project header that includes it |
+|-----|--------|--------------------------------|
+| 3.58 | =boost/log/sources/severity_channel_logger.hpp= | =ores.logging/make_logger.hpp= |
+| 3.06 | =boost/multiprecision/cpp_dec_float.hpp= | =ores.utility/decimal/decimal.hpp= |
+| 2.99 | =boost/asio/io_context.hpp= | 196 direct includers, mostly =main.cpp= files and =ores.http.api/net/http_server.hpp= |
+| 2.81 | =boost/asio/ip/address.hpp= | =ores.utility/codec/text_form.hpp= |
+| 2.44 | =boost/uuid/string_generator.hpp= | =ores.utility/uuid/tenant_id.hpp=, where nothing uses it |
+| 2.39 | =boost/asio/detail/impl/socket_ops.ipp= | through =io_context.hpp= |
+| 2.36 | =boost/uuid/uuid.hpp= | =ores.utility/uuid/tenant_id.hpp= |
+| 2.32 | =<chrono>= | =ores.platform/time/datetime.hpp= and =boost/uuid/uuid.hpp= |
+| 1.94 | =boost/lexical_cast.hpp= | =ores.utility/codec/text_form.hpp= |
+| 1.94 | =<filesystem>= | =ores.utility/codec/text_form.hpp= |
+| 1.49 | =<format>= | through =<chrono>= and =text_form.hpp= |
+| 1.41 | =<ostream>= | =ores.utility/uuid/tenant_id.hpp=, =ores.logging/boost_severity.hpp= |
+| 0.90 | =<condition_variable>= | =ores.database/pq/pool.hpp=, and 16 other headers |
+| 0.77 | =magic_enum/magic_enum.hpp= | =ores.utility/serialization/error_code.hpp=, =text_form.hpp= |
+| 0.50 | =<string>= | nearly everything |
+| 0.48 | =<stdexcept>= | =ores.database/domain/context.hpp=, 16 others |
+| 0.29 | =<mutex>= | =ores.database/pq/pool.hpp=, =ores.database/domain/context.hpp=, and 60 others |
+| 0.12 | =<expected>= | =ores.utility/uuid/tenant_id.hpp= |
+| 0.04 | =libpq-fe.h= | =ores.database/pq/connection.hpp=, plus five .cpp files |
+
+=libpq-fe.h= is the cheapest header on this list. The story's premise named it
+first. Measured, it is not the problem; it is only a problem because a header
+read by 365 objects includes it at all.
+
+* The include chain behind =context.hpp=
+
+The trace of a translation unit that reads only =context.hpp= puts its 6.38 s
+here:
+
+| ms | File |
+|---|------|
+| 406 | =c++/16/format= |
+| 379 | =boost/math/special_functions/lanczos.hpp= |
+| 246 | =c++/16/chrono= |
+| 199 | =boost/multiprecision/detail/default_ops.hpp= |
+| 145 | =ores.database/pq/transaction.hpp=, its own body |
+| 135 | =c++/16/bits/stl_bvector.h= |
+| 122 | =c++/16/bits/chrono_io.h= |
+| 110 | =boost/multiprecision/cpp_dec_float.hpp= |
+
+The chain is =context.hpp= → =pq/transaction.hpp= → =pq/statement.hpp= →
+=pq/codec.hpp= → =decimal.hpp= → boost multiprecision, and
+=context.hpp= → =tenant_id.hpp= → =boost/uuid/uuid.hpp= → =<chrono>=. =libpq-fe.h=
+does not appear in the first fourteen rows.
+
+So the task's stated fix, keeping libpq and the pool out of =context.hpp=,
+saves far less than the premise predicted. It is still right, because a header
+that only names a type should not include it, but the larger win in the same
+header is the codec chain behind =pq/transaction.hpp=.
+
+* Cycles and cross-component includes
+
+- Include cycles among project headers: none. The graph is a DAG, so forward
+  declarations within it are safe.
+- Includes of another component's =src/= tree: none, in 0 of the 52075 edges.
+  The component boundaries hold, so no decision here is blocked by a leak.
+- The heaviest cross-component edges are ordinary library use:
+  =ores.refdata= → =ores.utility= (5058 edges), =ores.refdata= →
+  =ores.database= (3500), =ores.trading= → =ores.utility= (3322).
+
+* Codegen output
+
+10523 of the 11243 project headers carry the =AUTO-GENERATED FILE= banner. The
+templates, by count:
+
+| Headers | Template |
+|--------|----------|
+| 638 | =cpp_protocol.hpp.mustache= |
+| 570 | =cpp_domain_type_class.hpp.mustache= |
+| 570 | =cpp_domain_type_codec.hpp.mustache= |
+| 568 | =cpp_domain_type_generator.hpp.mustache= |
+| 556 | =cpp_service.hpp.mustache= |
+| 556 | =cpp_nats_handler.hpp.mustache= |
+
+No generated header reaches more than a component's own units, so none is worth
+a per-object decision. The one codegen decision in the work order is the header
+that all 638 protocol headers include: change =cpp_protocol.hpp.mustache=, not
+the 638 outputs.
+
+* Decisions, one per header family
+
+| Header | Decision | Reason |
+|--------|----------|--------|
+| =ores.utility/codec/text_form.hpp= | *Move* the text-form definitions to a =.cpp=, leaving declarations | The forms are defined inline so each =text_form= is visible to the codec; doing so costs 4.99 s on 715 objects. The abandoned task [[id:8856431C-F316-423C-B142-FAC42D87B1AC][Keep the codec headers light]] proposed this and was not carried out. |
+| =ores.utility/domain/protocol_codec.hpp= and =ores.utility/codec/json_codec.hpp= | *Keep*, but lose the inline text forms with the row above | Both are template code that must see the encode/decode interface. Their own cost falls with =text_form.hpp=. |
+| =ores.utility/decimal/decimal.hpp= | *Keep* for now; record the split as a candidate | =cpp_dec_float_50= is a by-value member and the arithmetic operators are inline over it. Hiding it behind a pointer would remove 4.03 s from 831 objects and cost every arithmetic call an indirection. This needs its own measurement. |
+| =ores.logging/make_logger.hpp= | *Split*: hold the logger behind a small handle, so the typedef does not need Boost.Log's sources | One typedef pulls 3.58 s into 565 objects. The call sites already go through a macro. |
+| =ores.utility/uuid/tenant_id.hpp= | *Move*: drop the unused =<boost/uuid/string_generator.hpp>= include | Nothing in the header uses it; the =.cpp= already includes it itself. Measured saving 0.69 s on 837 objects. |
+| =ores.utility/serialization/error_code.hpp= | *Move* the two inline functions that call =magic_enum= into the =.cpp= | =operator<<= and =to_string= are the only users. Removing the include alone does not compile, which the A/B run proved: the fix is to move the code, not the line. |
+| =ores.database/domain/context.hpp= | *Forward-declare* =pq::pool=, =pq::transaction= and =pq::session_context=; *move* =connection_options= and =open_policy= to a small header; *hide* =pq_slot= behind a pointer to an incomplete type defined in the =.cpp= | This is the story's known case. It removes libpq, =<mutex>= and =<condition_variable>= from 365 objects. The larger remaining cost in the same header is the codec chain behind =pq/transaction.hpp=. |
+| =ores.database/pq/connection.hpp= | *Move* =connection_options= out; *keep* the rest | The rest needs libpq to name =PGconn=. |
+| =ores.database/pq/pool.hpp=, =pq/transaction.hpp=, =pq/statement.hpp=, =pq/codec.hpp= | *Keep* their own types; lose the family's cost as =decimal.hpp= and =context.hpp= change | These are the implementation of the database component, and a caller that names them uses them in full. |
+| =ores.platform/time/datetime.hpp= | *Keep* | =<chrono>= is needed by value in its own inline functions, and =std::chrono= types cannot be forward-declared. |
+| =ores.utility/codec/wire_fields.hpp=, =member_count.hpp=, =wire_traits_fwd.hpp= | *Keep* | Template metaprogramming over =<tuple>= and =<type_traits>= only; 0.02 to 0.34 s for 789 to 813 objects. There is nothing heavy to remove. |
+| =ores.logging/severity_level.hpp=, =boost_severity.hpp=, =ores.utility/export.hpp=, =ores.platform/export.hpp= | *Keep* | 0.03 to 0.05 s each. Reach without cost is not a problem. |
+| =ores.utility/domain/protocol.hpp= | *Keep* | Plain data structures over =<string>=, =<vector>=, =<optional>=; 0.96 s for 562 objects. |
+| 638 generated =*_protocol.hpp= | *Regenerate* after =cpp_protocol.hpp.mustache= changes; never hand-edit | A hand edit does not survive regeneration. |
+
+* Order of work
+
+By the object-seconds table, with the chain respected so one change is not
+undone by the next:
+
+1. =text_form.hpp=: move the text-form definitions into a =.cpp=. Removes about
+   3568 object-seconds and shrinks =protocol_codec.hpp= and =json_codec.hpp=
+   with it.
+2. =protocol_codec.hpp= and =json_codec.hpp=: declare only what they must, now
+   that the forms are out of line. Another 2400 object-seconds fall out of the
+   same change.
+3. =tenant_id.hpp=: delete the unused include. 0.69 s on 837 objects, no design
+   change, so it can ride in the same PR as anything else.
+4. =error_code.hpp=: move the two =magic_enum= users to the =.cpp=.
+5. =make_logger.hpp=: split the logger handle. This needs its own task, because
+   it changes every call site.
+6. =context.hpp= and the =pq= family: the story's known case, on the corrected
+   understanding that libpq is cheap and the codec chain is not.
+7. =decimal.hpp=: only after its own measurement of the pointer-indirection
+   cost. The exactness is a domain requirement, so this decision is a trade-off
+   and not a clean win.
+
+Steps 1 and 2 are one PR: they are the same decision applied to the headers that
+share it. Step 7 is a candidate, not a commitment.
+
+* Paths taken
+
+- The first cost instrument used =clang -fsyntax-only -ftime-trace=<path>=. It
+  reported zero for every header. Clang writes the trace only for a real
+  compile, so the probe now compiles to an object and reads the =.json= beside
+  it.
+- The trace groups its events by category, not by time. Pairing the begin and
+  end events in file order put every span at nesting depth one and reported 48 s
+  of a 7 s compile. Sorting the events by timestamp first fixes it.
+- The first A/B removed an include by copying the header to a shadow tree that
+  mirrored the whole repository path. The =#include= then resolved to the real
+  header, so the measurement compared the header with itself and reported a
+  saving of zero. The shadow now mirrors only the part the include path
+  resolves.
+- Removing =magic_enum/magic_enum.hpp= from =error_code.hpp= does not compile,
+  because two inline functions call it. That result is the point of the
+  evidence: it turns an opinion into a fact, and it moves the decision from
+  *delete the include* to *move the functions*.
+
+* Conclusions
+
+- Reach and cost are different questions and this build answers them with
+  different headers. The most widely included headers are free; the most
+  expensive ones reach a third to a half of the build; two are both.
+- The cost is carried by three chains: the codec chain rooted in
+  =text_form.hpp= and =decimal.hpp=, the clock chain opened by =datetime.hpp=
+  and =boost/uuid/uuid.hpp=, and the logging chain opened by =make_logger.hpp=.
+- The story's premise is wrong about the cause and right about the fix. libpq
+  costs 0.04 s. =context.hpp= is expensive because of the codec and clock chains
+  behind =pq/transaction.hpp= and =tenant_id.hpp=.
+- A single unused include in =tenant_id.hpp= costs every one of 837 objects
+  0.69 s. This is the cheapest change in the whole analysis and needs no design
+  decision.
+- The include graph is a DAG and no component includes another's =src= tree, so
+  no decision is blocked by a cycle or a boundary leak.
+- Codegen output is 94% of the project headers by count and none of the top
+  twenty by reach. One template change reaches all 638 protocol headers.
+
+* Recommendations
+
+- Carry out steps 1 to 4 as one PR series under
+  [[id:DEA440DD-F4B6-4D37-9083-5F3BB33F1018][Forward-declare what the analysis finds]], in the order given. Steps 1 and 2
+  prove the instrument as well as the fix: the same measurement before and after
+  states the effect.
+- Re-run both scripts after each step and record the result beside this one, so
+  the ranking stays a measurement and not a memory.
+- Keep [[id:908E710A-C9A3-433E-AC93-92B67FB76B6C][Pass the database context by reference behind a forward declaration]] as
+  written, and add the codec chain behind =pq/transaction.hpp= to its scope. On
+  the measured numbers the forward declarations are the smaller half of its
+  gain.
+- Make the forward-declaration check that the story asks for read the type list
+  this analysis produced. A type joins the check by adding a line.
+- Do not change =decimal.hpp= before measuring what the pointer indirection
+  costs at run time. It is the only decision here that trades correctness risk
+  for compile time.
+
+* See also
+
+- [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] — the story this serves.
+- [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]] — the task that commissioned it.
+- [[id:8856431C-F316-423C-B142-FAC42D87B1AC][Keep the codec headers light]] — the abandoned task that first measured
+  the codec headers, and whose numbers this investigation reproduces.
+- [[id:C8F67EE9-885C-4EBE-9F63-0E89A1D71B70][Measure the translation-unit cost of reflect-cpp]] — the earlier
+  trace-and-extrapolate method this investigation follows.
+- =evidence/header_blast_radius.py=, =evidence/header_cost.py= — the two
+  instruments, kept beside this page.

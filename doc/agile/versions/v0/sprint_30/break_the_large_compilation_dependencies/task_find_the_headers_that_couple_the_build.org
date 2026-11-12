@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build:compilation:headers:analysis:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/find-the-headers-that-couple-the-build
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment: bright_faraday
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The story knows one header that couples the build, the database context. It does
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Not yet started.                       |
+| Now          | Analysis written.                      |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-11                               |
+| Next         | Apply the order of work.               |
+| Last touched | 2026-11-12                               |
 
 * Acceptance
 
@@ -49,23 +49,46 @@ The story knows one header that couples the build, the database context. It does
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two instruments, so that reach and cost are measured separately and neither is
+argued:
+
+1. =evidence/header_blast_radius.py= reads the build's own dependency record
+   (=ninja -t deps=) and counts, for each header, the compile objects and
+   targets that depend on it. It also scans the source text of every =#include=
+   for the third-party attribution, the include chains, the cycles and the
+   cross-component edges, and reads the =AUTO-GENERATED FILE= banner for the
+   codegen template of each generated header.
+2. =evidence/header_cost.py= parses one header with clang =-ftime-trace= and
+   sums the exclusive time of each file, so a header that only includes others
+   does not inherit their cost. It has four modes: =headers= for one header at a
+   time, =tu= for one real translation unit, =sample= for a spread of units, and
+   =compare= for an A/B on one include.
+
+Then: rank by both, multiply the two into object-seconds, and order the work by
+that product while respecting the chains, because removing a leaf before its
+root measures the same time twice.
+
+The two false starts and their fixes are recorded in the investigation's
+* Paths taken, so the next reader does not repeat them.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Compile objects in the release tree | 883 in 216 targets | =header_blast_radius.py= | =27cad5a0c6= |
+| Project headers in the tree | 11243, of which 10523 are codegen output | =header_blast_radius.py= | =27cad5a0c6= |
+| Widest header | =ores.utility/export.hpp=, 841 objects | =header_blast_radius.py= | =27cad5a0c6= |
+| Costliest header | =ores.database/domain/context.hpp=, 6.60 s | =header_cost.py headers --runs 5= | =27cad5a0c6= |
+| Costliest third-party header | =boost/log/sources/severity_channel_logger.hpp=, 3.58 s | =header_cost.py headers --runs 5= | =27cad5a0c6= |
+| Cheapest third-party header in the story's premise | =libpq-fe.h=, 0.04 s | =header_cost.py headers --runs 5= | =27cad5a0c6= |
+| Include cycles | 0 | =header_blast_radius.py= | =27cad5a0c6= |
+| Includes of another component's =src= tree | 0 of 52075 edges | =header_blast_radius.py= | =27cad5a0c6= |
+| Trace sample | 12 valid units of 14, 448.0 s frontend | =header_cost.py sample --count 14= | =27cad5a0c6= |
+| Tree frontend estimate | about 24342 s over 652 compiles | =header_cost.py sample --count 14= | =27cad5a0c6= |
+| Dead include in =tenant_id.hpp= | 0.69 s on 837 objects | =header_cost.py compare --runs 4= | =27cad5a0c6= |
+
+The full tables are in
+[[id:AF6C4DA7-903E-4848-8807-73EA4E49E9CA][Investigation: The headers that couple the build]].
 
 * Notes
 
@@ -86,3 +109,26 @@ Forward declaration is not free: a type named only by reference can still need i
 |   |                 |      |          |       |
 
 * Result
+
+The analysis is written and both instruments are kept with the task:
+=evidence/header_blast_radius.py= and =evidence/header_cost.py=.
+
+What it found:
+
+- Reach and cost are different questions. The most widely included headers
+  (=export.hpp=, =severity_level.hpp=, =wire_traits_fwd.hpp=) cost 0.02 to
+  0.05 s. The costliest ones reach a third to a half of the build.
+- The cost travels in three chains: the codec chain (=text_form.hpp= 4.99 s,
+  =protocol_codec.hpp= 6.15 s, =decimal.hpp= 4.03 s), the clock chain
+  (=<chrono>= through =datetime.hpp= and =boost/uuid/uuid.hpp=), and the
+  logging chain (=make_logger.hpp= 3.87 s pulling Boost.Log's logger).
+- The story's premise named =libpq-fe.h= as the reason =context.hpp= is
+  expensive. It costs 0.04 s. The bulk is the codec chain behind
+  =pq/transaction.hpp= and =<chrono>= behind =tenant_id.hpp=.
+- One unused include in =tenant_id.hpp= costs 0.69 s on 837 objects and needs
+  no design decision.
+- No cycles and no cross-component detail includes, so no decision is blocked.
+
+The decisions and the order of work are in the investigation's * Decisions and
+* Order of work. The first change is the codec headers: =text_form.hpp= moved
+out of line, then =protocol_codec.hpp= and =json_codec.hpp=.

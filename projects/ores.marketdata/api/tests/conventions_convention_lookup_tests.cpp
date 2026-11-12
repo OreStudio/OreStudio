@@ -113,12 +113,13 @@ TEST_CASE("a swap convention matches the index tenor it uses, not another",
     CHECK(ois->id == "USD-SOFR-OIS");
 }
 
-TEST_CASE("two conventions naming one address are refused, naming both",
+TEST_CASE("two conventions naming one address with different terms are refused, naming both",
           "[marketdata][conventions]") {
     auto lg(make_logger(test_suite));
     auto set = conventions();
-    set.swaps.push_back(
-        convention_at<rd::swap_convention>("EUR-EURIBOR-6M-SWAP-OLD", euribor_six_months));
+    auto annual = convention_at<rd::swap_convention>("EUR-EURIBOR-6M-SWAP-OLD", euribor_six_months);
+    annual.fixed_frequency = "Annual";
+    set.swaps.push_back(std::move(annual));
     const convention_lookup lookup(std::move(set));
 
     const auto found = lookup.swap_convention_of(identifier(euribor_six_months));
@@ -289,4 +290,33 @@ TEST_CASE("an_inflation_swap_convention_is_found_by_its_index",
         identifier("oresmd://inflation/UKRPIX?type=fixing&index=inflation"));
     REQUIRE_FALSE(missing);
     CHECK(missing.error().kind == lookup_refusal_kind::no_match);
+}
+
+TEST_CASE("swap conventions naming one address with the same terms are one, by the least id",
+          "[marketdata][conventions]") {
+    auto lg(make_logger(test_suite));
+    auto set = conventions();
+    set.swaps.insert(
+        set.swaps.begin(),
+        convention_at<rd::swap_convention>("EUR-6M-SWAP-CONVENTIONS", euribor_six_months));
+    set.swaps.push_back(convention_at<rd::swap_convention>("EUR-SWAP", euribor_six_months));
+    const convention_lookup lookup(std::move(set));
+
+    const auto found = lookup.swap_convention_of(identifier(euribor_six_months));
+
+    REQUIRE(found);
+    CHECK(found->id == "EUR-6M-SWAP-CONVENTIONS");
+}
+
+TEST_CASE("ois conventions naming one address are refused even with the same terms",
+          "[marketdata][conventions]") {
+    auto lg(make_logger(test_suite));
+    auto set = conventions();
+    set.ois_swaps.push_back(convention_at<rd::ois_convention>("USD-SOFR-OIS-2", sofr_index));
+    const convention_lookup lookup(std::move(set));
+
+    const auto found = lookup.ois_convention_of(identifier(sofr_index));
+
+    REQUIRE(!found);
+    CHECK(found.error().kind == lookup_refusal_kind::more_than_one_match);
 }

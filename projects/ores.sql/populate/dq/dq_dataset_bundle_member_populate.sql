@@ -85,7 +85,7 @@ BEGIN
     -- it runs in the system tenant, where the feeds run, and reads the FX option
     -- convention of each pair it quotes from there. Each party of a tenant gets
     -- its own copy through party_essentials; this one is the system party's.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.conventions', 21);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'refdata.conventions', 21);
 
     -- The FX volatility surface blueprints: one recipe for each pair the derived source
     -- quotes. Each names the pair's FX option convention, so it follows the conventions.
@@ -271,10 +271,10 @@ BEGIN
     -- --- Party Essentials Bundle Members ---
 
     -- The datasets every party gets: its instrument conventions
-    -- (ore.conventions), then its CRM topology (refdata.crm_topology_bundles,
+    -- (refdata.conventions), then its CRM topology (refdata.crm_topology_bundles,
     -- the crm_topology bundle's only member). Both are party-scoped: the CRM
     -- publish requires params.party_id.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'ore.conventions', 5);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'refdata.conventions', 5);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'party_essentials', 'refdata.crm_topology_bundles', 20);
 
     -- The generic report set, for a party with no report design of its own: its

@@ -19,7 +19,7 @@
  */
 
 /**
- * The ore.conventions dataset publishes its atomised tenor basis swap kind.
+ * The refdata.conventions dataset publishes its atomised tenor basis swap kind.
  *
  * Publishing the real dataset for a party writes the central convention row and
  * the one leg form the corpus stages. A repeat publish changes nothing. A
@@ -60,7 +60,7 @@ insert into ores_refdata_parties_tbl (
 
 create temporary table t_ctx on commit drop as
 select (select id from ores_dq_datasets_tbl
-        where code = 'ore.conventions'
+        where code = 'refdata.conventions'
           and valid_to = ores_utility_infinity_timestamp_fn()) as dataset_id,
        'a0000000-0000-0000-0000-00000000c0de'::uuid as party_id;
 

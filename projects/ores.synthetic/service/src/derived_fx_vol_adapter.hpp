@@ -118,6 +118,9 @@ private:
     std::chrono::steady_clock::time_point next_universe_{};
     std::chrono::steady_clock::time_point next_announce_{};
     std::chrono::steady_clock::time_point next_refresh_{};
+    /// Whether the history may still lack a pair's days, so the next pass keeps another.
+    bool history_pending_ = false;
+    std::chrono::steady_clock::time_point next_history_{};
     std::optional<ores::nats::service::subscription> demand_sub_;
     std::thread thread_;
     /// The heartbeats run on their own thread: a refresh derives every pair from years of

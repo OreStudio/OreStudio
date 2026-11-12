@@ -1452,6 +1452,18 @@ package "trading" #E8F5E9 {
           future_month_offset : integer
           include_period_end : boolean
           position : text
+          delivery_date : date
+          delivery_start : integer
+          delivery_end : integer
+          fva_date : date
+          premium_date : date
+          settlement_date : date
+          implied_vol_strike : numeric(38, 12)
+          reset_strike : numeric(38, 12)
+          trigger_type : text
+          trigger_price : numeric(38, 12)
+          premium_amount : numeric(38, 12)
+          target_amount : numeric(38, 12)
           description : text
         * modified_by : text
         * performed_by : text

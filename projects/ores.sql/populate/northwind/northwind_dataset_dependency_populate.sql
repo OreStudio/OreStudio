@@ -46,13 +46,13 @@ BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'northwind.party_counterparties', 'gleif.lei_counterparties.tiny', 'counterparty_reference');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'northwind.pricing_engines', 'ore.conventions', 'convention_source');
+        'northwind.pricing_engines', 'refdata.conventions', 'convention_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'northwind.todays_market', 'ore.conventions', 'convention_source');
+        'northwind.todays_market', 'refdata.conventions', 'convention_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'northwind.curve_configuration', 'ore.conventions', 'convention_source');
+        'northwind.curve_configuration', 'refdata.conventions', 'convention_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'northwind.engine_settings', 'ore.conventions', 'convention_source');
+        'northwind.engine_settings', 'refdata.conventions', 'convention_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'northwind.risk_report_configs', 'northwind.portfolios', 'scope_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -66,5 +66,5 @@ BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'northwind.report_definitions', 'northwind.engine_settings', 'configuration_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'northwind.report_definitions', 'ore.conventions', 'configuration_source');
+        'northwind.report_definitions', 'refdata.conventions', 'configuration_source');
 END $$;

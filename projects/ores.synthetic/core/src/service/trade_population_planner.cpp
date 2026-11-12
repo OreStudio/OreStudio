@@ -340,23 +340,56 @@ std::string_view bond_trade_planner::asset_class_code() const {
 namespace {
 
 /*
- * The indices a rate trade draws: those the tenant's swap conventions name
- * with a tenor, so a builder can read each leg's terms and a forward rate
- * agreement or a cap resets on an Ibor index. The domestic ones are in the
- * scope's currency, the foreign ones in any other.
+ * The swaps a rate trade draws: one for each swap the tenant's conventions
+ * state on an index with a tenor, so a builder can read each leg's terms and a
+ * forward rate agreement or a cap resets on an Ibor index. The domestic ones
+ * are in the scope's currency, the foreign ones in any other.
+ *
+ * A swap is the index with the legs of one convention. Conventions that state
+ * the same legs on one index under several ids, such as GBP-3M-SWAP and
+ * GBP-LIBOR-3M-SWAP, are one swap, drawn by the least id, so an index with
+ * three aliases is not three times as likely. Conventions that state other
+ * legs on one index, such as USD LIBOR 3M with an annual and a semiannual
+ * fixed leg, are two swaps, and the builder is told which by id.
  */
-std::vector<ores::marketdata::datum::market_reference>
-swap_indices_of(const domain::trade_generation_scope& scope, bool domestic) {
+struct swap_choice final {
+    ores::marketdata::datum::market_reference index;
+    std::string convention;
+};
+
+struct swap_choices final {
+    std::vector<swap_choice> domestic;
+    std::vector<swap_choice> foreign;
+};
+
+swap_choices swap_choices_of(const domain::trade_generation_scope& scope) {
     namespace md = ores::marketdata::datum;
-    std::vector<md::market_reference> out;
+    const auto legs_of = [](const ores::refdata::domain::swap_convention& c) {
+        return std::format("{}|{}|{}|{}|{}|{}|{}|{}",
+                           *c.oresmd_uri,
+                           c.fixed_calendar.value_or(""),
+                           c.fixed_frequency,
+                           c.fixed_convention.value_or(""),
+                           c.fixed_day_count_fraction,
+                           c.index,
+                           c.float_frequency.value_or(""),
+                           c.sub_periods_coupon_type.value_or(""));
+    };
+    std::map<std::string, const ores::refdata::domain::swap_convention*> swaps;
     for (const auto& swap : scope.conventions.swaps) {
         if (!swap.oresmd_uri)
             continue;
-        auto index = md::market_reference::parse(*swap.oresmd_uri);
+        auto [it, added] = swaps.emplace(legs_of(swap), &swap);
+        if (!added && swap.id < it->second->id)
+            it->second = &swap;
+    }
+    swap_choices out;
+    for (const auto& [legs, swap] : swaps) {
+        auto index = md::market_reference::parse(*swap->oresmd_uri);
         if (!index || index->index() == nullptr || index->index()->get("tenor") == nullptr)
             continue;
-        if ((index->index()->subject() == scope.currency_code) == domestic)
-            out.push_back(std::move(*index));
+        auto& pool = index->index()->subject() == scope.currency_code ? out.domestic : out.foreign;
+        pool.push_back(swap_choice{std::move(*index), swap->id});
     }
     return out;
 }
@@ -396,6 +429,7 @@ ores::trading::domain::bond_product bond_product_of(
  * before the trade.
  */
 ores::trading::domain::bond_product build_bond_trade(const domain::trade_generation_scope& scope,
+                                                     const swap_choices& swaps_of_scope,
                                                      const domain::trade_population_slot& entry,
                                                      const std::string& security_id,
                                                      const boost::uuids::uuid& issue_id,
@@ -497,14 +531,14 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
     if (type == "ConvertibleBond")
         return built(tb::convertible_bond_builder(convertible()).build());
     if (type == "Ascot") {
-        const auto indices = swap_indices_of(scope, true);
-        if (indices.empty())
+        const auto& swaps = swaps_of_scope.domestic;
+        if (swaps.empty())
             throw trade_population_error("No swap convention of the tenant names an index in " +
                                          scope.currency_code +
                                          ", so no Ascot can state its swap leg.");
         return built(tb::ascot_builder({.convertible = convertible(),
                                         .kind = kind,
-                                        .funding_index = indices[slot % indices.size()],
+                                        .funding_index = swaps[slot % swaps.size()].index,
                                         .recall_spread = money(0.02),
                                         .start = scope.as_of_date,
                                         .end = maturity})
@@ -526,6 +560,7 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
 
     const auto min_years = tenor_years_of(scope.min_tenor_code);
     const auto max_years = tenor_years_of(scope.max_tenor_code);
+    const auto swaps = swap_choices_of(scope);
 
     domain::trade_population_plan plan;
     plan.config_id = scope.config_id;
@@ -568,7 +603,7 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         if (!security)
             throw trade_population_error("The bond issue builder refuses the drawn " +
                                          security.error().term + ": " + security.error().message);
-        auto product = build_bond_trade(scope, entry, security_id, issue_id, maturity);
+        auto product = build_bond_trade(scope, swaps, entry, security_id, issue_id, maturity);
         entry.bond_issue = std::move(security->issue);
         entry.bond_issue_legs = std::move(security->legs);
         entry.bond_issue_leg_amounts = std::move(security->amounts);
@@ -1411,6 +1446,7 @@ swap_batch_of(std::expected<ores::trading::domain::swap_instrument_data,
 ores::trading::domain::instrument_batch
 build_rate_trade(const domain::trade_generation_scope& scope,
                  const ores::marketdata::conventions::convention_lookup& conventions,
+                 const swap_choices& swaps,
                  const domain::trade_population_slot& entry,
                  std::uint32_t years) {
     namespace tb = ores::trading::builders;
@@ -1419,7 +1455,7 @@ build_rate_trade(const domain::trade_generation_scope& scope,
         return decimal::from_double(value).value();
     };
 
-    const auto domestic = swap_indices_of(scope, true);
+    const auto& domestic = swaps.domestic;
     if (domestic.empty())
         throw trade_population_error("No swap convention of the tenant names an index in " +
                                      scope.currency_code +
@@ -1442,9 +1478,10 @@ build_rate_trade(const domain::trade_generation_scope& scope,
                                       .start = start,
                                       .maturity = maturity,
                                       .fixed_rate = fixed_rate,
-                                      .index = domestic[slot % domestic.size()],
+                                      .index = domestic[slot % domestic.size()].index,
                                       .fixed_side =
-                                          slot % 2 == 0 ? tb::side::pay : tb::side::receive};
+                                          slot % 2 == 0 ? tb::side::pay : tb::side::receive,
+                                      .convention = domestic[slot % domestic.size()].convention};
     };
     const auto start = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
     const auto swap = swap_from(start, add_years(start, static_cast<int>(years)));
@@ -1455,19 +1492,21 @@ build_rate_trade(const domain::trade_generation_scope& scope,
     if (type == "Swap")
         return built(tb::vanilla_swap_builder(conventions, swap).build());
     if (type == "CrossCurrencySwap") {
-        const auto foreign = swap_indices_of(scope, false);
+        const auto& foreign = swaps.foreign;
         if (foreign.empty())
             throw trade_population_error("No swap convention of the tenant names an index "
                                          "outside " +
                                          scope.currency_code +
                                          ", so no cross currency swap can state its foreign leg.");
-        const auto& index = foreign[slot % foreign.size()];
-        return built(tb::cross_currency_swap_builder(conventions,
-                                                     {.domestic = swap,
-                                                      .foreign_notional = money(entry.notional),
-                                                      .foreign_currency = index.index()->subject(),
-                                                      .foreign_index = index})
-                         .build());
+        const auto& chosen = foreign[slot % foreign.size()];
+        return built(
+            tb::cross_currency_swap_builder(conventions,
+                                            {.domestic = swap,
+                                             .foreign_notional = money(entry.notional),
+                                             .foreign_currency = chosen.index.index()->subject(),
+                                             .foreign_index = chosen.index,
+                                             .foreign_convention = chosen.convention})
+                .build());
     }
     if (type == "ForwardRateAgreement") {
         /*
@@ -1550,6 +1589,7 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     plan.as_of_date = scope.as_of_date;
 
     const ores::marketdata::conventions::convention_lookup conventions(scope.conventions);
+    const auto swaps = swap_choices_of(scope);
     const auto types = booked_types(rate_types, scope);
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
@@ -1568,8 +1608,8 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         entry.trade_type_code = std::string(type);
         entry.notional =
             price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
-        entry.instruments =
-            build_rate_trade(scope, conventions, entry, std::clamp(drawn, min_years, max_years));
+        entry.instruments = build_rate_trade(
+            scope, conventions, swaps, entry, std::clamp(drawn, min_years, max_years));
 
         plan.slots.push_back(std::move(entry));
     }
@@ -1963,19 +2003,19 @@ ores::marketdata::datum::market_reference credit_curve_of(const std::string& lei
 }
 
 /*
- * The index an RPA's underlying swap floats on: that of the first swap
- * convention whose index is in the trade currency, so the underlying is one the
- * tenant's conventions can build.
+ * The index an RPA's underlying swap floats on, with its convention: the first
+ * swap convention whose index is in the trade currency, so the underlying is
+ * one the tenant's conventions can build. Several conventions can name one
+ * index, so the underlying is built by the convention found here.
  */
-ores::marketdata::datum::market_reference
-underlying_index_of(const domain::trade_generation_scope& scope) {
+swap_choice underlying_index_of(const domain::trade_generation_scope& scope) {
     namespace md = ores::marketdata::datum;
     for (const auto& swap : scope.conventions.swaps) {
         if (!swap.oresmd_uri)
             continue;
         auto index = md::market_reference::parse(*swap.oresmd_uri);
         if (index && index->index() != nullptr && index->index()->subject() == scope.currency_code)
-            return std::move(*index);
+            return swap_choice{std::move(*index), swap.id};
     }
     throw trade_population_error("No swap convention of the tenant floats on an index in " +
                                  scope.currency_code +
@@ -2052,6 +2092,7 @@ build_credit_trade(const domain::trade_generation_scope& scope,
                         type);
     }
     if (type == "RiskParticipationAgreement") {
+        const auto underlying = underlying_index_of(scope);
         const tb::risk_participation_agreement_terms terms{
             .underlying = {.notional = money(entry.notional),
                            .currency = entry.currency,
@@ -2059,8 +2100,9 @@ build_credit_trade(const domain::trade_generation_scope& scope,
                            .maturity = add_years(start, static_cast<int>(years)),
                            .fixed_rate =
                                money(std::round((0.02 + 0.02 * draw(name, 3)) * 10000.0) / 10000.0),
-                           .index = underlying_index_of(scope),
-                           .fixed_side = draw(name, 4) < 0.5 ? tb::side::pay : tb::side::receive},
+                           .index = underlying.index,
+                           .fixed_side = draw(name, 4) < 0.5 ? tb::side::pay : tb::side::receive,
+                           .convention = underlying.convention},
             .participation_rate = 0.5,
             .reference_entity = reference_entity,
             .credit_curve = credit_curve_of(reference_entity, entry.currency),
@@ -2389,16 +2431,22 @@ ores::marketdata::datum::market_reference equity_address_of(const std::string& c
     return std::move(*reference);
 }
 
-/// The first index the tenant's swap conventions name with a tenor in @p currency.
-std::optional<ores::marketdata::datum::market_reference>
-funding_index_in(const domain::trade_generation_scope& scope, const std::string& currency) {
+/**
+ * @brief The first index the tenant's swap conventions name with a tenor in
+ *        @p currency, with the convention that names it.
+ *
+ * Several conventions can name one index, so the funding leg is built by the
+ * convention found here rather than by its index.
+ */
+std::optional<swap_choice> funding_index_in(const domain::trade_generation_scope& scope,
+                                            const std::string& currency) {
     for (const auto& swap : scope.conventions.swaps) {
         if (!swap.oresmd_uri)
             continue;
         auto index = ores::marketdata::datum::market_reference::parse(*swap.oresmd_uri);
         if (index && index->index() != nullptr && index->index()->get("tenor") != nullptr &&
             index->index()->subject() == currency)
-            return std::move(*index);
+            return swap_choice{std::move(*index), swap.id};
     }
     return std::nullopt;
 }
@@ -2428,7 +2476,7 @@ basket_members basket_members_of(const domain::trade_generation_scope& scope, st
         for (std::size_t j = 1; j < underlyings.size(); ++j) {
             const auto& second = underlyings[(slot + i + j) % underlyings.size()];
             if (second.code != first.code && currency_of(second) == currency_of(first))
-                return {first, second, std::move(*funding)};
+                return {first, second, std::move(funding->index)};
         }
     }
     throw trade_population_error("No two equity underlyings of the tenant share a currency its "
@@ -2549,8 +2597,8 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                 scope.equity_underlyings[(slot + i) % scope.equity_underlyings.size()];
             const auto candidate_currency =
                 candidate.currency.empty() ? std::string("USD") : candidate.currency;
-            auto index = funding_index_in(scope, candidate_currency);
-            if (!index)
+            auto funding = funding_index_in(scope, candidate_currency);
+            if (!funding)
                 continue;
             return built(
                 tb::equity_swap_builder(conventions,
@@ -2561,8 +2609,9 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                                                      .start = start,
                                                      .maturity = end,
                                                      .fixed_rate = money(0.0),
-                                                     .index = std::move(*index),
-                                                     .fixed_side = tb::side::pay}})
+                                                     .index = std::move(funding->index),
+                                                     .fixed_side = tb::side::pay,
+                                                     .convention = funding->convention}})
                     .build());
         }
         throw trade_population_error("No equity underlying of the tenant is in a currency its "

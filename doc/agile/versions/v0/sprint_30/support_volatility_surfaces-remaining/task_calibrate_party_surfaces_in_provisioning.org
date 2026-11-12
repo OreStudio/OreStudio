@@ -104,4 +104,4 @@ via its "Verifies task" field.
 
 The =publish_party_surfaces= step calibrates and publishes every party's surfaces in provisioning, and the surface publish refuses a calibration with arbitrage under any rule. On a fresh Acme provisioning all 40 blueprints of the four parties published, each from its party's own forward set and closed under the =tenant= rule.
 
-The run that proved it left out =generate_trades= in the local database only, because on main that step fails on swap conventions that name one index more than once ([[id:9137921C-B9C9-4C9F-84B6-847A07B61F28][Name GBP LIBOR 3M in one swap convention]]), and a failed run dispatches no later step. The committed profile still orders it.
+The run that proved it left out =generate_trades= in the local database only, because on main that step fails on swap conventions that name one index more than once ([[id:B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C][Publish one curated convention set and provision to completion]]), and a failed run dispatches no later step. The committed profile still orders it.

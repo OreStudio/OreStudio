@@ -143,6 +143,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] | BACKLOG | | | Find the headers most of the build depends on, forward-declare the types that are only passed along, and pass the database context by reference, so a change to one header rebuilds only the code that uses it. |
 | [[id:229811EA-0DC9-462B-93BA-AB3B438813D3][Own each durable NATS delivery with one RAII transaction]] | DONE | 2026-11-11 | 2026-11-12 | A durable NATS delivery has one owner, is settled once by commit, rollback or reject, and rolls back when dropped unsettled, so no delivery is freed twice or answered after its subscription ends. |
 | [[id:1D550641-953B-4F17-BFA4-B1DB1EFBE62C][Run a service's steps concurrently]] | DONE | 2026-11-11 | 2026-11-12 | A service runs its workflow steps one at a time, so a long step, such as generate_trades, holds back every step dispatched beside it until the workflow fails them as unclaimed. Serve step commands on a bounded set of workers. |
+| [[id:B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C][Publish one curated convention set and provision to completion]] | DONE | 2026-11-11 | 2026-11-12 | Provisioning stops at generate_trades: the swap builder refuses an index that several swap conventions name. Treat aliases with the same terms as one convention, and draw only indices the lookup answers. |
 
 * Achievements
 

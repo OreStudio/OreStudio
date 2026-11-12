@@ -102,8 +102,9 @@ shows come from the quotes its pillars read.
    without a second interpolation.
 
    A strike''s delta type is the short-dated delta type of the pair''s FX option
-   convention in the ore.conventions dataset, which is extracted from the ORE
-   example corpus (external/ore/examples). Five conventions state a premium
+   convention in the refdata.conventions dataset, which takes the FX option
+   conventions from the ORE examples (external/ore/examples). Five conventions
+   state a premium
    adjusted spot delta (PaSpot): USD/JPY, USD/CHF, USD/CAD, EUR/JPY and
    EUR/CHF. The other five state a spot delta (Spot). The test
    refdata_fx_vol_surface_blueprints_publish_test.sql refuses a blueprint whose

@@ -40,7 +40,7 @@ dataset_dependency needs(std::string dataset, std::string dependency) {
 TEST_CASE("datasets_with_no_dependency_between_them_keep_the_requested_order",
           "[publication_order]") {
     const std::vector<std::string> requested{
-        "iso.currencies", "synthetic.feeds.lseg", "ore.parameters", "ore.conventions"};
+        "iso.currencies", "synthetic.feeds.lseg", "ore.parameters", "refdata.conventions"};
 
     CHECK(publication_order(requested, {}) == requested);
 }

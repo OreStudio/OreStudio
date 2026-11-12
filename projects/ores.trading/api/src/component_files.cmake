@@ -820,6 +820,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/cadence.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/commodity_builders.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/credit_builders.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/day_count.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/equity_builders.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/fx_builder_rows.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/fx_builders.hpp"

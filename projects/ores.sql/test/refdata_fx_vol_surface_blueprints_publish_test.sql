@@ -40,7 +40,7 @@ select set_config('app.visible_party_ids', '{' || (select id::text from t_party)
 
 create temporary table t_dataset on commit drop as
 select id, code from ores_dq_datasets_tbl
-where code in ('refdata.fx_vol_surface_blueprints', 'ore.conventions')
+where code in ('refdata.fx_vol_surface_blueprints', 'refdata.conventions')
   and valid_to = ores_utility_infinity_timestamp_fn();
 
 select lives_ok(
@@ -134,13 +134,13 @@ select is(
 select is(
     (select count(*)::int from t_blueprints b
      left join ores_dq_fx_option_conventions_artefact_tbl c
-       on c.dataset_id = (select id from t_dataset where code = 'ore.conventions')
+       on c.dataset_id = (select id from t_dataset where code = 'refdata.conventions')
       and c.id = b.fx_option_convention_id
      where c.delta_type is null
         or b.output_strikes <> format('DEL/%1$s/Put/10,DEL/%1$s/Put/25,ATM,DEL/%1$s/Call/25,DEL/%1$s/Call/10',
                                       c.delta_type)),
     0,
-    'every output strike quotes the delta type of the pair''s FX option convention in ore.conventions');
+    'every output strike quotes the delta type of the pair''s FX option convention in refdata.conventions');
 
 select is(
     (select count(*)::int from t_pillars p

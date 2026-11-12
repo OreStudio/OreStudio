@@ -20,6 +20,8 @@
 #include "ores.marketdata.api/conventions/convention_lookup.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/builders/builder_registry.hpp"
+#include "ores.trading.api/builders/cadence.hpp"
+#include "ores.trading.api/builders/day_count.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -133,7 +135,7 @@ TEST_CASE("the_registry_names_the_swap", tags) {
 
 TEST_CASE("a_frequency_that_has_no_tenor_fails_and_names_the_term", tags) {
     auto conventions = euribor_conventions();
-    conventions.swaps[0].fixed_frequency = "Lunarmonth";
+    conventions.swaps[0].fixed_frequency = "Once";
     conv::convention_lookup lookup(conventions);
     const auto swap = vanilla_swap_builder(lookup, terms()).build();
     REQUIRE_FALSE(swap.has_value());
@@ -209,4 +211,40 @@ TEST_CASE("a_builder_does_not_accept_conventions_that_would_dangle", tags) {
     STATIC_CHECK_FALSE(std::is_constructible_v<vanilla_swap_builder,
                                                conv::convention_lookup&&,
                                                vanilla_swap_terms>);
+}
+
+TEST_CASE("a_convention_frequency_or_period_reads_as_a_schedule_tenor", "[builders][cadence]") {
+    using ores::trading::builders::cadence_of;
+    const auto annual = cadence_of("12M");
+    REQUIRE(annual.has_value());
+    CHECK(annual->frequency == "Annual");
+    CHECK(annual->tenor == "1Y");
+    const auto lunar = cadence_of("Lunarmonth");
+    REQUIRE(lunar.has_value());
+    CHECK(lunar->tenor == "28D");
+    const auto weekly = cadence_of("7D");
+    REQUIRE(weekly.has_value());
+    CHECK(weekly->frequency == "Weekly");
+    const auto ninety_one_days = cadence_of("91D");
+    REQUIRE(ninety_one_days.has_value());
+    CHECK(ninety_one_days->frequency.empty());
+    CHECK(ninety_one_days->tenor == "91D");
+}
+
+TEST_CASE("a_text_that_is_neither_a_frequency_nor_a_period_has_no_cadence", "[builders][cadence]") {
+    using ores::trading::builders::cadence_of;
+    CHECK_FALSE(cadence_of("").has_value());
+    CHECK_FALSE(cadence_of("M").has_value());
+    CHECK_FALSE(cadence_of("0M").has_value());
+    CHECK_FALSE(cadence_of("3X").has_value());
+    CHECK_FALSE(cadence_of("Fortnightly").has_value());
+}
+
+TEST_CASE("a_convention_day_count_reads_as_the_code_a_trade_leg_states", "[builders][day_count]") {
+    using ores::trading::builders::trade_day_count_of;
+    CHECK(trade_day_count_of("ACT/365.FIXED") == "A365F");
+    CHECK(trade_day_count_of("ACT/360") == "A360");
+    CHECK(trade_day_count_of("BUS/252") == "Business252");
+    CHECK(trade_day_count_of("A365F") == "A365F");
+    CHECK_FALSE(trade_day_count_of("ACT/364").has_value());
 }

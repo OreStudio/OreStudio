@@ -1169,24 +1169,49 @@ CATALOGUE: tuple[Check, ...] = (
             " commit the result.",
     ),
     Check(
-        id="index-conventions-seed",
-        title="The built-in index conventions match the mined table",
+        id="conventions-dataset",
+        title="The conventions dataset's populate script is what its table generates",
         argv=(
             "bash",
             "-c",
-            "./tools/ore_conventions/generate_builtin_index_conventions.py"
+            "projects/ores.codegen/venv/bin/python"
+            " projects/ores.seeder/datasets/conventions/generate_sql.py"
             " && git diff --exit-code --"
-            " projects/ores.sql/populate/refdata/"
-            "refdata_builtin_index_conventions_populate.sql",
+            " projects/ores.sql/populate/refdata/refdata_conventions_artefact_populate.sql",
+        ),
+        classes=("sql", "tooling"),
+        paths=(
+            "projects/ores.seeder/datasets/conventions/*",
+            "projects/ores.sql/populate/refdata/refdata_conventions_artefact_populate.sql",
+        ),
+        fix="Edit projects/ores.seeder/datasets/conventions/conventions.tsv, run its "
+            "generate_sql.py, and commit both.",
+    ),
+    Check(
+        id="conventions-coverage",
+        title="The conventions dataset holds every convention ORE holds, or says why not",
+        argv=(
+            "bash",
+            "-c",
+            "projects/ores.codegen/venv/bin/python tools/ore_conventions/extract.py"
+            " && python3 projects/ores.seeder/datasets/conventions/propose.py --check",
         ),
         classes=("sql", "tooling"),
         paths=(
             "tools/ore_conventions/*",
-            "external/ore/catalogue/index_builtins.jsonl",
-            "projects/ores.sql/populate/refdata/refdata_builtin_index_conventions_populate.sql",
+            "external/ore/examples/*",
+            "projects/ores.seeder/datasets/conventions/*",
         ),
-        fix="Run tools/ore_conventions/generate_builtin_index_conventions.py and "
-            "commit the result.",
+        fix="Add or change the row in conventions.tsv, or record why the dataset keeps "
+            "its own row in propose_decisions.tsv; see methodology.txt.",
+    ),
+    Check(
+        id="conventions-generator-tests",
+        title="The conventions dataset generator's tests pass",
+        argv=("projects/ores.codegen/venv/bin/python",
+              "projects/ores.seeder/datasets/conventions/test_generate_sql.py"),
+        classes=("sql", "tooling"),
+        paths=("projects/ores.seeder/datasets/conventions/*",),
     ),
     Check(
         id="ore-output-catalogue",

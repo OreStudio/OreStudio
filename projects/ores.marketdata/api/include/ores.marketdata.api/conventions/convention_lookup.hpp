@@ -162,6 +162,15 @@ public:
     [[nodiscard]] std::expected<refdata::domain::swap_convention, lookup_error>
     swap_convention_of(const datum::market_reference& index) const;
 
+    /**
+     * @brief The swap convention whose id is @p id, when its floating leg uses @p index.
+     *
+     * An index whose conventions state different legs, such as USD LIBOR 3M with an annual and
+     * a semiannual fixed leg, has no one convention; a caller that chose one names it by id.
+     */
+    [[nodiscard]] std::expected<refdata::domain::swap_convention, lookup_error>
+    swap_convention_by_id(std::string_view id, const datum::market_reference& index) const;
+
     /// The OIS convention whose floating leg uses @p index.
     [[nodiscard]] std::expected<refdata::domain::ois_convention, lookup_error>
     ois_convention_of(const datum::market_reference& index) const;

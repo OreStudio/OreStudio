@@ -31,6 +31,7 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <expected>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -58,6 +59,8 @@ struct cross_currency_swap_terms final {
     required<utility::decimal::decimal> foreign_notional;
     required<std::string> foreign_currency;
     required<marketdata::datum::market_reference> foreign_index;
+    /// The id of the foreign swap convention, when the foreign index has more than one.
+    std::optional<std::string> foreign_convention = std::nullopt;
 };
 
 class ORES_TRADING_API_EXPORT cross_currency_swap_builder final {

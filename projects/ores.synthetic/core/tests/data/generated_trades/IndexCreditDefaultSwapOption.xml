@@ -27,7 +27,7 @@
           <LegType>Fixed</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>Following</PaymentConvention>
-          <DayCounter>ACT/360</DayCounter>
+          <DayCounter>A360</DayCounter>
           <Notionals>
             <Notional>5375309.62</Notional>
           </Notionals>
@@ -77,7 +77,7 @@
           <LegType>Fixed</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>Following</PaymentConvention>
-          <DayCounter>ACT/360</DayCounter>
+          <DayCounter>A360</DayCounter>
           <Notionals>
             <Notional>5817155.05</Notional>
           </Notionals>

@@ -136,7 +136,9 @@ std::string("USD")
 :economic:      true
 :END:
 
-Contract quantity. Must be positive.
+Contract quantity. Must be positive, except on an accumulating product such
+as an accumulator or a TaRF: it states its size per fixing in
+=accumulation_amount=, and its quantity is zero.
 
 #+begin_src cpp :name generator
 1000.0
@@ -773,7 +775,7 @@ with the instrument and the legs do not outlive it.
 
 | expression |
 |---|
-| "quantity" > 0 |
+| "quantity" > 0 or ("quantity" = 0 and "accumulation_amount" is not null) |
 | "commodity_code" <> '' |
 | "currency" <> '' |
 | "unit" is null or "unit" <> '' |

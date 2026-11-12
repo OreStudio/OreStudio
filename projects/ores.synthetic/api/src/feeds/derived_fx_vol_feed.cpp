@@ -20,6 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include <algorithm>
 #include <chrono>
+#include <iterator>
 #include <ranges>
 #include <string>
 #include <utility>
@@ -89,6 +90,14 @@ derived_fx_vol_feed::answer(const mm::adapter_demand_request& request) const {
             response.rejected.push_back({id, "unknown"});
     }
     return response;
+}
+
+mm::adapter_demand_request coalesce_demands(mm::adapter_demand_request earlier,
+                                            mm::adapter_demand_request later) {
+    later.image.insert(later.image.end(),
+                       std::make_move_iterator(earlier.image.begin()),
+                       std::make_move_iterator(earlier.image.end()));
+    return later;
 }
 
 mm::adapter_demand_response derived_fx_vol_feed::demand(const mm::adapter_demand_request& request) {
@@ -166,7 +175,8 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     return ticks;
 }
 
-std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
+std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
+                                         std::size_t pair_limit) {
     if (!store_)
         return 0;
     failures_.clear();
@@ -185,7 +195,10 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
         << "Keeping the derived history of " << pairs.size() << " pair(s) up to " << today;
 
     std::size_t written = 0;
+    std::size_t pairs_written = 0;
     for (const auto& [key, pair] : pairs) {
+        if (pairs_written >= pair_limit)
+            break;
         auto kept = kept_.find(key);
         if (kept == kept_.end()) {
             auto started = std::chrono::steady_clock::now();
@@ -277,6 +290,7 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today) {
         for (const auto& d : missing->days)
             held.insert(d.day);
         written += missing->days.size();
+        ++pairs_written;
     }
     BOOST_LOG_SEV(derived_fx_feed_lg(), info)
         << "Kept the derived history of " << pairs.size() << " pair(s) in "

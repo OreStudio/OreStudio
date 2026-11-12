@@ -344,6 +344,32 @@ TEST_CASE("a_credit_trade_names_the_credit_curve_of_its_reference_entity", "[tra
                              batch.credit_instruments.front().reference_entity_id + "?"));
 }
 
+namespace {
+
+/// Gives each swap convention a rival that names its index with other terms.
+void name_each_swap_index_twice(domain::trade_generation_scope& scope) {
+    const auto swaps = scope.conventions.swaps;
+    for (auto rival : swaps) {
+        rival.id += "-RIVAL";
+        rival.fixed_frequency = rival.fixed_frequency == "Annual" ? "Semiannual" : "Annual";
+        scope.conventions.swaps.push_back(rival);
+    }
+}
+
+}
+
+TEST_CASE("an_rpa_builds_its_underlying_swap_when_two_conventions_name_the_index",
+          "[trade_population]") {
+    auto scope = credit_scope();
+    scope.trade_type_codes = {"RiskParticipationAgreement"};
+    name_each_swap_index_twice(scope);
+
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
+    CHECK_FALSE(plan.slots.front().instruments.swap_legs.empty());
+}
+
 TEST_CASE("an_rpa_in_a_currency_no_swap_convention_floats_in_is_refused", "[trade_population]") {
     auto scope = credit_scope();
     scope.trade_type_codes = {"RiskParticipationAgreement"};
@@ -804,6 +830,28 @@ TEST_CASE("a_rate_config_that_states_one_slot_per_routed_code_draws_every_code",
     REQUIRE(plan.slots.size() == routed.size());
     CHECK(codes_of(plan) == routed);
     CHECK(codes_of(plan).contains("KnockOutSwap"));
+}
+
+TEST_CASE("a_rate_population_draws_an_index_its_alias_conventions_name_and_skips_a_conflict",
+          "[trade_population]") {
+    auto scope = rate_scope();
+    const auto six_months = scope.conventions.swaps.front();
+    auto alias = six_months;
+    alias.id = "EUR-SWAP";
+    auto conflict = six_months;
+    conflict.id = "EUR-EURIBOR-3M-SWAP";
+    conflict.index = "EUR-EURIBOR-3M";
+    conflict.oresmd_uri = "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=3M";
+    auto other_terms = conflict;
+    other_terms.id = "EUR-3M-SWAP-CONVENTIONS";
+    other_terms.fixed_frequency = "Semiannual";
+    scope.conventions.swaps.push_back(alias);
+    scope.conventions.swaps.push_back(conflict);
+    scope.conventions.swaps.push_back(other_terms);
+
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
 }
 
 TEST_CASE("a_rate_population_without_a_swap_convention_in_its_currency_is_refused",
@@ -1436,4 +1484,16 @@ TEST_CASE("a_trade_type_the_class_does_not_book_is_refused", "[trade_population]
     scope.trade_type_codes = {"Bond"};
 
     REQUIRE_THROWS_AS(plan_of(scope), trade_population_error);
+}
+
+TEST_CASE("an_equity_swap_builds_its_funding_leg_when_two_conventions_name_the_index",
+          "[trade_population]") {
+    auto scope = equity_scope();
+    scope.trade_type_codes = {"EquitySwap"};
+    name_each_swap_index_twice(scope);
+
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
+    CHECK(plan.slots.front().instruments.equity_swap_instruments.size() == 1u);
 }

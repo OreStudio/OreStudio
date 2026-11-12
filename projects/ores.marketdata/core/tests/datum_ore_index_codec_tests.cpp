@@ -317,13 +317,13 @@ TEST_CASE("the_fixing_uri_reader_refuses_a_uri_that_breaks_the_contract",
 
 TEST_CASE("every_committed_index_map_row_round_trips_through_the_codecs",
           "[marketdata][datum][ore_index_codec]") {
-    // tools/ore_conventions/oresmd_index_map.tsv is generated once from the
+    // projects/ores.seeder/datasets/conventions/oresmd_index_map.tsv is generated once from the
     // codecs and committed, so the seed generator needs no C++ binding. That
     // makes it data that can rot under a codec change: this is the guard. Every
     // committed row must be a name the index codec reads and the URI it writes
     // back from it, or the fixed table has drifted from the codec.
-    const auto path =
-        ores::testing::project_root::resolve("tools/ore_conventions/oresmd_index_map.tsv");
+    const auto path = ores::testing::project_root::resolve(
+        "projects/ores.seeder/datasets/conventions/oresmd_index_map.tsv");
     const auto content = ores::platform::filesystem::file::read_content(path);
     std::istringstream stream(content);
     std::string line;

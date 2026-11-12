@@ -27,7 +27,7 @@ METHODOLOGY_URL = ("https://github.com/OreStudio/OreStudio/tree/main/projects/or
                    "datasets/fx_vol_surfaces")
 
 # The pairs the derived source quotes, in market quoting order, with the short-dated
-# delta type of each pair's FX option convention in ore.conventions.
+# delta type of each pair's FX option convention in refdata.conventions.
 PAIRS = [
     ("EUR", "USD", "Spot"),
     ("GBP", "USD", "Spot"),

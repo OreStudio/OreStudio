@@ -17,8 +17,8 @@ Decide what the MXN overnight curve is named after, and make a fresh database ag
 
 The id =MXN-TIIE= has two meanings:
 
-- ORE's code builds =MXN-TIIE= as an IBOR index (=MXNTiie=, the 28-day TIIE). =refdata_builtin_index_conventions_populate.sql= seeds it into =ores_refdata_ibor_index_conventions_tbl=, and =refdata_overnight_index_conventions_populate.sql= leaves it out on purpose, because that script keeps only the families ORE builds no index for.
-- The ORE example corpus defines =MXN-TIIE= as an =OvernightIndex= (A360, zero settlement days) in =external/ore/examples/Products/Input/conventions.xml=. Only the =ore.conventions= dataset carries it, and that dataset publishes at system provisioning. Its oresmd address still names the IBOR fixing (=index=ibor&name=TIIE=).
+- ORE's code builds =MXN-TIIE= as an IBOR index (=MXNTiie=, the 28-day TIIE). The refdata.conventions dataset (=projects/ores.seeder/datasets/conventions/conventions.tsv=) holds it as an =IborIndex= row whose source is the ORE engine.
+- The ORE example corpus defines =MXN-TIIE= as an =OvernightIndex= (A360, zero settlement days) in =external/ore/examples/Products/Input/conventions.xml=. The refdata.conventions dataset holds it as an =OvernightIndex= row whose source is the ORE examples, and the dataset publishes at system provisioning. Its oresmd address still names the IBOR fixing (=index=ibor&name=TIIE=).
 
 =refdata_ir_curve_overnight_configs_populate.sql= seeds an overnight curve config named =MXN-TIIE=. Test 3 of =refdata_overnight_curve_configs_test.sql= looks that name up among the overnight conventions. On a recreated database, 18 of the 19 configs it checks find a seeded convention and =MXN-TIIE= finds none, so the test fails. After system provisioning the corpus row arrives and the test passes.
 
@@ -39,7 +39,7 @@ Options:
 
 - =projects/ores.sql/test/refdata_overnight_curve_configs_test.sql=, test 3.
 - =projects/ores.sql/populate/refdata/refdata_ir_curve_overnight_configs_populate.sql=, the =MXN-TIIE= config.
-- =projects/ores.sql/populate/refdata/refdata_builtin_index_conventions_populate.sql=, the IBOR row.
+- =projects/ores.seeder/datasets/conventions/conventions.tsv=, both rows.
 - =tools/ore_conventions/builtin_indices.tsv=, =MXN-TIIE ibor MXNTiie=.
 - =external/ore/examples/Products/Input/conventions.xml=, the =OvernightIndex= definition.
 - Commits 46a56a2f94 (configs and test) and 5c3bcca095 (builtin index seed).

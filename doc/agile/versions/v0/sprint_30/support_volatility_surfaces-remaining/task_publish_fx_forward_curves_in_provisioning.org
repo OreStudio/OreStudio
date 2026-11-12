@@ -105,4 +105,4 @@ via its "Verifies task" field.
 
 * Result
 
-The =publish_party_forwards= step publishes every party's forward sets in provisioning. On a fresh Acme provisioning it published 39 sets for each of the four parties, every request closed under the =tenant= rule, and it named each of the other 140 conventions per party with the service's reason. The run itself failed later, at =generate_trades=, on main's duplicate GBP swap convention, which [[id:9137921C-B9C9-4C9F-84B6-847A07B61F28][Name GBP LIBOR 3M in one swap convention]] records.
+The =publish_party_forwards= step publishes every party's forward sets in provisioning. On a fresh Acme provisioning it published 39 sets for each of the four parties, every request closed under the =tenant= rule, and it named each of the other 140 conventions per party with the service's reason. The run itself failed later, at =generate_trades=, on main's duplicate GBP swap convention, which [[id:B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C][Publish one curated convention set and provision to completion]] records.

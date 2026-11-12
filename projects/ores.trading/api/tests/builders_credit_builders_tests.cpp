@@ -131,7 +131,7 @@ TEST_CASE("a_cds_takes_its_premium_leg_from_the_cds_convention", credit_tags) {
     CHECK(leg.leg_group == "premium");
     CHECK(leg.payer == true);
     CHECK(leg.leg_type_code == "Fixed");
-    CHECK(leg.day_count_fraction_code == "ACT/360");
+    CHECK(leg.day_count_fraction_code == "A360");
     REQUIRE(cds->leg_rates.size() == 1);
     CHECK(cds->leg_rates.front().value == *decimal::from_string("0.01"));
 

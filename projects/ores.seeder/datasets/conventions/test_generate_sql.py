@@ -17,22 +17,23 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-"""Tests for tools/ore_conventions/generate_dq_seed.py.
+"""Tests for projects/ores.seeder/datasets/conventions/generate_sql.py.
 
 Run with the project venv:
 
-    ./projects/ores.codegen/venv/bin/python tools/ore_conventions/test_generate_dq_seed.py
+    ./projects/ores.codegen/venv/bin/python projects/ores.seeder/datasets/conventions/test_generate_sql.py
 
 Every fixture is a tiny inline canonical TSV and a tiny inline index map, so
 the tests never depend on the ORE corpus or on the committed map.
 """
 
 import importlib.util
+import re
 import tempfile
 import unittest
 from pathlib import Path
 
-MODULE_PATH = Path(__file__).resolve().parent / "generate_dq_seed.py"
+MODULE_PATH = Path(__file__).resolve().parent / "generate_sql.py"
 _spec = importlib.util.spec_from_file_location("ore_conventions_generate", MODULE_PATH)
 generate_dq_seed = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(generate_dq_seed)
@@ -202,7 +203,7 @@ class GenerateDqSeedCompositeTest(unittest.TestCase):
         """
         seeded, per_kind = generate_dq_seed.generate(self.tsv, self.map)
 
-        sql = generate_dq_seed.render(seeded, per_kind)
+        sql = generate_dq_seed.render(seeded, per_kind, "A methodology.")
 
         self.assertNotIn("return;", sql)
         self.assertEqual(sql.count("if not exists ("), 3)
@@ -221,6 +222,32 @@ class GenerateDqSeedCompositeTest(unittest.TestCase):
                 "        where dataset_id = v_dataset_id\n",
                 sql,
             )
+
+
+class CommittedDayCountsTest(unittest.TestCase):
+    """The committed set against the trade builders' day count table.
+
+    A builder refuses a convention whose day count has no trade code, so a row
+    added to conventions.tsv with a new day count would stop trade generation.
+    This reads the committed files on purpose.
+    """
+
+    def test_every_day_count_the_set_states_has_a_trade_code(self):
+        here = Path(__file__).resolve().parent
+        checkout = here.parents[3]
+        table = (checkout / "projects/ores.trading/api/include/ores.trading.api/builders/"
+                 "day_count.hpp").read_text()
+        coded = set(re.findall(r'\{"([^"]+)", "[^"]+"\}', table))
+        self.assertTrue(coded, "the trade day count table states no day count")
+
+        stated = set()
+        for value in re.findall(r"DayCount[A-Za-z]*=([^;\t]+)",
+                                (here / "conventions.tsv").read_text()):
+            canonical = generate_dq_seed.DAY_COUNTER.get(value.strip())
+            if canonical is not None:
+                stated.add(canonical)
+        self.assertTrue(stated, "the set states no day count")
+        self.assertEqual(stated - coded, set())
 
 
 if __name__ == "__main__":

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-iam-views
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Serve these composed views from ores.iam: the bootstrap status, the deployment o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,34 @@ Serve these composed views from ores.iam: the bootstrap status, the deployment o
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+ores.http already answers the three views at the BFF's addresses, from the
+access and tenancy tasks, as hand-assembled answers with no cache policy. This
+task meets the four obligations on each, as the synthetic views did.
+
+| View | Address | Computation | Cache policy |
+|------+---------+-------------+--------------|
+| The bootstrap status | =GET /api/bootstrap= | the IAM answer and two settings a failed read leaves false | =ETag=, revalidated at each read |
+| The deployment overview | =GET /api/overview= | a counted list read per status, the first page, the setup runs read once | =ETag=, revalidated at each read |
+| The principal's ways to hold | =GET /api/me/ways-to-hold= | the caller's roles and the catalogue | =ETag=, revalidated at each read |
+
+Decisions:
+
+- *Schema.* Each answer is a model type with =wire_fields=, published through
+  =response<T>()= and written by the codec. The answer keeps the BFF's bytes but
+  one: a tenant with no setup run states no =setup=, where the BFF stated null,
+  as the codec leaves out an empty optional. The web schema already reads a
+  missing setup as null.
+- *Cache policy.* The web client fetches with the browser's default cache, so a
+  =max-age= lets the browser skip the server after the caller's own write: the
+  setup screen would see bootstrap mode after creating the administrator, and
+  the access screen the old ways after a grant. =view_cache_policy= now names
+  three modes: not stored, revalidated at each read (=private, no-cache= with
+  the =ETag=, so an unchanged view answers 304), and fresh for a while. These
+  three views are revalidated, and so is the synthetic folder tree, which a
+  folder write changes; the inventory's cache policy for each says so. Only the
+  market trace, which no write of the caller changes, stays fresh for 10 s.
+- The ways to hold answers no ways when a read fails, as the BFF did, so a test
+  drives that route without a service and proves its =ETag= and 304 end to end.
 
 * Measurements
 
@@ -86,3 +111,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three IAM composed views meet their four obligations: a name, a published
+model, the IAM service as owner, and a stated computation with a revalidated
+=ETag=. =view_cache_policy= names its three modes, and the synthetic folder tree
+moved to revalidation, so no screen shows a view from before its own write.
+
+Component audit: the task touched ores.http (the api, iam and synthetic parts).
+The models live beside the routes of the screens that call them, and the cache
+answer in the api part's =net=; =validate_docs.sh= is run before the pull
+request.
+

@@ -91,6 +91,26 @@ class Exemption:
 
 
 RULES = (
+    # The IAM composed views ores.http answers, ahead of the rules for the screen
+    # routes they share a part with; each keeps the BFF's view name, so its
+    # obligations are stated once.
+    Rule("the deployment overview",
+         ("exact", "GET /api/overview"),
+         CPP, COMPOSED, "tenancy",
+         "The system administrator's home answered by ores.http at the address and in the"
+         " shape the BFF answered: the roster counted by status, the tenants that need the"
+         " administrator, the first page and the newest setups."),
+    Rule("the bootstrap status",
+         ("exact", "GET /api/bootstrap"),
+         CPP, COMPOSED, "tenancy",
+         "Whether the deployment still needs its first administrator, answered by ores.http"
+         " at the address and in the shape the BFF answered, with the two first-run settings"
+         " a failed read leaves false."),
+    Rule("the principal's ways to hold",
+         ("exact", "GET /api/me/ways-to-hold"),
+         CPP, COMPOSED, "access",
+         "The roles the caller could ask for that would give a permission, answered by"
+         " ores.http at the address and in the shape the BFF answered."),
     Rule("the cookie credential",
          ("regex", r"^(GET|POST|DELETE) /api/session(/party|/switch-party)?$"),
          BFF, TRANSPORT, "auth",
@@ -1372,12 +1392,12 @@ VIEWS = {
         "ores.iam",
         "the tenant roster counted by status, its first page, and the newest setups, "
         "each count a separate list read",
-        "ETag on the whole view, stale after 15 s"),
+        "ETag on the whole view, revalidated at each read, because provisioning changes it"),
     "the bootstrap status": (
         "ores.iam",
         "the IAM account and tenant answer, plus a variability settings read that may "
         "fail without failing the answer",
-        "ETag on the whole view, stale after 5 s"),
+        "ETag on the whole view, revalidated at each read, because setup changes it"),
     "one subject's story": (
         "ores.workflow",
         "every component's rows for one subject, each source read under its owner's "
@@ -1499,7 +1519,7 @@ VIEWS = {
         "ores.synthetic",
         "the folders and the feeds under each, at any depth, with the count of each "
         "kind so no screen reads the feeds",
-        "ETag on the whole view, stale after 60 s"),
+        "ETag on the whole view, revalidated at each read, because folder writes change it"),
     "the blotter": (
         "ores.trading",
         "one page of trades with the rail that groups them: books, portfolios, "
@@ -1514,7 +1534,7 @@ VIEWS = {
         "ores.iam",
         "the role catalogue and what each role grants against the grants the person "
         "already holds",
-        "ETag on the whole view, stale after 5 min"),
+        "ETag on the whole view, revalidated at each read, because a grant changes it"),
     "the calibration of an asset class": (
         "ores.synthetic",
         "every feed of the class resolved as a start would, with its candidates and their "

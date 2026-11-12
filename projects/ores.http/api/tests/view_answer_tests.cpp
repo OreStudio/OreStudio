@@ -32,7 +32,7 @@ using ores::http::net::view_cache_policy;
 namespace {
 
 const std::string view_body = R"({"folders":[]})";
-const view_cache_policy fresh_for_a_minute{std::chrono::seconds(60)};
+const auto fresh_for_a_minute = view_cache_policy::fresh_for(std::chrono::seconds(60));
 
 http_request asking_for(const std::string& if_none_match) {
     http_request req;
@@ -71,11 +71,23 @@ TEST_CASE("view_answer_sends_the_body_when_the_caller_holds_another_tag", "[view
 }
 
 TEST_CASE("view_answer_does_not_store_a_view_with_no_freshness_rule", "[view_answer]") {
-    const auto answer = view_answer(asking_for("*"), view_body, {});
+    const auto answer = view_answer(asking_for("*"), view_body, view_cache_policy::not_stored());
     CHECK(answer.status == http_status::ok);
     CHECK(answer.body == view_body);
     CHECK(answer.headers.at("Cache-Control") == "no-store");
     CHECK_FALSE(answer.headers.contains("ETag"));
+}
+
+TEST_CASE("view_answer_has_a_revalidated_view_asked_about_at_each_read", "[view_answer]") {
+    const auto policy = view_cache_policy::revalidated();
+    const auto sent = view_answer(asking_for(""), view_body, policy);
+    CHECK(sent.status == http_status::ok);
+    CHECK(sent.headers.at("Cache-Control") == "private, no-cache");
+    CHECK(sent.headers.at("ETag") == entity_tag(view_body));
+    const auto kept = view_answer(asking_for(entity_tag(view_body)), view_body, policy);
+    CHECK(kept.status == http_status::not_modified);
+    CHECK(kept.body.empty());
+    CHECK(kept.headers.at("Cache-Control") == "private, no-cache");
 }
 
 TEST_CASE("entity_tag_changes_with_the_bytes", "[view_answer]") {

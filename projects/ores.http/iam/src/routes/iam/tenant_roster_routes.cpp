@@ -20,6 +20,7 @@
 #include "ores.http/routes/iam/tenant_roster_routes.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.api/net/view_answer.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/iam/deployment_access.hpp"
 #include "ores.http/routes/iam/tenancy_screen_shapes.hpp"
@@ -308,31 +309,39 @@ std::string tenant_roster_routes::detail_json(const tenant& t,
 }
 
 std::string tenant_roster_routes::overview_json(const overview& o) {
-    std::string out = "{\"inService\":" + std::to_string(o.in_service) +
-                      ",\"onEvaluation\":" + std::to_string(o.on_evaluation) +
-                      ",\"settingUp\":" + std::to_string(o.setting_up) + ",\"attention\":[";
-    for (std::size_t i = 0; i < o.attention.size(); ++i) {
-        const auto& a = o.attention[i];
-        out += (i == 0 ? "{" : ",{");
-        out += "\"tenant\":" + summary_json(a.tenant, a.setup) +
-               ",\"reason\":" + json::write(a.reason) + "}";
-    }
-    out += "],\"tenants\":[";
-    for (std::size_t i = 0; i < o.tenants.size(); ++i)
-        out += (i == 0 ? "" : ",") + summary_json(o.tenants[i], setup_for(o.setups, o.tenants[i]));
-    out += "],\"totalCount\":" + std::to_string(o.total_count) + ",\"activity\":[";
-    for (std::size_t i = 0; i < o.activity.size(); ++i) {
-        const auto& a = o.activity[i];
-        out += (i == 0 ? "{" : ",{");
-        out += "\"instanceId\":" + json::write(a.instance_id);
-        out += ",\"tenantName\":" + json::write(a.tenant_name);
-        out += ",\"status\":" + json::write(a.status);
-        out += ",\"stepsDone\":" + std::to_string(a.steps_done);
-        out += ",\"stepCount\":" + std::to_string(a.step_count);
-        out += ",\"error\":" + json::write(a.error);
-        out += ",\"at\":" + json::write(a.at) + "}";
-    }
-    return out + "],\"activityUnavailable\":" + json::write(o.activity_unavailable) + "}";
+    const auto setup_of = [](const std::optional<tenant_setup>& setup) {
+        return setup ? std::optional(overview_setup{setup->instance_id,
+                                                    setup->status,
+                                                    setup->steps_done,
+                                                    setup->step_count,
+                                                    setup->error}) :
+                       std::nullopt;
+    };
+    const auto tenant_of = [&](const tenant& t, const std::optional<tenant_setup>& setup) {
+        return overview_tenant{boost::uuids::to_string(t.id),
+                               t.code,
+                               t.name,
+                               t.type,
+                               t.description,
+                               t.hostname,
+                               t.status,
+                               t.is_registration_default,
+                               setup_of(setup)};
+    };
+    deployment_overview view;
+    view.inService = o.in_service;
+    view.onEvaluation = o.on_evaluation;
+    view.settingUp = o.setting_up;
+    for (const auto& a : o.attention)
+        view.attention.push_back({tenant_of(a.tenant, a.setup), a.reason});
+    for (const auto& t : o.tenants)
+        view.tenants.push_back(tenant_of(t, setup_for(o.setups, t)));
+    view.totalCount = o.total_count;
+    for (const auto& a : o.activity)
+        view.activity.push_back(
+            {a.instance_id, a.tenant_name, a.status, a.steps_done, a.step_count, a.error, a.at});
+    view.activityUnavailable = o.activity_unavailable;
+    return json::write(view);
 }
 
 void tenant_roster_routes::register_routes(
@@ -411,8 +420,15 @@ void tenant_roster_routes::register_routes(
             });
         });
 
-    add(router->get("/api/overview"),
-        "Read the state of the deployment's tenants for the system administrator's home",
+    add(router->get("/api/overview")
+            .description("A composed view owned by the IAM service: the tenant roster counted "
+                         "by status, the tenants that need the administrator, the first page of "
+                         "the roster and the newest setups. Each count is a list read that asks "
+                         "for its total, and the setup runs are read once for the tenants they "
+                         "name. The answer carries an ETag and is revalidated at each read, "
+                         "because provisioning a tenant changes it.")
+            .response<deployment_overview>(),
+        "The deployment overview",
         [&session](const http_request& req) {
             return guarded<messaging::list_tenants_request>([&] {
                 deployment_access::require_read(req, session, "The deployment overview");
@@ -528,7 +544,8 @@ void tenant_roster_routes::register_routes(
                     o.attention.push_back({t, std::nullopt, "suspended"});
                 o.tenants = first.tenants;
                 o.total_count = first.total;
-                return http_response::json(overview_json(o));
+                return ores::http::net::view_answer(
+                    req, overview_json(o), ores::http::net::view_cache_policy::revalidated());
             });
         });
 

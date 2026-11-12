@@ -82,7 +82,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:B5C7B068-DA18-4D42-8FC9-D914FE521C77][Serve the reporting composed views]] | BACKLOG | | | Seven reporting views are answered only by the BFF. |
 | [[id:E3322004-3E88-448F-A5D1-75B705F8F148][Serve the market data composed views]] | BACKLOG | | | Six market data views are answered only by the BFF. |
 | [[id:ABDC11EE-7538-4BF0-A9A5-E73F553FBDBB][Serve the workflow composed views]] | BACKLOG | | | Five workflow views and the authorisation queue are answered only by the BFF. |
-| [[id:297C5264-A2AB-4DB2-B3C9-15FB5DBB5D4B][Serve the IAM composed views]] | BACKLOG | | | Three IAM views are answered only by the BFF. |
+| [[id:297C5264-A2AB-4DB2-B3C9-15FB5DBB5D4B][Serve the IAM composed views]] | STARTED | 2026-11-11 | | Three IAM views are answered only by the BFF. |
 | [[id:BE5A7BF2-B680-42BF-AB49-E9801C307742][Serve the synthetic composed views]] | DONE | 2026-11-11 | 2026-11-11 | Three synthetic views are answered only by the BFF. |
 | [[id:A2165589-71E8-4107-856A-77FB5FDD32E0][Serve the grid composed views]] | BACKLOG | | | Three grid views are answered only by the BFF. |
 | [[id:350D91AF-A4E0-43B0-849E-8188345DA443][Serve the trading composed views]] | BACKLOG | | | Two trading views are answered only by the BFF. |

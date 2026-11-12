@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
-#+updated: 2026-11-11
+#+updated: 2026-11-12
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -27,16 +27,25 @@ given, and the IAM service runs its provisioning steps on four.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1D550641-953B-4F17-BFA4-B1DB1EFBE62C][Run a service's steps concurrently]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and verified.              |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-11                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-11-12                             |
 
 * Acceptance
 
--
+- =serve_step_commands= takes a worker count, one by default, so every other
+  service is unchanged.
+- =step_workers= waits for a free worker rather than queueing, and its
+  destructor joins the running steps.
+- A delivery moves to its worker, which settles it; a step that throws on a
+  worker is logged and its delivery rolls back.
+- The IAM provisioning steps run on four workers, and the service token
+  provider takes a lock.
+- A fresh environment provisions the system and Acme to completion with no
+  service crash.
 
 * Plan
 
@@ -103,3 +112,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=serve_step_commands= runs a service's steps on the number of workers it is
+given, and IAM runs its provisioning steps on four. The branch was rebased on
+/Own each durable NATS delivery with one RAII transaction/: a step's delivery
+moves to its worker, so the double free that crashed IAM when this branch
+first ran cannot happen. =step_workers::run= takes a
+=std::move_only_function=, because a delivery cannot be copied.
+
+All acceptance points are met. =ores.service.tests= (63 cases, including the
+four =step_workers= cases), =ores.nats.tests= (65), =ores.iam.service.tests=
+(13) and =ores.iam.core.tests= (341) pass.
+
+A fresh environment provisioned the system (3 of 3 steps) and Acme (17 of 17)
+to completion with this branch merged with the hotfix /Publish one curated
+convention set and provision to completion/, with no failed unit and no
+crash in the journal. The steps now run side by side, which exposed two
+defects in the derived FX vol source that the hotfix fixes. Without the
+hotfix, provisioning stops at =generate_trades= on the convention defect it
+names.
+

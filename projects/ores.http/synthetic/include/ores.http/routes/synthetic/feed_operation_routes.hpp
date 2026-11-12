@@ -27,7 +27,6 @@
 #include "ores.utility/codec/shaped_wire_traits.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <memory>
-#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -44,7 +43,7 @@ struct feed_folder_tree final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_folder_tree>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"folders", &feed_folder_tree::folders}};
+    return ::ores::utility::codec::field_list{field{"folders", &feed_folder_tree::folders}};
 }
 
 /**

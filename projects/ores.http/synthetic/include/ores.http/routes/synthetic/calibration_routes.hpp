@@ -29,7 +29,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -59,19 +58,20 @@ struct calibration_view_policy final {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_view_policy>) {
     using ores::utility::codec::field;
     using p = calibration_view_policy;
-    return std::tuple{field{"from_policy_row", &p::from_policy_row},
-                      field{"window_days", &p::window_days},
-                      field{"variance_window_days", &p::variance_window_days},
-                      field{"variance_approval_mode", &p::variance_approval_mode},
-                      field{"variance_min_returns", &p::variance_min_returns},
-                      field{"variance_require_starts_agree", &p::variance_require_starts_agree},
-                      field{"variance_min_persistence", &p::variance_min_persistence},
-                      field{"variance_max_persistence", &p::variance_max_persistence},
-                      field{"variance_min_reaction", &p::variance_min_reaction},
-                      field{"allow_inverse", &p::allow_inverse},
-                      field{"fallback_code", &p::fallback_code},
-                      field{"provider_order", &p::provider_order},
-                      field{"version", &p::version}};
+    return ::ores::utility::codec::field_list{
+        field{"from_policy_row", &p::from_policy_row},
+        field{"window_days", &p::window_days},
+        field{"variance_window_days", &p::variance_window_days},
+        field{"variance_approval_mode", &p::variance_approval_mode},
+        field{"variance_min_returns", &p::variance_min_returns},
+        field{"variance_require_starts_agree", &p::variance_require_starts_agree},
+        field{"variance_min_persistence", &p::variance_min_persistence},
+        field{"variance_max_persistence", &p::variance_max_persistence},
+        field{"variance_min_reaction", &p::variance_min_reaction},
+        field{"allow_inverse", &p::allow_inverse},
+        field{"fallback_code", &p::fallback_code},
+        field{"provider_order", &p::provider_order},
+        field{"version", &p::version}};
 }
 
 /**
@@ -88,11 +88,12 @@ struct calibration_coverage final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calibration_coverage>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"total", &calibration_coverage::total},
-                      field{"fromFixing", &calibration_coverage::fromFixing},
-                      field{"keptFixed", &calibration_coverage::keptFixed},
-                      field{"refused", &calibration_coverage::refused},
-                      field{"overridden", &calibration_coverage::overridden}};
+    return ::ores::utility::codec::field_list{
+        field{"total", &calibration_coverage::total},
+        field{"fromFixing", &calibration_coverage::fromFixing},
+        field{"keptFixed", &calibration_coverage::keptFixed},
+        field{"refused", &calibration_coverage::refused},
+        field{"overridden", &calibration_coverage::overridden}};
 }
 
 /**
@@ -110,11 +111,12 @@ struct asset_class_calibration final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_class_calibration>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"assetClass", &asset_class_calibration::assetClass},
-                      field{"policy", &asset_class_calibration::policy},
-                      field{"policyWritable", &asset_class_calibration::policyWritable},
-                      field{"feeds", &asset_class_calibration::feeds},
-                      field{"coverage", &asset_class_calibration::coverage}};
+    return ::ores::utility::codec::field_list{
+        field{"assetClass", &asset_class_calibration::assetClass},
+        field{"policy", &asset_class_calibration::policy},
+        field{"policyWritable", &asset_class_calibration::policyWritable},
+        field{"feeds", &asset_class_calibration::feeds},
+        field{"coverage", &asset_class_calibration::coverage}};
 }
 
 /**

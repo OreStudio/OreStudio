@@ -1,0 +1,169 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_ANALYTICS_QUANT_DOMAIN_LATENT_MARKET_HPP
+#define ORES_ANALYTICS_QUANT_DOMAIN_LATENT_MARKET_HPP
+
+#include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/keyed_brownian_path.hpp"
+#include <cstdint>
+#include <span>
+#include <vector>
+
+namespace ores::analytics::quant::domain {
+
+/// One factor's weight on one series' driver.
+struct factor_weight {
+    std::uint32_t factor;
+    double weight;
+};
+
+/// What a series' tick reads from the market: the shared part of its driver's
+/// increment, and the time that increment covers.
+struct driver_increment {
+    double shared;
+    double elapsed;
+};
+
+/**
+ * @brief The latent market: shared Brownian factors and the drivers that load on
+ * them, held as flat arrays.
+ *
+ * Every series' driver is a standard Brownian motion built from shared factors
+ * and its own motion, as the design note states: the loadings of a series are
+ * the weights of its driver on those factors, and the squares of those weights
+ * leave the rest to the series' own noise. Two series therefore correlate by
+ * the dot product of their loadings, exactly, whatever their tick times are.
+ *
+ * The data model is the many case, not the few. Factors are a handful and each
+ * owns a keyed path and a walk; series are thousands and each owns two doubles,
+ * its driver value at its last tick and that tick's time. The loadings live in
+ * one flat array, written once while the market is built and read only after, so
+ * a tick over many series touches no allocator and walks one contiguous span.
+ *
+ * A factor is read once when simulated time moves, not once a series: a market
+ * tick advances the walks and fills the factor values, and each series' tick is
+ * then a dot product over its own handful of weights.
+ *
+ * The market is owned by the scheduler and touched only on its thread. It is
+ * forward only: simulated time never moves backwards, and a series' tick at an
+ * earlier time is refused rather than silently re-summed.
+ */
+struct latent_market {
+    std::vector<math::keyed_path_params> factors;
+    std::vector<math::keyed_walk> walks;
+    /// Each factor's value at now, refreshed when simulated time moves.
+    std::vector<double> factor_value;
+
+    /// The loadings, series by series, with the span each series owns.
+    std::vector<factor_weight> loadings;
+    std::vector<std::uint32_t> loading_begin;
+
+    /// Each series' driver value at its last tick, and that tick's time.
+    std::vector<double> driver;
+    std::vector<double> tick_time;
+
+    /// The simulated time the market has been advanced to.
+    double now;
+    /// The run's seed, so a market is reproducible by seed.
+    std::uint64_t run_seed;
+    /// The width of a factor's cells in simulated time.
+    double cell_width;
+    /// The number of bridge levels inside a cell.
+    unsigned depth;
+    /// The simulated time the run starts at.
+    double start;
+};
+
+/**
+ * @brief A market with no factors and no series.
+ *
+ * @param run_seed The seed every factor is keyed by.
+ * @param cell_width The width of a factor's cells in simulated time.
+ * @param depth The number of bridge levels inside a cell.
+ * @param start The simulated time the run starts at.
+ */
+ORES_ANALYTICS_QUANT_EXPORT latent_market make_latent_market(std::uint64_t run_seed,
+                                                             double cell_width,
+                                                             unsigned depth,
+                                                             double start);
+
+/**
+ * @brief Adds a factor, keyed by its own id.
+ *
+ * The id takes a purpose of its own in the stream, so a factor never collides
+ * with a series' price or arrival draws.
+ *
+ * @return The factor's index.
+ */
+ORES_ANALYTICS_QUANT_EXPORT std::uint32_t latent_add_factor(latent_market& market,
+                                                            std::uint64_t factor_id);
+
+/**
+ * @brief Adds a series with no loadings yet.
+ *
+ * @return The series' index.
+ */
+ORES_ANALYTICS_QUANT_EXPORT std::uint32_t latent_add_series(latent_market& market);
+
+/**
+ * @brief Sets a series' loadings.
+ *
+ * Called once, for the series most recently added, so the flat array is built in
+ * one pass and never moved again.
+ *
+ * @throws std::invalid_argument if the series is not the last one added, if a
+ *         factor is out of range or repeated, or if the squares of the weights
+ *         exceed one, which would leave a driver that is not a standard Brownian
+ *         motion.
+ */
+ORES_ANALYTICS_QUANT_EXPORT void latent_set_loadings(latent_market& market,
+                                                     std::uint32_t series,
+                                                     std::span<const factor_weight> loadings);
+
+/**
+ * @brief Moves simulated time and refreshes every factor's value.
+ *
+ * @throws std::invalid_argument if the time is before the market's now.
+ */
+ORES_ANALYTICS_QUANT_EXPORT void latent_advance(latent_market& market, double t);
+
+/// A series' driver value at now, from the factors' cached values.
+ORES_ANALYTICS_QUANT_EXPORT double latent_driver_value(const latent_market& market,
+                                                       std::uint32_t series);
+
+/**
+ * @brief Ticks a series at a simulated time.
+ *
+ * Advances the market to the time, returns the shared part of the driver's
+ * increment over the interval since the series' last tick, and records the new
+ * driver value and time. A first tick measures from the run's start.
+ *
+ * A process turns what this returns into a standard normal by adding its own
+ * motion, weighted by the square root of one less the squared loadings, and
+ * dividing by the square root of the elapsed time.
+ *
+ * @throws std::invalid_argument if the time is before the market's now.
+ */
+ORES_ANALYTICS_QUANT_EXPORT driver_increment latent_tick(latent_market& market,
+                                                         std::uint32_t series,
+                                                         double t);
+
+}
+
+#endif

@@ -47,6 +47,7 @@ set(files
     "heath_jarrow_morton_process_tests.cpp"
     "hull_white_process_tests.cpp"
     "keyed_brownian_path_tests.cpp"
+    "latent_market_tests.cpp"
     "libor_market_model_process_tests.cpp"
     "main.cpp"
     "mixture_tilt_tests.cpp"

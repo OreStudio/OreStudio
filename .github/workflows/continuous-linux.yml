@@ -165,6 +165,14 @@ jobs:
         # refuses the repository without this.
         run: git config --global --add safe.directory "${GITHUB_WORKSPACE}"
 
+      - name: Point the caches at the container workspace
+        # github.workspace holds the runner path, /home/runner/work, but the
+        # container mounts the workspace at /__w. The cache steps save the
+        # container path, so vcpkg and sccache must write there.
+        run: |
+          echo "VCPKG_BINARY_SOURCES=clear;files,${GITHUB_WORKSPACE}/vcpkg-cache,readwrite" >> "$GITHUB_ENV"
+          echo "SCCACHE_DIR=${GITHUB_WORKSPACE}/.sccache" >> "$GITHUB_ENV"
+
       - name: Check every Boost header has a vcpkg port behind it
         # Boost arrives as per-library ports, so a new library compiles for
         # whoever added it and fails on a clean install with a missing header.

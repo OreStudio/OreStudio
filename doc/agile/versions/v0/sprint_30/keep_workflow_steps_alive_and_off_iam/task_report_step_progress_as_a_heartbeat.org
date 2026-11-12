@@ -41,9 +41,35 @@ A step states its progress on the heartbeat it already renews, the engine fails 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Today a worker renews its step's claim lease in the background, and each
+renewal moves =lease_expires_at= forward. The engine's deadline pass ignores
+the lease: it measures silence from =claimed_at= and fails the step when that
+passes the budget, so a live step is failed twenty minutes after its claim.
+The renewal carries no progress, so nothing can tell working from stuck.
+
+The user decided that reported progress is the stall signal: a step stuck
+inside a call keeps renewing its lease but stops progressing, and that is
+the stall to catch.
+
+1. The claim row gains the step's latest progress: a phase, a done and a
+   total count, and when the progress last changed. A claim starts with no
+   progress, changed at its claim.
+2. A step reports progress through its context, as it advances, in the
+   units natural to it. The renewal the worker already sends carries the
+   latest report, and the repository stores it, moving the changed time
+   only when the progress differs.
+3. The engine fails a claimed step when its progress has not changed for
+   the step's budget, which becomes a stall budget, or when its lease has
+   lapsed past a grace, because then its worker is gone. Elapsed time since
+   the claim no longer fails a step. An unclaimed step keeps today's queue
+   rule.
+4. The workflow's step status carries the progress, and the shell prints it
+   for a running step.
+5. The provisioning steps report progress: generate_trades per entry and
+   per trade written, set_staff_passwords per page, and the curve and
+   photo steps per item.
+6. Prove it on Acme provisioning under load, and with a test step that
+   stops progressing while it keeps its lease.
 
 * Measurements
 

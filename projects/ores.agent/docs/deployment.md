@@ -93,7 +93,7 @@ See [validation](validation.md) for Windows evidence and the open Linux GPU chec
 
 ## NATS and access
 
-Checked contract: `f19210e781dd508c1019f499a74ecd40d59912e3`. This is test evidence, not a server version lock.
+Checked contract: `46f7c82339d67d3bfd79f15a1039afc680a305f0`. This is test evidence, not a server version lock.
 `src/backend.ts` defines the independent operation allowlist. It uses MessagePack,
 mTLS, user Bearer token, `Nats-Session-Id` and correlation IDs. Reads have an
 eight-second deadline without retry. Cancellation discards pending results.

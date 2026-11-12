@@ -668,3 +668,32 @@ TEST_CASE("a_curve_the_policy_refuses_to_start_without_a_fixing_does_not_start",
                                                               start),
                     std::runtime_error);
 }
+
+TEST_CASE("a_curve_whose_series_cannot_be_read_keeps_its_fixed_rate_and_says_why",
+          "[feed_factory]") {
+    auto ctx = make_build_context();
+    const auto f = make_ir_fixture();
+    const ores::synthetic::feed::calibration_policy policy;
+
+    const auto start =
+        ores::synthetic::feed::resolve_ir_start(ctx.auth_nats, f.config, policy, nullptr);
+
+    CHECK_FALSE(start.refused);
+    CHECK_FALSE(start.rate.has_value());
+    CHECK_FALSE(start.source.from_fixing);
+    CHECK(start.source.note.find("could not be read") != std::string::npos);
+}
+
+TEST_CASE("a_curve_the_policy_refuses_when_its_series_cannot_be_read_is_refused",
+          "[feed_factory]") {
+    auto ctx = make_build_context();
+    const auto f = make_ir_fixture();
+    ores::synthetic::feed::calibration_policy policy;
+    policy.fallback_code = "refuse";
+
+    const auto start =
+        ores::synthetic::feed::resolve_ir_start(ctx.auth_nats, f.config, policy, nullptr);
+
+    CHECK(start.refused);
+    CHECK(start.source.note.find("refuses to start without a fixing") != std::string::npos);
+}

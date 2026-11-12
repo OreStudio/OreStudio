@@ -19,6 +19,7 @@
  */
 #include "ores.trading.api/builders/commodity_builders.hpp"
 #include "leg_rows.hpp"
+#include "ores.trading.api/builders/day_count.hpp"
 #include "refusals.hpp"
 #include <cmath>
 #include <optional>
@@ -970,6 +971,11 @@ commodity_result commodity_worst_of_basket_swap_builder::build() const {
             return std::tuple{index.day_count_fraction, index.fixing_calendar, rolls};
         },
         *definition);
+    // The leg states the day count in the trade's vocabulary, not the convention's.
+    const auto funding_day_count = trade_day_count_of(day_count);
+    if (!funding_day_count)
+        return std::unexpected(
+            build_error{"funding_index", "no trade day count for " + std::string(day_count)});
 
     auto row = commodity_row_of(
         trade_type, basket.front().underlying, terms_.currency.get(), terms_.quantity.get(), {});
@@ -991,7 +997,7 @@ commodity_result commodity_worst_of_basket_swap_builder::build() const {
     // The funding leg floats on its index; the coupon leg pays the fixed rate.
     auto funding_leg = rows::swap_leg(1, true, "Floating", terms_.currency.get());
     funding_leg.floating_index_code = funding.uri();
-    funding_leg.day_count_fraction_code = day_count;
+    funding_leg.day_count_fraction_code = std::string(*funding_day_count);
     out.legs.push_back(std::move(funding_leg));
     out.legs.push_back(rows::swap_leg(2, false, "Fixed", terms_.currency.get()));
     domain::swap_leg_rate coupon{};

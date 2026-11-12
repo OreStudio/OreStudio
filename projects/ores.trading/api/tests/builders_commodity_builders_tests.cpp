@@ -632,7 +632,8 @@ const conv::convention_lookup& funding_conventions() {
         libor.id = "USD-LIBOR";
         libor.fixing_calendar = "US";
         libor.settlement_days = 2;
-        libor.day_count_fraction = "A360";
+        // Conventions state ORE's spelling, which the leg must restate in the trade's.
+        libor.day_count_fraction = "ACT/360";
         libor.business_day_convention = "MF";
         libor.oresmd_uri = "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR";
         return conv::convention_lookup(conv::convention_set{.ibor_indices = {libor}});

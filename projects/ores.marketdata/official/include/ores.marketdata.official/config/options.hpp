@@ -95,8 +95,7 @@ struct options final {
      */
     std::string bcch_url;
     /**
-     * @brief The address of the Czech National Bank's site, which serves its yearly CZEONIA
-     * files.
+     * @brief The address of the Czech National Bank's site, which serves its yearly CZEONIA files.
      */
     std::string cnb_url;
     /**

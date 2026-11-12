@@ -37,6 +37,12 @@ namespace json = boost::json;
 
 constexpr std::string_view structured_marker = "StructuredMessage";
 
+/**
+ * @brief The scope an error or a warning carries when the engine named no
+ * group, so the line is still stored and still reads as the engine's own.
+ */
+constexpr std::string_view unstated_scope = "Engine";
+
 /** The text with its leading spaces and tabs removed. */
 std::string_view without_leading_space(std::string_view text) {
     const auto first = text.find_first_not_of(" \t");
@@ -399,6 +405,22 @@ bool is_memory_report(const engine_log_event& event) {
     return event.severity == "warning" && event.message.ends_with(engine_memory_report_suffix);
 }
 
+/**
+ * @brief Gives an error or a warning a scope when the engine stated no group.
+ *
+ * The engine states a group in its structured lines and states none in its
+ * plain ones, where a warning about a convention or an input arrives with no
+ * group at all. A reader still needs to see it, so such a line is recorded as
+ * the engine's own: the scope says the engine spoke and named no part of
+ * itself, which is what the engine said. A notice keeps no scope, because the
+ * run does not store one.
+ */
+void assign_unstated_scope(engine_log_event& event) {
+    const auto spoken = event.severity == "error" || event.severity == "warning";
+    if (spoken && event.scope.empty())
+        event.scope = std::string(unstated_scope);
+}
+
 std::string store_level_of(const engine_log_event& event) {
     if (!event.states_line_fields)
         return {};
@@ -474,6 +496,7 @@ std::vector<engine_log_event> parse_engine_log_text(std::string_view text,
             event.message = statement.message;
             event.message_stated = true;
         }
+        assign_unstated_scope(event);
         events.push_back(std::move(event));
     });
     return events;
@@ -493,6 +516,7 @@ std::vector<engine_log_event> parse_engine_log_json(std::string_view text,
         } else if (event.message.empty()) {
             event.message = std::string(line);
         }
+        assign_unstated_scope(event);
         events.push_back(std::move(event));
     });
     return events;

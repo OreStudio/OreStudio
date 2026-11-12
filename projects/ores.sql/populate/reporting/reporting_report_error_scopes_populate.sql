@@ -21,12 +21,13 @@
 /**
  * Report Error Scopes Population Script
  *
- * Seeds the report_error_scopes lookup for the system tenant. Four of the five
+ * Seeds the report_error_scopes lookup for the system tenant. Four of the six
  * codes are the ORE engine's own structured-log group names, copied verbatim,
  * so that an error's scope is the engine's statement about it and not a
- * classification this system applies. The fifth, Report, is the scope an error
- * has when it is about the run itself, which is where an error that never
- * reached the engine lands.
+ * classification this system applies. Engine is the scope of an error or a
+ * warning whose line stated no group, so the row is kept rather than lost.
+ * Report is the scope an error has when it is about the run itself, which is
+ * where an error that never reached the engine lands.
  *
  * This script is idempotent.
  */
@@ -140,5 +141,26 @@ begin
         raise debug 'Created report error scope: Report';
     else
         raise debug 'Report error scope already exists: Report';
+    end if;
+
+    if not exists (
+        select 1 from ores_reporting_report_error_scopes_tbl
+        where tenant_id = v_sys_tenant and code = 'Engine'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_reporting_report_error_scopes_tbl (
+            code, tenant_id, version,
+            name, description, display_order,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            'Engine', v_sys_tenant, 0,
+            'Engine',
+            'The engine stated no group: the line names no part of the engine it belongs to.',
+            6,
+            current_user, 'system.initial_load', 'Seed report error scope: Engine'
+        );
+        raise debug 'Created report error scope: Engine';
+    else
+        raise debug 'Report error scope already exists: Engine';
     end if;
 end $$;

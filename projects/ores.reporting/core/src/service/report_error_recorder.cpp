@@ -44,7 +44,8 @@ constexpr std::string_view scope_report = "Report";
 constexpr std::string_view subject_trade = "trade";
 
 /// The scopes the engine emits, which the seed states and the store enforces.
-constexpr std::string_view engine_scopes[] = {"Trade", "Analytics", "Curve", "Configuration"};
+constexpr std::string_view engine_scopes[] = {
+    "Trade", "Analytics", "Curve", "Configuration", "Engine"};
 
 bool is_known_scope(std::string_view scope) {
     if (scope == scope_report)

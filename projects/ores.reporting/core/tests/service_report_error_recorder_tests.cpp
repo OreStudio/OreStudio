@@ -200,6 +200,35 @@ TEST_CASE("a run that failed its analytics carries one error row per trade it co
     CHECK(analytic->party_id == *ctx.party_id());
 }
 
+TEST_CASE("a warning the engine stated no group for is stored as the engine's own",
+          "[service][database]") {
+    /*
+     * The engine writes a warning about a convention or an input with no group
+     * at all. Losing it left a run that failed with nothing to read, so the row
+     * is kept under the scope that says the engine spoke and named no part of
+     * itself.
+     */
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
+    const auto instance_id = write_instance(ctx, h.db_user(), gen);
+
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    const std::vector<ores::reporting::service::engine_log_row> errors{
+        {.severity = "warning",
+         .scope = "Engine",
+         .message = "Exception parsing convention CAD-CORRA: Convention already exists for id "
+                    "CAD-CORRA.",
+         .detail = {}}};
+    CHECK(recorder.record_engine_errors(instance_id, errors).failure.empty());
+
+    const auto rows = errors_of(ctx, instance_id);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().scope_code == "Engine");
+    CHECK(rows.front().severity == "warning");
+    CHECK(rows.front().message.starts_with("Exception parsing convention CAD-CORRA"));
+}
+
 TEST_CASE("an error about a trade carries the version the run read and the date it read it at",
           "[service][database]") {
     scoped_database_helper h;

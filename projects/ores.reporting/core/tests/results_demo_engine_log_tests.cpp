@@ -124,9 +124,9 @@ TEST_CASE("an engine that writes only a text log still states a row for each fai
     CHECK(rows[0].subject == "trade");
     CHECK(rows[0].subject_id == "00cf3e0f-29e1-53f9-9e85-eac72dcff6ca");
     CHECK(rows[0].message == "XML Node is NULL (expected OptionData)");
-    // A line the engine wrote without a group is read as it says, and the
-    // recorder is what decides a row that names no scope is not a failure of a
-    // part of the run.
+    // A line the engine wrote without a group is read as it says, and it is
+    // stored as the engine's own rather than dropped, so a reader of the run
+    // sees what the engine said even when it named no part of itself.
     CHECK(rows[1].severity == "warning");
-    CHECK(rows[1].scope.empty());
+    CHECK(rows[1].scope == "Engine");
 }

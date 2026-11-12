@@ -526,12 +526,12 @@ TEST_CASE("a_commodity_tarf_with_no_target_fails", commodity_tags) {
 }
 
 TEST_CASE("a_commodity_generic_barrier_option_monitors_its_barrier_monthly", commodity_tags) {
-    const auto option = commodity_generic_barrier_option_builder(
-                            {.option = crude_call(),
-                             .barrier = barrier_kind::up_and_out,
-                             .barrier_level = amount("100"),
-                             .monitoring_start = 2026y / 1 / 5})
-                            .build();
+    const auto option =
+        commodity_generic_barrier_option_builder({.option = crude_call(),
+                                                  .barrier = barrier_kind::up_and_out,
+                                                  .barrier_level = amount("100"),
+                                                  .monitoring_start = 2026y / 1 / 5})
+            .build();
     REQUIRE(option.has_value());
     REQUIRE(option->barriers.size() == 1);
     CHECK(option->barriers[0].barrier_type == "UpAndOut");
@@ -541,12 +541,12 @@ TEST_CASE("a_commodity_generic_barrier_option_monitors_its_barrier_monthly", com
 }
 
 TEST_CASE("a_commodity_generic_barrier_option_with_no_level_fails", commodity_tags) {
-    const auto option = commodity_generic_barrier_option_builder(
-                            {.option = crude_call(),
-                             .barrier = barrier_kind::down_and_in,
-                             .barrier_level = amount("0"),
-                             .monitoring_start = 2026y / 1 / 5})
-                            .build();
+    const auto option =
+        commodity_generic_barrier_option_builder({.option = crude_call(),
+                                                  .barrier = barrier_kind::down_and_in,
+                                                  .barrier_level = amount("0"),
+                                                  .monitoring_start = 2026y / 1 / 5})
+            .build();
     REQUIRE_FALSE(option.has_value());
     CHECK(option.error().term == "barrier_level");
 }
@@ -563,8 +563,7 @@ TEST_CASE("a_commodity_strike_resettable_option_keeps_its_trigger", commodity_ta
     CHECK(option->options.empty());
 }
 
-TEST_CASE("a_commodity_strike_resettable_option_settling_before_its_expiry_fails",
-          commodity_tags) {
+TEST_CASE("a_commodity_strike_resettable_option_settling_before_its_expiry_fails", commodity_tags) {
     auto terms = crude_resettable();
     terms.settlement = 2027y / 1 / 4;
     const auto option = commodity_strike_resettable_option_builder(terms).build();
@@ -581,8 +580,7 @@ TEST_CASE("a_commodity_forward_volatility_agreement_fixes_before_its_expiry", co
     CHECK(fva->instrument.position == "Long");
 }
 
-TEST_CASE("a_commodity_forward_volatility_agreement_fixing_at_its_expiry_fails",
-          commodity_tags) {
+TEST_CASE("a_commodity_forward_volatility_agreement_fixing_at_its_expiry_fails", commodity_tags) {
     auto terms = crude_fva();
     terms.fva_date = 2027y / 1 / 5;
     const auto fva = commodity_forward_volatility_agreement_builder(terms).build();

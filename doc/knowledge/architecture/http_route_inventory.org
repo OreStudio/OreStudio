@@ -79,7 +79,7 @@ an API publishes no area, so it is counted under =(none)=.
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 44 | composed view 12, resource 32 |
 | simulation | calibration, market-regime, synthetic | 62 | composed view 6, resource 56 |
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
-| trading | blotter, book-changes, booking, books, structures, trades | 24 | composed view 2, resource 22 |
+| trading | blotter, book-changes, booking, books, structures, trades, trading | 27 | composed view 2, resource 25 |
 | workflow | inbox, server, timeline | 18 | composed view 6, resource 12 |
 | (none) | books, classifications, conventions, core, counterparties, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 423 | not an API 405, transport capability 18 |
 
@@ -157,10 +157,10 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | reporting | 44 | 0 | 44 |
 | simulation | 28 | 28 | 0 |
 | tenancy | 21 | 21 | 0 |
-| trading | 24 | 0 | 24 |
+| trading | 24 | 3 | 21 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 22 | 13 |
-| total | 324 | 153 | 171 |
+| total | 324 | 156 | 168 |
 
 * The pairing
 
@@ -481,11 +481,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | PUT =/api/tenors/tenors= | PUT /api/tenors/tenors |
 | GET =/api/timeline= | none |
 | GET =/api/trade-link-types= | none |
-| GET =/api/trades= | none |
+| GET =/api/trades= | GET /api/trades |
 | POST =/api/trades= | none |
-| GET =/api/trades/:id= | none |
+| GET =/api/trades/:id= | GET /api/trades/{id} |
 | POST =/api/trades/:id/links= | none |
-| GET =/api/trades/:id/versions/:version= | none |
+| GET =/api/trades/:id/versions/:version= | GET /api/trades/{id}/versions/{version} |
 | GET =/api/trades/new= | none |
 | GET =/api/ungrouped-trades= | none |
 | GET =/api/workflow/:instanceId= | none |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1243 routes: 324 answered by the BFF and 919 by ores.http.
+1246 routes: 324 answered by the BFF and 922 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -1320,11 +1320,14 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | composed view | workflow | get | =/api/timeline= | bff | projects/ores.web/packages/bff/src/timeline.ts:61 | One person's, party's or request's story as one stream, each source gated by the permission its owner puts on it and a source that refuses becoming a gap in the answer. |
 | resource | trading | get | =/api/trade-link-types= | bff | projects/ores.web/packages/bff/src/booking.ts:278 | The link types a person can record between trades, a lookup the server holds. |
 | resource | trading | get | =/api/trades= | bff | projects/ores.web/packages/bff/src/trades.ts:196 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
+| resource | trading | get | =/api/trades= | ores.http | projects/ores.http/trading/src/routes/trading/trade_read_routes.cpp:467 | The trade screens' reads at the address and in the shape the BFF answered: a page of the trade list enriched with what a person reads, one trade's page, and one trade at one version. |
 | resource | trading | post | =/api/trades= | bff | projects/ores.web/packages/bff/src/booking.ts:383 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
 | resource | trading | get | =/api/trades/:id= | bff | projects/ores.web/packages/bff/src/trades.ts:308 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
 | resource | trading | post | =/api/trades/:id/links= | bff | projects/ores.web/packages/bff/src/booking.ts:302 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
 | resource | trading | get | =/api/trades/:id/versions/:version= | bff | projects/ores.web/packages/bff/src/trades.ts:174 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
 | resource | trading | get | =/api/trades/new= | bff | projects/ores.web/packages/bff/src/booking.ts:202 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
+| resource | trading | get | =/api/trades/{id}= | ores.http | projects/ores.http/trading/src/routes/trading/trade_read_routes.cpp:482 | The trade screens' reads at the address and in the shape the BFF answered: a page of the trade list enriched with what a person reads, one trade's page, and one trade at one version. |
+| resource | trading | get | =/api/trades/{id}/versions/{version}= | ores.http | projects/ores.http/trading/src/routes/trading/trade_read_routes.cpp:613 | The trade screens' reads at the address and in the shape the BFF answered: a page of the trade list enriched with what a person reads, one trade's page, and one trade at one version. |
 | resource | trading | get | =/api/ungrouped-trades= | bff | projects/ores.web/packages/bff/src/structures.ts:566 | The trades no structure holds, a filtered read of the trade collection. |
 | resource | access | get | =/api/v1/access/account_contact_informations= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:379 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
 | resource | access | post | =/api/v1/access/account_contact_informations= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:431 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
@@ -1433,7 +1436,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | access | post | =/api/v1/iam/ops/update_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:205 | An RPC-shaped write to one account: its fields, or the lock that refuses the next sign-in and leaves the open sessions alone. |
 | resource | auth | post | =/api/v1/iam/ops/update_my_email= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:279 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
 | resource | access | post | =/api/v1/iam/roles_permissions/put= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:204 | Replaces the permissions one role grants with exactly the set sent. |
-| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:163 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
+| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:164 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
 | resource | reference-data | get | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:340 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | post | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:386 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | put | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:399 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |

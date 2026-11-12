@@ -847,6 +847,12 @@ RULES = (
          "The market-wide arrival factor at the address and in the shape the BFF answered: the"
          " regime in force, the switch that forces it, the settings that move it, and the tick"
          " counts of the last stretch of the run."),
+    Rule("the trade screens' read",
+         ("regex", r"^GET /api/trades(/\{id\}(/versions/\{version\})?)?$"),
+         CPP, RESOURCE, "trading",
+         "The trade screens' reads at the address and in the shape the BFF answered: a page of"
+         " the trade list enriched with what a person reads, one trade's page, and one trade"
+         " at one version."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

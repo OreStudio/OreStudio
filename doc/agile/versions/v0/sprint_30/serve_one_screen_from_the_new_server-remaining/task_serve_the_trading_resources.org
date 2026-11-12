@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-trading-resources
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The gateway has no part for the trading area. Add the part with the adapter reci
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,35 @@ The gateway has no part for the trading area. Add the part with the adapter reci
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The inventory lists 22 trading resource routes in four groups. Each group is
+one pull request; the first also stands up the part.
+
+| Group | Routes | BFF source |
+|-------+--------+------------|
+| The part and the trade reads | 3 | =trades.ts= |
+| Booking | 5 | =booking.ts= |
+| Structures | 8 | =structures.ts= |
+| Books and book changes | 6 | =books.ts=, =book-changes.ts= |
+
+The blotter and the book tree are composed views and belong to
+[[id:350D91AF-A4E0-43B0-849E-8188345DA443][Serve the trading composed views]].
+
+Decisions made in the first group:
+
+- The part is stood up by the adapter recipe, copied from =ores.http.synthetic=:
+  its model, its four CMake files, the composite's parts list, the umbrella
+  header, the aggregate, the file lists, the diagram, and the server's link and
+  registration. It links =ores.refdata.api= beside =ores.trading.api=, because
+  a trade's rows are named by their book and counterparty.
+- A page's rows are the summary rows with five members added: the identifier a
+  desk quotes, the counterparty's and book's names, and the trade's versions.
+  The members are added to the row's JSON, as the BFF spread them into the row,
+  so a summary member the BFF passed on is not restated by hand.
+- An enrichment read is skipped when the page names nothing for it, where the
+  BFF sent an empty one-of list; an empty list's meaning is the service's to
+  state, and skipping it reads nothing.
+- The structures of a trade, its terms' issue and a structure's reference are
+  supplementary: a read of them that is refused answers none, as the BFF's did.
 
 * Measurements
 

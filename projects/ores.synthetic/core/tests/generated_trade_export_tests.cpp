@@ -473,12 +473,8 @@ const std::set<std::string>& known_refusals() {
 /// The generated trade types written with no product data. Asserted exactly.
 const std::set<std::string>& known_passthroughs() {
     static const std::set<std::string> known = {
-        "CommodityBasketVarianceSwap",
-        "CommodityBestEntryOption",
         "CommodityPairwiseVarianceSwap",
-        "CommodityRainbowOption",
         "CommodityWindowBarrierOption",
-        "CommodityWorstOfBasketSwap",
     };
     return known;
 }

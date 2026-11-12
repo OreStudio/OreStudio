@@ -37,7 +37,7 @@ framework for every call site, and not the whole audit of the NATS patterns.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -69,7 +69,7 @@ framework for every call site, and not the whole audit of the NATS patterns.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:F55B666A-60C3-428D-8255-D2B6B67879A7][State each workflow request's deadline against its work]] | BACKLOG | | | Every request a provisioning step makes takes the shared 30-second default, so a calibration that needs longer fails the step on a healthy answer. State a deadline for each request, sized to its work, with the reason beside it. |
+| [[id:F55B666A-60C3-428D-8255-D2B6B67879A7][State each workflow request's deadline against its work]] | STARTED | 2026-11-12 | | Every request a provisioning step makes takes the shared 30-second default, so a calibration that needs longer fails the step on a healthy answer. State a deadline for each request, sized to its work, with the reason beside it. |
 | [[id:961F9A06-18FF-4EDC-9EA0-6610DA942DED][Classify a failed request and retry the transient ones]] | BACKLOG | | | A request that times out throws straight out of the step, so a transient failure fails the run on its first occurrence. Classify the failure, retry the transient one with backoff and jitter inside the step's remaining budget, and never retry a refusal. |
 | [[id:459AB808-737A-4CA0-9BF1-955D629880B2][Make each repeated request safe to repeat]] | BACKLOG | | | A retry is correct only when repeating the request changes nothing. Give each retried request a stable identity, have the step read the result an earlier attempt may have produced, and prove a repeat writes no second candidate or raises a second approval request. |
 | [[id:F4419745-0E3D-4894-A4CD-C531496A914C][Bound the work one request may do]] | BACKLOG | | | The calibrate handler reads every pillar and pillar source in the tenant for one blueprint and filters in memory, so its cost grows with the catalogue, and it keeps working after the caller has given up. Bound the work of one request and let it say when it cannot finish. |

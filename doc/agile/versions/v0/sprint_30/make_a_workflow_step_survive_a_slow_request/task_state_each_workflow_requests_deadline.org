@@ -26,7 +26,7 @@ Every request a provisioning step makes either takes the shared default delibera
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

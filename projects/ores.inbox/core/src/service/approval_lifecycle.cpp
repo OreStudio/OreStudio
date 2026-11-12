@@ -358,11 +358,12 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
     return raise_under(policy_for(kind, !codes.empty()), kind, reason, requested_by, codes);
 }
 
-domain::approval_request approval_lifecycle::raise_under(const raise_policy& policy,
-                                                         const domain::approval_kind& kind,
-                                                         const std::string& reason,
-                                                         const boost::uuids::uuid& requested_by,
-                                                         const std::vector<std::string>& part_codes) {
+domain::approval_request
+approval_lifecycle::raise_under(const raise_policy& policy,
+                                const domain::approval_kind& kind,
+                                const std::string& reason,
+                                const boost::uuids::uuid& requested_by,
+                                const std::vector<std::string>& part_codes) {
     const auto codes = distinct_part_codes(part_codes);
     const auto& rule = policy.rule;
     if (rule && !codes.empty())

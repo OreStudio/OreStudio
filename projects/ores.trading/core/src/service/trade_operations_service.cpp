@@ -640,8 +640,11 @@ trade_operations_service::complete_structure(const messaging::complete_structure
             "Checking whether a leg is still a draft");
         if (still_draft.empty() || still_draft.front() != "true")
             continue;
-        auto one = execute_within(
-            ctx, authorisation, leg.trade_id, request.change_reason_code, request.change_commentary);
+        auto one = execute_within(ctx,
+                                  authorisation,
+                                  leg.trade_id,
+                                  request.change_reason_code,
+                                  request.change_commentary);
         if (one)
             raised.push_back(std::move(*one));
     }

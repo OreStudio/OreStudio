@@ -128,6 +128,7 @@ option(WITH_PROFILING "Generate profiling information for code coverage." OFF)
 option(WITH_MEMCHECK "Configure the tests for a run under valgrind." OFF)
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 option(ORES_UNITY_BUILD "Build each target as unity translation units." ON)
+option(ORES_WARNINGS_AS_ERRORS "Treat compiler warnings as errors." ON)
 set(ORES_UNITY_BUILD_BATCH_SIZE 16 CACHE STRING
     "Sources merged into each unity translation unit.")
 

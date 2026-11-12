@@ -299,6 +299,12 @@ jobs:
           export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
           export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           export cmake_args="build_group=Nightly,preset=${preset}"
+          # Only clang builds in Continuous, so gcc warnings reach main
+          # unchecked. Keep them warnings here until the gcc build is clean,
+          # so its tests still run and CDash still shows them.
+          if [[ "${{matrix.compiler}}" == "gcc" ]]; then
+              cmake_args="${cmake_args},warnings_as_errors=0"
+          fi
           # Coverage and valgrind are what make the debug job the heaviest
           # configuration built, and neither belongs on a release job.
           # A suite under valgrind takes up to an hour. The cap stops one that

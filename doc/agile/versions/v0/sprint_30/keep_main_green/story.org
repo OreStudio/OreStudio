@@ -21,7 +21,7 @@ Developers start work from a commit that CI has proven green, and main only move
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -48,6 +48,7 @@ Developers start work from a commit that CI has proven green, and main only move
 | [[id:20FA6378-3FCA-4156-89AC-9BCB527B8978][Name the culprit of a red run]] | BACKLOG | | | On a red continuous run, list the PRs between the last green commit and the run's commit and match them to the failing tests. |
 | [[id:7E177AB3-D85E-4029-B496-C21F76FEA34B][Stop the line when dev is red]] | BACKLOG | | | Make compass pr merge refuse a non-fix merge while the latest continuous run on dev is red. |
 | [[id:2585BB37-1F7F-4D2A-B3C7-EEA6B1805A54][Show the branch of each build in CDash]] | BACKLOG | | | Submit each CI build to a CDash group named after the branch it built: dev, integration or main. |
+| [[id:AC551901-58D0-4F99-8C4E-AABC7BF70858][Fix the nightly compile errors]] | STARTED | 2026-11-12 | | Fix the gcc, macOS and Windows compile errors that stop the nightly builds, and keep warnings as warnings on those compilers until they are clean. |
 
 * Decisions
 

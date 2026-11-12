@@ -245,6 +245,14 @@ cross join (values
         "ACME Corporation US Inc",
         "ACME Corporation HK Ltd"
     ]}'::jsonb),
+    -- A forward set is derived data as well: each legal entity publishes one for every pair
+    -- convention it can build from its spot and its own published funding curves.
+    ('acme_demo', 'publish_party_forwards', 67, '{"parties": [
+        "Acme Corporation Plc",
+        "ACME Corporation UK plc",
+        "ACME Corporation US Inc",
+        "ACME Corporation HK Ltd"
+    ]}'::jsonb),
     -- the generator. The counterparties are the entity's own
     -- tradeable links, which is why the step resolves them rather than the
     -- row naming them. No anchor is stated: the population is meant to sit

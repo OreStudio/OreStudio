@@ -1,29 +1,30 @@
 :PROPERTIES:
 :ID: 6014CFE1-D978-4ABA-BBA9-D87040FE44BA
 :END:
-#+title: The acme_demo profile is ten ordered steps, and the steps are data
-#+description: The starting point that builds the Acme tenant: what each of its ten steps creates, in which order, and which parts of the tenant a person could change without touching code.
+#+title: The acme_demo profile is an ordered list of steps, and the steps are data
+#+description: The starting point that builds the Acme tenant: what each of its steps creates, in which order, and which parts of the tenant a person could change without touching code.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:provisioning:acme:demo:seed:
 #+created: 2026-10-26
-#+updated: 2026-11-03
+#+updated: 2026-11-12
 #+startup: inlineimages
 
 * Summary
 
 A tenant is built from a starting point, and a starting point is an ordered list
-of steps held as rows. The one the demonstration uses is =acme_demo=: eleven steps
-that install the system data, publish the system's curves, publish the tenant's own datasets, import the LEI
-hierarchy, provision the parties, load the staff, set their passwords, attach
-their pictures, subscribe every party to its market data provider, schedule the
-reports each party publishes and generate a trade population. Nothing in that
+of steps held as rows. The one the demonstration uses is =acme_demo=. Its steps
+install the system data, publish the system's curves, publish the tenant's own
+datasets, import the LEI hierarchy, provision the parties, load the staff, set
+their passwords, attach their pictures, subscribe every party to its market data
+provider, give each party its own curves, surface blueprints and FX forwards,
+schedule the reports each party publishes and generate a trade population. Nothing in that
 list is code. A variant changes a row's arguments, and a tenant that wants a
 thinner book or a different feed changes a value rather than a build.
 
 * Detail
 
-** The fifteen steps
+** The steps
 
 #+ATTR_HTML: :class hug-leading
 | Order | Step | What it creates |
@@ -40,6 +41,8 @@ thinner book or a different feed changes a value rather than a build.
 | 50 | =attach_photos= | each account's picture and each party's logo, copied from the system tenant's templates |
 | 60 | =subscribe_market_data= | one subscription and one route for every party, at the provider and source the row names |
 | 65 | =publish_party_curves= | each entity's own copy of the 20 curve blueprints, bootstrapped from the quotes its own subscriptions deliver and published under auto-approval |
+| 66 | =give_party_surface_blueprints= | each entity's own copy of the system's FX volatility surface blueprints, reading the volatility quotes its subscription to the derived source delivers |
+| 67 | =publish_party_forwards= | each entity's FX forward set for every pair convention it can build from its spot and its own published funding curves, published under auto-approval. A pair it cannot build is named in the step's result with the reason |
 | 70 | =schedule_reports= | a scheduler job and a run grant for every report definition each party publishes whose schedule is a real cron, so the catalogue ticks without a person acting |
 | 80 | =generate_trades= | one trade population per trading entity, each booked into that entity's own book by its own traders |
 | 9000 | =end_auto_approval= | releases the grant after every other step, so people decide from here on. A run that fails or is abandoned releases it as it closes, and the grant's expiry ends it if the run never does |
@@ -50,7 +53,7 @@ bootstrap flag, and declares the run done.
 
 ** Why the order is what it is
 
-Five dependencies decide it, and all but the curves have a failure behind them.
+Six dependencies decide it, and all but the curves and the forwards have a failure behind them.
 
 - The system data comes first, because a tenant is built on a system that already
   makes sense: a coding scheme validator resolves its scheme in the system
@@ -66,6 +69,9 @@ Five dependencies decide it, and all but the curves have a failure behind them.
 - The market data comes after the staff and the parties, because the step acts as
   a party and writes a party's rows: a subscription written before the party
   exists has nothing to hang from.
+- A party's forwards come after its funding curves, because a forward set reads
+  the published curve of each of its two currencies. A pair whose curve is not
+  published is skipped, and the step says why.
 - The schedule comes last but for the trades, because it reads what the earlier
   steps published: a party's report definitions arrive with the bundles the
   staff step names, and a schedule names the party whose consent its runs act

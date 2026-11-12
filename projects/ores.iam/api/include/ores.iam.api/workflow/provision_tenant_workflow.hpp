@@ -110,6 +110,7 @@ inline constexpr std::string_view subscribe_market_data_step_kind = "subscribe_m
 inline constexpr std::string_view publish_party_curves_step_kind = "publish_party_curves";
 inline constexpr std::string_view give_party_surface_blueprints_step_kind =
     "give_party_surface_blueprints";
+inline constexpr std::string_view publish_party_forwards_step_kind = "publish_party_forwards";
 inline constexpr std::string_view generate_trades_step_kind = "generate_trades";
 inline constexpr std::string_view schedule_reports_step_kind = "schedule_reports";
 
@@ -133,6 +134,7 @@ inline constexpr std::string_view provision_step_kinds[] = {system_provision_ste
                                                             subscribe_market_data_step_kind,
                                                             publish_party_curves_step_kind,
                                                             give_party_surface_blueprints_step_kind,
+                                                            publish_party_forwards_step_kind,
                                                             generate_trades_step_kind,
                                                             schedule_reports_step_kind};
 
@@ -246,6 +248,13 @@ struct step_kind_words {
                 "blueprint whose quotes do not arrive in time is named with its party, and the "
                 "step fails.",
                 orchestrating_step_timeout};
+    if (kind == publish_party_forwards_step_kind)
+        return {"Publish each party's FX forwards",
+                "Publishes a forward set for every currency pair convention each party it names "
+                "can build from its spot and its published funding curves. A pair the party "
+                "cannot build is named with the reason. A forward that does not publish is named "
+                "with its party, and the step fails.",
+                orchestrating_step_timeout};
     if (kind == generate_trades_step_kind)
         return {"Generate the trades",
                 "Records a trade generation config for each party the starting point names and "
@@ -297,6 +306,7 @@ inline constexpr std::string_view provision_executed_step_kinds[] = {
     subscribe_market_data_step_kind,
     publish_party_curves_step_kind,
     give_party_surface_blueprints_step_kind,
+    publish_party_forwards_step_kind,
     generate_trades_step_kind,
     schedule_reports_step_kind};
 
@@ -566,6 +576,9 @@ make_step(const provision_tenant_workflow_request& run,
     // A party's surface blueprints read the volatility quotes its subscriptions deliver.
     if (kind == give_party_surface_blueprints_step_kind)
         return {subscribe_market_data_step_kind};
+    // A forward set reads the party's spot and the funding curves it has published.
+    if (kind == publish_party_forwards_step_kind)
+        return {publish_party_curves_step_kind};
     // The report definitions a party runs are published by the bundles the
     // staff step names, and a schedule names the party whose consent its runs
     // act under, so the parties and their published definitions exist first.

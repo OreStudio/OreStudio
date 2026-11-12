@@ -54,6 +54,7 @@
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/feed_protocol.hpp"
+#include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
@@ -68,6 +69,7 @@
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/calendar_materialisation_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_pair_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_blueprint_protocol.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_pillar_protocol.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_pillar_source_protocol.hpp"
@@ -808,6 +810,13 @@ public:
         /// and the ones it could not, each with the reason it was last refused.
         std::vector<std::string> curves;
         std::vector<std::string> curves_not_published;
+        /// The forward sets a publish_party_forwards step published, the ones a party had
+        /// already, the pairs a party cannot build with the service's reason, and the ones it
+        /// raised and could not publish, each as "party: pair: detail".
+        std::vector<std::string> forwards;
+        std::vector<std::string> forwards_already_published;
+        std::vector<std::string> forwards_skipped;
+        std::vector<std::string> forwards_not_published;
     };
 
 private:
@@ -953,6 +962,9 @@ private:
                 return;
             case provision_step_action::give_party_surface_blueprints:
                 give_party_surface_blueprints_step(wf, command, resolve_step_actor(command));
+                return;
+            case provision_step_action::publish_party_forwards:
+                publish_party_forwards_step(wf, command, resolve_step_actor(command));
                 return;
             case provision_step_action::generate_trades:
                 generate_trades_step(wf, command, resolve_step_actor(command));
@@ -1470,6 +1482,120 @@ private:
                                  " party curve(s) were not published. A rerun is safe: it "
                                  "writes no row twice and publishes only the missing curves:";
             for (const auto& line : result.curves_not_published)
+                reason += " " + line + ";";
+            wf.fail(reason);
+            return;
+        }
+        wf.complete(ores::utility::codec::json::write(result), step_log);
+    }
+
+    /// The pair codes of every currency pair convention the tenant holds.
+    static std::vector<std::string> pair_convention_codes(internal_request_client& client) {
+        std::vector<std::string> out;
+        ores::refdata::messaging::list_currency_pair_conventions_request request;
+        request.limit = 1000;
+        for (;;) {
+            const auto page = client.request(request);
+            for (const auto& c : page.conventions)
+                out.push_back(c.pair_code);
+            if (page.conventions.empty() || out.size() >= page.total)
+                break;
+            request.offset = static_cast<std::uint32_t>(out.size());
+        }
+        std::ranges::sort(out);
+        return out;
+    }
+
+    /**
+     * @brief Publishes each party's FX forward sets.
+     *
+     * A forward set is derived data, so it belongs to the party whose spot and funding curves it
+     * reads. Each party is asked for every currency pair convention the tenant holds, and the
+     * forward service decides which it can build: a pair it refuses before raising a request is
+     * skipped, with its reason. Under the tenant's auto-approval the raise closes and the set
+     * publishes at once.
+     *
+     * A set raised and not published fails the step, named with its party. A second run publishes
+     * only the pairs that are still missing.
+     */
+    void
+    publish_party_forwards_step(const ores::service::messaging::workflow_step_context& wf,
+                                const ores::iam::workflow::provision_tenant_step_command& command,
+                                const step_actor& actor) {
+        constexpr std::string_view publish_reason =
+            "Provisioning publishes the party's FX forward set from its spot and its published "
+            "funding curves.";
+
+        const auto parties = parse_party_forwards_arguments(command.arguments_json);
+        auto discover =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+        const auto pairs = pair_convention_codes(discover);
+        if (pairs.empty()) {
+            wf.fail("The tenant holds no currency pair convention to publish a forward set for.");
+            return;
+        }
+
+        provision_step_result result;
+        result.kind = command.kind;
+        std::vector<ores::workflow::messaging::step_log_entry> step_log;
+        for (const auto& party_name : parties) {
+            const auto party = find_party(discover, party_name);
+            if (!party)
+                throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
+            auto party_client =
+                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
+
+            std::size_t published = 0;
+            for (const auto& pair : pairs) {
+                const auto as_of = std::chrono::system_clock::now();
+                const auto line = party_name + ": " + pair;
+
+                ores::marketdata::messaging::get_published_fx_forward_request read;
+                read.pair_code = pair;
+                read.as_of = as_of;
+                if (party_client.request(read).success) {
+                    result.forwards_already_published.push_back(line);
+                    continue;
+                }
+
+                ores::marketdata::messaging::publish_fx_forward_request publish;
+                publish.pair_code = pair;
+                publish.as_of = as_of;
+                publish.reason = std::string(publish_reason);
+                const auto answer = party_client.request(publish);
+                if (answer.success && answer.published_at) {
+                    ++published;
+                    result.forwards.push_back(
+                        line + ": as of " + ores::platform::time::datetime::to_iso8601_utc(as_of));
+                } else if (answer.approval_request_id.empty()) {
+                    result.forwards_skipped.push_back(line + ": " + answer.message);
+                } else if (answer.success) {
+                    result.forwards_not_published.push_back(
+                        line + ": the request " + answer.approval_request_id + " is " +
+                        answer.state_code + " and no person has answered it");
+                } else {
+                    result.forwards_not_published.push_back(line + ": " + answer.message);
+                }
+            }
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "publish_party_forwards: " << party_name << ": published " << published << " of "
+                << pairs.size() << " pair(s)";
+            result.parties.push_back(boost::uuids::to_string(party->id));
+        }
+
+        for (const auto& skipped : result.forwards_skipped)
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
+                                .message = "skipped " + skipped,
+                                .context = {}});
+        for (const auto& not_published : result.forwards_not_published)
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
+                                .message = not_published,
+                                .context = {}});
+        if (!result.forwards_not_published.empty()) {
+            std::string reason = std::to_string(result.forwards_not_published.size()) +
+                                 " forward set(s) were not published. A rerun is safe: it "
+                                 "publishes only the missing pairs:";
+            for (const auto& line : result.forwards_not_published)
                 reason += " " + line + ";";
             wf.fail(reason);
             return;
@@ -3544,7 +3670,11 @@ wire_fields(std::type_identity<tenant_provisioning_handler::provision_step_resul
         field{"trades_already_present", &result::trades_already_present},
         field{"report_schedules", &result::report_schedules},
         field{"curves", &result::curves},
-        field{"curves_not_published", &result::curves_not_published}};
+        field{"curves_not_published", &result::curves_not_published},
+        field{"forwards", &result::forwards},
+        field{"forwards_already_published", &result::forwards_already_published},
+        field{"forwards_skipped", &result::forwards_skipped},
+        field{"forwards_not_published", &result::forwards_not_published}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<

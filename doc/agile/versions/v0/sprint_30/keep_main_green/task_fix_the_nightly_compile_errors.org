@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: feature/fix-the-nightly-compile-errors
-#+pr: 4651
+#+pr: 4653
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
@@ -56,10 +56,10 @@ The nightly run 43163241266 (Linux), 43190100783 (macOS) and 43178285478
 4. clang-cl: =std::getenv= is deprecated. =application.cpp= now reads the
    site environment through =ores::platform::environment=.
 
-Each job stops at its first failing file, so more errors can follow. Until the
-three builds are clean, the gcc, macOS and Windows nightlies pass
-=warnings_as_errors=0=, which sets the new =ORES_WARNINGS_AS_ERRORS= option
-off. Linux clang keeps warnings as errors.
+Each job stops at its first failing file, so more errors can follow. The new
+=ORES_WARNINGS_AS_ERRORS= option sets =-Werror= and =/WX=. It is off on every
+build until all platforms build clean of warnings; then it goes back on.
+A CTest script can still set it with =warnings_as_errors=1=.
 
 * Measurements
 
@@ -92,6 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4653][#4653]] | [build] Leave warnings as warnings on every build |
 | [[https://github.com/OreStudio/OreStudio/pull/4651][#4651]] | [build] Fix the nightly compile errors on gcc, macOS and Windows |
 
 * Review

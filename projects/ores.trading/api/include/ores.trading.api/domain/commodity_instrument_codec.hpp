@@ -98,6 +98,11 @@ namespace ores::trading::domain {
         utility::codec::field{"trigger_price", &commodity_instrument::trigger_price},
         utility::codec::field{"premium_amount", &commodity_instrument::premium_amount},
         utility::codec::field{"target_amount", &commodity_instrument::target_amount},
+        utility::codec::field{"multiplier", &commodity_instrument::multiplier},
+        utility::codec::field{"cap", &commodity_instrument::cap},
+        utility::codec::field{"trigger_level", &commodity_instrument::trigger_level},
+        utility::codec::field{"reset_minimum", &commodity_instrument::reset_minimum},
+        utility::codec::field{"strike_date", &commodity_instrument::strike_date},
         utility::codec::field{"description", &commodity_instrument::description},
         utility::codec::field{"audit", &commodity_instrument::audit},
     };

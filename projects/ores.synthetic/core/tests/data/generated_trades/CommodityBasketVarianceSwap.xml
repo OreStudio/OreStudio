@@ -2,8 +2,68 @@
 <Portfolio>
   <Trade id="f2c4ae8a-a1b6-5d49-a9c5-03fc6a378431">
     <TradeType>CommodityBasketVarianceSwap</TradeType>
+    <CommodityBasketVarianceSwapData>
+      <LongShort>Long</LongShort>
+      <Strike>0.1</Strike>
+      <Notional>85531.53</Notional>
+      <Underlyings>
+        <Underlying>
+          <Type>Commodity</Type>
+          <Name>NYMEX:CL</Name>
+          <Weight>0.5</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>Commodity</Type>
+          <Name>NYMEX:NG</Name>
+          <Weight>0.5</Weight>
+        </Underlying>
+      </Underlyings>
+      <ValuationSchedule>
+        <Rules>
+          <StartDate>2026-01-02</StartDate>
+          <EndDate>2028-01-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>US-NYSE</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </ValuationSchedule>
+      <SquaredPayoff>true</SquaredPayoff>
+      <SettlementDate>2028-01-04</SettlementDate>
+      <Currency>USD</Currency>
+    </CommodityBasketVarianceSwapData>
   </Trade>
   <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
     <TradeType>CommodityBasketVarianceSwap</TradeType>
+    <CommodityBasketVarianceSwapData>
+      <LongShort>Long</LongShort>
+      <Strike>0.19</Strike>
+      <Notional>94739.65</Notional>
+      <Underlyings>
+        <Underlying>
+          <Type>Commodity</Type>
+          <Name>NYMEX:NG</Name>
+          <Weight>0.5</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>Commodity</Type>
+          <Name>NYMEX:CL</Name>
+          <Weight>0.5</Weight>
+        </Underlying>
+      </Underlyings>
+      <ValuationSchedule>
+        <Rules>
+          <StartDate>2025-12-02</StartDate>
+          <EndDate>2032-12-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>US-NYSE</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </ValuationSchedule>
+      <SquaredPayoff>true</SquaredPayoff>
+      <SettlementDate>2032-12-04</SettlementDate>
+      <Currency>USD</Currency>
+    </CommodityBasketVarianceSwapData>
   </Trade>
 </Portfolio>

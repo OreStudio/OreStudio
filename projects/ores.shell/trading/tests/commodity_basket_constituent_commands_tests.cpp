@@ -164,7 +164,7 @@ TEST_CASE("commodity_basket_constituent_commands_process_add_requires_a_session"
 
     command_feedback::reset();
     commodity_basket_constituent_commands::process_add(
-        out, session, commodity_basket_constituent_tokens(5));
+        out, session, commodity_basket_constituent_tokens(6));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -200,7 +200,7 @@ TEST_CASE("commodity_basket_constituent_commands_process_set_requires_a_session"
 
     command_feedback::reset();
     commodity_basket_constituent_commands::process_set(
-        out, session, commodity_basket_constituent_tokens(5));
+        out, session, commodity_basket_constituent_tokens(6));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -237,7 +237,7 @@ TEST_CASE("commodity_basket_constituent_commands_process_put_many_requires_a_ses
 
     command_feedback::reset();
     commodity_basket_constituent_commands::process_put_many(
-        out, session, commodity_basket_constituent_tokens(5));
+        out, session, commodity_basket_constituent_tokens(6));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

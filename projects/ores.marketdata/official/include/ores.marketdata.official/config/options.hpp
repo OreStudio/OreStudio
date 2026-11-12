@@ -99,6 +99,11 @@ struct options final {
      */
     std::string cnb_url;
     /**
+     * @brief The address of the Monetary Authority of Singapore's statistics site, which serves its
+     * domestic interest rates.
+     */
+    std::string mas_url;
+    /**
      * @brief The sources the adapter hosts.
      */
     std::vector<domain::hosted_source> sources;
@@ -129,6 +134,7 @@ struct options final {
         ::ores::utility::codec::field{"banxico_url", &options::banxico_url},
         ::ores::utility::codec::field{"bcch_url", &options::bcch_url},
         ::ores::utility::codec::field{"cnb_url", &options::cnb_url},
+        ::ores::utility::codec::field{"mas_url", &options::mas_url},
         ::ores::utility::codec::field{"sources", &options::sources},
         ::ores::utility::codec::field{"backfill_days", &options::backfill_days},
         ::ores::utility::codec::field{"poll_minutes", &options::poll_minutes},

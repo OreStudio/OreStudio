@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-image-map-view
+#+pr: 4654
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Serve these composed views from ores.assets: the image map. Each view states its
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -42,9 +42,29 @@ Serve these composed views from ores.assets: the image map. Each view states its
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Serve =GET /api/image-map= from ores.http, as the other composed views were
+served.
+
+| View | Computation | Cache policy |
+|------+-------------+--------------|
+| The image map | four whole reference data list reads and one image search | =ETag=, fresh for 5 min |
+
+Decisions:
+
+- *Owner and place.* The inventory names ores.assets the owner, so the view
+  lives in =image_screen_routes= in =ores.http.assets=. It reads four reference
+  data lists, so the assets part links =ores.refdata.api=; both apis are public
+  links, because the view's model in the header holds their types.
+- *Schema.* =image_map= is a model of four code-to-image maps and the
+  placeholder, written by the codec. =image_map_of= is a pure function of the
+  five reads: a calendar uses its own image or its country's, a business centre
+  its country's, and the placeholder is the image coded =xx=, as the BFF built
+  it. A missing placeholder is null.
+- *Cache policy.* Fresh for five minutes, as the BFF kept it and the inventory
+  states. Every screen reads the map, so revalidating it would cost five reads a
+  screen; a flag changes rarely, and a stale flag for a few minutes is cosmetic.
+  This is the one view so far whose caller's own writes can change it and that
+  is still kept fresh; the trade-off is stated on the route.
 
 * Measurements
 
@@ -77,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4654][#4654]] | [http] Serve the image map composed view |
 
 * Review
 
@@ -86,3 +106,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The image map is served by ores.http at the BFF's address, a published model
+built from four reference data lists and one image search, fresh for five
+minutes with an =ETag=. A test proves each fallback, the placeholder and the
+answer's shape.
+
+Proved live on a freshly provisioned Acme deployment: the map answers 200
+with 170 currencies, 250 countries, 61 calendars and the placeholder, byte for
+byte the BFF's answer (22,039 bytes each), with =private, max-age=300= and an
+=ETag=; the same tag answers 304 with no body; no session answers 401.
+
+Component audit: the task touched ores.http (the assets part), which now links
+=ores.refdata.api=. The view lives in the image screens' unit; =validate_docs.sh=
+is run before the pull request.
+

@@ -232,10 +232,7 @@ jobs:
           $env:ORES_BUILD_NUMBER="$env:GITHUB_RUN_NUMBER"
           $env:ORES_BUILD_TIMESTAMP=Get-Date -format "yyyy/MM/dd HH:mm:ss"
           $preset="${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja"
-          # Continuous builds Linux only, so Windows warnings reach main
-          # unchecked. Keep them warnings here until the build is clean, so
-          # its tests still run and CDash still shows them.
-          $cmake_args="build_group=Nightly,preset=$preset,warnings_as_errors=0"
+          $cmake_args="build_group=Nightly,preset=$preset"
           ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
 
       - name: Show sccache statistics

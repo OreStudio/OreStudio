@@ -22,6 +22,7 @@
 
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
+#include "ores.trading.api/domain/basket_swap_period.hpp"
 #include "ores.trading.api/domain/callable_swap_call_date.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
@@ -33,7 +34,6 @@
 #include "ores.trading.api/domain/equity_basket_constituent.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
-#include "ores.trading.api/domain/equity_swap_period.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
@@ -226,6 +226,11 @@ struct commodity_instrument_data {
      * shared rows the FX and equity accumulators use.
      */
     std::vector<range_bound> range_bounds;
+    /**
+     * @brief The determination periods of a commodity worst-of basket swap, in
+     * the rows every family's worst-of basket swap shares.
+     */
+    std::vector<basket_swap_period> periods;
 };
 
 // A credit trade states its legs as rows of the shared leg tables, and an index
@@ -388,7 +393,7 @@ struct equity_instrument_data {
      * The level lists run one per date, so a period row holds the date's two
      * levels and its ordinal pairs them with the schedule.
      */
-    std::vector<equity_swap_period> periods;
+    std::vector<basket_swap_period> periods;
     /**
      * @brief The range bounds an equity accumulator pays on.
      *
@@ -768,6 +773,7 @@ inline void stamp_ids(commodity_instrument_data& data,
     stamp_one(data.instrument_underlyings);
     stamp_one(data.strikes);
     stamp_one(data.range_bounds);
+    stamp_one(data.periods);
 }
 
 inline void stamp_ids(credit_instrument_data& data,

@@ -562,6 +562,7 @@ entity "trading" as trading {
   ores_trading_balance_guaranteed_swap_instruments_tbl
   ores_trading_balance_guaranteed_swap_tranches_tbl
   ores_trading_barrier_types_tbl
+  ores_trading_basket_swap_periods_tbl
   ores_trading_bg_swap_tranche_notionals_tbl
   ores_trading_bond_forwards_tbl
   ores_trading_bond_futures_tbl
@@ -609,7 +610,6 @@ entity "trading" as trading {
   ores_trading_equity_position_instruments_tbl
   ores_trading_equity_position_option_underlyings_tbl
   ores_trading_equity_swap_instruments_tbl
-  ores_trading_equity_swap_periods_tbl
   ores_trading_equity_tarf_instruments_tbl
   ores_trading_equity_variance_swap_instruments_tbl
   ores_trading_exercise_types_tbl

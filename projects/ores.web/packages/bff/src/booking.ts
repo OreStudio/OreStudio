@@ -76,7 +76,7 @@ function emptyBatch(): InstrumentBatch {
         balance_guaranteed_swap_tranche_notionals: [],
         balance_guaranteed_swap_tranches: [],
         equity_basket_constituents: [],
-        equity_swap_periods: [],
+        basket_swap_periods: [],
         bond_instruments: [],
         callable_swap_call_dates: [],
         callable_swap_instruments: [],

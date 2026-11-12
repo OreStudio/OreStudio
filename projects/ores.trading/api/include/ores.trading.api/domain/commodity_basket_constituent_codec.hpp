@@ -55,6 +55,7 @@ namespace ores::trading::domain {
                               &commodity_basket_constituent::trade_activity_id},
         utility::codec::field{"underlying_code", &commodity_basket_constituent::underlying_code},
         utility::codec::field{"weight", &commodity_basket_constituent::weight},
+        utility::codec::field{"initial_price", &commodity_basket_constituent::initial_price},
         utility::codec::field{"modified_by", &commodity_basket_constituent::modified_by},
         utility::codec::field{"performed_by", &commodity_basket_constituent::performed_by},
         utility::codec::field{"change_reason_code",

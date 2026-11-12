@@ -20,27 +20,77 @@
 #ifndef ORES_HTTP_ROUTES_ASSETS_IMAGE_SCREEN_ROUTES_HPP
 #define ORES_HTTP_ROUTES_ASSETS_IMAGE_SCREEN_ROUTES_HPP
 
+#include "ores.assets.api/domain/image.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.refdata.api/domain/business_centre.hpp"
+#include "ores.refdata.api/domain/calendar.hpp"
+#include "ores.refdata.api/domain/country.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
+#include "ores.utility/codec/shaped_wire_traits.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <cstdint>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <type_traits>
+#include <vector>
 
 namespace ores::http::routes::assets {
+
+/**
+ * @brief The image map: which image every record that shows a flag uses, by
+ * its code, and the placeholder drawn for a code with none.
+ *
+ * A calendar uses its own image when it has one, else its country's; a
+ * business centre uses its country's. It holds identifiers only: a screen
+ * fetches each image once from the image's own address.
+ */
+struct image_map final {
+    std::map<std::string, std::string> currencies;
+    std::map<std::string, std::string> countries;
+    std::map<std::string, std::string> calendars;
+    std::map<std::string, std::string> businessCentres;
+    std::optional<std::string> noFlag;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_map>) {
+    using ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{field{"currencies", &image_map::currencies},
+                                              field{"countries", &image_map::countries},
+                                              field{"calendars", &image_map::calendars},
+                                              field{"businessCentres", &image_map::businessCentres},
+                                              field{"noFlag", &image_map::noFlag}};
+}
 
 /**
  * @brief The image screens' reads and upload, at the addresses and in the
  * shapes ores.web reads.
  *
  * A page of the tenant's images, one image's bytes, the policy an upload must
- * meet, and an upload. Each forwards the caller's own token, so the assets
- * service's permission check governs.
+ * meet, an upload, and the image map view. Each forwards the caller's own
+ * token, so the owning service's permission check governs.
  */
 class image_screen_routes final {
 public:
+    /// The image code of the placeholder flag.
+    static constexpr std::string_view no_flag_code = "xx";
+
+    /**
+     * @brief The image map from the four reference data lists and the images
+     * a search for the placeholder's code found.
+     */
+    static image_map
+    image_map_of(const std::vector<ores::refdata::domain::currency>& currencies,
+                 const std::vector<ores::refdata::domain::country>& countries,
+                 const std::vector<ores::refdata::domain::calendar>& calendars,
+                 const std::vector<ores::refdata::domain::business_centre>& centres,
+                 const std::vector<ores::assets::domain::image>& placeholders);
+
     /**
      * @brief The most an upload body may hold, as the BFF allowed.
      */
@@ -85,5 +135,9 @@ public:
 };
 
 }
+
+template <>
+struct ores::utility::codec::wire_traits<ores::http::routes::assets::image_map>
+    : shaped_wire_traits<ores::http::routes::assets::image_map> {};
 
 #endif

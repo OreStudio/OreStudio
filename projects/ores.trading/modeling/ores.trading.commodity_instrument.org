@@ -560,8 +560,8 @@ The day a scripted commodity product settles, as =SettlementDate= states it.
 
 ** implied_vol_strike
 :PROPERTIES:
-:type:     numeric(38, 12)
-:cpp_type: std::optional<ores::utility::decimal::decimal>
+:type:     double precision
+:cpp_type: std::optional<double>
 :nullable: true
 :economic: true
 :END:
@@ -569,10 +569,11 @@ The day a scripted commodity product settles, as =SettlementDate= states it.
 The volatility a forward volatility agreement strikes at, as
 =ImpliedVolStrike= states it.
 
+A volatility is a continuous quantity and not money, so it is a binary float,
+as the variance strike is.
+
 #+begin_src cpp :name generator
-ores::utility::decimal::decimal::from_string(
-    std::to_string(faker::number::decimal<double>(0.05, 1.0)))
-    .value()
+faker::number::decimal<double>(0.05, 1.0)
 #+end_src
 
 ** reset_strike
@@ -627,6 +628,59 @@ The premium a strike resettable option pays, as =Premium= states it.
 :END:
 
 The gain at which a TaRF knocks out, as =TargetAmount= states it.
+
+** multiplier
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The multiple of its gain a best entry option pays, as =Multiplier= states it.
+
+** cap
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The most a best entry option's gain can reach, as =Cap= states it.
+
+** trigger_level
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The fraction of the initial price that, when the price falls to it, lets a
+best entry option reset its strike, as =TriggerLevel= states it.
+
+** reset_minimum
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The lowest fraction of the initial price a best entry option's strike can
+reset to, as =ResetMinimum= states it.
+
+** strike_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The day a best entry option fixes its initial strike, as =StrikeDate=
+states it.
 
 ** description
 :PROPERTIES:

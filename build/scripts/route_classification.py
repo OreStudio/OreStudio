@@ -94,6 +94,12 @@ RULES = (
     # The IAM composed views ores.http answers, ahead of the rules for the screen
     # routes they share a part with; each keeps the BFF's view name, so its
     # obligations are stated once.
+    Rule("the image map",
+         ("exact", "GET /api/image-map"),
+         CPP, COMPOSED, "assets",
+         "Which image every flagged record uses, answered by ores.http from four reference"
+         " data lists and one image search, at the address and in the shape the BFF"
+         " answered."),
     Rule("the tenor catalogue",
          ("exact", "GET /api/tenors/catalogue"),
          CPP, COMPOSED, "reference-data",

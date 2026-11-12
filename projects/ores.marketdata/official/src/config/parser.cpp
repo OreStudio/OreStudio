@@ -50,6 +50,7 @@ const std::string bcb_url_arg("bcb-url");
 const std::string banxico_url_arg("banxico-url");
 const std::string bcch_url_arg("bcch-url");
 const std::string cnb_url_arg("cnb-url");
+const std::string mas_url_arg("mas-url");
 const std::string source_arg("source");
 const std::string backfill_days_arg("backfill-days");
 const std::string poll_minutes_arg("poll-minutes");
@@ -113,6 +114,10 @@ options_description make_options_description() {
         cnb_url_arg.c_str(),
         value<std::string>()->default_value("https://www.cnb.cz"),
         "Address of the Czech National Bank's site, which serves its yearly CZEONIA files")(
+        mas_url_arg.c_str(),
+        value<std::string>()->default_value("https://eservices.mas.gov.sg"),
+        "Address of the Monetary Authority of Singapore's statistics site, which serves its "
+        "domestic interest rates")(
         source_arg.c_str(),
         value<std::vector<std::string>>()->composing(),
         "A source to host, as <source name>:<provider code>:<adapter code>:<key>, such as "
@@ -187,6 +192,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.banxico_url = vm[banxico_url_arg].as<std::string>();
     r.bcch_url = vm[bcch_url_arg].as<std::string>();
     r.cnb_url = vm[cnb_url_arg].as<std::string>();
+    r.mas_url = vm[mas_url_arg].as<std::string>();
     r.backfill_days = vm[backfill_days_arg].as<std::uint32_t>();
     if (r.backfill_days < 1 || r.backfill_days > 3650)
         BOOST_THROW_EXCEPTION(parser_exception("--backfill-days is from 1 to 3650."));

@@ -199,12 +199,13 @@ TEST_CASE("account_screen_routes_refuse_a_reporting_line_with_no_target", "[acco
     });
     REQUIRE(found != routes.end());
     std::optional<http_response> answer;
+    // Built outside the coroutine: g++ 13 crashes on a braced list inside the
+    // co_await expression.
+    const auto req = screen_request({}, {{"accountId", "x"}}, "{}");
     boost::asio::io_context io;
     boost::asio::co_spawn(
         io,
-        [&]() -> boost::asio::awaitable<void> {
-            answer = co_await found->handler(screen_request({}, {{"accountId", "x"}}, "{}"));
-        },
+        [&]() -> boost::asio::awaitable<void> { answer = co_await found->handler(req); },
         boost::asio::detached);
     io.run();
     REQUIRE(answer);

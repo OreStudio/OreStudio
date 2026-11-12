@@ -162,6 +162,11 @@ ORES_ANALYTICS_QUANT_EXPORT double latent_driver_value(const latent_market& mark
  * and a factor already read at this instant is reused, so an event costs its own
  * series' levels and nothing else.
  *
+ * The scheduler clamps a late tick to a clock that may not have moved since the
+ * series last ticked, so the elapsed time can be zero. That is a normal outcome
+ * of a loop catching up: the increment is then zero and the caller skips the
+ * tick, because a normal needs a positive interval.
+ *
  * A process turns what this returns into a standard normal by adding its own
  * motion, weighted by the square root of one less the squared loadings, and
  * dividing by the square root of the elapsed time.

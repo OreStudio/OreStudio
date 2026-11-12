@@ -135,11 +135,13 @@ driver_increment latent_tick(latent_market& market, std::uint32_t series, double
     increment.elapsed = market.now - market.tick_time[series];
 
     // A tick the scheduler clamped to a clock that had not moved has no elapsed
-    // time, so its increment is zero and its standard form is undefined. Refuse
-    // it here rather than let a caller divide by the square root of nothing.
-    if (!(increment.elapsed > 0.0))
-        throw std::invalid_argument(
-            "latent_tick: no simulated time passed since the series last ticked");
+    // time: no time, no noise. It is a normal outcome of a slow loop catching up,
+    // so it is returned as a zero increment with zero elapsed rather than thrown,
+    // and a caller skips it instead of dividing by the square root of nothing.
+    if (!(increment.elapsed > 0.0)) {
+        increment.shared = 0.0;
+        increment.elapsed = 0.0;
+    }
 
     market.driver[series] = value;
     market.tick_time[series] = market.now;

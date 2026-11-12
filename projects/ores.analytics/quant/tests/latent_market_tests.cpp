@@ -340,13 +340,15 @@ TEST_CASE("a driver refuses loadings that are not its own", "[latent_market]") {
     CHECK_THROWS_AS(latent_set_loadings(market, 0, late), std::invalid_argument);
 }
 
-TEST_CASE("a tick with no time behind it is refused", "[latent_market]") {
+TEST_CASE("a tick with no time behind it carries no increment", "[latent_market]") {
     // The scheduler clamps a late tick to a clock that has not moved, so two ticks
-    // can share an instant. Their interval is zero and a standard normal needs a
-    // positive one.
+    // can share an instant. No time means no noise: the increment is zero and the
+    // caller skips the tick rather than dividing by the square root of nothing.
     latent_market market = make_latent_block(2024, 0.5);
     static_cast<void>(latent_tick(market, 0, 0.1 * latent_hour));
-    CHECK_THROWS_AS(latent_tick(market, 0, 0.1 * latent_hour), std::invalid_argument);
+    const auto again = latent_tick(market, 0, 0.1 * latent_hour);
+    CHECK(again.elapsed == 0.0);
+    CHECK(again.shared == 0.0);
 }
 
 TEST_CASE("a burst inside one finest step interpolates between its two nodes", "[latent_market]") {

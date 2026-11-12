@@ -110,7 +110,18 @@ jobs:
     # in the image; the vcpkg binary cache restores them.
     container:
       image: ${{ needs.image.outputs.ref }}
+    # A container job runs its steps with sh, but the runner runs them with
+    # bash -e. The steps use [[ and process substitution, which sh does not
+    # have. Plain "bash" would also add pipefail, which the steps do not expect.
+    defaults:
+      run:
+        shell: bash -e {0}
     environment: CI
+    # The repository's default token is read-only; the cache steps delete old
+    # sccache entries, which needs actions: write.
+    permissions:
+      contents: read
+      actions: write
     strategy:
       fail-fast: false
       matrix:

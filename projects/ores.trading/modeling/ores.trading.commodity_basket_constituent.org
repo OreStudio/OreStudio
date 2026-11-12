@@ -100,6 +100,16 @@ The ORE =Weight= element is optional. A document that states no weight
 leaves this column null, and the reverse mapper then writes no =Weight=
 element back.
 
+** initial_price
+:PROPERTIES:
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The constituent's price when a worst-of basket swap starts, which its
+performance is measured against, as =InitialPrice= states it.
+
 * Foreign keys
 
 ** trade_id

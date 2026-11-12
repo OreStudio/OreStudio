@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.api/conventions/convention_lookup.hpp"
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.trading.api/builders/builder_registry.hpp"
 #include "ores.trading.api/builders/commodity_builders.hpp"
@@ -26,6 +27,7 @@
 
 using namespace ores::trading::builders;
 using namespace std::chrono;
+namespace conv = ores::marketdata::conventions;
 namespace md = ores::marketdata::datum;
 using ores::utility::decimal::decimal;
 
@@ -296,7 +298,11 @@ TEST_CASE("the_registry_names_every_commodity_builder", commodity_tags) {
                              "CommodityTaRF",
                              "CommodityGenericBarrierOption",
                              "CommodityStrikeResettableOption",
-                             "CommodityForwardVolatilityAgreement"})
+                             "CommodityForwardVolatilityAgreement",
+                             "CommodityRainbowOption",
+                             "CommodityBasketVarianceSwap",
+                             "CommodityBestEntryOption",
+                             "CommodityWorstOfBasketSwap"})
         CHECK(types.contains(type));
 }
 
@@ -453,7 +459,7 @@ commodity_forward_volatility_agreement_terms crude_fva() {
             .expiry = 2027y / 1 / 5,
             .settlement = 2027y / 1 / 7,
             .premium_date = 2026y / 7 / 8,
-            .implied_vol_strike = amount("0.3"),
+            .implied_vol_strike = 0.3,
             .position = option_position::long_option};
 }
 
@@ -576,7 +582,7 @@ TEST_CASE("a_commodity_forward_volatility_agreement_fixes_before_its_expiry", co
     REQUIRE(fva.has_value());
     CHECK(fva->instrument.fva_date == 2026y / 7 / 6);
     CHECK(fva->instrument.maturity_date == 2027y / 1 / 5);
-    CHECK(fva->instrument.implied_vol_strike == amount("0.3"));
+    CHECK(fva->instrument.implied_vol_strike == 0.3);
     CHECK(fva->instrument.position == "Long");
 }
 
@@ -586,4 +592,178 @@ TEST_CASE("a_commodity_forward_volatility_agreement_fixing_at_its_expiry_fails",
     const auto fva = commodity_forward_volatility_agreement_builder(terms).build();
     REQUIRE_FALSE(fva.has_value());
     CHECK(fva.error().term == "fva_date");
+}
+
+namespace {
+
+std::vector<commodity_basket_member> crude_gas_basket() {
+    return {{commodity("NYMEX:CL"), 0.5}, {commodity("NYMEX:NG"), 0.5}};
+}
+
+commodity_best_entry_option_terms crude_best_entry() {
+    return {.underlying = commodity("NYMEX:CL"),
+            .currency = std::string("USD"),
+            .notional = amount("1000"),
+            .strike = amount("80"),
+            .multiplier = amount("1"),
+            .cap = amount("0.5"),
+            .trigger_level = amount("0.9"),
+            .reset_minimum = amount("0.8"),
+            .premium = amount("1200"),
+            .premium_date = 2026y / 1 / 7,
+            .strike_date = 2026y / 1 / 5,
+            .expiry = 2027y / 1 / 5,
+            .settlement = 2027y / 1 / 7,
+            .position = option_position::long_option};
+}
+
+md::market_reference commodity_funding_libor() {
+    auto parsed =
+        md::market_reference::parse("oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M");
+    REQUIRE(parsed);
+    return *parsed;
+}
+
+/// Conventions defining the index a worst-of basket funds on; static, as the builder keeps a
+/// reference.
+const conv::convention_lookup& funding_conventions() {
+    static const conv::convention_lookup lookup = [] {
+        ores::refdata::domain::ibor_index_convention libor;
+        libor.id = "USD-LIBOR";
+        libor.fixing_calendar = "US";
+        libor.settlement_days = 2;
+        // Conventions state ORE's spelling, which the leg must restate in the trade's.
+        libor.day_count_fraction = "ACT/360";
+        libor.business_day_convention = "MF";
+        libor.oresmd_uri = "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR";
+        return conv::convention_lookup(conv::convention_set{.ibor_indices = {libor}});
+    }();
+    return lookup;
+}
+
+commodity_worst_of_basket_swap_terms crude_gas_worst_of() {
+    return {.basket = std::vector<commodity_worst_of_member>{{commodity("NYMEX:CL"), amount("75")},
+                                                             {commodity("NYMEX:NG"), amount("3")}},
+            .observation_dates = std::vector<year_month_day>{2026y / 7 / 5, 2027y / 1 / 5},
+            .funding_index = commodity_funding_libor(),
+            .currency = std::string("USD"),
+            .quantity = amount("1000000"),
+            .fixed_rate = amount("0.05"),
+            .start = 2026y / 1 / 5,
+            .maturity = 2027y / 1 / 5,
+            .position = option_position::long_option};
+}
+
+}
+
+TEST_CASE("a_commodity_rainbow_option_pays_its_payoff_on_its_basket", commodity_tags) {
+    const auto option = commodity_rainbow_option_builder({.basket = crude_gas_basket(),
+                                                          .currency = std::string("USD"),
+                                                          .notional = amount("1000"),
+                                                          .kind = option_kind::call,
+                                                          .payoff = rainbow_payoff::max_rainbow,
+                                                          .strike = amount("80"),
+                                                          .expiry = 2027y / 1 / 5,
+                                                          .position = option_position::long_option})
+                            .build();
+    REQUIRE(option.has_value());
+    REQUIRE(option->constituents.size() == 2);
+    CHECK(option->constituents[1].sequence_number == 2);
+    REQUIRE(option->options.size() == 1);
+    CHECK(option->options[0].payoff_type == "MaxRainbow");
+    CHECK(option->instrument.unit.empty());
+}
+
+TEST_CASE("a_commodity_rainbow_option_on_one_commodity_fails", commodity_tags) {
+    const auto option =
+        commodity_rainbow_option_builder(
+            {.basket = std::vector<commodity_basket_member>{{commodity("NYMEX:CL"), 0.5},
+                                                            {commodity("NYMEX:CL"), 0.5}},
+             .currency = std::string("USD"),
+             .notional = amount("1000"),
+             .kind = option_kind::call,
+             .payoff = rainbow_payoff::best_of_asset_or_cash,
+             .strike = amount("80"),
+             .expiry = 2027y / 1 / 5,
+             .position = option_position::long_option})
+            .build();
+    REQUIRE_FALSE(option.has_value());
+    CHECK(option.error().term == "basket");
+}
+
+TEST_CASE("a_commodity_basket_variance_swap_squares_its_returns", commodity_tags) {
+    const auto swap =
+        commodity_basket_variance_swap_builder({.basket = crude_gas_basket(),
+                                                .currency = std::string("USD"),
+                                                .notional = amount("100000"),
+                                                .variance_strike = 0.04,
+                                                .start = 2026y / 1 / 5,
+                                                .maturity = 2027y / 1 / 5,
+                                                .settlement = 2027y / 1 / 7,
+                                                .position = option_position::short_option})
+            .build();
+    REQUIRE(swap.has_value());
+    CHECK(swap->instrument.moment_type == "Variance");
+    CHECK(swap->instrument.position == "Short");
+    REQUIRE(swap->schedules.size() == 1);
+    CHECK(swap->schedules[0].schedule_role == "valuation_schedule");
+}
+
+TEST_CASE("a_commodity_basket_variance_swap_settling_before_its_maturity_fails", commodity_tags) {
+    const auto swap =
+        commodity_basket_variance_swap_builder({.basket = crude_gas_basket(),
+                                                .currency = std::string("USD"),
+                                                .notional = amount("100000"),
+                                                .variance_strike = 0.04,
+                                                .start = 2026y / 1 / 5,
+                                                .maturity = 2027y / 1 / 5,
+                                                .settlement = 2027y / 1 / 4,
+                                                .position = option_position::short_option})
+            .build();
+    REQUIRE_FALSE(swap.has_value());
+    CHECK(swap.error().term == "settlement");
+}
+
+TEST_CASE("a_commodity_best_entry_option_keeps_its_reset_terms", commodity_tags) {
+    const auto option = commodity_best_entry_option_builder(crude_best_entry()).build();
+    REQUIRE(option.has_value());
+    CHECK(option->instrument.trigger_level == amount("0.9"));
+    CHECK(option->instrument.reset_minimum == amount("0.8"));
+    CHECK(option->instrument.strike_date == 2026y / 1 / 5);
+    REQUIRE(option->schedules.size() == 1);
+    CHECK(option->schedules[0].schedule_role == "observation_schedule");
+}
+
+TEST_CASE("a_commodity_best_entry_option_triggering_above_the_initial_price_fails",
+          commodity_tags) {
+    auto terms = crude_best_entry();
+    terms.trigger_level = amount("1.2");
+    const auto option = commodity_best_entry_option_builder(terms).build();
+    REQUIRE_FALSE(option.has_value());
+    CHECK(option.error().term == "trigger_level");
+}
+
+TEST_CASE("a_commodity_worst_of_basket_swap_funds_on_one_leg_and_pays_coupons_on_another",
+          commodity_tags) {
+    const auto swap =
+        commodity_worst_of_basket_swap_builder(funding_conventions(), crude_gas_worst_of()).build();
+    REQUIRE(swap.has_value());
+    REQUIRE(swap->legs.size() == 2);
+    CHECK(swap->legs[0].leg_type_code == "Floating");
+    CHECK(swap->legs[0].day_count_fraction_code == "A360");
+    CHECK(swap->legs[1].leg_type_code == "Fixed");
+    REQUIRE(swap->leg_rates.size() == 1);
+    CHECK(swap->leg_rates[0].leg_number == 2);
+    CHECK(swap->leg_rates[0].value == amount("0.05"));
+    REQUIRE(swap->constituents.size() == 2);
+    CHECK(swap->constituents[0].initial_price == amount("75"));
+    CHECK(swap->periods.size() == 2);
+}
+
+TEST_CASE("a_commodity_worst_of_basket_swap_observing_past_its_maturity_fails", commodity_tags) {
+    auto terms = crude_gas_worst_of();
+    terms.observation_dates = std::vector<year_month_day>{2027y / 2 / 5};
+    const auto swap = commodity_worst_of_basket_swap_builder(funding_conventions(), terms).build();
+    REQUIRE_FALSE(swap.has_value());
+    CHECK(swap.error().term == "observation_dates");
 }

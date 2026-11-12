@@ -55,7 +55,7 @@ using trading::domain::equity_option_instrument;
 using trading::domain::equity_position_instrument;
 using trading::domain::equity_position_option_underlying;
 using trading::domain::equity_swap_instrument;
-using trading::domain::equity_swap_period;
+using trading::domain::basket_swap_period;
 using trading::domain::equity_variance_swap_instrument;
 using trading::domain::range_bound;
 
@@ -586,10 +586,10 @@ auto read_equity_worst_of_basket_swap(const record_reader& trade) -> equity_inst
 
     const auto knock_outs = levels("KnockOutLevels", "KnockOutLevel");
     const auto triggers = levels("FixedTriggerLevels", "FixedTriggerLevel");
-    std::vector<equity_swap_period> periods;
+    std::vector<basket_swap_period> periods;
     const auto period_count = std::max(knock_outs.size(), triggers.size());
     for (std::size_t i = 0; i < period_count; ++i) {
-        equity_swap_period row;
+        basket_swap_period row;
         row.sequence_number = static_cast<int>(i + 1);
         if (i < knock_outs.size())
             row.knock_out_level = knock_outs[i].to_double();
@@ -1003,7 +1003,7 @@ void write_equity_cliquet_option(record_writer& trade,
 void write_equity_worst_of_basket_swap(record_writer& trade,
                                        const equity_swap_instrument& v,
                                        const std::vector<equity_basket_constituent>& rows,
-                                       const std::vector<equity_swap_period>& periods,
+                                       const std::vector<basket_swap_period>& periods,
                                        const equity_instrument_data& carrier) {
     auto data = trade.child("EquityWorstOfBasketSwapData");
     data.set_spelling("LongShort", "Long", "long short");

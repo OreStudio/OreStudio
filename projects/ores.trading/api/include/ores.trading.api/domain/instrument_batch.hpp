@@ -29,6 +29,7 @@
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_codec.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional_codec.hpp"
+#include "ores.trading.api/domain/basket_swap_period_codec.hpp"
 #include "ores.trading.api/domain/bond_amortization_data.hpp"
 #include "ores.trading.api/domain/bond_fixed_leg_data.hpp"
 #include "ores.trading.api/domain/bond_float_data.hpp"
@@ -91,7 +92,6 @@
 #include "ores.trading.api/domain/equity_position_instrument_codec.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying_codec.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument_codec.hpp"
-#include "ores.trading.api/domain/equity_swap_period_codec.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/flexi_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional_codec.hpp"
@@ -372,9 +372,9 @@ struct instrument_batch {
      */
     std::vector<ores::trading::domain::equity_basket_constituent> equity_basket_constituents;
     /**
-     * @brief The equity_swap_period rows, keyed by trade id.
+     * @brief The basket_swap_period rows, keyed by trade id.
      */
-    std::vector<ores::trading::domain::equity_swap_period> equity_swap_periods;
+    std::vector<ores::trading::domain::basket_swap_period> basket_swap_periods;
     /**
      * @brief The equity_position_option_underlying rows, keyed by trade id.
      */
@@ -897,10 +897,10 @@ inline void append(instrument_batch& batch, equity_basket_constituent v) {
 }
 
 /**
- * @brief Adds one equity_swap_period to the array that holds its type.
+ * @brief Adds one basket_swap_period to the array that holds its type.
  */
-inline void append(instrument_batch& batch, equity_swap_period v) {
-    batch.equity_swap_periods.push_back(std::move(v));
+inline void append(instrument_batch& batch, basket_swap_period v) {
+    batch.basket_swap_periods.push_back(std::move(v));
 }
 
 /**
@@ -1246,8 +1246,8 @@ template <typename T>
                                       &instrument_batch::credit_linked_swap_instruments},
         ::ores::utility::codec::field{"equity_basket_constituents",
                                       &instrument_batch::equity_basket_constituents},
-        ::ores::utility::codec::field{"equity_swap_periods",
-                                      &instrument_batch::equity_swap_periods},
+        ::ores::utility::codec::field{"basket_swap_periods",
+                                      &instrument_batch::basket_swap_periods},
         ::ores::utility::codec::field{"equity_position_option_underlyings",
                                       &instrument_batch::equity_position_option_underlyings},
         ::ores::utility::codec::field{"flexi_swap_instruments",

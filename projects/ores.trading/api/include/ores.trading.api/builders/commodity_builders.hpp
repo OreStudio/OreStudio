@@ -20,6 +20,7 @@
 #ifndef ORES_TRADING_API_BUILDERS_COMMODITY_BUILDERS_HPP
 #define ORES_TRADING_API_BUILDERS_COMMODITY_BUILDERS_HPP
 
+#include "ores.marketdata.api/conventions/convention_lookup.hpp"
 #include "ores.marketdata.api/datum/market_reference.hpp"
 #include "ores.trading.api/builders/build_error.hpp"
 #include "ores.trading.api/builders/option_position.hpp"
@@ -492,7 +493,8 @@ struct commodity_forward_volatility_agreement_terms final {
     required<std::chrono::year_month_day> expiry;
     required<std::chrono::year_month_day> settlement;
     required<std::chrono::year_month_day> premium_date;
-    required<utility::decimal::decimal> implied_vol_strike;
+    /// The volatility struck at, such as 0.3 for thirty per cent.
+    required<double> implied_vol_strike;
     required<option_position> position;
     /// The unit the quantity counts, as the catalogue states it; empty when unstated.
     std::string unit;
@@ -507,6 +509,140 @@ public:
 
 private:
     commodity_forward_volatility_agreement_terms terms_;
+};
+
+/*
+ * The scripted products on a basket of commodities. A basket holds at least
+ * two distinct commodities, each with a positive weight.
+ */
+
+/// What a rainbow option pays on its basket.
+enum class rainbow_payoff {
+    best_of_asset_or_cash,
+    worst_of_asset_or_cash,
+    max_rainbow,
+    min_rainbow
+};
+
+/// An option on the best or worst performer of a basket of commodities.
+struct commodity_rainbow_option_terms final {
+    required<std::vector<commodity_basket_member>> basket;
+    required<std::string> currency;
+    required<utility::decimal::decimal> notional;
+    required<option_kind> kind;
+    required<rainbow_payoff> payoff;
+    required<utility::decimal::decimal> strike;
+    required<std::chrono::year_month_day> expiry;
+    required<option_position> position;
+};
+
+class ORES_TRADING_API_EXPORT commodity_rainbow_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityRainbowOption";
+    explicit commodity_rainbow_option_builder(commodity_rainbow_option_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_rainbow_option_terms terms_;
+};
+
+/// A swap of a basket of commodities' realised variance, observed monthly, for a strike.
+struct commodity_basket_variance_swap_terms final {
+    required<std::vector<commodity_basket_member>> basket;
+    required<std::string> currency;
+    required<utility::decimal::decimal> notional;
+    /// The strike as a variance, such as 0.04 for a twenty per cent volatility.
+    required<double> variance_strike;
+    required<std::chrono::year_month_day> start;
+    required<std::chrono::year_month_day> maturity;
+    required<std::chrono::year_month_day> settlement;
+    required<option_position> position;
+};
+
+class ORES_TRADING_API_EXPORT commodity_basket_variance_swap_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityBasketVarianceSwap";
+    explicit commodity_basket_variance_swap_builder(commodity_basket_variance_swap_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_basket_variance_swap_terms terms_;
+};
+
+/**
+ * @brief An option whose strike resets to a lower price observed monthly from
+ * the strike date, when the price falls to the trigger level.
+ *
+ * The trigger level and the reset minimum are fractions of the initial price.
+ */
+struct commodity_best_entry_option_terms final {
+    required<marketdata::datum::market_reference> underlying;
+    required<std::string> currency;
+    required<utility::decimal::decimal> notional;
+    required<utility::decimal::decimal> strike;
+    required<utility::decimal::decimal> multiplier;
+    required<utility::decimal::decimal> cap;
+    required<utility::decimal::decimal> trigger_level;
+    required<utility::decimal::decimal> reset_minimum;
+    required<utility::decimal::decimal> premium;
+    required<std::chrono::year_month_day> premium_date;
+    required<std::chrono::year_month_day> strike_date;
+    required<std::chrono::year_month_day> expiry;
+    required<std::chrono::year_month_day> settlement;
+    required<option_position> position;
+    /// The unit the notional counts, as the catalogue states it; empty when unstated.
+    std::string unit;
+};
+
+class ORES_TRADING_API_EXPORT commodity_best_entry_option_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityBestEntryOption";
+    explicit commodity_best_entry_option_builder(commodity_best_entry_option_terms terms);
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    commodity_best_entry_option_terms terms_;
+};
+
+/// A commodity in a worst-of basket, with the price its performance is measured from.
+struct commodity_worst_of_member final {
+    marketdata::datum::market_reference underlying;
+    utility::decimal::decimal initial_price;
+};
+
+/**
+ * @brief A swap that pays a floating funding leg against fixed coupons on the
+ * worst performer of a basket of commodities, observed on its dates against a
+ * knock out at par and a trigger at three quarters.
+ */
+struct commodity_worst_of_basket_swap_terms final {
+    required<std::vector<commodity_worst_of_member>> basket;
+    /// The end of each accrual period, ascending, after the start and no later than maturity.
+    required<std::vector<std::chrono::year_month_day>> observation_dates;
+    /// The index the funding leg floats on, in the basket's currency.
+    required<marketdata::datum::market_reference> funding_index;
+    required<std::string> currency;
+    required<utility::decimal::decimal> quantity;
+    /// The coupon rate paid while the basket stays above the trigger.
+    required<utility::decimal::decimal> fixed_rate;
+    required<std::chrono::year_month_day> start;
+    required<std::chrono::year_month_day> maturity;
+    required<option_position> position;
+};
+
+class ORES_TRADING_API_EXPORT commodity_worst_of_basket_swap_builder final {
+public:
+    static constexpr std::string_view trade_type = "CommodityWorstOfBasketSwap";
+    commodity_worst_of_basket_swap_builder(
+        const marketdata::conventions::convention_lookup& conventions,
+        commodity_worst_of_basket_swap_terms terms);
+    commodity_worst_of_basket_swap_builder(marketdata::conventions::convention_lookup&&,
+                                           commodity_worst_of_basket_swap_terms) = delete;
+    [[nodiscard]] commodity_result build() const;
+
+private:
+    const marketdata::conventions::convention_lookup& conventions_;
+    commodity_worst_of_basket_swap_terms terms_;
 };
 
 }

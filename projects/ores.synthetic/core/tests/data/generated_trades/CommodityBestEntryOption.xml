@@ -2,8 +2,66 @@
 <Portfolio>
   <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
     <TradeType>CommodityBestEntryOption</TradeType>
+    <CommodityBestEntryOptionData>
+      <LongShort>Short</LongShort>
+      <Currency>USD</Currency>
+      <Notional>36369.36</Notional>
+      <Multiplier>1</Multiplier>
+      <Cap>0.5</Cap>
+      <Strike>75.78</Strike>
+      <TriggerLevel>0.9</TriggerLevel>
+      <ResetMinimum>0.8</ResetMinimum>
+      <Premium>82682.1</Premium>
+      <ExpiryDate>2035-01-02</ExpiryDate>
+      <StrikeDate>2026-01-02</StrikeDate>
+      <PremiumDate>2026-01-04</PremiumDate>
+      <SettlementDate>2035-01-04</SettlementDate>
+      <StrikeObservationDates>
+        <Rules>
+          <StartDate>2026-01-02</StartDate>
+          <EndDate>2035-01-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>US-NYSE</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </StrikeObservationDates>
+      <Underlying>
+        <Type>Commodity</Type>
+        <Name>NYMEX:CL</Name>
+      </Underlying>
+    </CommodityBestEntryOptionData>
   </Trade>
   <Trade id="9df8ee5f-9ce1-546e-ba4b-05270865af03">
     <TradeType>CommodityBestEntryOption</TradeType>
+    <CommodityBestEntryOptionData>
+      <LongShort>Short</LongShort>
+      <Currency>USD</Currency>
+      <Notional>2790.02</Notional>
+      <Multiplier>1</Multiplier>
+      <Cap>0.5</Cap>
+      <Strike>160.67</Strike>
+      <TriggerLevel>0.9</TriggerLevel>
+      <ResetMinimum>0.8</ResetMinimum>
+      <Premium>13448.18</Premium>
+      <ExpiryDate>2034-12-02</ExpiryDate>
+      <StrikeDate>2025-12-02</StrikeDate>
+      <PremiumDate>2025-12-04</PremiumDate>
+      <SettlementDate>2034-12-04</SettlementDate>
+      <StrikeObservationDates>
+        <Rules>
+          <StartDate>2025-12-02</StartDate>
+          <EndDate>2034-12-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>US-NYSE</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </StrikeObservationDates>
+      <Underlying>
+        <Type>Commodity</Type>
+        <Name>NYMEX:NG</Name>
+      </Underlying>
+    </CommodityBestEntryOptionData>
   </Trade>
 </Portfolio>

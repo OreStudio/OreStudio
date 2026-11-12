@@ -41,13 +41,21 @@ insert into ores_trading_payoff_types_tbl (
      current_user, 'system.initial_load', 'Seed payoff types'),
     ('AverageStrike', ores_utility_system_tenant_id_fn(), 0, 'Average strike payoff',
      current_user, 'system.initial_load', 'Seed payoff types'),
+    ('BestOfAssetOrCash', ores_utility_system_tenant_id_fn(), 0, 'Rainbow: the best performer, or cash',
+     current_user, 'system.initial_load', 'Seed payoff types'),
     ('Decumulator',   ores_utility_system_tenant_id_fn(), 0, 'Decumulator payoff',
+     current_user, 'system.initial_load', 'Seed payoff types'),
+    ('MaxRainbow',    ores_utility_system_tenant_id_fn(), 0, 'Rainbow: on the best performer',
+     current_user, 'system.initial_load', 'Seed payoff types'),
+    ('MinRainbow',    ores_utility_system_tenant_id_fn(), 0, 'Rainbow: on the worst performer',
      current_user, 'system.initial_load', 'Seed payoff types'),
     ('TargetExact',   ores_utility_system_tenant_id_fn(), 0, 'Target exact: the target amount is fixed',
      current_user, 'system.initial_load', 'Seed payoff types'),
     ('TargetFull',    ores_utility_system_tenant_id_fn(), 0, 'Target full: the target amount is a maximum',
      current_user, 'system.initial_load', 'Seed payoff types'),
     ('Vanilla',       ores_utility_system_tenant_id_fn(), 0, 'Vanilla payoff',
+     current_user, 'system.initial_load', 'Seed payoff types'),
+    ('WorstOfAssetOrCash', ores_utility_system_tenant_id_fn(), 0, 'Rainbow: the worst performer, or cash',
      current_user, 'system.initial_load', 'Seed payoff types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

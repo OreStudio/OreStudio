@@ -2226,26 +2226,36 @@ private:
             return;
         }
 
-        iam::messaging::reset_password_request req;
-        req.account_ids = account_ids;
-        req.new_password = arguments.password;
-        const auto resp = client.request(req);
-
-        if (resp.results.size() != account_ids.size()) {
-            throw std::runtime_error("The staff passwords were not set: the response named " +
-                                     std::to_string(resp.results.size()) + " of " +
-                                     std::to_string(account_ids.size()) + " accounts.");
-        }
-
+        /*
+         * Hashing a password takes up to a second on a loaded host, so one
+         * request for every account outlasts the request deadline as the staff
+         * grows. A page of accounts keeps each request short whatever the
+         * tenant's size.
+         */
+        constexpr std::size_t accounts_per_request = 8;
         std::vector<std::string> set;
-        for (std::size_t i = 0; i < account_ids.size(); ++i) {
-            if (resp.results[i].success ||
-                resp.results[i].message == service::password_unchanged_message) {
-                set.push_back(usernames[i]);
-                continue;
+        for (std::size_t first = 0; first < account_ids.size(); first += accounts_per_request) {
+            const auto last = std::min(first + accounts_per_request, account_ids.size());
+            iam::messaging::reset_password_request req;
+            req.account_ids.assign(account_ids.begin() + static_cast<std::ptrdiff_t>(first),
+                                   account_ids.begin() + static_cast<std::ptrdiff_t>(last));
+            req.new_password = arguments.password;
+            const auto resp = client.request(req);
+
+            if (resp.results.size() != last - first) {
+                throw std::runtime_error("The staff passwords were not set: the response named " +
+                                         std::to_string(resp.results.size()) + " of " +
+                                         std::to_string(last - first) + " accounts.");
             }
-            throw std::runtime_error("The password of '" + usernames[i] +
-                                     "' was not set: " + resp.results[i].message);
+            for (std::size_t i = first; i < last; ++i) {
+                const auto& result = resp.results[i - first];
+                if (result.success || result.message == service::password_unchanged_message) {
+                    set.push_back(usernames[i]);
+                    continue;
+                }
+                throw std::runtime_error("The password of '" + usernames[i] +
+                                         "' was not set: " + result.message);
+            }
         }
 
         wf.complete(ores::utility::codec::json::write(

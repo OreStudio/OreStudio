@@ -93,12 +93,17 @@ struct commodity_instrument_write {
     std::optional<std::chrono::year_month_day> fva_date;
     std::optional<std::chrono::year_month_day> premium_date;
     std::optional<std::chrono::year_month_day> settlement_date;
-    std::optional<ores::utility::decimal::decimal> implied_vol_strike;
+    std::optional<double> implied_vol_strike;
     std::optional<ores::utility::decimal::decimal> reset_strike;
     std::optional<std::string> trigger_type;
     std::optional<ores::utility::decimal::decimal> trigger_price;
     std::optional<ores::utility::decimal::decimal> premium_amount;
     std::optional<ores::utility::decimal::decimal> target_amount;
+    std::optional<ores::utility::decimal::decimal> multiplier;
+    std::optional<ores::utility::decimal::decimal> cap;
+    std::optional<ores::utility::decimal::decimal> trigger_level;
+    std::optional<ores::utility::decimal::decimal> reset_minimum;
+    std::optional<std::chrono::year_month_day> strike_date;
     std::string description;
 
     friend bool operator==(const commodity_instrument_write&,
@@ -495,6 +500,11 @@ inline constexpr std::string_view deleted = "trading.v1.events.commodity_instrum
         utility::codec::field{"trigger_price", &commodity_instrument_write::trigger_price},
         utility::codec::field{"premium_amount", &commodity_instrument_write::premium_amount},
         utility::codec::field{"target_amount", &commodity_instrument_write::target_amount},
+        utility::codec::field{"multiplier", &commodity_instrument_write::multiplier},
+        utility::codec::field{"cap", &commodity_instrument_write::cap},
+        utility::codec::field{"trigger_level", &commodity_instrument_write::trigger_level},
+        utility::codec::field{"reset_minimum", &commodity_instrument_write::reset_minimum},
+        utility::codec::field{"strike_date", &commodity_instrument_write::strike_date},
         utility::codec::field{"description", &commodity_instrument_write::description},
     };
 }

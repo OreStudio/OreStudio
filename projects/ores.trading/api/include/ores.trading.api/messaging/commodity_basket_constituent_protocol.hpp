@@ -56,6 +56,7 @@ struct commodity_basket_constituent_write {
     boost::uuids::uuid trade_activity_id;
     std::string underlying_code;
     std::optional<double> weight;
+    std::optional<ores::utility::decimal::decimal> initial_price;
 
     friend bool operator==(const commodity_basket_constituent_write&,
                            const commodity_basket_constituent_write&) = default;
@@ -439,6 +440,7 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"underlying_code",
                               &commodity_basket_constituent_write::underlying_code},
         utility::codec::field{"weight", &commodity_basket_constituent_write::weight},
+        utility::codec::field{"initial_price", &commodity_basket_constituent_write::initial_price},
     };
 }
 

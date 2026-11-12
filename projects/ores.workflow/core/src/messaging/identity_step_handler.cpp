@@ -19,6 +19,7 @@
  */
 #include "ores.workflow.core/messaging/identity_step_handler.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -49,10 +50,8 @@ auto& lg() {
  * The context is taken from the message headers rather than the body, exactly as
  * a real step handler takes it, so the fixture exercises the same contract.
  */
-void handle(ores::nats::service::client& nats, ores::nats::message msg) {
-    // The handler answers the delivery, so that a command it records no outcome
-    // for is redelivered rather than silently dropped.
-    ores::nats::ack_guard ack(msg);
+void handle(ores::nats::service::client& nats, ores::nats::delivery delivery) {
+    const auto& msg = delivery.msg();
 
     const auto ctx = ores::service::messaging::workflow_step_context::from_message(nats, msg);
     if (!ctx) {
@@ -60,7 +59,7 @@ void handle(ores::nats::service::client& nats, ores::nats::message msg) {
         // second delivery would achieve.
         BOOST_LOG_SEV(lg(), warn) << "Identity command arrived without workflow headers on "
                                   << msg.subject;
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
 
@@ -73,7 +72,7 @@ void handle(ores::nats::service::client& nats, ores::nats::message msg) {
         step = ores::utility::codec::json::read<identity_ns::identity_step_request>(payload);
     } catch (const std::exception& e) {
         ctx->fail("Failed to parse the identity step command: " + std::string(e.what()));
-        ack.accept();
+        std::move(delivery).commit();
         return;
     }
 
@@ -98,7 +97,7 @@ void handle(ores::nats::service::client& nats, ores::nats::message msg) {
                       .level = ores::workflow::messaging::step_log_level::warn,
                       .message = "identity step '" + step.name + "' deliberately warned",
                       .context = step.name}});
-        ack.accept();
+        std::move(delivery).commit();
         return;
     }
 
@@ -109,7 +108,7 @@ void handle(ores::nats::service::client& nats, ores::nats::message msg) {
                       .level = ores::workflow::messaging::step_log_level::error,
                       .message = "identity step '" + step.name + "' was asked to fail",
                       .context = step.name}});
-        ack.accept();
+        std::move(delivery).commit();
         return;
     }
 
@@ -118,13 +117,13 @@ void handle(ores::nats::service::client& nats, ores::nats::message msg) {
                                   << "' asked for unknown behaviour '" << outcome << "'.";
         ctx->fail("identity step '" + step.name + "' asked for unknown behaviour '" + outcome +
                   "'");
-        ack.accept();
+        std::move(delivery).commit();
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Identity step '" << step.name << "' reporting completion.";
     ctx->complete(result_json);
-    ack.accept();
+    std::move(delivery).commit();
 }
 
 }
@@ -137,9 +136,9 @@ register_identity_step_handlers(ores::nats::service::client& nats, std::string_v
     // and the dispatch cannot disagree about what this service serves.
     ores::service::messaging::step_routes routes;
     routes.on(identity_ns::identity_step_command_subject,
-              [&nats](ores::nats::message msg) { handle(nats, std::move(msg)); });
+              [&nats](ores::nats::delivery delivery) { handle(nats, std::move(delivery)); });
     routes.on(identity_ns::identity_compensation_command_subject,
-              [&nats](ores::nats::message msg) { handle(nats, std::move(msg)); });
+              [&nats](ores::nats::delivery delivery) { handle(nats, std::move(delivery)); });
 
     subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
 

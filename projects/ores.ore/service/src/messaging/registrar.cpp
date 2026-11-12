@@ -127,15 +127,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     ores::service::messaging::step_routes routes;
     routes
         .on(ores::ore::messaging::run_configuration_import_execute_request::nats_subject,
-            [rci](ores::nats::message msg) { rci->execute(std::move(msg)); })
+            [rci](ores::nats::delivery delivery) { rci->execute(std::move(delivery)); })
         .on(ores::ore::messaging::run_configuration_import_rollback_request::nats_subject,
-            [rci](ores::nats::message msg) { rci->rollback(std::move(msg)); })
+            [rci](ores::nats::delivery delivery) { rci->rollback(std::move(delivery)); })
         .on(ores::ore::messaging::ore_import_execute_request::nats_subject,
-            [eh](ores::nats::message msg) { eh->execute(std::move(msg)); })
+            [eh](ores::nats::delivery delivery) { eh->execute(std::move(delivery)); })
         .on(ores::ore::messaging::ore_import_rollback_request::nats_subject,
-            [eh](ores::nats::message msg) { eh->rollback(std::move(msg)); })
+            [eh](ores::nats::delivery delivery) { eh->rollback(std::move(delivery)); })
         .on(ores::reporting::messaging::prepare_ore_package_request::nats_subject,
-            [rph](ores::nats::message msg) { rph->prepare_package(std::move(msg)); });
+            [rph](ores::nats::delivery delivery) { rph->prepare_package(std::move(delivery)); });
     subs.push_back(ores::service::messaging::serve_step_commands(nats, qg, routes));
 
     BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " ORE service message handlers.";

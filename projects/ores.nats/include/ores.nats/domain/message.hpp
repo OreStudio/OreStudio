@@ -34,51 +34,12 @@
 namespace ores::nats {
 
 /**
- * @brief Answers a durable delivery: ack, nak or term.
- *
- * A core NATS message has no such handle, because there is nothing to
- * acknowledge. A JetStream message carries one, and the handler that decides
- * the outcome answers through it. The transport's own backstop naks a message
- * left unanswered, so an undecided delivery is redelivered rather than
- * silently acknowledged.
- */
-class ack_handle {
-public:
-    virtual ~ack_handle() = default;
-
-    /// The work is committed; the message is delivered no more.
-    virtual void accept() = 0;
-    /// The work failed; deliver the message again.
-    virtual void retry() = 0;
-    /**
-     * @brief The work failed this time and should come back later, not
-     *        immediately.
-     *
-     * An immediate retry suits a message whose failure was its own. It does not
-     * suit one that another delivery is already working: the redelivery lands
-     * at once, loses the same race, and spends the delivery budget in a tight
-     * loop. A delay gives the holder time to finish, so the next delivery finds
-     * the work done rather than contending for it again.
-     *
-     * @param delay How long before the server redelivers, in milliseconds.
-     */
-    virtual void retry_after(std::chrono::milliseconds delay) = 0;
-    /// The message can never be handled; stop delivering it.
-    virtual void reject() = 0;
-    /**
-     * @brief Tells the server the delivery is still being worked on, so it waits a full
-     * ack wait again before redelivering. A no-op for a delivery that cannot say so, and
-     * for one already answered. Safe to call from a thread other than the handler's.
-     */
-    virtual void working() {}
-};
-
-/**
  * @brief A received NATS message.
  *
- * No cnats types appear here. All data is copied out of the cnats message
- * before the callback returns so the cnats message can be destroyed
- * immediately on the cnats internal thread.
+ * No cnats types appear here. All data is copied out of the cnats message,
+ * so a message is a plain value that can be copied and kept. It carries
+ * nothing to answer: a durable delivery is answered through the @c delivery
+ * that holds it.
  */
 struct message {
     /**
@@ -107,86 +68,6 @@ struct message {
      * per-request authentication: @c "Authorization" -> @c "Bearer <token>".
      */
     std::unordered_map<std::string, std::string> headers;
-
-    /**
-     * @brief The delivery's acknowledgement handle, or nothing for core NATS.
-     *
-     * Held by shared handle so the message stays cheap to pass by value, which
-     * is how every handler receives it. An @c ack_guard answers on the
-     * handler's behalf; the handle itself accepts only the first answer.
-     */
-    std::shared_ptr<ack_handle> ack;
-};
-
-/**
- * @brief RAII guard for a durable delivery, defaulting to a retry.
- *
- * Declared at the top of a handler, it answers the message on the handler's
- * behalf when the handler answers nothing itself. The destructor runs @c retry,
- * so a path that throws or returns early is redelivered rather than
- * acknowledged as done — the failure mode that defeats at-least-once delivery.
- *
- * @code
- * void provision_step(ores::nats::message msg) {
- *     ores::nats::ack_guard ack(msg);
- *     // ... work ...
- *     ack.accept();   // committed
- * }
- * @endcode
- *
- * A message with no handle — every core NATS message — makes every method a
- * no-op, so one handler shape serves both.
- */
-class ack_guard {
-public:
-    explicit ack_guard(const message& msg) noexcept
-        : handle_(msg.ack) {}
-
-    ~ack_guard() {
-        if (handle_ && !answered_)
-            handle_->retry();
-    }
-
-    ack_guard(const ack_guard&) = delete;
-    ack_guard& operator=(const ack_guard&) = delete;
-
-    /// @return true when this message can be answered at all.
-    [[nodiscard]] bool has_handle() const noexcept {
-        return handle_ != nullptr;
-    }
-
-    void accept() noexcept {
-        answer(&ack_handle::accept);
-    }
-
-    void retry() noexcept {
-        answer(&ack_handle::retry);
-    }
-
-    /// Retries the delivery after @p delay rather than at once.
-    void retry_after(std::chrono::milliseconds delay) noexcept {
-        if (handle_ && !answered_) {
-            answered_ = true;
-            handle_->retry_after(delay);
-        }
-    }
-
-    void reject() noexcept {
-        answer(&ack_handle::reject);
-    }
-
-private:
-    void answer(void (ack_handle::*verb)()) noexcept {
-        if (handle_ && !answered_) {
-            answered_ = true;
-            (handle_.get()->*verb)();
-        }
-    }
-
-    // Shared, not borrowed: a handler that takes its message by value and
-    // moves it on would otherwise free the handle out from under the guard.
-    std::shared_ptr<ack_handle> handle_;
-    bool answered_ = false;
 };
 
 /**

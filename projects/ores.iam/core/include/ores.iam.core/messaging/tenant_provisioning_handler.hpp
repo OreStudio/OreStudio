@@ -62,6 +62,7 @@
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/route_protocol.hpp"
 #include "ores.marketdata.api/messaging/subscription_protocol.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -626,12 +627,9 @@ public:
      * somebody else's request on the shared subject is not this handler's to
      * answer.
      */
-    void provision_step(ores::nats::message msg) {
+    void provision_step(ores::nats::delivery delivery) {
+        const auto& msg = delivery.msg();
         const auto correlation_id = log_handler_entry(tenant_provisioning_handler_lg(), msg);
-        // The step command is delivered durably, so it must be answered rather
-        // than left to the transport's default. The guard retries when a path
-        // below returns without deciding.
-        ores::nats::ack_guard ack(msg);
 
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
         if (!wf) {
@@ -646,7 +644,7 @@ public:
                 << "provision_step: the step command could not be read, so the step is left "
                    "unanswered and the run will expire it. subject="
                 << msg.subject;
-            ack.reject();
+            std::move(delivery).reject();
             return;
         }
 
@@ -666,7 +664,7 @@ public:
                                                                   cached->result_json,
                                                                   cached->error_message,
                                                                   cached->log);
-                ack.accept();
+                std::move(delivery).commit();
                 return;
             }
 
@@ -679,7 +677,7 @@ public:
                 // it would only report the same failure again.
                 wf->fail("The provisioning step command could not be read: " +
                          std::string(parsed.error()));
-                ack.accept();
+                std::move(delivery).commit();
                 return;
             }
 
@@ -692,12 +690,12 @@ public:
                 << "provision_step " << parsed->kind << " returned after "
                 << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count()
                 << "s: step_id=" << wf->step_id;
-            ack.accept();
+            std::move(delivery).commit();
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
                 << "provision_step failed: step_id=" << wf->step_id << ": " << e.what();
             wf->fail(e.what());
-            ack.accept();
+            std::move(delivery).commit();
         } catch (...) {
             // An exception of no standard type would otherwise leave the step with no answer and
             // no line saying why, so the run would wait out its deadline in silence.
@@ -705,7 +703,7 @@ public:
                 << "provision_step failed with an exception of no standard type: step_id="
                 << wf->step_id;
             wf->fail("The step failed with an exception of no standard type.");
-            ack.accept();
+            std::move(delivery).commit();
         }
     }
 

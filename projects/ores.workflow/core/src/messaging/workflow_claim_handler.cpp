@@ -171,17 +171,12 @@ workflow_claim_handler::workflow_claim_handler(ores::nats::service::client& nats
 void workflow_claim_handler::claim_step(ores::nats::message msg) {
     BOOST_LOG_SEV(lg(), debug) << "claim_step request received";
 
-    // The delivery is answered on every path, so a claim this handler cannot
-    // decide is redelivered rather than dropped.
-    ores::nats::ack_guard ack(msg);
-
     const auto req = decode<claim_step_request>(msg);
     if (!req || req->step_id.empty() || req->tenant_id.empty()) {
         reply(nats_,
               msg,
               claim_step_response{.success = false,
                                   .message = "step_id and tenant_id are both required."});
-        ack.accept();
         return;
     }
 
@@ -212,18 +207,15 @@ void workflow_claim_handler::claim_step(ores::nats::message msg) {
                                   << ": " << (resp.message.empty() ? resp.state : resp.message);
 
     reply(nats_, msg, resp);
-    ack.accept();
 }
 
 void workflow_claim_handler::renew_step_claim(ores::nats::message msg) {
-    ores::nats::ack_guard ack(msg);
     const auto req = decode<renew_step_claim_request>(msg);
     if (!req || req->step_id.empty() || req->tenant_id.empty()) {
         reply(nats_,
               msg,
               renew_step_claim_response{.success = false,
                                         .message = "step_id and tenant_id are both required."});
-        ack.accept();
         return;
     }
     renew_step_claim_response resp;
@@ -240,7 +232,6 @@ void workflow_claim_handler::renew_step_claim(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), warn) << "Step " << req->step_id << " lease not renewed for "
                                   << req->owner << ": " << resp.message;
     reply(nats_, msg, resp);
-    ack.accept();
 }
 
 } // namespace ores::workflow::messaging

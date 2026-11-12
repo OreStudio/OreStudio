@@ -51,6 +51,7 @@ target_link_libraries(${lib_target_name}
         Boost::program_options
     PRIVATE
         ores.logging.lib
+        ores.platform.lib
         ores.utility.lib
         Boost::boost
         Boost::json)

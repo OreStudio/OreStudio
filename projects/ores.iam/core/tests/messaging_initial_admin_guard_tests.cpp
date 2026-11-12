@@ -43,22 +43,21 @@ using ores::database::pq::transaction;
 
 struct initial_admin_guard_rolled_back final {};
 
-void set_bootstrap_mode(transaction& tx, bool enabled) {
+void set_bootstrap_mode(transaction& tx, bool enabled, const std::string& actor) {
     tx.run(dynamic_statement(
         std::string("select ores_variability_system_settings_set_fn("
                     "ores_utility_system_tenant_id_fn(), 'system.bootstrap_mode', '") +
-        (enabled ? "true" : "false") +
-        "', 'boolean', 'Bootstrap mode, set by a test.', 'test', 'system.initial_load', "
-        "'Set by a test that rolls back.')"));
+        (enabled ? "true" : "false") + "', 'boolean', 'Bootstrap mode, set by a test.', '" + actor +
+        "', 'system.initial_load', 'Set by a test that rolls back.')"));
 }
 
-/// The SQLSTATE a create raises, or nothing when it succeeds. The actor is the
-/// principal, as the handler states it: no account exists before the first.
-std::optional<std::string> create_admin(transaction& tx, const std::string& principal) {
+/// The SQLSTATE a create raises, or nothing when it succeeds. The shared test
+/// database already holds accounts, so the actor must be one of them.
+std::optional<std::string>
+create_admin(transaction& tx, const std::string& principal, const std::string& actor) {
     try {
         tx.run(dynamic_statement("select ores_iam_create_initial_admin_fn('" + principal + "', '" +
-                                 principal + "@example.com', 'not-a-real-hash', '" + principal +
-                                 "')"));
+                                 principal + "@example.com', 'not-a-real-hash', '" + actor + "')"));
         return std::nullopt;
     } catch (const store_error& e) {
         return e.sqlstate();
@@ -76,16 +75,17 @@ TEST_CASE("initial_admin_create_runs_once_in_bootstrap_mode", "[initial_admin_gu
     ores::testing::database_helper h;
     std::optional<std::string> first;
     std::optional<std::string> second;
-    CHECK_THROWS_AS(
-        ores::database::transact(system_context(h),
-                                 [&](transaction& tx) {
-                                     set_bootstrap_mode(tx, true);
-                                     first = create_admin(tx, initial_admin_guard_principal());
-                                     if (!first)
-                                         second = create_admin(tx, initial_admin_guard_principal());
-                                     throw initial_admin_guard_rolled_back{};
-                                 }),
-        initial_admin_guard_rolled_back);
+    CHECK_THROWS_AS(ores::database::transact(
+                        system_context(h),
+                        [&](transaction& tx) {
+                            set_bootstrap_mode(tx, true, h.db_user());
+                            first = create_admin(tx, initial_admin_guard_principal(), h.db_user());
+                            if (!first)
+                                second =
+                                    create_admin(tx, initial_admin_guard_principal(), h.db_user());
+                            throw initial_admin_guard_rolled_back{};
+                        }),
+                    initial_admin_guard_rolled_back);
     INFO("first create: " << first.value_or("succeeded"));
     CHECK_FALSE(first.has_value());
     CHECK(second == std::optional<std::string>("55000"));
@@ -94,13 +94,14 @@ TEST_CASE("initial_admin_create_runs_once_in_bootstrap_mode", "[initial_admin_gu
 TEST_CASE("initial_admin_create_refuses_outside_bootstrap_mode", "[initial_admin_guard]") {
     ores::testing::database_helper h;
     std::optional<std::string> refused;
-    CHECK_THROWS_AS(ores::database::transact(system_context(h),
-                                             [&](transaction& tx) {
-                                                 set_bootstrap_mode(tx, false);
-                                                 refused = create_admin(
-                                                     tx, initial_admin_guard_principal());
-                                                 throw initial_admin_guard_rolled_back{};
-                                             }),
+    CHECK_THROWS_AS(ores::database::transact(
+                        system_context(h),
+                        [&](transaction& tx) {
+                            set_bootstrap_mode(tx, false, h.db_user());
+                            refused =
+                                create_admin(tx, initial_admin_guard_principal(), h.db_user());
+                            throw initial_admin_guard_rolled_back{};
+                        }),
                     initial_admin_guard_rolled_back);
     CHECK(refused == std::optional<std::string>("55000"));
 }
@@ -110,8 +111,8 @@ TEST_CASE("initial_admin_create_refuses_an_empty_principal", "[initial_admin_gua
     std::optional<std::string> refused;
     CHECK_THROWS_AS(ores::database::transact(system_context(h),
                                              [&](transaction& tx) {
-                                                 set_bootstrap_mode(tx, true);
-                                                 refused = create_admin(tx, "");
+                                                 set_bootstrap_mode(tx, true, h.db_user());
+                                                 refused = create_admin(tx, "", h.db_user());
                                                  throw initial_admin_guard_rolled_back{};
                                              }),
                     initial_admin_guard_rolled_back);

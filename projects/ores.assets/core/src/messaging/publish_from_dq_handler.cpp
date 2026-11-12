@@ -22,6 +22,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <algorithm>
@@ -69,17 +70,14 @@ publish_from_dq_handler::publish_from_dq_handler(ores::nats::service::client& na
     : nats_(nats)
     , ctx_(std::move(ctx)) {}
 
-void publish_from_dq_handler::handle(ores::nats::message msg) {
-    // A durable consumer answers every delivery, so the handler states the
-    // outcome on each path. The guard retries anything that returns without
-    // deciding, which is the one thing that must not happen silently.
-    ores::nats::ack_guard ack(msg);
+void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
+    const auto& msg = delivery.msg();
 
     auto wf = workflow_step_context::from_message(nats_, msg);
     if (!wf) {
         // Not a step command at all, so there is no step to fail and nothing
         // a second delivery would achieve.
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
 
@@ -89,14 +87,14 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
         cmd = ores::utility::codec::json::read<ores::dq::messaging::publish_from_dq_command>(sv);
     } catch (const std::exception& e) {
         wf->fail("Failed to decode publish_from_dq_command: " + std::string(e.what()));
-        ack.accept();
+        std::move(delivery).commit();
         return;
     }
 
     const auto fn_name = subject_to_fn(msg.subject);
     if (fn_name.empty()) {
         wf->fail("Cannot derive SQL function from subject: " + std::string(msg.subject));
-        ack.accept();
+        std::move(delivery).commit();
         return;
     }
 
@@ -135,7 +133,7 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
                                   << " updated=" << result.records_updated;
 
         wf->complete(ores::utility::codec::json::write(result));
-        ack.accept();
+        std::move(delivery).commit();
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
@@ -143,7 +141,7 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
         wf->fail(e.what());
         // The failure reaches the engine, so the delivery is done with;
         // redelivering would only report the same failure again.
-        ack.accept();
+        std::move(delivery).commit();
     }
 }
 

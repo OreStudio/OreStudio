@@ -21,6 +21,7 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
@@ -50,6 +51,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 // The engine paths a shell script cannot reach. A script can only start a run
@@ -298,11 +300,24 @@ struct fixture {
     }
 };
 
+/**
+ * @brief Answers nothing: the tests call the engine directly, with no server
+ *        behind the delivery to answer.
+ */
+class unanswered_settler final : public ores::nats::delivery_settler {
+public:
+    void ack() noexcept override {}
+    void nak() noexcept override {}
+    void nak_after(std::chrono::milliseconds) noexcept override {}
+    void term() noexcept override {}
+    void in_progress() noexcept override {}
+};
+
 template <typename T>
-ores::nats::message as_message(const T& payload) {
+ores::nats::delivery as_delivery(const T& payload) {
     ores::nats::message msg;
     msg.data = ores::nats::default_wire_codec().encode(payload);
-    return msg;
+    return {std::move(msg), std::make_unique<unanswered_settler>()};
 }
 
 start_workflow_message
@@ -440,7 +455,7 @@ TEST_CASE("workflow_engine starts nothing for a type it does not know", "[engine
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_no_such_workflow", f.tenant(), refused_id)));
+        as_delivery(start_for("test_no_such_workflow", f.tenant(), refused_id)));
 
     // An unregistered type is a refusal, not a run: no instance, and no step
     // command for a service to answer.
@@ -453,7 +468,7 @@ TEST_CASE("workflow_engine starts nothing for a type it does not know", "[engine
     // a start that could not have worked either way.
     const auto accepted_id = boost::uuids::to_string(boost::uuids::random_generator()());
     f.engine->on_start_workflow(
-        as_message(start_for("test_known_workflow", f.tenant(), accepted_id)));
+        as_delivery(start_for("test_known_workflow", f.tenant(), accepted_id)));
     CHECK(instances.read_latest(f.h.context(), accepted_id).size() == 1);
     CHECK(wait_for_instance(commands, accepted_id, 1, std::chrono::seconds(5)).size() == 1);
     BOOST_LOG_SEV(lg, debug) << "Unregistered type created nothing.";
@@ -479,9 +494,9 @@ TEST_CASE("workflow_engine refuses a chain that reads a step it does not contain
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
 
     f.engine->on_start_workflow(
-        as_message(start_for("test_unknown_input_workflow", f.tenant(), unknown_id)));
+        as_delivery(start_for("test_unknown_input_workflow", f.tenant(), unknown_id)));
     f.engine->on_start_workflow(
-        as_message(start_for("test_forward_input_workflow", f.tenant(), forward_id)));
+        as_delivery(start_for("test_forward_input_workflow", f.tenant(), forward_id)));
 
     workflow_instance_repository instances;
     CHECK(instances.read_latest(f.h.context(), unknown_id).empty());
@@ -494,7 +509,7 @@ TEST_CASE("workflow_engine refuses a chain that reads a step it does not contain
     // and not about a start that could not have worked either way.
     const auto accepted_id = boost::uuids::to_string(boost::uuids::random_generator()());
     f.engine->on_start_workflow(
-        as_message(start_for("test_well_formed_workflow", f.tenant(), accepted_id)));
+        as_delivery(start_for("test_well_formed_workflow", f.tenant(), accepted_id)));
     CHECK(instances.read_latest(f.h.context(), accepted_id).size() == 1);
     CHECK(wait_for_instance(commands, accepted_id, 1, std::chrono::seconds(5)).size() == 1);
     BOOST_LOG_SEV(lg, debug) << "A chain that cannot deliver its inputs created nothing.";
@@ -510,7 +525,8 @@ TEST_CASE("workflow_engine starts nothing for a definition with no steps",
     const auto empty_id = boost::uuids::to_string(boost::uuids::random_generator()());
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
-    f.engine->on_start_workflow(as_message(start_for("test_empty_workflow", f.tenant(), empty_id)));
+    f.engine->on_start_workflow(
+        as_delivery(start_for("test_empty_workflow", f.tenant(), empty_id)));
 
     // The definition is registered, so the type resolves; it simply declares
     // no work. An instance with no steps could never advance, so the engine
@@ -522,7 +538,7 @@ TEST_CASE("workflow_engine starts nothing for a definition with no steps",
     // Same fixture, same tenant, one step declared instead of none.
     const auto accepted_id = boost::uuids::to_string(boost::uuids::random_generator()());
     f.engine->on_start_workflow(
-        as_message(start_for("test_one_step_workflow", f.tenant(), accepted_id)));
+        as_delivery(start_for("test_one_step_workflow", f.tenant(), accepted_id)));
     CHECK(instances.read_latest(f.h.context(), accepted_id).size() == 1);
     CHECK(wait_for_instance(commands, accepted_id, 1, std::chrono::seconds(5)).size() == 1);
     BOOST_LOG_SEV(lg, debug) << "Empty definition created nothing.";
@@ -539,7 +555,7 @@ TEST_CASE("workflow_engine stores the target a start names", "[engine][integrati
     auto req = start_for("test_targeted_workflow", f.tenant(), instance_id);
     req.target_kind = "tenant";
     req.target_id = boost::uuids::to_string(target);
-    f.engine->on_start_workflow(as_message(req));
+    f.engine->on_start_workflow(as_delivery(req));
 
     // The target is what the run acts on, so a reader finds the run by it
     // without parsing the payload.
@@ -552,7 +568,7 @@ TEST_CASE("workflow_engine stores the target a start names", "[engine][integrati
     // A start that names no target stores none.
     const auto untargeted_id = boost::uuids::to_string(boost::uuids::random_generator()());
     f.engine->on_start_workflow(
-        as_message(start_for("test_targeted_workflow", f.tenant(), untargeted_id)));
+        as_delivery(start_for("test_targeted_workflow", f.tenant(), untargeted_id)));
     const auto untargeted = instances.read_latest(f.h.context(), untargeted_id);
     REQUIRE(untargeted.size() == 1);
     CHECK(untargeted.front().target_kind.empty());
@@ -586,7 +602,7 @@ TEST_CASE("workflow_engine refuses a start that names half a target", "[engine][
     bad_id.target_id = "not-a-uuid";
 
     for (const auto& req : {kind_only, id_only, bad_id}) {
-        f.engine->on_start_workflow(as_message(req));
+        f.engine->on_start_workflow(as_delivery(req));
         CHECK(instances.read_latest(f.h.context(), req.instance_id).empty());
     }
 
@@ -598,7 +614,7 @@ TEST_CASE("workflow_engine refuses a start that names half a target", "[engine][
                            boost::uuids::to_string(boost::uuids::random_generator()()));
     whole.target_kind = "tenant";
     whole.target_id = boost::uuids::to_string(boost::uuids::random_generator()());
-    f.engine->on_start_workflow(as_message(whole));
+    f.engine->on_start_workflow(as_delivery(whole));
     CHECK(instances.read_latest(f.h.context(), whole.instance_id).size() == 1);
     BOOST_LOG_SEV(lg, debug) << "Half targets refused.";
 }
@@ -612,7 +628,7 @@ TEST_CASE("workflow_engine advances once when a step completes twice", "[engine]
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_two_step_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_two_step_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
@@ -622,14 +638,14 @@ TEST_CASE("workflow_engine advances once when a step completes twice", "[engine]
 
     // Step one completes, which dispatches step two.
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, first_step_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, first_step_id, step_outcome::completed)));
     REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
 
     // The same completion arrives again, as a redelivery would. With two steps
     // declared, a second advance would end the run rather than repeat a step,
     // so the instance's state is what tells the two apart.
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, first_step_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, first_step_id, step_outcome::completed)));
 
     workflow_instance_repository instances;
     const auto instance = instances.read_latest(f.h.context(), instance_id);
@@ -653,7 +669,7 @@ TEST_CASE("workflow_engine recovery re-dispatches the step that was in progress"
 
     auto commands = f.nats.subscribe_buffered(step_subject, step_command_buffer);
     f.engine->on_start_workflow(
-        as_message(start_for("test_recovery_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_recovery_workflow", f.tenant(), instance_id)));
     const auto first = wait_for_instance(commands, instance_id, 1, recovery_wait);
     REQUIRE(first.size() == 1);
     const auto step_id =
@@ -689,7 +705,7 @@ TEST_CASE("a definition that declares stop keeps its completed steps on a failur
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_stop_policy_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_stop_policy_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
@@ -701,15 +717,15 @@ TEST_CASE("a definition that declares stop keeps its completed steps on a failur
     auto done = completion_for(
         instance_id, boost::uuids::to_string(rows.front().id), step_outcome::completed);
     done.result_json = R"({"kept":"yes"})";
-    f.engine->on_step_completed(as_message(done));
+    f.engine->on_step_completed(as_delivery(done));
     REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
 
     rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     REQUIRE(rows.size() == 2);
     const auto second_step_id = boost::uuids::to_string(rows.back().id);
 
-    f.engine->on_step_completed(
-        as_message(completion_for(instance_id, second_step_id, step_outcome::failed, "two broke")));
+    f.engine->on_step_completed(as_delivery(
+        completion_for(instance_id, second_step_id, step_outcome::failed, "two broke")));
 
     // The run stops where it is: failed, with the error standing against it.
     auto instance = instances.read_latest(f.h.context(), instance_id);
@@ -740,7 +756,7 @@ TEST_CASE("a retry re-dispatches the failed step under its own identity", "[engi
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_retry_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_retry_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
@@ -750,14 +766,14 @@ TEST_CASE("a retry re-dispatches the failed step under its own identity", "[engi
     auto done = completion_for(
         instance_id, boost::uuids::to_string(rows.front().id), step_outcome::completed);
     done.result_json = R"({"kept":"yes"})";
-    f.engine->on_step_completed(as_message(done));
+    f.engine->on_step_completed(as_delivery(done));
     REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
 
     rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     REQUIRE(rows.size() == 2);
     const auto failed_step_id = boost::uuids::to_string(rows.back().id);
-    f.engine->on_step_completed(
-        as_message(completion_for(instance_id, failed_step_id, step_outcome::failed, "two broke")));
+    f.engine->on_step_completed(as_delivery(
+        completion_for(instance_id, failed_step_id, step_outcome::failed, "two broke")));
 
     auto instance = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(instance.size() == 1);
@@ -827,7 +843,7 @@ TEST_CASE("a retry refuses a run that has not stopped", "[engine][integration]")
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_retry_refusal_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_retry_refusal_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     // Running, not stopped: there is no failed step to resume.
@@ -853,13 +869,13 @@ TEST_CASE("a retry refuses a step the run does not hold", "[engine][integration]
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_retry_name_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_retry_name_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
     auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     REQUIRE(rows.size() == 1);
-    f.engine->on_step_completed(as_message(completion_for(
+    f.engine->on_step_completed(as_delivery(completion_for(
         instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "one broke")));
 
     // The run stopped at step one, and no step of its chain is named three.
@@ -879,7 +895,7 @@ TEST_CASE("a retry refuses a stopped run that has no failed step", "[engine][int
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_retry_no_failed_step_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_retry_no_failed_step_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     // A run can rest in failed with no failed step: a stop that left every
@@ -922,13 +938,13 @@ TEST_CASE("a retry is confined to the caller's own tenant", "[engine][integratio
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_retry_tenant_workflow", run_tenant, instance_id)));
+        as_delivery(start_for("test_retry_tenant_workflow", run_tenant, instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
     const auto rows = steps.read_latest_by_workflow_id(f.service_context(), instance_id, 0, 100);
     REQUIRE(rows.size() == 1);
-    f.engine->on_step_completed(as_message(completion_for(
+    f.engine->on_step_completed(as_delivery(completion_for(
         instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "one broke")));
 
     // A caller in another tenant is told the run does not exist, not that it
@@ -967,7 +983,7 @@ TEST_CASE("the workflow service user starts and advances a three step apply run"
 
     auto commands = f.nats.subscribe_buffered(step_subject, 1000);
     f.engine->on_start_workflow(
-        as_message(start_for("test_apply_shaped_workflow", run_tenant, instance_id)));
+        as_delivery(start_for("test_apply_shaped_workflow", run_tenant, instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     // The engine wrote these rows as the workflow service user. They are read
@@ -979,7 +995,7 @@ TEST_CASE("the workflow service user starts and advances a three step apply run"
     for (std::size_t done = 1; done <= 3; ++done) {
         const auto rows = steps.read_latest_by_workflow_id(service_ctx, instance_id, 0, 100);
         REQUIRE(rows.size() == done);
-        f.engine->on_step_completed(as_message(completion_for(
+        f.engine->on_step_completed(as_delivery(completion_for(
             instance_id, boost::uuids::to_string(rows.back().id), step_outcome::completed)));
         if (done < 3)
             REQUIRE(wait_for_instance(commands, instance_id, done + 1, std::chrono::seconds(5))
@@ -1003,7 +1019,7 @@ TEST_CASE("the workflow service user stops a run on a failure and resumes it",
 
     auto commands = f.nats.subscribe_buffered(step_subject, 1000);
     f.engine->on_start_workflow(
-        as_message(start_for("test_apply_shaped_retry_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_apply_shaped_retry_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
@@ -1011,7 +1027,7 @@ TEST_CASE("the workflow service user stops a run on a failure and resumes it",
     const auto service_ctx = f.service_context();
     const auto rows = steps.read_latest_by_workflow_id(service_ctx, instance_id, 0, 100);
     REQUIRE(rows.size() == 1);
-    f.engine->on_step_completed(as_message(completion_for(
+    f.engine->on_step_completed(as_delivery(completion_for(
         instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "down")));
 
     const auto stopped = instances.read_latest(service_ctx, instance_id);
@@ -1035,12 +1051,12 @@ TEST_CASE("a start that names a run the engine holds changes nothing", "[engine]
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_repeated_start_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_repeated_start_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     // The scheduled retry of an apply starts the same run on every pass.
     f.engine->on_start_workflow(
-        as_message(start_for("test_repeated_start_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_repeated_start_workflow", f.tenant(), instance_id)));
     CHECK(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(1)).size() == 1);
 
     workflow_step_repository steps;
@@ -1059,13 +1075,13 @@ TEST_CASE("a retry from the system tenant reaches a run of any tenant", "[engine
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_retry_system_workflow", run_tenant, instance_id)));
+        as_delivery(start_for("test_retry_system_workflow", run_tenant, instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
     const auto rows = steps.read_latest_by_workflow_id(f.service_context(), instance_id, 0, 100);
     REQUIRE(rows.size() == 1);
-    f.engine->on_step_completed(as_message(completion_for(
+    f.engine->on_step_completed(as_delivery(completion_for(
         instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "one broke")));
 
     // The scheduled retry of a stopped apply runs as a service in the system
@@ -1089,20 +1105,20 @@ TEST_CASE("a definition that declares compensate still rolls its work back",
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     auto compensation = f.nats.subscribe_buffered(compensation_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_compensate_policy_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_compensate_policy_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
     workflow_instance_repository instances;
     auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     REQUIRE(rows.size() == 1);
-    f.engine->on_step_completed(as_message(completion_for(
+    f.engine->on_step_completed(as_delivery(completion_for(
         instance_id, boost::uuids::to_string(rows.front().id), step_outcome::completed)));
     REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
 
     rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     REQUIRE(rows.size() == 2);
-    f.engine->on_step_completed(as_message(completion_for(
+    f.engine->on_step_completed(as_delivery(completion_for(
         instance_id, boost::uuids::to_string(rows.back().id), step_outcome::failed, "two broke")));
 
     // The rollback is the default policy's answer: the run compensates and the
@@ -1135,7 +1151,7 @@ TEST_CASE("a rollback settles the forward steps it abandoned", "[engine][integra
     auto commands = f.nats.subscribe_buffered(step_subject, step_command_buffer);
     auto compensation = f.nats.subscribe_buffered(compensation_subject, step_command_buffer);
     f.engine->on_start_workflow(
-        as_message(start_for("test_settled_after_rollback_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_settled_after_rollback_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 3, std::chrono::seconds(5)).size() == 3);
 
     workflow_step_repository steps;
@@ -1158,9 +1174,9 @@ TEST_CASE("a rollback settles the forward steps it abandoned", "[engine][integra
     // One step answers, one fails, and the third is still running when the run
     // decides to roll back.
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, id_at(0), step_outcome::completed)));
+        as_delivery(completion_for(instance_id, id_at(0), step_outcome::completed)));
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, id_at(1), step_outcome::failed, "two broke")));
+        as_delivery(completion_for(instance_id, id_at(1), step_outcome::failed, "two broke")));
 
     // The rollback runs to its end, which is where a compensated run is read.
     REQUIRE(wait_for_instance(compensation, instance_id, 1, std::chrono::seconds(5)).size() == 1);
@@ -1170,7 +1186,7 @@ TEST_CASE("a rollback settles the forward steps it abandoned", "[engine][integra
             compensation_id = boost::uuids::to_string(s.id);
     REQUIRE(!compensation_id.empty());
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, compensation_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, compensation_id, step_outcome::completed)));
 
     const auto instance = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(instance.size() == 1);
@@ -1201,7 +1217,7 @@ TEST_CASE("workflow_engine drives a run that belongs to another tenant", "[engin
 
     auto commands = f.nats.subscribe_buffered(step_subject, 1000);
     f.engine->on_start_workflow(
-        as_message(start_for("test_cross_tenant_workflow", run_tenant, instance_id)));
+        as_delivery(start_for("test_cross_tenant_workflow", run_tenant, instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     // The engine holds the system tenant, so the rows it wrote belong to the
@@ -1225,7 +1241,7 @@ TEST_CASE("workflow_engine drives a run that belongs to another tenant", "[engin
 
     const auto first_step_id = boost::uuids::to_string(step_rows.front().id);
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, first_step_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, first_step_id, step_outcome::completed)));
     REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
 
     instance_rows = instances.read_latest(service_ctx, instance_id);
@@ -1239,7 +1255,7 @@ TEST_CASE("workflow_engine drives a run that belongs to another tenant", "[engin
     // The second step is the last, so completing it ends the run.
     const auto second_step_id = boost::uuids::to_string(step_rows.back().id);
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, second_step_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, second_step_id, step_outcome::completed)));
 
     instance_rows = instances.read_latest(service_ctx, instance_id);
     REQUIRE(instance_rows.size() == 1);
@@ -1263,7 +1279,7 @@ TEST_CASE("workflow_engine recovery finds a run in another tenant", "[engine][in
     // whole pass rather than the few messages this case is about.
     auto commands = f.nats.subscribe_buffered(step_subject, 1000);
     f.engine->on_start_workflow(
-        as_message(start_for("test_cross_tenant_recovery_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_cross_tenant_recovery_workflow", f.tenant(), instance_id)));
     const auto first = wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5));
     REQUIRE(first.size() == 1);
     const auto step_id =
@@ -1306,7 +1322,7 @@ TEST_CASE("workflow_query_handler answers for the tenant a request names",
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_step_result_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_step_result_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     // Complete the first step, so the run has a terminal step result to find.
@@ -1315,7 +1331,7 @@ TEST_CASE("workflow_query_handler answers for the tenant a request names",
     REQUIRE(first.size() == 1);
     const auto step_id = boost::uuids::to_string(first.front().id);
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, step_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, step_id, step_outcome::completed)));
 
     // The handler holds the service's own context, which reaches every tenant's
     // steps. What confines the answer is the tenant the request names, and this
@@ -1455,7 +1471,7 @@ TEST_CASE("workflow_query_handler filters runs by type and by target", "[engine]
                 type, f.tenant(), boost::uuids::to_string(boost::uuids::random_generator()()));
             req.target_kind = kind;
             req.target_id = target;
-            f.engine->on_start_workflow(as_message(req));
+            f.engine->on_start_workflow(as_delivery(req));
             return req.instance_id;
         };
     const auto a_first = start("test_filter_workflow_a", "tenant", first);
@@ -1538,7 +1554,7 @@ TEST_CASE("a listed run says when it last did anything", "[engine][integration]"
     auto start = start_for("test_activity_workflow", f.tenant(), instance_id);
     start.target_kind = "tenant";
     start.target_id = target;
-    f.engine->on_start_workflow(as_message(start));
+    f.engine->on_start_workflow(as_delivery(start));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     auto handler = std::make_shared<workflow_query_handler>(
@@ -1580,7 +1596,7 @@ TEST_CASE("a listed run says when it last did anything", "[engine][integration]"
     workflow_step_repository steps;
     const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 1000);
     REQUIRE(rows.size() == 1);
-    f.engine->on_step_completed(as_message(completion_for(
+    f.engine->on_step_completed(as_delivery(completion_for(
         instance_id, boost::uuids::to_string(rows.front().id), step_outcome::completed)));
 
     const auto finished = ask();
@@ -1604,13 +1620,13 @@ TEST_CASE("workflow_handler retries a run only for a permitted caller in its ten
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_handler_retry_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_handler_retry_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
     const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     REQUIRE(rows.size() == 1);
-    f.engine->on_step_completed(as_message(completion_for(
+    f.engine->on_step_completed(as_delivery(completion_for(
         instance_id, boost::uuids::to_string(rows.front().id), step_outcome::failed, "broke")));
 
     auto handler = std::make_shared<workflow_handler>(
@@ -1682,9 +1698,9 @@ TEST_CASE("workflow repositories list one tenant's runs for a tenant and all for
 
     auto commands = f.nats.subscribe_buffered(step_subject, 1000);
     f.engine->on_start_workflow(
-        as_message(start_for("test_list_scope_workflow", run_tenant, run_in_tenant)));
+        as_delivery(start_for("test_list_scope_workflow", run_tenant, run_in_tenant)));
     f.engine->on_start_workflow(
-        as_message(start_for("test_list_scope_workflow", service_tenant, run_in_service)));
+        as_delivery(start_for("test_list_scope_workflow", service_tenant, run_in_service)));
     REQUIRE(wait_for_instance(commands, run_in_tenant, 1, std::chrono::seconds(5)).size() == 1);
     REQUIRE(wait_for_instance(commands, run_in_service, 1, std::chrono::seconds(5)).size() == 1);
 
@@ -1749,7 +1765,7 @@ TEST_CASE("workflow_engine stops a run whose step outlives its deadline", "[engi
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_deadline_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_deadline_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
@@ -1793,7 +1809,7 @@ TEST_CASE("workflow_engine leaves a queued step alone", "[engine][integration]")
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_queued_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_queued_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
@@ -1826,7 +1842,7 @@ TEST_CASE("workflow_engine stops a step no worker ever claimed", "[engine][integ
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_unclaimed_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_unclaimed_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
@@ -1860,7 +1876,7 @@ TEST_CASE("workflow_engine gives a claimed step its whole budget", "[engine][int
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_claimed_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_claimed_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
@@ -1897,7 +1913,7 @@ TEST_CASE("workflow_engine keeps a failure when the step answers later", "[engin
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_late_answer_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_late_answer_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     workflow_step_repository steps;
@@ -1913,7 +1929,7 @@ TEST_CASE("workflow_engine keeps a failure when the step answers later", "[engin
     // the record is the one a person was already shown, and a late report does
     // not un-say it. The retry that follows is what advances the run.
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, step_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, step_id, step_outcome::completed)));
 
     const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     REQUIRE(rows.size() == 1);
@@ -1957,7 +1973,7 @@ TEST_CASE("workflow_engine starts nothing for a definition whose step states no 
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_undeadlined_workflow", f.tenant(), refused_id)));
+        as_delivery(start_for("test_undeadlined_workflow", f.tenant(), refused_id)));
 
     // A step with no deadline is a command the engine would wait on for ever,
     // so the run is refused rather than left for a person to wait on.
@@ -1969,7 +1985,7 @@ TEST_CASE("workflow_engine starts nothing for a definition whose step states no 
     // changed, so the assertion above is about the deadline.
     const auto accepted_id = boost::uuids::to_string(boost::uuids::random_generator()());
     f.engine->on_start_workflow(
-        as_message(start_for("test_deadlined_workflow", f.tenant(), accepted_id)));
+        as_delivery(start_for("test_deadlined_workflow", f.tenant(), accepted_id)));
     CHECK(instances.read_latest(f.h.context(), accepted_id).size() == 1);
     CHECK(wait_for_instance(commands, accepted_id, 1, std::chrono::seconds(5)).size() == 1);
     BOOST_LOG_SEV(lg, debug) << "A definition with no deadline started nothing.";
@@ -1990,7 +2006,7 @@ TEST_CASE("a consumer of two producers waits for both while the producers run to
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_fan_in_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_fan_in_workflow", f.tenant(), instance_id)));
 
     workflow_step_repository steps;
     const auto at_start = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
@@ -2014,14 +2030,14 @@ TEST_CASE("a consumer of two producers waits for both while the producers run to
     // The first producer answers and the consumer still may not run, because it
     // reads the step that has not answered.
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, id_of("book_a"), step_outcome::completed)));
+        as_delivery(completion_for(instance_id, id_of("book_a"), step_outcome::completed)));
     const auto after_one = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     REQUIRE(after_one.size() == 2);
     CHECK_FALSE(named(after_one, "combine"));
 
     // The second answers, and now the consumer runs.
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, id_of("book_b"), step_outcome::completed)));
+        as_delivery(completion_for(instance_id, id_of("book_b"), step_outcome::completed)));
     const auto after_both = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
     REQUIRE(after_both.size() == 3);
     REQUIRE(named(after_both, "combine"));
@@ -2029,7 +2045,7 @@ TEST_CASE("a consumer of two producers waits for both while the producers run to
     // Completing the consumer ends the run, because every step has answered.
     for (const auto& r : after_both)
         if (r.name == "combine")
-            f.engine->on_step_completed(as_message(completion_for(
+            f.engine->on_step_completed(as_delivery(completion_for(
                 instance_id, boost::uuids::to_string(r.id), step_outcome::completed)));
 
     workflow_instance_repository instances;
@@ -2052,7 +2068,7 @@ TEST_CASE("a finished run carries the times it ran and was last touched", "[engi
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_stamped_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_stamped_workflow", f.tenant(), instance_id)));
     const auto dispatched = wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5));
     REQUIRE(dispatched.size() == 1);
 
@@ -2072,7 +2088,7 @@ TEST_CASE("a finished run carries the times it ran and was last touched", "[engi
 
     // Step one answers, which dispatches step two.
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, first_step_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, first_step_id, step_outcome::completed)));
     REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
 
     rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
@@ -2087,7 +2103,7 @@ TEST_CASE("a finished run carries the times it ran and was last touched", "[engi
     const auto second_step_id = boost::uuids::to_string(second->id);
 
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, second_step_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, second_step_id, step_outcome::completed)));
 
     const auto finished = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(finished.size() == 1);
@@ -2137,7 +2153,7 @@ TEST_CASE("a finished run carries the times it ran and was last touched", "[engi
     // The completion is when the run finished, not when its row was last
     // written: a redelivery of the last answer must not move it on.
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, second_step_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, second_step_id, step_outcome::completed)));
     const auto after_duplicate = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(after_duplicate.size() == 1);
     REQUIRE(after_duplicate.front().completed_at.has_value());
@@ -2158,7 +2174,7 @@ TEST_CASE("a live run's activity time moves on while it runs", "[engine][integra
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_activity_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_activity_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     const auto at_start = instances.read_latest(f.h.context(), instance_id);
@@ -2174,7 +2190,7 @@ TEST_CASE("a live run's activity time moves on while it runs", "[engine][integra
     // work: a run that had stopped being touched would keep the older time.
     std::this_thread::sleep_for(std::chrono::milliseconds(1100));
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, first_step_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, first_step_id, step_outcome::completed)));
     REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
 
     const auto now = instances.read_latest(f.h.context(), instance_id);
@@ -2202,7 +2218,7 @@ TEST_CASE("a retry takes the failure's completion time off the step it resumes",
 
     auto commands = f.nats.subscribe_buffered(step_subject, 10);
     f.engine->on_start_workflow(
-        as_message(start_for("test_retry_stamp_workflow", f.tenant(), instance_id)));
+        as_delivery(start_for("test_retry_stamp_workflow", f.tenant(), instance_id)));
     REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
 
     auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
@@ -2210,7 +2226,7 @@ TEST_CASE("a retry takes the failure's completion time off the step it resumes",
     const auto first_step_id = boost::uuids::to_string(rows.front().id);
 
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, first_step_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, first_step_id, step_outcome::completed)));
     REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
 
     rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
@@ -2219,8 +2235,8 @@ TEST_CASE("a retry takes the failure's completion time off the step it resumes",
 
     // The second step fails, and the declaration says stop rather than roll
     // back, so the run stops with the failure recorded.
-    f.engine->on_step_completed(
-        as_message(completion_for(instance_id, second_step_id, step_outcome::failed, "two broke")));
+    f.engine->on_step_completed(as_delivery(
+        completion_for(instance_id, second_step_id, step_outcome::failed, "two broke")));
 
     auto instance = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(instance.size() == 1);
@@ -2254,7 +2270,7 @@ TEST_CASE("a retry takes the failure's completion time off the step it resumes",
     // The second attempt answers, and now the run carries the time it actually
     // finished rather than the time it first stopped.
     f.engine->on_step_completed(
-        as_message(completion_for(instance_id, second_step_id, step_outcome::completed)));
+        as_delivery(completion_for(instance_id, second_step_id, step_outcome::completed)));
     instance = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(instance.size() == 1);
     CHECK(instance.front().state_id == f.instance_states.require("completed"));

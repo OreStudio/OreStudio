@@ -27,6 +27,7 @@
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.service/messaging/book_proposal_mapping.hpp"
@@ -74,8 +75,8 @@ public:
      * apply_failed here, before anything is written, with the line and the
      * reason.
      */
-    void recheck(ores::nats::message msg) {
-        run(msg, [this](const auto& ctx, const std::string& request_id) {
+    void recheck(ores::nats::delivery delivery) {
+        run(std::move(delivery), [this](const auto& ctx, const std::string& request_id) {
             // A run resumed after the request ended has nothing left to
             // check: the request is no longer approved, and its state stands.
             const auto request = ores::inbox::service::approval_lifecycle(ctx).request(request_id);
@@ -99,8 +100,8 @@ public:
     /**
      * @brief Serves refdata.v1.steps.apply_book_changes.
      */
-    void apply(ores::nats::message msg) {
-        run(msg, [this](const auto& ctx, const std::string& request_id) {
+    void apply(ores::nats::delivery delivery) {
+        run(std::move(delivery), [this](const auto& ctx, const std::string& request_id) {
             const auto applied = service::book_proposal_service(ctx).apply(request_id);
             const auto result = apply_step_result(applied);
             // The run stops on a failure and the tell step never runs, so a
@@ -159,16 +160,14 @@ private:
     }
 
     template <typename Body>
-    void run(const ores::nats::message& msg, Body&& body) {
-        // A durable consumer answers every delivery, so each path below states
-        // the outcome; the guard retries a path that returns without deciding.
-        ores::nats::ack_guard ack(msg);
+    void run(ores::nats::delivery delivery, Body&& body) {
+        const auto& msg = delivery.msg();
 
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
         if (!wf) {
             BOOST_LOG_SEV(lg(), ores::logging::warn)
                 << "Ignored a command with no workflow headers: " << msg.subject;
-            ack.reject();
+            std::move(delivery).reject();
             return;
         }
         try {
@@ -181,7 +180,7 @@ private:
                                                                   cached->result_json,
                                                                   cached->error_message,
                                                                   cached->log);
-                ack.accept();
+                std::move(delivery).commit();
                 return;
             }
 
@@ -189,7 +188,7 @@ private:
                 ores::service::messaging::decode<ores::inbox::workflow::apply_step_command>(msg);
             if (!command || command->request_id.empty()) {
                 wf->fail("The command names no request.");
-                ack.accept();
+                std::move(delivery).commit();
                 return;
             }
 
@@ -206,7 +205,7 @@ private:
                 << "Step " << wf->step_id << " failed: " << e.what();
             wf->fail(e.what());
         }
-        ack.accept();
+        std::move(delivery).commit();
     }
 
     ores::nats::service::client& nats_;

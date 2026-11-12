@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -84,8 +85,8 @@ public:
     run_configuration_import_handler(ores::nats::service::client& nats,
                                      ores::nats::service::nats_client outbound_nats);
 
-    void execute(ores::nats::message msg);
-    void rollback(ores::nats::message msg);
+    void execute(ores::nats::delivery delivery);
+    void rollback(ores::nats::delivery delivery);
 
 private:
     ores::nats::service::client& nats_;

@@ -19,6 +19,7 @@
  */
 #include "ores.ore.service/messaging/run_configuration_handler.hpp"
 #include "ores.nats/domain/correlation.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.api/messaging/run_configuration_protocol.hpp"
@@ -171,12 +172,12 @@ run_configuration_import_handler::run_configuration_import_handler(
     : nats_(nats)
     , outbound_nats_(std::move(outbound_nats)) {}
 
-void run_configuration_import_handler::execute(ores::nats::message msg) {
-    ores::nats::ack_guard ack(msg);
+void run_configuration_import_handler::execute(ores::nats::delivery delivery) {
+    const auto& msg = delivery.msg();
 
     auto wf = workflow_step_context::from_message(nats_, msg);
     if (!wf) {
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
@@ -184,7 +185,7 @@ void run_configuration_import_handler::execute(ores::nats::message msg) {
         ores::utility::codec::json::try_read<run_configuration_import_execute_request>(sv);
     if (!req) {
         wf->fail("Failed to decode run_configuration_import_execute_request");
-        ack.accept();
+        std::move(delivery).commit();
         return;
     }
     try {
@@ -198,21 +199,21 @@ void run_configuration_import_handler::execute(ores::nats::message msg) {
             BOOST_LOG_SEV(lg(), warn)
                 << "run configuration import | corr=" << req->correlation_id << " " << warning;
         wf->complete(ores::utility::codec::json::write(result));
-        ack.accept();
+        std::move(delivery).commit();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "run configuration import failed | corr="
                                   << req->correlation_id << " " << e.what();
         wf->fail(e.what());
-        ack.accept();
+        std::move(delivery).commit();
     }
 }
 
-void run_configuration_import_handler::rollback(ores::nats::message msg) {
-    ores::nats::ack_guard ack(msg);
+void run_configuration_import_handler::rollback(ores::nats::delivery delivery) {
+    const auto& msg = delivery.msg();
 
     auto wf = workflow_step_context::from_message(nats_, msg);
     if (!wf) {
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
@@ -220,7 +221,7 @@ void run_configuration_import_handler::rollback(ores::nats::message msg) {
         ores::utility::codec::json::try_read<run_configuration_import_rollback_request>(sv);
     if (!req) {
         wf->fail("Failed to decode run_configuration_import_rollback_request");
-        ack.accept();
+        std::move(delivery).commit();
         return;
     }
     try {
@@ -229,13 +230,13 @@ void run_configuration_import_handler::rollback(ores::nats::message msg) {
         undo_import(
             owners, req->report_definition_id, req->run_document_saved, req->saved_documents);
         wf->complete("{}");
-        ack.accept();
+        std::move(delivery).commit();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
             << "run configuration rollback failed | corr=" << req->correlation_id << " "
             << e.what();
         wf->fail(e.what());
-        ack.accept();
+        std::move(delivery).commit();
     }
 }
 

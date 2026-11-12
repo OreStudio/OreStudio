@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: DCF819F8-23C0-49A7-8317-8D406B12317D
+:END:
+#+title: Task: Own each durable NATS delivery with one RAII transaction
+#+description: Replace the shared ack handle and ack_guard with a move-only delivery that durable handlers settle once, and make cnats leave the message to it.
+#+type: task
+#+level: s1
+#+filetags: :own_each_durable_nats_delivery:sprint_30:v0:
+#+owner: marco
+#+branch: feature/own-each-durable-nats-delivery
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-12
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:229811EA-0DC9-462B-93BA-AB3B438813D3][Own each durable NATS delivery with one RAII transaction]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every durable NATS handler takes an =ores::nats::delivery= and settles it
+once. The transport asks cnats for manual acks, so the delivery is the only
+owner of its cnats message. A subscription is destroyed only after its open
+deliveries end. =ack_guard=, =ack_handle= and the =ack= field of =message= are
+gone.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:229811EA-0DC9-462B-93BA-AB3B438813D3][Own each durable NATS delivery with one RAII transaction]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-12                             |
+
+* Acceptance
+
+- =delivery= is move-only. =commit=, =rollback=, =rollback_after= and =reject=
+  are rvalue-qualified, and the destructor rolls back an unsettled delivery.
+- =keep_alive= reports progress on a thread the delivery owns, and the thread
+  ends before the delivery is settled or freed.
+- Both durable subscribe calls build their options in one function, which sets
+  =ManualAck=.
+- =drain_and_release= waits for the subscription's open deliveries before it
+  destroys the subscription.
+- The 37 durable registrations and their handlers take a delivery. The two
+  core claim handlers lose their no-op guards.
+- Unit tests pin the settlement rules with a fake settler. An integration test
+  keeps a delivery past its callback and settles it on another thread.
+
+* Plan
+
+1. Add =delivery= and =delivery_settler= to =ores.nats/domain=. The keep-alive
+   thread lives behind a private implementation, so the header carries no
+   thread type.
+2. In the client, replace =ack_sink= with =jetstream_settler=, which owns the
+   cnats message and one count of its subscription's open deliveries. The
+   callback builds a delivery for a durable subscription and a plain message
+   for a core one, from a =std::variant= of the two handler types.
+3. Move =serve_step_commands= to deliveries. The claim renewer becomes the
+   delivery's keep-alive.
+4. Migrate the registrations and the handlers with two scripts, one for the
+   registration lambdas and one for the handler signatures, guards and
+   answers. Remove each comment that introduced a removed guard.
+5. Update the pattern pages /Acknowledge What Was Handled/ and /At Least Once
+   Prerequisites/.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ores.nats tests | 65 cases pass | =ores.nats.tests= | dbe9d4d420 |
+| Changed-component suites | 16 suites pass, 1 case skipped | each =<component>.tests= binary | dbe9d4d420 |
+| Acme provisioning | steps 1-12 complete; step 13 fails on the GBP convention defect | =compass shell -f .../how_do_i_provision_the_system_with_acme_corporation_holding_group.ores= | dbe9d4d420 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Shutdown may wait the drain budget for open deliveries | client.cpp | Accepted | The leak log names how many deliveries were still open. The budget stays: a shorter one would free memory a delivery still answers through. |
+| 2 | =on_tick= that waits on the settling thread deadlocks | delivery.hpp | Accepted | The =keep_alive= doc states the rule. |
+| 3 | The renew tick refers to the client | delivery.hpp | Accepted | The =keep_alive= doc states the lifetime chain. |
+| 4 | =msg= refers into a moved delivery | step_command_stream.hpp | Accepted | The subject is copied once at the top and read after the move. |
+| 5 | =rollback_after= repeats =settle= | delivery.cpp | Accepted | =settle= takes the answer as a callable; every settlement uses it. |
+| 6 | A thrown step handler naks at once | step_command_stream.hpp | Declined | A throw costs one delivery from the budget, and the redelivery takes the busy path with its hold-off. |
+
+* Result
+
+=ores::nats::delivery= is the only owner of a durable cnats message. Both
+durable subscribe calls set =ManualAck=, so cnats no longer acknowledges and
+frees the message after the callback. That removes the double free that
+crashed IAM when a step ran on a worker thread. Every durable handler takes a
+delivery and settles it once; a dropped delivery rolls back. A subscription
+waits for its open deliveries before it is destroyed. =ack_guard=,
+=ack_handle= and the =ack= field of =message= are gone.
+
+All acceptance points are met:
+
+- =delivery= is move-only, its settlements are rvalue-qualified, and the
+  destructor rolls back. Eight unit tests pin this with a fake settler.
+- =keep_alive= runs on a thread the delivery owns and stops before the answer.
+- One function builds the durable options and sets =ManualAck=.
+- =drain_and_release= waits for open deliveries.
+- The 37 registrations and their handlers take a delivery.
+- An integration test keeps a delivery past its callback and settles it on
+  another thread.
+
+The build also fixed three IAM guard tests that named accounts the shared
+test database refuses, and the workflow engine tests now pass deliveries.
+
+Provisioning Acme on a fresh database completed steps 1 to 12 with no service
+crash. Step 13 (=generate_trades=) fails on the GBP swap convention defect,
+which the hotfix /Draw only swap indices with one convention/ fixes.
+

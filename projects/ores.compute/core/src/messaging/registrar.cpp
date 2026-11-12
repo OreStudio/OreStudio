@@ -129,7 +129,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto rsh = std::make_shared<report_submit_handler>(nats, ctx, outbound_nats);
     ores::service::messaging::step_routes routes;
     routes.on(ores::reporting::messaging::submit_compute_request::nats_subject,
-              [rsh](ores::nats::message msg) { rsh->submit(std::move(msg)); });
+              [rsh](ores::nats::delivery delivery) { rsh->submit(std::move(delivery)); });
     subs.push_back(
         ores::service::messaging::serve_step_commands(nats, "ores.compute.service", routes));
 

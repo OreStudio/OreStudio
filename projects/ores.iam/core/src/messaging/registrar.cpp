@@ -492,8 +492,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // the server for a consumer; as a core subscription it was discarded, with
     // no trace on either side, and the run expired twenty minutes later.
     ores::service::messaging::step_routes provisioning_routes;
-    provisioning_routes.on(ores::iam::workflow::provision_tenant_step_subject,
-                           [tph](ores::nats::message msg) { tph->provision_step(std::move(msg)); });
+    provisioning_routes.on(
+        ores::iam::workflow::provision_tenant_step_subject,
+        [tph](ores::nats::delivery delivery) { tph->provision_step(std::move(delivery)); });
     subs.push_back(ores::service::messaging::serve_step_commands(nats, qg, provisioning_routes));
     // The account-picture reconcile the attach_photos step runs is also a
     // subject, so an operator can re-run it from a client and a scope that is
@@ -680,7 +681,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         };
         ores::service::messaging::step_routes routes{"from_dq"};
         for (const auto subject : publish_subjects)
-            routes.on(subject, [h](ores::nats::message msg) { h->handle(std::move(msg)); });
+            routes.on(subject,
+                      [h](ores::nats::delivery delivery) { h->handle(std::move(delivery)); });
         subs.push_back(ores::service::messaging::serve_step_commands(nats, qg, routes));
     }
 

@@ -463,7 +463,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_badge_mappings_from_dq_request::nats_subject};
         ores::service::messaging::step_routes routes;
         for (const auto subject : subjects)
-            routes.on(subject, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+            routes.on(subject,
+                      [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
         subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
     }
 

@@ -58,7 +58,8 @@ struct upload_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<upload_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"mimeType", &upload_body::mimeType}, field{"data", &upload_body::data}};
+    return ::ores::utility::codec::field_list{field{"mimeType", &upload_body::mimeType},
+                                              field{"data", &upload_body::data}};
 }
 
 }

@@ -418,7 +418,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.credit_simulati
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<credit_simulation_config_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"name", &credit_simulation_config_key::name},
     };
 }
@@ -432,7 +432,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.credit_simulati
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<credit_simulation_config_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &credit_simulation_config_write::id},
         utility::codec::field{"name", &credit_simulation_config_write::name},
         utility::codec::field{"configuration_id",
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.credit_simulati
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<credit_simulation_config_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &credit_simulation_config_change::write},
         utility::codec::field{"precondition", &credit_simulation_config_change::precondition},
     };
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.credit_simulati
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<credit_simulation_config_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &credit_simulation_config_removal::key},
         utility::codec::field{"precondition", &credit_simulation_config_removal::precondition},
     };
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.credit_simulati
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<credit_simulation_config_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &credit_simulation_config_lookup::key},
         utility::codec::field{"credit_simulation_config",
                               &credit_simulation_config_lookup::credit_simulation_config},
@@ -505,7 +505,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.credit_simulati
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<credit_simulation_configs_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"configuration_id",
                               &credit_simulation_configs_filter::configuration_id},
         utility::codec::field{"id_one_of", &credit_simulation_configs_filter::id_one_of},
@@ -523,7 +523,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.credit_simulati
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<credit_simulation_config_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &credit_simulation_config_event::event_id},
         utility::codec::field{"key", &credit_simulation_config_event::key},
         utility::codec::field{"action", &credit_simulation_config_event::action},
@@ -542,7 +542,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.credit_simulati
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<credit_simulation_config_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"credit_simulation_config",
                               &credit_simulation_config_version_key::credit_simulation_config},
         utility::codec::field{"version", &credit_simulation_config_version_key::version},
@@ -559,7 +559,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.credit_simulati
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<credit_simulation_config_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &credit_simulation_config_versions_filter::version},
         utility::codec::field{"from_version",
                               &credit_simulation_config_versions_filter::from_version},
@@ -577,7 +577,7 @@ wire_fields(std::type_identity<credit_simulation_config_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_credit_simulation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_credit_simulation_configs_request::offset},
         utility::codec::field{"limit", &list_credit_simulation_configs_request::limit},
         utility::codec::field{"order", &list_credit_simulation_configs_request::order},
@@ -596,7 +596,7 @@ wire_fields(std::type_identity<list_credit_simulation_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_credit_simulation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_credit_simulation_configs_response::result},
         utility::codec::field{"configs", &list_credit_simulation_configs_response::configs},
         utility::codec::field{"total", &list_credit_simulation_configs_response::total},
@@ -612,7 +612,7 @@ wire_fields(std::type_identity<list_credit_simulation_configs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_credit_simulation_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_credit_simulation_config_request::key},
     };
 }
@@ -627,7 +627,7 @@ wire_fields(std::type_identity<list_credit_simulation_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_credit_simulation_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_credit_simulation_config_response::result},
         utility::codec::field{"credit_simulation_config",
                               &get_credit_simulation_config_response::credit_simulation_config},
@@ -644,7 +644,7 @@ wire_fields(std::type_identity<get_credit_simulation_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_credit_simulation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_credit_simulation_configs_request::keys},
     };
 }
@@ -659,7 +659,7 @@ wire_fields(std::type_identity<get_many_credit_simulation_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_credit_simulation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_credit_simulation_configs_response::result},
         utility::codec::field{"entries", &get_many_credit_simulation_configs_response::entries},
     };
@@ -674,7 +674,7 @@ wire_fields(std::type_identity<get_many_credit_simulation_configs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_credit_simulation_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_credit_simulation_config_request::change},
         utility::codec::field{"intent", &put_credit_simulation_config_request::intent},
     };
@@ -690,7 +690,7 @@ wire_fields(std::type_identity<get_many_credit_simulation_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_credit_simulation_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_credit_simulation_config_response::result},
         utility::codec::field{"credit_simulation_config",
                               &put_credit_simulation_config_response::credit_simulation_config},
@@ -707,7 +707,7 @@ wire_fields(std::type_identity<put_credit_simulation_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_credit_simulation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_credit_simulation_configs_request::changes},
         utility::codec::field{"intent", &put_many_credit_simulation_configs_request::intent},
     };
@@ -723,7 +723,7 @@ wire_fields(std::type_identity<put_many_credit_simulation_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_credit_simulation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_credit_simulation_configs_response::result},
         utility::codec::field{"configs", &put_many_credit_simulation_configs_response::configs},
     };
@@ -739,7 +739,7 @@ wire_fields(std::type_identity<put_many_credit_simulation_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_credit_simulation_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_credit_simulation_config_request::removal},
         utility::codec::field{"intent", &delete_credit_simulation_config_request::intent},
     };
@@ -755,7 +755,7 @@ wire_fields(std::type_identity<delete_credit_simulation_config_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_credit_simulation_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_credit_simulation_config_response::result},
     };
 }
@@ -770,7 +770,7 @@ wire_fields(std::type_identity<delete_credit_simulation_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_credit_simulation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_credit_simulation_configs_request::removals},
         utility::codec::field{"intent", &delete_many_credit_simulation_configs_request::intent},
     };
@@ -786,7 +786,7 @@ wire_fields(std::type_identity<delete_many_credit_simulation_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_credit_simulation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_credit_simulation_configs_response::result},
     };
 }
@@ -801,7 +801,7 @@ wire_fields(std::type_identity<delete_many_credit_simulation_configs_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_configuration_id_credit_simulation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "configuration_id",
             &list_by_configuration_id_credit_simulation_configs_request::configuration_id},
@@ -828,7 +828,7 @@ wire_fields(std::type_identity<list_by_configuration_id_credit_simulation_config
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_configuration_id_credit_simulation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_configuration_id_credit_simulation_configs_response::result},
         utility::codec::field{
@@ -848,7 +848,7 @@ wire_fields(std::type_identity<list_by_configuration_id_credit_simulation_config
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_credit_simulation_config_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_credit_simulation_config_versions_request::key},
         utility::codec::field{"offset", &list_credit_simulation_config_versions_request::offset},
         utility::codec::field{"limit", &list_credit_simulation_config_versions_request::limit},
@@ -867,7 +867,7 @@ wire_fields(std::type_identity<list_credit_simulation_config_versions_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_credit_simulation_config_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_credit_simulation_config_versions_response::result},
         utility::codec::field{"versions",
                               &list_credit_simulation_config_versions_response::versions},
@@ -885,7 +885,7 @@ wire_fields(std::type_identity<list_credit_simulation_config_versions_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_credit_simulation_config_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_credit_simulation_config_version_request::key},
     };
 }
@@ -900,7 +900,7 @@ wire_fields(std::type_identity<get_credit_simulation_config_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_credit_simulation_config_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_credit_simulation_config_version_response::result},
         utility::codec::field{"version", &get_credit_simulation_config_version_response::version},
     };

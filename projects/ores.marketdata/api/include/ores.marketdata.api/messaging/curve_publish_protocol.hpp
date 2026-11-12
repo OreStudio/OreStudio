@@ -278,7 +278,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_publish_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_publish_key::id},
     };
 }
@@ -292,7 +292,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_publish_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_publish_lookup::key},
         utility::codec::field{"curve_publish", &curve_publish_lookup::curve_publish},
     };
@@ -307,7 +307,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_publishes_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &curve_publishes_filter::request_id},
         utility::codec::field{"party_id", &curve_publishes_filter::party_id},
         utility::codec::field{"bootstrap_config_id", &curve_publishes_filter::bootstrap_config_id},
@@ -328,7 +328,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_publish_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &curve_publish_event::event_id},
         utility::codec::field{"key", &curve_publish_event::key},
         utility::codec::field{"action", &curve_publish_event::action},
@@ -347,7 +347,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_publish_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"curve_publish", &curve_publish_version_key::curve_publish},
         utility::codec::field{"version", &curve_publish_version_key::version},
     };
@@ -362,7 +362,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_publish_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &curve_publish_versions_filter::version},
         utility::codec::field{"from_version", &curve_publish_versions_filter::from_version},
         utility::codec::field{"to_version", &curve_publish_versions_filter::to_version},
@@ -378,7 +378,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_publishes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_curve_publishes_request::offset},
         utility::codec::field{"limit", &list_curve_publishes_request::limit},
         utility::codec::field{"order", &list_curve_publishes_request::order},
@@ -396,7 +396,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_publishes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_publishes_response::result},
         utility::codec::field{"curve_publishes", &list_curve_publishes_response::curve_publishes},
         utility::codec::field{"total", &list_curve_publishes_response::total},
@@ -412,7 +412,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_publish_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_publish_request::key},
     };
 }
@@ -426,7 +426,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_publish_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_publish_response::result},
         utility::codec::field{"curve_publish", &get_curve_publish_response::curve_publish},
     };
@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_curve_publishes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_curve_publishes_request::keys},
     };
 }
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_curve_publishes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_curve_publishes_response::result},
         utility::codec::field{"entries", &get_many_curve_publishes_response::entries},
     };
@@ -471,7 +471,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.curve_publishe
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_request_id_curve_publishes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id",
                               &list_by_request_id_curve_publishes_request::request_id},
         utility::codec::field{"scope", &list_by_request_id_curve_publishes_request::scope},
@@ -492,7 +492,7 @@ wire_fields(std::type_identity<list_by_request_id_curve_publishes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_request_id_curve_publishes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_request_id_curve_publishes_response::result},
         utility::codec::field{"curve_publishes",
                               &list_by_request_id_curve_publishes_response::curve_publishes},
@@ -509,7 +509,7 @@ wire_fields(std::type_identity<list_by_request_id_curve_publishes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_publish_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_curve_publish_versions_request::key},
         utility::codec::field{"offset", &list_curve_publish_versions_request::offset},
         utility::codec::field{"limit", &list_curve_publish_versions_request::limit},
@@ -527,7 +527,7 @@ wire_fields(std::type_identity<list_by_request_id_curve_publishes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_publish_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_publish_versions_response::result},
         utility::codec::field{"versions", &list_curve_publish_versions_response::versions},
         utility::codec::field{"total", &list_curve_publish_versions_response::total},
@@ -543,7 +543,7 @@ wire_fields(std::type_identity<list_by_request_id_curve_publishes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_publish_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_publish_version_request::key},
     };
 }
@@ -557,7 +557,7 @@ wire_fields(std::type_identity<list_by_request_id_curve_publishes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_publish_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_publish_version_response::result},
         utility::codec::field{"version", &get_curve_publish_version_response::version},
     };

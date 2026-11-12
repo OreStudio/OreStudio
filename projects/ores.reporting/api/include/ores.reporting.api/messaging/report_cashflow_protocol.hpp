@@ -321,7 +321,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_cashflow_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &report_cashflow_key::id},
     };
 }
@@ -335,7 +335,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_cashflow_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &report_cashflow_write::id},
         utility::codec::field{"party_id", &report_cashflow_write::party_id},
         utility::codec::field{"report_instance_id", &report_cashflow_write::report_instance_id},
@@ -367,7 +367,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_cashflow_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &report_cashflow_change::write},
         utility::codec::field{"precondition", &report_cashflow_change::precondition},
     };
@@ -382,7 +382,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_cashflow_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &report_cashflow_removal::key},
         utility::codec::field{"precondition", &report_cashflow_removal::precondition},
     };
@@ -397,7 +397,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_cashflow_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &report_cashflow_lookup::key},
         utility::codec::field{"report_cashflow", &report_cashflow_lookup::report_cashflow},
     };
@@ -412,7 +412,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_cashflows_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"report_instance_id", &report_cashflows_filter::report_instance_id},
         utility::codec::field{"family", &report_cashflows_filter::family},
         utility::codec::field{"subject_id", &report_cashflows_filter::subject_id},
@@ -439,7 +439,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_cashflow_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &report_cashflow_event::event_id},
         utility::codec::field{"key", &report_cashflow_event::key},
         utility::codec::field{"action", &report_cashflow_event::action},
@@ -458,7 +458,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_report_cashflows_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_report_cashflows_request::offset},
         utility::codec::field{"limit", &list_report_cashflows_request::limit},
         utility::codec::field{"order", &list_report_cashflows_request::order},
@@ -476,7 +476,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_report_cashflows_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_report_cashflows_response::result},
         utility::codec::field{"cashflows", &list_report_cashflows_response::cashflows},
         utility::codec::field{"total", &list_report_cashflows_response::total},
@@ -492,7 +492,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_report_cashflow_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_report_cashflow_request::key},
     };
 }
@@ -506,7 +506,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_report_cashflow_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_report_cashflow_response::result},
         utility::codec::field{"report_cashflow", &get_report_cashflow_response::report_cashflow},
     };
@@ -521,7 +521,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_report_cashflows_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_report_cashflows_request::keys},
     };
 }
@@ -535,7 +535,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_report_cashflows_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_report_cashflows_response::result},
         utility::codec::field{"entries", &get_many_report_cashflows_response::entries},
     };
@@ -550,7 +550,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_report_cashflow_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_report_cashflow_request::change},
         utility::codec::field{"intent", &put_report_cashflow_request::intent},
     };
@@ -565,7 +565,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_report_cashflow_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_report_cashflow_response::result},
         utility::codec::field{"report_cashflow", &put_report_cashflow_response::report_cashflow},
     };
@@ -580,7 +580,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_report_cashflows_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_report_cashflows_request::changes},
         utility::codec::field{"intent", &put_many_report_cashflows_request::intent},
     };
@@ -595,7 +595,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_report_cashflows_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_report_cashflows_response::result},
         utility::codec::field{"cashflows", &put_many_report_cashflows_response::cashflows},
     };
@@ -610,7 +610,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_report_cashflow_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_report_cashflow_request::removal},
         utility::codec::field{"intent", &delete_report_cashflow_request::intent},
     };
@@ -625,7 +625,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_report_cashflow_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_report_cashflow_response::result},
     };
 }
@@ -639,7 +639,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_report_cashflows_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_report_cashflows_request::removals},
         utility::codec::field{"intent", &delete_many_report_cashflows_request::intent},
     };
@@ -655,7 +655,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_cashflow
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_report_cashflows_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_report_cashflows_response::result},
     };
 }

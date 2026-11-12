@@ -256,7 +256,7 @@ struct clear_notifications_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_argument_value>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"name", &notification_argument_value::name},
         ::ores::utility::codec::field{"value", &notification_argument_value::value},
     };
@@ -271,7 +271,7 @@ struct clear_notifications_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inbox_notification>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id", &inbox_notification::id},
         ::ores::utility::codec::field{"kind_code", &inbox_notification::kind_code},
         ::ores::utility::codec::field{"message_key", &inbox_notification::message_key},
@@ -293,7 +293,7 @@ struct clear_notifications_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_notification_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"kind_code", &raise_notification_request::kind_code},
         ::ores::utility::codec::field{"link_route", &raise_notification_request::link_route},
         ::ores::utility::codec::field{"link_id", &raise_notification_request::link_id},
@@ -313,7 +313,7 @@ struct clear_notifications_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_notification_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &raise_notification_response::result},
         ::ores::utility::codec::field{"notification_id",
                                       &raise_notification_response::notification_id},
@@ -331,7 +331,7 @@ struct clear_notifications_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_my_notifications_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"unread_only", &list_my_notifications_request::unread_only},
         ::ores::utility::codec::field{"offset", &list_my_notifications_request::offset},
         ::ores::utility::codec::field{"limit", &list_my_notifications_request::limit},
@@ -347,7 +347,7 @@ struct clear_notifications_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_my_notifications_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &list_my_notifications_response::result},
         ::ores::utility::codec::field{"notifications",
                                       &list_my_notifications_response::notifications},
@@ -364,7 +364,7 @@ struct clear_notifications_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<count_unread_notifications_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -376,7 +376,7 @@ struct clear_notifications_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<count_unread_notifications_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &count_unread_notifications_response::result},
         ::ores::utility::codec::field{"unread", &count_unread_notifications_response::unread},
     };
@@ -391,7 +391,7 @@ struct clear_notifications_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<mark_notifications_read_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"notification_ids",
                                       &mark_notifications_read_request::notification_ids},
     };
@@ -406,7 +406,7 @@ struct clear_notifications_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<mark_notifications_read_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &mark_notifications_read_response::result},
         ::ores::utility::codec::field{"marked", &mark_notifications_read_response::marked},
     };
@@ -421,7 +421,7 @@ struct clear_notifications_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<clear_notifications_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"notification_ids",
                                       &clear_notifications_request::notification_ids},
     };
@@ -436,7 +436,7 @@ struct clear_notifications_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<clear_notifications_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &clear_notifications_response::result},
         ::ores::utility::codec::field{"cleared", &clear_notifications_response::cleared},
     };

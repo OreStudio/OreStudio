@@ -365,7 +365,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.entity_classifica
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_classification_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &entity_classification_key::code},
         utility::codec::field{"coding_scheme_code", &entity_classification_key::coding_scheme_code},
     };
@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.entity_classifica
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_classification_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &entity_classification_write::code},
         utility::codec::field{"coding_scheme_code",
                               &entity_classification_write::coding_scheme_code},
@@ -398,7 +398,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.entity_classifica
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_classification_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &entity_classification_change::write},
         utility::codec::field{"precondition", &entity_classification_change::precondition},
     };
@@ -413,7 +413,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.entity_classifica
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_classification_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &entity_classification_removal::key},
         utility::codec::field{"precondition", &entity_classification_removal::precondition},
     };
@@ -428,7 +428,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.entity_classifica
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_classification_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &entity_classification_lookup::key},
         utility::codec::field{"entity_classification",
                               &entity_classification_lookup::entity_classification},
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.entity_classifica
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_classification_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &entity_classification_event::event_id},
         utility::codec::field{"key", &entity_classification_event::key},
         utility::codec::field{"action", &entity_classification_event::action},
@@ -463,7 +463,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.entity_classifica
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_classification_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"entity_classification",
                               &entity_classification_version_key::entity_classification},
         utility::codec::field{"version", &entity_classification_version_key::version},
@@ -480,7 +480,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.entity_classifica
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<entity_classification_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &entity_classification_versions_filter::version},
         utility::codec::field{"from_version", &entity_classification_versions_filter::from_version},
         utility::codec::field{"to_version", &entity_classification_versions_filter::to_version},
@@ -496,7 +496,7 @@ wire_fields(std::type_identity<entity_classification_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_entity_classifications_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_entity_classifications_request::offset},
         utility::codec::field{"limit", &list_entity_classifications_request::limit},
         utility::codec::field{"order", &list_entity_classifications_request::order},
@@ -513,7 +513,7 @@ wire_fields(std::type_identity<entity_classification_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_entity_classifications_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_entity_classifications_response::result},
         utility::codec::field{"classifications",
                               &list_entity_classifications_response::classifications},
@@ -530,7 +530,7 @@ wire_fields(std::type_identity<entity_classification_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_entity_classification_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_entity_classification_request::key},
     };
 }
@@ -544,7 +544,7 @@ wire_fields(std::type_identity<entity_classification_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_entity_classification_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_entity_classification_response::result},
         utility::codec::field{"entity_classification",
                               &get_entity_classification_response::entity_classification},
@@ -561,7 +561,7 @@ wire_fields(std::type_identity<entity_classification_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_entity_classifications_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_entity_classifications_request::keys},
     };
 }
@@ -576,7 +576,7 @@ wire_fields(std::type_identity<get_many_entity_classifications_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_entity_classifications_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_entity_classifications_response::result},
         utility::codec::field{"entries", &get_many_entity_classifications_response::entries},
     };
@@ -591,7 +591,7 @@ wire_fields(std::type_identity<get_many_entity_classifications_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_entity_classification_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_entity_classification_request::change},
         utility::codec::field{"intent", &put_entity_classification_request::intent},
     };
@@ -606,7 +606,7 @@ wire_fields(std::type_identity<get_many_entity_classifications_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_entity_classification_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_entity_classification_response::result},
         utility::codec::field{"entity_classification",
                               &put_entity_classification_response::entity_classification},
@@ -623,7 +623,7 @@ wire_fields(std::type_identity<get_many_entity_classifications_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_entity_classifications_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_entity_classifications_request::changes},
         utility::codec::field{"intent", &put_many_entity_classifications_request::intent},
     };
@@ -639,7 +639,7 @@ wire_fields(std::type_identity<put_many_entity_classifications_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_entity_classifications_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_entity_classifications_response::result},
         utility::codec::field{"classifications",
                               &put_many_entity_classifications_response::classifications},
@@ -655,7 +655,7 @@ wire_fields(std::type_identity<put_many_entity_classifications_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_entity_classification_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_entity_classification_request::removal},
         utility::codec::field{"intent", &delete_entity_classification_request::intent},
     };
@@ -671,7 +671,7 @@ wire_fields(std::type_identity<put_many_entity_classifications_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_entity_classification_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_entity_classification_response::result},
     };
 }
@@ -686,7 +686,7 @@ wire_fields(std::type_identity<delete_entity_classification_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_entity_classifications_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_entity_classifications_request::removals},
         utility::codec::field{"intent", &delete_many_entity_classifications_request::intent},
     };
@@ -702,7 +702,7 @@ wire_fields(std::type_identity<delete_many_entity_classifications_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_entity_classifications_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_entity_classifications_response::result},
     };
 }
@@ -717,7 +717,7 @@ wire_fields(std::type_identity<delete_many_entity_classifications_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_entity_classification_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_entity_classification_versions_request::key},
         utility::codec::field{"offset", &list_entity_classification_versions_request::offset},
         utility::codec::field{"limit", &list_entity_classification_versions_request::limit},
@@ -736,7 +736,7 @@ wire_fields(std::type_identity<list_entity_classification_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_entity_classification_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_entity_classification_versions_response::result},
         utility::codec::field{"versions", &list_entity_classification_versions_response::versions},
         utility::codec::field{"total", &list_entity_classification_versions_response::total},
@@ -753,7 +753,7 @@ wire_fields(std::type_identity<list_entity_classification_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_entity_classification_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_entity_classification_version_request::key},
     };
 }
@@ -768,7 +768,7 @@ wire_fields(std::type_identity<get_entity_classification_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_entity_classification_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_entity_classification_version_response::result},
         utility::codec::field{"version", &get_entity_classification_version_response::version},
     };

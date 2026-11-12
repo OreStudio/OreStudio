@@ -78,7 +78,7 @@ struct bond_formula_based_leg_data {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_formula_based_leg_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"index", &bond_formula_based_leg_data::index},
         utility::codec::field{"is_in_arrears", &bond_formula_based_leg_data::is_in_arrears},
         utility::codec::field{"fixing_days", &bond_formula_based_leg_data::fixing_days},

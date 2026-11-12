@@ -114,15 +114,16 @@ struct entity_event_notification final {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_event_notification>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"event_id", &entity_event_notification::event_id},
-                      field{"entity", &entity_event_notification::entity},
-                      field{"key", &entity_event_notification::key},
-                      field{"action", &entity_event_notification::action},
-                      field{"version", &entity_event_notification::version},
-                      field{"occurred_at", &entity_event_notification::occurred_at},
-                      field{"correlation_id", &entity_event_notification::correlation_id},
-                      field{"tenant_id", &entity_event_notification::tenant_id},
-                      field{"party_id", &entity_event_notification::party_id}};
+    return ::ores::utility::codec::field_list{
+        field{"event_id", &entity_event_notification::event_id},
+        field{"entity", &entity_event_notification::entity},
+        field{"key", &entity_event_notification::key},
+        field{"action", &entity_event_notification::action},
+        field{"version", &entity_event_notification::version},
+        field{"occurred_at", &entity_event_notification::occurred_at},
+        field{"correlation_id", &entity_event_notification::correlation_id},
+        field{"tenant_id", &entity_event_notification::tenant_id},
+        field{"party_id", &entity_event_notification::party_id}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<entity_event_notification>(),

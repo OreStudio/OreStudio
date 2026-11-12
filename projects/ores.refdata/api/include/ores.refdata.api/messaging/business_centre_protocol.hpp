@@ -366,7 +366,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_centre_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &business_centre_key::code},
     };
 }
@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_centre_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &business_centre_write::code},
         utility::codec::field{"source", &business_centre_write::source},
         utility::codec::field{"description", &business_centre_write::description},
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_centre_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &business_centre_change::write},
         utility::codec::field{"precondition", &business_centre_change::precondition},
     };
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_centre_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &business_centre_removal::key},
         utility::codec::field{"precondition", &business_centre_removal::precondition},
     };
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_centre_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &business_centre_lookup::key},
         utility::codec::field{"business_centre", &business_centre_lookup::business_centre},
     };
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_centres_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &business_centres_filter::code_one_of},
     };
 }
@@ -458,7 +458,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_centre_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &business_centre_event::event_id},
         utility::codec::field{"key", &business_centre_event::key},
         utility::codec::field{"action", &business_centre_event::action},
@@ -477,7 +477,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_centre_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"business_centre", &business_centre_version_key::business_centre},
         utility::codec::field{"version", &business_centre_version_key::version},
     };
@@ -492,7 +492,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<business_centre_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &business_centre_versions_filter::version},
         utility::codec::field{"from_version", &business_centre_versions_filter::from_version},
         utility::codec::field{"to_version", &business_centre_versions_filter::to_version},
@@ -508,7 +508,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_business_centres_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_business_centres_request::offset},
         utility::codec::field{"limit", &list_business_centres_request::limit},
         utility::codec::field{"order", &list_business_centres_request::order},
@@ -526,7 +526,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_business_centres_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_business_centres_response::result},
         utility::codec::field{"centres", &list_business_centres_response::centres},
         utility::codec::field{"total", &list_business_centres_response::total},
@@ -542,7 +542,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_business_centre_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_business_centre_request::key},
     };
 }
@@ -556,7 +556,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_business_centre_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_business_centre_response::result},
         utility::codec::field{"business_centre", &get_business_centre_response::business_centre},
     };
@@ -571,7 +571,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_business_centres_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_business_centres_request::keys},
     };
 }
@@ -585,7 +585,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_business_centres_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_business_centres_response::result},
         utility::codec::field{"entries", &get_many_business_centres_response::entries},
     };
@@ -600,7 +600,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_business_centre_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_business_centre_request::change},
         utility::codec::field{"intent", &put_business_centre_request::intent},
     };
@@ -615,7 +615,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_business_centre_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_business_centre_response::result},
         utility::codec::field{"business_centre", &put_business_centre_response::business_centre},
     };
@@ -630,7 +630,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_business_centres_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_business_centres_request::changes},
         utility::codec::field{"intent", &put_many_business_centres_request::intent},
     };
@@ -645,7 +645,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_business_centres_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_business_centres_response::result},
         utility::codec::field{"centres", &put_many_business_centres_response::centres},
     };
@@ -660,7 +660,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_business_centre_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_business_centre_request::removal},
         utility::codec::field{"intent", &delete_business_centre_request::intent},
     };
@@ -675,7 +675,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_business_centre_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_business_centre_response::result},
     };
 }
@@ -689,7 +689,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_business_centres_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_business_centres_request::removals},
         utility::codec::field{"intent", &delete_many_business_centres_request::intent},
     };
@@ -705,7 +705,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_centres.
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_business_centres_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_business_centres_response::result},
     };
 }
@@ -720,7 +720,7 @@ wire_fields(std::type_identity<delete_many_business_centres_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_business_centre_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_business_centre_versions_request::key},
         utility::codec::field{"offset", &list_business_centre_versions_request::offset},
         utility::codec::field{"limit", &list_business_centre_versions_request::limit},
@@ -739,7 +739,7 @@ wire_fields(std::type_identity<list_business_centre_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_business_centre_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_business_centre_versions_response::result},
         utility::codec::field{"versions", &list_business_centre_versions_response::versions},
         utility::codec::field{"total", &list_business_centre_versions_response::total},
@@ -755,7 +755,7 @@ wire_fields(std::type_identity<list_business_centre_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_business_centre_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_business_centre_version_request::key},
     };
 }
@@ -769,7 +769,7 @@ wire_fields(std::type_identity<list_business_centre_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_business_centre_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_business_centre_version_response::result},
         utility::codec::field{"version", &get_business_centre_version_response::version},
     };

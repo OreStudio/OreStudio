@@ -626,7 +626,7 @@ struct trade_generation_assignment {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_assignment>) {
     using ::ores::utility::codec::field;
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         field{"party", &trade_generation_assignment::party},
         field{"name", &trade_generation_assignment::name},
         field{"description", &trade_generation_assignment::description},
@@ -656,7 +656,8 @@ struct trade_generation_step_arguments {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_step_arguments>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"configs", &trade_generation_step_arguments::configs}};
+    return ::ores::utility::codec::field_list{
+        field{"configs", &trade_generation_step_arguments::configs}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<trade_generation_step_arguments>(),

@@ -364,7 +364,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trading_account_type_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &trading_account_type_key::code},
         utility::codec::field{"coding_scheme_code", &trading_account_type_key::coding_scheme_code},
     };
@@ -379,7 +379,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trading_account_type_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &trading_account_type_write::code},
         utility::codec::field{"coding_scheme_code",
                               &trading_account_type_write::coding_scheme_code},
@@ -397,7 +397,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trading_account_type_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &trading_account_type_change::write},
         utility::codec::field{"precondition", &trading_account_type_change::precondition},
     };
@@ -412,7 +412,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trading_account_type_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &trading_account_type_removal::key},
         utility::codec::field{"precondition", &trading_account_type_removal::precondition},
     };
@@ -427,7 +427,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trading_account_type_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &trading_account_type_lookup::key},
         utility::codec::field{"trading_account_type",
                               &trading_account_type_lookup::trading_account_type},
@@ -443,7 +443,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trading_account_type_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &trading_account_type_event::event_id},
         utility::codec::field{"key", &trading_account_type_event::key},
         utility::codec::field{"action", &trading_account_type_event::action},
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trading_account_type_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trading_account_type",
                               &trading_account_type_version_key::trading_account_type},
         utility::codec::field{"version", &trading_account_type_version_key::version},
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trading_account_type_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &trading_account_type_versions_filter::version},
         utility::codec::field{"from_version", &trading_account_type_versions_filter::from_version},
         utility::codec::field{"to_version", &trading_account_type_versions_filter::to_version},
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_trading_account_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_trading_account_types_request::offset},
         utility::codec::field{"limit", &list_trading_account_types_request::limit},
         utility::codec::field{"order", &list_trading_account_types_request::order},
@@ -511,7 +511,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_trading_account_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_trading_account_types_response::result},
         utility::codec::field{"types", &list_trading_account_types_response::types},
         utility::codec::field{"total", &list_trading_account_types_response::total},
@@ -527,7 +527,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_trading_account_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_trading_account_type_request::key},
     };
 }
@@ -541,7 +541,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_trading_account_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_trading_account_type_response::result},
         utility::codec::field{"trading_account_type",
                               &get_trading_account_type_response::trading_account_type},
@@ -558,7 +558,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.trading_account_t
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_trading_account_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_trading_account_types_request::keys},
     };
 }
@@ -573,7 +573,7 @@ wire_fields(std::type_identity<get_many_trading_account_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_trading_account_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_trading_account_types_response::result},
         utility::codec::field{"entries", &get_many_trading_account_types_response::entries},
     };
@@ -588,7 +588,7 @@ wire_fields(std::type_identity<get_many_trading_account_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_trading_account_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_trading_account_type_request::change},
         utility::codec::field{"intent", &put_trading_account_type_request::intent},
     };
@@ -603,7 +603,7 @@ wire_fields(std::type_identity<get_many_trading_account_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_trading_account_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_trading_account_type_response::result},
         utility::codec::field{"trading_account_type",
                               &put_trading_account_type_response::trading_account_type},
@@ -620,7 +620,7 @@ wire_fields(std::type_identity<get_many_trading_account_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_trading_account_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_trading_account_types_request::changes},
         utility::codec::field{"intent", &put_many_trading_account_types_request::intent},
     };
@@ -636,7 +636,7 @@ wire_fields(std::type_identity<put_many_trading_account_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_trading_account_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_trading_account_types_response::result},
         utility::codec::field{"types", &put_many_trading_account_types_response::types},
     };
@@ -651,7 +651,7 @@ wire_fields(std::type_identity<put_many_trading_account_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_trading_account_type_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_trading_account_type_request::removal},
         utility::codec::field{"intent", &delete_trading_account_type_request::intent},
     };
@@ -666,7 +666,7 @@ wire_fields(std::type_identity<put_many_trading_account_types_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_trading_account_type_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_trading_account_type_response::result},
     };
 }
@@ -681,7 +681,7 @@ wire_fields(std::type_identity<put_many_trading_account_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_trading_account_types_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_trading_account_types_request::removals},
         utility::codec::field{"intent", &delete_many_trading_account_types_request::intent},
     };
@@ -697,7 +697,7 @@ wire_fields(std::type_identity<delete_many_trading_account_types_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_trading_account_types_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_trading_account_types_response::result},
     };
 }
@@ -712,7 +712,7 @@ wire_fields(std::type_identity<delete_many_trading_account_types_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_trading_account_type_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_trading_account_type_versions_request::key},
         utility::codec::field{"offset", &list_trading_account_type_versions_request::offset},
         utility::codec::field{"limit", &list_trading_account_type_versions_request::limit},
@@ -731,7 +731,7 @@ wire_fields(std::type_identity<list_trading_account_type_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_trading_account_type_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_trading_account_type_versions_response::result},
         utility::codec::field{"versions", &list_trading_account_type_versions_response::versions},
         utility::codec::field{"total", &list_trading_account_type_versions_response::total},
@@ -748,7 +748,7 @@ wire_fields(std::type_identity<list_trading_account_type_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_trading_account_type_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_trading_account_type_version_request::key},
     };
 }
@@ -763,7 +763,7 @@ wire_fields(std::type_identity<get_trading_account_type_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_trading_account_type_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_trading_account_type_version_response::result},
         utility::codec::field{"version", &get_trading_account_type_version_response::version},
     };

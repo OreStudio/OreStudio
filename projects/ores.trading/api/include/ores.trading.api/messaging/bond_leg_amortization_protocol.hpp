@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_leg_amortiza
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_leg_amortization_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &bond_leg_amortization_key::trade_id},
         utility::codec::field{"leg_role", &bond_leg_amortization_key::leg_role},
         utility::codec::field{"leg_number", &bond_leg_amortization_key::leg_number},
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_leg_amortiza
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_leg_amortization_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &bond_leg_amortization_write::trade_id},
         utility::codec::field{"leg_role", &bond_leg_amortization_write::leg_role},
         utility::codec::field{"leg_number", &bond_leg_amortization_write::leg_number},
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_leg_amortiza
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_leg_amortization_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &bond_leg_amortization_change::write},
         utility::codec::field{"precondition", &bond_leg_amortization_change::precondition},
     };
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_leg_amortiza
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_leg_amortization_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &bond_leg_amortization_removal::key},
         utility::codec::field{"precondition", &bond_leg_amortization_removal::precondition},
     };
@@ -485,7 +485,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_leg_amortiza
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_leg_amortization_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &bond_leg_amortization_lookup::key},
         utility::codec::field{"bond_leg_amortization",
                               &bond_leg_amortization_lookup::bond_leg_amortization},
@@ -501,7 +501,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_leg_amortiza
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_leg_amortizations_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &bond_leg_amortizations_filter::trade_id},
         utility::codec::field{"trade_id_one_of", &bond_leg_amortizations_filter::trade_id_one_of},
     };
@@ -516,7 +516,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_leg_amortiza
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_leg_amortization_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &bond_leg_amortization_event::event_id},
         utility::codec::field{"key", &bond_leg_amortization_event::key},
         utility::codec::field{"action", &bond_leg_amortization_event::action},
@@ -535,7 +535,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_leg_amortiza
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_leg_amortization_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"bond_leg_amortization",
                               &bond_leg_amortization_version_key::bond_leg_amortization},
         utility::codec::field{"version", &bond_leg_amortization_version_key::version},
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_leg_amortiza
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<bond_leg_amortization_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &bond_leg_amortization_versions_filter::version},
         utility::codec::field{"from_version", &bond_leg_amortization_versions_filter::from_version},
         utility::codec::field{"to_version", &bond_leg_amortization_versions_filter::to_version},
@@ -568,7 +568,7 @@ wire_fields(std::type_identity<bond_leg_amortization_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bond_leg_amortizations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_bond_leg_amortizations_request::offset},
         utility::codec::field{"limit", &list_bond_leg_amortizations_request::limit},
         utility::codec::field{"order", &list_bond_leg_amortizations_request::order},
@@ -586,7 +586,7 @@ wire_fields(std::type_identity<bond_leg_amortization_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bond_leg_amortizations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_bond_leg_amortizations_response::result},
         utility::codec::field{"bond_leg_amortizations",
                               &list_bond_leg_amortizations_response::bond_leg_amortizations},
@@ -603,7 +603,7 @@ wire_fields(std::type_identity<bond_leg_amortization_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bond_leg_amortization_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_bond_leg_amortization_request::key},
     };
 }
@@ -617,7 +617,7 @@ wire_fields(std::type_identity<bond_leg_amortization_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bond_leg_amortization_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_bond_leg_amortization_response::result},
         utility::codec::field{"bond_leg_amortization",
                               &get_bond_leg_amortization_response::bond_leg_amortization},
@@ -634,7 +634,7 @@ wire_fields(std::type_identity<bond_leg_amortization_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_bond_leg_amortizations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_bond_leg_amortizations_request::keys},
     };
 }
@@ -649,7 +649,7 @@ wire_fields(std::type_identity<get_many_bond_leg_amortizations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_bond_leg_amortizations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_bond_leg_amortizations_response::result},
         utility::codec::field{"entries", &get_many_bond_leg_amortizations_response::entries},
     };
@@ -664,7 +664,7 @@ wire_fields(std::type_identity<get_many_bond_leg_amortizations_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_bond_leg_amortization_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_bond_leg_amortization_request::change},
         utility::codec::field{"intent", &put_bond_leg_amortization_request::intent},
     };
@@ -679,7 +679,7 @@ wire_fields(std::type_identity<get_many_bond_leg_amortizations_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_bond_leg_amortization_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_bond_leg_amortization_response::result},
         utility::codec::field{"bond_leg_amortization",
                               &put_bond_leg_amortization_response::bond_leg_amortization},
@@ -696,7 +696,7 @@ wire_fields(std::type_identity<get_many_bond_leg_amortizations_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_bond_leg_amortizations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_bond_leg_amortizations_request::changes},
         utility::codec::field{"intent", &put_many_bond_leg_amortizations_request::intent},
     };
@@ -712,7 +712,7 @@ wire_fields(std::type_identity<put_many_bond_leg_amortizations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_bond_leg_amortizations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_bond_leg_amortizations_response::result},
         utility::codec::field{"bond_leg_amortizations",
                               &put_many_bond_leg_amortizations_response::bond_leg_amortizations},
@@ -728,7 +728,7 @@ wire_fields(std::type_identity<put_many_bond_leg_amortizations_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_bond_leg_amortization_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_bond_leg_amortization_request::removal},
         utility::codec::field{"intent", &delete_bond_leg_amortization_request::intent},
     };
@@ -744,7 +744,7 @@ wire_fields(std::type_identity<put_many_bond_leg_amortizations_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_bond_leg_amortization_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_bond_leg_amortization_response::result},
     };
 }
@@ -759,7 +759,7 @@ wire_fields(std::type_identity<delete_bond_leg_amortization_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_bond_leg_amortizations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_bond_leg_amortizations_request::removals},
         utility::codec::field{"intent", &delete_many_bond_leg_amortizations_request::intent},
     };
@@ -775,7 +775,7 @@ wire_fields(std::type_identity<delete_many_bond_leg_amortizations_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_bond_leg_amortizations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_bond_leg_amortizations_response::result},
     };
 }
@@ -790,7 +790,7 @@ wire_fields(std::type_identity<delete_many_bond_leg_amortizations_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_bond_leg_amortizations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id",
                               &list_by_trade_id_bond_leg_amortizations_request::trade_id},
         utility::codec::field{"scope", &list_by_trade_id_bond_leg_amortizations_request::scope},
@@ -811,7 +811,7 @@ wire_fields(std::type_identity<list_by_trade_id_bond_leg_amortizations_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_bond_leg_amortizations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_trade_id_bond_leg_amortizations_response::result},
         utility::codec::field{
             "bond_leg_amortizations",
@@ -830,7 +830,7 @@ wire_fields(std::type_identity<list_by_trade_id_bond_leg_amortizations_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_bond_leg_amortization_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_bond_leg_amortization_versions_request::key},
         utility::codec::field{"offset", &list_bond_leg_amortization_versions_request::offset},
         utility::codec::field{"limit", &list_bond_leg_amortization_versions_request::limit},
@@ -849,7 +849,7 @@ wire_fields(std::type_identity<list_bond_leg_amortization_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_bond_leg_amortization_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_bond_leg_amortization_versions_response::result},
         utility::codec::field{"versions", &list_bond_leg_amortization_versions_response::versions},
         utility::codec::field{"total", &list_bond_leg_amortization_versions_response::total},
@@ -866,7 +866,7 @@ wire_fields(std::type_identity<list_bond_leg_amortization_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_bond_leg_amortization_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_bond_leg_amortization_version_request::key},
     };
 }
@@ -881,7 +881,7 @@ wire_fields(std::type_identity<get_bond_leg_amortization_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_bond_leg_amortization_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_bond_leg_amortization_version_response::result},
         utility::codec::field{"version", &get_bond_leg_amortization_version_response::version},
     };

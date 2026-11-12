@@ -363,7 +363,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_status_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"status", &account_status_key::status},
     };
 }
@@ -377,7 +377,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_status_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"status", &account_status_write::status},
         utility::codec::field{"name", &account_status_write::name},
         utility::codec::field{"description", &account_status_write::description},
@@ -394,7 +394,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_status_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &account_status_change::write},
         utility::codec::field{"precondition", &account_status_change::precondition},
     };
@@ -409,7 +409,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_status_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &account_status_removal::key},
         utility::codec::field{"precondition", &account_status_removal::precondition},
     };
@@ -424,7 +424,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_status_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &account_status_lookup::key},
         utility::codec::field{"account_status", &account_status_lookup::account_status},
     };
@@ -439,7 +439,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_statuses_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"status_one_of", &account_statuses_filter::status_one_of},
     };
 }
@@ -453,7 +453,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_status_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &account_status_event::event_id},
         utility::codec::field{"key", &account_status_event::key},
         utility::codec::field{"action", &account_status_event::action},
@@ -472,7 +472,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_status_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_status", &account_status_version_key::account_status},
         utility::codec::field{"version", &account_status_version_key::version},
     };
@@ -487,7 +487,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_status_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &account_status_versions_filter::version},
         utility::codec::field{"from_version", &account_status_versions_filter::from_version},
         utility::codec::field{"to_version", &account_status_versions_filter::to_version},
@@ -503,7 +503,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_account_statuses_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_account_statuses_request::offset},
         utility::codec::field{"limit", &list_account_statuses_request::limit},
         utility::codec::field{"order", &list_account_statuses_request::order},
@@ -521,7 +521,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_account_statuses_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_account_statuses_response::result},
         utility::codec::field{"statuses", &list_account_statuses_response::statuses},
         utility::codec::field{"total", &list_account_statuses_response::total},
@@ -537,7 +537,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_status_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_account_status_request::key},
     };
 }
@@ -551,7 +551,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_status_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_account_status_response::result},
         utility::codec::field{"account_status", &get_account_status_response::account_status},
     };
@@ -566,7 +566,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_account_statuses_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_account_statuses_request::keys},
     };
 }
@@ -580,7 +580,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_account_statuses_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_account_statuses_response::result},
         utility::codec::field{"entries", &get_many_account_statuses_response::entries},
     };
@@ -595,7 +595,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_account_status_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_account_status_request::change},
         utility::codec::field{"intent", &put_account_status_request::intent},
     };
@@ -610,7 +610,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_account_status_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_account_status_response::result},
         utility::codec::field{"account_status", &put_account_status_response::account_status},
     };
@@ -625,7 +625,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_account_statuses_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_account_statuses_request::changes},
         utility::codec::field{"intent", &put_many_account_statuses_request::intent},
     };
@@ -640,7 +640,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_account_statuses_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_account_statuses_response::result},
         utility::codec::field{"statuses", &put_many_account_statuses_response::statuses},
     };
@@ -655,7 +655,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_account_status_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_account_status_request::removal},
         utility::codec::field{"intent", &delete_account_status_request::intent},
     };
@@ -670,7 +670,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_account_status_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_account_status_response::result},
     };
 }
@@ -684,7 +684,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_account_statuses_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_account_statuses_request::removals},
         utility::codec::field{"intent", &delete_many_account_statuses_request::intent},
     };
@@ -700,7 +700,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.account_statuses.dele
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_account_statuses_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_account_statuses_response::result},
     };
 }
@@ -714,7 +714,7 @@ wire_fields(std::type_identity<delete_many_account_statuses_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_account_status_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_account_status_versions_request::key},
         utility::codec::field{"offset", &list_account_status_versions_request::offset},
         utility::codec::field{"limit", &list_account_status_versions_request::limit},
@@ -733,7 +733,7 @@ wire_fields(std::type_identity<delete_many_account_statuses_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_account_status_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_account_status_versions_response::result},
         utility::codec::field{"versions", &list_account_status_versions_response::versions},
         utility::codec::field{"total", &list_account_status_versions_response::total},
@@ -749,7 +749,7 @@ wire_fields(std::type_identity<list_account_status_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_status_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_account_status_version_request::key},
     };
 }
@@ -763,7 +763,7 @@ wire_fields(std::type_identity<list_account_status_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_status_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_account_status_version_response::result},
         utility::codec::field{"version", &get_account_status_version_response::version},
     };

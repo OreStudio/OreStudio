@@ -386,7 +386,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_correlation
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_correlation_config_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_correlation_config_key::id},
     };
 }
@@ -400,7 +400,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_correlation
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_correlation_config_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_correlation_config_write::id},
         utility::codec::field{"curve_definition_id",
                               &curve_correlation_config_write::curve_definition_id},
@@ -433,7 +433,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_correlation
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_correlation_config_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &curve_correlation_config_change::write},
         utility::codec::field{"precondition", &curve_correlation_config_change::precondition},
     };
@@ -448,7 +448,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_correlation
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_correlation_config_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_correlation_config_removal::key},
         utility::codec::field{"precondition", &curve_correlation_config_removal::precondition},
     };
@@ -463,7 +463,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_correlation
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_correlation_config_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_correlation_config_lookup::key},
         utility::codec::field{"curve_correlation_config",
                               &curve_correlation_config_lookup::curve_correlation_config},
@@ -479,7 +479,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_correlation
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_correlation_configs_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &curve_correlation_configs_filter::id_one_of},
     };
 }
@@ -493,7 +493,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_correlation
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_correlation_config_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &curve_correlation_config_event::event_id},
         utility::codec::field{"key", &curve_correlation_config_event::key},
         utility::codec::field{"action", &curve_correlation_config_event::action},
@@ -512,7 +512,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_correlation
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_correlation_config_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"curve_correlation_config",
                               &curve_correlation_config_version_key::curve_correlation_config},
         utility::codec::field{"version", &curve_correlation_config_version_key::version},
@@ -529,7 +529,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_correlation
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_correlation_config_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &curve_correlation_config_versions_filter::version},
         utility::codec::field{"from_version",
                               &curve_correlation_config_versions_filter::from_version},
@@ -547,7 +547,7 @@ wire_fields(std::type_identity<curve_correlation_config_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_correlation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_curve_correlation_configs_request::offset},
         utility::codec::field{"limit", &list_curve_correlation_configs_request::limit},
         utility::codec::field{"order", &list_curve_correlation_configs_request::order},
@@ -566,7 +566,7 @@ wire_fields(std::type_identity<list_curve_correlation_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_correlation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_correlation_configs_response::result},
         utility::codec::field{"correlation_configs",
                               &list_curve_correlation_configs_response::correlation_configs},
@@ -583,7 +583,7 @@ wire_fields(std::type_identity<list_curve_correlation_configs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_correlation_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_correlation_config_request::key},
     };
 }
@@ -598,7 +598,7 @@ wire_fields(std::type_identity<list_curve_correlation_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_correlation_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_correlation_config_response::result},
         utility::codec::field{"curve_correlation_config",
                               &get_curve_correlation_config_response::curve_correlation_config},
@@ -615,7 +615,7 @@ wire_fields(std::type_identity<get_curve_correlation_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_correlation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_curve_correlation_configs_request::keys},
     };
 }
@@ -630,7 +630,7 @@ wire_fields(std::type_identity<get_many_curve_correlation_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_correlation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_curve_correlation_configs_response::result},
         utility::codec::field{"entries", &get_many_curve_correlation_configs_response::entries},
     };
@@ -645,7 +645,7 @@ wire_fields(std::type_identity<get_many_curve_correlation_configs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_curve_correlation_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_curve_correlation_config_request::change},
         utility::codec::field{"intent", &put_curve_correlation_config_request::intent},
     };
@@ -661,7 +661,7 @@ wire_fields(std::type_identity<get_many_curve_correlation_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_curve_correlation_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_curve_correlation_config_response::result},
         utility::codec::field{"curve_correlation_config",
                               &put_curve_correlation_config_response::curve_correlation_config},
@@ -678,7 +678,7 @@ wire_fields(std::type_identity<put_curve_correlation_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_correlation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_curve_correlation_configs_request::changes},
         utility::codec::field{"intent", &put_many_curve_correlation_configs_request::intent},
     };
@@ -694,7 +694,7 @@ wire_fields(std::type_identity<put_many_curve_correlation_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_correlation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_curve_correlation_configs_response::result},
         utility::codec::field{"correlation_configs",
                               &put_many_curve_correlation_configs_response::correlation_configs},
@@ -711,7 +711,7 @@ wire_fields(std::type_identity<put_many_curve_correlation_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_correlation_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_curve_correlation_config_request::removal},
         utility::codec::field{"intent", &delete_curve_correlation_config_request::intent},
     };
@@ -727,7 +727,7 @@ wire_fields(std::type_identity<delete_curve_correlation_config_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_correlation_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_curve_correlation_config_response::result},
     };
 }
@@ -742,7 +742,7 @@ wire_fields(std::type_identity<delete_curve_correlation_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_correlation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_curve_correlation_configs_request::removals},
         utility::codec::field{"intent", &delete_many_curve_correlation_configs_request::intent},
     };
@@ -758,7 +758,7 @@ wire_fields(std::type_identity<delete_many_curve_correlation_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_correlation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_curve_correlation_configs_response::result},
     };
 }
@@ -773,7 +773,7 @@ wire_fields(std::type_identity<delete_many_curve_correlation_configs_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_correlation_config_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_curve_correlation_config_versions_request::key},
         utility::codec::field{"offset", &list_curve_correlation_config_versions_request::offset},
         utility::codec::field{"limit", &list_curve_correlation_config_versions_request::limit},
@@ -792,7 +792,7 @@ wire_fields(std::type_identity<list_curve_correlation_config_versions_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_correlation_config_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_correlation_config_versions_response::result},
         utility::codec::field{"versions",
                               &list_curve_correlation_config_versions_response::versions},
@@ -810,7 +810,7 @@ wire_fields(std::type_identity<list_curve_correlation_config_versions_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_correlation_config_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_correlation_config_version_request::key},
     };
 }
@@ -825,7 +825,7 @@ wire_fields(std::type_identity<get_curve_correlation_config_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_correlation_config_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_correlation_config_version_response::result},
         utility::codec::field{"version", &get_curve_correlation_config_version_response::version},
     };

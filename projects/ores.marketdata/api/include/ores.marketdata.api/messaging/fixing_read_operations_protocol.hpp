@@ -226,7 +226,7 @@ struct get_fixing_window_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fixing_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"item", &get_fixing_request::item},
         ::ores::utility::codec::field{"provider_code", &get_fixing_request::provider_code},
         ::ores::utility::codec::field{"party_id", &get_fixing_request::party_id},
@@ -243,7 +243,7 @@ struct get_fixing_window_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fixing_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_fixing_response::result},
         ::ores::utility::codec::field{"provider_code", &get_fixing_response::provider_code},
         ::ores::utility::codec::field{"vendor_scheme", &get_fixing_response::vendor_scheme},
@@ -264,7 +264,7 @@ struct get_fixing_window_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fixing_window_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"item", &get_fixing_window_request::item},
         ::ores::utility::codec::field{"provider_code", &get_fixing_window_request::provider_code},
         ::ores::utility::codec::field{"party_id", &get_fixing_window_request::party_id},
@@ -282,7 +282,7 @@ struct get_fixing_window_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fixing_window_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_fixing_window_response::result},
         ::ores::utility::codec::field{"provider_code", &get_fixing_window_response::provider_code},
         ::ores::utility::codec::field{"vendor_scheme", &get_fixing_window_response::vendor_scheme},

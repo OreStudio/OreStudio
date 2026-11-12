@@ -372,7 +372,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_instrument_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &swaption_instrument_key::trade_id},
     };
 }
@@ -386,7 +386,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_instrument_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &swaption_instrument_write::trade_id},
         utility::codec::field{"trade_activity_id", &swaption_instrument_write::trade_activity_id},
         utility::codec::field{"expiry_date", &swaption_instrument_write::expiry_date},
@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_instrument_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &swaption_instrument_change::write},
         utility::codec::field{"precondition", &swaption_instrument_change::precondition},
     };
@@ -420,7 +420,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_instrument_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &swaption_instrument_removal::key},
         utility::codec::field{"precondition", &swaption_instrument_removal::precondition},
     };
@@ -435,7 +435,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_instrument_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &swaption_instrument_lookup::key},
         utility::codec::field{"swaption_instrument",
                               &swaption_instrument_lookup::swaption_instrument},
@@ -451,7 +451,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_instruments_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id_one_of", &swaption_instruments_filter::trade_id_one_of},
     };
 }
@@ -465,7 +465,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_instrument_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &swaption_instrument_event::event_id},
         utility::codec::field{"key", &swaption_instrument_event::key},
         utility::codec::field{"action", &swaption_instrument_event::action},
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_instrument_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"swaption_instrument",
                               &swaption_instrument_version_key::swaption_instrument},
         utility::codec::field{"version", &swaption_instrument_version_key::version},
@@ -500,7 +500,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<swaption_instrument_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &swaption_instrument_versions_filter::version},
         utility::codec::field{"from_version", &swaption_instrument_versions_filter::from_version},
         utility::codec::field{"to_version", &swaption_instrument_versions_filter::to_version},
@@ -516,7 +516,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_swaption_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_swaption_instruments_request::offset},
         utility::codec::field{"limit", &list_swaption_instruments_request::limit},
         utility::codec::field{"order", &list_swaption_instruments_request::order},
@@ -534,7 +534,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_swaption_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_swaption_instruments_response::result},
         utility::codec::field{"swaption_instruments",
                               &list_swaption_instruments_response::swaption_instruments},
@@ -551,7 +551,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_swaption_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_swaption_instrument_request::key},
     };
 }
@@ -565,7 +565,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_swaption_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_swaption_instrument_response::result},
         utility::codec::field{"swaption_instrument",
                               &get_swaption_instrument_response::swaption_instrument},
@@ -582,7 +582,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.swaption_instrume
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_swaption_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_swaption_instruments_request::keys},
     };
 }
@@ -597,7 +597,7 @@ wire_fields(std::type_identity<get_many_swaption_instruments_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_swaption_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_swaption_instruments_response::result},
         utility::codec::field{"entries", &get_many_swaption_instruments_response::entries},
     };
@@ -612,7 +612,7 @@ wire_fields(std::type_identity<get_many_swaption_instruments_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_swaption_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_swaption_instrument_request::change},
         utility::codec::field{"intent", &put_swaption_instrument_request::intent},
     };
@@ -627,7 +627,7 @@ wire_fields(std::type_identity<get_many_swaption_instruments_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_swaption_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_swaption_instrument_response::result},
         utility::codec::field{"swaption_instrument",
                               &put_swaption_instrument_response::swaption_instrument},
@@ -644,7 +644,7 @@ wire_fields(std::type_identity<get_many_swaption_instruments_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_swaption_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_swaption_instruments_request::changes},
         utility::codec::field{"intent", &put_many_swaption_instruments_request::intent},
     };
@@ -660,7 +660,7 @@ wire_fields(std::type_identity<put_many_swaption_instruments_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_swaption_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_swaption_instruments_response::result},
         utility::codec::field{"swaption_instruments",
                               &put_many_swaption_instruments_response::swaption_instruments},
@@ -676,7 +676,7 @@ wire_fields(std::type_identity<put_many_swaption_instruments_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_swaption_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_swaption_instrument_request::removal},
         utility::codec::field{"intent", &delete_swaption_instrument_request::intent},
     };
@@ -691,7 +691,7 @@ wire_fields(std::type_identity<put_many_swaption_instruments_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_swaption_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_swaption_instrument_response::result},
     };
 }
@@ -706,7 +706,7 @@ wire_fields(std::type_identity<put_many_swaption_instruments_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_swaption_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_swaption_instruments_request::removals},
         utility::codec::field{"intent", &delete_many_swaption_instruments_request::intent},
     };
@@ -722,7 +722,7 @@ wire_fields(std::type_identity<delete_many_swaption_instruments_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_swaption_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_swaption_instruments_response::result},
     };
 }
@@ -737,7 +737,7 @@ wire_fields(std::type_identity<delete_many_swaption_instruments_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_swaption_instrument_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_swaption_instrument_versions_request::key},
         utility::codec::field{"offset", &list_swaption_instrument_versions_request::offset},
         utility::codec::field{"limit", &list_swaption_instrument_versions_request::limit},
@@ -756,7 +756,7 @@ wire_fields(std::type_identity<list_swaption_instrument_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_swaption_instrument_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_swaption_instrument_versions_response::result},
         utility::codec::field{"versions", &list_swaption_instrument_versions_response::versions},
         utility::codec::field{"total", &list_swaption_instrument_versions_response::total},
@@ -773,7 +773,7 @@ wire_fields(std::type_identity<list_swaption_instrument_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_swaption_instrument_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_swaption_instrument_version_request::key},
     };
 }
@@ -788,7 +788,7 @@ wire_fields(std::type_identity<get_swaption_instrument_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_swaption_instrument_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_swaption_instrument_version_response::result},
         utility::codec::field{"version", &get_swaption_instrument_version_response::version},
     };

@@ -403,7 +403,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<risk_participation_agreement_instrument_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &risk_participation_agreement_instrument_key::trade_id},
     };
 }
@@ -418,7 +418,7 @@ wire_fields(std::type_identity<risk_participation_agreement_instrument_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<risk_participation_agreement_instrument_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &risk_participation_agreement_instrument_write::trade_id},
         utility::codec::field{"trade_activity_id",
                               &risk_participation_agreement_instrument_write::trade_activity_id},
@@ -447,7 +447,7 @@ wire_fields(std::type_identity<risk_participation_agreement_instrument_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<risk_participation_agreement_instrument_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &risk_participation_agreement_instrument_change::write},
         utility::codec::field{"precondition",
                               &risk_participation_agreement_instrument_change::precondition},
@@ -464,7 +464,7 @@ wire_fields(std::type_identity<risk_participation_agreement_instrument_change>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<risk_participation_agreement_instrument_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &risk_participation_agreement_instrument_removal::key},
         utility::codec::field{"precondition",
                               &risk_participation_agreement_instrument_removal::precondition},
@@ -481,7 +481,7 @@ wire_fields(std::type_identity<risk_participation_agreement_instrument_removal>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<risk_participation_agreement_instrument_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &risk_participation_agreement_instrument_lookup::key},
         utility::codec::field{"risk_participation_agreement_instrument",
                               &risk_participation_agreement_instrument_lookup::
@@ -499,7 +499,7 @@ wire_fields(std::type_identity<risk_participation_agreement_instrument_lookup>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<risk_participation_agreement_instruments_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id_one_of",
                               &risk_participation_agreement_instruments_filter::trade_id_one_of},
     };
@@ -515,7 +515,7 @@ wire_fields(std::type_identity<risk_participation_agreement_instruments_filter>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<risk_participation_agreement_instrument_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &risk_participation_agreement_instrument_event::event_id},
         utility::codec::field{"key", &risk_participation_agreement_instrument_event::key},
         utility::codec::field{"action", &risk_participation_agreement_instrument_event::action},
@@ -537,7 +537,7 @@ wire_fields(std::type_identity<risk_participation_agreement_instrument_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<risk_participation_agreement_instrument_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"risk_participation_agreement_instrument",
                               &risk_participation_agreement_instrument_version_key::
                                   risk_participation_agreement_instrument},
@@ -556,7 +556,7 @@ wire_fields(std::type_identity<risk_participation_agreement_instrument_version_k
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<risk_participation_agreement_instrument_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version",
                               &risk_participation_agreement_instrument_versions_filter::version},
         utility::codec::field{
@@ -576,7 +576,7 @@ wire_fields(std::type_identity<risk_participation_agreement_instrument_versions_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_risk_participation_agreement_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset",
                               &list_risk_participation_agreement_instruments_request::offset},
         utility::codec::field{"limit",
@@ -600,7 +600,7 @@ wire_fields(std::type_identity<list_risk_participation_agreement_instruments_req
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_risk_participation_agreement_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_risk_participation_agreement_instruments_response::result},
         utility::codec::field{"risk_participation_agreement_instruments",
@@ -621,7 +621,7 @@ wire_fields(std::type_identity<list_risk_participation_agreement_instruments_res
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_risk_participation_agreement_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_risk_participation_agreement_instrument_request::key},
     };
 }
@@ -636,7 +636,7 @@ wire_fields(std::type_identity<get_risk_participation_agreement_instrument_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_risk_participation_agreement_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_risk_participation_agreement_instrument_response::result},
         utility::codec::field{"risk_participation_agreement_instrument",
@@ -655,7 +655,7 @@ wire_fields(std::type_identity<get_risk_participation_agreement_instrument_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_risk_participation_agreement_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys",
                               &get_many_risk_participation_agreement_instruments_request::keys},
     };
@@ -671,7 +671,7 @@ wire_fields(std::type_identity<get_many_risk_participation_agreement_instruments
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_risk_participation_agreement_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_risk_participation_agreement_instruments_response::result},
         utility::codec::field{"entries",
@@ -689,7 +689,7 @@ wire_fields(std::type_identity<get_many_risk_participation_agreement_instruments
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_risk_participation_agreement_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change",
                               &put_risk_participation_agreement_instrument_request::change},
         utility::codec::field{"intent",
@@ -707,7 +707,7 @@ wire_fields(std::type_identity<put_risk_participation_agreement_instrument_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_risk_participation_agreement_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_risk_participation_agreement_instrument_response::result},
         utility::codec::field{"risk_participation_agreement_instrument",
@@ -726,7 +726,7 @@ wire_fields(std::type_identity<put_risk_participation_agreement_instrument_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_risk_participation_agreement_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_risk_participation_agreement_instruments_request::changes},
         utility::codec::field{"intent",
@@ -744,7 +744,7 @@ wire_fields(std::type_identity<put_many_risk_participation_agreement_instruments
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_risk_participation_agreement_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_risk_participation_agreement_instruments_response::result},
         utility::codec::field{"risk_participation_agreement_instruments",
@@ -763,7 +763,7 @@ wire_fields(std::type_identity<put_many_risk_participation_agreement_instruments
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_risk_participation_agreement_instrument_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal",
                               &delete_risk_participation_agreement_instrument_request::removal},
         utility::codec::field{"intent",
@@ -781,7 +781,7 @@ wire_fields(std::type_identity<delete_risk_participation_agreement_instrument_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_risk_participation_agreement_instrument_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_risk_participation_agreement_instrument_response::result},
     };
@@ -797,7 +797,7 @@ wire_fields(std::type_identity<delete_risk_participation_agreement_instrument_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_risk_participation_agreement_instruments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "removals", &delete_many_risk_participation_agreement_instruments_request::removals},
         utility::codec::field{
@@ -815,7 +815,7 @@ wire_fields(std::type_identity<delete_many_risk_participation_agreement_instrume
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_risk_participation_agreement_instruments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &delete_many_risk_participation_agreement_instruments_response::result},
     };
@@ -831,7 +831,7 @@ wire_fields(std::type_identity<delete_many_risk_participation_agreement_instrume
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_risk_participation_agreement_instrument_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &list_risk_participation_agreement_instrument_versions_request::key},
         utility::codec::field{
@@ -855,7 +855,7 @@ wire_fields(std::type_identity<list_risk_participation_agreement_instrument_vers
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_risk_participation_agreement_instrument_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_risk_participation_agreement_instrument_versions_response::result},
         utility::codec::field{
@@ -875,7 +875,7 @@ wire_fields(std::type_identity<list_risk_participation_agreement_instrument_vers
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_risk_participation_agreement_instrument_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &get_risk_participation_agreement_instrument_version_request::key},
     };
@@ -891,7 +891,7 @@ wire_fields(std::type_identity<get_risk_participation_agreement_instrument_versi
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_risk_participation_agreement_instrument_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &get_risk_participation_agreement_instrument_version_response::result},
         utility::codec::field{

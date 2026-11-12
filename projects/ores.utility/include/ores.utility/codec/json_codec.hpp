@@ -54,11 +54,11 @@ namespace detail {
 
 template <typename T, typename... Members>
 yyjson_mut_val*
-write_object(yyjson_mut_doc* doc, const T& v, const std::tuple<field<T, Members>...>& fields) {
+write_object(yyjson_mut_doc* doc, const T& v, const field_list<field<T, Members>...>& fields) {
     auto* object = yyjson_mut_obj(doc);
     if (object == nullptr)
         throw std::runtime_error("Could not make a JSON object");
-    std::apply(
+    apply_fields(
         [&](const auto&... f) {
             (
                 [&] {
@@ -92,10 +92,10 @@ write_object(yyjson_mut_doc* doc, const T& v, const std::tuple<field<T, Members>
 inline thread_local bool missing_keeps_default = false;
 
 template <typename T, typename... Members>
-void read_object(yyjson_val* v, T& out, const std::tuple<field<T, Members>...>& fields) {
+void read_object(yyjson_val* v, T& out, const field_list<field<T, Members>...>& fields) {
     if (!yyjson_is_obj(v))
         throw std::invalid_argument("Not an object");
-    std::apply(
+    apply_fields(
         [&](const auto&... f) {
             (
                 [&] {

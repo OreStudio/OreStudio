@@ -52,10 +52,11 @@ struct browser_party final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<browser_party>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"id", &browser_party::id},
-                      field{"name", &browser_party::name},
-                      field{"partyCategory", &browser_party::partyCategory},
-                      field{"businessCenterCode", &browser_party::businessCenterCode}};
+    return ::ores::utility::codec::field_list{
+        field{"id", &browser_party::id},
+        field{"name", &browser_party::name},
+        field{"partyCategory", &browser_party::partyCategory},
+        field{"businessCenterCode", &browser_party::businessCenterCode}};
 }
 
 /**
@@ -70,10 +71,10 @@ struct browser_database final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<browser_database>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"fingerprint", &browser_database::fingerprint},
-                      field{"environment", &browser_database::environment},
-                      field{"commit", &browser_database::commit},
-                      field{"created", &browser_database::created}};
+    return ::ores::utility::codec::field_list{field{"fingerprint", &browser_database::fingerprint},
+                                              field{"environment", &browser_database::environment},
+                                              field{"commit", &browser_database::commit},
+                                              field{"created", &browser_database::created}};
 }
 
 /**
@@ -99,19 +100,20 @@ struct browser_session final {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<browser_session>) {
     using ores::utility::codec::field;
     using s = browser_session;
-    return std::tuple{field{"username", &s::username},
-                      field{"email", &s::email},
-                      field{"accountId", &s::accountId},
-                      field{"tenantId", &s::tenantId},
-                      field{"tenantName", &s::tenantName},
-                      field{"mode", &s::mode},
-                      field{"tenantBootstrapping", &s::tenantBootstrapping},
-                      field{"version", &s::version},
-                      field{"database", &s::database},
-                      field{"party", &s::party},
-                      field{"availableParties", &s::availableParties},
-                      field{"accessLifetimeSeconds", &s::accessLifetimeSeconds},
-                      field{"passwordResetRequired", &s::passwordResetRequired}};
+    return ::ores::utility::codec::field_list{
+        field{"username", &s::username},
+        field{"email", &s::email},
+        field{"accountId", &s::accountId},
+        field{"tenantId", &s::tenantId},
+        field{"tenantName", &s::tenantName},
+        field{"mode", &s::mode},
+        field{"tenantBootstrapping", &s::tenantBootstrapping},
+        field{"version", &s::version},
+        field{"database", &s::database},
+        field{"party", &s::party},
+        field{"availableParties", &s::availableParties},
+        field{"accessLifetimeSeconds", &s::accessLifetimeSeconds},
+        field{"passwordResetRequired", &s::passwordResetRequired}};
 }
 
 /**

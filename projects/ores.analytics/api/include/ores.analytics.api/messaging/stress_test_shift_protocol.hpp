@@ -375,7 +375,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_shift_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &stress_test_shift_key::id},
     };
 }
@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_shift_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &stress_test_shift_write::id},
         utility::codec::field{"stress_test_scenario_id",
                               &stress_test_shift_write::stress_test_scenario_id},
@@ -413,7 +413,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_shift_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &stress_test_shift_change::write},
         utility::codec::field{"precondition", &stress_test_shift_change::precondition},
     };
@@ -428,7 +428,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_shift_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &stress_test_shift_removal::key},
         utility::codec::field{"precondition", &stress_test_shift_removal::precondition},
     };
@@ -443,7 +443,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_shift_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &stress_test_shift_lookup::key},
         utility::codec::field{"stress_test_shift", &stress_test_shift_lookup::stress_test_shift},
     };
@@ -458,7 +458,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_shifts_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &stress_test_shifts_filter::id_one_of},
     };
 }
@@ -472,7 +472,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_shift_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &stress_test_shift_event::event_id},
         utility::codec::field{"key", &stress_test_shift_event::key},
         utility::codec::field{"action", &stress_test_shift_event::action},
@@ -491,7 +491,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_shift_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"stress_test_shift",
                               &stress_test_shift_version_key::stress_test_shift},
         utility::codec::field{"version", &stress_test_shift_version_key::version},
@@ -507,7 +507,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_shift_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &stress_test_shift_versions_filter::version},
         utility::codec::field{"from_version", &stress_test_shift_versions_filter::from_version},
         utility::codec::field{"to_version", &stress_test_shift_versions_filter::to_version},
@@ -523,7 +523,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_stress_test_shifts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_stress_test_shifts_request::offset},
         utility::codec::field{"limit", &list_stress_test_shifts_request::limit},
         utility::codec::field{"order", &list_stress_test_shifts_request::order},
@@ -541,7 +541,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_stress_test_shifts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_stress_test_shifts_response::result},
         utility::codec::field{"stress_test_shifts",
                               &list_stress_test_shifts_response::stress_test_shifts},
@@ -558,7 +558,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_stress_test_shift_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_stress_test_shift_request::key},
     };
 }
@@ -572,7 +572,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_stress_test_shift_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_stress_test_shift_response::result},
         utility::codec::field{"stress_test_shift",
                               &get_stress_test_shift_response::stress_test_shift},
@@ -588,7 +588,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_stress_test_shifts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_stress_test_shifts_request::keys},
     };
 }
@@ -602,7 +602,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_stress_test_shifts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_stress_test_shifts_response::result},
         utility::codec::field{"entries", &get_many_stress_test_shifts_response::entries},
     };
@@ -617,7 +617,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_stress_test_shift_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_stress_test_shift_request::change},
         utility::codec::field{"intent", &put_stress_test_shift_request::intent},
     };
@@ -632,7 +632,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_stress_test_shift_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_stress_test_shift_response::result},
         utility::codec::field{"stress_test_shift",
                               &put_stress_test_shift_response::stress_test_shift},
@@ -648,7 +648,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_stress_test_shifts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_stress_test_shifts_request::changes},
         utility::codec::field{"intent", &put_many_stress_test_shifts_request::intent},
     };
@@ -663,7 +663,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_stress_test_shifts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_stress_test_shifts_response::result},
         utility::codec::field{"stress_test_shifts",
                               &put_many_stress_test_shifts_response::stress_test_shifts},
@@ -679,7 +679,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_stress_test_shift_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_stress_test_shift_request::removal},
         utility::codec::field{"intent", &delete_stress_test_shift_request::intent},
     };
@@ -694,7 +694,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_stress_test_shift_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_stress_test_shift_response::result},
     };
 }
@@ -709,7 +709,7 @@ inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_shi
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_stress_test_shifts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_stress_test_shifts_request::removals},
         utility::codec::field{"intent", &delete_many_stress_test_shifts_request::intent},
     };
@@ -725,7 +725,7 @@ wire_fields(std::type_identity<delete_many_stress_test_shifts_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_stress_test_shifts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_stress_test_shifts_response::result},
     };
 }
@@ -740,7 +740,7 @@ wire_fields(std::type_identity<delete_many_stress_test_shifts_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_stress_test_shift_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_stress_test_shift_versions_request::key},
         utility::codec::field{"offset", &list_stress_test_shift_versions_request::offset},
         utility::codec::field{"limit", &list_stress_test_shift_versions_request::limit},
@@ -759,7 +759,7 @@ wire_fields(std::type_identity<list_stress_test_shift_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_stress_test_shift_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_stress_test_shift_versions_response::result},
         utility::codec::field{"versions", &list_stress_test_shift_versions_response::versions},
         utility::codec::field{"total", &list_stress_test_shift_versions_response::total},
@@ -776,7 +776,7 @@ wire_fields(std::type_identity<list_stress_test_shift_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_stress_test_shift_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_stress_test_shift_version_request::key},
     };
 }
@@ -791,7 +791,7 @@ wire_fields(std::type_identity<get_stress_test_shift_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_stress_test_shift_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_stress_test_shift_version_response::result},
         utility::codec::field{"version", &get_stress_test_shift_version_response::version},
     };

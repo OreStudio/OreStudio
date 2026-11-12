@@ -48,10 +48,11 @@ struct environment_view final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<environment_view>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"id", &environment_view::id},
-                      field{"displayName", &environment_view::displayName},
-                      field{"description", &environment_view::description},
-                      field{"nonProduction", &environment_view::nonProduction}};
+    return ::ores::utility::codec::field_list{
+        field{"id", &environment_view::id},
+        field{"displayName", &environment_view::displayName},
+        field{"description", &environment_view::description},
+        field{"nonProduction", &environment_view::nonProduction}};
 }
 
 struct site_state_view final {
@@ -63,10 +64,11 @@ struct site_state_view final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<site_state_view>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"appName", &site_state_view::appName},
-                      field{"environment", &site_state_view::environment},
-                      field{"developerTools", &site_state_view::developerTools},
-                      field{"developerAccounts", &site_state_view::developerAccounts}};
+    return ::ores::utility::codec::field_list{
+        field{"appName", &site_state_view::appName},
+        field{"environment", &site_state_view::environment},
+        field{"developerTools", &site_state_view::developerTools},
+        field{"developerAccounts", &site_state_view::developerAccounts}};
 }
 
 struct available_view final {
@@ -77,9 +79,10 @@ struct available_view final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<available_view>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"id", &available_view::id},
-                      field{"displayName", &available_view::displayName},
-                      field{"nonProduction", &available_view::nonProduction}};
+    return ::ores::utility::codec::field_list{
+        field{"id", &available_view::id},
+        field{"displayName", &available_view::displayName},
+        field{"nonProduction", &available_view::nonProduction}};
 }
 
 struct deployment_view final {
@@ -91,10 +94,11 @@ struct deployment_view final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<deployment_view>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"environment", &deployment_view::environment},
-                      field{"configFile", &deployment_view::configFile},
-                      field{"developerTools", &deployment_view::developerTools},
-                      field{"available", &deployment_view::available}};
+    return ::ores::utility::codec::field_list{
+        field{"environment", &deployment_view::environment},
+        field{"configFile", &deployment_view::configFile},
+        field{"developerTools", &deployment_view::developerTools},
+        field{"available", &deployment_view::available}};
 }
 
 /// The keys a journal record already uses or the server adds, which a browser

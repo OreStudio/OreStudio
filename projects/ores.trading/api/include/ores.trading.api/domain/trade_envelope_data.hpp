@@ -73,7 +73,7 @@ struct trade_envelope_data final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_envelope_field>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"name", &trade_envelope_field::name},
         utility::codec::field{"value", &trade_envelope_field::value},
     };
@@ -83,7 +83,7 @@ static_assert(::ores::utility::codec::names_every_member<trade_envelope_field>()
               "trade_envelope_field has a member its wire shape does not name");
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_envelope_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"counter_party", &trade_envelope_data::counter_party},
         utility::codec::field{"netting_set_id", &trade_envelope_data::netting_set_id},
         utility::codec::field{"portfolio_ids", &trade_envelope_data::portfolio_ids},

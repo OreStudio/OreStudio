@@ -422,7 +422,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_product_type_deal_class_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &party_product_type_deal_class_key::id},
     };
 }
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_product_type_deal_class_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &party_product_type_deal_class_write::id},
         utility::codec::field{"party_id", &party_product_type_deal_class_write::party_id},
         utility::codec::field{"product_type_code",
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_product_type_deal_class_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &party_product_type_deal_class_change::write},
         utility::codec::field{"precondition", &party_product_type_deal_class_change::precondition},
     };
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<party_product_type_deal_class_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &party_product_type_deal_class_removal::key},
         utility::codec::field{"precondition", &party_product_type_deal_class_removal::precondition},
     };
@@ -485,7 +485,7 @@ wire_fields(std::type_identity<party_product_type_deal_class_removal>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_product_type_deal_class_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &party_product_type_deal_class_lookup::key},
         utility::codec::field{"party_product_type_deal_class",
                               &party_product_type_deal_class_lookup::party_product_type_deal_class},
@@ -502,7 +502,7 @@ wire_fields(std::type_identity<party_product_type_deal_class_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<party_product_type_deal_classes_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"party_id", &party_product_type_deal_classes_filter::party_id},
         utility::codec::field{"id_one_of", &party_product_type_deal_classes_filter::id_one_of},
         utility::codec::field{"party_id_one_of",
@@ -519,7 +519,7 @@ wire_fields(std::type_identity<party_product_type_deal_classes_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<party_product_type_deal_class_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &party_product_type_deal_class_event::event_id},
         utility::codec::field{"key", &party_product_type_deal_class_event::key},
         utility::codec::field{"action", &party_product_type_deal_class_event::action},
@@ -540,7 +540,7 @@ wire_fields(std::type_identity<party_product_type_deal_classes_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<party_product_type_deal_class_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "party_product_type_deal_class",
             &party_product_type_deal_class_version_key::party_product_type_deal_class},
@@ -558,7 +558,7 @@ wire_fields(std::type_identity<party_product_type_deal_class_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<party_product_type_deal_class_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &party_product_type_deal_class_versions_filter::version},
         utility::codec::field{"from_version",
                               &party_product_type_deal_class_versions_filter::from_version},
@@ -577,7 +577,7 @@ wire_fields(std::type_identity<party_product_type_deal_class_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_party_product_type_deal_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_party_product_type_deal_classes_request::offset},
         utility::codec::field{"limit", &list_party_product_type_deal_classes_request::limit},
         utility::codec::field{"order", &list_party_product_type_deal_classes_request::order},
@@ -596,7 +596,7 @@ wire_fields(std::type_identity<list_party_product_type_deal_classes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_party_product_type_deal_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_party_product_type_deal_classes_response::result},
         utility::codec::field{
             "party_product_type_deal_classes",
@@ -615,7 +615,7 @@ wire_fields(std::type_identity<list_party_product_type_deal_classes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_party_product_type_deal_class_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_party_product_type_deal_class_request::key},
     };
 }
@@ -630,7 +630,7 @@ wire_fields(std::type_identity<get_party_product_type_deal_class_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_party_product_type_deal_class_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_party_product_type_deal_class_response::result},
         utility::codec::field{
             "party_product_type_deal_class",
@@ -648,7 +648,7 @@ wire_fields(std::type_identity<get_party_product_type_deal_class_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_party_product_type_deal_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_party_product_type_deal_classes_request::keys},
     };
 }
@@ -663,7 +663,7 @@ wire_fields(std::type_identity<get_many_party_product_type_deal_classes_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_party_product_type_deal_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_party_product_type_deal_classes_response::result},
         utility::codec::field{"entries",
                               &get_many_party_product_type_deal_classes_response::entries},
@@ -680,7 +680,7 @@ wire_fields(std::type_identity<get_many_party_product_type_deal_classes_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_party_product_type_deal_class_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_party_product_type_deal_class_request::change},
         utility::codec::field{"intent", &put_party_product_type_deal_class_request::intent},
     };
@@ -696,7 +696,7 @@ wire_fields(std::type_identity<put_party_product_type_deal_class_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_party_product_type_deal_class_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_party_product_type_deal_class_response::result},
         utility::codec::field{
             "party_product_type_deal_class",
@@ -714,7 +714,7 @@ wire_fields(std::type_identity<put_party_product_type_deal_class_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_party_product_type_deal_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_party_product_type_deal_classes_request::changes},
         utility::codec::field{"intent", &put_many_party_product_type_deal_classes_request::intent},
@@ -731,7 +731,7 @@ wire_fields(std::type_identity<put_many_party_product_type_deal_classes_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_party_product_type_deal_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_party_product_type_deal_classes_response::result},
         utility::codec::field{
             "party_product_type_deal_classes",
@@ -749,7 +749,7 @@ wire_fields(std::type_identity<put_many_party_product_type_deal_classes_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_party_product_type_deal_class_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_party_product_type_deal_class_request::removal},
         utility::codec::field{"intent", &delete_party_product_type_deal_class_request::intent},
     };
@@ -765,7 +765,7 @@ wire_fields(std::type_identity<delete_party_product_type_deal_class_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_party_product_type_deal_class_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_party_product_type_deal_class_response::result},
     };
 }
@@ -780,7 +780,7 @@ wire_fields(std::type_identity<delete_party_product_type_deal_class_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_party_product_type_deal_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_party_product_type_deal_classes_request::removals},
         utility::codec::field{"intent",
@@ -798,7 +798,7 @@ wire_fields(std::type_identity<delete_many_party_product_type_deal_classes_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_party_product_type_deal_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_party_product_type_deal_classes_response::result},
     };
@@ -814,7 +814,7 @@ wire_fields(std::type_identity<delete_many_party_product_type_deal_classes_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_party_id_party_product_type_deal_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"party_id",
                               &list_by_party_id_party_product_type_deal_classes_request::party_id},
         utility::codec::field{"scope",
@@ -840,7 +840,7 @@ wire_fields(std::type_identity<list_by_party_id_party_product_type_deal_classes_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_party_id_party_product_type_deal_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_party_id_party_product_type_deal_classes_response::result},
         utility::codec::field{"party_product_type_deal_classes",
@@ -861,7 +861,7 @@ wire_fields(std::type_identity<list_by_party_id_party_product_type_deal_classes_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_party_product_type_deal_class_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_party_product_type_deal_class_versions_request::key},
         utility::codec::field{"offset",
                               &list_party_product_type_deal_class_versions_request::offset},
@@ -882,7 +882,7 @@ wire_fields(std::type_identity<list_party_product_type_deal_class_versions_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_party_product_type_deal_class_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_party_product_type_deal_class_versions_response::result},
         utility::codec::field{"versions",
@@ -902,7 +902,7 @@ wire_fields(std::type_identity<list_party_product_type_deal_class_versions_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_party_product_type_deal_class_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_party_product_type_deal_class_version_request::key},
     };
 }
@@ -917,7 +917,7 @@ wire_fields(std::type_identity<get_party_product_type_deal_class_version_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_party_product_type_deal_class_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_party_product_type_deal_class_version_response::result},
         utility::codec::field{"version",

@@ -95,7 +95,7 @@ struct convert_ir_parameters_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<convert_ir_parameters_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"process_type", &convert_ir_parameters_request::process_type},
         ::ores::utility::codec::field{"to_simple", &convert_ir_parameters_request::to_simple},
         ::ores::utility::codec::field{"parameter_names",
@@ -114,7 +114,7 @@ struct convert_ir_parameters_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<convert_ir_parameters_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &convert_ir_parameters_response::success},
         ::ores::utility::codec::field{"message", &convert_ir_parameters_response::message},
         ::ores::utility::codec::field{"has_simple_form",

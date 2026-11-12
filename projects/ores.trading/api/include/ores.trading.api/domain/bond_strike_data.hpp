@@ -92,7 +92,7 @@ struct bond_strike_data {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_strike_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"price_value", &bond_strike_data::price_value},
         utility::codec::field{"price_currency", &bond_strike_data::price_currency},
         utility::codec::field{"yield_value", &bond_strike_data::yield_value},

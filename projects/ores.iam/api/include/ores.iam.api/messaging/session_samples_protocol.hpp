@@ -83,7 +83,7 @@ struct get_session_samples_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<session_sample_dto>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"sample_time_ms", &session_sample_dto::sample_time_ms},
         ::ores::utility::codec::field{"bytes_sent", &session_sample_dto::bytes_sent},
         ::ores::utility::codec::field{"bytes_received", &session_sample_dto::bytes_received},
@@ -99,7 +99,7 @@ struct get_session_samples_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_session_samples_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"session_id", &get_session_samples_request::session_id},
     };
 }
@@ -113,7 +113,7 @@ struct get_session_samples_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_session_samples_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"samples", &get_session_samples_response::samples},
         ::ores::utility::codec::field{"success", &get_session_samples_response::success},
         ::ores::utility::codec::field{"message", &get_session_samples_response::message},

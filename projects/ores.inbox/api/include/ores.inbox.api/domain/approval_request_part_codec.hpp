@@ -46,7 +46,7 @@ namespace ores::inbox::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_part>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &approval_request_part::version},
         utility::codec::field{"tenant_id", &approval_request_part::tenant_id},
         utility::codec::field{"request_id", &approval_request_part::request_id},

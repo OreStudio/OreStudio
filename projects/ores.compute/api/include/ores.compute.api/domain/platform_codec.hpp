@@ -46,7 +46,7 @@ namespace ores::compute::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<platform>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &platform::version},
         utility::codec::field{"tenant_id", &platform::tenant_id},
         utility::codec::field{"id", &platform::id},

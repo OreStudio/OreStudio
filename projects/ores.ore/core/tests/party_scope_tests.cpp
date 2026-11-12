@@ -45,12 +45,12 @@ struct mapped_document {
 // generated document.
 constexpr auto wire_fields(std::type_identity<mapped_document>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"header", &mapped_document::header},
-                      field{"analytics", &mapped_document::analytics},
-                      field{"extra", &mapped_document::extra},
-                      field{"absent", &mapped_document::absent},
-                      field{"name", &mapped_document::name},
-                      field{"unmodelled", &mapped_document::unmodelled}};
+    return ::ores::utility::codec::field_list{field{"header", &mapped_document::header},
+                                              field{"analytics", &mapped_document::analytics},
+                                              field{"extra", &mapped_document::extra},
+                                              field{"absent", &mapped_document::absent},
+                                              field{"name", &mapped_document::name},
+                                              field{"unmodelled", &mapped_document::unmodelled}};
 }
 
 }

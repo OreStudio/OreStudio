@@ -46,7 +46,7 @@ namespace ores::reporting::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_trigger_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"tenant_id", &report_trigger_event::tenant_id},
         utility::codec::field{"id", &report_trigger_event::id},
         utility::codec::field{"report_definition_id", &report_trigger_event::report_definition_id},

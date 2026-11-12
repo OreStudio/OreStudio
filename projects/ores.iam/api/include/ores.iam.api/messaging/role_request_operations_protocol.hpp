@@ -152,7 +152,7 @@ struct get_request_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ask_for_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"role_ids", &ask_for_roles_request::role_ids},
         ::ores::utility::codec::field{"reason", &ask_for_roles_request::reason},
     };
@@ -167,7 +167,7 @@ struct get_request_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ask_for_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &ask_for_roles_response::result},
         ::ores::utility::codec::field{"request_id", &ask_for_roles_response::request_id},
     };
@@ -182,7 +182,7 @@ struct get_request_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_request_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id", &get_request_roles_request::request_id},
     };
 }
@@ -196,7 +196,7 @@ struct get_request_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<requested_role>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"role", &requested_role::role},
         ::ores::utility::codec::field{"asked_at", &requested_role::asked_at},
         ::ores::utility::codec::field{"applied_at", &requested_role::applied_at},
@@ -213,7 +213,7 @@ struct get_request_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_request_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_request_roles_response::result},
         ::ores::utility::codec::field{"roles", &get_request_roles_response::roles},
     };

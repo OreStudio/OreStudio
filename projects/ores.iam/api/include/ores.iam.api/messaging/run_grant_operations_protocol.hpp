@@ -188,7 +188,7 @@ struct exchange_run_grant_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<create_run_grant_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"resource", &create_run_grant_request::resource},
         ::ores::utility::codec::field{"role", &create_run_grant_request::role},
         ::ores::utility::codec::field{"audience", &create_run_grant_request::audience},
@@ -206,7 +206,7 @@ struct exchange_run_grant_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<create_run_grant_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &create_run_grant_response::success},
         ::ores::utility::codec::field{"message", &create_run_grant_response::message},
         ::ores::utility::codec::field{"grant_id", &create_run_grant_response::grant_id},
@@ -223,7 +223,7 @@ struct exchange_run_grant_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<revoke_run_grant_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"grant_id", &revoke_run_grant_request::grant_id},
         ::ores::utility::codec::field{"reason", &revoke_run_grant_request::reason},
     };
@@ -238,7 +238,7 @@ struct exchange_run_grant_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<revoke_run_grant_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &revoke_run_grant_response::success},
         ::ores::utility::codec::field{"message", &revoke_run_grant_response::message},
     };
@@ -253,7 +253,7 @@ struct exchange_run_grant_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<exchange_run_grant_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"grant_id", &exchange_run_grant_request::grant_id},
         ::ores::utility::codec::field{"run_id", &exchange_run_grant_request::run_id},
         ::ores::utility::codec::field{"tenant_id", &exchange_run_grant_request::tenant_id},
@@ -269,7 +269,7 @@ struct exchange_run_grant_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<exchange_run_grant_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &exchange_run_grant_response::success},
         ::ores::utility::codec::field{"message", &exchange_run_grant_response::message},
         ::ores::utility::codec::field{"token", &exchange_run_grant_response::token},

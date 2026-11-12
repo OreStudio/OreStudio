@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<concurrency_policy_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &concurrency_policy_key::code},
     };
 }
@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<concurrency_policy_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &concurrency_policy_write::code},
         utility::codec::field{"name", &concurrency_policy_write::name},
         utility::codec::field{"description", &concurrency_policy_write::description},
@@ -402,7 +402,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<concurrency_policy_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &concurrency_policy_change::write},
         utility::codec::field{"precondition", &concurrency_policy_change::precondition},
     };
@@ -417,7 +417,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<concurrency_policy_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &concurrency_policy_removal::key},
         utility::codec::field{"precondition", &concurrency_policy_removal::precondition},
     };
@@ -432,7 +432,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<concurrency_policy_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &concurrency_policy_lookup::key},
         utility::codec::field{"concurrency_policy", &concurrency_policy_lookup::concurrency_policy},
     };
@@ -447,7 +447,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<concurrency_policies_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &concurrency_policies_filter::code_one_of},
     };
 }
@@ -461,7 +461,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<concurrency_policy_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &concurrency_policy_event::event_id},
         utility::codec::field{"key", &concurrency_policy_event::key},
         utility::codec::field{"action", &concurrency_policy_event::action},
@@ -480,7 +480,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<concurrency_policy_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"concurrency_policy",
                               &concurrency_policy_version_key::concurrency_policy},
         utility::codec::field{"version", &concurrency_policy_version_key::version},
@@ -496,7 +496,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<concurrency_policy_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &concurrency_policy_versions_filter::version},
         utility::codec::field{"from_version", &concurrency_policy_versions_filter::from_version},
         utility::codec::field{"to_version", &concurrency_policy_versions_filter::to_version},
@@ -512,7 +512,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_concurrency_policies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_concurrency_policies_request::offset},
         utility::codec::field{"limit", &list_concurrency_policies_request::limit},
         utility::codec::field{"order", &list_concurrency_policies_request::order},
@@ -530,7 +530,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_concurrency_policies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_concurrency_policies_response::result},
         utility::codec::field{"policies", &list_concurrency_policies_response::policies},
         utility::codec::field{"total", &list_concurrency_policies_response::total},
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_concurrency_policy_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_concurrency_policy_request::key},
     };
 }
@@ -560,7 +560,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_concurrency_policy_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_concurrency_policy_response::result},
         utility::codec::field{"concurrency_policy",
                               &get_concurrency_policy_response::concurrency_policy},
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "reporting.v1.events.concurrency_pol
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_concurrency_policies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_concurrency_policies_request::keys},
     };
 }
@@ -592,7 +592,7 @@ wire_fields(std::type_identity<get_many_concurrency_policies_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_concurrency_policies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_concurrency_policies_response::result},
         utility::codec::field{"entries", &get_many_concurrency_policies_response::entries},
     };
@@ -607,7 +607,7 @@ wire_fields(std::type_identity<get_many_concurrency_policies_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_concurrency_policy_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_concurrency_policy_request::change},
         utility::codec::field{"intent", &put_concurrency_policy_request::intent},
     };
@@ -622,7 +622,7 @@ wire_fields(std::type_identity<get_many_concurrency_policies_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_concurrency_policy_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_concurrency_policy_response::result},
         utility::codec::field{"concurrency_policy",
                               &put_concurrency_policy_response::concurrency_policy},
@@ -639,7 +639,7 @@ wire_fields(std::type_identity<get_many_concurrency_policies_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_concurrency_policies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_concurrency_policies_request::changes},
         utility::codec::field{"intent", &put_many_concurrency_policies_request::intent},
     };
@@ -655,7 +655,7 @@ wire_fields(std::type_identity<put_many_concurrency_policies_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_concurrency_policies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_concurrency_policies_response::result},
         utility::codec::field{"policies", &put_many_concurrency_policies_response::policies},
     };
@@ -670,7 +670,7 @@ wire_fields(std::type_identity<put_many_concurrency_policies_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_concurrency_policy_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_concurrency_policy_request::removal},
         utility::codec::field{"intent", &delete_concurrency_policy_request::intent},
     };
@@ -685,7 +685,7 @@ wire_fields(std::type_identity<put_many_concurrency_policies_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_concurrency_policy_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_concurrency_policy_response::result},
     };
 }
@@ -700,7 +700,7 @@ wire_fields(std::type_identity<put_many_concurrency_policies_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_concurrency_policies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_concurrency_policies_request::removals},
         utility::codec::field{"intent", &delete_many_concurrency_policies_request::intent},
     };
@@ -716,7 +716,7 @@ wire_fields(std::type_identity<delete_many_concurrency_policies_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_concurrency_policies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_concurrency_policies_response::result},
     };
 }
@@ -731,7 +731,7 @@ wire_fields(std::type_identity<delete_many_concurrency_policies_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_concurrency_policy_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_concurrency_policy_versions_request::key},
         utility::codec::field{"offset", &list_concurrency_policy_versions_request::offset},
         utility::codec::field{"limit", &list_concurrency_policy_versions_request::limit},
@@ -750,7 +750,7 @@ wire_fields(std::type_identity<list_concurrency_policy_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_concurrency_policy_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_concurrency_policy_versions_response::result},
         utility::codec::field{"versions", &list_concurrency_policy_versions_response::versions},
         utility::codec::field{"total", &list_concurrency_policy_versions_response::total},
@@ -767,7 +767,7 @@ wire_fields(std::type_identity<list_concurrency_policy_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_concurrency_policy_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_concurrency_policy_version_request::key},
     };
 }
@@ -782,7 +782,7 @@ wire_fields(std::type_identity<get_concurrency_policy_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_concurrency_policy_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_concurrency_policy_version_response::result},
         utility::codec::field{"version", &get_concurrency_policy_version_response::version},
     };

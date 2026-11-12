@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_contact_information_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"contact_type", &counterparty_contact_information_key::contact_type},
     };
 }
@@ -446,7 +446,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<counterparty_contact_information_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &counterparty_contact_information_write::id},
         utility::codec::field{"counterparty_id",
                               &counterparty_contact_information_write::counterparty_id},
@@ -477,7 +477,7 @@ wire_fields(std::type_identity<counterparty_contact_information_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<counterparty_contact_information_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &counterparty_contact_information_change::write},
         utility::codec::field{"precondition",
                               &counterparty_contact_information_change::precondition},
@@ -494,7 +494,7 @@ wire_fields(std::type_identity<counterparty_contact_information_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<counterparty_contact_information_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &counterparty_contact_information_removal::key},
         utility::codec::field{"precondition",
                               &counterparty_contact_information_removal::precondition},
@@ -511,7 +511,7 @@ wire_fields(std::type_identity<counterparty_contact_information_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<counterparty_contact_information_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &counterparty_contact_information_lookup::key},
         utility::codec::field{
             "counterparty_contact_information",
@@ -529,7 +529,7 @@ wire_fields(std::type_identity<counterparty_contact_information_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<counterparty_contact_informations_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"counterparty_id",
                               &counterparty_contact_informations_filter::counterparty_id},
         utility::codec::field{"id_one_of", &counterparty_contact_informations_filter::id_one_of},
@@ -548,7 +548,7 @@ wire_fields(std::type_identity<counterparty_contact_informations_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<counterparty_contact_information_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &counterparty_contact_information_event::event_id},
         utility::codec::field{"key", &counterparty_contact_information_event::key},
         utility::codec::field{"action", &counterparty_contact_information_event::action},
@@ -569,7 +569,7 @@ wire_fields(std::type_identity<counterparty_contact_information_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<counterparty_contact_information_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "counterparty_contact_information",
             &counterparty_contact_information_version_key::counterparty_contact_information},
@@ -587,7 +587,7 @@ wire_fields(std::type_identity<counterparty_contact_information_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<counterparty_contact_information_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version",
                               &counterparty_contact_information_versions_filter::version},
         utility::codec::field{"from_version",
@@ -607,7 +607,7 @@ wire_fields(std::type_identity<counterparty_contact_information_versions_filter>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_counterparty_contact_informations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_counterparty_contact_informations_request::offset},
         utility::codec::field{"limit", &list_counterparty_contact_informations_request::limit},
         utility::codec::field{"order", &list_counterparty_contact_informations_request::order},
@@ -626,7 +626,7 @@ wire_fields(std::type_identity<list_counterparty_contact_informations_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_counterparty_contact_informations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_counterparty_contact_informations_response::result},
         utility::codec::field{
             "counterparty_contact_informations",
@@ -645,7 +645,7 @@ wire_fields(std::type_identity<list_counterparty_contact_informations_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_counterparty_contact_information_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_counterparty_contact_information_request::key},
     };
 }
@@ -660,7 +660,7 @@ wire_fields(std::type_identity<get_counterparty_contact_information_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_counterparty_contact_information_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_counterparty_contact_information_response::result},
         utility::codec::field{
             "counterparty_contact_information",
@@ -678,7 +678,7 @@ wire_fields(std::type_identity<get_counterparty_contact_information_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_counterparty_contact_informations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_counterparty_contact_informations_request::keys},
     };
 }
@@ -693,7 +693,7 @@ wire_fields(std::type_identity<get_many_counterparty_contact_informations_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_counterparty_contact_informations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_counterparty_contact_informations_response::result},
         utility::codec::field{"entries",
@@ -711,7 +711,7 @@ wire_fields(std::type_identity<get_many_counterparty_contact_informations_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_counterparty_contact_information_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_counterparty_contact_information_request::change},
         utility::codec::field{"intent", &put_counterparty_contact_information_request::intent},
     };
@@ -727,7 +727,7 @@ wire_fields(std::type_identity<put_counterparty_contact_information_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_counterparty_contact_information_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_counterparty_contact_information_response::result},
         utility::codec::field{
             "counterparty_contact_information",
@@ -745,7 +745,7 @@ wire_fields(std::type_identity<put_counterparty_contact_information_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_counterparty_contact_informations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_counterparty_contact_informations_request::changes},
         utility::codec::field{"intent",
@@ -763,7 +763,7 @@ wire_fields(std::type_identity<put_many_counterparty_contact_informations_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_counterparty_contact_informations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_counterparty_contact_informations_response::result},
         utility::codec::field{"counterparty_contact_informations",
@@ -782,7 +782,7 @@ wire_fields(std::type_identity<put_many_counterparty_contact_informations_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_counterparty_contact_information_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_counterparty_contact_information_request::removal},
         utility::codec::field{"intent", &delete_counterparty_contact_information_request::intent},
     };
@@ -798,7 +798,7 @@ wire_fields(std::type_identity<delete_counterparty_contact_information_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_counterparty_contact_information_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_counterparty_contact_information_response::result},
     };
 }
@@ -813,7 +813,7 @@ wire_fields(std::type_identity<delete_counterparty_contact_information_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_counterparty_contact_informations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_counterparty_contact_informations_request::removals},
         utility::codec::field{"intent",
@@ -831,7 +831,7 @@ wire_fields(std::type_identity<delete_many_counterparty_contact_informations_req
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_counterparty_contact_informations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_counterparty_contact_informations_response::result},
     };
@@ -847,7 +847,7 @@ wire_fields(std::type_identity<delete_many_counterparty_contact_informations_res
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_counterparty_id_counterparty_contact_informations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "counterparty_id",
             &list_by_counterparty_id_counterparty_contact_informations_request::counterparty_id},
@@ -874,7 +874,7 @@ wire_fields(std::type_identity<list_by_counterparty_id_counterparty_contact_info
  */
 [[nodiscard]] constexpr auto wire_fields(
     std::type_identity<list_by_counterparty_id_counterparty_contact_informations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_by_counterparty_id_counterparty_contact_informations_response::result},
         utility::codec::field{"counterparty_contact_informations",
@@ -895,7 +895,7 @@ wire_fields(std::type_identity<list_by_counterparty_id_counterparty_contact_info
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_counterparty_contact_information_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_counterparty_contact_information_versions_request::key},
         utility::codec::field{"offset",
                               &list_counterparty_contact_information_versions_request::offset},
@@ -918,7 +918,7 @@ wire_fields(std::type_identity<list_counterparty_contact_information_versions_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_counterparty_contact_information_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_counterparty_contact_information_versions_response::result},
         utility::codec::field{"versions",
@@ -938,7 +938,7 @@ wire_fields(std::type_identity<list_counterparty_contact_information_versions_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_counterparty_contact_information_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_counterparty_contact_information_version_request::key},
     };
 }
@@ -953,7 +953,7 @@ wire_fields(std::type_identity<get_counterparty_contact_information_version_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_counterparty_contact_information_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_counterparty_contact_information_version_response::result},
         utility::codec::field{"version",

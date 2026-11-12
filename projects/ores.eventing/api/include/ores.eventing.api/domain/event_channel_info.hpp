@@ -55,8 +55,9 @@ struct event_channel_info final {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<event_channel_info>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"name", &event_channel_info::name},
-                      field{"description", &event_channel_info::description}};
+    return ::ores::utility::codec::field_list{
+        field{"name", &event_channel_info::name},
+        field{"description", &event_channel_info::description}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<event_channel_info>(),

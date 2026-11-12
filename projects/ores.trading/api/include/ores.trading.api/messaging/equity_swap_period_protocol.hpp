@@ -364,7 +364,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &equity_swap_period_key::trade_id},
         utility::codec::field{"trade_activity_id", &equity_swap_period_key::trade_activity_id},
         utility::codec::field{"sequence_number", &equity_swap_period_key::sequence_number},
@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &equity_swap_period_write::trade_id},
         utility::codec::field{"trade_activity_id", &equity_swap_period_write::trade_activity_id},
         utility::codec::field{"sequence_number", &equity_swap_period_write::sequence_number},
@@ -400,7 +400,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &equity_swap_period_change::write},
         utility::codec::field{"precondition", &equity_swap_period_change::precondition},
     };
@@ -415,7 +415,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &equity_swap_period_removal::key},
         utility::codec::field{"precondition", &equity_swap_period_removal::precondition},
     };
@@ -430,7 +430,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &equity_swap_period_lookup::key},
         utility::codec::field{"equity_swap_period", &equity_swap_period_lookup::equity_swap_period},
     };
@@ -445,7 +445,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &equity_swap_period_event::event_id},
         utility::codec::field{"key", &equity_swap_period_event::key},
         utility::codec::field{"action", &equity_swap_period_event::action},
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"equity_swap_period",
                               &equity_swap_period_version_key::equity_swap_period},
         utility::codec::field{"version", &equity_swap_period_version_key::version},
@@ -480,7 +480,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_swap_period_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &equity_swap_period_versions_filter::version},
         utility::codec::field{"from_version", &equity_swap_period_versions_filter::from_version},
         utility::codec::field{"to_version", &equity_swap_period_versions_filter::to_version},
@@ -496,7 +496,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_equity_swap_periods_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_equity_swap_periods_request::offset},
         utility::codec::field{"limit", &list_equity_swap_periods_request::limit},
         utility::codec::field{"order", &list_equity_swap_periods_request::order},
@@ -513,7 +513,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_equity_swap_periods_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_equity_swap_periods_response::result},
         utility::codec::field{"equity_swap_periods",
                               &list_equity_swap_periods_response::equity_swap_periods},
@@ -530,7 +530,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_equity_swap_period_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_equity_swap_period_request::key},
     };
 }
@@ -544,7 +544,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_equity_swap_period_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_equity_swap_period_response::result},
         utility::codec::field{"equity_swap_period",
                               &get_equity_swap_period_response::equity_swap_period},
@@ -560,7 +560,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_equity_swap_periods_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_equity_swap_periods_request::keys},
     };
 }
@@ -575,7 +575,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_perio
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_equity_swap_periods_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_equity_swap_periods_response::result},
         utility::codec::field{"entries", &get_many_equity_swap_periods_response::entries},
     };
@@ -590,7 +590,7 @@ wire_fields(std::type_identity<get_many_equity_swap_periods_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_equity_swap_period_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_equity_swap_period_request::change},
         utility::codec::field{"intent", &put_equity_swap_period_request::intent},
     };
@@ -605,7 +605,7 @@ wire_fields(std::type_identity<get_many_equity_swap_periods_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_equity_swap_period_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_equity_swap_period_response::result},
         utility::codec::field{"equity_swap_period",
                               &put_equity_swap_period_response::equity_swap_period},
@@ -621,7 +621,7 @@ wire_fields(std::type_identity<get_many_equity_swap_periods_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_equity_swap_periods_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_equity_swap_periods_request::changes},
         utility::codec::field{"intent", &put_many_equity_swap_periods_request::intent},
     };
@@ -637,7 +637,7 @@ wire_fields(std::type_identity<get_many_equity_swap_periods_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_equity_swap_periods_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_equity_swap_periods_response::result},
         utility::codec::field{"equity_swap_periods",
                               &put_many_equity_swap_periods_response::equity_swap_periods},
@@ -653,7 +653,7 @@ wire_fields(std::type_identity<put_many_equity_swap_periods_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_equity_swap_period_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_equity_swap_period_request::removal},
         utility::codec::field{"intent", &delete_equity_swap_period_request::intent},
     };
@@ -668,7 +668,7 @@ wire_fields(std::type_identity<put_many_equity_swap_periods_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_equity_swap_period_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_equity_swap_period_response::result},
     };
 }
@@ -683,7 +683,7 @@ wire_fields(std::type_identity<put_many_equity_swap_periods_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_equity_swap_periods_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_equity_swap_periods_request::removals},
         utility::codec::field{"intent", &delete_many_equity_swap_periods_request::intent},
     };
@@ -699,7 +699,7 @@ wire_fields(std::type_identity<delete_many_equity_swap_periods_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_equity_swap_periods_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_equity_swap_periods_response::result},
     };
 }
@@ -714,7 +714,7 @@ wire_fields(std::type_identity<delete_many_equity_swap_periods_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_equity_swap_period_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_equity_swap_period_versions_request::key},
         utility::codec::field{"offset", &list_equity_swap_period_versions_request::offset},
         utility::codec::field{"limit", &list_equity_swap_period_versions_request::limit},
@@ -733,7 +733,7 @@ wire_fields(std::type_identity<list_equity_swap_period_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_equity_swap_period_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_equity_swap_period_versions_response::result},
         utility::codec::field{"versions", &list_equity_swap_period_versions_response::versions},
         utility::codec::field{"total", &list_equity_swap_period_versions_response::total},
@@ -750,7 +750,7 @@ wire_fields(std::type_identity<list_equity_swap_period_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_equity_swap_period_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_equity_swap_period_version_request::key},
     };
 }
@@ -765,7 +765,7 @@ wire_fields(std::type_identity<get_equity_swap_period_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_equity_swap_period_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_equity_swap_period_version_response::result},
         utility::codec::field{"version", &get_equity_swap_period_version_response::version},
     };

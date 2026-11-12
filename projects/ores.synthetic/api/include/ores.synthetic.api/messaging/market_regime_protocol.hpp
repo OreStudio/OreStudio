@@ -369,7 +369,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_market_regime_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -381,7 +381,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_regime_sample>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"at", &market_regime_sample::at},
         ::ores::utility::codec::field{"heat", &market_regime_sample::heat},
         ::ores::utility::codec::field{"intensity", &market_regime_sample::intensity},
@@ -397,7 +397,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_market_regime_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_market_regime_response::success},
         ::ores::utility::codec::field{"message", &get_market_regime_response::message},
         ::ores::utility::codec::field{"state", &get_market_regime_response::state},
@@ -431,7 +431,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_market_trace_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"source_name", &get_market_trace_request::source_name},
         ::ores::utility::codec::field{"seconds", &get_market_trace_request::seconds},
         ::ores::utility::codec::field{"limit", &get_market_trace_request::limit},
@@ -447,7 +447,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_trace_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"kind", &market_trace_event::kind},
         ::ores::utility::codec::field{"source_name", &market_trace_event::source_name},
         ::ores::utility::codec::field{"at", &market_trace_event::at},
@@ -471,7 +471,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_series_state>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"source_name", &market_series_state::source_name},
         ::ores::utility::codec::field{"mode", &market_series_state::mode},
         ::ores::utility::codec::field{"rate", &market_series_state::rate},
@@ -493,7 +493,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_market_trace_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_market_trace_response::success},
         ::ores::utility::codec::field{"message", &get_market_trace_response::message},
         ::ores::utility::codec::field{"run_seed", &get_market_trace_response::run_seed},
@@ -519,7 +519,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_market_history_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"resolution", &get_market_history_request::resolution},
         ::ores::utility::codec::field{"seconds", &get_market_history_request::seconds},
     };
@@ -534,7 +534,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_history_bin>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"at", &market_history_bin::at},
         ::ores::utility::codec::field{"counts", &market_history_bin::counts},
         ::ores::utility::codec::field{"pace", &market_history_bin::pace},
@@ -551,7 +551,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_market_history_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_market_history_response::success},
         ::ores::utility::codec::field{"message", &get_market_history_response::message},
         ::ores::utility::codec::field{"slot_seconds", &get_market_history_response::slot_seconds},
@@ -569,7 +569,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pin_market_regime_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"mode", &pin_market_regime_request::mode},
     };
 }
@@ -583,7 +583,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pin_market_regime_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &pin_market_regime_response::success},
         ::ores::utility::codec::field{"message", &pin_market_regime_response::message},
         ::ores::utility::codec::field{"state", &pin_market_regime_response::state},
@@ -617,7 +617,7 @@ struct configure_market_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<configure_market_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"wake_rate", &configure_market_request::wake_rate},
         ::ores::utility::codec::field{"calm_rate", &configure_market_request::calm_rate},
         ::ores::utility::codec::field{"jump", &configure_market_request::jump},

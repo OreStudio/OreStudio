@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_prefer
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_preference_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &notification_preference_key::account_id},
         utility::codec::field{"kind_code", &notification_preference_key::kind_code},
         utility::codec::field{"channel_code", &notification_preference_key::channel_code},
@@ -422,7 +422,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_prefer
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_preference_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &notification_preference_write::account_id},
         utility::codec::field{"kind_code", &notification_preference_write::kind_code},
         utility::codec::field{"channel_code", &notification_preference_write::channel_code},
@@ -439,7 +439,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_prefer
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_preference_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &notification_preference_change::write},
         utility::codec::field{"precondition", &notification_preference_change::precondition},
     };
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_prefer
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_preference_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &notification_preference_removal::key},
         utility::codec::field{"precondition", &notification_preference_removal::precondition},
     };
@@ -469,7 +469,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_prefer
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_preference_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &notification_preference_lookup::key},
         utility::codec::field{"notification_preference",
                               &notification_preference_lookup::notification_preference},
@@ -485,7 +485,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_prefer
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_preferences_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &notification_preferences_filter::account_id},
         utility::codec::field{"account_id_one_of",
                               &notification_preferences_filter::account_id_one_of},
@@ -501,7 +501,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_prefer
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_preference_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &notification_preference_event::event_id},
         utility::codec::field{"key", &notification_preference_event::key},
         utility::codec::field{"action", &notification_preference_event::action},
@@ -520,7 +520,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_prefer
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_preference_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"notification_preference",
                               &notification_preference_version_key::notification_preference},
         utility::codec::field{"version", &notification_preference_version_key::version},
@@ -537,7 +537,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.notification_prefer
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<notification_preference_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &notification_preference_versions_filter::version},
         utility::codec::field{"from_version",
                               &notification_preference_versions_filter::from_version},
@@ -555,7 +555,7 @@ wire_fields(std::type_identity<notification_preference_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_notification_preferences_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_notification_preferences_request::offset},
         utility::codec::field{"limit", &list_notification_preferences_request::limit},
         utility::codec::field{"order", &list_notification_preferences_request::order},
@@ -574,7 +574,7 @@ wire_fields(std::type_identity<list_notification_preferences_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_notification_preferences_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_notification_preferences_response::result},
         utility::codec::field{"preferences", &list_notification_preferences_response::preferences},
         utility::codec::field{"total", &list_notification_preferences_response::total},
@@ -590,7 +590,7 @@ wire_fields(std::type_identity<list_notification_preferences_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_notification_preference_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_notification_preference_request::key},
     };
 }
@@ -604,7 +604,7 @@ wire_fields(std::type_identity<list_notification_preferences_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_notification_preference_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_notification_preference_response::result},
         utility::codec::field{"notification_preference",
                               &get_notification_preference_response::notification_preference},
@@ -621,7 +621,7 @@ wire_fields(std::type_identity<list_notification_preferences_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_notification_preferences_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_notification_preferences_request::keys},
     };
 }
@@ -636,7 +636,7 @@ wire_fields(std::type_identity<get_many_notification_preferences_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_notification_preferences_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_notification_preferences_response::result},
         utility::codec::field{"entries", &get_many_notification_preferences_response::entries},
     };
@@ -651,7 +651,7 @@ wire_fields(std::type_identity<get_many_notification_preferences_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_notification_preference_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_notification_preference_request::change},
         utility::codec::field{"intent", &put_notification_preference_request::intent},
     };
@@ -666,7 +666,7 @@ wire_fields(std::type_identity<get_many_notification_preferences_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_notification_preference_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_notification_preference_response::result},
         utility::codec::field{"notification_preference",
                               &put_notification_preference_response::notification_preference},
@@ -683,7 +683,7 @@ wire_fields(std::type_identity<get_many_notification_preferences_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_notification_preferences_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_notification_preferences_request::changes},
         utility::codec::field{"intent", &put_many_notification_preferences_request::intent},
     };
@@ -699,7 +699,7 @@ wire_fields(std::type_identity<put_many_notification_preferences_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_notification_preferences_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_notification_preferences_response::result},
         utility::codec::field{"preferences",
                               &put_many_notification_preferences_response::preferences},
@@ -716,7 +716,7 @@ wire_fields(std::type_identity<put_many_notification_preferences_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_notification_preference_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_notification_preference_request::removal},
         utility::codec::field{"intent", &delete_notification_preference_request::intent},
     };
@@ -732,7 +732,7 @@ wire_fields(std::type_identity<delete_notification_preference_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_notification_preference_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_notification_preference_response::result},
     };
 }
@@ -747,7 +747,7 @@ wire_fields(std::type_identity<delete_notification_preference_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_notification_preferences_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_notification_preferences_request::removals},
         utility::codec::field{"intent", &delete_many_notification_preferences_request::intent},
     };
@@ -763,7 +763,7 @@ wire_fields(std::type_identity<delete_many_notification_preferences_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_notification_preferences_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_notification_preferences_response::result},
     };
 }
@@ -778,7 +778,7 @@ wire_fields(std::type_identity<delete_many_notification_preferences_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_account_id_notification_preferences_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id",
                               &list_by_account_id_notification_preferences_request::account_id},
         utility::codec::field{"scope", &list_by_account_id_notification_preferences_request::scope},
@@ -801,7 +801,7 @@ wire_fields(std::type_identity<list_by_account_id_notification_preferences_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_account_id_notification_preferences_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_account_id_notification_preferences_response::result},
         utility::codec::field{"preferences",
@@ -821,7 +821,7 @@ wire_fields(std::type_identity<list_by_account_id_notification_preferences_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_notification_preference_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_notification_preference_versions_request::key},
         utility::codec::field{"offset", &list_notification_preference_versions_request::offset},
         utility::codec::field{"limit", &list_notification_preference_versions_request::limit},
@@ -840,7 +840,7 @@ wire_fields(std::type_identity<list_notification_preference_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_notification_preference_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_notification_preference_versions_response::result},
         utility::codec::field{"versions",
                               &list_notification_preference_versions_response::versions},
@@ -858,7 +858,7 @@ wire_fields(std::type_identity<list_notification_preference_versions_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_notification_preference_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_notification_preference_version_request::key},
     };
 }
@@ -873,7 +873,7 @@ wire_fields(std::type_identity<get_notification_preference_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_notification_preference_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_notification_preference_version_response::result},
         utility::codec::field{"version", &get_notification_preference_version_response::version},
     };

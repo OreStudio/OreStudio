@@ -104,7 +104,7 @@ struct get_calendar_adjustments_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_adjustment>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"version", &calendar_adjustment::version},
         ::ores::utility::codec::field{"tenant_id", &calendar_adjustment::tenant_id},
         ::ores::utility::codec::field{"calendar_name", &calendar_adjustment::calendar_name},
@@ -131,7 +131,7 @@ struct get_calendar_adjustments_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_adjustments_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"calendar_codes",
                                       &get_calendar_adjustments_request::calendar_codes},
     };
@@ -146,7 +146,7 @@ struct get_calendar_adjustments_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_adjustments_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"adjustments",
                                       &get_calendar_adjustments_response::adjustments},
         ::ores::utility::codec::field{"success", &get_calendar_adjustments_response::success},

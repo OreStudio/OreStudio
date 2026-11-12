@@ -339,7 +339,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_role_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &account_role_key::account_id},
         utility::codec::field{"role_id", &account_role_key::role_id},
     };
@@ -354,7 +354,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_role_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &account_role_write::account_id},
         utility::codec::field{"role_id", &account_role_write::role_id},
     };
@@ -369,7 +369,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_role_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &account_role_change::write},
         utility::codec::field{"precondition", &account_role_change::precondition},
     };
@@ -384,7 +384,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_role_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &account_role_removal::key},
         utility::codec::field{"precondition", &account_role_removal::precondition},
     };
@@ -399,7 +399,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_role_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &account_role_lookup::key},
         utility::codec::field{"account_role", &account_role_lookup::account_role},
     };
@@ -414,7 +414,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_roles_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &account_roles_filter::account_id},
         utility::codec::field{"role_id", &account_roles_filter::role_id},
         utility::codec::field{"account_id_one_of", &account_roles_filter::account_id_one_of},
@@ -431,7 +431,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<account_role_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &account_role_event::event_id},
         utility::codec::field{"key", &account_role_event::key},
         utility::codec::field{"action", &account_role_event::action},
@@ -450,7 +450,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_account_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_account_roles_request::offset},
         utility::codec::field{"limit", &list_account_roles_request::limit},
         utility::codec::field{"order", &list_account_roles_request::order},
@@ -467,7 +467,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_account_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_account_roles_response::result},
         utility::codec::field{"account_roles", &list_account_roles_response::account_roles},
         utility::codec::field{"total", &list_account_roles_response::total},
@@ -483,7 +483,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_account_role_request::key},
     };
 }
@@ -497,7 +497,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_account_role_response::result},
         utility::codec::field{"account_role", &get_account_role_response::account_role},
     };
@@ -512,7 +512,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_account_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_account_roles_request::keys},
     };
 }
@@ -526,7 +526,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_account_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_account_roles_response::result},
         utility::codec::field{"entries", &get_many_account_roles_response::entries},
     };
@@ -541,7 +541,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_account_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_account_role_request::change},
         utility::codec::field{"intent", &put_account_role_request::intent},
     };
@@ -556,7 +556,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_account_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_account_role_response::result},
         utility::codec::field{"account_role", &put_account_role_response::account_role},
     };
@@ -571,7 +571,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_account_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_account_roles_request::changes},
         utility::codec::field{"intent", &put_many_account_roles_request::intent},
     };
@@ -586,7 +586,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_account_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_account_roles_response::result},
         utility::codec::field{"account_roles", &put_many_account_roles_response::account_roles},
     };
@@ -601,7 +601,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_account_role_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_account_role_request::removal},
         utility::codec::field{"intent", &delete_account_role_request::intent},
     };
@@ -616,7 +616,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_account_role_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_account_role_response::result},
     };
 }
@@ -630,7 +630,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_account_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_account_roles_request::removals},
         utility::codec::field{"intent", &delete_many_account_roles_request::intent},
     };
@@ -645,7 +645,7 @@ struct list_by_role_id_account_roles_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_account_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_account_roles_response::result},
     };
 }
@@ -660,7 +660,7 @@ struct list_by_role_id_account_roles_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_account_id_account_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &list_by_account_id_account_roles_request::account_id},
         utility::codec::field{"scope", &list_by_account_id_account_roles_request::scope},
         utility::codec::field{"offset", &list_by_account_id_account_roles_request::offset},
@@ -680,7 +680,7 @@ wire_fields(std::type_identity<list_by_account_id_account_roles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_account_id_account_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_account_id_account_roles_response::result},
         utility::codec::field{"account_roles",
                               &list_by_account_id_account_roles_response::account_roles},
@@ -698,7 +698,7 @@ wire_fields(std::type_identity<list_by_account_id_account_roles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_role_id_account_roles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"role_id", &list_by_role_id_account_roles_request::role_id},
         utility::codec::field{"scope", &list_by_role_id_account_roles_request::scope},
         utility::codec::field{"offset", &list_by_role_id_account_roles_request::offset},
@@ -718,7 +718,7 @@ wire_fields(std::type_identity<list_by_role_id_account_roles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_role_id_account_roles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_role_id_account_roles_response::result},
         utility::codec::field{"account_roles",
                               &list_by_role_id_account_roles_response::account_roles},

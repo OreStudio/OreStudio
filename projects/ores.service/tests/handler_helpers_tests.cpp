@@ -43,8 +43,9 @@ struct payload {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<payload>) {
-    return std::tuple{ores::utility::codec::field{"name", &payload::name},
-                      ores::utility::codec::field{"count", &payload::count}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"name", &payload::name},
+        ores::utility::codec::field{"count", &payload::count}};
 }
 
 // A domain object of the shape stamp() writes to.
@@ -72,10 +73,11 @@ struct document {
 // The walk reads a struct by its stated shape, as codegen states it for a
 // generated document.
 constexpr auto wire_fields(std::type_identity<document>) {
-    return std::tuple{ores::utility::codec::field{"header", &document::header},
-                      ores::utility::codec::field{"rows", &document::rows},
-                      ores::utility::codec::field{"id", &document::id},
-                      ores::utility::codec::field{"count", &document::count}};
+    return ::ores::utility::codec::field_list{
+        ores::utility::codec::field{"header", &document::header},
+        ores::utility::codec::field{"rows", &document::rows},
+        ores::utility::codec::field{"id", &document::id},
+        ores::utility::codec::field{"count", &document::count}};
 }
 
 }

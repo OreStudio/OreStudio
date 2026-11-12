@@ -52,7 +52,8 @@ struct inner {
  * warning.
  */
 inline constexpr auto wire_fields(std::type_identity<inner>) {
-    return std::tuple{field{"count", &inner::count}, field{"label", &inner::label}};
+    return ::ores::utility::codec::field_list{field{"count", &inner::count},
+                                              field{"label", &inner::label}};
 }
 
 /**
@@ -68,11 +69,11 @@ struct outer {
 };
 
 inline constexpr auto wire_fields(std::type_identity<outer>) {
-    return std::tuple{field{"name", &outer::name},
-                      field{"one", &outer::one},
-                      field{"many", &outer::many},
-                      field{"maybe", &outer::maybe},
-                      field{"note", &outer::note}};
+    return ::ores::utility::codec::field_list{field{"name", &outer::name},
+                                              field{"one", &outer::one},
+                                              field{"many", &outer::many},
+                                              field{"maybe", &outer::maybe},
+                                              field{"note", &outer::note}};
 }
 
 /**
@@ -85,7 +86,8 @@ struct tally {
 };
 
 inline constexpr auto wire_fields(std::type_identity<tally>) {
-    return std::tuple{field{"counts", &tally::counts}, field{"parts", &tally::parts}};
+    return ::ores::utility::codec::field_list{field{"counts", &tally::counts},
+                                              field{"parts", &tally::parts}};
 }
 
 /**
@@ -97,7 +99,8 @@ struct timed {
 };
 
 inline constexpr auto wire_fields(std::type_identity<timed>) {
-    return std::tuple{field{"interval", &timed::interval}, field{"pause", &timed::pause}};
+    return ::ores::utility::codec::field_list{field{"interval", &timed::interval},
+                                              field{"pause", &timed::pause}};
 }
 
 /**
@@ -108,7 +111,7 @@ struct located {
 };
 
 inline constexpr auto wire_fields(std::type_identity<located>) {
-    return std::tuple{field{"dir", &located::dir}};
+    return ::ores::utility::codec::field_list{field{"dir", &located::dir}};
 }
 
 /**
@@ -122,7 +125,8 @@ struct forgetful {
 };
 
 inline constexpr auto wire_fields(std::type_identity<forgetful>) {
-    return std::tuple{field{"user", &forgetful::user}, field{"port", &forgetful::port}};
+    return ::ores::utility::codec::field_list{field{"user", &forgetful::user},
+                                              field{"port", &forgetful::port}};
 }
 
 }

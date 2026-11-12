@@ -393,7 +393,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_cross_currency_terms_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_segment_cross_currency_terms_key::id},
     };
 }
@@ -408,7 +408,7 @@ wire_fields(std::type_identity<curve_segment_cross_currency_terms_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_cross_currency_terms_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_segment_cross_currency_terms_write::id},
         utility::codec::field{"curve_segment_id",
                               &curve_segment_cross_currency_terms_write::curve_segment_id},
@@ -432,7 +432,7 @@ wire_fields(std::type_identity<curve_segment_cross_currency_terms_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_cross_currency_terms_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &curve_segment_cross_currency_terms_change::write},
         utility::codec::field{"precondition",
                               &curve_segment_cross_currency_terms_change::precondition},
@@ -449,7 +449,7 @@ wire_fields(std::type_identity<curve_segment_cross_currency_terms_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_cross_currency_terms_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_segment_cross_currency_terms_removal::key},
         utility::codec::field{"precondition",
                               &curve_segment_cross_currency_terms_removal::precondition},
@@ -466,7 +466,7 @@ wire_fields(std::type_identity<curve_segment_cross_currency_terms_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_cross_currency_terms_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_segment_cross_currency_terms_lookup::key},
         utility::codec::field{
             "curve_segment_cross_currency_terms",
@@ -484,7 +484,7 @@ wire_fields(std::type_identity<curve_segment_cross_currency_terms_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_cross_currency_terms_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &curve_segment_cross_currency_terms_filter::id_one_of},
     };
 }
@@ -499,7 +499,7 @@ wire_fields(std::type_identity<curve_segment_cross_currency_terms_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_cross_currency_terms_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &curve_segment_cross_currency_terms_event::event_id},
         utility::codec::field{"key", &curve_segment_cross_currency_terms_event::key},
         utility::codec::field{"action", &curve_segment_cross_currency_terms_event::action},
@@ -521,7 +521,7 @@ wire_fields(std::type_identity<curve_segment_cross_currency_terms_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_cross_currency_terms_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "curve_segment_cross_currency_terms",
             &curve_segment_cross_currency_terms_version_key::curve_segment_cross_currency_terms},
@@ -539,7 +539,7 @@ wire_fields(std::type_identity<curve_segment_cross_currency_terms_version_key>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_cross_currency_terms_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version",
                               &curve_segment_cross_currency_terms_versions_filter::version},
         utility::codec::field{"from_version",
@@ -559,7 +559,7 @@ wire_fields(std::type_identity<curve_segment_cross_currency_terms_versions_filte
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_cross_currency_terms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_curve_segment_cross_currency_terms_request::offset},
         utility::codec::field{"limit", &list_curve_segment_cross_currency_terms_request::limit},
         utility::codec::field{"order", &list_curve_segment_cross_currency_terms_request::order},
@@ -578,7 +578,7 @@ wire_fields(std::type_identity<list_curve_segment_cross_currency_terms_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_cross_currency_terms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_segment_cross_currency_terms_response::result},
         utility::codec::field{
             "segment_cross_currency_terms",
@@ -597,7 +597,7 @@ wire_fields(std::type_identity<list_curve_segment_cross_currency_terms_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_cross_currency_terms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_segment_cross_currency_terms_request::key},
     };
 }
@@ -612,7 +612,7 @@ wire_fields(std::type_identity<get_curve_segment_cross_currency_terms_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_cross_currency_terms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_segment_cross_currency_terms_response::result},
         utility::codec::field{
             "curve_segment_cross_currency_terms",
@@ -630,7 +630,7 @@ wire_fields(std::type_identity<get_curve_segment_cross_currency_terms_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_segment_cross_currency_terms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_curve_segment_cross_currency_terms_request::keys},
     };
 }
@@ -645,7 +645,7 @@ wire_fields(std::type_identity<get_many_curve_segment_cross_currency_terms_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_segment_cross_currency_terms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_curve_segment_cross_currency_terms_response::result},
         utility::codec::field{"entries",
@@ -663,7 +663,7 @@ wire_fields(std::type_identity<get_many_curve_segment_cross_currency_terms_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_curve_segment_cross_currency_terms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_curve_segment_cross_currency_terms_request::change},
         utility::codec::field{"intent", &put_curve_segment_cross_currency_terms_request::intent},
     };
@@ -679,7 +679,7 @@ wire_fields(std::type_identity<put_curve_segment_cross_currency_terms_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_curve_segment_cross_currency_terms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_curve_segment_cross_currency_terms_response::result},
         utility::codec::field{
             "curve_segment_cross_currency_terms",
@@ -697,7 +697,7 @@ wire_fields(std::type_identity<put_curve_segment_cross_currency_terms_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_segment_cross_currency_terms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_curve_segment_cross_currency_terms_request::changes},
         utility::codec::field{"intent",
@@ -715,7 +715,7 @@ wire_fields(std::type_identity<put_many_curve_segment_cross_currency_terms_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_segment_cross_currency_terms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_curve_segment_cross_currency_terms_response::result},
         utility::codec::field{
@@ -734,7 +734,7 @@ wire_fields(std::type_identity<put_many_curve_segment_cross_currency_terms_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_segment_cross_currency_terms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal",
                               &delete_curve_segment_cross_currency_terms_request::removal},
         utility::codec::field{"intent", &delete_curve_segment_cross_currency_terms_request::intent},
@@ -751,7 +751,7 @@ wire_fields(std::type_identity<delete_curve_segment_cross_currency_terms_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_segment_cross_currency_terms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_curve_segment_cross_currency_terms_response::result},
     };
@@ -767,7 +767,7 @@ wire_fields(std::type_identity<delete_curve_segment_cross_currency_terms_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_segment_cross_currency_terms_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_curve_segment_cross_currency_terms_request::removals},
         utility::codec::field{"intent",
@@ -785,7 +785,7 @@ wire_fields(std::type_identity<delete_many_curve_segment_cross_currency_terms_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_segment_cross_currency_terms_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_curve_segment_cross_currency_terms_response::result},
     };
@@ -801,7 +801,7 @@ wire_fields(std::type_identity<delete_many_curve_segment_cross_currency_terms_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_cross_currency_terms_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &list_curve_segment_cross_currency_terms_versions_request::key},
         utility::codec::field{"offset",
@@ -825,7 +825,7 @@ wire_fields(std::type_identity<list_curve_segment_cross_currency_terms_versions_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_cross_currency_terms_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_curve_segment_cross_currency_terms_versions_response::result},
         utility::codec::field{"versions",
@@ -845,7 +845,7 @@ wire_fields(std::type_identity<list_curve_segment_cross_currency_terms_versions_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_cross_currency_terms_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_segment_cross_currency_terms_version_request::key},
     };
 }
@@ -860,7 +860,7 @@ wire_fields(std::type_identity<get_curve_segment_cross_currency_terms_version_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_cross_currency_terms_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_curve_segment_cross_currency_terms_version_response::result},
         utility::codec::field{"version",

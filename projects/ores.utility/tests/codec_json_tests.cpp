@@ -41,8 +41,8 @@ struct keeps_its_defaults {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<keeps_its_defaults>) {
     using ::ores::utility::codec::field;
-    return std::tuple{field{"label", &keeps_its_defaults::label},
-                      field{"count", &keeps_its_defaults::count}};
+    return ::ores::utility::codec::field_list{field{"label", &keeps_its_defaults::label},
+                                              field{"count", &keeps_its_defaults::count}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<keeps_its_defaults>(),

@@ -356,7 +356,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<benchmark_rate_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &benchmark_rate_key::code},
         utility::codec::field{"coding_scheme_code", &benchmark_rate_key::coding_scheme_code},
     };
@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<benchmark_rate_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &benchmark_rate_write::code},
         utility::codec::field{"coding_scheme_code", &benchmark_rate_write::coding_scheme_code},
         utility::codec::field{"source", &benchmark_rate_write::source},
@@ -388,7 +388,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<benchmark_rate_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &benchmark_rate_change::write},
         utility::codec::field{"precondition", &benchmark_rate_change::precondition},
     };
@@ -403,7 +403,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<benchmark_rate_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &benchmark_rate_removal::key},
         utility::codec::field{"precondition", &benchmark_rate_removal::precondition},
     };
@@ -418,7 +418,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<benchmark_rate_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &benchmark_rate_lookup::key},
         utility::codec::field{"benchmark_rate", &benchmark_rate_lookup::benchmark_rate},
     };
@@ -433,7 +433,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<benchmark_rate_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &benchmark_rate_event::event_id},
         utility::codec::field{"key", &benchmark_rate_event::key},
         utility::codec::field{"action", &benchmark_rate_event::action},
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<benchmark_rate_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"benchmark_rate", &benchmark_rate_version_key::benchmark_rate},
         utility::codec::field{"version", &benchmark_rate_version_key::version},
     };
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<benchmark_rate_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &benchmark_rate_versions_filter::version},
         utility::codec::field{"from_version", &benchmark_rate_versions_filter::from_version},
         utility::codec::field{"to_version", &benchmark_rate_versions_filter::to_version},
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_benchmark_rates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_benchmark_rates_request::offset},
         utility::codec::field{"limit", &list_benchmark_rates_request::limit},
         utility::codec::field{"order", &list_benchmark_rates_request::order},
@@ -500,7 +500,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_benchmark_rates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_benchmark_rates_response::result},
         utility::codec::field{"rates", &list_benchmark_rates_response::rates},
         utility::codec::field{"total", &list_benchmark_rates_response::total},
@@ -516,7 +516,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_benchmark_rate_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_benchmark_rate_request::key},
     };
 }
@@ -530,7 +530,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_benchmark_rate_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_benchmark_rate_response::result},
         utility::codec::field{"benchmark_rate", &get_benchmark_rate_response::benchmark_rate},
     };
@@ -545,7 +545,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_benchmark_rates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_benchmark_rates_request::keys},
     };
 }
@@ -559,7 +559,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_benchmark_rates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_benchmark_rates_response::result},
         utility::codec::field{"entries", &get_many_benchmark_rates_response::entries},
     };
@@ -574,7 +574,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_benchmark_rate_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_benchmark_rate_request::change},
         utility::codec::field{"intent", &put_benchmark_rate_request::intent},
     };
@@ -589,7 +589,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_benchmark_rate_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_benchmark_rate_response::result},
         utility::codec::field{"benchmark_rate", &put_benchmark_rate_response::benchmark_rate},
     };
@@ -604,7 +604,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_benchmark_rates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_benchmark_rates_request::changes},
         utility::codec::field{"intent", &put_many_benchmark_rates_request::intent},
     };
@@ -619,7 +619,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_benchmark_rates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_benchmark_rates_response::result},
         utility::codec::field{"rates", &put_many_benchmark_rates_response::rates},
     };
@@ -634,7 +634,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_benchmark_rate_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_benchmark_rate_request::removal},
         utility::codec::field{"intent", &delete_benchmark_rate_request::intent},
     };
@@ -649,7 +649,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_benchmark_rate_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_benchmark_rate_response::result},
     };
 }
@@ -663,7 +663,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_benchmark_rates_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_benchmark_rates_request::removals},
         utility::codec::field{"intent", &delete_many_benchmark_rates_request::intent},
     };
@@ -678,7 +678,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_benchmark_rates_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_benchmark_rates_response::result},
     };
 }
@@ -692,7 +692,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_benchmark_rate_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_benchmark_rate_versions_request::key},
         utility::codec::field{"offset", &list_benchmark_rate_versions_request::offset},
         utility::codec::field{"limit", &list_benchmark_rate_versions_request::limit},
@@ -711,7 +711,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.benchmark_rates.d
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_benchmark_rate_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_benchmark_rate_versions_response::result},
         utility::codec::field{"versions", &list_benchmark_rate_versions_response::versions},
         utility::codec::field{"total", &list_benchmark_rate_versions_response::total},
@@ -727,7 +727,7 @@ wire_fields(std::type_identity<list_benchmark_rate_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_benchmark_rate_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_benchmark_rate_version_request::key},
     };
 }
@@ -741,7 +741,7 @@ wire_fields(std::type_identity<list_benchmark_rate_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_benchmark_rate_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_benchmark_rate_version_response::result},
         utility::codec::field{"version", &get_benchmark_rate_version_response::version},
     };

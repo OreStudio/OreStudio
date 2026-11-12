@@ -361,7 +361,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<local_jurisdiction_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &local_jurisdiction_key::code},
         utility::codec::field{"coding_scheme_code", &local_jurisdiction_key::coding_scheme_code},
     };
@@ -376,7 +376,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<local_jurisdiction_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &local_jurisdiction_write::code},
         utility::codec::field{"coding_scheme_code", &local_jurisdiction_write::coding_scheme_code},
         utility::codec::field{"source", &local_jurisdiction_write::source},
@@ -393,7 +393,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<local_jurisdiction_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &local_jurisdiction_change::write},
         utility::codec::field{"precondition", &local_jurisdiction_change::precondition},
     };
@@ -408,7 +408,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<local_jurisdiction_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &local_jurisdiction_removal::key},
         utility::codec::field{"precondition", &local_jurisdiction_removal::precondition},
     };
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<local_jurisdiction_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &local_jurisdiction_lookup::key},
         utility::codec::field{"local_jurisdiction", &local_jurisdiction_lookup::local_jurisdiction},
     };
@@ -438,7 +438,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<local_jurisdiction_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &local_jurisdiction_event::event_id},
         utility::codec::field{"key", &local_jurisdiction_event::key},
         utility::codec::field{"action", &local_jurisdiction_event::action},
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<local_jurisdiction_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"local_jurisdiction",
                               &local_jurisdiction_version_key::local_jurisdiction},
         utility::codec::field{"version", &local_jurisdiction_version_key::version},
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<local_jurisdiction_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &local_jurisdiction_versions_filter::version},
         utility::codec::field{"from_version", &local_jurisdiction_versions_filter::from_version},
         utility::codec::field{"to_version", &local_jurisdiction_versions_filter::to_version},
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_local_jurisdictions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_local_jurisdictions_request::offset},
         utility::codec::field{"limit", &list_local_jurisdictions_request::limit},
         utility::codec::field{"order", &list_local_jurisdictions_request::order},
@@ -506,7 +506,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_local_jurisdictions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_local_jurisdictions_response::result},
         utility::codec::field{"jurisdictions", &list_local_jurisdictions_response::jurisdictions},
         utility::codec::field{"total", &list_local_jurisdictions_response::total},
@@ -522,7 +522,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_local_jurisdiction_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_local_jurisdiction_request::key},
     };
 }
@@ -536,7 +536,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_local_jurisdiction_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_local_jurisdiction_response::result},
         utility::codec::field{"local_jurisdiction",
                               &get_local_jurisdiction_response::local_jurisdiction},
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_local_jurisdictions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_local_jurisdictions_request::keys},
     };
 }
@@ -567,7 +567,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.local_jurisdictio
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_local_jurisdictions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_local_jurisdictions_response::result},
         utility::codec::field{"entries", &get_many_local_jurisdictions_response::entries},
     };
@@ -582,7 +582,7 @@ wire_fields(std::type_identity<get_many_local_jurisdictions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_local_jurisdiction_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_local_jurisdiction_request::change},
         utility::codec::field{"intent", &put_local_jurisdiction_request::intent},
     };
@@ -597,7 +597,7 @@ wire_fields(std::type_identity<get_many_local_jurisdictions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_local_jurisdiction_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_local_jurisdiction_response::result},
         utility::codec::field{"local_jurisdiction",
                               &put_local_jurisdiction_response::local_jurisdiction},
@@ -613,7 +613,7 @@ wire_fields(std::type_identity<get_many_local_jurisdictions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_local_jurisdictions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_local_jurisdictions_request::changes},
         utility::codec::field{"intent", &put_many_local_jurisdictions_request::intent},
     };
@@ -629,7 +629,7 @@ wire_fields(std::type_identity<get_many_local_jurisdictions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_local_jurisdictions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_local_jurisdictions_response::result},
         utility::codec::field{"jurisdictions",
                               &put_many_local_jurisdictions_response::jurisdictions},
@@ -645,7 +645,7 @@ wire_fields(std::type_identity<put_many_local_jurisdictions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_local_jurisdiction_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_local_jurisdiction_request::removal},
         utility::codec::field{"intent", &delete_local_jurisdiction_request::intent},
     };
@@ -660,7 +660,7 @@ wire_fields(std::type_identity<put_many_local_jurisdictions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_local_jurisdiction_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_local_jurisdiction_response::result},
     };
 }
@@ -675,7 +675,7 @@ wire_fields(std::type_identity<put_many_local_jurisdictions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_local_jurisdictions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_local_jurisdictions_request::removals},
         utility::codec::field{"intent", &delete_many_local_jurisdictions_request::intent},
     };
@@ -691,7 +691,7 @@ wire_fields(std::type_identity<delete_many_local_jurisdictions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_local_jurisdictions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_local_jurisdictions_response::result},
     };
 }
@@ -706,7 +706,7 @@ wire_fields(std::type_identity<delete_many_local_jurisdictions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_local_jurisdiction_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_local_jurisdiction_versions_request::key},
         utility::codec::field{"offset", &list_local_jurisdiction_versions_request::offset},
         utility::codec::field{"limit", &list_local_jurisdiction_versions_request::limit},
@@ -725,7 +725,7 @@ wire_fields(std::type_identity<list_local_jurisdiction_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_local_jurisdiction_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_local_jurisdiction_versions_response::result},
         utility::codec::field{"versions", &list_local_jurisdiction_versions_response::versions},
         utility::codec::field{"total", &list_local_jurisdiction_versions_response::total},
@@ -742,7 +742,7 @@ wire_fields(std::type_identity<list_local_jurisdiction_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_local_jurisdiction_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_local_jurisdiction_version_request::key},
     };
 }
@@ -757,7 +757,7 @@ wire_fields(std::type_identity<get_local_jurisdiction_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_local_jurisdiction_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_local_jurisdiction_version_response::result},
         utility::codec::field{"version", &get_local_jurisdiction_version_response::version},
     };

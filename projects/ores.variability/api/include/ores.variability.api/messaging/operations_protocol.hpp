@@ -158,7 +158,7 @@ struct get_setting_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<clear_bootstrap_mode_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -170,7 +170,7 @@ struct get_setting_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<clear_bootstrap_mode_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &clear_bootstrap_mode_response::result},
     };
 }
@@ -184,7 +184,7 @@ struct get_setting_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<complete_system_onboarding_request>) {
-    return std::tuple{};
+    return ::ores::utility::codec::field_list{};
 }
 
 /**
@@ -196,7 +196,7 @@ struct get_setting_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<complete_system_onboarding_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &complete_system_onboarding_response::result},
     };
 }
@@ -210,7 +210,7 @@ struct get_setting_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<complete_party_onboarding_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"party_id", &complete_party_onboarding_request::party_id},
     };
 }
@@ -224,7 +224,7 @@ struct get_setting_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<complete_party_onboarding_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &complete_party_onboarding_response::result},
     };
 }
@@ -238,7 +238,7 @@ struct get_setting_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_setting_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"name", &get_setting_request::name},
     };
 }
@@ -252,7 +252,7 @@ struct get_setting_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_setting_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_setting_response::result},
         ::ores::utility::codec::field{"value", &get_setting_response::value},
         ::ores::utility::codec::field{"data_type", &get_setting_response::data_type},

@@ -194,7 +194,7 @@ struct put_many_commodity_future_conventions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_future_convention_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id", &commodity_future_convention_key::id},
     };
 }
@@ -208,7 +208,7 @@ struct put_many_commodity_future_conventions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_future_convention_item>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"key", &commodity_future_convention_item::key},
         ::ores::utility::codec::field{"convention", &commodity_future_convention_item::convention},
         ::ores::utility::codec::field{"averaging_terms",
@@ -233,7 +233,7 @@ struct put_many_commodity_future_conventions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_future_convention_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"change", &commodity_future_convention_write::change},
         ::ores::utility::codec::field{"averaging_terms",
                                       &commodity_future_convention_write::averaging_terms},
@@ -258,7 +258,7 @@ struct put_many_commodity_future_conventions_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_future_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"key", &get_commodity_future_convention_request::key},
     };
 }
@@ -273,7 +273,7 @@ wire_fields(std::type_identity<get_commodity_future_convention_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_future_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_commodity_future_convention_response::result},
         ::ores::utility::codec::field{"item", &get_commodity_future_convention_response::item},
     };
@@ -289,7 +289,7 @@ wire_fields(std::type_identity<get_commodity_future_convention_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_commodity_future_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"keys", &get_many_commodity_future_conventions_request::keys},
     };
 }
@@ -304,7 +304,7 @@ wire_fields(std::type_identity<get_many_commodity_future_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_commodity_future_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result",
                                       &get_many_commodity_future_conventions_response::result},
         ::ores::utility::codec::field{"items",
@@ -322,7 +322,7 @@ wire_fields(std::type_identity<get_many_commodity_future_conventions_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_commodity_future_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"item", &put_commodity_future_convention_request::item},
         ::ores::utility::codec::field{"intent", &put_commodity_future_convention_request::intent},
     };
@@ -338,7 +338,7 @@ wire_fields(std::type_identity<put_commodity_future_convention_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_commodity_future_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &put_commodity_future_convention_response::result},
         ::ores::utility::codec::field{"item", &put_commodity_future_convention_response::item},
     };
@@ -354,7 +354,7 @@ wire_fields(std::type_identity<put_commodity_future_convention_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_commodity_future_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"items",
                                       &put_many_commodity_future_conventions_request::items},
         ::ores::utility::codec::field{"intent",
@@ -372,7 +372,7 @@ wire_fields(std::type_identity<put_many_commodity_future_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_commodity_future_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result",
                                       &put_many_commodity_future_conventions_response::result},
         ::ores::utility::codec::field{"items",

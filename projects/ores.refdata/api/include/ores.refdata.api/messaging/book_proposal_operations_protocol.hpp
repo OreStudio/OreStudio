@@ -247,7 +247,7 @@ struct recheck_book_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<book_line_outcome>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"line_no", &book_line_outcome::line_no},
         ::ores::utility::codec::field{"operation", &book_line_outcome::operation},
         ::ores::utility::codec::field{"entity_id", &book_line_outcome::entity_id},
@@ -266,7 +266,7 @@ struct recheck_book_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_book_changes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"lines", &preview_book_changes_request::lines},
     };
 }
@@ -280,7 +280,7 @@ struct recheck_book_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_book_changes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &preview_book_changes_response::result},
         ::ores::utility::codec::field{"lines", &preview_book_changes_response::lines},
         ::ores::utility::codec::field{"part_codes", &preview_book_changes_response::part_codes},
@@ -296,7 +296,7 @@ struct recheck_book_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_book_changes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"reason", &raise_book_changes_request::reason},
         ::ores::utility::codec::field{"lines", &raise_book_changes_request::lines},
     };
@@ -311,7 +311,7 @@ struct recheck_book_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_book_changes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &raise_book_changes_response::result},
         ::ores::utility::codec::field{"request_id", &raise_book_changes_response::request_id},
         ::ores::utility::codec::field{"lines", &raise_book_changes_response::lines},
@@ -328,7 +328,7 @@ struct recheck_book_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<book_field_delta>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"name", &book_field_delta::name},
         ::ores::utility::codec::field{"before", &book_field_delta::before},
         ::ores::utility::codec::field{"after", &book_field_delta::after},
@@ -345,7 +345,7 @@ struct recheck_book_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<book_change_delta>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"line_no", &book_change_delta::line_no},
         ::ores::utility::codec::field{"operation", &book_change_delta::operation},
         ::ores::utility::codec::field{"entity_id", &book_change_delta::entity_id},
@@ -364,7 +364,7 @@ struct recheck_book_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_book_changes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id", &get_book_changes_request::request_id},
     };
 }
@@ -378,7 +378,7 @@ struct recheck_book_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_book_changes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_book_changes_response::result},
         ::ores::utility::codec::field{"changes", &get_book_changes_response::changes},
     };
@@ -393,7 +393,7 @@ struct recheck_book_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<recheck_book_changes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id", &recheck_book_changes_request::request_id},
     };
 }
@@ -407,7 +407,7 @@ struct recheck_book_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<recheck_book_changes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &recheck_book_changes_response::result},
         ::ores::utility::codec::field{"lines", &recheck_book_changes_response::lines},
         ::ores::utility::codec::field{"part_codes", &recheck_book_changes_response::part_codes},

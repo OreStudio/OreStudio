@@ -74,7 +74,7 @@ public:
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<context_factory::configuration>) {
     using configuration = context_factory::configuration;
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"database_options", &configuration::database_options},
         ::ores::utility::codec::field{"pool_size", &configuration::pool_size},
         ::ores::utility::codec::field{"num_attempts", &configuration::num_attempts},

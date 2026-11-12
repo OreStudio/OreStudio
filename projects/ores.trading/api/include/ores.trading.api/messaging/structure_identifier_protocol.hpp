@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_identifier_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"structure_id", &structure_identifier_key::structure_id},
         utility::codec::field{"id_type", &structure_identifier_key::id_type},
     };
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_identifier_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"structure_id", &structure_identifier_write::structure_id},
         utility::codec::field{"id_type", &structure_identifier_write::id_type},
         utility::codec::field{"id_value", &structure_identifier_write::id_value},
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_identifier_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &structure_identifier_change::write},
         utility::codec::field{"precondition", &structure_identifier_change::precondition},
     };
@@ -451,7 +451,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_identifier_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &structure_identifier_removal::key},
         utility::codec::field{"precondition", &structure_identifier_removal::precondition},
     };
@@ -466,7 +466,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_identifier_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &structure_identifier_lookup::key},
         utility::codec::field{"structure_identifier",
                               &structure_identifier_lookup::structure_identifier},
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_identifiers_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"structure_id", &structure_identifiers_filter::structure_id},
         utility::codec::field{"structure_id_one_of",
                               &structure_identifiers_filter::structure_id_one_of},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_identifier_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &structure_identifier_event::event_id},
         utility::codec::field{"key", &structure_identifier_event::key},
         utility::codec::field{"action", &structure_identifier_event::action},
@@ -517,7 +517,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_identifier_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"structure_identifier",
                               &structure_identifier_version_key::structure_identifier},
         utility::codec::field{"version", &structure_identifier_version_key::version},
@@ -533,7 +533,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_identifier_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &structure_identifier_versions_filter::version},
         utility::codec::field{"from_version", &structure_identifier_versions_filter::from_version},
         utility::codec::field{"to_version", &structure_identifier_versions_filter::to_version},
@@ -549,7 +549,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_structure_identifiers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_structure_identifiers_request::offset},
         utility::codec::field{"limit", &list_structure_identifiers_request::limit},
         utility::codec::field{"order", &list_structure_identifiers_request::order},
@@ -567,7 +567,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_structure_identifiers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_structure_identifiers_response::result},
         utility::codec::field{"identifiers", &list_structure_identifiers_response::identifiers},
         utility::codec::field{"total", &list_structure_identifiers_response::total},
@@ -583,7 +583,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_structure_identifier_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_structure_identifier_request::key},
     };
 }
@@ -597,7 +597,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_structure_identifier_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_structure_identifier_response::result},
         utility::codec::field{"structure_identifier",
                               &get_structure_identifier_response::structure_identifier},
@@ -614,7 +614,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_identif
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_structure_identifiers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_structure_identifiers_request::keys},
     };
 }
@@ -629,7 +629,7 @@ wire_fields(std::type_identity<get_many_structure_identifiers_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_structure_identifiers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_structure_identifiers_response::result},
         utility::codec::field{"entries", &get_many_structure_identifiers_response::entries},
     };
@@ -644,7 +644,7 @@ wire_fields(std::type_identity<get_many_structure_identifiers_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_structure_identifier_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_structure_identifier_request::change},
         utility::codec::field{"intent", &put_structure_identifier_request::intent},
     };
@@ -659,7 +659,7 @@ wire_fields(std::type_identity<get_many_structure_identifiers_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_structure_identifier_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_structure_identifier_response::result},
         utility::codec::field{"structure_identifier",
                               &put_structure_identifier_response::structure_identifier},
@@ -676,7 +676,7 @@ wire_fields(std::type_identity<get_many_structure_identifiers_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_structure_identifiers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_structure_identifiers_request::changes},
         utility::codec::field{"intent", &put_many_structure_identifiers_request::intent},
     };
@@ -692,7 +692,7 @@ wire_fields(std::type_identity<put_many_structure_identifiers_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_structure_identifiers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_structure_identifiers_response::result},
         utility::codec::field{"identifiers", &put_many_structure_identifiers_response::identifiers},
     };
@@ -707,7 +707,7 @@ wire_fields(std::type_identity<put_many_structure_identifiers_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_structure_identifier_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_structure_identifier_request::removal},
         utility::codec::field{"intent", &delete_structure_identifier_request::intent},
     };
@@ -722,7 +722,7 @@ wire_fields(std::type_identity<put_many_structure_identifiers_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_structure_identifier_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_structure_identifier_response::result},
     };
 }
@@ -737,7 +737,7 @@ wire_fields(std::type_identity<put_many_structure_identifiers_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_structure_identifiers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_structure_identifiers_request::removals},
         utility::codec::field{"intent", &delete_many_structure_identifiers_request::intent},
     };
@@ -753,7 +753,7 @@ wire_fields(std::type_identity<delete_many_structure_identifiers_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_structure_identifiers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_structure_identifiers_response::result},
     };
 }
@@ -768,7 +768,7 @@ wire_fields(std::type_identity<delete_many_structure_identifiers_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_structure_id_structure_identifiers_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"structure_id",
                               &list_by_structure_id_structure_identifiers_request::structure_id},
         utility::codec::field{"scope", &list_by_structure_id_structure_identifiers_request::scope},
@@ -791,7 +791,7 @@ wire_fields(std::type_identity<list_by_structure_id_structure_identifiers_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_structure_id_structure_identifiers_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_by_structure_id_structure_identifiers_response::result},
         utility::codec::field{"identifiers",
@@ -810,7 +810,7 @@ wire_fields(std::type_identity<list_by_structure_id_structure_identifiers_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_structure_identifier_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_structure_identifier_versions_request::key},
         utility::codec::field{"offset", &list_structure_identifier_versions_request::offset},
         utility::codec::field{"limit", &list_structure_identifier_versions_request::limit},
@@ -829,7 +829,7 @@ wire_fields(std::type_identity<list_structure_identifier_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_structure_identifier_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_structure_identifier_versions_response::result},
         utility::codec::field{"versions", &list_structure_identifier_versions_response::versions},
         utility::codec::field{"total", &list_structure_identifier_versions_response::total},
@@ -846,7 +846,7 @@ wire_fields(std::type_identity<list_structure_identifier_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_structure_identifier_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_structure_identifier_version_request::key},
     };
 }
@@ -861,7 +861,7 @@ wire_fields(std::type_identity<get_structure_identifier_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_structure_identifier_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_structure_identifier_version_response::result},
         utility::codec::field{"version", &get_structure_identifier_version_response::version},
     };

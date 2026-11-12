@@ -66,7 +66,7 @@ struct bond_settlement_data {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_settlement_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"fx_index", &bond_settlement_data::fx_index},
         utility::codec::field{"fixing_date", &bond_settlement_data::fixing_date},
     };

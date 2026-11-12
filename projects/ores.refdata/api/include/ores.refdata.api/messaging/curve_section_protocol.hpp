@@ -361,7 +361,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_section_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &curve_section_key::code},
     };
 }
@@ -375,7 +375,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_section_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &curve_section_write::code},
         utility::codec::field{"entry_element", &curve_section_write::entry_element},
         utility::codec::field{"description", &curve_section_write::description},
@@ -391,7 +391,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_section_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &curve_section_change::write},
         utility::codec::field{"precondition", &curve_section_change::precondition},
     };
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_section_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_section_removal::key},
         utility::codec::field{"precondition", &curve_section_removal::precondition},
     };
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_section_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_section_lookup::key},
         utility::codec::field{"curve_section", &curve_section_lookup::curve_section},
     };
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_sections_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &curve_sections_filter::code_one_of},
     };
 }
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_section_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &curve_section_event::event_id},
         utility::codec::field{"key", &curve_section_event::key},
         utility::codec::field{"action", &curve_section_event::action},
@@ -469,7 +469,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_section_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"curve_section", &curve_section_version_key::curve_section},
         utility::codec::field{"version", &curve_section_version_key::version},
     };
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_section_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &curve_section_versions_filter::version},
         utility::codec::field{"from_version", &curve_section_versions_filter::from_version},
         utility::codec::field{"to_version", &curve_section_versions_filter::to_version},
@@ -500,7 +500,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_sections_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_curve_sections_request::offset},
         utility::codec::field{"limit", &list_curve_sections_request::limit},
         utility::codec::field{"order", &list_curve_sections_request::order},
@@ -518,7 +518,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_sections_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_sections_response::result},
         utility::codec::field{"sections", &list_curve_sections_response::sections},
         utility::codec::field{"total", &list_curve_sections_response::total},
@@ -534,7 +534,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_section_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_section_request::key},
     };
 }
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_section_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_section_response::result},
         utility::codec::field{"curve_section", &get_curve_section_response::curve_section},
     };
@@ -563,7 +563,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_curve_sections_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_curve_sections_request::keys},
     };
 }
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_curve_sections_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_curve_sections_response::result},
         utility::codec::field{"entries", &get_many_curve_sections_response::entries},
     };
@@ -592,7 +592,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_curve_section_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_curve_section_request::change},
         utility::codec::field{"intent", &put_curve_section_request::intent},
     };
@@ -607,7 +607,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_curve_section_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_curve_section_response::result},
         utility::codec::field{"curve_section", &put_curve_section_response::curve_section},
     };
@@ -622,7 +622,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_curve_sections_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_curve_sections_request::changes},
         utility::codec::field{"intent", &put_many_curve_sections_request::intent},
     };
@@ -637,7 +637,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_curve_sections_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_curve_sections_response::result},
         utility::codec::field{"sections", &put_many_curve_sections_response::sections},
     };
@@ -652,7 +652,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_curve_section_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_curve_section_request::removal},
         utility::codec::field{"intent", &delete_curve_section_request::intent},
     };
@@ -667,7 +667,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_curve_section_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_curve_section_response::result},
     };
 }
@@ -681,7 +681,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_curve_sections_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_curve_sections_request::removals},
         utility::codec::field{"intent", &delete_many_curve_sections_request::intent},
     };
@@ -696,7 +696,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_curve_sections_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_curve_sections_response::result},
     };
 }
@@ -710,7 +710,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_section_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_curve_section_versions_request::key},
         utility::codec::field{"offset", &list_curve_section_versions_request::offset},
         utility::codec::field{"limit", &list_curve_section_versions_request::limit},
@@ -728,7 +728,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_section_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_section_versions_response::result},
         utility::codec::field{"versions", &list_curve_section_versions_response::versions},
         utility::codec::field{"total", &list_curve_section_versions_response::total},
@@ -744,7 +744,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_section_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_section_version_request::key},
     };
 }
@@ -758,7 +758,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_sections.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_section_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_section_version_response::result},
         utility::codec::field{"version", &get_curve_section_version_response::version},
     };

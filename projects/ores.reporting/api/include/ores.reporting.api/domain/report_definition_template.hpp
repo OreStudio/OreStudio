@@ -69,12 +69,13 @@ struct report_definition_template final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<report_definition_template>) {
     using t = report_definition_template;
-    return std::tuple{utility::codec::field{"name", &t::name},
-                      utility::codec::field{"description", &t::description},
-                      utility::codec::field{"report_type", &t::report_type},
-                      utility::codec::field{"schedule_expression", &t::schedule_expression},
-                      utility::codec::field{"concurrency_policy", &t::concurrency_policy},
-                      utility::codec::field{"display_order", &t::display_order}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"name", &t::name},
+        utility::codec::field{"description", &t::description},
+        utility::codec::field{"report_type", &t::report_type},
+        utility::codec::field{"schedule_expression", &t::schedule_expression},
+        utility::codec::field{"concurrency_policy", &t::concurrency_policy},
+        utility::codec::field{"display_order", &t::display_order}};
 }
 static_assert(utility::codec::names_every_member<report_definition_template>());
 

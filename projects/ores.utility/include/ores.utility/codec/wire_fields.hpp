@@ -20,10 +20,12 @@
 #ifndef ORES_UTILITY_CODEC_WIRE_FIELDS_HPP
 #define ORES_UTILITY_CODEC_WIRE_FIELDS_HPP
 
+#include <cstddef>
 #include <optional>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 
 namespace ores::utility::codec {
 
@@ -44,8 +46,55 @@ namespace ores::utility::codec {
 template <typename T, typename Member>
 struct field {
     std::string_view name;
-    Member T::*member;
+    Member T::* member;
 };
+
+template <std::size_t I, typename Field>
+struct field_slot {
+    Field value;
+};
+
+template <typename Indices, typename... Fields>
+struct field_list_storage;
+
+template <std::size_t... Is, typename... Fields>
+struct field_list_storage<std::index_sequence<Is...>, Fields...> : field_slot<Is, Fields>... {
+    constexpr field_list_storage(Fields... fields)
+        : field_slot<Is, Fields>{fields}... {}
+
+    template <typename F>
+    constexpr decltype(auto) apply(F&& f) const {
+        return std::forward<F>(f)(static_cast<const field_slot<Is, Fields>&>(*this).value...);
+    }
+};
+
+/**
+ * @brief The fields of a type, in the order of its stated shape.
+ *
+ * Every type's header defines =wire_fields= and so builds one of these, in
+ * every translation unit that includes it, whether the unit encodes the type
+ * or not. =std::tuple= costs the compiler work that grows with the square of
+ * the field count, because libstdc++ nests one base per element over the rest
+ * of the pack and checks its constructor constraints at every level. This list
+ * has one flat base per field, so its cost grows with the field count alone.
+ */
+template <typename... Fields>
+struct field_list : field_list_storage<std::index_sequence_for<Fields...>, Fields...> {
+    using field_list_storage<std::index_sequence_for<Fields...>, Fields...>::field_list_storage;
+
+    static constexpr std::size_t size = sizeof...(Fields);
+};
+
+template <typename... Fields>
+field_list(Fields...) -> field_list<Fields...>;
+
+/**
+ * @brief Calls @p f with every field of @p fields, as one pack.
+ */
+template <typename F, typename... Fields>
+constexpr decltype(auto) apply_fields(F&& f, const field_list<Fields...>& fields) {
+    return fields.apply(std::forward<F>(f));
+}
 
 /**
  * @brief Whether a member's value may be absent.
@@ -82,8 +131,8 @@ concept states_wire_form = requires { wire_fields(std::type_identity<T>{}); };
 template <typename T, typename F>
     requires states_wire_form<std::remove_const_t<T>>
 constexpr void for_each_field(T& v, F&& f) {
-    std::apply([&](const auto&... fields) { (f(fields.name, v.*(fields.member)), ...); },
-               wire_fields(std::type_identity<std::remove_const_t<T>>{}));
+    apply_fields([&](const auto&... fields) { (f(fields.name, v.*(fields.member)), ...); },
+                 wire_fields(std::type_identity<std::remove_const_t<T>>{}));
 }
 
 }

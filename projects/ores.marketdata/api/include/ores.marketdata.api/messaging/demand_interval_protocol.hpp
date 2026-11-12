@@ -373,7 +373,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<demand_interval_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"oresmd_uri", &demand_interval_key::oresmd_uri},
     };
 }
@@ -387,7 +387,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<demand_interval_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &demand_interval_write::id},
         utility::codec::field{"party_id", &demand_interval_write::party_id},
         utility::codec::field{"provider_code", &demand_interval_write::provider_code},
@@ -407,7 +407,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<demand_interval_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &demand_interval_change::write},
         utility::codec::field{"precondition", &demand_interval_change::precondition},
     };
@@ -422,7 +422,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<demand_interval_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &demand_interval_removal::key},
         utility::codec::field{"precondition", &demand_interval_removal::precondition},
     };
@@ -437,7 +437,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<demand_interval_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &demand_interval_lookup::key},
         utility::codec::field{"demand_interval", &demand_interval_lookup::demand_interval},
     };
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<demand_intervals_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"party_id", &demand_intervals_filter::party_id},
         utility::codec::field{"provider_code", &demand_intervals_filter::provider_code},
         utility::codec::field{"feed_id", &demand_intervals_filter::feed_id},
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<demand_interval_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &demand_interval_event::event_id},
         utility::codec::field{"key", &demand_interval_event::key},
         utility::codec::field{"action", &demand_interval_event::action},
@@ -492,7 +492,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<demand_interval_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"demand_interval", &demand_interval_version_key::demand_interval},
         utility::codec::field{"version", &demand_interval_version_key::version},
     };
@@ -507,7 +507,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<demand_interval_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &demand_interval_versions_filter::version},
         utility::codec::field{"from_version", &demand_interval_versions_filter::from_version},
         utility::codec::field{"to_version", &demand_interval_versions_filter::to_version},
@@ -523,7 +523,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_demand_intervals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_demand_intervals_request::offset},
         utility::codec::field{"limit", &list_demand_intervals_request::limit},
         utility::codec::field{"order", &list_demand_intervals_request::order},
@@ -541,7 +541,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_demand_intervals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_demand_intervals_response::result},
         utility::codec::field{"demand_intervals",
                               &list_demand_intervals_response::demand_intervals},
@@ -558,7 +558,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_demand_interval_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_demand_interval_request::key},
     };
 }
@@ -572,7 +572,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_demand_interval_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_demand_interval_response::result},
         utility::codec::field{"demand_interval", &get_demand_interval_response::demand_interval},
     };
@@ -587,7 +587,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_demand_intervals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_demand_intervals_request::keys},
     };
 }
@@ -601,7 +601,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_demand_intervals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_demand_intervals_response::result},
         utility::codec::field{"entries", &get_many_demand_intervals_response::entries},
     };
@@ -616,7 +616,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_demand_interval_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_demand_interval_request::change},
         utility::codec::field{"intent", &put_demand_interval_request::intent},
     };
@@ -631,7 +631,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_demand_interval_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_demand_interval_response::result},
         utility::codec::field{"demand_interval", &put_demand_interval_response::demand_interval},
     };
@@ -646,7 +646,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_demand_intervals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_demand_intervals_request::changes},
         utility::codec::field{"intent", &put_many_demand_intervals_request::intent},
     };
@@ -661,7 +661,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_demand_intervals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_demand_intervals_response::result},
         utility::codec::field{"demand_intervals",
                               &put_many_demand_intervals_response::demand_intervals},
@@ -677,7 +677,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_demand_interval_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_demand_interval_request::removal},
         utility::codec::field{"intent", &delete_demand_interval_request::intent},
     };
@@ -692,7 +692,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_demand_interval_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_demand_interval_response::result},
     };
 }
@@ -706,7 +706,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_demand_intervals_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_demand_intervals_request::removals},
         utility::codec::field{"intent", &delete_many_demand_intervals_request::intent},
     };
@@ -722,7 +722,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.demand_interva
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_demand_intervals_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_demand_intervals_response::result},
     };
 }
@@ -737,7 +737,7 @@ wire_fields(std::type_identity<delete_many_demand_intervals_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_demand_interval_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_demand_interval_versions_request::key},
         utility::codec::field{"offset", &list_demand_interval_versions_request::offset},
         utility::codec::field{"limit", &list_demand_interval_versions_request::limit},
@@ -756,7 +756,7 @@ wire_fields(std::type_identity<list_demand_interval_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_demand_interval_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_demand_interval_versions_response::result},
         utility::codec::field{"versions", &list_demand_interval_versions_response::versions},
         utility::codec::field{"total", &list_demand_interval_versions_response::total},
@@ -772,7 +772,7 @@ wire_fields(std::type_identity<list_demand_interval_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_demand_interval_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_demand_interval_version_request::key},
     };
 }
@@ -786,7 +786,7 @@ wire_fields(std::type_identity<list_demand_interval_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_demand_interval_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_demand_interval_version_response::result},
         utility::codec::field{"version", &get_demand_interval_version_response::version},
     };

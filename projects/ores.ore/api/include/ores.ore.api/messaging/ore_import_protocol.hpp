@@ -184,7 +184,7 @@ struct ore_import_rollback_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_import_item_error>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"source_file", &ore_import_item_error::source_file},
         ::ores::utility::codec::field{"item_id", &ore_import_item_error::item_id},
         ::ores::utility::codec::field{"message", &ore_import_item_error::message},
@@ -200,7 +200,7 @@ struct ore_import_rollback_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_import_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id", &ore_import_request::request_id},
         ::ores::utility::codec::field{"import_choices_json",
                                       &ore_import_request::import_choices_json},
@@ -217,7 +217,7 @@ struct ore_import_rollback_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_import_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &ore_import_response::success},
         ::ores::utility::codec::field{"message", &ore_import_response::message},
         ::ores::utility::codec::field{"item_errors", &ore_import_response::item_errors},
@@ -236,7 +236,7 @@ struct ore_import_rollback_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_import_execute_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id", &ore_import_execute_request::request_id},
         ::ores::utility::codec::field{"import_choices_json",
                                       &ore_import_execute_request::import_choices_json},
@@ -255,7 +255,7 @@ struct ore_import_rollback_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_import_execute_result>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &ore_import_execute_result::success},
         ::ores::utility::codec::field{"message", &ore_import_execute_result::message},
         ::ores::utility::codec::field{"correlation_id", &ore_import_execute_result::correlation_id},
@@ -280,7 +280,7 @@ struct ore_import_rollback_request {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<ore_import_rollback_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"correlation_id",
                                       &ore_import_rollback_request::correlation_id},
         ::ores::utility::codec::field{"bearer_token", &ore_import_rollback_request::bearer_token},

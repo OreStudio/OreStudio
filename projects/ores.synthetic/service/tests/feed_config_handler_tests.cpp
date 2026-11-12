@@ -708,8 +708,8 @@ TEST_CASE("a stored FX spot config is written back with every field it holds",
     CHECK(w.variance_calibration_id == cfg.variance_calibration_id);
     // A field the write type gains and write_of forgets compiles silently; the count keeps the
     // two in step.
-    CHECK(std::tuple_size_v<decltype(wire_fields(
-              std::type_identity<std::remove_cvref_t<decltype(w)>>{}))> == 21);
+    CHECK(decltype(wire_fields(std::type_identity<std::remove_cvref_t<decltype(w)>>{}))::size ==
+          21);
 }
 
 TEST_CASE("a run's start states its level whether a fixing set it or the run kept it",

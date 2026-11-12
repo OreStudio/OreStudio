@@ -105,7 +105,7 @@ struct telemetry_options final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<telemetry_options>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"service_name", &telemetry_options::service_name},
         ::ores::utility::codec::field{"service_version", &telemetry_options::service_version},
         ::ores::utility::codec::field{"output_file", &telemetry_options::output_file},

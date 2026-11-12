@@ -217,7 +217,7 @@ struct search_lei_entities_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_entity_summary>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"lei", &lei_entity_summary::lei},
         ::ores::utility::codec::field{"entity_legal_name", &lei_entity_summary::entity_legal_name},
         ::ores::utility::codec::field{"entity_category", &lei_entity_summary::entity_category},
@@ -234,7 +234,7 @@ struct search_lei_entities_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_lei_entities_summary_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"country_filter",
                                       &get_lei_entities_summary_request::country_filter},
         ::ores::utility::codec::field{"offset", &get_lei_entities_summary_request::offset},
@@ -251,7 +251,7 @@ struct search_lei_entities_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_lei_entities_summary_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &get_lei_entities_summary_response::success},
         ::ores::utility::codec::field{"error_message",
                                       &get_lei_entities_summary_response::error_message},
@@ -268,7 +268,7 @@ struct search_lei_entities_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_entity_match>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"lei", &lei_entity_match::lei},
         ::ores::utility::codec::field{"entity_legal_name", &lei_entity_match::entity_legal_name},
         ::ores::utility::codec::field{"entity_category", &lei_entity_match::entity_category},
@@ -286,7 +286,7 @@ struct search_lei_entities_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<search_lei_entities_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"search", &search_lei_entities_request::search},
         ::ores::utility::codec::field{"country_filter",
                                       &search_lei_entities_request::country_filter},
@@ -304,7 +304,7 @@ struct search_lei_entities_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<search_lei_entities_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &search_lei_entities_response::success},
         ::ores::utility::codec::field{"error_message",
                                       &search_lei_entities_response::error_message},

@@ -197,7 +197,7 @@ struct list_folder_feeds_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_folder>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id", &feed_folder::id},
         ::ores::utility::codec::field{"parent_id", &feed_folder::parent_id},
         ::ores::utility::codec::field{"name", &feed_folder::name},
@@ -220,7 +220,7 @@ struct list_folder_feeds_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_feed_folders_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"parent_id", &list_feed_folders_request::parent_id},
     };
 }
@@ -234,7 +234,7 @@ struct list_folder_feeds_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_feed_folders_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &list_feed_folders_response::success},
         ::ores::utility::codec::field{"message", &list_feed_folders_response::message},
         ::ores::utility::codec::field{"folders", &list_feed_folders_response::folders},
@@ -250,7 +250,7 @@ struct list_folder_feeds_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<folder_feed>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"id", &folder_feed::id},
         ::ores::utility::codec::field{"kind", &folder_feed::kind},
         ::ores::utility::codec::field{"label", &folder_feed::label},
@@ -276,7 +276,7 @@ struct list_folder_feeds_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_folder_feeds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"folder_id", &list_folder_feeds_request::folder_id},
         ::ores::utility::codec::field{"provider_code", &list_folder_feeds_request::provider_code},
         ::ores::utility::codec::field{"should_run", &list_folder_feeds_request::should_run},
@@ -297,7 +297,7 @@ struct list_folder_feeds_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_folder_feeds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &list_folder_feeds_response::success},
         ::ores::utility::codec::field{"message", &list_folder_feeds_response::message},
         ::ores::utility::codec::field{"total", &list_folder_feeds_response::total},

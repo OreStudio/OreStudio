@@ -365,7 +365,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nature_dimension_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &nature_dimension_key::code},
     };
 }
@@ -379,7 +379,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nature_dimension_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &nature_dimension_write::code},
         utility::codec::field{"name", &nature_dimension_write::name},
         utility::codec::field{"description", &nature_dimension_write::description},
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nature_dimension_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &nature_dimension_change::write},
         utility::codec::field{"precondition", &nature_dimension_change::precondition},
     };
@@ -410,7 +410,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nature_dimension_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &nature_dimension_removal::key},
         utility::codec::field{"precondition", &nature_dimension_removal::precondition},
     };
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nature_dimension_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &nature_dimension_lookup::key},
         utility::codec::field{"nature_dimension", &nature_dimension_lookup::nature_dimension},
     };
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nature_dimensions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &nature_dimensions_filter::code_one_of},
     };
 }
@@ -454,7 +454,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nature_dimension_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &nature_dimension_event::event_id},
         utility::codec::field{"key", &nature_dimension_event::key},
         utility::codec::field{"action", &nature_dimension_event::action},
@@ -473,7 +473,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nature_dimension_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"nature_dimension", &nature_dimension_version_key::nature_dimension},
         utility::codec::field{"version", &nature_dimension_version_key::version},
     };
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nature_dimension_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &nature_dimension_versions_filter::version},
         utility::codec::field{"from_version", &nature_dimension_versions_filter::from_version},
         utility::codec::field{"to_version", &nature_dimension_versions_filter::to_version},
@@ -504,7 +504,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_nature_dimensions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_nature_dimensions_request::offset},
         utility::codec::field{"limit", &list_nature_dimensions_request::limit},
         utility::codec::field{"order", &list_nature_dimensions_request::order},
@@ -522,7 +522,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_nature_dimensions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_nature_dimensions_response::result},
         utility::codec::field{"dimensions", &list_nature_dimensions_response::dimensions},
         utility::codec::field{"total", &list_nature_dimensions_response::total},
@@ -538,7 +538,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_nature_dimension_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_nature_dimension_request::key},
     };
 }
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_nature_dimension_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_nature_dimension_response::result},
         utility::codec::field{"nature_dimension", &get_nature_dimension_response::nature_dimension},
     };
@@ -567,7 +567,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_nature_dimensions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_nature_dimensions_request::keys},
     };
 }
@@ -581,7 +581,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_nature_dimensions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_nature_dimensions_response::result},
         utility::codec::field{"entries", &get_many_nature_dimensions_response::entries},
     };
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_nature_dimension_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_nature_dimension_request::change},
         utility::codec::field{"intent", &put_nature_dimension_request::intent},
     };
@@ -611,7 +611,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_nature_dimension_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_nature_dimension_response::result},
         utility::codec::field{"nature_dimension", &put_nature_dimension_response::nature_dimension},
     };
@@ -626,7 +626,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_nature_dimensions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_nature_dimensions_request::changes},
         utility::codec::field{"intent", &put_many_nature_dimensions_request::intent},
     };
@@ -641,7 +641,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_nature_dimensions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_nature_dimensions_response::result},
         utility::codec::field{"dimensions", &put_many_nature_dimensions_response::dimensions},
     };
@@ -656,7 +656,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_nature_dimension_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_nature_dimension_request::removal},
         utility::codec::field{"intent", &delete_nature_dimension_request::intent},
     };
@@ -671,7 +671,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_nature_dimension_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_nature_dimension_response::result},
     };
 }
@@ -686,7 +686,7 @@ inline constexpr std::string_view deleted = "dq.v1.events.nature_dimensions.dele
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_nature_dimensions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_nature_dimensions_request::removals},
         utility::codec::field{"intent", &delete_many_nature_dimensions_request::intent},
     };
@@ -702,7 +702,7 @@ wire_fields(std::type_identity<delete_many_nature_dimensions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_nature_dimensions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_nature_dimensions_response::result},
     };
 }
@@ -717,7 +717,7 @@ wire_fields(std::type_identity<delete_many_nature_dimensions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_nature_dimension_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_nature_dimension_versions_request::key},
         utility::codec::field{"offset", &list_nature_dimension_versions_request::offset},
         utility::codec::field{"limit", &list_nature_dimension_versions_request::limit},
@@ -736,7 +736,7 @@ wire_fields(std::type_identity<list_nature_dimension_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_nature_dimension_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_nature_dimension_versions_response::result},
         utility::codec::field{"versions", &list_nature_dimension_versions_response::versions},
         utility::codec::field{"total", &list_nature_dimension_versions_response::total},
@@ -752,7 +752,7 @@ wire_fields(std::type_identity<list_nature_dimension_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_nature_dimension_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_nature_dimension_version_request::key},
     };
 }
@@ -767,7 +767,7 @@ wire_fields(std::type_identity<list_nature_dimension_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_nature_dimension_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_nature_dimension_version_response::result},
         utility::codec::field{"version", &get_nature_dimension_version_response::version},
     };

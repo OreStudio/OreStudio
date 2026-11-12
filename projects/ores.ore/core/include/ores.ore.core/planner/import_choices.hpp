@@ -66,7 +66,7 @@ struct trade_defaults {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_defaults>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_date", &trade_defaults::trade_date},
         utility::codec::field{"activity_type_code", &trade_defaults::activity_type_code},
         utility::codec::field{"default_counterparty_id", &trade_defaults::default_counterparty_id}};
@@ -196,7 +196,7 @@ struct import_choices {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<import_choices>) {
     using c = import_choices;
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"currency_mode", &c::currency_mode},
         utility::codec::field{"portfolio_reimport_mode", &c::portfolio_reimport_mode},
         utility::codec::field{"parent_portfolio_name", &c::parent_portfolio_name},

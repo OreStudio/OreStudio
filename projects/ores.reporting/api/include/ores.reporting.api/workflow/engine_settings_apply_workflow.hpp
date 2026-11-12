@@ -52,7 +52,7 @@ struct engine_settings_apply_workflow_request {
 
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<engine_settings_apply_workflow_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"request_id", &engine_settings_apply_workflow_request::request_id}};
 }
 static_assert(utility::codec::names_every_member<engine_settings_apply_workflow_request>());

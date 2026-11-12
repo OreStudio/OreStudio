@@ -45,7 +45,7 @@ namespace ores::utility::codec {
 namespace object {
 
 template <typename T, typename... Members>
-std::string write_json(const T& v, const std::tuple<field<T, Members>...>& fields) {
+std::string write_json(const T& v, const field_list<field<T, Members>...>& fields) {
     yyjson_mut_doc* doc = yyjson_mut_doc_new(nullptr);
     if (doc == nullptr)
         throw std::runtime_error("Could not make a JSON document");
@@ -67,7 +67,7 @@ std::string write_json(const T& v) {
 }
 
 template <typename T, typename... Members>
-T read_json(std::string_view text, const std::tuple<field<T, Members>...>& fields) {
+T read_json(std::string_view text, const field_list<field<T, Members>...>& fields) {
     yyjson_doc* doc = yyjson_read(text.data(), text.size(), 0);
     if (doc == nullptr)
         throw std::invalid_argument("Not JSON: " + std::string(text));
@@ -88,7 +88,7 @@ T read_json(std::string_view text) {
 }
 
 template <typename T, typename... Members>
-std::string write_msgpack(const T& v, const std::tuple<field<T, Members>...>& fields) {
+std::string write_msgpack(const T& v, const field_list<field<T, Members>...>& fields) {
     msgpack_sbuffer sbuf;
     msgpack_sbuffer_init(&sbuf);
     msgpack_packer pk;
@@ -110,7 +110,7 @@ std::string write_msgpack(const T& v) {
 }
 
 template <typename T, typename... Members>
-T read_msgpack(std::span<const std::byte> data, const std::tuple<field<T, Members>...>& fields) {
+T read_msgpack(std::span<const std::byte> data, const field_list<field<T, Members>...>& fields) {
     msgpack_unpacked result;
     msgpack_unpacked_init(&result);
     std::size_t offset = 0;

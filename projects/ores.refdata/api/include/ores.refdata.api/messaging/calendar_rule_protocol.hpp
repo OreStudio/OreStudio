@@ -402,7 +402,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_rule_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &calendar_rule_key::id},
     };
 }
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_rule_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &calendar_rule_write::id},
         utility::codec::field{"calendar_code", &calendar_rule_write::calendar_code},
         utility::codec::field{"kind", &calendar_rule_write::kind},
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_rule_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &calendar_rule_change::write},
         utility::codec::field{"precondition", &calendar_rule_change::precondition},
     };
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_rule_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &calendar_rule_removal::key},
         utility::codec::field{"precondition", &calendar_rule_removal::precondition},
     };
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_rule_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &calendar_rule_lookup::key},
         utility::codec::field{"calendar_rule", &calendar_rule_lookup::calendar_rule},
     };
@@ -485,7 +485,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_rules_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"calendar_code", &calendar_rules_filter::calendar_code},
         utility::codec::field{"id_one_of", &calendar_rules_filter::id_one_of},
         utility::codec::field{"calendar_code_one_of", &calendar_rules_filter::calendar_code_one_of},
@@ -501,7 +501,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_rule_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &calendar_rule_event::event_id},
         utility::codec::field{"key", &calendar_rule_event::key},
         utility::codec::field{"action", &calendar_rule_event::action},
@@ -520,7 +520,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_rule_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"calendar_rule", &calendar_rule_version_key::calendar_rule},
         utility::codec::field{"version", &calendar_rule_version_key::version},
     };
@@ -535,7 +535,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_rule_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &calendar_rule_versions_filter::version},
         utility::codec::field{"from_version", &calendar_rule_versions_filter::from_version},
         utility::codec::field{"to_version", &calendar_rule_versions_filter::to_version},
@@ -551,7 +551,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calendar_rules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_calendar_rules_request::offset},
         utility::codec::field{"limit", &list_calendar_rules_request::limit},
         utility::codec::field{"order", &list_calendar_rules_request::order},
@@ -569,7 +569,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calendar_rules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_calendar_rules_response::result},
         utility::codec::field{"calendar_rules", &list_calendar_rules_response::calendar_rules},
         utility::codec::field{"total", &list_calendar_rules_response::total},
@@ -585,7 +585,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_rule_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_calendar_rule_request::key},
     };
 }
@@ -599,7 +599,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_rule_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_calendar_rule_response::result},
         utility::codec::field{"calendar_rule", &get_calendar_rule_response::calendar_rule},
     };
@@ -614,7 +614,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_calendar_rules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_calendar_rules_request::keys},
     };
 }
@@ -628,7 +628,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_calendar_rules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_calendar_rules_response::result},
         utility::codec::field{"entries", &get_many_calendar_rules_response::entries},
     };
@@ -643,7 +643,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_calendar_rule_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_calendar_rule_request::change},
         utility::codec::field{"intent", &put_calendar_rule_request::intent},
     };
@@ -658,7 +658,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_calendar_rule_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_calendar_rule_response::result},
         utility::codec::field{"calendar_rule", &put_calendar_rule_response::calendar_rule},
     };
@@ -673,7 +673,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_calendar_rules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_calendar_rules_request::changes},
         utility::codec::field{"intent", &put_many_calendar_rules_request::intent},
     };
@@ -688,7 +688,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_calendar_rules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_calendar_rules_response::result},
         utility::codec::field{"calendar_rules", &put_many_calendar_rules_response::calendar_rules},
     };
@@ -703,7 +703,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_calendar_rule_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_calendar_rule_request::removal},
         utility::codec::field{"intent", &delete_calendar_rule_request::intent},
     };
@@ -718,7 +718,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_calendar_rule_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_calendar_rule_response::result},
     };
 }
@@ -732,7 +732,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_calendar_rules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_calendar_rules_request::removals},
         utility::codec::field{"intent", &delete_many_calendar_rules_request::intent},
     };
@@ -747,7 +747,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_calendar_rules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_calendar_rules_response::result},
     };
 }
@@ -762,7 +762,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_rules.de
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_calendar_code_calendar_rules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"calendar_code",
                               &list_by_calendar_code_calendar_rules_request::calendar_code},
         utility::codec::field{"scope", &list_by_calendar_code_calendar_rules_request::scope},
@@ -783,7 +783,7 @@ wire_fields(std::type_identity<list_by_calendar_code_calendar_rules_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_calendar_code_calendar_rules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_calendar_code_calendar_rules_response::result},
         utility::codec::field{"calendar_rules",
                               &list_by_calendar_code_calendar_rules_response::calendar_rules},
@@ -800,7 +800,7 @@ wire_fields(std::type_identity<list_by_calendar_code_calendar_rules_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calendar_rule_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_calendar_rule_versions_request::key},
         utility::codec::field{"offset", &list_calendar_rule_versions_request::offset},
         utility::codec::field{"limit", &list_calendar_rule_versions_request::limit},
@@ -818,7 +818,7 @@ wire_fields(std::type_identity<list_by_calendar_code_calendar_rules_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calendar_rule_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_calendar_rule_versions_response::result},
         utility::codec::field{"versions", &list_calendar_rule_versions_response::versions},
         utility::codec::field{"total", &list_calendar_rule_versions_response::total},
@@ -834,7 +834,7 @@ wire_fields(std::type_identity<list_by_calendar_code_calendar_rules_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_rule_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_calendar_rule_version_request::key},
     };
 }
@@ -848,7 +848,7 @@ wire_fields(std::type_identity<list_by_calendar_code_calendar_rules_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_rule_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_calendar_rule_version_response::result},
         utility::codec::field{"version", &get_calendar_rule_version_response::version},
     };

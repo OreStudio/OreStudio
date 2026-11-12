@@ -373,7 +373,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_segment_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_projection_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_segment_projection_key::id},
     };
 }
@@ -387,7 +387,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_segment_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_projection_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_segment_projection_write::id},
         utility::codec::field{"curve_segment_id",
                               &curve_segment_projection_write::curve_segment_id},
@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_segment_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_projection_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &curve_segment_projection_change::write},
         utility::codec::field{"precondition", &curve_segment_projection_change::precondition},
     };
@@ -420,7 +420,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_segment_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_projection_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_segment_projection_removal::key},
         utility::codec::field{"precondition", &curve_segment_projection_removal::precondition},
     };
@@ -435,7 +435,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_segment_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_projection_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_segment_projection_lookup::key},
         utility::codec::field{"curve_segment_projection",
                               &curve_segment_projection_lookup::curve_segment_projection},
@@ -451,7 +451,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_segment_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_projections_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &curve_segment_projections_filter::id_one_of},
     };
 }
@@ -465,7 +465,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_segment_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_projection_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &curve_segment_projection_event::event_id},
         utility::codec::field{"key", &curve_segment_projection_event::key},
         utility::codec::field{"action", &curve_segment_projection_event::action},
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_segment_pro
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_projection_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"curve_segment_projection",
                               &curve_segment_projection_version_key::curve_segment_projection},
         utility::codec::field{"version", &curve_segment_projection_version_key::version},
@@ -501,7 +501,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_segment_pro
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_segment_projection_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &curve_segment_projection_versions_filter::version},
         utility::codec::field{"from_version",
                               &curve_segment_projection_versions_filter::from_version},
@@ -519,7 +519,7 @@ wire_fields(std::type_identity<curve_segment_projection_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_projections_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_curve_segment_projections_request::offset},
         utility::codec::field{"limit", &list_curve_segment_projections_request::limit},
         utility::codec::field{"order", &list_curve_segment_projections_request::order},
@@ -538,7 +538,7 @@ wire_fields(std::type_identity<list_curve_segment_projections_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_projections_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_segment_projections_response::result},
         utility::codec::field{"segment_projections",
                               &list_curve_segment_projections_response::segment_projections},
@@ -555,7 +555,7 @@ wire_fields(std::type_identity<list_curve_segment_projections_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_segment_projection_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_segment_projection_request::key},
     };
 }
@@ -570,7 +570,7 @@ wire_fields(std::type_identity<list_curve_segment_projections_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_projection_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_segment_projection_response::result},
         utility::codec::field{"curve_segment_projection",
                               &get_curve_segment_projection_response::curve_segment_projection},
@@ -587,7 +587,7 @@ wire_fields(std::type_identity<get_curve_segment_projection_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_segment_projections_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_curve_segment_projections_request::keys},
     };
 }
@@ -602,7 +602,7 @@ wire_fields(std::type_identity<get_many_curve_segment_projections_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_segment_projections_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_curve_segment_projections_response::result},
         utility::codec::field{"entries", &get_many_curve_segment_projections_response::entries},
     };
@@ -617,7 +617,7 @@ wire_fields(std::type_identity<get_many_curve_segment_projections_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_curve_segment_projection_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_curve_segment_projection_request::change},
         utility::codec::field{"intent", &put_curve_segment_projection_request::intent},
     };
@@ -633,7 +633,7 @@ wire_fields(std::type_identity<get_many_curve_segment_projections_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_curve_segment_projection_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_curve_segment_projection_response::result},
         utility::codec::field{"curve_segment_projection",
                               &put_curve_segment_projection_response::curve_segment_projection},
@@ -650,7 +650,7 @@ wire_fields(std::type_identity<put_curve_segment_projection_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_segment_projections_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_curve_segment_projections_request::changes},
         utility::codec::field{"intent", &put_many_curve_segment_projections_request::intent},
     };
@@ -666,7 +666,7 @@ wire_fields(std::type_identity<put_many_curve_segment_projections_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_segment_projections_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_curve_segment_projections_response::result},
         utility::codec::field{"segment_projections",
                               &put_many_curve_segment_projections_response::segment_projections},
@@ -683,7 +683,7 @@ wire_fields(std::type_identity<put_many_curve_segment_projections_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_segment_projection_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_curve_segment_projection_request::removal},
         utility::codec::field{"intent", &delete_curve_segment_projection_request::intent},
     };
@@ -699,7 +699,7 @@ wire_fields(std::type_identity<delete_curve_segment_projection_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_segment_projection_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_curve_segment_projection_response::result},
     };
 }
@@ -714,7 +714,7 @@ wire_fields(std::type_identity<delete_curve_segment_projection_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_segment_projections_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_curve_segment_projections_request::removals},
         utility::codec::field{"intent", &delete_many_curve_segment_projections_request::intent},
     };
@@ -730,7 +730,7 @@ wire_fields(std::type_identity<delete_many_curve_segment_projections_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_segment_projections_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_curve_segment_projections_response::result},
     };
 }
@@ -745,7 +745,7 @@ wire_fields(std::type_identity<delete_many_curve_segment_projections_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_projection_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_curve_segment_projection_versions_request::key},
         utility::codec::field{"offset", &list_curve_segment_projection_versions_request::offset},
         utility::codec::field{"limit", &list_curve_segment_projection_versions_request::limit},
@@ -764,7 +764,7 @@ wire_fields(std::type_identity<list_curve_segment_projection_versions_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_segment_projection_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_segment_projection_versions_response::result},
         utility::codec::field{"versions",
                               &list_curve_segment_projection_versions_response::versions},
@@ -782,7 +782,7 @@ wire_fields(std::type_identity<list_curve_segment_projection_versions_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_projection_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_segment_projection_version_request::key},
     };
 }
@@ -797,7 +797,7 @@ wire_fields(std::type_identity<get_curve_segment_projection_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_segment_projection_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_segment_projection_version_response::result},
         utility::codec::field{"version", &get_curve_segment_projection_version_response::version},
     };

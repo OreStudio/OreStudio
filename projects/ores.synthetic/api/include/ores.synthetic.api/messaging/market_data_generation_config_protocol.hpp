@@ -388,7 +388,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_generation_config_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &market_data_generation_config_key::id},
     };
 }
@@ -402,7 +402,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_generation_config_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &market_data_generation_config_write::id},
         utility::codec::field{"name", &market_data_generation_config_write::name},
         utility::codec::field{"description", &market_data_generation_config_write::description},
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_generation_config_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &market_data_generation_config_change::write},
         utility::codec::field{"precondition", &market_data_generation_config_change::precondition},
     };
@@ -437,7 +437,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<market_data_generation_config_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &market_data_generation_config_removal::key},
         utility::codec::field{"precondition", &market_data_generation_config_removal::precondition},
     };
@@ -452,7 +452,7 @@ wire_fields(std::type_identity<market_data_generation_config_removal>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_generation_config_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &market_data_generation_config_lookup::key},
         utility::codec::field{"market_data_generation_config",
                               &market_data_generation_config_lookup::market_data_generation_config},
@@ -469,7 +469,7 @@ wire_fields(std::type_identity<market_data_generation_config_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<market_data_generation_configs_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &market_data_generation_configs_filter::id_one_of},
     };
 }
@@ -483,7 +483,7 @@ wire_fields(std::type_identity<market_data_generation_configs_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_data_generation_config_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &market_data_generation_config_event::event_id},
         utility::codec::field{"key", &market_data_generation_config_event::key},
         utility::codec::field{"action", &market_data_generation_config_event::action},
@@ -504,7 +504,7 @@ wire_fields(std::type_identity<market_data_generation_configs_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<market_data_generation_config_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "market_data_generation_config",
             &market_data_generation_config_version_key::market_data_generation_config},
@@ -522,7 +522,7 @@ wire_fields(std::type_identity<market_data_generation_config_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<market_data_generation_config_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &market_data_generation_config_versions_filter::version},
         utility::codec::field{"from_version",
                               &market_data_generation_config_versions_filter::from_version},
@@ -541,7 +541,7 @@ wire_fields(std::type_identity<market_data_generation_config_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_market_data_generation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_market_data_generation_configs_request::offset},
         utility::codec::field{"limit", &list_market_data_generation_configs_request::limit},
         utility::codec::field{"order", &list_market_data_generation_configs_request::order},
@@ -560,7 +560,7 @@ wire_fields(std::type_identity<list_market_data_generation_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_market_data_generation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_market_data_generation_configs_response::result},
         utility::codec::field{
             "market_data_generation_configs",
@@ -579,7 +579,7 @@ wire_fields(std::type_identity<list_market_data_generation_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_market_data_generation_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_market_data_generation_config_request::key},
     };
 }
@@ -594,7 +594,7 @@ wire_fields(std::type_identity<get_market_data_generation_config_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_market_data_generation_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_market_data_generation_config_response::result},
         utility::codec::field{
             "market_data_generation_config",
@@ -612,7 +612,7 @@ wire_fields(std::type_identity<get_market_data_generation_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_market_data_generation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_market_data_generation_configs_request::keys},
     };
 }
@@ -627,7 +627,7 @@ wire_fields(std::type_identity<get_many_market_data_generation_configs_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_market_data_generation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_market_data_generation_configs_response::result},
         utility::codec::field{"entries",
                               &get_many_market_data_generation_configs_response::entries},
@@ -644,7 +644,7 @@ wire_fields(std::type_identity<get_many_market_data_generation_configs_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_market_data_generation_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_market_data_generation_config_request::change},
         utility::codec::field{"intent", &put_market_data_generation_config_request::intent},
     };
@@ -660,7 +660,7 @@ wire_fields(std::type_identity<put_market_data_generation_config_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_market_data_generation_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_market_data_generation_config_response::result},
         utility::codec::field{
             "market_data_generation_config",
@@ -678,7 +678,7 @@ wire_fields(std::type_identity<put_market_data_generation_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_market_data_generation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_market_data_generation_configs_request::changes},
         utility::codec::field{"intent", &put_many_market_data_generation_configs_request::intent},
     };
@@ -694,7 +694,7 @@ wire_fields(std::type_identity<put_many_market_data_generation_configs_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_market_data_generation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_market_data_generation_configs_response::result},
         utility::codec::field{
             "market_data_generation_configs",
@@ -712,7 +712,7 @@ wire_fields(std::type_identity<put_many_market_data_generation_configs_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_market_data_generation_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_market_data_generation_config_request::removal},
         utility::codec::field{"intent", &delete_market_data_generation_config_request::intent},
     };
@@ -728,7 +728,7 @@ wire_fields(std::type_identity<delete_market_data_generation_config_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_market_data_generation_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_market_data_generation_config_response::result},
     };
 }
@@ -743,7 +743,7 @@ wire_fields(std::type_identity<delete_market_data_generation_config_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_market_data_generation_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_market_data_generation_configs_request::removals},
         utility::codec::field{"intent",
@@ -761,7 +761,7 @@ wire_fields(std::type_identity<delete_many_market_data_generation_configs_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_market_data_generation_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_market_data_generation_configs_response::result},
     };
@@ -777,7 +777,7 @@ wire_fields(std::type_identity<delete_many_market_data_generation_configs_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_market_data_generation_config_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_market_data_generation_config_versions_request::key},
         utility::codec::field{"offset",
                               &list_market_data_generation_config_versions_request::offset},
@@ -798,7 +798,7 @@ wire_fields(std::type_identity<list_market_data_generation_config_versions_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_market_data_generation_config_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_market_data_generation_config_versions_response::result},
         utility::codec::field{"versions",
@@ -818,7 +818,7 @@ wire_fields(std::type_identity<list_market_data_generation_config_versions_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_market_data_generation_config_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_market_data_generation_config_version_request::key},
     };
 }
@@ -833,7 +833,7 @@ wire_fields(std::type_identity<get_market_data_generation_config_version_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_market_data_generation_config_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_market_data_generation_config_version_response::result},
         utility::codec::field{"version",

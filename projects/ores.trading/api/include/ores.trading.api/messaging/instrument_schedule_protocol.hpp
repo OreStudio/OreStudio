@@ -426,7 +426,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &instrument_schedule_key::trade_id},
         utility::codec::field{"owner_role", &instrument_schedule_key::owner_role},
         utility::codec::field{"owner_number", &instrument_schedule_key::owner_number},
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &instrument_schedule_write::trade_id},
         utility::codec::field{"owner_role", &instrument_schedule_write::owner_role},
         utility::codec::field{"owner_number", &instrument_schedule_write::owner_number},
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &instrument_schedule_change::write},
         utility::codec::field{"precondition", &instrument_schedule_change::precondition},
     };
@@ -499,7 +499,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &instrument_schedule_removal::key},
         utility::codec::field{"precondition", &instrument_schedule_removal::precondition},
     };
@@ -514,7 +514,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &instrument_schedule_lookup::key},
         utility::codec::field{"instrument_schedule",
                               &instrument_schedule_lookup::instrument_schedule},
@@ -530,7 +530,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedules_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &instrument_schedules_filter::trade_id},
         utility::codec::field{"trade_id_one_of", &instrument_schedules_filter::trade_id_one_of},
     };
@@ -545,7 +545,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &instrument_schedule_event::event_id},
         utility::codec::field{"key", &instrument_schedule_event::key},
         utility::codec::field{"action", &instrument_schedule_event::action},
@@ -564,7 +564,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"instrument_schedule",
                               &instrument_schedule_version_key::instrument_schedule},
         utility::codec::field{"version", &instrument_schedule_version_key::version},
@@ -580,7 +580,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &instrument_schedule_versions_filter::version},
         utility::codec::field{"from_version", &instrument_schedule_versions_filter::from_version},
         utility::codec::field{"to_version", &instrument_schedule_versions_filter::to_version},
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_instrument_schedules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_instrument_schedules_request::offset},
         utility::codec::field{"limit", &list_instrument_schedules_request::limit},
         utility::codec::field{"order", &list_instrument_schedules_request::order},
@@ -614,7 +614,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_instrument_schedules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_instrument_schedules_response::result},
         utility::codec::field{"instrument_schedules",
                               &list_instrument_schedules_response::instrument_schedules},
@@ -631,7 +631,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_instrument_schedule_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_instrument_schedule_request::key},
     };
 }
@@ -645,7 +645,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_instrument_schedule_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_instrument_schedule_response::result},
         utility::codec::field{"instrument_schedule",
                               &get_instrument_schedule_response::instrument_schedule},
@@ -662,7 +662,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_instrument_schedules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_instrument_schedules_request::keys},
     };
 }
@@ -677,7 +677,7 @@ wire_fields(std::type_identity<get_many_instrument_schedules_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_instrument_schedules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_instrument_schedules_response::result},
         utility::codec::field{"entries", &get_many_instrument_schedules_response::entries},
     };
@@ -692,7 +692,7 @@ wire_fields(std::type_identity<get_many_instrument_schedules_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_instrument_schedule_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_instrument_schedule_request::change},
         utility::codec::field{"intent", &put_instrument_schedule_request::intent},
     };
@@ -707,7 +707,7 @@ wire_fields(std::type_identity<get_many_instrument_schedules_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_instrument_schedule_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_instrument_schedule_response::result},
         utility::codec::field{"instrument_schedule",
                               &put_instrument_schedule_response::instrument_schedule},
@@ -724,7 +724,7 @@ wire_fields(std::type_identity<get_many_instrument_schedules_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_instrument_schedules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_instrument_schedules_request::changes},
         utility::codec::field{"intent", &put_many_instrument_schedules_request::intent},
     };
@@ -740,7 +740,7 @@ wire_fields(std::type_identity<put_many_instrument_schedules_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_instrument_schedules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_instrument_schedules_response::result},
         utility::codec::field{"instrument_schedules",
                               &put_many_instrument_schedules_response::instrument_schedules},
@@ -756,7 +756,7 @@ wire_fields(std::type_identity<put_many_instrument_schedules_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_instrument_schedule_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_instrument_schedule_request::removal},
         utility::codec::field{"intent", &delete_instrument_schedule_request::intent},
     };
@@ -771,7 +771,7 @@ wire_fields(std::type_identity<put_many_instrument_schedules_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_instrument_schedule_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_instrument_schedule_response::result},
     };
 }
@@ -786,7 +786,7 @@ wire_fields(std::type_identity<put_many_instrument_schedules_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_instrument_schedules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_instrument_schedules_request::removals},
         utility::codec::field{"intent", &delete_many_instrument_schedules_request::intent},
     };
@@ -802,7 +802,7 @@ wire_fields(std::type_identity<delete_many_instrument_schedules_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_instrument_schedules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_instrument_schedules_response::result},
     };
 }
@@ -817,7 +817,7 @@ wire_fields(std::type_identity<delete_many_instrument_schedules_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_instrument_schedules_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"trade_id", &list_by_trade_id_instrument_schedules_request::trade_id},
         utility::codec::field{"scope", &list_by_trade_id_instrument_schedules_request::scope},
         utility::codec::field{"offset", &list_by_trade_id_instrument_schedules_request::offset},
@@ -837,7 +837,7 @@ wire_fields(std::type_identity<list_by_trade_id_instrument_schedules_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_trade_id_instrument_schedules_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_by_trade_id_instrument_schedules_response::result},
         utility::codec::field{
             "instrument_schedules",
@@ -856,7 +856,7 @@ wire_fields(std::type_identity<list_by_trade_id_instrument_schedules_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_instrument_schedule_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_instrument_schedule_versions_request::key},
         utility::codec::field{"offset", &list_instrument_schedule_versions_request::offset},
         utility::codec::field{"limit", &list_instrument_schedule_versions_request::limit},
@@ -875,7 +875,7 @@ wire_fields(std::type_identity<list_instrument_schedule_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_instrument_schedule_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_instrument_schedule_versions_response::result},
         utility::codec::field{"versions", &list_instrument_schedule_versions_response::versions},
         utility::codec::field{"total", &list_instrument_schedule_versions_response::total},
@@ -892,7 +892,7 @@ wire_fields(std::type_identity<list_instrument_schedule_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_instrument_schedule_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_instrument_schedule_version_request::key},
     };
 }
@@ -907,7 +907,7 @@ wire_fields(std::type_identity<get_instrument_schedule_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_instrument_schedule_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_instrument_schedule_version_response::result},
         utility::codec::field{"version", &get_instrument_schedule_version_response::version},
     };

@@ -46,7 +46,7 @@ namespace ores::trading::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fpml_event_type>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &fpml_event_type::version},
         utility::codec::field{"tenant_id", &fpml_event_type::tenant_id},
         utility::codec::field{"code", &fpml_event_type::code},

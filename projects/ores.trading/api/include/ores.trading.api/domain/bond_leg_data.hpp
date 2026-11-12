@@ -174,7 +174,7 @@ struct bond_leg_data {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_leg_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"payer", &bond_leg_data::payer},
         utility::codec::field{"leg_type", &bond_leg_data::leg_type},
         utility::codec::field{"currency", &bond_leg_data::currency},

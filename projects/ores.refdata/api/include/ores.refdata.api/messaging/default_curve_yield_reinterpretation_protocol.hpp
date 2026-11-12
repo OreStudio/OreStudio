@@ -394,7 +394,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<default_curve_yield_reinterpretation_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &default_curve_yield_reinterpretation_key::id},
     };
 }
@@ -409,7 +409,7 @@ wire_fields(std::type_identity<default_curve_yield_reinterpretation_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<default_curve_yield_reinterpretation_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &default_curve_yield_reinterpretation_write::id},
         utility::codec::field{
             "default_curve_configuration_id",
@@ -430,7 +430,7 @@ wire_fields(std::type_identity<default_curve_yield_reinterpretation_write>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<default_curve_yield_reinterpretation_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &default_curve_yield_reinterpretation_change::write},
         utility::codec::field{"precondition",
                               &default_curve_yield_reinterpretation_change::precondition},
@@ -447,7 +447,7 @@ wire_fields(std::type_identity<default_curve_yield_reinterpretation_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<default_curve_yield_reinterpretation_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &default_curve_yield_reinterpretation_removal::key},
         utility::codec::field{"precondition",
                               &default_curve_yield_reinterpretation_removal::precondition},
@@ -464,7 +464,7 @@ wire_fields(std::type_identity<default_curve_yield_reinterpretation_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<default_curve_yield_reinterpretation_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &default_curve_yield_reinterpretation_lookup::key},
         utility::codec::field{
             "default_curve_yield_reinterpretation",
@@ -482,7 +482,7 @@ wire_fields(std::type_identity<default_curve_yield_reinterpretation_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<default_curve_yield_reinterpretations_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of",
                               &default_curve_yield_reinterpretations_filter::id_one_of},
     };
@@ -498,7 +498,7 @@ wire_fields(std::type_identity<default_curve_yield_reinterpretations_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<default_curve_yield_reinterpretation_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &default_curve_yield_reinterpretation_event::event_id},
         utility::codec::field{"key", &default_curve_yield_reinterpretation_event::key},
         utility::codec::field{"action", &default_curve_yield_reinterpretation_event::action},
@@ -520,7 +520,7 @@ wire_fields(std::type_identity<default_curve_yield_reinterpretation_event>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<default_curve_yield_reinterpretation_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"default_curve_yield_reinterpretation",
                               &default_curve_yield_reinterpretation_version_key::
                                   default_curve_yield_reinterpretation},
@@ -539,7 +539,7 @@ wire_fields(std::type_identity<default_curve_yield_reinterpretation_version_key>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<default_curve_yield_reinterpretation_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version",
                               &default_curve_yield_reinterpretation_versions_filter::version},
         utility::codec::field{"from_version",
@@ -559,7 +559,7 @@ wire_fields(std::type_identity<default_curve_yield_reinterpretation_versions_fil
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_default_curve_yield_reinterpretations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset",
                               &list_default_curve_yield_reinterpretations_request::offset},
         utility::codec::field{"limit", &list_default_curve_yield_reinterpretations_request::limit},
@@ -580,7 +580,7 @@ wire_fields(std::type_identity<list_default_curve_yield_reinterpretations_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_default_curve_yield_reinterpretations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_default_curve_yield_reinterpretations_response::result},
         utility::codec::field{
@@ -600,7 +600,7 @@ wire_fields(std::type_identity<list_default_curve_yield_reinterpretations_respon
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_default_curve_yield_reinterpretation_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_default_curve_yield_reinterpretation_request::key},
     };
 }
@@ -615,7 +615,7 @@ wire_fields(std::type_identity<get_default_curve_yield_reinterpretation_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_default_curve_yield_reinterpretation_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_default_curve_yield_reinterpretation_response::result},
         utility::codec::field{"default_curve_yield_reinterpretation",
                               &get_default_curve_yield_reinterpretation_response::
@@ -633,7 +633,7 @@ wire_fields(std::type_identity<get_default_curve_yield_reinterpretation_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_default_curve_yield_reinterpretations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys",
                               &get_many_default_curve_yield_reinterpretations_request::keys},
     };
@@ -649,7 +649,7 @@ wire_fields(std::type_identity<get_many_default_curve_yield_reinterpretations_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_default_curve_yield_reinterpretations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_default_curve_yield_reinterpretations_response::result},
         utility::codec::field{"entries",
@@ -667,7 +667,7 @@ wire_fields(std::type_identity<get_many_default_curve_yield_reinterpretations_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_default_curve_yield_reinterpretation_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_default_curve_yield_reinterpretation_request::change},
         utility::codec::field{"intent", &put_default_curve_yield_reinterpretation_request::intent},
     };
@@ -683,7 +683,7 @@ wire_fields(std::type_identity<put_default_curve_yield_reinterpretation_request>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_default_curve_yield_reinterpretation_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_default_curve_yield_reinterpretation_response::result},
         utility::codec::field{"default_curve_yield_reinterpretation",
                               &put_default_curve_yield_reinterpretation_response::
@@ -701,7 +701,7 @@ wire_fields(std::type_identity<put_default_curve_yield_reinterpretation_response
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_default_curve_yield_reinterpretations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_default_curve_yield_reinterpretations_request::changes},
         utility::codec::field{"intent",
@@ -719,7 +719,7 @@ wire_fields(std::type_identity<put_many_default_curve_yield_reinterpretations_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_default_curve_yield_reinterpretations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_default_curve_yield_reinterpretations_response::result},
         utility::codec::field{
@@ -738,7 +738,7 @@ wire_fields(std::type_identity<put_many_default_curve_yield_reinterpretations_re
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_default_curve_yield_reinterpretation_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal",
                               &delete_default_curve_yield_reinterpretation_request::removal},
         utility::codec::field{"intent",
@@ -756,7 +756,7 @@ wire_fields(std::type_identity<delete_default_curve_yield_reinterpretation_reque
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_default_curve_yield_reinterpretation_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_default_curve_yield_reinterpretation_response::result},
     };
@@ -772,7 +772,7 @@ wire_fields(std::type_identity<delete_default_curve_yield_reinterpretation_respo
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_default_curve_yield_reinterpretations_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_default_curve_yield_reinterpretations_request::removals},
         utility::codec::field{"intent",
@@ -790,7 +790,7 @@ wire_fields(std::type_identity<delete_many_default_curve_yield_reinterpretations
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_default_curve_yield_reinterpretations_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_default_curve_yield_reinterpretations_response::result},
     };
@@ -806,7 +806,7 @@ wire_fields(std::type_identity<delete_many_default_curve_yield_reinterpretations
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_default_curve_yield_reinterpretation_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &list_default_curve_yield_reinterpretation_versions_request::key},
         utility::codec::field{"offset",
@@ -830,7 +830,7 @@ wire_fields(std::type_identity<list_default_curve_yield_reinterpretation_version
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_default_curve_yield_reinterpretation_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_default_curve_yield_reinterpretation_versions_response::result},
         utility::codec::field{
@@ -850,7 +850,7 @@ wire_fields(std::type_identity<list_default_curve_yield_reinterpretation_version
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_default_curve_yield_reinterpretation_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key",
                               &get_default_curve_yield_reinterpretation_version_request::key},
     };
@@ -866,7 +866,7 @@ wire_fields(std::type_identity<get_default_curve_yield_reinterpretation_version_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_default_curve_yield_reinterpretation_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_default_curve_yield_reinterpretation_version_response::result},
         utility::codec::field{"version",

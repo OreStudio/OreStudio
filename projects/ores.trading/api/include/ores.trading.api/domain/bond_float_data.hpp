@@ -71,7 +71,7 @@ struct bond_float_data {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_float_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"value", &bond_float_data::value},
         utility::codec::field{"start_date", &bond_float_data::start_date},
     };

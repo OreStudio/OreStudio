@@ -169,7 +169,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.login_info.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<login_info_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id", &login_info_key::account_id},
     };
 }
@@ -183,7 +183,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.login_info.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<login_info_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &login_info_lookup::key},
         utility::codec::field{"login_info", &login_info_lookup::login_info},
     };
@@ -198,7 +198,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.login_info.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<login_info_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"account_id_one_of", &login_info_filter::account_id_one_of},
     };
 }
@@ -212,7 +212,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.login_info.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<login_info_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &login_info_event::event_id},
         utility::codec::field{"key", &login_info_event::key},
         utility::codec::field{"action", &login_info_event::action},
@@ -231,7 +231,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.login_info.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_login_info_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_login_info_request::offset},
         utility::codec::field{"limit", &list_login_info_request::limit},
         utility::codec::field{"order", &list_login_info_request::order},
@@ -248,7 +248,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.login_info.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_login_info_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_login_info_response::result},
         utility::codec::field{"login_info", &list_login_info_response::login_info},
         utility::codec::field{"total", &list_login_info_response::total},
@@ -264,7 +264,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.login_info.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_login_info_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_login_info_request::key},
     };
 }
@@ -278,7 +278,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.login_info.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_login_info_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_login_info_response::result},
         utility::codec::field{"login_info", &get_login_info_response::login_info},
     };
@@ -293,7 +293,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.login_info.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_login_info_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_login_info_request::keys},
     };
 }
@@ -307,7 +307,7 @@ inline constexpr std::string_view deleted = "iam.v1.events.login_info.deleted";
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_login_info_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_login_info_response::result},
         utility::codec::field{"entries", &get_many_login_info_response::entries},
     };

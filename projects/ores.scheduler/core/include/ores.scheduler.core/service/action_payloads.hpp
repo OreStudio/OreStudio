@@ -43,9 +43,10 @@ struct mq_payload_fields {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<mq_payload_fields>) {
-    return std::tuple{utility::codec::field{"queue_id", &mq_payload_fields::queue_id},
-                      utility::codec::field{"message_type", &mq_payload_fields::message_type},
-                      utility::codec::field{"payload", &mq_payload_fields::payload}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"queue_id", &mq_payload_fields::queue_id},
+        utility::codec::field{"message_type", &mq_payload_fields::message_type},
+        utility::codec::field{"payload", &mq_payload_fields::payload}};
 }
 static_assert(utility::codec::names_every_member<mq_payload_fields>());
 
@@ -57,7 +58,7 @@ struct nats_publish_payload {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_publish_payload>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"subject", &nats_publish_payload::subject},
         utility::codec::field{"report_definition_id", &nats_publish_payload::report_definition_id},
         utility::codec::field{"tenant_id", &nats_publish_payload::tenant_id}};
@@ -85,7 +86,7 @@ struct nats_trigger_body {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_trigger_body>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"report_definition_id", &nats_trigger_body::report_definition_id},
         utility::codec::field{"tenant_id", &nats_trigger_body::tenant_id},
         utility::codec::field{"job_instance_id", &nats_trigger_body::job_instance_id},
@@ -113,14 +114,15 @@ struct reply_body {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<reply_result>) {
-    return std::tuple{utility::codec::field{"outcome", &reply_result::outcome},
-                      utility::codec::field{"code", &reply_result::code},
-                      utility::codec::field{"message", &reply_result::message}};
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"outcome", &reply_result::outcome},
+        utility::codec::field{"code", &reply_result::code},
+        utility::codec::field{"message", &reply_result::message}};
 }
 static_assert(utility::codec::names_every_member<reply_result>());
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<reply_body>) {
-    return std::tuple{utility::codec::field{"result", &reply_body::result}};
+    return ::ores::utility::codec::field_list{utility::codec::field{"result", &reply_body::result}};
 }
 static_assert(utility::codec::names_every_member<reply_body>());
 

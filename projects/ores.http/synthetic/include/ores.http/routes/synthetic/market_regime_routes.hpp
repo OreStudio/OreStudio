@@ -30,7 +30,6 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -57,17 +56,17 @@ struct market_trace_event final {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_trace_event>) {
     using ores::utility::codec::field;
     using e = market_trace_event;
-    return std::tuple{field{"kind", &e::kind},
-                      field{"sourceName", &e::sourceName},
-                      field{"at", &e::at},
-                      field{"tau", &e::tau},
-                      field{"operationalGap", &e::operationalGap},
-                      field{"wallGap", &e::wallGap},
-                      field{"compensatedGap", &e::compensatedGap},
-                      field{"heat", &e::heat},
-                      field{"multiplier", &e::multiplier},
-                      field{"pace", &e::pace},
-                      field{"state", &e::state}};
+    return ::ores::utility::codec::field_list{field{"kind", &e::kind},
+                                              field{"sourceName", &e::sourceName},
+                                              field{"at", &e::at},
+                                              field{"tau", &e::tau},
+                                              field{"operationalGap", &e::operationalGap},
+                                              field{"wallGap", &e::wallGap},
+                                              field{"compensatedGap", &e::compensatedGap},
+                                              field{"heat", &e::heat},
+                                              field{"multiplier", &e::multiplier},
+                                              field{"pace", &e::pace},
+                                              field{"state", &e::state}};
 }
 
 /// One running feed and the state of its arrival law now.
@@ -86,15 +85,15 @@ struct market_feed_law final {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_feed_law>) {
     using ores::utility::codec::field;
     using f = market_feed_law;
-    return std::tuple{field{"sourceName", &f::sourceName},
-                      field{"mode", &f::mode},
-                      field{"rate", &f::rate},
-                      field{"sensitivity", &f::sensitivity},
-                      field{"effectiveRate", &f::effectiveRate},
-                      field{"phase", &f::phase},
-                      field{"excess", &f::excess},
-                      field{"branchingRatio", &f::branchingRatio},
-                      field{"decay", &f::decay}};
+    return ::ores::utility::codec::field_list{field{"sourceName", &f::sourceName},
+                                              field{"mode", &f::mode},
+                                              field{"rate", &f::rate},
+                                              field{"sensitivity", &f::sensitivity},
+                                              field{"effectiveRate", &f::effectiveRate},
+                                              field{"phase", &f::phase},
+                                              field{"excess", &f::excess},
+                                              field{"branchingRatio", &f::branchingRatio},
+                                              field{"decay", &f::decay}};
 }
 
 /**
@@ -115,14 +114,14 @@ struct market_trace final {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<market_trace>) {
     using ores::utility::codec::field;
     using t = market_trace;
-    return std::tuple{field{"runSeed", &t::runSeed},
-                      field{"ticksPerSecond", &t::ticksPerSecond},
-                      field{"heapSize", &t::heapSize},
-                      field{"latenessSeconds", &t::latenessSeconds},
-                      field{"maxLatenessSeconds", &t::maxLatenessSeconds},
-                      field{"series", &t::series},
-                      field{"events", &t::events},
-                      field{"feeds", &t::feeds}};
+    return ::ores::utility::codec::field_list{field{"runSeed", &t::runSeed},
+                                              field{"ticksPerSecond", &t::ticksPerSecond},
+                                              field{"heapSize", &t::heapSize},
+                                              field{"latenessSeconds", &t::latenessSeconds},
+                                              field{"maxLatenessSeconds", &t::maxLatenessSeconds},
+                                              field{"series", &t::series},
+                                              field{"events", &t::events},
+                                              field{"feeds", &t::feeds}};
 }
 
 /**

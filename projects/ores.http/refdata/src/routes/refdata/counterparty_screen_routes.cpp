@@ -45,7 +45,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <set>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -85,15 +84,16 @@ struct counterparty_composite_body final {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_composite_body>) {
     using ores::utility::codec::field;
     using body = counterparty_composite_body;
-    return std::tuple{field{"intent", &body::intent},
-                      field{"counterparty", &body::counterparty},
-                      field{"identifiers", &body::identifiers},
-                      field{"contacts", &body::contacts},
-                      field{"agreements", &body::agreements},
-                      field{"netting_sets", &body::netting_sets},
-                      field{"netting_set_identifiers", &body::netting_set_identifiers},
-                      field{"csas", &body::csas},
-                      field{"eligible_currencies", &body::eligible_currencies}};
+    return ::ores::utility::codec::field_list{
+        field{"intent", &body::intent},
+        field{"counterparty", &body::counterparty},
+        field{"identifiers", &body::identifiers},
+        field{"contacts", &body::contacts},
+        field{"agreements", &body::agreements},
+        field{"netting_sets", &body::netting_sets},
+        field{"netting_set_identifiers", &body::netting_set_identifiers},
+        field{"csas", &body::csas},
+        field{"eligible_currencies", &body::eligible_currencies}};
 }
 
 /// Which party a counterparty is to be visible to.
@@ -104,8 +104,9 @@ struct counterparty_visibility_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_visibility_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"partyId", &counterparty_visibility_body::partyId},
-                      field{"intent", &counterparty_visibility_body::intent}};
+    return ::ores::utility::codec::field_list{
+        field{"partyId", &counterparty_visibility_body::partyId},
+        field{"intent", &counterparty_visibility_body::intent}};
 }
 
 /// The business centres a counterparty is to hold.
@@ -116,8 +117,8 @@ struct counterparty_centres_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_centres_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"codes", &counterparty_centres_body::codes},
-                      field{"intent", &counterparty_centres_body::intent}};
+    return ::ores::utility::codec::field_list{field{"codes", &counterparty_centres_body::codes},
+                                              field{"intent", &counterparty_centres_body::intent}};
 }
 
 }

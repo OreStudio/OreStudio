@@ -95,7 +95,7 @@ identity rather than two and the two cannot disagree.
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_identity>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &instrument_identity::version},
         utility::codec::field{"tenant_id", &instrument_identity::tenant_id},
         utility::codec::field{"trade_type_code", &instrument_identity::trade_type_code},

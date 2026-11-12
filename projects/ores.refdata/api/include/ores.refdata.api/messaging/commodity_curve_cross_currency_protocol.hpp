@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_cross_currency_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &commodity_curve_cross_currency_key::id},
     };
 }
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_cross_currency_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &commodity_curve_cross_currency_write::id},
         utility::codec::field{"curve_definition_id",
                               &commodity_curve_cross_currency_write::curve_definition_id},
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted =
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_curve_cross_currency_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &commodity_curve_cross_currency_change::write},
         utility::codec::field{"precondition", &commodity_curve_cross_currency_change::precondition},
     };
@@ -437,7 +437,7 @@ wire_fields(std::type_identity<commodity_curve_cross_currency_change>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_curve_cross_currency_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &commodity_curve_cross_currency_removal::key},
         utility::codec::field{"precondition",
                               &commodity_curve_cross_currency_removal::precondition},
@@ -454,7 +454,7 @@ wire_fields(std::type_identity<commodity_curve_cross_currency_removal>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_curve_cross_currency_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &commodity_curve_cross_currency_lookup::key},
         utility::codec::field{
             "commodity_curve_cross_currency",
@@ -472,7 +472,7 @@ wire_fields(std::type_identity<commodity_curve_cross_currency_lookup>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_curve_cross_currencies_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &commodity_curve_cross_currencies_filter::id_one_of},
     };
 }
@@ -486,7 +486,7 @@ wire_fields(std::type_identity<commodity_curve_cross_currencies_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_cross_currency_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &commodity_curve_cross_currency_event::event_id},
         utility::codec::field{"key", &commodity_curve_cross_currency_event::key},
         utility::codec::field{"action", &commodity_curve_cross_currency_event::action},
@@ -507,7 +507,7 @@ wire_fields(std::type_identity<commodity_curve_cross_currencies_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_curve_cross_currency_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "commodity_curve_cross_currency",
             &commodity_curve_cross_currency_version_key::commodity_curve_cross_currency},
@@ -525,7 +525,7 @@ wire_fields(std::type_identity<commodity_curve_cross_currency_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<commodity_curve_cross_currency_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &commodity_curve_cross_currency_versions_filter::version},
         utility::codec::field{"from_version",
                               &commodity_curve_cross_currency_versions_filter::from_version},
@@ -544,7 +544,7 @@ wire_fields(std::type_identity<commodity_curve_cross_currency_versions_filter>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_curve_cross_currencies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_commodity_curve_cross_currencies_request::offset},
         utility::codec::field{"limit", &list_commodity_curve_cross_currencies_request::limit},
         utility::codec::field{"order", &list_commodity_curve_cross_currencies_request::order},
@@ -563,7 +563,7 @@ wire_fields(std::type_identity<list_commodity_curve_cross_currencies_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_curve_cross_currencies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_commodity_curve_cross_currencies_response::result},
         utility::codec::field{"cross_currencies",
                               &list_commodity_curve_cross_currencies_response::cross_currencies},
@@ -581,7 +581,7 @@ wire_fields(std::type_identity<list_commodity_curve_cross_currencies_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_curve_cross_currency_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_commodity_curve_cross_currency_request::key},
     };
 }
@@ -596,7 +596,7 @@ wire_fields(std::type_identity<get_commodity_curve_cross_currency_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_curve_cross_currency_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_commodity_curve_cross_currency_response::result},
         utility::codec::field{
             "commodity_curve_cross_currency",
@@ -614,7 +614,7 @@ wire_fields(std::type_identity<get_commodity_curve_cross_currency_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_commodity_curve_cross_currencies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_commodity_curve_cross_currencies_request::keys},
     };
 }
@@ -629,7 +629,7 @@ wire_fields(std::type_identity<get_many_commodity_curve_cross_currencies_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_commodity_curve_cross_currencies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_many_commodity_curve_cross_currencies_response::result},
         utility::codec::field{"entries",
@@ -647,7 +647,7 @@ wire_fields(std::type_identity<get_many_commodity_curve_cross_currencies_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_commodity_curve_cross_currency_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_commodity_curve_cross_currency_request::change},
         utility::codec::field{"intent", &put_commodity_curve_cross_currency_request::intent},
     };
@@ -663,7 +663,7 @@ wire_fields(std::type_identity<put_commodity_curve_cross_currency_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_commodity_curve_cross_currency_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_commodity_curve_cross_currency_response::result},
         utility::codec::field{
             "commodity_curve_cross_currency",
@@ -681,7 +681,7 @@ wire_fields(std::type_identity<put_commodity_curve_cross_currency_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_commodity_curve_cross_currencies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes",
                               &put_many_commodity_curve_cross_currencies_request::changes},
         utility::codec::field{"intent", &put_many_commodity_curve_cross_currencies_request::intent},
@@ -698,7 +698,7 @@ wire_fields(std::type_identity<put_many_commodity_curve_cross_currencies_request
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_commodity_curve_cross_currencies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &put_many_commodity_curve_cross_currencies_response::result},
         utility::codec::field{
@@ -717,7 +717,7 @@ wire_fields(std::type_identity<put_many_commodity_curve_cross_currencies_respons
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_commodity_curve_cross_currency_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_commodity_curve_cross_currency_request::removal},
         utility::codec::field{"intent", &delete_commodity_curve_cross_currency_request::intent},
     };
@@ -733,7 +733,7 @@ wire_fields(std::type_identity<delete_commodity_curve_cross_currency_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_commodity_curve_cross_currency_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_commodity_curve_cross_currency_response::result},
     };
 }
@@ -748,7 +748,7 @@ wire_fields(std::type_identity<delete_commodity_curve_cross_currency_response>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_commodity_curve_cross_currencies_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_commodity_curve_cross_currencies_request::removals},
         utility::codec::field{"intent",
@@ -766,7 +766,7 @@ wire_fields(std::type_identity<delete_many_commodity_curve_cross_currencies_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_commodity_curve_cross_currencies_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &delete_many_commodity_curve_cross_currencies_response::result},
     };
@@ -782,7 +782,7 @@ wire_fields(std::type_identity<delete_many_commodity_curve_cross_currencies_resp
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_curve_cross_currency_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_commodity_curve_cross_currency_versions_request::key},
         utility::codec::field{"offset",
                               &list_commodity_curve_cross_currency_versions_request::offset},
@@ -805,7 +805,7 @@ wire_fields(std::type_identity<list_commodity_curve_cross_currency_versions_requ
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_commodity_curve_cross_currency_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &list_commodity_curve_cross_currency_versions_response::result},
         utility::codec::field{"versions",
@@ -825,7 +825,7 @@ wire_fields(std::type_identity<list_commodity_curve_cross_currency_versions_resp
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_curve_cross_currency_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_commodity_curve_cross_currency_version_request::key},
     };
 }
@@ -840,7 +840,7 @@ wire_fields(std::type_identity<get_commodity_curve_cross_currency_version_reques
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_commodity_curve_cross_currency_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result",
                               &get_commodity_curve_cross_currency_version_response::result},
         utility::codec::field{"version",

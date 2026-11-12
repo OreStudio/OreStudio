@@ -388,7 +388,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_swap_co
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_swap_convention_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &inflation_swap_convention_key::id},
     };
 }
@@ -402,7 +402,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_swap_co
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_swap_convention_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &inflation_swap_convention_write::id},
         utility::codec::field{"fix_calendar", &inflation_swap_convention_write::fix_calendar},
         utility::codec::field{"fix_convention", &inflation_swap_convention_write::fix_convention},
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_swap_co
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_swap_convention_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &inflation_swap_convention_change::write},
         utility::codec::field{"precondition", &inflation_swap_convention_change::precondition},
     };
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_swap_co
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_swap_convention_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &inflation_swap_convention_removal::key},
         utility::codec::field{"precondition", &inflation_swap_convention_removal::precondition},
     };
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_swap_co
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_swap_convention_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &inflation_swap_convention_lookup::key},
         utility::codec::field{"inflation_swap_convention",
                               &inflation_swap_convention_lookup::inflation_swap_convention},
@@ -490,7 +490,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_swap_co
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_swap_conventions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &inflation_swap_conventions_filter::id_one_of},
     };
 }
@@ -504,7 +504,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_swap_co
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<inflation_swap_convention_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &inflation_swap_convention_event::event_id},
         utility::codec::field{"key", &inflation_swap_convention_event::key},
         utility::codec::field{"action", &inflation_swap_convention_event::action},
@@ -524,7 +524,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.inflation_swap_co
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_swap_convention_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"inflation_swap_convention",
                               &inflation_swap_convention_version_key::inflation_swap_convention},
         utility::codec::field{"version", &inflation_swap_convention_version_key::version},
@@ -541,7 +541,7 @@ wire_fields(std::type_identity<inflation_swap_convention_version_key>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<inflation_swap_convention_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &inflation_swap_convention_versions_filter::version},
         utility::codec::field{"from_version",
                               &inflation_swap_convention_versions_filter::from_version},
@@ -559,7 +559,7 @@ wire_fields(std::type_identity<inflation_swap_convention_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_inflation_swap_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_inflation_swap_conventions_request::offset},
         utility::codec::field{"limit", &list_inflation_swap_conventions_request::limit},
         utility::codec::field{"order", &list_inflation_swap_conventions_request::order},
@@ -578,7 +578,7 @@ wire_fields(std::type_identity<list_inflation_swap_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_inflation_swap_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_inflation_swap_conventions_response::result},
         utility::codec::field{
             "inflation_swap_conventions",
@@ -597,7 +597,7 @@ wire_fields(std::type_identity<list_inflation_swap_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_inflation_swap_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_inflation_swap_convention_request::key},
     };
 }
@@ -612,7 +612,7 @@ wire_fields(std::type_identity<get_inflation_swap_convention_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_inflation_swap_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_inflation_swap_convention_response::result},
         utility::codec::field{"inflation_swap_convention",
                               &get_inflation_swap_convention_response::inflation_swap_convention},
@@ -629,7 +629,7 @@ wire_fields(std::type_identity<get_inflation_swap_convention_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_inflation_swap_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_inflation_swap_conventions_request::keys},
     };
 }
@@ -644,7 +644,7 @@ wire_fields(std::type_identity<get_many_inflation_swap_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_inflation_swap_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_inflation_swap_conventions_response::result},
         utility::codec::field{"entries", &get_many_inflation_swap_conventions_response::entries},
     };
@@ -660,7 +660,7 @@ wire_fields(std::type_identity<get_many_inflation_swap_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_inflation_swap_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_inflation_swap_convention_request::change},
         utility::codec::field{"intent", &put_inflation_swap_convention_request::intent},
     };
@@ -676,7 +676,7 @@ wire_fields(std::type_identity<put_inflation_swap_convention_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_inflation_swap_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_inflation_swap_convention_response::result},
         utility::codec::field{"inflation_swap_convention",
                               &put_inflation_swap_convention_response::inflation_swap_convention},
@@ -693,7 +693,7 @@ wire_fields(std::type_identity<put_inflation_swap_convention_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_inflation_swap_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_inflation_swap_conventions_request::changes},
         utility::codec::field{"intent", &put_many_inflation_swap_conventions_request::intent},
     };
@@ -709,7 +709,7 @@ wire_fields(std::type_identity<put_many_inflation_swap_conventions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_inflation_swap_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_inflation_swap_conventions_response::result},
         utility::codec::field{
             "inflation_swap_conventions",
@@ -727,7 +727,7 @@ wire_fields(std::type_identity<put_many_inflation_swap_conventions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_inflation_swap_convention_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_inflation_swap_convention_request::removal},
         utility::codec::field{"intent", &delete_inflation_swap_convention_request::intent},
     };
@@ -743,7 +743,7 @@ wire_fields(std::type_identity<delete_inflation_swap_convention_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_inflation_swap_convention_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_inflation_swap_convention_response::result},
     };
 }
@@ -758,7 +758,7 @@ wire_fields(std::type_identity<delete_inflation_swap_convention_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_inflation_swap_conventions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_inflation_swap_conventions_request::removals},
         utility::codec::field{"intent", &delete_many_inflation_swap_conventions_request::intent},
@@ -775,7 +775,7 @@ wire_fields(std::type_identity<delete_many_inflation_swap_conventions_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_inflation_swap_conventions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_inflation_swap_conventions_response::result},
     };
 }
@@ -790,7 +790,7 @@ wire_fields(std::type_identity<delete_many_inflation_swap_conventions_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_inflation_swap_convention_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_inflation_swap_convention_versions_request::key},
         utility::codec::field{"offset", &list_inflation_swap_convention_versions_request::offset},
         utility::codec::field{"limit", &list_inflation_swap_convention_versions_request::limit},
@@ -809,7 +809,7 @@ wire_fields(std::type_identity<list_inflation_swap_convention_versions_request>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_inflation_swap_convention_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_inflation_swap_convention_versions_response::result},
         utility::codec::field{"versions",
                               &list_inflation_swap_convention_versions_response::versions},
@@ -827,7 +827,7 @@ wire_fields(std::type_identity<list_inflation_swap_convention_versions_response>
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_inflation_swap_convention_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_inflation_swap_convention_version_request::key},
     };
 }
@@ -842,7 +842,7 @@ wire_fields(std::type_identity<get_inflation_swap_convention_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_inflation_swap_convention_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_inflation_swap_convention_version_response::result},
         utility::codec::field{"version", &get_inflation_swap_convention_version_response::version},
     };

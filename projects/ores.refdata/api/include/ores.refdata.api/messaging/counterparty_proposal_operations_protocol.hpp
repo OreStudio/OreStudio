@@ -259,7 +259,7 @@ struct recheck_counterparty_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_line_outcome>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"line_no", &counterparty_line_outcome::line_no},
         ::ores::utility::codec::field{"entity_type", &counterparty_line_outcome::entity_type},
         ::ores::utility::codec::field{"operation", &counterparty_line_outcome::operation},
@@ -279,7 +279,7 @@ struct recheck_counterparty_changes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_counterparty_changes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"counterparties",
                                       &preview_counterparty_changes_request::counterparties},
         ::ores::utility::codec::field{"identifiers",
@@ -298,7 +298,7 @@ struct recheck_counterparty_changes_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<preview_counterparty_changes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &preview_counterparty_changes_response::result},
         ::ores::utility::codec::field{"lines", &preview_counterparty_changes_response::lines},
         ::ores::utility::codec::field{"part_codes",
@@ -315,7 +315,7 @@ wire_fields(std::type_identity<preview_counterparty_changes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_counterparty_changes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"reason", &raise_counterparty_changes_request::reason},
         ::ores::utility::codec::field{"counterparties",
                                       &raise_counterparty_changes_request::counterparties},
@@ -334,7 +334,7 @@ wire_fields(std::type_identity<preview_counterparty_changes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_counterparty_changes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &raise_counterparty_changes_response::result},
         ::ores::utility::codec::field{"request_id",
                                       &raise_counterparty_changes_response::request_id},
@@ -353,7 +353,7 @@ wire_fields(std::type_identity<preview_counterparty_changes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_field_delta>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"name", &counterparty_field_delta::name},
         ::ores::utility::codec::field{"before", &counterparty_field_delta::before},
         ::ores::utility::codec::field{"after", &counterparty_field_delta::after},
@@ -370,7 +370,7 @@ wire_fields(std::type_identity<preview_counterparty_changes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_change_delta>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"line_no", &counterparty_change_delta::line_no},
         ::ores::utility::codec::field{"entity_type", &counterparty_change_delta::entity_type},
         ::ores::utility::codec::field{"operation", &counterparty_change_delta::operation},
@@ -390,7 +390,7 @@ wire_fields(std::type_identity<preview_counterparty_changes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_counterparty_changes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id", &get_counterparty_changes_request::request_id},
     };
 }
@@ -404,7 +404,7 @@ wire_fields(std::type_identity<preview_counterparty_changes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_counterparty_changes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &get_counterparty_changes_response::result},
         ::ores::utility::codec::field{"changes", &get_counterparty_changes_response::changes},
     };
@@ -419,7 +419,7 @@ wire_fields(std::type_identity<preview_counterparty_changes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<recheck_counterparty_changes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"request_id",
                                       &recheck_counterparty_changes_request::request_id},
     };
@@ -435,7 +435,7 @@ wire_fields(std::type_identity<preview_counterparty_changes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<recheck_counterparty_changes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"result", &recheck_counterparty_changes_response::result},
         ::ores::utility::codec::field{"lines", &recheck_counterparty_changes_response::lines},
         ::ores::utility::codec::field{"part_codes",

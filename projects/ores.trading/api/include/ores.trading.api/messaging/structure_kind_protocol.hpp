@@ -361,7 +361,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &structure_kind_key::code},
     };
 }
@@ -375,7 +375,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &structure_kind_write::code},
         utility::codec::field{"description", &structure_kind_write::description},
         utility::codec::field{"confirms_as_whole", &structure_kind_write::confirms_as_whole},
@@ -391,7 +391,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &structure_kind_change::write},
         utility::codec::field{"precondition", &structure_kind_change::precondition},
     };
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &structure_kind_removal::key},
         utility::codec::field{"precondition", &structure_kind_removal::precondition},
     };
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &structure_kind_lookup::key},
         utility::codec::field{"structure_kind", &structure_kind_lookup::structure_kind},
     };
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kinds_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &structure_kinds_filter::code_one_of},
     };
 }
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &structure_kind_event::event_id},
         utility::codec::field{"key", &structure_kind_event::key},
         utility::codec::field{"action", &structure_kind_event::action},
@@ -469,7 +469,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"structure_kind", &structure_kind_version_key::structure_kind},
         utility::codec::field{"version", &structure_kind_version_key::version},
     };
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &structure_kind_versions_filter::version},
         utility::codec::field{"from_version", &structure_kind_versions_filter::from_version},
         utility::codec::field{"to_version", &structure_kind_versions_filter::to_version},
@@ -500,7 +500,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_structure_kinds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_structure_kinds_request::offset},
         utility::codec::field{"limit", &list_structure_kinds_request::limit},
         utility::codec::field{"order", &list_structure_kinds_request::order},
@@ -518,7 +518,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_structure_kinds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_structure_kinds_response::result},
         utility::codec::field{"structure_kinds", &list_structure_kinds_response::structure_kinds},
         utility::codec::field{"total", &list_structure_kinds_response::total},
@@ -534,7 +534,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_structure_kind_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_structure_kind_request::key},
     };
 }
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_structure_kind_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_structure_kind_response::result},
         utility::codec::field{"structure_kind", &get_structure_kind_response::structure_kind},
     };
@@ -563,7 +563,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_structure_kinds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_structure_kinds_request::keys},
     };
 }
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_structure_kinds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_structure_kinds_response::result},
         utility::codec::field{"entries", &get_many_structure_kinds_response::entries},
     };
@@ -592,7 +592,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_structure_kind_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_structure_kind_request::change},
         utility::codec::field{"intent", &put_structure_kind_request::intent},
     };
@@ -607,7 +607,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_structure_kind_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_structure_kind_response::result},
         utility::codec::field{"structure_kind", &put_structure_kind_response::structure_kind},
     };
@@ -622,7 +622,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_structure_kinds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_structure_kinds_request::changes},
         utility::codec::field{"intent", &put_many_structure_kinds_request::intent},
     };
@@ -637,7 +637,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_structure_kinds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_structure_kinds_response::result},
         utility::codec::field{"structure_kinds",
                               &put_many_structure_kinds_response::structure_kinds},
@@ -653,7 +653,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_structure_kind_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_structure_kind_request::removal},
         utility::codec::field{"intent", &delete_structure_kind_request::intent},
     };
@@ -668,7 +668,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_structure_kind_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_structure_kind_response::result},
     };
 }
@@ -682,7 +682,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_structure_kinds_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_structure_kinds_request::removals},
         utility::codec::field{"intent", &delete_many_structure_kinds_request::intent},
     };
@@ -697,7 +697,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_structure_kinds_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_structure_kinds_response::result},
     };
 }
@@ -711,7 +711,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_structure_kind_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_structure_kind_versions_request::key},
         utility::codec::field{"offset", &list_structure_kind_versions_request::offset},
         utility::codec::field{"limit", &list_structure_kind_versions_request::limit},
@@ -730,7 +730,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.d
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_structure_kind_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_structure_kind_versions_response::result},
         utility::codec::field{"versions", &list_structure_kind_versions_response::versions},
         utility::codec::field{"total", &list_structure_kind_versions_response::total},
@@ -746,7 +746,7 @@ wire_fields(std::type_identity<list_structure_kind_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_structure_kind_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_structure_kind_version_request::key},
     };
 }
@@ -760,7 +760,7 @@ wire_fields(std::type_identity<list_structure_kind_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_structure_kind_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_structure_kind_version_response::result},
         utility::codec::field{"version", &get_structure_kind_version_response::version},
     };

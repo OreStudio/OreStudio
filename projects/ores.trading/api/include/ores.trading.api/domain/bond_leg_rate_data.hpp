@@ -77,7 +77,7 @@ struct bond_leg_rate_data {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_leg_rate_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"fixed", &bond_leg_rate_data::fixed},
         utility::codec::field{"floating", &bond_leg_rate_data::floating},
         utility::codec::field{"formula_based", &bond_leg_rate_data::formula_based},

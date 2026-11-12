@@ -364,7 +364,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_part_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &approval_part_key::code},
     };
 }
@@ -378,7 +378,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_part_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code", &approval_part_write::code},
         utility::codec::field{"name", &approval_part_write::name},
         utility::codec::field{"description", &approval_part_write::description},
@@ -398,7 +398,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_part_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &approval_part_change::write},
         utility::codec::field{"precondition", &approval_part_change::precondition},
     };
@@ -413,7 +413,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_part_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &approval_part_removal::key},
         utility::codec::field{"precondition", &approval_part_removal::precondition},
     };
@@ -428,7 +428,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_part_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &approval_part_lookup::key},
         utility::codec::field{"approval_part", &approval_part_lookup::approval_part},
     };
@@ -443,7 +443,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_parts_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"code_one_of", &approval_parts_filter::code_one_of},
     };
 }
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_part_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &approval_part_event::event_id},
         utility::codec::field{"key", &approval_part_event::key},
         utility::codec::field{"action", &approval_part_event::action},
@@ -476,7 +476,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_part_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"approval_part", &approval_part_version_key::approval_part},
         utility::codec::field{"version", &approval_part_version_key::version},
     };
@@ -491,7 +491,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_part_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &approval_part_versions_filter::version},
         utility::codec::field{"from_version", &approval_part_versions_filter::from_version},
         utility::codec::field{"to_version", &approval_part_versions_filter::to_version},
@@ -507,7 +507,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_parts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_approval_parts_request::offset},
         utility::codec::field{"limit", &list_approval_parts_request::limit},
         utility::codec::field{"order", &list_approval_parts_request::order},
@@ -525,7 +525,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_parts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_approval_parts_response::result},
         utility::codec::field{"parts", &list_approval_parts_response::parts},
         utility::codec::field{"total", &list_approval_parts_response::total},
@@ -541,7 +541,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_part_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_approval_part_request::key},
     };
 }
@@ -555,7 +555,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_part_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_approval_part_response::result},
         utility::codec::field{"approval_part", &get_approval_part_response::approval_part},
     };
@@ -570,7 +570,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_approval_parts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_approval_parts_request::keys},
     };
 }
@@ -584,7 +584,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_approval_parts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_approval_parts_response::result},
         utility::codec::field{"entries", &get_many_approval_parts_response::entries},
     };
@@ -599,7 +599,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_approval_part_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_approval_part_request::change},
         utility::codec::field{"intent", &put_approval_part_request::intent},
     };
@@ -614,7 +614,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_approval_part_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_approval_part_response::result},
         utility::codec::field{"approval_part", &put_approval_part_response::approval_part},
     };
@@ -629,7 +629,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_approval_parts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_approval_parts_request::changes},
         utility::codec::field{"intent", &put_many_approval_parts_request::intent},
     };
@@ -644,7 +644,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_approval_parts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_approval_parts_response::result},
         utility::codec::field{"parts", &put_many_approval_parts_response::parts},
     };
@@ -659,7 +659,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_approval_part_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_approval_part_request::removal},
         utility::codec::field{"intent", &delete_approval_part_request::intent},
     };
@@ -674,7 +674,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_approval_part_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_approval_part_response::result},
     };
 }
@@ -688,7 +688,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_approval_parts_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_approval_parts_request::removals},
         utility::codec::field{"intent", &delete_many_approval_parts_request::intent},
     };
@@ -703,7 +703,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_approval_parts_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_approval_parts_response::result},
     };
 }
@@ -717,7 +717,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_part_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_approval_part_versions_request::key},
         utility::codec::field{"offset", &list_approval_part_versions_request::offset},
         utility::codec::field{"limit", &list_approval_part_versions_request::limit},
@@ -735,7 +735,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_part_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_approval_part_versions_response::result},
         utility::codec::field{"versions", &list_approval_part_versions_response::versions},
         utility::codec::field{"total", &list_approval_part_versions_response::total},
@@ -751,7 +751,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_part_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_approval_part_version_request::key},
     };
 }
@@ -765,7 +765,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_parts.dele
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_part_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_approval_part_version_response::result},
         utility::codec::field{"version", &get_approval_part_version_response::version},
     };

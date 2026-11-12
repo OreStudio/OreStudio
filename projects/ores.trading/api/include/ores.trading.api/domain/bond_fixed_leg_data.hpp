@@ -63,7 +63,7 @@ struct bond_fixed_leg_data {
  * members inside it.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_fixed_leg_data>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"rates", &bond_fixed_leg_data::rates},
     };
 }

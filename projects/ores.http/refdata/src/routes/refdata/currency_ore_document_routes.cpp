@@ -25,7 +25,6 @@
 #include <boost/asio/awaitable.hpp>
 #include <set>
 #include <string>
-#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -53,7 +52,7 @@ struct preview_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"content", &preview_body::content}};
+    return ::ores::utility::codec::field_list{field{"content", &preview_body::content}};
 }
 
 /// What an import writes: the file, the choice made for each currency, and why.
@@ -66,10 +65,10 @@ struct import_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<import_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"content", &import_body::content},
-                      field{"choices", &import_body::choices},
-                      field{"reasonCode", &import_body::reasonCode},
-                      field{"commentary", &import_body::commentary}};
+    return ::ores::utility::codec::field_list{field{"content", &import_body::content},
+                                              field{"choices", &import_body::choices},
+                                              field{"reasonCode", &import_body::reasonCode},
+                                              field{"commentary", &import_body::commentary}};
 }
 
 }

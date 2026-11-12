@@ -87,7 +87,7 @@ struct nats_options final {
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_options>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"url", &nats_options::url},
         ::ores::utility::codec::field{"subject_prefix", &nats_options::subject_prefix},
         ::ores::utility::codec::field{"tls_ca_cert", &nats_options::tls_ca_cert},

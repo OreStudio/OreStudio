@@ -31,7 +31,6 @@
 #include <cmath>
 #include <cstdint>
 #include <string>
-#include <tuple>
 #include <type_traits>
 
 namespace ores::http::routes::synthetic {
@@ -57,7 +56,7 @@ struct pin_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<pin_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"mode", &pin_body::mode}};
+    return ::ores::utility::codec::field_list{field{"mode", &pin_body::mode}};
 }
 
 /// How the market moves from now on.
@@ -72,12 +71,12 @@ struct settings_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<settings_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"wakeRate", &settings_body::wakeRate},
-                      field{"calmRate", &settings_body::calmRate},
-                      field{"jump", &settings_body::jump},
-                      field{"decay", &settings_body::decay},
-                      field{"speed", &settings_body::speed},
-                      field{"tailLoading", &settings_body::tailLoading}};
+    return ::ores::utility::codec::field_list{field{"wakeRate", &settings_body::wakeRate},
+                                              field{"calmRate", &settings_body::calmRate},
+                                              field{"jump", &settings_body::jump},
+                                              field{"decay", &settings_body::decay},
+                                              field{"speed", &settings_body::speed},
+                                              field{"tailLoading", &settings_body::tailLoading}};
 }
 
 }

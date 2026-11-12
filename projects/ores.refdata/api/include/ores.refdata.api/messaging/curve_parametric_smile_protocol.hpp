@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_parametric_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_parametric_smile_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_parametric_smile_key::id},
     };
 }
@@ -388,7 +388,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_parametric_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_parametric_smile_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &curve_parametric_smile_write::id},
         utility::codec::field{"curve_definition_id",
                               &curve_parametric_smile_write::curve_definition_id},
@@ -412,7 +412,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_parametric_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_parametric_smile_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &curve_parametric_smile_change::write},
         utility::codec::field{"precondition", &curve_parametric_smile_change::precondition},
     };
@@ -427,7 +427,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_parametric_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_parametric_smile_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_parametric_smile_removal::key},
         utility::codec::field{"precondition", &curve_parametric_smile_removal::precondition},
     };
@@ -442,7 +442,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_parametric_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_parametric_smile_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &curve_parametric_smile_lookup::key},
         utility::codec::field{"curve_parametric_smile",
                               &curve_parametric_smile_lookup::curve_parametric_smile},
@@ -458,7 +458,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_parametric_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_parametric_smiles_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &curve_parametric_smiles_filter::id_one_of},
     };
 }
@@ -472,7 +472,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_parametric_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_parametric_smile_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &curve_parametric_smile_event::event_id},
         utility::codec::field{"key", &curve_parametric_smile_event::key},
         utility::codec::field{"action", &curve_parametric_smile_event::action},
@@ -491,7 +491,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_parametric_
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_parametric_smile_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"curve_parametric_smile",
                               &curve_parametric_smile_version_key::curve_parametric_smile},
         utility::codec::field{"version", &curve_parametric_smile_version_key::version},
@@ -508,7 +508,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.curve_parametric_
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<curve_parametric_smile_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &curve_parametric_smile_versions_filter::version},
         utility::codec::field{"from_version",
                               &curve_parametric_smile_versions_filter::from_version},
@@ -525,7 +525,7 @@ wire_fields(std::type_identity<curve_parametric_smile_versions_filter>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_curve_parametric_smiles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_curve_parametric_smiles_request::offset},
         utility::codec::field{"limit", &list_curve_parametric_smiles_request::limit},
         utility::codec::field{"order", &list_curve_parametric_smiles_request::order},
@@ -544,7 +544,7 @@ wire_fields(std::type_identity<curve_parametric_smile_versions_filter>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_parametric_smiles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_parametric_smiles_response::result},
         utility::codec::field{"parametric_smiles",
                               &list_curve_parametric_smiles_response::parametric_smiles},
@@ -561,7 +561,7 @@ wire_fields(std::type_identity<list_curve_parametric_smiles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_parametric_smile_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_parametric_smile_request::key},
     };
 }
@@ -575,7 +575,7 @@ wire_fields(std::type_identity<list_curve_parametric_smiles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_parametric_smile_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_parametric_smile_response::result},
         utility::codec::field{"curve_parametric_smile",
                               &get_curve_parametric_smile_response::curve_parametric_smile},
@@ -592,7 +592,7 @@ wire_fields(std::type_identity<list_curve_parametric_smiles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_parametric_smiles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_curve_parametric_smiles_request::keys},
     };
 }
@@ -607,7 +607,7 @@ wire_fields(std::type_identity<get_many_curve_parametric_smiles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_curve_parametric_smiles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_curve_parametric_smiles_response::result},
         utility::codec::field{"entries", &get_many_curve_parametric_smiles_response::entries},
     };
@@ -622,7 +622,7 @@ wire_fields(std::type_identity<get_many_curve_parametric_smiles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_curve_parametric_smile_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_curve_parametric_smile_request::change},
         utility::codec::field{"intent", &put_curve_parametric_smile_request::intent},
     };
@@ -637,7 +637,7 @@ wire_fields(std::type_identity<get_many_curve_parametric_smiles_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_curve_parametric_smile_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_curve_parametric_smile_response::result},
         utility::codec::field{"curve_parametric_smile",
                               &put_curve_parametric_smile_response::curve_parametric_smile},
@@ -654,7 +654,7 @@ wire_fields(std::type_identity<get_many_curve_parametric_smiles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_parametric_smiles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_curve_parametric_smiles_request::changes},
         utility::codec::field{"intent", &put_many_curve_parametric_smiles_request::intent},
     };
@@ -670,7 +670,7 @@ wire_fields(std::type_identity<put_many_curve_parametric_smiles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_curve_parametric_smiles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_curve_parametric_smiles_response::result},
         utility::codec::field{"parametric_smiles",
                               &put_many_curve_parametric_smiles_response::parametric_smiles},
@@ -687,7 +687,7 @@ wire_fields(std::type_identity<put_many_curve_parametric_smiles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_parametric_smile_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_curve_parametric_smile_request::removal},
         utility::codec::field{"intent", &delete_curve_parametric_smile_request::intent},
     };
@@ -703,7 +703,7 @@ wire_fields(std::type_identity<delete_curve_parametric_smile_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_curve_parametric_smile_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_curve_parametric_smile_response::result},
     };
 }
@@ -718,7 +718,7 @@ wire_fields(std::type_identity<delete_curve_parametric_smile_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_parametric_smiles_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_curve_parametric_smiles_request::removals},
         utility::codec::field{"intent", &delete_many_curve_parametric_smiles_request::intent},
     };
@@ -734,7 +734,7 @@ wire_fields(std::type_identity<delete_many_curve_parametric_smiles_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_curve_parametric_smiles_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_curve_parametric_smiles_response::result},
     };
 }
@@ -749,7 +749,7 @@ wire_fields(std::type_identity<delete_many_curve_parametric_smiles_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_parametric_smile_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_curve_parametric_smile_versions_request::key},
         utility::codec::field{"offset", &list_curve_parametric_smile_versions_request::offset},
         utility::codec::field{"limit", &list_curve_parametric_smile_versions_request::limit},
@@ -768,7 +768,7 @@ wire_fields(std::type_identity<list_curve_parametric_smile_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_curve_parametric_smile_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_curve_parametric_smile_versions_response::result},
         utility::codec::field{"versions", &list_curve_parametric_smile_versions_response::versions},
         utility::codec::field{"total", &list_curve_parametric_smile_versions_response::total},
@@ -785,7 +785,7 @@ wire_fields(std::type_identity<list_curve_parametric_smile_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_parametric_smile_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_curve_parametric_smile_version_request::key},
     };
 }
@@ -800,7 +800,7 @@ wire_fields(std::type_identity<get_curve_parametric_smile_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_curve_parametric_smile_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_curve_parametric_smile_version_response::result},
         utility::codec::field{"version", &get_curve_parametric_smile_version_response::version},
     };

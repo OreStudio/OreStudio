@@ -36,7 +36,6 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -171,8 +170,8 @@ struct stated_intent final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<stated_intent>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"reason_code", &stated_intent::reason_code},
-                      field{"commentary", &stated_intent::commentary}};
+    return ::ores::utility::codec::field_list{field{"reason_code", &stated_intent::reason_code},
+                                              field{"commentary", &stated_intent::commentary}};
 }
 
 /**
@@ -196,9 +195,9 @@ struct versioned_write final {
 template <typename Write>
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<versioned_write<Write>>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"intent", &versioned_write<Write>::intent},
-                      field{"version", &versioned_write<Write>::version},
-                      field{"write", &versioned_write<Write>::write}};
+    return ::ores::utility::codec::field_list{field{"intent", &versioned_write<Write>::intent},
+                                              field{"version", &versioned_write<Write>::version},
+                                              field{"write", &versioned_write<Write>::write}};
 }
 
 /**
@@ -258,10 +257,10 @@ struct write_body final {
 template <typename Write>
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<write_body<Write>>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"write", &write_body<Write>::write},
-                      field{"version", &write_body<Write>::version},
-                      field{"reasonCode", &write_body<Write>::reasonCode},
-                      field{"commentary", &write_body<Write>::commentary}};
+    return ::ores::utility::codec::field_list{field{"write", &write_body<Write>::write},
+                                              field{"version", &write_body<Write>::version},
+                                              field{"reasonCode", &write_body<Write>::reasonCode},
+                                              field{"commentary", &write_body<Write>::commentary}};
 }
 
 /**
@@ -278,10 +277,10 @@ struct removal_body final {
 template <typename Key>
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<removal_body<Key>>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"key", &removal_body<Key>::key},
-                      field{"version", &removal_body<Key>::version},
-                      field{"reasonCode", &removal_body<Key>::reasonCode},
-                      field{"commentary", &removal_body<Key>::commentary}};
+    return ::ores::utility::codec::field_list{field{"key", &removal_body<Key>::key},
+                                              field{"version", &removal_body<Key>::version},
+                                              field{"reasonCode", &removal_body<Key>::reasonCode},
+                                              field{"commentary", &removal_body<Key>::commentary}};
 }
 
 /**
@@ -296,8 +295,8 @@ struct change_body final {
 template <typename Write>
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<change_body<Write>>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"write", &change_body<Write>::write},
-                      field{"version", &change_body<Write>::version}};
+    return ::ores::utility::codec::field_list{field{"write", &change_body<Write>::write},
+                                              field{"version", &change_body<Write>::version}};
 }
 
 /**
@@ -314,8 +313,8 @@ struct save_body final {
 template <typename Write>
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<save_body<Write>>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"intent", &save_body<Write>::intent},
-                      field{"changes", &save_body<Write>::changes}};
+    return ::ores::utility::codec::field_list{field{"intent", &save_body<Write>::intent},
+                                              field{"changes", &save_body<Write>::changes}};
 }
 
 /**
@@ -328,7 +327,8 @@ struct removal_item final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<removal_item>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"key", &removal_item::key}, field{"version", &removal_item::version}};
+    return ::ores::utility::codec::field_list{field{"key", &removal_item::key},
+                                              field{"version", &removal_item::version}};
 }
 
 /**
@@ -343,8 +343,8 @@ struct remove_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<remove_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"intent", &remove_body::intent},
-                      field{"removals", &remove_body::removals}};
+    return ::ores::utility::codec::field_list{field{"intent", &remove_body::intent},
+                                              field{"removals", &remove_body::removals}};
 }
 
 /**

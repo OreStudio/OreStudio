@@ -144,7 +144,7 @@ void state_keys(ores::trading::domain::instrument_batch& batch,
                 const std::string& trade_type) {
     const ores::trading::service::instrument_keys keys{
         trade_id, trade_type, boost::uuids::nil_uuid()};
-    std::apply(
+    ores::utility::codec::apply_fields(
         [&](const auto&... fields) {
             (
                 [&] {
@@ -158,7 +158,7 @@ void state_keys(ores::trading::domain::instrument_batch& batch,
 
 void append(ores::trading::domain::instrument_batch& into,
             const ores::trading::domain::instrument_batch& from) {
-    std::apply(
+    ores::utility::codec::apply_fields(
         [&](const auto&... fields) {
             ((into.*(fields.member))
                  .insert((into.*(fields.member)).end(),

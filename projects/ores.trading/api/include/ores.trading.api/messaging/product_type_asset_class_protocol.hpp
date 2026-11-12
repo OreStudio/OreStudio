@@ -321,7 +321,7 @@ struct list_by_product_type_code_product_type_asset_classes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<product_type_asset_class_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"product_type_code",
                               &product_type_asset_class_key::product_type_code},
         utility::codec::field{"asset_class_code", &product_type_asset_class_key::asset_class_code},
@@ -337,7 +337,7 @@ struct list_by_product_type_code_product_type_asset_classes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<product_type_asset_class_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"product_type_code",
                               &product_type_asset_class_write::product_type_code},
         utility::codec::field{"asset_class_code",
@@ -355,7 +355,7 @@ struct list_by_product_type_code_product_type_asset_classes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<product_type_asset_class_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &product_type_asset_class_change::write},
         utility::codec::field{"precondition", &product_type_asset_class_change::precondition},
     };
@@ -370,7 +370,7 @@ struct list_by_product_type_code_product_type_asset_classes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<product_type_asset_class_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &product_type_asset_class_removal::key},
         utility::codec::field{"precondition", &product_type_asset_class_removal::precondition},
     };
@@ -385,7 +385,7 @@ struct list_by_product_type_code_product_type_asset_classes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<product_type_asset_class_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &product_type_asset_class_lookup::key},
         utility::codec::field{"product_type_asset_class",
                               &product_type_asset_class_lookup::product_type_asset_class},
@@ -401,7 +401,7 @@ struct list_by_product_type_code_product_type_asset_classes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<product_type_asset_classes_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"product_type_code",
                               &product_type_asset_classes_filter::product_type_code},
         utility::codec::field{"product_type_code_one_of",
@@ -418,7 +418,7 @@ struct list_by_product_type_code_product_type_asset_classes_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<product_type_asset_class_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &product_type_asset_class_event::event_id},
         utility::codec::field{"key", &product_type_asset_class_event::key},
         utility::codec::field{"action", &product_type_asset_class_event::action},
@@ -438,7 +438,7 @@ struct list_by_product_type_code_product_type_asset_classes_response {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_product_type_asset_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_product_type_asset_classes_request::offset},
         utility::codec::field{"limit", &list_product_type_asset_classes_request::limit},
         utility::codec::field{"order", &list_product_type_asset_classes_request::order},
@@ -456,7 +456,7 @@ wire_fields(std::type_identity<list_product_type_asset_classes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_product_type_asset_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_product_type_asset_classes_response::result},
         utility::codec::field{
             "product_type_asset_classes",
@@ -474,7 +474,7 @@ wire_fields(std::type_identity<list_product_type_asset_classes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_product_type_asset_class_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_product_type_asset_class_request::key},
     };
 }
@@ -489,7 +489,7 @@ wire_fields(std::type_identity<list_product_type_asset_classes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_product_type_asset_class_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_product_type_asset_class_response::result},
         utility::codec::field{"product_type_asset_class",
                               &get_product_type_asset_class_response::product_type_asset_class},
@@ -506,7 +506,7 @@ wire_fields(std::type_identity<get_product_type_asset_class_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_product_type_asset_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_product_type_asset_classes_request::keys},
     };
 }
@@ -521,7 +521,7 @@ wire_fields(std::type_identity<get_many_product_type_asset_classes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_product_type_asset_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_product_type_asset_classes_response::result},
         utility::codec::field{"entries", &get_many_product_type_asset_classes_response::entries},
     };
@@ -536,7 +536,7 @@ wire_fields(std::type_identity<get_many_product_type_asset_classes_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_product_type_asset_class_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_product_type_asset_class_request::change},
         utility::codec::field{"intent", &put_product_type_asset_class_request::intent},
     };
@@ -552,7 +552,7 @@ wire_fields(std::type_identity<get_many_product_type_asset_classes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_product_type_asset_class_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_product_type_asset_class_response::result},
         utility::codec::field{"product_type_asset_class",
                               &put_product_type_asset_class_response::product_type_asset_class},
@@ -569,7 +569,7 @@ wire_fields(std::type_identity<put_product_type_asset_class_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_product_type_asset_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_product_type_asset_classes_request::changes},
         utility::codec::field{"intent", &put_many_product_type_asset_classes_request::intent},
     };
@@ -585,7 +585,7 @@ wire_fields(std::type_identity<put_many_product_type_asset_classes_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_product_type_asset_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_product_type_asset_classes_response::result},
         utility::codec::field{
             "product_type_asset_classes",
@@ -603,7 +603,7 @@ wire_fields(std::type_identity<put_many_product_type_asset_classes_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_product_type_asset_class_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_product_type_asset_class_request::removal},
         utility::codec::field{"intent", &delete_product_type_asset_class_request::intent},
     };
@@ -619,7 +619,7 @@ wire_fields(std::type_identity<delete_product_type_asset_class_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_product_type_asset_class_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_product_type_asset_class_response::result},
     };
 }
@@ -634,7 +634,7 @@ wire_fields(std::type_identity<delete_product_type_asset_class_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_product_type_asset_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals",
                               &delete_many_product_type_asset_classes_request::removals},
         utility::codec::field{"intent", &delete_many_product_type_asset_classes_request::intent},
@@ -651,7 +651,7 @@ wire_fields(std::type_identity<delete_many_product_type_asset_classes_request>) 
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_product_type_asset_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_product_type_asset_classes_response::result},
     };
 }
@@ -666,7 +666,7 @@ wire_fields(std::type_identity<delete_many_product_type_asset_classes_response>)
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_product_type_code_product_type_asset_classes_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "product_type_code",
             &list_by_product_type_code_product_type_asset_classes_request::product_type_code},
@@ -693,7 +693,7 @@ wire_fields(std::type_identity<list_by_product_type_code_product_type_asset_clas
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_by_product_type_code_product_type_asset_classes_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{
             "result", &list_by_product_type_code_product_type_asset_classes_response::result},
         utility::codec::field{"product_type_asset_classes",

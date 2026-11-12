@@ -381,7 +381,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_curve_config_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &equity_curve_config_key::id},
     };
 }
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_curve_config_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &equity_curve_config_write::id},
         utility::codec::field{"curve_definition_id",
                               &equity_curve_config_write::curve_definition_id},
@@ -428,7 +428,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_curve_config_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &equity_curve_config_change::write},
         utility::codec::field{"precondition", &equity_curve_config_change::precondition},
     };
@@ -443,7 +443,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_curve_config_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &equity_curve_config_removal::key},
         utility::codec::field{"precondition", &equity_curve_config_removal::precondition},
     };
@@ -458,7 +458,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_curve_config_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &equity_curve_config_lookup::key},
         utility::codec::field{"equity_curve_config",
                               &equity_curve_config_lookup::equity_curve_config},
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_curve_configs_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &equity_curve_configs_filter::id_one_of},
     };
 }
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_curve_config_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &equity_curve_config_event::event_id},
         utility::codec::field{"key", &equity_curve_config_event::key},
         utility::codec::field{"action", &equity_curve_config_event::action},
@@ -507,7 +507,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_curve_config_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"equity_curve_config",
                               &equity_curve_config_version_key::equity_curve_config},
         utility::codec::field{"version", &equity_curve_config_version_key::version},
@@ -523,7 +523,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_curve_config_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &equity_curve_config_versions_filter::version},
         utility::codec::field{"from_version", &equity_curve_config_versions_filter::from_version},
         utility::codec::field{"to_version", &equity_curve_config_versions_filter::to_version},
@@ -539,7 +539,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_equity_curve_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_equity_curve_configs_request::offset},
         utility::codec::field{"limit", &list_equity_curve_configs_request::limit},
         utility::codec::field{"order", &list_equity_curve_configs_request::order},
@@ -557,7 +557,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_equity_curve_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_equity_curve_configs_response::result},
         utility::codec::field{"equity_curve_configs",
                               &list_equity_curve_configs_response::equity_curve_configs},
@@ -574,7 +574,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_equity_curve_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_equity_curve_config_request::key},
     };
 }
@@ -588,7 +588,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_equity_curve_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_equity_curve_config_response::result},
         utility::codec::field{"equity_curve_config",
                               &get_equity_curve_config_response::equity_curve_config},
@@ -605,7 +605,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.equity_curve_conf
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_equity_curve_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_equity_curve_configs_request::keys},
     };
 }
@@ -620,7 +620,7 @@ wire_fields(std::type_identity<get_many_equity_curve_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_many_equity_curve_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_equity_curve_configs_response::result},
         utility::codec::field{"entries", &get_many_equity_curve_configs_response::entries},
     };
@@ -635,7 +635,7 @@ wire_fields(std::type_identity<get_many_equity_curve_configs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_equity_curve_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_equity_curve_config_request::change},
         utility::codec::field{"intent", &put_equity_curve_config_request::intent},
     };
@@ -650,7 +650,7 @@ wire_fields(std::type_identity<get_many_equity_curve_configs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_equity_curve_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_equity_curve_config_response::result},
         utility::codec::field{"equity_curve_config",
                               &put_equity_curve_config_response::equity_curve_config},
@@ -667,7 +667,7 @@ wire_fields(std::type_identity<get_many_equity_curve_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_equity_curve_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_equity_curve_configs_request::changes},
         utility::codec::field{"intent", &put_many_equity_curve_configs_request::intent},
     };
@@ -683,7 +683,7 @@ wire_fields(std::type_identity<put_many_equity_curve_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<put_many_equity_curve_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_equity_curve_configs_response::result},
         utility::codec::field{"equity_curve_configs",
                               &put_many_equity_curve_configs_response::equity_curve_configs},
@@ -699,7 +699,7 @@ wire_fields(std::type_identity<put_many_equity_curve_configs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_equity_curve_config_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_equity_curve_config_request::removal},
         utility::codec::field{"intent", &delete_equity_curve_config_request::intent},
     };
@@ -714,7 +714,7 @@ wire_fields(std::type_identity<put_many_equity_curve_configs_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_equity_curve_config_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_equity_curve_config_response::result},
     };
 }
@@ -729,7 +729,7 @@ wire_fields(std::type_identity<put_many_equity_curve_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_equity_curve_configs_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_equity_curve_configs_request::removals},
         utility::codec::field{"intent", &delete_many_equity_curve_configs_request::intent},
     };
@@ -745,7 +745,7 @@ wire_fields(std::type_identity<delete_many_equity_curve_configs_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<delete_many_equity_curve_configs_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_equity_curve_configs_response::result},
     };
 }
@@ -760,7 +760,7 @@ wire_fields(std::type_identity<delete_many_equity_curve_configs_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_equity_curve_config_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_equity_curve_config_versions_request::key},
         utility::codec::field{"offset", &list_equity_curve_config_versions_request::offset},
         utility::codec::field{"limit", &list_equity_curve_config_versions_request::limit},
@@ -779,7 +779,7 @@ wire_fields(std::type_identity<list_equity_curve_config_versions_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_equity_curve_config_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_equity_curve_config_versions_response::result},
         utility::codec::field{"versions", &list_equity_curve_config_versions_response::versions},
         utility::codec::field{"total", &list_equity_curve_config_versions_response::total},
@@ -796,7 +796,7 @@ wire_fields(std::type_identity<list_equity_curve_config_versions_response>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_equity_curve_config_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_equity_curve_config_version_request::key},
     };
 }
@@ -811,7 +811,7 @@ wire_fields(std::type_identity<get_equity_curve_config_version_request>) {
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<get_equity_curve_config_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_equity_curve_config_version_response::result},
         utility::codec::field{"version", &get_equity_curve_config_version_response::version},
     };

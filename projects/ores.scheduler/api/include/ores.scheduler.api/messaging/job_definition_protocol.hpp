@@ -366,7 +366,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<job_definition_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &job_definition_key::id},
     };
 }
@@ -380,7 +380,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<job_definition_write>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id", &job_definition_write::id},
         utility::codec::field{"job_name", &job_definition_write::job_name},
         utility::codec::field{"description", &job_definition_write::description},
@@ -401,7 +401,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<job_definition_change>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"write", &job_definition_change::write},
         utility::codec::field{"precondition", &job_definition_change::precondition},
     };
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<job_definition_removal>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &job_definition_removal::key},
         utility::codec::field{"precondition", &job_definition_removal::precondition},
     };
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<job_definition_lookup>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &job_definition_lookup::key},
         utility::codec::field{"job_definition", &job_definition_lookup::job_definition},
     };
@@ -446,7 +446,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<job_definitions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"id_one_of", &job_definitions_filter::id_one_of},
     };
 }
@@ -460,7 +460,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<job_definition_event>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"event_id", &job_definition_event::event_id},
         utility::codec::field{"key", &job_definition_event::key},
         utility::codec::field{"action", &job_definition_event::action},
@@ -479,7 +479,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<job_definition_version_key>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"job_definition", &job_definition_version_key::job_definition},
         utility::codec::field{"version", &job_definition_version_key::version},
     };
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<job_definition_versions_filter>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &job_definition_versions_filter::version},
         utility::codec::field{"from_version", &job_definition_versions_filter::from_version},
         utility::codec::field{"to_version", &job_definition_versions_filter::to_version},
@@ -510,7 +510,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_job_definitions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"offset", &list_job_definitions_request::offset},
         utility::codec::field{"limit", &list_job_definitions_request::limit},
         utility::codec::field{"order", &list_job_definitions_request::order},
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_job_definitions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_job_definitions_response::result},
         utility::codec::field{"definitions", &list_job_definitions_response::definitions},
         utility::codec::field{"total", &list_job_definitions_response::total},
@@ -544,7 +544,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_job_definition_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_job_definition_request::key},
     };
 }
@@ -558,7 +558,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_job_definition_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_job_definition_response::result},
         utility::codec::field{"job_definition", &get_job_definition_response::job_definition},
     };
@@ -573,7 +573,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_job_definitions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"keys", &get_many_job_definitions_request::keys},
     };
 }
@@ -587,7 +587,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_job_definitions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_many_job_definitions_response::result},
         utility::codec::field{"entries", &get_many_job_definitions_response::entries},
     };
@@ -602,7 +602,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_job_definition_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"change", &put_job_definition_request::change},
         utility::codec::field{"intent", &put_job_definition_request::intent},
     };
@@ -617,7 +617,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_job_definition_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_job_definition_response::result},
         utility::codec::field{"job_definition", &put_job_definition_response::job_definition},
     };
@@ -632,7 +632,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_job_definitions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"changes", &put_many_job_definitions_request::changes},
         utility::codec::field{"intent", &put_many_job_definitions_request::intent},
     };
@@ -647,7 +647,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_job_definitions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &put_many_job_definitions_response::result},
         utility::codec::field{"definitions", &put_many_job_definitions_response::definitions},
     };
@@ -662,7 +662,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_job_definition_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removal", &delete_job_definition_request::removal},
         utility::codec::field{"intent", &delete_job_definition_request::intent},
     };
@@ -677,7 +677,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_job_definition_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_job_definition_response::result},
     };
 }
@@ -691,7 +691,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_job_definitions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"removals", &delete_many_job_definitions_request::removals},
         utility::codec::field{"intent", &delete_many_job_definitions_request::intent},
     };
@@ -706,7 +706,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_job_definitions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &delete_many_job_definitions_response::result},
     };
 }
@@ -720,7 +720,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_job_definition_versions_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &list_job_definition_versions_request::key},
         utility::codec::field{"offset", &list_job_definition_versions_request::offset},
         utility::codec::field{"limit", &list_job_definition_versions_request::limit},
@@ -739,7 +739,7 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.job_definitions
  */
 [[nodiscard]] constexpr auto
 wire_fields(std::type_identity<list_job_definition_versions_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &list_job_definition_versions_response::result},
         utility::codec::field{"versions", &list_job_definition_versions_response::versions},
         utility::codec::field{"total", &list_job_definition_versions_response::total},
@@ -755,7 +755,7 @@ wire_fields(std::type_identity<list_job_definition_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_job_definition_version_request>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"key", &get_job_definition_version_request::key},
     };
 }
@@ -769,7 +769,7 @@ wire_fields(std::type_identity<list_job_definition_versions_response>) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<get_job_definition_version_response>) {
-    return std::tuple{
+    return ::ores::utility::codec::field_list{
         utility::codec::field{"result", &get_job_definition_version_response::result},
         utility::codec::field{"version", &get_job_definition_version_response::version},
     };

@@ -55,15 +55,15 @@ struct provision_tenant_body final {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_body>) {
     using ores::utility::codec::field;
     using b = provision_tenant_body;
-    return std::tuple{field{"profileCode", &b::profileCode},
-                      field{"tenantCode", &b::tenantCode},
-                      field{"tenantName", &b::tenantName},
-                      field{"tenantHostname", &b::tenantHostname},
-                      field{"tenantDescription", &b::tenantDescription},
-                      field{"adminUsername", &b::adminUsername},
-                      field{"adminEmail", &b::adminEmail},
-                      field{"adminPassword", &b::adminPassword},
-                      field{"parameters", &b::parameters}};
+    return ::ores::utility::codec::field_list{field{"profileCode", &b::profileCode},
+                                              field{"tenantCode", &b::tenantCode},
+                                              field{"tenantName", &b::tenantName},
+                                              field{"tenantHostname", &b::tenantHostname},
+                                              field{"tenantDescription", &b::tenantDescription},
+                                              field{"adminUsername", &b::adminUsername},
+                                              field{"adminEmail", &b::adminEmail},
+                                              field{"adminPassword", &b::adminPassword},
+                                              field{"parameters", &b::parameters}};
 }
 
 /**
@@ -78,9 +78,9 @@ struct provision_party_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_party_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"fullName", &provision_party_body::fullName},
-                      field{"shortCode", &provision_party_body::shortCode},
-                      field{"lei", &provision_party_body::lei}};
+    return ::ores::utility::codec::field_list{field{"fullName", &provision_party_body::fullName},
+                                              field{"shortCode", &provision_party_body::shortCode},
+                                              field{"lei", &provision_party_body::lei}};
 }
 
 /**
@@ -92,7 +92,8 @@ struct confirm_removal_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<confirm_removal_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"confirmCode", &confirm_removal_body::confirmCode}};
+    return ::ores::utility::codec::field_list{
+        field{"confirmCode", &confirm_removal_body::confirmCode}};
 }
 
 /**
@@ -106,9 +107,10 @@ struct initial_administrator_body final {
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<initial_administrator_body>) {
     using ores::utility::codec::field;
-    return std::tuple{field{"principal", &initial_administrator_body::principal},
-                      field{"password", &initial_administrator_body::password},
-                      field{"email", &initial_administrator_body::email}};
+    return ::ores::utility::codec::field_list{
+        field{"principal", &initial_administrator_body::principal},
+        field{"password", &initial_administrator_body::password},
+        field{"email", &initial_administrator_body::email}};
 }
 
 }

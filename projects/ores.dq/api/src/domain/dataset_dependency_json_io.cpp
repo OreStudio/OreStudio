@@ -18,6 +18,7 @@
  *
  */
 #include "ores.dq.api/domain/dataset_dependency_json_io.hpp"
+#include "ores.dq.api/domain/dataset_dependency_codec.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <ostream>
 

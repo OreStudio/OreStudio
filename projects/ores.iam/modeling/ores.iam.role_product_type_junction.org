@@ -121,6 +121,7 @@ ID of the IAM role; must exist in ores_iam_roles_tbl.
 
 #+begin_src cpp :name includes
 #include <string>
+#include <boost/uuid/uuid.hpp>
 #+end_src
 
 ** Conventions

@@ -101,7 +101,7 @@ via its "Verifies task" field.
 | 4 | A refusal for a reason other than the pair, such as a permission, reads as a skip and passes the step | =tenant_provisioning_handler.hpp= | Fix | A party that ends with no forward set at all, published or held, fails the step. |
 | 5 | Note the step's measured duration | task | Fix | 1 min 39 s live for 4 parties and 179 conventions, beside 1 min 5 s for the party curves. |
 | 6 | Test the new kind's dependency | =workflow_provision_tenant_workflow_tests.cpp= | Fix | A case checks that the forwards step waits for the party curves. |
-| 7 | Blank line before the closing namespace | =provision_step_arguments.hpp= | Fix | |
+| 7 | Blank line before the closing namespace | =provision_step_arguments.hpp= | Dismiss | The project's clang-format removes it, so the file keeps the formatter's layout. |
 
 * Result
 

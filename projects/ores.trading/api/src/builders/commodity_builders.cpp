@@ -207,7 +207,11 @@ void commodity_add_underlying(domain::commodity_instrument_data& out,
     out.instrument_underlyings.push_back(std::move(row));
 }
 
-/// A scripted product's monthly dates from @p start to @p end, kept as its own.
+/*
+ * A scripted product's monthly dates from start to end, kept as its own. They
+ * roll on the NYSE calendar, as the commodity legs pay on it. A commodity that
+ * trades on another exchange's calendar needs the calendar as a term.
+ */
 domain::instrument_schedule commodity_scripted_schedule(std::string role, ymd start, ymd end) {
     domain::instrument_schedule row{};
     row.owner_role = "option";

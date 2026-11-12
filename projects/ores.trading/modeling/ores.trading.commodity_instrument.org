@@ -567,6 +567,12 @@ The day a scripted commodity product settles, as =SettlementDate= states it.
 The volatility a forward volatility agreement strikes at, as
 =ImpliedVolStrike= states it.
 
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string(
+    std::to_string(faker::number::decimal<double>(0.05, 1.0)))
+    .value()
+#+end_src
+
 ** reset_strike
 :PROPERTIES:
 :type:     numeric(38, 12)

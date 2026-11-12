@@ -118,7 +118,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A TaRF states its target twice, as =TargetAmount= and a =CumulatedProfitCap= barrier | =commodity_builders.cpp= | Declined | ORE's schema requires the Barriers block beside the target, and the equity TaRF builder states the same pair. A change belongs to both families together. |
+| 2 | The scripted schedule hard-codes its tenor, calendar, convention and rule | =commodity_builders.cpp= | Accepted | A comment says the dates roll on the NYSE calendar, and another exchange's commodity needs the calendar as a term. |
+| 3 | The planner throws for a barrier type outside four | =trade_population_planner.cpp= | Declined | The commodity barrier draw states only =DownAndOut=. The throw refuses at the boundary, as the planner does elsewhere. |
+| 4 | The planner turns a missing draw into zero | =trade_population_planner.cpp= | Declined | The accumulator and TaRF draws always state the amounts, and the builder's refusal names the drawn term it refuses. |
+| 5 | The shell commands take 50 positional arguments | shell commands | Declined | Codegen produces them. Named flags are a codegen change of their own. |
+| 6 | The range bound products are a list, not a product flag | =commodity_instrument_projection.cpp= | Declined | The family's other block memberships, the underlyings, barriers and schedules, are tables too. |
+| 7 | The generator draws an implied volatility from 1 to 1000 | =commodity_instrument_generator.cpp= | Accepted | The model's generator draws it from 0.05 to 1. |
+| 8 | Add a repository round trip for the new columns | repository | Declined | The columns are codegen output, and no service test runs in this task, as the PR states. |
 
 * Result
 

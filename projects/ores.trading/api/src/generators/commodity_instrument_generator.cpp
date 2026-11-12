@@ -88,7 +88,7 @@ generate_synthetic_commodity_instrument(utility::generation::generation_context&
     r.settlement_date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.implied_vol_strike = ores::utility::decimal::decimal::from_string(
-                               std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                               std::to_string(faker::number::decimal<double>(0.05, 1.0)))
                                .value();
     r.reset_strike = ores::utility::decimal::decimal::from_string(
                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))

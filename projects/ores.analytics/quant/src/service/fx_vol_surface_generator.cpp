@@ -18,10 +18,13 @@
  *
  */
 #include "ores.analytics.quant/service/fx_vol_surface_generator.hpp"
+#include "ores.analytics.quant/math/normal.hpp"
 #include <algorithm>
 #include <cmath>
 #include <format>
+#include <limits>
 #include <numbers>
+#include <optional>
 #include <random>
 #include <stdexcept>
 #include <utility>
@@ -45,6 +48,11 @@ double step_ou(double x, double level, double reversion, double volatility, doub
     return level + (x - level) * decay + spread * z;
 }
 
+/// Whether x is a finite number of at least zero; a NaN is neither.
+bool non_negative(double x) noexcept {
+    return std::isfinite(x) && x >= 0.0;
+}
+
 std::expected<void, std::string> check_dynamics(const fx_vol_surface_dynamics& d,
                                                 std::size_t segments) {
     if (d.variance_reversion.size() != segments || d.variance_volatility.size() != segments)
@@ -55,13 +63,14 @@ std::expected<void, std::string> check_dynamics(const fx_vol_surface_dynamics& d
             d.variance_volatility.size(),
             segments));
     for (std::size_t j = 0; j < segments; ++j)
-        if (d.variance_reversion[j] < 0.0 || d.variance_volatility[j] < 0.0)
-            return std::unexpected(
-                std::format("Segment {} has a negative reversion or volatility.", j + 1));
-    if (d.skew_reversion < 0.0 || d.skew_volatility < 0.0 || d.curvature_reversion < 0.0 ||
-        d.curvature_volatility < 0.0)
-        return std::unexpected(
-            std::string("The skew or curvature driver has a negative reversion or volatility."));
+        if (!non_negative(d.variance_reversion[j]) || !non_negative(d.variance_volatility[j]))
+            return std::unexpected(std::format(
+                "Segment {} has a reversion or volatility that is negative or not a number.",
+                j + 1));
+    if (!non_negative(d.skew_reversion) || !non_negative(d.skew_volatility) ||
+        !non_negative(d.curvature_reversion) || !non_negative(d.curvature_volatility))
+        return std::unexpected(std::string("The skew or curvature driver has a reversion or "
+                                           "volatility that is negative or not a number."));
 
     const auto size = static_cast<Eigen::Index>(segments + 3);
     const auto& c = d.correlation;
@@ -73,6 +82,8 @@ std::expected<void, std::string> check_dynamics(const fx_vol_surface_dynamics& d
             segments,
             size,
             size));
+    if (!c.allFinite())
+        return std::unexpected(std::string("The correlation holds an entry that is not a number."));
     for (Eigen::Index i = 0; i < size; ++i) {
         if (std::abs(c(i, i) - 1.0) > 1e-12)
             return std::unexpected(std::format("Correlation entry ({0},{0}) is not one.", i));
@@ -235,6 +246,24 @@ fx_vol_surface_quotes(const ssvi_parameters& surface,
     return out;
 }
 
+std::optional<std::string> fx_vol_noise_profile_error(const fx_vol_noise_profile& p) {
+    for (const auto [name, value] : {std::pair{"missing", p.missing_probability},
+                                     std::pair{"stale", p.stale_probability},
+                                     std::pair{"outlier", p.outlier_probability}})
+        if (!(value >= 0.0 && value <= 1.0))
+            return std::format("The {} probability {} is not inside [0, 1].", name, value);
+    for (const auto [name, value] : {std::pair{"noise", p.noise},
+                                     std::pair{"wing widening", p.wing_widening},
+                                     std::pair{"expiry widening", p.expiry_widening},
+                                     std::pair{"quote step", p.quote_step},
+                                     std::pair{"outlier size", p.outlier_size}})
+        if (!non_negative(value))
+            return std::format("The {} {} is negative or not a number.", name, value);
+    if (!std::isfinite(p.bias))
+        return std::string("The bias is not a number.");
+    return std::nullopt;
+}
+
 fx_vol_observation observe_fx_vol_point(double clean,
                                         double delta,
                                         double years,
@@ -242,17 +271,25 @@ fx_vol_observation observe_fx_vol_point(double clean,
                                         const fx_vol_noise_profile& profile,
                                         math::rng_stream& stream) {
     std::uniform_real_distribution<double> uniform(0.0, 1.0);
-    std::normal_distribution<double> normal;
-    if (uniform(stream) < profile.missing_probability)
+    // Every draw is taken before any outcome is read, and the shock is the inverse of one uniform
+    // rather than a rejection sampler's, so each call reads the stream the same number of times.
+    const double missing = uniform(stream);
+    const double stale = uniform(stream);
+    const double outlier = uniform(stream);
+    const double outlier_side = uniform(stream);
+    const double shock = math::normal_quantile(
+        std::clamp(uniform(stream), std::numeric_limits<double>::min(), 1.0 - 1e-16));
+
+    if (missing < profile.missing_probability)
         return {};
-    if (previous && uniform(stream) < profile.stale_probability)
+    if (previous && stale < profile.stale_probability)
         return {.value = previous, .stale = true};
 
     const double scale = profile.noise * (1.0 + profile.wing_widening * (0.5 - delta)) *
                          (1.0 + profile.expiry_widening * std::max(0.0, years - 1.0));
-    double value = clean + profile.bias + scale * normal(stream);
-    if (uniform(stream) < profile.outlier_probability)
-        value += uniform(stream) < 0.5 ? -profile.outlier_size : profile.outlier_size;
+    double value = clean + profile.bias + scale * shock;
+    if (outlier < profile.outlier_probability)
+        value += outlier_side < 0.5 ? -profile.outlier_size : profile.outlier_size;
     if (profile.quote_step > 0.0)
         value = std::round(value / profile.quote_step) * profile.quote_step;
     return {.value = value};

@@ -25,7 +25,8 @@
 #include "ores.analytics.quant/math/fx_smile_quotes.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.analytics.quant/service/ssvi_calibration_engine.hpp"
-#include <Eigen/Dense>
+#include <Eigen/Cholesky>
+#include <Eigen/Core>
 #include <cstddef>
 #include <expected>
 #include <optional>
@@ -63,21 +64,28 @@ struct fx_vol_surface_dynamics final {
 /**
  * @brief A synthetic FX volatility surface: an SSVI surface whose parameters evolve.
  *
- * The exponent gamma is fixed at 1/2, so every surface it emits is free of static arbitrage
- * while each ATM total variance stays below two: the forward variances are positive, so the ATM
- * total variance rises with the expiry, the skew lies in (-1, 1) and the curvature in
- * (0, sqrt(2)).
+ * The exponent gamma is fixed at 1/2, so the curvature is phi(theta) = eta / sqrt(theta) and
+ * every surface it emits is free of static arbitrage while each ATM total variance theta stays
+ * below two. The forward variances are positive, so theta rises with the expiry; the skew lies in
+ * (-1, 1) and the curvature eta in (0, sqrt(2)). The butterfly condition
+ * theta * phi * (1 + |rho|) < 4 reads eta * sqrt(theta) * (1 + |rho|) < 4, which these bounds
+ * give only while theta < 2.
+ *
+ * The forward variances step by Euler with a floor, because their shocks must be correlated with
+ * spot's and the exact transition draws its own. The Feller condition is not enforced, and a long
+ * step biases the variance paths toward the floor.
  */
 class ORES_ANALYTICS_QUANT_EXPORT fx_vol_surface_generator final {
 public:
     /**
      * @brief Starts at a fitted surface, which is also the level every process reverts to.
      *
-     * The start's ATM total variances, skew and curvature are kept; its gamma is replaced by 1/2.
+     * The start's ATM total variances, skew and curvature are kept, and its gamma is ignored.
      * Refuses a start whose ATM total variance does not rise strictly with the expiry, a skew or
      * a curvature outside its bounds, dynamics that do not name one value for each segment, a
      * correlation that is not a positive definite matrix of the right size with a unit diagonal,
-     * and a step that is not positive.
+     * a reversion, volatility or correlation that is not a finite number, and a step that is not
+     * positive.
      *
      * @param dt The year fraction one step represents.
      */
@@ -93,6 +101,7 @@ public:
      * @param spot_shock The standard normal spot's own step drew, so the surface moves with
      * spot by the correlation.
      * @param independent One independent standard normal for each factor; see factor_count.
+     * @throws std::invalid_argument when independent does not hold factor_count normals.
      */
     const ssvi_parameters& step(double spot_shock, std::span<const double> independent);
 
@@ -172,6 +181,14 @@ struct fx_vol_noise_profile final {
     double bias = 0.0;
 };
 
+/**
+ * @brief Why a noise profile cannot be applied, or nothing when it can.
+ *
+ * Refuses a probability outside [0, 1] and a negative noise, widening, quote step or outlier size.
+ */
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::optional<std::string>
+fx_vol_noise_profile_error(const fx_vol_noise_profile& profile);
+
 /// What a contributor publishes for one point.
 struct fx_vol_observation final {
     /// Empty when the contributor publishes nothing for the point this step.
@@ -182,9 +199,15 @@ struct fx_vol_observation final {
 /**
  * @brief One contributor's observation of one clean point.
  *
- * @param delta The point's delta, such as 0.25; 0.5 for ATM.
+ * Each call draws the same number of values from the stream, whatever the profile and the
+ * outcome, so a change to one field of a profile does not move a later point's draws. A noisy
+ * value is not clamped: a contributor can publish a volatility a desk would discard.
+ *
+ * @param delta The point's delta, in (0, 0.5]; 0.5 for ATM.
  * @param years The point's expiry.
- * @param previous The contributor's last value for the point, which a stale point repeats.
+ * @param previous The value the contributor last published for the point, which a stale point
+ * repeats unchanged.
+ * @param profile A profile fx_vol_noise_profile_error accepts.
  */
 [[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT fx_vol_observation
 observe_fx_vol_point(double clean,

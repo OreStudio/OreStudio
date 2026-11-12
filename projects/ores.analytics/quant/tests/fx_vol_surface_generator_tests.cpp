@@ -22,6 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <random>
 #include <vector>
 
@@ -297,4 +298,44 @@ TEST_CASE("one seed gives one contributor path", "[fx_vol_surface_generator]") {
     for (int i = 0; i < 50; ++i)
         CHECK(observe_fx_vol_point(0.07, 0.1, 2.0, 0.07, profile, a).value ==
               observe_fx_vol_point(0.07, 0.1, 2.0, 0.07, profile, b).value);
+}
+
+TEST_CASE("the generator refuses dynamics that are not numbers", "[fx_vol_surface_generator]") {
+    const auto start = start_surface();
+    const auto nan = std::numeric_limits<double>::quiet_NaN();
+
+    auto reversion = dynamics_for(start.expiries.size());
+    reversion.variance_reversion[1] = nan;
+    CHECK(!fx_vol_surface_generator::make(start, reversion, one_day));
+
+    auto skew = dynamics_for(start.expiries.size());
+    skew.skew_volatility = nan;
+    CHECK(!fx_vol_surface_generator::make(start, skew, one_day));
+
+    auto correlation = dynamics_for(start.expiries.size());
+    correlation.correlation(1, 2) = correlation.correlation(2, 1) = nan;
+    CHECK(!fx_vol_surface_generator::make(start, correlation, one_day));
+}
+
+TEST_CASE("a noise profile outside its bounds is refused", "[fx_vol_surface_generator]") {
+    CHECK(!fx_vol_noise_profile_error(fx_vol_noise_profile{}));
+    CHECK(!fx_vol_noise_profile_error(fx_vol_noise_profile{.noise = 0.002, .bias = -0.001}));
+    CHECK(fx_vol_noise_profile_error(fx_vol_noise_profile{.missing_probability = 1.5}));
+    CHECK(fx_vol_noise_profile_error(fx_vol_noise_profile{.stale_probability = -0.1}));
+    CHECK(fx_vol_noise_profile_error(fx_vol_noise_profile{.noise = -0.001}));
+    CHECK(fx_vol_noise_profile_error(
+        fx_vol_noise_profile{.quote_step = std::numeric_limits<double>::quiet_NaN()}));
+}
+
+TEST_CASE("a change to one field of a profile does not move a later point's draws",
+          "[fx_vol_surface_generator]") {
+    const fx_vol_noise_profile often_missing{.noise = 0.002, .missing_probability = 0.9};
+    const fx_vol_noise_profile never_missing{.noise = 0.002};
+    auto a = stream_of(9);
+    auto b = stream_of(9);
+    for (int i = 0; i < 50; ++i) {
+        (void)observe_fx_vol_point(0.07, 0.25, 0.5, 0.07, often_missing, a);
+        (void)observe_fx_vol_point(0.07, 0.25, 0.5, 0.07, never_missing, b);
+    }
+    CHECK(a() == b());
 }

@@ -91,6 +91,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The "ATM total variance below two" caveat looks unneeded | =fx_vol_surface_generator.hpp= | Dismiss | The review took phi as eta / sqrt(theta (1 + theta)). The engine's phi is the pure power law eta / sqrt(theta), and its butterfly bound eta sqrt(theta) (1 + abs(rho)) < 4 holds only while theta < 2. The header now gives the derivation. |
+| 2 | A NaN reversion, volatility or correlation passes the checks | =fx_vol_surface_generator.cpp= | Fix | Every reversion and volatility must be a finite number of at least zero, and every correlation entry finite; a test refuses each. |
+| 3 | The noise profile is never validated | =fx_vol_surface_generator.hpp= | Fix | =fx_vol_noise_profile_error= refuses a probability outside [0, 1] and a negative or non-numeric noise, widening, step or outlier size. The delta is stated to lie in (0, 0.5], so the wing factor is at least one, and a noisy value is stated not to be clamped. |
+| 4 | =step= throws without saying so | =fx_vol_surface_generator.hpp= | Fix | The header names the throw. |
+| 5 | The draw count changes with the outcome, and =std::normal_distribution= is implementation-defined | =fx_vol_surface_generator.cpp= | Fix, dismiss | An observation takes every draw first, and its shock is the inverse normal of one uniform, so each call reads five values; a test shows a change of profile does not move later draws. The generator's own normals stay with =std::normal_distribution=, as the eight other uses in the quant library do; portable sampling is a library question. |
+| 6 | =step= allocates on every call | =fx_vol_surface_generator.cpp= | Dismiss | A surface steps once a tick; it is not a hot path. |
+| 7 | Say the Feller condition is not enforced and a long step biases the paths | =fx_vol_surface_generator.hpp= | Fix | The class comment says both. |
+| 8 | Say a stale point's previous value is the published one | =fx_vol_surface_generator.hpp= | Fix | The parameter says so. |
+| 9 | =Eigen/Dense= in a public header; "gamma is replaced" wording | =fx_vol_surface_generator.hpp= | Fix | =Eigen/Core= and =Eigen/Cholesky=; the start's gamma is ignored. |
 
 * Result

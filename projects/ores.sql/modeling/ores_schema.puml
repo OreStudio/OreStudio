@@ -609,7 +609,7 @@ entity "trading" as trading {
   ores_trading_equity_position_instruments_tbl
   ores_trading_equity_position_option_underlyings_tbl
   ores_trading_equity_swap_instruments_tbl
-  ores_trading_equity_swap_periods_tbl
+  ores_trading_basket_swap_periods_tbl
   ores_trading_equity_tarf_instruments_tbl
   ores_trading_equity_variance_swap_instruments_tbl
   ores_trading_exercise_types_tbl

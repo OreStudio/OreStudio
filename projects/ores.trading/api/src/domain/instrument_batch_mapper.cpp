@@ -133,7 +133,7 @@ as_equity(const instrument_batch& batch, const Leaf& leaf, boost::uuids::uuid tr
     return equity_instrument_data{equity_instrument_variant{leaf},
                                   find_all(batch.equity_position_option_underlyings, trade_id),
                                   find_all(batch.equity_basket_constituents, trade_id),
-                                  find_all(batch.equity_swap_periods, trade_id),
+                                  find_all(batch.basket_swap_periods, trade_id),
                                   find_all(batch.range_bounds, trade_id),
                                   find_all(batch.instrument_options, trade_id),
                                   find_all(batch.instrument_option_premiums, trade_id),
@@ -292,8 +292,8 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 batch.equity_basket_constituents.insert(batch.equity_basket_constituents.end(),
                                                         v.basket_constituents.begin(),
                                                         v.basket_constituents.end());
-                batch.equity_swap_periods.insert(
-                    batch.equity_swap_periods.end(), v.periods.begin(), v.periods.end());
+                batch.basket_swap_periods.insert(
+                    batch.basket_swap_periods.end(), v.periods.begin(), v.periods.end());
                 batch.range_bounds.insert(
                     batch.range_bounds.end(), v.range_bounds.begin(), v.range_bounds.end());
                 const auto append_rows = [](auto& to, const auto& from) {

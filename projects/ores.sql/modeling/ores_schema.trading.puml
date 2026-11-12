@@ -2326,7 +2326,7 @@ package "trading" #E8F5E9 {
     that name the trade; for single-name swaps, the constituents are absent.
     end note
 
-    entity ores_trading_equity_swap_periods_tbl <<temporal>> #C6F0D8 {
+    entity ores_trading_basket_swap_periods_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
         * trade_activity_id : uuid <<PK, FK>>
@@ -2344,11 +2344,11 @@ package "trading" #E8F5E9 {
         * valid_to : timestamptz
     }
 
-    note right of ores_trading_equity_swap_periods_tbl
+    note right of ores_trading_basket_swap_periods_tbl
     AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
-    Equity Swap Period Table
+    Basket Swap Period Table
     One row per determination period of an equity worst-of basket swap, keyed to
     the trade and the period's ordinal within the document.
     The levels are a list. A list is rows of a child table rather than an encoded

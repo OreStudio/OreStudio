@@ -527,7 +527,7 @@ TEST_CASE("a_worst_of_basket_states_its_constituents_and_its_periods", "[trade_p
         REQUIRE(slot.instruments.equity_swap_instruments.size() == 1u);
         REQUIRE(slot.instruments.equity_basket_constituents.size() == 2u);
         // The periods run to maturity, and each schedule holds the start and every period end.
-        const auto& periods = slot.instruments.equity_swap_periods;
+        const auto& periods = slot.instruments.basket_swap_periods;
         REQUIRE_FALSE(periods.empty());
         REQUIRE(periods.back().period_date ==
                 slot.instruments.equity_swap_instruments.front().maturity_date);
@@ -542,7 +542,7 @@ TEST_CASE("a_worst_of_basket_states_its_constituents_and_its_periods", "[trade_p
             REQUIRE_FALSE(member.underlying_kind.empty());
             REQUIRE(member.initial_price.has_value());
         }
-        for (const auto& period : slot.instruments.equity_swap_periods) {
+        for (const auto& period : slot.instruments.basket_swap_periods) {
             REQUIRE(period.period_date.has_value());
             REQUIRE(period.knock_out_level.has_value());
             REQUIRE(period.fixed_trigger_level.has_value());

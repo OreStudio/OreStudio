@@ -488,7 +488,7 @@ equity_result equity_worst_of_basket_swap_builder::build() const {
     }
     number = 0;
     for (const auto& when : observations) {
-        domain::equity_swap_period period{};
+        domain::basket_swap_period period{};
         period.sequence_number = ++number;
         period.period_date = when;
         period.knock_out_level = 1.0;

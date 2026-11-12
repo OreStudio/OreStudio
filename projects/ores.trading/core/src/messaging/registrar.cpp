@@ -66,7 +66,7 @@
 #include "ores.trading.core/messaging/equity_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_outperformance_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_position_option_underlying_history_provider_registrar.hpp"
-#include "ores.trading.core/messaging/equity_swap_period_registrar.hpp"
+#include "ores.trading.core/messaging/basket_swap_period_registrar.hpp"
 #include "ores.trading.core/messaging/equity_tarf_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/exercise_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/exercise_type_registrar.hpp"
@@ -274,7 +274,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_equity_cliquet_option_instrument_handlers(nats, ctx, verifier));
     append(register_equity_instrument_handlers(nats, ctx, verifier));
     append(register_equity_outperformance_option_instrument_handlers(nats, ctx, verifier));
-    append(register_equity_swap_period_handlers(nats, ctx, verifier));
+    append(register_basket_swap_period_handlers(nats, ctx, verifier));
     append(register_equity_tarf_instrument_handlers(nats, ctx, verifier));
     append(register_instrument_barrier_handlers(nats, ctx, verifier));
     append(register_instrument_barrier_level_handlers(nats, ctx, verifier));

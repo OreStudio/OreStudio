@@ -33,7 +33,7 @@
 #include "ores.trading.api/domain/equity_basket_constituent.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
-#include "ores.trading.api/domain/equity_swap_period.hpp"
+#include "ores.trading.api/domain/basket_swap_period.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
 #include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
@@ -388,7 +388,7 @@ struct equity_instrument_data {
      * The level lists run one per date, so a period row holds the date's two
      * levels and its ordinal pairs them with the schedule.
      */
-    std::vector<equity_swap_period> periods;
+    std::vector<basket_swap_period> periods;
     /**
      * @brief The range bounds an equity accumulator pays on.
      *

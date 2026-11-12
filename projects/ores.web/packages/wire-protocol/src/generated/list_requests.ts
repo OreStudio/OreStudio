@@ -6023,12 +6023,12 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
-    'trading.v1.equity_swap_periods.list': {
+    'trading.v1.basket_swap_periods.list': {
         asOf: true,
         filter: [],
-        rows: ['equity_swap_periods'],
+        rows: ['basket_swap_periods'],
     },
-    'trading.v1.equity_swap_periods_versions.list': {
+    'trading.v1.basket_swap_periods_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

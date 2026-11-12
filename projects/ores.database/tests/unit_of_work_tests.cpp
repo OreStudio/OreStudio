@@ -157,10 +157,8 @@ TEST_CASE("a committed unit of work returns its connection before it goes out of
     // The factory opens its pool at once, so the context is built here to open
     // a pool of one on first use.
     const auto opened = ores::testing::test_database_manager::make_context();
-    ores::database::context ctx(opened.connection_options(),
-                                opened.tenant_id(),
-                                opened.actor(),
-                                opened.service_account());
+    ores::database::context ctx(
+        opened.connection_options(), opened.tenant_id(), opened.actor(), opened.service_account());
     ctx.set_pq_pool_size(1);
 
     unit_of_work first(ctx);

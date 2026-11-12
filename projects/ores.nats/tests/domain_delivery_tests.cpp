@@ -109,9 +109,7 @@ using answers = std::vector<std::string>;
 
 TEST_CASE("a_delivery_dropped_without_a_settlement_rolls_back", tags) {
     auto j = std::make_shared<journal>();
-    {
-        auto d = make_delivery(j);
-    }
+    { auto d = make_delivery(j); }
     CHECK(j->events() == answers{"nak", "freed"});
 }
 

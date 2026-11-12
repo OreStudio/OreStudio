@@ -150,10 +150,9 @@ ores::utility::codec::json_document family_list_request(std::uint64_t offset, st
 // family's table carries a party. World families are the tenant's, so every row
 // stays. A row is written while its page lives: a json_value is a view into the
 // page's document, so it must not be returned.
-std::vector<std::string>
-read_family(nats_client& owners,
-            const ores::refdata::domain::convention_family_entry& family,
-            const std::string& party_id) {
+std::vector<std::string> read_family(nats_client& owners,
+                                     const ores::refdata::domain::convention_family_entry& family,
+                                     const std::string& party_id) {
     const auto subject = std::string(family.subject_stem) + ".list";
     constexpr std::uint64_t page_size = 1000;
     std::vector<std::string> rows;

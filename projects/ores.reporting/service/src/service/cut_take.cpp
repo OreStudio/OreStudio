@@ -324,8 +324,7 @@ cut_take_service::take(const ores::reporting::messaging::take_cut_request& reque
             const auto me = lifecycle.actor_account_id();
             if (!me)
                 throw std::runtime_error("The signed-in account was not found.");
-            const auto raised =
-                lifecycle.raise_under(*policy, *approval_kind, request.reason, *me);
+            const auto raised = lifecycle.raise_under(*policy, *approval_kind, request.reason, *me);
             request_id = boost::uuids::to_string(raised.id);
             cut.approval_request_id = raised.id;
         }

@@ -341,8 +341,8 @@ TEST_CASE("a_raise_inside_a_unit_of_work_by_a_party_is_bound_by_the_tenants_mode
     REQUIRE(seeded);
     const auto policy = reader.policy_for(*seeded, false);
     ores::database::repository::unit_of_work uow(as_party);
-    const auto raised =
-        approval_lifecycle(uow.ctx()).raise_under(policy, *seeded, "Raised with its subject", asker.id);
+    const auto raised = approval_lifecycle(uow.ctx()).raise_under(
+        policy, *seeded, "Raised with its subject", asker.id);
     uow.commit();
 
     CHECK(raised.state_code == "approved");

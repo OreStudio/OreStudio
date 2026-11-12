@@ -301,6 +301,14 @@ ir_curve_start resolve_ir_start(ores::nats::service::nats_client& auth_nats,
                 (latest ? std::string("no fixing on or before today") : latest.error()));
             continue;
         }
+        const auto age = static_cast<int>(
+            (std::chrono::sys_days(today) - std::chrono::sys_days(*latest->fixing_date)).count());
+        if (policy.window_days > 0 && age > policy.window_days) {
+            skipped.push_back(item.item + ": its newest fixing is " + std::to_string(age) +
+                              " days old, beyond the policy's " +
+                              std::to_string(policy.window_days) + "-day window");
+            continue;
+        }
         const auto rate = rate_of(latest->value);
         const auto published = ores::utility::decimal::decimal::from_string(latest->value);
         if (!rate || !published) {
@@ -315,8 +323,13 @@ ir_curve_start resolve_ir_start(ores::nats::service::nats_client& auth_nats,
         s.value = *published;
         s.fixing_date = latest->fixing_date;
         s.received_at = latest->received_at;
-        s.age_days = static_cast<int>(
-            (std::chrono::sys_days(today) - std::chrono::sys_days(*s.fixing_date)).count());
+        s.age_days = age;
+        // Every adapter stores the decimal of a published percent; a rate above one in size is
+        // a percent stored by mistake, which would start the curve a hundred times too high.
+        if (std::abs(*rate) > 1.0)
+            BOOST_LOG_SEV(ir_curve_feed_lg(), ores::logging::warn)
+                << "Curve " << cfg.source_name << " starts from " << latest->value << " of "
+                << item.item << ", which is above one in size: is it a percent?";
         out.rate = *rate;
         return out;
     }

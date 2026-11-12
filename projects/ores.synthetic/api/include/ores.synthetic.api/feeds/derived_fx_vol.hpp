@@ -160,12 +160,12 @@ convention_at(const refdata::domain::fx_option_convention& convention, std::stri
  * A quote of today sent before the end of the day would otherwise be dated after its send,
  * and a reader that takes the quotes at or before a time would not see it until then.
  */
-ORES_SYNTHETIC_API_EXPORT std::vector<marketdata::messaging::adapter_tick> derived_fx_ticks(
-    const derived_fx_pair& pair,
-    const analytics::quant::math::fx_derivation& derivation,
-    std::chrono::year_month_day day,
-    std::uint64_t first_sequence,
-    std::chrono::system_clock::time_point sent_at = std::chrono::system_clock::time_point::max());
+ORES_SYNTHETIC_API_EXPORT std::vector<marketdata::messaging::adapter_tick>
+derived_fx_ticks(const derived_fx_pair& pair,
+                 const analytics::quant::math::fx_derivation& derivation,
+                 std::chrono::year_month_day day,
+                 std::uint64_t first_sequence,
+                 std::chrono::system_clock::time_point sent_at);
 
 /// One quote of a day, at its point of the pair's series.
 struct derived_fx_point final {

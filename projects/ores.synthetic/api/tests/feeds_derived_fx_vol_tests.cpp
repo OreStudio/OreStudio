@@ -176,7 +176,11 @@ TEST_CASE("a_derivation_becomes_one_tick_per_label_of_each_quoted_expiry", deriv
     const auto d = qm::derive_fx_quotes(returns->returns, expiries, {});
     REQUIRE(d);
     REQUIRE(d->expiries[7].has_value() == false);
-    const auto ticks = derived_fx_ticks({.base = "EUR", .quote = "USD"}, *d, *returns->last, 40);
+    const auto ticks = derived_fx_ticks({.base = "EUR", .quote = "USD"},
+                                        *d,
+                                        *returns->last,
+                                        40,
+                                        std::chrono::system_clock::time_point::max());
     REQUIRE(ticks.size() == 7 * derived_fx_labels.size());
     CHECK(ticks.front().external_id == "EURUSD/1W/ATM");
     CHECK(ticks[1].external_id == "EURUSD/1W/25RR");
@@ -318,7 +322,11 @@ TEST_CASE("a_quote_that_is_not_finite_is_left_out_of_the_ticks", derived_tags) {
                    .bf10 = 0.006},
         .smile = {.sigma = 0.1, .skewness = 0.0, .excess_kurtosis = 0.0, .years = 1.0 / 12.0},
         .window = 21});
-    const auto ticks = derived_fx_ticks({.base = "EUR", .quote = "USD"}, d, derived_start, 0);
+    const auto ticks = derived_fx_ticks({.base = "EUR", .quote = "USD"},
+                                        d,
+                                        derived_start,
+                                        0,
+                                        std::chrono::system_clock::time_point::max());
     REQUIRE(ticks.size() == 3);
     CHECK(ticks[0].external_id == "EURUSD/1M/ATM");
     CHECK(ticks[1].external_id == "EURUSD/1M/25BF");
@@ -337,7 +345,11 @@ TEST_CASE("a_quote_of_today_sent_before_the_end_of_the_day_is_not_dated_after_it
     const auto sent = sys_days{derived_start} + hours(15) + minutes(46);
 
     const auto today = derived_fx_ticks({.base = "EUR", .quote = "USD"}, d, derived_start, 0, sent);
-    const auto past = derived_fx_ticks({.base = "EUR", .quote = "USD"}, d, derived_start, 0);
+    const auto past = derived_fx_ticks({.base = "EUR", .quote = "USD"},
+                                       d,
+                                       derived_start,
+                                       0,
+                                       std::chrono::system_clock::time_point::max());
 
     REQUIRE_FALSE(today.empty());
     for (const auto& t : today)

@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: F4419745-0E3D-4894-A4CD-C531496A914C
+:ID: 45896343-6F92-44D1-AE5F-27B329D66CA6
 :END:
-#+title: Task: Bound the work one request may do
-#+description: The calibrate handler reads every pillar and pillar source in the tenant for one blueprint and filters in memory, so its cost grows with the catalogue, and it keeps working after the caller has given up. Bound the work of one request and let it say when it cannot finish.
+#+title: Task: Name the failing work when a step gives up
+#+description: A step that gives up reports only the transport's words, so a person cannot tell which party, surface or pair failed. Fail the step with the work it was doing, the request, the attempts and the reason.
 #+type: task
 #+level: s1
 #+filetags: :make_a_workflow_step_survive_a_slow_request:sprint_30:v0:
@@ -13,14 +13,14 @@
 #+blocked_since:
 #+created: 2026-11-12
 #+updated: 2026-11-12
-#+environment: merry_newton
+#+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The work a request may do is bounded by what it is asked about, not by the size of the catalogue. A calibration reads only its own blueprint's pillars and sources, the largest calibration the service accepts is stated, and a request that cannot finish inside its deadline answers with a reason rather than running on.
+A step that gives up reports the party and the item it was working on, the request it made, the number of attempts and the reason. The transport's own words stay, as the reason. A person reading the run, in either client, can tell what failed without reading a service log.
 
 * Status
 
@@ -35,10 +35,10 @@ The work a request may do is bounded by what it is asked about, not by the size 
 
 * Acceptance
 
-- A calibration reads only the pillars and pillar sources of its own blueprint.
-- The service states the largest calibration it accepts, and refuses a larger one with a reason.
-- A request that cannot finish inside its deadline answers with a reason, or abandons its work.
-- The cost of one calibration does not grow with the number of blueprints in the tenant.
+- A step that gives up names the party and the item it was working on.
+- The report states the request and the number of attempts it took.
+- The transport's own words stay, as the reason.
+- A test asserts the message for a refused request and for one that timed out.
 
 * Plan
 

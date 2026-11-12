@@ -2,7 +2,7 @@
 :ID: A9F04AFF-87C3-4F63-A771-B4118E7ED415
 :END:
 #+title: Task: Show a run's progress and failure in ores.shell
-#+description: The shell prints a step when its status changes, so the work a step reports while it runs is not shown, and a failure prints only the transport text. Print the progress lines as they arrive and print the failing work with its reason.
+#+description: The shell now prints a running step's progress from its heartbeat, but a failure still prints only the transport's words. Print the work that failed, the attempts it took and the reason.
 #+type: task
 #+level: s1
 #+filetags: :make_a_workflow_step_survive_a_slow_request:sprint_30:v0:
@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A person watching a provisioning run in the shell sees each progress line while the step works, and a failure names the work that failed and why. The shell prints the same lines the web shows, from the same progress read.
+A person watching a provisioning run in the shell sees a failure that names the
+work, the attempts it took and the reason. The progress lines a running step
+reports are already printed; this task keeps them and makes the failure read as
+a report.
 
 * Status
 
@@ -35,9 +38,11 @@ A person watching a provisioning run in the shell sees each progress line while 
 
 * Acceptance
 
-- The shell prints a new progress line while the step is still in progress, without waiting for the step to finish.
-- A failed step prints its name, its position, the work that failed and the reason.
-- A retry that succeeded is visible in the output, with the attempt it took.
+- A failed step prints its name, its position, the work that failed, the
+  attempts it took and the reason.
+- A step that retried and then succeeded prints each attempt and its reason.
+- The progress lines a running step reports stay printed as they move, as the
+  heartbeat work added them.
 - The output stays readable when a step reports many progress lines.
 
 * Plan

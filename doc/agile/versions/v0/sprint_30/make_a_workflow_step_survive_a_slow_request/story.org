@@ -2,7 +2,7 @@
 :ID: BA56F4F5-AA1F-468E-AA7B-B322F20B6382
 :END:
 #+title: Story: Make a workflow step survive a slow request
-#+description: A workflow step calls a service over the bus with one 30-second default for every request, so a slow calibration times out, fails the step on its first occurrence, and names no work. Provisioning failed at step 13 of 15 this way, with 9 of 10 surfaces published. State each request's deadline against its work, classify the failure, retry only what is safe to repeat, bound the work a request may do, and report progress as the step runs.
+#+description: A workflow step calls a service over the bus with one 30-second default for every request, so a slow calibration times out, fails the step on its first occurrence, and names no work. Provisioning failed at step 13 of 15 this way, with 9 of 10 surfaces published. State each request's deadline against its work, classify the failure, retry only what is safe to repeat, name the work when a step gives up, and show the progress and the failure in both clients. The progress channel and the bound on a request's work belong to the story Keep workflow steps alive while they work, and off iam.
 #+type: story
 #+level: s2
 #+filetags: :sprint_30:v0:
@@ -25,13 +25,19 @@ on the first timeout, with no retry, and the only thing it reported was
 After this story a step's requests are bounded to the work they ask for. A
 transient failure is retried with backoff and jitter inside the step's own
 budget, and only when repeating the request changes nothing. A refusal fails at
-once. The service bounds the work one request may do, so a calibration costs
-what its blueprint costs and not what the whole catalogue costs. A step reports
-its progress while it runs, and both ores.shell and ores.web show that progress
-and name the work that failed, with its reason.
+once. A step that gives up names the party and the item it was working on, with
+its reason, instead of the transport's words. Both clients show that failure,
+and the browser shows the progress a step already reports.
 
-The focus is the requests a workflow step makes. This is not a general retry
-framework for every call site, and not the whole audit of the NATS patterns.
+The engine now fails a step only when its progress stands still, and a step
+reports progress as its heartbeat. That arrived in
+[[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]], whose
+own task bounds the work one request may do. This story depends on that work and
+does not repeat it.
+
+The focus is the requests a workflow step makes and what a person sees when one
+fails. This is not a general retry framework for every call site, and not the
+whole audit of the NATS patterns.
 
 * Status
 
@@ -39,9 +45,9 @@ framework for every call site, and not the whole audit of the NATS patterns.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Task 1 in flight: the requests' deadlines. |
 | Waiting on    | Nothing.                               |
-| Next          | Start with the request deadlines, then the classification and the retry. |
+| Next          | Finish the deadlines, then classify and retry. |
 | Last touched  | 2026-11-12                               |
 
 * Acceptance
@@ -54,16 +60,12 @@ framework for every call site, and not the whole audit of the NATS patterns.
 - A refusal is never retried, and no request is retried unless repeating it
   leaves the store unchanged.
 - A step that retries and then succeeds completes. A step that still cannot
-  finish fails with a message that names the work, not just the transport.
-- The service bounds the work one request may do, and a request that cannot
-  finish inside its deadline answers with a reason.
-- A running step reports its progress, and the progress read answers the latest
-  line while the step is still in progress.
-- ores.shell and ores.web both show that progress, and name the failing work and
-  its reason when the run stops.
+  finish fails with a message that names the party and the item it was working
+  on, the attempts it took and the reason.
+- ores.shell and ores.web both show the failure, and the browser shows the
+  progress a running step reports, which the wire already carries.
 - A test drives a step against a responder that answers late and one that
-  refuses, and proves the retry, the refusal, the progress and the failure
-  message.
+  refuses, and proves the retry, the refusal and the failure message.
 
 * Tasks
 
@@ -72,10 +74,9 @@ framework for every call site, and not the whole audit of the NATS patterns.
 | [[id:F55B666A-60C3-428D-8255-D2B6B67879A7][State each workflow request's deadline against its work]] | STARTED | 2026-11-12 | | Every request a provisioning step makes takes the shared 30-second default, so a calibration that needs longer fails the step on a healthy answer. State a deadline for each request, sized to its work, with the reason beside it. |
 | [[id:961F9A06-18FF-4EDC-9EA0-6610DA942DED][Classify a failed request and retry the transient ones]] | BACKLOG | | | A request that times out throws straight out of the step, so a transient failure fails the run on its first occurrence. Classify the failure, retry the transient one with backoff and jitter inside the step's remaining budget, and never retry a refusal. |
 | [[id:459AB808-737A-4CA0-9BF1-955D629880B2][Make each repeated request safe to repeat]] | BACKLOG | | | A retry is correct only when repeating the request changes nothing. Give each retried request a stable identity, have the step read the result an earlier attempt may have produced, and prove a repeat writes no second candidate or raises a second approval request. |
-| [[id:F4419745-0E3D-4894-A4CD-C531496A914C][Bound the work one request may do]] | BACKLOG | | | The calibrate handler reads every pillar and pillar source in the tenant for one blueprint and filters in memory, so its cost grows with the catalogue, and it keeps working after the caller has given up. Bound the work of one request and let it say when it cannot finish. |
-| [[id:12D970EA-5B03-4BE8-89C7-DF6C7E93C970][Report a step's progress while it runs]] | BACKLOG | | | A step writes its log only when it finishes, so a person watching a run sees one long silence and then a result. Publish progress entries as the step works, through the same progress read both clients already poll. |
-| [[id:A9F04AFF-87C3-4F63-A771-B4118E7ED415][Show a run's progress and failure in ores.shell]] | BACKLOG | | | The shell prints a step when its status changes, so the work a step reports while it runs is not shown, and a failure prints only the transport text. Print the progress lines as they arrive and print the failing work with its reason. |
-| [[id:5278DF3A-53B1-4249-B8DC-094DDC70C4B5][Show a run's progress and failure in ores.web]] | BACKLOG | | | The web rail shows a step's status and its last logged line only once the step has finished, and a failure shows the raw transport text. Show the progress line while the step runs, and name the failing work and its reason when it stops. |
+| [[id:45896343-6F92-44D1-AE5F-27B329D66CA6][Name the failing work when a step gives up]] | BACKLOG | | | A step that gives up reports only the transport's words, so a person cannot tell which party, surface or pair failed. Fail the step with the work it was doing, the request, the attempts and the reason. |
+| [[id:A9F04AFF-87C3-4F63-A771-B4118E7ED415][Show a run's progress and failure in ores.shell]] | BACKLOG | | | The shell prints a running step's progress now, but a failure still prints only the transport's words. Print the work that failed, the attempts it took and the reason. |
+| [[id:5278DF3A-53B1-4249-B8DC-094DDC70C4B5][Show a run's progress and failure in ores.web]] | BACKLOG | | | The wire carries a running step's progress, but the rail does not render it, and a failure shows the transport text. Show the progress while the step runs, and name the work and the reason when it stops. |
 | [[id:97379470-2D88-4540-97DD-1F56C7B45B49][Prove a step survives a slow responder]] | BACKLOG | | | Nothing tests a step against a responder that answers late or refuses, so the retry, the classification and the failure message rest on the code alone. Drive a step with a fake client that answers late and one that refuses. |
 
 * Decisions
@@ -88,20 +89,26 @@ framework for every call site, and not the whole audit of the NATS patterns.
   deadline for a read or a handshake.
 - The step's remaining budget is the outer bound of its retries, so a retry
   cannot outlive the step the engine judges.
-- Progress travels through the progress read both clients already poll, rather
-  than through a new channel. A client that polls late still sees the lines.
-- The responder bounds its own work by what the request is about, not by a cap
-  the caller imposes.
+- The progress channel is not built here. A step reports progress as its
+  heartbeat, the engine fails on a stall rather than on elapsed time, and the
+  shell prints the line. That arrived with
+  [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]].
+  This story consumes the channel and fills the gap it left: the browser
+  rendering and a failure that names the work.
+- The responder bounds its own work, and that belongs to
+  [[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]] in the same story. The calibrate
+  handler's whole-table pillar read is recorded there as evidence.
 - A failure names the work: the party, the surface or pair, the attempt and the
   reason. The transport string alone is not a report.
 
 * Out of scope
 
 - An asynchronous calibrate that accepts the work and answers with an id to
-  poll. It is the fallback if the bound on the responder's work cannot meet a
-  sane deadline, and it would be its own story.
+  poll. It is the fallback if the bound on a request's work cannot meet a sane
+  deadline, and it belongs with that bound.
 - Retrying every request at the NATS client for every caller. Only the helper
   the workflow steps use changes.
-- The engine's dispatch, delivery and claim retries, which are already built.
+- The engine's dispatch, delivery and claim retries, and the heartbeat deadline,
+  which are already built.
 - Rewriting the provisioning steps that are not requests: the trade generator,
   the calendars and the bundles keep their current shape.

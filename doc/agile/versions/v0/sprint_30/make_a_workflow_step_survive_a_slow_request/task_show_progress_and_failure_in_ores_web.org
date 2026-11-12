@@ -2,7 +2,7 @@
 :ID: 5278DF3A-53B1-4249-B8DC-094DDC70C4B5
 :END:
 #+title: Task: Show a run's progress and failure in ores.web
-#+description: The web rail shows a step's status and its last logged line only once the step has finished, and a failure shows the raw transport text. Show the progress line while the step runs, and name the failing work and its reason when it stops.
+#+description: The wire now carries a running step's progress from its heartbeat, but the rail does not render it, and a failure shows the transport text. Show the progress line and its counts while the step runs, and name the work and the reason when it stops.
 #+type: task
 #+level: s1
 #+filetags: :make_a_workflow_step_survive_a_slow_request:sprint_30:v0:
@@ -20,7 +20,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A person watching a run in the browser sees the current progress line on the step's rail while it works, and a failure names the work that failed and why.
+A person watching a run in the browser sees the progress a running step reports,
+and a failure names the work that failed and why.
 
 * Status
 
@@ -35,9 +36,10 @@ A person watching a run in the browser sees the current progress line on the ste
 
 * Acceptance
 
-- A step in progress shows its latest progress line on the rail.
-- A failed step shows the work that failed and the reason, translated where a translation exists.
-- A run that retried shows the attempts it took.
+- A step in progress shows its latest progress line, and its counts where it
+  counts, on the rail.
+- A failed step shows the work that failed, the attempts it took and the reason,
+  translated where a translation exists.
 - The polling stops when the run reaches a terminal state, as it does today.
 
 * Plan

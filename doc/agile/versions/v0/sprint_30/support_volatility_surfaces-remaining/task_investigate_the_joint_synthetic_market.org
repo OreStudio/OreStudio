@@ -106,6 +106,13 @@ via its "Verifies task" field.
 | 6 | Measure the bridge's cost and the feed count | investigation | Dismiss | No code exists to measure; both are stated as unmeasured, and the story's first step measures them. |
 | 7 | The task's status, result and empty measurement row | task | Fix | Status and result state the investigation's outcome and the pending decision; the measurement table is the template's and stays empty, since nothing was measured. |
 | 8 | "b within a" and the independence of the factors | investigation | Fix | Written as option b inside option a; the factors and each series' own noise are stated independent. |
+| 9 | The anchor rule contradicts the zero-loading identity | shared factors | Fix | An anchor's own noise is a keyed path, since members tick at their own times; the bit-for-bit identity holds for series that anchor no block, in the note and the build task. |
+| 10 | Business time does not fit the keyed path | shared factors | Fix | The noise stays in simulated time and returns a standard normal; the process scales its variance by the volatility channel's loading, exact when the loading is constant over a tick interval, with the first-order error stated otherwise. |
+| 11 | Bit for bit needs a branch, not only d = 1 | shared factors, task | Fix | A series with every loading zero is handed its drawn normal unscaled; step 3 says so. |
+| 12 | Memory per series | shared factors | Fix | Static loadings keep the driver value; per-regime loadings keep the K factor values at the last tick. |
+| 13 | The boundary cache assumes time passes every cell | keyed path, task | Fix | A jump sums the skipped cells' increments; a late start sums from the start cell; step 1 tests a jump over many cells. |
+| 14 | How the arrival rule is pinned | shared factors, task | Fix | The arrival interface takes no price, and a test pins it. |
+| 15 | Measurements, the depth question and licences | task, shared factors | Fix | Step 1 records the read cost at depths 16 and 30 and the licence of every source copied; the open question links to step 1. |
 
 * Result
 

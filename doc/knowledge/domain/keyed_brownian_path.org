@@ -94,6 +94,14 @@ latent market keeps each series' driver value at its last tick, so it never
 needs a boundary in the past. Caching the values of a deterministic function
 does not change them, so the cache keeps the path a function of seed and time.
 
+Simulated time can jump: a speed change, a long idle gap or a run that starts
+late can pass many cells between two reads. The cache then sums the increments
+of every cell it passed, which costs one draw a skipped cell and leaves the
+values unchanged. A run that starts at a simulated time $t_0 > 0$ starts its sum
+at the cell of $t_0$, with $F_k(t_0) = 0$; every increment is then measured from
+there, which a Brownian motion allows. A test reads a factor before and after a
+jump of many cells and checks the values against a read with no jump.
+
 ** What is fixed and what is not
 
 Adding a feed, or a burst on another feed, only reads more nodes of the same

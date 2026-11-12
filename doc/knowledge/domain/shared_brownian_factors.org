@@ -130,12 +130,24 @@ $Z_i$, under one condition: the tick times are independent of the factors and of
 $E_i$. That holds while arrival laws read the regime, the heat and their own
 draws but no price. An arrival law that reads a price would make a tick time a
 stopping time of the noise, and $Z_i$ would no longer be Gaussian in general. So
-no arrival law may read a price while it is driven by this noise.
+no arrival law may read a price while it is driven by this noise. The scheduler pins it by type: an arrival law is given the regime, the heat
+and its own stream, and no price reaches its interface.
 
-With the volatility channel's subordination
-([[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]]), the
-noise runs in business time $\beta(t) = \int_0^t \lambda(u)\, du$ instead of
-$t$, and $T - t_i$ in the denominator becomes $\beta(T) - \beta(t_i)$.
+The noise runs in simulated time $t$, and the factors are keyed on cells of
+$t$. The volatility channel's business time
+([[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]])
+does not reach the noise: the latent market returns the standard $Z_i$ above,
+and the process scales its variance by the channel's loading, as it does
+today. The two alternatives each break something. Keying the cells on business
+time $\beta(t) = \int_0^t \lambda(u)\, du$ makes the grid a function of the
+regime's path, and of every event when the loading reads the heat. Dividing a
+simulated-time increment by $\sqrt{\beta(T) - \beta(t_i)}$ does not give a
+standard normal. Scaling the variance in the process is exact when the loading
+is constant over the interval between two ticks. When it varies inside the
+interval, the shared Gaussian weights the interval's parts by time and not by
+loading. The loading is common to every series, so the correlation of two
+drivers over their overlap is unchanged, and the cost is a first-order error in
+how the interval's variance is spread inside it.
 
 ** Regime changes
 
@@ -158,7 +170,11 @@ with correlation $\rho$ to spot has the driver
 $\rho\, W_{\text{spot}} + \sqrt{1 - \rho^2}\, G$, where $G$ is built from the
 block's own factors. Its correlation with spot is then exactly $\rho$, whatever
 spot's global loadings are. In factor terms the anchor's idiosyncratic motion is
-promoted to a block factor. The block's internal correlations, such as
+promoted to a block factor. So an anchor's $E$ is not drawn from its price
+stream: a member ticks at its own times and needs the anchor's increment over
+any interval, so the anchor's idiosyncratic motion is a keyed path like any
+factor. An anchor's draws therefore change once it has a block, and the
+identity of a series with no loadings holds for non-anchors only. The block's internal correlations, such as
 neighbouring forward variances, come from the lower Cholesky factor of the
 block's correlation matrix with the anchor first. That matrix is the one the
 synthetic FX surface engine already builds from its three stated correlations
@@ -173,8 +189,9 @@ A factor's value at a time is a pure function of the run seed, the factor and
 the time; it does not depend on which series asked or when
 ([[id:14C79EA2-4E36-4EF2-A0DB-0EB932655029][A keyed Brownian path is a pure function of seed and time]]).
 So a series' path is invariant to the presence, absence and tick times of any
-other series. A series' own $E_i$ is drawn from the series' own price stream, so
-it depends only on its own ticks, as its noise does today.
+other series. A series that anchors no block draws its own $E_i$ from its own
+price stream, so it depends only on its own ticks, as its noise does today. An
+anchor's $E_i$ is a keyed path, a function of the seed and time alone.
 
 Two things bound that invariance. The keyed path is exact to the resolution of
 its bridge, not below it. And the heat of the arrival regime is endogenous:
@@ -189,16 +206,23 @@ A series with every loading zero has $d_i = 1$ and its driver is its own
 $E_i$. The latent market draws $E_i$ from the series' existing price stream, in
 the order and number the process draws today. So the driven step takes one
 standard normal in and scales it as before, and a series with no loadings
-reproduces today's path for the same seed bit for bit. That identity is the
-migration test: nothing changes until loadings are set.
+reproduces today's path for the same seed bit for bit. Bit for bit needs a
+branch, not only $d_i = 1$: $d_i\sqrt{\Delta t}\,g/\sqrt{\Delta t}$ need not equal
+$g$ in floating point, so a series with every loading zero is handed the drawn
+$g$ unscaled. That identity is the migration test: nothing changes until
+loadings are set. It holds for a series that anchors no block; an anchor's own
+noise is a keyed path, as Hierarchy and blocks states.
 
 ** Cost
 
 A tick reads $K$ factors at the current time, each through at most $D$ levels
 of the bridge, so it costs $O(KD)$ and does not depend on the number of series
 $N$. The latent market keeps each series' driver value at its last tick, so it
-never reads a factor in the past. Memory is the loadings, $O(NK)$, plus one
-value a series. A run's total cost is linear in its ticks, which generalises the
+never reads a factor in the past. With static loadings that value is the
+driver itself, $\sum_k b_{ik} F_k(t_i) + d_i E_i(t_i)$; with per-regime loadings
+it is the $K$ factor values at the last tick, because the piece after a switch
+needs them. Memory is the loadings, $O(NK)$, plus one value a series with
+static loadings or $K$ with per-regime ones. A run's total cost is linear in its ticks, which generalises the
 rank-one result of the arrival regime from one factor to $K$.
 
 ** What the correlation reaches
@@ -294,7 +318,9 @@ built from the spot and the two discount curves last published.
    public, so the loadings of a surface's state variables cannot be fitted from
    data the project holds.
 3. *Bridge depth at scale.* The cost of depth 30 a tick at tens of thousands of
-   feeds is unmeasured.
+   feeds is unmeasured. Step 1 of
+   [[id:9331995E-79ED-40B3-923D-524975949FB5][Build the latent market of shared Brownian factors]]
+   measures it.
 
 ** References
 

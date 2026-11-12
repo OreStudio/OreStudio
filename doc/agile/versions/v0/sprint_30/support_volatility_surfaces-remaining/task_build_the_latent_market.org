@@ -75,15 +75,16 @@ the decision is OD-1 of
   states.
 - A set of loadings that is not a correlation is refused, never projected.
 - =i_stochastic_process= takes one standard normal in for a driven step. A
-  series with every loading zero reproduces today's path bit for bit for the
-  same seed. A process that cannot take an external normal refuses loadings.
+  series with every loading zero that anchors no block reproduces today's path
+  bit for bit for the same seed. A process that cannot take an external normal refuses loadings.
 - The FX spot feed and the FX volatility surface read their drivers from the
   tick context; the surface's three correlations become its block's loadings,
   and its strikes are solved against the forward from the published spot and
   curves.
 - The factors and loadings are typed configuration tables, shown on the Market
   regime tab and set from the shell.
-- No arrival law reads a price; a test or a check pins it.
+- No arrival law reads a price: the arrival interface takes no price, and a
+  test pins it.
 
 * Plan
 
@@ -92,16 +93,21 @@ published price.
 
 1. *The keyed path.* A factor's value at a time from keyed cells and a dyadic
    bridge, through direct Philox block access at a draw index. Tests: the
-   bridge's law at its nodes, order independence, the resolution bound, and
-   Random123's known-answer vectors for the block function if =rng_stream= does
-   not already carry them.
+   bridge's law at its nodes, order independence, the resolution bound, a jump
+   over many cells, and Random123's known-answer vectors for the block function
+   if =rng_stream= does not already carry them. Record the cost of a read at
+   depths 16 and 30 in the Measurements table, and the licence of every source
+   copied.
 2. *The latent market.* Block factors, loadings, the anchor rule (a member loads
    on its anchor's whole driver), the per-series last driver value, and the
    increment. Tests: Hayashi-Yoshida correlation under irregular sampling;
    isolation when a series is added or bursts; reproducible by seed.
 3. *The driven step.* =i_stochastic_process= takes the normal it would draw; the
-   latent market draws a series' own noise from its existing price stream.
-   Test: zero loadings reproduce today's path bit for bit.
+   latent market draws a series' own noise from its existing price stream, and
+   hands a series with every loading zero its drawn normal unscaled. Test: zero
+   loadings reproduce today's path bit for bit, for a series that anchors no
+   block. An anchor's own noise is a keyed path, so its draws change once it
+   anchors a block, and the test says so.
 4. *The tick context carries the market.* FX spot moves onto its driver.
 5. *Configuration.* Factor and loading tables through codegen, the Market regime
    tab and the shell.

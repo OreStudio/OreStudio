@@ -56,9 +56,10 @@ struct driver_increment {
  * one flat array, written once while the market is built and read only after, so
  * a tick over many series touches no allocator and walks one contiguous span.
  *
- * A factor is read once when simulated time moves, not once a series: a market
- * tick advances the walks and fills the factor values, and each series' tick is
- * then a dot product over its own handful of weights.
+ * A tick reads only the factors its own series loads on, and only the first time
+ * in an instant: an event costs a handful of levels, not a walk over every factor
+ * in the market. Batching is therefore unnecessary for cost, which is what lets
+ * stochastic and self-exciting arrivals interleave freely.
  *
  * The market is owned by the scheduler and touched only on its thread. It is
  * forward only: simulated time never moves backwards, and a series' tick at an
@@ -67,8 +68,9 @@ struct driver_increment {
 struct latent_market {
     std::vector<math::keyed_path_params> factors;
     std::vector<math::keyed_walk> walks;
-    /// Each factor's value at now, refreshed when simulated time moves.
+    /// Each factor's value, and the time it was read at.
     std::vector<double> factor_value;
+    std::vector<double> factor_time;
 
     /// The loadings, series by series, with the span each series owns.
     std::vector<factor_weight> loadings;
@@ -139,6 +141,10 @@ ORES_ANALYTICS_QUANT_EXPORT void latent_set_loadings(latent_market& market,
 /**
  * @brief Moves simulated time and refreshes every factor's value.
  *
+ * A tick does not need this: it reads the factors its series loads on. Call it
+ * only when every factor's value is wanted at one instant, for a batch or a
+ * report.
+ *
  * @throws std::invalid_argument if the time is before the market's now.
  */
 ORES_ANALYTICS_QUANT_EXPORT void latent_advance(latent_market& market, double t);
@@ -150,9 +156,11 @@ ORES_ANALYTICS_QUANT_EXPORT double latent_driver_value(const latent_market& mark
 /**
  * @brief Ticks a series at a simulated time.
  *
- * Advances the market to the time, returns the shared part of the driver's
- * increment over the interval since the series' last tick, and records the new
- * driver value and time. A first tick measures from the run's start.
+ * Returns the shared part of the driver's increment over the interval since the
+ * series' last tick, and records the new driver value and time. A first tick
+ * measures from the run's start. Only the factors the series loads on are read,
+ * and a factor already read at this instant is reused, so an event costs its own
+ * series' levels and nothing else.
  *
  * A process turns what this returns into a standard normal by adding its own
  * motion, weighted by the square root of one less the squared loadings, and

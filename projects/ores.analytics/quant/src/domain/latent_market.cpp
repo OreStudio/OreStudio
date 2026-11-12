@@ -42,6 +42,7 @@ std::uint32_t latent_add_factor(latent_market& market, std::uint64_t factor_id) 
     market.factors.push_back(params);
     market.walks.push_back(math::make_keyed_walk(params));
     market.factor_value.push_back(0.0);
+    market.factor_time.push_back(market.start);
     return static_cast<std::uint32_t>(market.factors.size() - 1);
 }
 
@@ -93,6 +94,7 @@ void latent_advance(latent_market& market, double t) {
 
     for (std::size_t k = 0; k < market.factors.size(); ++k) {
         market.factor_value[k] = math::keyed_walk_value(market.factors[k], market.walks[k], t);
+        market.factor_time[k] = t;
     }
     market.now = t;
 }
@@ -106,13 +108,38 @@ double latent_driver_value(const latent_market& market, std::uint32_t series) {
     return value;
 }
 
-driver_increment latent_tick(latent_market& market, std::uint32_t series, double t) {
-    latent_advance(market, t);
+static double latent_factor_value(latent_market& market, std::uint32_t factor, double t) {
+    if (market.factor_time[factor] != t) {
+        market.factor_value[factor] =
+            math::keyed_walk_value(market.factors[factor], market.walks[factor], t);
+        market.factor_time[factor] = t;
+    }
+    return market.factor_value[factor];
+}
 
-    const double value = latent_driver_value(market, series);
+driver_increment latent_tick(latent_market& market, std::uint32_t series, double t) {
+    if (!std::isfinite(t))
+        throw std::invalid_argument("latent_tick: time must be finite");
+    if (t < market.now)
+        throw std::invalid_argument("latent_tick: time is behind the market");
+
+    const std::uint32_t begin = market.loading_begin[series];
+    const std::uint32_t end = market.loading_begin[series + 1];
+    double value = 0.0;
+    for (std::uint32_t i = begin; i < end; ++i)
+        value +=
+            market.loadings[i].weight * latent_factor_value(market, market.loadings[i].factor, t);
+    market.now = t;
     driver_increment increment{};
     increment.shared = value - market.driver[series];
     increment.elapsed = market.now - market.tick_time[series];
+
+    // A tick the scheduler clamped to a clock that had not moved has no elapsed
+    // time, so its increment is zero and its standard form is undefined. Refuse
+    // it here rather than let a caller divide by the square root of nothing.
+    if (!(increment.elapsed > 0.0))
+        throw std::invalid_argument(
+            "latent_tick: no simulated time passed since the series last ticked");
 
     market.driver[series] = value;
     market.tick_time[series] = market.now;

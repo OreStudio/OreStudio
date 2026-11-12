@@ -22,8 +22,10 @@
 #include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
 #include <numeric>
 #include <stdexcept>
 #include <vector>
@@ -37,6 +39,9 @@ using ores::analytics::quant::domain::latent_market;
 using ores::analytics::quant::domain::latent_set_loadings;
 using ores::analytics::quant::domain::latent_tick;
 using ores::analytics::quant::domain::make_latent_market;
+using ores::analytics::quant::math::keyed_path_finest_step;
+using ores::analytics::quant::math::keyed_path_value_at;
+using ores::analytics::quant::math::make_keyed_path;
 using ores::analytics::quant::math::correlation_loadings;
 
 namespace {
@@ -249,6 +254,54 @@ TEST_CASE("a series is untouched by another series' ticks", "[latent_market]") {
     CHECK(shared == alone);
 }
 
+TEST_CASE("a factor no series loads on changes nothing", "[latent_market]") {
+    const double dt = latent_hour / 20.0;
+    std::vector<double> without;
+    std::vector<double> with;
+    for (int pass = 0; pass < 2; ++pass) {
+        latent_market market = make_latent_block(313, 0.6);
+        if (pass == 1) {
+            for (std::uint32_t k = 0; k < 200; ++k)
+                latent_add_factor(market, 10'000 + k);
+        }
+        for (int i = 1; i <= 20; ++i) {
+            const double value = latent_tick(market, 0, static_cast<double>(i) * dt).shared;
+            (pass == 0 ? without : with).push_back(value);
+        }
+    }
+    CHECK(with == without);
+}
+
+TEST_CASE("an event costs its own factors, not every factor in the market",
+          "[.benchmark][latent_market]") {
+    constexpr int events = 20000;
+    for (const std::uint32_t factor_count : {2u, 2000u}) {
+        latent_market market = make_latent_market(4242, latent_hour, latent_depth, 0.0);
+        for (std::uint32_t k = 0; k < factor_count; ++k)
+            latent_add_factor(market, static_cast<std::uint64_t>(k) + 1);
+        latent_add_series(market);
+        const std::vector<factor_weight> loadings{{.factor = 0, .weight = 0.6},
+                                                  {.factor = 1, .weight = 0.8}};
+        latent_set_loadings(market, 0, loadings);
+
+        // A day a millisecond of market, so every event lands in a new finest
+        // step and the bridge is walked in full: the honest cold-tick cost.
+        const double dt = 100.0 * latent_hour / static_cast<double>(events);
+        double sink = 0.0;
+        const auto started = std::chrono::steady_clock::now();
+        for (int i = 1; i <= events; ++i)
+            sink += latent_tick(market, 0, static_cast<double>(i) * dt).shared;
+        const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                            std::chrono::steady_clock::now() - started)
+                            .count() /
+                        static_cast<long long>(events);
+        std::printf("factors %u: %lld ns an event (sink %g)\n",
+                    factor_count,
+                    static_cast<long long>(ns),
+                    sink);
+    }
+}
+
 TEST_CASE("a market is reproducible by seed", "[latent_market]") {
     const double dt = latent_hour / 20.0;
     std::vector<double> first;
@@ -285,6 +338,52 @@ TEST_CASE("a driver refuses loadings that are not its own", "[latent_market]") {
     // built in one pass and never moved.
     const std::vector<factor_weight> late{{.factor = 0, .weight = 0.5}};
     CHECK_THROWS_AS(latent_set_loadings(market, 0, late), std::invalid_argument);
+}
+
+TEST_CASE("a tick with no time behind it is refused", "[latent_market]") {
+    // The scheduler clamps a late tick to a clock that has not moved, so two ticks
+    // can share an instant. Their interval is zero and a standard normal needs a
+    // positive one.
+    latent_market market = make_latent_block(2024, 0.5);
+    static_cast<void>(latent_tick(market, 0, 0.1 * latent_hour));
+    CHECK_THROWS_AS(latent_tick(market, 0, 0.1 * latent_hour), std::invalid_argument);
+}
+
+TEST_CASE("a burst inside one finest step interpolates between its two nodes", "[latent_market]") {
+    // A Hawkes burst can fire many ticks inside one finest step. The path is then
+    // linear there: the increments add up to the step's own increment, and their
+    // squares are not the elapsed time. This pins the bound the design note states,
+    // rather than pretending the burst carries noise the resolution cannot hold.
+    const math::keyed_path_params path = make_keyed_path(
+        math::stream_key{.run_seed = 7, .series = 1, .purpose = math::draw_purpose::market},
+        latent_hour,
+        latent_depth,
+        0.0);
+    const double step = math::keyed_path_finest_step(path);
+    const double node = 0.5 * latent_hour;
+    const double full =
+        math::keyed_path_value_at(path, node + step) - math::keyed_path_value_at(path, node);
+
+    double total = 0.0;
+    double squares = 0.0;
+    double previous = math::keyed_path_value_at(path, node);
+    constexpr int ticks = 8;
+    for (int i = 1; i <= ticks; ++i) {
+        const double t = node + step * static_cast<double>(i) / static_cast<double>(ticks);
+        const double value = math::keyed_path_value_at(path, t);
+        const double increment = value - previous;
+        total += increment;
+        squares += increment * increment;
+        previous = value;
+    }
+
+    CHECK(total == Catch::Approx(full).margin(1e-12));
+    // The step's quadratic variation is lost: eight equal parts carry an eighth
+    // of it, so the burst reads as smooth rather than Brownian. This is the
+    // resolution bound the design note states, and the reason the depth has to
+    // sit below the shortest gap an arrival law can produce.
+    CHECK(squares < 0.2 * full * full);
+    CHECK(squares > 0.0);
 }
 
 TEST_CASE("a first tick measures from the run's start", "[latent_market]") {

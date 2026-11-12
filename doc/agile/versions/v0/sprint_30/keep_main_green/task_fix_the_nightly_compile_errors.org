@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: feature/fix-the-nightly-compile-errors
-#+pr: 4653
+#+pr: 4659
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
@@ -120,6 +120,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4659][#4659]] | [build] Fix the failing checks on main |
 | [[https://github.com/OreStudio/OreStudio/pull/4653][#4653]] | [build] Leave warnings as warnings on every build |
 | [[https://github.com/OreStudio/OreStudio/pull/4651][#4651]] | [build] Fix the nightly compile errors on gcc, macOS and Windows |
 

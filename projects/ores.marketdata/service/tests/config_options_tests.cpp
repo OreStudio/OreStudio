@@ -36,7 +36,7 @@ TEST_CASE("printed options name each member in declaration order and no password
     const auto text = s.str();
 
     CHECK(text.find("secret") == std::string::npos);
-    CHECK(text.find("\"logging\"") == std::string::npos);
+    CHECK(text.find("\"logging\":null") != std::string::npos);
 
     const auto nats = text.find("\"nats\":{");
     const auto database = text.find("\"database\":{");

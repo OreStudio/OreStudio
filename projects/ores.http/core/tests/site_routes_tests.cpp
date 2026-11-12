@@ -160,7 +160,7 @@ TEST_CASE("site_routes_deployment_is_absent_without_the_developer_surface", "[si
     const auto shown = site_routes::deployment(load_site(path, "local", variables({})));
     CHECK(shown.status == http_status::ok);
     CHECK(shown.body.find(R"("host":"localhost")") != std::string::npos);
-    CHECK(shown.body.find(R"("tls":{})") != std::string::npos);
+    CHECK(shown.body.find(R"("tls":{"ca":null,"cert":null,"key":null})") != std::string::npos);
     CHECK(
         shown.body.find(
             R"("available":[{"id":"local","displayName":"Local","nonProduction":true},{"id":"prod","displayName":"Production","nonProduction":false}])") !=

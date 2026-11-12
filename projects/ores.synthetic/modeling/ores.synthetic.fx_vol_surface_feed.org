@@ -353,6 +353,9 @@ The correlation of neighbouring forward variances; segments further apart correl
 | "source_name" like 'synthetic.%' |
 | "ticks_per_hour" > 0 |
 | "arrival_mode" in ('periodic', 'poisson', 'hawkes') |
+| "branching_ratio" >= 0 and "branching_ratio" < 1 |
+| "decay" > 0 and "decay" < 'Infinity' |
+| "sensitivity" > 0 and "sensitivity" < 'Infinity' |
 | "skew_reversion" >= 0 and "skew_reversion" < 'Infinity' |
 | "skew_volatility" >= 0 and "skew_volatility" < 'Infinity' |
 | "curvature_reversion" >= 0 and "curvature_reversion" < 'Infinity' |

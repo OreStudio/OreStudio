@@ -125,7 +125,7 @@ The volatility of the segment's forward variance.
 
 | expression |
 |------------|
-| "tenor" ~ '^[1-9][0-9]*[DWMY]$' |
+| "tenor" ~ '^[1-9][0-9]?[DWMY]$' |
 | "variance_reversion" >= 0 and "variance_reversion" < 'Infinity' |
 | "variance_volatility" >= 0 and "variance_volatility" < 'Infinity' |
 

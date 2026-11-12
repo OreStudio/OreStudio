@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/keep-workflow-steps-alive-and-off-iam
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ A step states its progress on the heartbeat it already renews, the engine fails 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

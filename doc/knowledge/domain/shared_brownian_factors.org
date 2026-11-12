@@ -268,23 +268,41 @@ built from the spot and the two discount curves last published.
 
 ** Open questions
 
-1. *The level of the smile's curvature.* The design gives the curvature its
-   shocks, not its level. In the generator the level is the curvature of the
-   fitted surface the run starts from, to which its process reverts. Spot
-   history cannot identify it: curvature is a $Q$ quantity, the market's price
-   of tail risk, and a $P$ series gives at most its real-world counterpart. Two
-   sources are possible: the spot model's own return distribution at each
-   expiry, whose mixture implies a convex smile, plus a stated risk premium; or
-   contributed or vendor option quotes. Kienitz (2026a) generates whole surfaces
-   from a mixture fitted to surface history, which needs that history.
-2. *Calibration data for surfaces.* Public fixings exist for rates and spot. FX
-   option quotes are not public, so the loadings of a surface's state variables
-   cannot be fitted from public data alone.
+1. *The parameters of the smile's curvature.* The curvature already evolves:
+   the generator moves the SSVI curvature $\eta$ by a bounded logistic of an
+   Ornstein-Uhlenbeck driver, and the skew $\rho$ by a hyperbolic tangent of
+   another. The published model closest to this is Andrès, Boumezoued and
+   Jourdain (2023), who fit a four-parameter SSVI to historical surfaces, find
+   that the two ATM parameters follow past returns and squared returns, find
+   that $\rho$ and $\eta$ do not, and so model those two as bounded Jacobi
+   processes. That result says two things. Bounded mean-reverting processes are
+   the published answer for the dynamics. And the path of spot cannot set
+   their level, reversion or volatility: curvature is a $Q$ quantity, the
+   market's price of tail risk. What is open is where those numbers come from.
+   This project has no private market data source, so they cannot be fitted to
+   option quotes. Three public routes remain: published estimates of smile
+   dynamics as stated priors; the spot model's own return distribution at each
+   expiry, whose mixture implies a convex smile, plus a stated risk premium;
+   and any FX option prices regulators publish, which need checking. Kienitz
+   (2026a) generates whole surfaces from a mixture fitted to surface history,
+   which needs that history. El Amrani, Jacquier and Martini (2019) show the
+   limit of any such dynamics: no Itô dynamics beyond the trivial keeps an
+   uncorrelated SSVI smile free of dynamic arbitrage up to expiry.
+2. *Calibration data for surfaces.* Public fixings exist for rates and spot.
+   This project has no private market data source and FX option quotes are not
+   public, so the loadings of a surface's state variables cannot be fitted from
+   data the project holds.
 3. *Bridge depth at scale.* The cost of depth 30 a tick at tens of thousands of
    feeds is unmeasured.
 
 ** References
 
+- Andrès, H., Boumezoued, A., and Jourdain, B. (2023). The implied volatility
+  surface (also) is path-dependent. [[https://arxiv.org/abs/2312.15950][arXiv:2312.15950]],
+  revised October 2025.
+- El Amrani, M., Jacquier, A., and Martini, C. (2019). Dynamics of symmetric
+  SSVI smiles and implied volatility bubbles.
+  [[https://arxiv.org/abs/1909.10272][arXiv:1909.10272]], revised February 2021.
 - Karatzas, I., and Shreve, S. E. (1991). /Brownian Motion and Stochastic
   Calculus/, 2nd ed. Springer. Theorem 3.3.16 (Lévy's characterisation).
 - Kienitz, J. (2026a). Gaussian generation of implied volatility surfaces:

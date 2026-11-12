@@ -99,6 +99,12 @@ The two false starts and their fixes are recorded in the investigation's
 | =context= with every service header cut | 321 before, 301 after | =header_blast_radius.py --cut-set= | =27cad5a0c6= |
 | =context= with every header cut | 321 before, 179 after | =header_blast_radius.py --cut-set= | =27cad5a0c6= |
 | Lifetime-sensitive captures of a context | 1, synchronous (=feed_kind_registry.cpp:492=); 0 by value, 0 reference members | =grep= | =27cad5a0c6= |
+| Generated service header, parse cost | 6.22 s | =header_cost.py headers= | =27cad5a0c6= |
+| Generated repository header, parse cost | 8.01 s | =header_cost.py headers= | =27cad5a0c6= |
+| Objects reading =context.hpp= and naming it in their own source | 179 of 365 | =header_blast_radius.py= | =27cad5a0c6= |
+| Objects depending on a service or repository header | 512, of which 364 read =context.hpp= | =header_blast_radius.py= | =27cad5a0c6= |
+| Service header with =shared_ptr<context>= and a forward declaration | compiles, rc 0 | shadow compile, =clang++ -fsyntax-only= | =27cad5a0c6= |
+| Repository header with =const context&= and a forward declaration | compiles, rc 0 | shadow compile, =clang++ -fsyntax-only= | =27cad5a0c6= |
 
 The full tables are in
 [[id:AF6C4DA7-903E-4848-8807-73EA4E49E9CA][Investigation: The headers that couple the build]].
@@ -153,6 +159,11 @@ What it found:
   leaves 179 of 365 objects reading it, because the =.cpp= files that construct
   a context need the definition. The only change that moves the radius is the
   split of the type, which needs its own task.
+- A pointer is worth it for the stored member, for parse cost and not for
+  rebuilds: at most 186 objects stop parsing a 6.6 s header and about 20 stop
+  rebuilding. =shared_ptr=, a raw pointer and a pimpl all compile on a generated
+  service header; they differ in ownership, and the raw pointer is the one that
+  makes the code worse. The choice belongs to the split task.
 - The decisions, the pattern table and the objects each cut saves are in the
   investigation's * Rebuild blast radius and * Order of work.
 

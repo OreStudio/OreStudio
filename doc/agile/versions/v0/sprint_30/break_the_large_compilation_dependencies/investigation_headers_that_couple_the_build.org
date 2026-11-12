@@ -221,6 +221,64 @@ reference capture in the tree,
 outlive the call. That file is the list to re-check when a copy becomes a
 reference, because a compile does not find a dangling reference.
 
+** Pointer, shared pointer, or pimpl
+
+A pointer is a different question from a reference, and it only makes sense for
+the stored member. A generated service header costs 6.22 s to parse and a
+repository header 8.01 s, and most of that is =context.hpp=. If the service
+header did not need the definition, the units that include it would stop paying
+that.
+
+What a pointer buys, per option, with the two proof compiles recorded below:
+
+| Option | Service header compiles with a forward declaration | Parse cost of the units that include a service header | What it costs |
+|--------|:---:|---------------------|---------------|
+| =std::shared_ptr<context> ctx_= | yes | drops the =context.hpp= subtree | one allocation per context, nullability, shared ownership of the request's identity |
+| =context* ctx_= | yes | same | non-owning and unchecked: a caller must outlive the service, and an async handler will eventually not |
+| =struct impl; std::unique_ptr<impl> p_= (pimpl) | yes | same | one allocation per service, and every member use moves to the =.cpp= |
+
+All three remove the definition from the header. The compile numbers do not
+choose between them, so the choice is about ownership, not compile time:
+
+- =shared_ptr= is the safe version of a raw pointer, and it is the cheapest copy:
+  one atomic increment against the several string copies a =context= copy makes
+  today. It also changes what the service holds: a shared reference to the
+  caller's identity object instead of its own copy.
+- =unique_ptr= to an =impl= keeps today's ownership exactly, "the service owns
+  its context", and adds no nullability and no sharing. It costs one allocation
+  per service.
+- A raw pointer is the one option that makes the code worse: it adds a lifetime
+  rule that nothing enforces, in a codebase that already hands contexts to
+  asynchronous handlers.
+
+What it buys on each axis:
+
+- Parse cost: 365 objects read =context.hpp= and 179 of them name it in their
+  own source, so at most 186 objects stop parsing a 6.6 s header, about 1230
+  object-seconds. 512 objects depend on a service or repository header, and 364
+  of those also read =context.hpp=, so the reach is there.
+- Rebuild radius: about 20 objects. Cutting every service header from the
+  include graph saves 20 of 321, because each service's =.cpp= still builds a
+  context.
+- Run time: the constructor stops copying. That is 1305 copies removed.
+
+The two proofs, on one generated header of each shape:
+
+#+begin_src sh :results verbatim
+# service header: context ctx_ replaced by std::shared_ptr<context> ctx_,
+# the constructor takes the pointer, the include replaced by a forward
+# declaration of ores::database::context. Result: rc 0.
+# repository header: every "context ctx" parameter replaced by
+# "const context& ctx", the include replaced by a forward declaration.
+# Result: rc 0.
+#+end_src
+
+Neither proof is a design decision. Both changes touch what a generated service
+stores and what every generated method takes, so they belong to the split task,
+where they can be judged together with the tenancy question: a long-lived
+service that holds a request's context is a hazard today, and sharing the object
+does not remove it.
+
 ** The ceiling on cutting headers
 
 If 2268 includers could drop the include, the rebuild radius should fall. It does
@@ -471,7 +529,7 @@ the 638 outputs.
 | =ores.utility/uuid/tenant_id.hpp= | *Move*: drop the unused =<boost/uuid/string_generator.hpp>= include | Nothing in the header uses it; the =.cpp= already includes it itself. Measured saving 0.69 s on 837 objects. |
 | =ores.utility/serialization/error_code.hpp= | *Move* the two inline functions that call =magic_enum= into the =.cpp= | =operator<<= and =to_string= are the only users. Removing the include alone does not compile, which the A/B run proved: the fix is to move the code, not the line. |
 | =ores.database/domain/context.hpp=, type =context=, by-value parameters | *Change* to =const context&= in the codegen templates first, then the hand-written code | 21874 copies of a type that is only read, 11141 of them emitted by the =repository= and =service= archetypes. Strictly better at run time and free of lifetime risk while the call is synchronous. It does not reduce rebuilds: see the ceiling. |
-| =ores.database/domain/context.hpp=, type =context=, member =ctx_= | *Keep* by value | A reference member dangles when the service outlives its caller, and a pointer adds ownership and nullability to a type that costs a few strings and one atomic increment to copy. |
+| =ores.database/domain/context.hpp=, type =context=, member =ctx_= | *Keep* by value for now; the pointer, shared-pointer and pimpl options are a design decision for the split task | A reference member dangles when the service outlives its caller. A =shared_ptr= or a pimpl both let the 1305 service headers drop the include and stop parsing a 6.6 s header, and both compile unchanged on a generated header. They differ in ownership, not in compile time, so the choice belongs with the tenancy question. A raw pointer is the one option that makes the code worse. |
 | =ores.database/domain/context.hpp=, the type itself | *Split*, in its own task | This is the only change that moves the header's own radius. The connection and pool part changes rarely; the per-request identity part is what 1305 services store. |
 | =ores.database/domain/context.hpp=, its includes | *Forward-declare* =pq::pool=, =pq::transaction= and =pq::session_context=; *move* =connection_options= and =open_policy= to a small header without libpq; *hide* =pq_slot= behind a pointer to an incomplete type defined in the =.cpp= | This is where the rebuild saving is: cutting =pq/pool.hpp= and =pq/transaction.hpp= from this one header takes 147 objects each off their blast radius. =pq/connection.hpp= moves only together with =pq/pool.hpp= and =pq/statement.hpp=, because each of those reaches it. |
 | =ores.database/pq/connection.hpp=, type =connection_options= | *Move* to the small options header | It has no libpq dependency of its own: =<string>=, =<cstdint>=, =<chrono>=. Held by value in =context=, so the type must stay complete, but not the =PGconn= half. |
@@ -511,7 +569,10 @@ group closes a door that one cut cannot close:
    the 1305 services the per-request part only. This is the only step that moves
    =context.hpp='s own radius, and it needs its own task and its own design: it
    changes what a service stores, and it must keep =with_tenant=, =with_party=,
-   =with_roles= and =with_transaction= returning complete copies.
+   =with_roles= and =with_transaction= returning complete copies. The pointer
+   question belongs here: a =shared_ptr= member or a pimpl both let the service
+   header drop the definition, at most 186 objects stop parsing a 6.6 s header,
+   and the rebuild radius moves by about 20 objects.
 
 Step 5 is not a header change and must not be dressed as one. The measurement is
 blunt about it: cutting every header in the tree still leaves 179 of 365 objects
@@ -589,6 +650,10 @@ them. Steps 3 and 4 belong to
   repository headers saves one object; cutting every header in the tree still
   leaves 179 of 365 objects reading it, because the =.cpp= files that build a
   context need the definition whatever the headers do.
+- A pointer or a pimpl on the stored member is worth doing for parse cost, not
+  for rebuilds: at most 186 objects stop parsing a 6.6 s header, and about 20
+  stop rebuilding. The three options compile alike, so ownership decides, and a
+  raw pointer is the one that makes the code worse.
 - The story is right about the rebuild fix and wrong about the parse cost.
   libpq costs 0.04 s to parse, yet it sits under 375 objects. Keeping it out of
   =context.hpp= is a blast-radius fix worth 147 to 375 objects; it is not a parse

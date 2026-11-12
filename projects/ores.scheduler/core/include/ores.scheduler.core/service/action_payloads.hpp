@@ -65,6 +65,21 @@ struct nats_publish_payload {
 }
 static_assert(utility::codec::names_every_member<nats_publish_payload>());
 
+// Fields read from job_definition.action_payload for a job that sends an
+// authenticated request and reads its answer. The body is the callee's own
+// request; a job whose request needs arguments states them here.
+struct nats_request_payload {
+    std::string subject;
+    std::string body = "{}";
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_request_payload>) {
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"subject", &nats_request_payload::subject},
+        utility::codec::field{"body", &nats_request_payload::body}};
+}
+static_assert(utility::codec::names_every_member<nats_request_payload>());
+
 // The body published to the subject on each firing. It must name every member
 // that reporting's trigger_report_instance_request requires: the receiver reads
 // members by name, and one it requires and does not find fails the whole decode,

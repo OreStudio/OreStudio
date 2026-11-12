@@ -87,6 +87,7 @@ using ores::utility::codec::object::read_json;
 TEST_CASE("the action payloads survive the wire", tags) {
     survives_the_wire(mq_payload_fields{"q1", "report.run", R"({"a": "b"})"});
     survives_the_wire(nats_publish_payload{"reporting.v1.ops.trigger", "r1", std::nullopt});
+    survives_the_wire(nats_request_payload{"marketdata.v1.ops.publish_due_curves", "{}"});
     survives_the_wire(
         nats_trigger_body{boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301"),
                           boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000000"),
@@ -109,6 +110,13 @@ TEST_CASE("a job's action payload reads from the wire it", tags) {
     CHECK(nats.subject == "a.b");
     CHECK_FALSE(nats.report_definition_id.has_value());
     CHECK_FALSE(nats.tenant_id.has_value());
+
+    // A request job that states no body sends the empty object.
+    const auto request = read_json<nats_request_payload>(R"({"subject": "c.d"})");
+    CHECK(request.subject == "c.d");
+    CHECK(request.body == "{}");
+    CHECK(read_json<nats_request_payload>(R"({"subject": "c.d", "body": "{\"e\": 1}"})").body ==
+          R"({"e": 1})");
 
     CHECK_THROWS_WITH(read_json<mq_payload_fields>(R"({"queue_id": "q1"})"),
                       Catch::Matchers::ContainsSubstring("Missing member"));

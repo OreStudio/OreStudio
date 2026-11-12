@@ -385,6 +385,35 @@ export interface ComputeCurveResponse {
 }
 
 /**
+ * @brief Request to bootstrap and publish every IR curve the system tenant holds
+ * a bootstrap config for -- the sweep a scheduler job fires on its cadence.
+ *
+ * Each curve goes through the same compute/publish pair a person's publish
+ * takes, so each publish supersedes the previous one. A curve whose compute or
+ * publish fails keeps its previous publish, and the response names it.
+ */
+export interface PublishDueCurvesRequest {}
+
+/**
+ * @brief What the sweep did for one curve: the curve's name, its as-of, how
+ * long it took, and whether it published or why it did not.
+ */
+export interface CurveRepublishOutcome {
+    bootstrap_config_id: string;
+    name: string;
+    as_of: string;
+    duration_ms: number;
+    published: boolean;
+    message: string;
+}
+
+export interface PublishDueCurvesResponse {
+    success: boolean;
+    message: string;
+    curves: CurveRepublishOutcome[];
+}
+
+/**
  * @brief One instant of a slice: the object as it stood then.
  */
 export interface SeriesSliceInstant {
@@ -1139,6 +1168,7 @@ export const subjects = {
     get_crm_rates_request: 'marketdata.v1.ops.get_crm_rates',
     republish_curve_request: 'marketdata.v1.ops.republish_curve',
     compute_curve_request: 'marketdata.v1.ops.compute_curve',
+    publish_due_curves_request: 'marketdata.v1.ops.publish_due_curves',
     get_series_slice_request: 'marketdata.v1.ops.get_series_slice',
     get_series_evolution_request: 'marketdata.v1.ops.get_series_evolution',
     get_curve_snapshot_request: 'marketdata.v1.curve_snapshot.get',
@@ -1169,6 +1199,7 @@ export const requiresSession = {
     get_crm_rates_request: true,
     republish_curve_request: true,
     compute_curve_request: true,
+    publish_due_curves_request: true,
     get_series_slice_request: true,
     get_series_evolution_request: true,
     get_curve_snapshot_request: true,

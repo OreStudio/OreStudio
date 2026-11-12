@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/bootstrap-the-curves-as-quotes-move
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
 #+updated: 2026-11-08
-#+environment: prime_origin
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Each published overnight-index curve is bootstrapped and published again on a sc
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The plan is written. Start with the publish sweep in marketdata. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-04                               |
+| Next         | The =marketdata.v1.ops.publish_due_curves= operation and its handler. |
+| Last touched | 2026-11-12                              |
 
 * Acceptance
 
@@ -43,6 +43,41 @@ Each published overnight-index curve is bootstrapped and published again on a sc
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+The cadence is one scheduler job for every published system curve. The
+task's "config or policy states" becomes "the job states", because the
+curves share one market and one cadence; a per-curve interval is a later
+change if a curve ever needs a different one.
+
+A publish is the pair provisioning already uses: =compute_curve=, then
+=publish_curve= at the same as-of. The =republish_curve= operation is
+not used: it writes observations but no publish record, so nothing is
+superseded.
+
+1. Add =marketdata.v1.ops.publish_due_curves=: an empty request and a
+   per-curve response. The handler lists the system tenant's IR curve
+   bootstrap configs and, for each one at a single =now=, sends
+   =compute_curve= and then =publish_curve= as a delegated request with
+   the caller's own token. It measures each curve, logs its name, as-of,
+   duration and outcome, and names a failure in the response. A curve
+   whose compute or publish fails keeps its previous publish.
+2. Let the scheduler send an authenticated request: extend the
+   =nats_publish= action payload with =authenticated= and =body=. When
+   =authenticated= is set, send an =authenticated_request= with the
+   scheduler's service token; the report path keeps its own shape.
+3. Grant =SchedulerService= the curve compute and publish permissions in
+   the IAM role seed, so the scheduler's token passes the handlers.
+4. Seed one job, =ores.marketdata.curve_republish=, every 15 minutes,
+   action =nats_publish=, subject =marketdata.v1.ops.publish_due_curves=,
+   authenticated. The job row states the cadence.
+5. Prove it: tests for the sweep (publishes and supersedes, keeps the
+   previous publish on a failed compute, names the failure), for the
+   scheduler payload, and for the permission refusal; then fire the job
+   on the provisioned environment and read the new publish, its
+   supersession and the log lines.
+
+Out of scope: per-party curves, which the story excludes; a per-curve
+cadence; the market-day roll, which is captured in the backlog.
 
 * Measurements
 

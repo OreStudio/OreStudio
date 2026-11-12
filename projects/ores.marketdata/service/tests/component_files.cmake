@@ -48,4 +48,5 @@ set(files
     "curve_republish_resolver_tests.cpp"
     "fx_forward_ladder_plan_tests.cpp"
     "main.cpp"
+    "messaging_publish_due_curves_tests.cpp"
 )

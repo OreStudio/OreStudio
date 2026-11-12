@@ -138,7 +138,7 @@ clean belongs to the =drift-sweep= check, not to this branch's
 
 * What still runs on GitHub
 
-Nothing on a pull request. Eleven workflows keep their own triggers:
+Nothing on a pull request. Twelve workflows keep their own triggers:
 
 | Workflow | When | Why it stays |
 |----------+------+--------------|
@@ -151,6 +151,7 @@ Nothing on a pull request. Eleven workflows keep their own triggers:
 | =stale.yml= | daily | closes stale issues and pull requests |
 | =claude.yml= | an =@claude= comment | the on-demand review |
 | =unity-batch-measurement.yml= | manual | compares unity batch sizes 16, 8, 4 and off: a cold, an incremental and a warm-cache build of one merged PR |
+| =ci-image.yml= | push to main that changes =build/docker/ci/=; manual | builds the Linux CI image from =build/docker/ci/versions.env= and publishes it to =ghcr.io/orestudio/ores-ci= when its tag is new |
 
 The twelve retired triggers were =codegen-drift=, =codegen-sweep=,
 =doc-lint=, =dsh-environment=,

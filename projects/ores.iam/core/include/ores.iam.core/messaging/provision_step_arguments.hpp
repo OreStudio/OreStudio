@@ -57,6 +57,7 @@ enum class provision_step_action {
     publish_party_curves,
     give_party_surface_blueprints,
     publish_party_forwards,
+    publish_party_surfaces,
     generate_trades,
     schedule_reports,
     complete_provisioning,
@@ -112,6 +113,8 @@ enum class provision_step_action {
         return provision_step_action::give_party_surface_blueprints;
     if (kind == publish_party_forwards_step_kind)
         return provision_step_action::publish_party_forwards;
+    if (kind == publish_party_surfaces_step_kind)
+        return provision_step_action::publish_party_surfaces;
     if (kind == "generate_trades")
         return provision_step_action::generate_trades;
     if (kind == schedule_reports_step_kind)
@@ -771,6 +774,18 @@ parse_party_curves_arguments(const std::string& arguments_json) {
  */
 [[nodiscard]] inline std::vector<std::string>
 parse_party_forwards_arguments(const std::string& arguments_json) {
+    return parse_report_schedule_arguments(arguments_json).parties;
+}
+
+/**
+ * @brief Reads a publish_party_surfaces step's arguments: the parties that publish their own
+ * volatility surfaces.
+ *
+ * The step states no surface. Each party publishes every blueprint it holds, so a blueprint the
+ * party gains reaches the step without the profile changing.
+ */
+[[nodiscard]] inline std::vector<std::string>
+parse_party_surfaces_arguments(const std::string& arguments_json) {
     return parse_report_schedule_arguments(arguments_json).parties;
 }
 }

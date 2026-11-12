@@ -295,6 +295,24 @@ TEST_CASE("a party's forwards wait for the curves they read", "[workflow]") {
     CHECK(forwards->consumes == std::vector<std::string>{"publish_party_curves"});
 }
 
+TEST_CASE("a party's surfaces wait for its forwards and its blueprints", "[workflow]") {
+    const auto def = setup_definition();
+    const auto steps = def.build_steps(request_json({declared("provision_party"),
+                                                     declared("subscribe_market_data"),
+                                                     declared("publish_party_curves"),
+                                                     declared("give_party_surface_blueprints"),
+                                                     declared("publish_party_forwards"),
+                                                     declared("publish_party_surfaces")}),
+                                       tenant_id,
+                                       correlation_id);
+
+    const auto surfaces = std::ranges::find_if(
+        steps, [](const auto& step) { return step.name == "publish_party_surfaces"; });
+    REQUIRE(surfaces != steps.end());
+    CHECK(surfaces->consumes ==
+          std::vector<std::string>{"publish_party_forwards", "give_party_surface_blueprints"});
+}
+
 TEST_CASE("the trade generation waits for the books, the staff and the feeds", "[workflow]") {
     const auto def = setup_definition();
     const auto steps = def.build_steps(request_json({declared("publish_bundle"),

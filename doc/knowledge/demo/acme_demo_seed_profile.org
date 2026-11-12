@@ -43,6 +43,7 @@ thinner book or a different feed changes a value rather than a build.
 | 65 | =publish_party_curves= | each entity's own copy of the 20 curve blueprints, bootstrapped from the quotes its own subscriptions deliver and published under auto-approval |
 | 66 | =give_party_surface_blueprints= | each entity's own copy of the system's FX volatility surface blueprints, reading the volatility quotes its subscription to the derived source delivers |
 | 67 | =publish_party_forwards= | each entity's FX forward set for every pair convention it can build from its spot and its own published funding curves, published under auto-approval. A pair it cannot build is named in the step's result with the reason |
+| 68 | =publish_party_surfaces= | each entity's FX volatility surfaces, calibrated from its volatility quotes and its published forward sets and published under auto-approval. A surface with arbitrage, a fit that did not converge or a pillar beyond the tolerance is held back and named |
 | 70 | =schedule_reports= | a scheduler job and a run grant for every report definition each party publishes whose schedule is a real cron, so the catalogue ticks without a person acting |
 | 80 | =generate_trades= | one trade population per trading entity, each booked into that entity's own book by its own traders |
 | 9000 | =end_auto_approval= | releases the grant after every other step, so people decide from here on. A run that fails or is abandoned releases it as it closes, and the grant's expiry ends it if the run never does |
@@ -53,7 +54,7 @@ bootstrap flag, and declares the run done.
 
 ** Why the order is what it is
 
-Six dependencies decide it, and all but the curves and the forwards have a failure behind them.
+Seven dependencies decide it, and all but the curves, the forwards and the surfaces have a failure behind them.
 
 - The system data comes first, because a tenant is built on a system that already
   makes sense: a coding scheme validator resolves its scheme in the system
@@ -72,6 +73,9 @@ Six dependencies decide it, and all but the curves and the forwards have a failu
 - A party's forwards come after its funding curves, because a forward set reads
   the published curve of each of its two currencies. A pair whose curve is not
   published is skipped, and the step says why.
+- A party's surfaces come after its forwards and its surface blueprints, because
+  a calibration reads the blueprint's quotes and the party's published forward
+  set of the pair.
 - The schedule comes last but for the trades, because it reads what the earlier
   steps published: a party's report definitions arrive with the bundles the
   staff step names, and a schedule names the party whose consent its runs act

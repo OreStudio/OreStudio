@@ -81,7 +81,7 @@ struct person {
     ores::database::context ctx;
 };
 
-person seed_person(ores::testing::scoped_database_helper& h) {
+inline person seed_person(ores::testing::scoped_database_helper& h) {
     auto gctx = ores::testing::make_generation_context(h);
     auto a = ores::iam::generators::generate_synthetic_account(gctx);
     // A person's account written into the shared test tenant would end its

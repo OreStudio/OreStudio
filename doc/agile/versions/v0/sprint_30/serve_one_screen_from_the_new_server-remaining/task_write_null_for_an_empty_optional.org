@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/write-null-for-an-empty-optional
-#+pr:
+#+pr: 4652
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4652][#4652]] | [utility] Write null for an empty optional in JSON |
 
 * Review
 

@@ -104,6 +104,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:B773B120-7C5D-47C2-A44E-484E13BEEFF7][Model the gateway's forwarding part so codegen owns it]] | DONE | 2026-11-11 | 2026-11-11 | The ores.http.nats part is missing from ores.http's #+parts: and states the adapter kind, though it owns its own include root. |
 | [[id:F0162D2F-B6AA-4A6F-941D-661501280BED][Carry a browser session's token to the services]] | DONE | 2026-11-11 | 2026-11-11 | A request signed in with the session cookie reaches its route with the session's claims but no token, so every forward delegates an empty token. The server must hand the session's token to the forward step. |
 | [[id:21A6941D-1C63-4E8A-A49D-7A441DDD583D][Write null for an empty optional in JSON]] | DONE | 2026-11-12 | 2026-11-12 | The JSON codec leaves out an empty optional, where the msgpack wire carries nil and the BFF answers null, so ores.web reads a missing member where it expects null. |
+| [[id:8FDEB666-F768-47C0-9D0E-40E91A84EBC7][Forward the caller's session id with each request]] | STARTED | 2026-11-12 | | The gateway forwards the caller's token but not its session id, so IAM refuses a party switch from the C++ server: the account seems to hold no parties. |
 
 * Decisions
 

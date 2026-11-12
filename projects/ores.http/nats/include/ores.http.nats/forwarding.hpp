@@ -82,6 +82,24 @@ refuse_refused(const ores::nats::service::request_refused_error& e);
 refuse_lapsed(const ores::nats::service::session_expired_error& e);
 
 /**
+ * @brief The session a request's caller signed in to, as their token states it,
+ * or nothing for a token that states none.
+ */
+[[nodiscard]] ORES_HTTP_NATS_EXPORT std::optional<std::string>
+caller_session_id(const ores::http::domain::http_request& req);
+
+/**
+ * @brief The client a request is forwarded on: the caller's token as a
+ * delegation, and the caller's session id beside it when the token states one.
+ *
+ * The BFF sends its session id with every call, and a service that keys on the
+ * session, such as IAM's party switch, finds the caller's parties by it.
+ */
+[[nodiscard]] ORES_HTTP_NATS_EXPORT ores::nats::service::nats_client
+caller_client(const ores::http::domain::http_request& req,
+              ores::nats::service::nats_client& session);
+
+/**
  * @brief Send one canonical request as the caller on a subject named at run time.
  *
  * A request whose subject depends on what it asks for, such as the history of
@@ -96,7 +114,7 @@ typename Request::response_type forward_on(const ores::http::domain::http_reques
                                            ores::nats::service::nats_client& session,
                                            std::string_view subject,
                                            const Request& msg) {
-    auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
+    auto delegated = caller_client(req, session);
     try {
         auto reply =
             ores::nats::service::authenticated_request_and_decode<typename Request::response_type>(

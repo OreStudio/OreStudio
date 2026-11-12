@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-10
-#+updated: 2026-11-10
+#+updated: 2026-11-12
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ SORA is stored as fixings in the system tenant, with its history, read from the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and verified.              |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-10                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-11-12                             |
 
 * Acceptance
 
@@ -60,7 +60,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| SORA fixings stored on a fresh environment | 275, from 2025-10-08 to 2026-11-11, values 0.007564 to 0.017446 | count over =ores_marketdata_market_fixings_tbl= joined to its series | after the year-header fix |
+| Time from service start to the fixings sent | about 50 seconds (14:24:22 to 14:25:10) | =ores.marketdata.official= log: "Sent 275 fixing(s) of 'mas-sora'" | after the year-header fix |
+| History the route serves | from 2005-07-01 | POST of the Download form for 2005 | 2026-11-12 |
+| ores.marketdata.official.tests | 120 cases pass, 7 of them new | =ores.marketdata.official.tests= | after the year-header fix |
+| ores.http.client.tests | 13 cases pass, 2 of them new | =ores.http.client.tests= | 690a3e0174 |
+| Catalogue pgTAP suite | 5 of 5 pass | =run_tests.sh marketdata_overnight_rates_catalogue_test.sql= | after the year-header fix |
 
 * Notes
 
@@ -90,3 +95,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The adapter reads SORA from the domestic interest rates page of the Monetary
+Authority of Singapore. The MAS API needs a Singapore Corppass login, so the
+fetcher does what the page's Download button does: a GET of the page for its
+ASP.NET hidden fields, then a POST of the form with a range of months and the
+SORA column. The answer is CSV, which states a row's year and month only when
+they change and repeats its header above each year. The page needs no key
+and no cookie. The HTTP transport gained =post= for this; a transport that
+only reads refuses it, so the test transports of every other fetcher are
+unchanged.
+
+The first fresh run failed on the header of the second year, because a first
+read covers 400 days. The parser now reads past it, and a test pins it. On a
+fresh environment the service then sent 275 fixings about 50 seconds after it
+started. Each is the decimal of the published percent, with the credit the
+MAS Open Data Licence asks for, naming the dataset and its source. The date
+of access is not part of the credit, since a provider holds one credit for
+every read. The route serves SORA from 2005-07-01; the calibration sources
+note records it. The system and Acme provisioned to completion.
+

@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/build-the-fx-vol-surface-generator-2
-#+pr: 4650
+#+pr: 4655
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -85,6 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4655][#4655]] | [synthetic] Model the synthetic FX volatility surface feed |
 | [[https://github.com/OreStudio/OreStudio/pull/4650][#4650]] | [analytics] Generate a synthetic FX volatility surface from an SSVI state |
 
 * Review

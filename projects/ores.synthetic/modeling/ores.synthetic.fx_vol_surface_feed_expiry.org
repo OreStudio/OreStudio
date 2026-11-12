@@ -80,12 +80,17 @@ ctx.generate_uuid()
 :cpp_type: std::string
 :nullable: false
 :natural_key: true
+:no_generator_suffix: true
 :END:
 
 The expiry, such as 1W, 3M or 1Y.
 
 #+begin_src cpp :name generator
-std::string("3M")
+// no_generator_suffix: a tenor must read as a count and a unit, so the row cycles through real tenors.
+[idx] {
+    static constexpr const char* tenors[] = {"1W", "1M", "2M", "3M", "6M", "9M", "1Y"};
+    return std::string(tenors[idx % std::size(tenors)]);
+}()
 #+end_src
 
 ** variance_reversion

@@ -100,5 +100,5 @@ TEST_CASE("history_routes_reaches_a_known_owner_for_every_type_it_serves", "[his
         CHECK(owners.contains(owner));
         CHECK(subject == owner + ".v1.history.get");
     }
-    CHECK(history_routes::served_types().size() == 86);
+    CHECK(history_routes::served_types().size() == 90);
 }

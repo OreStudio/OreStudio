@@ -86,11 +86,13 @@ ctx.generate_uuid()
 :cpp_type: std::string
 :nullable: false
 :natural_key: true
+:no_generator_suffix: true
 :END:
 
 The base currency of the pair, such as EUR in EUR/USD.
 
 #+begin_src cpp :name generator
+// no_generator_suffix: the column is validated against the currency table, and the parent config keeps each row unique.
 std::string("EUR")
 #+end_src
 
@@ -100,11 +102,13 @@ std::string("EUR")
 :cpp_type: std::string
 :nullable: false
 :natural_key: true
+:no_generator_suffix: true
 :END:
 
 The quote currency of the pair.
 
 #+begin_src cpp :name generator
+// no_generator_suffix: the column is validated against the currency table, and the parent config keeps each row unique.
 std::string("USD")
 #+end_src
 

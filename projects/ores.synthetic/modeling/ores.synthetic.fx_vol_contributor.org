@@ -68,12 +68,18 @@ ctx.generate_uuid()
 :cpp_type: std::string
 :nullable: false
 :natural_key: true
+:no_generator_suffix: true
 :END:
 
 The provider the contributor publishes as.
 
 #+begin_src cpp :name generator
-std::string("synthetic-broker-a")
+// no_generator_suffix: the column is validated against the provider catalogue, so the row cycles through providers it holds.
+[idx] {
+    static constexpr const char* providers[] = {
+        "bloomberg", "lseg", "ice", "tradeweb", "demo", "derived", "ore", "composite"};
+    return std::string(providers[idx % std::size(providers)]);
+}()
 #+end_src
 
 ** noise

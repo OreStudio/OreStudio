@@ -25,11 +25,38 @@
 #include "ores.workflow.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
 
 namespace ores::workflow::repository {
+
+/**
+ * @brief What a step's holder last said about its work, in its own units.
+ *
+ * A phase alone says what the step is doing; a done and a total count say how
+ * far through it is.
+ */
+struct step_progress final {
+    std::string phase;
+    std::optional<std::int64_t> done;
+    std::optional<std::int64_t> total;
+
+    friend bool operator==(const step_progress&, const step_progress&) = default;
+};
+
+/**
+ * @brief The live state of a claim: when it was taken, the progress its holder
+ * last reported, and when that progress last changed.
+ *
+ * A claim starts with no progress, changed at the moment it was taken.
+ */
+struct step_claim_activity final {
+    std::chrono::system_clock::time_point claimed_at;
+    std::chrono::system_clock::time_point progressed_at;
+    std::optional<step_progress> progress;
+};
 
 /**
  * @brief The claim that makes exactly one delivery do a step's work.
@@ -99,16 +126,20 @@ public:
     bool release(context ctx, const boost::uuids::uuid& step_id);
 
     /**
-     * @brief Extends the lease of a claim its holder still holds, by a full lease.
+     * @brief Extends the lease of a claim its holder still holds, by a full lease,
+     * and records the progress the holder reports.
      *
      * The owner is part of the condition, so a holder whose claim another delivery took
      * over cannot extend it back. Returns false when the claim is gone or names another
-     * holder. The claim's time is left as it was, because the step's deadline counts from it.
+     * holder. The progress's time moves only when the progress differs from the one stored,
+     * because a step that renews without advancing has not progressed. A renewal that
+     * reports no progress leaves the stored one as it was.
      */
     bool renew(context ctx,
                const boost::uuids::uuid& step_id,
                const std::string& owner,
-               std::chrono::seconds lease);
+               std::chrono::seconds lease,
+               const std::optional<step_progress>& progress = std::nullopt);
 
     /**
      * @brief The owner of the claim on a step, when one holds it.
@@ -120,14 +151,14 @@ public:
     std::optional<std::string> holder(context ctx, const boost::uuids::uuid& step_id);
 
     /**
-     * @brief When the current claim on a step was taken, when one holds it.
+     * @brief The live state of the current claim on a step, when one holds it.
      *
-     * The moment a worker took the step, which is when the work could first go
-     * silent. A command that waited in a queue before that was waiting on the
-     * service, not on the step.
+     * The claim's time is the moment a worker took the step, which is when the
+     * work could first go silent; a command that waited in a queue before that
+     * was waiting on the service, not on the step. The progress's time is the
+     * last moment the work moved.
      */
-    std::optional<std::chrono::system_clock::time_point>
-    claimed_at(context ctx, const boost::uuids::uuid& step_id);
+    std::optional<step_claim_activity> activity(context ctx, const boost::uuids::uuid& step_id);
 };
 
 }

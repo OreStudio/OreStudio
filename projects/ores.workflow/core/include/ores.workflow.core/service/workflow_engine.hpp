@@ -381,10 +381,11 @@ private:
      * draws no conclusion from it, because a service that is running but
      * wedged reports for duty too.
      */
-    std::string deadline_failure_text(const domain::workflow_step& step,
-                                      std::chrono::seconds budget,
-                                      std::chrono::seconds silent_for,
-                                      bool claimed);
+    std::string
+    deadline_failure_text(const domain::workflow_step& step,
+                          std::chrono::seconds budget,
+                          std::chrono::seconds silent_for,
+                          const std::optional<repository::step_claim_activity>& activity);
 
     /**
      * @brief When the service that owns a command subject last reported.

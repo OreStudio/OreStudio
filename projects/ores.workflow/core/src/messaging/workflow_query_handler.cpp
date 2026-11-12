@@ -310,6 +310,18 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
         ws.started_at = fmt_opt_tp(s.started_at);
         ws.completed_at = fmt_opt_tp(s.completed_at);
         ws.error = s.error;
+        /*
+         * A running step's progress lives on its claim, which belongs to the
+         * installation, so it is read through the service's own context. The
+         * step was already confined to the caller's tenant above.
+         */
+        if (ws.status == "in_progress")
+            if (const auto activity = claim_repo_.activity(ctx_, s.id);
+                activity && activity->progress) {
+                ws.progress = activity->progress->phase;
+                ws.progress_done = activity->progress->done;
+                ws.progress_total = activity->progress->total;
+            }
         if (!s.step_log_json.empty()) {
             auto log = ores::utility::codec::json::try_read<
                 std::vector<ores::workflow::messaging::step_log_entry>>(s.step_log_json);

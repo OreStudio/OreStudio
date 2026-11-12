@@ -688,6 +688,29 @@ so they cross to TypeScript as strings.
 :cpp_type: std::vector<step_log_entry>
 :END:
 
+*** progress
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The progress a running step last reported: what it is doing, and how
+ * far through it is out of how much when it counts. Empty when the step is not
+ * running or reported none.
+ */
+#+end_src
+
+*** progress_done
+:PROPERTIES:
+:cpp_type: std::optional<std::int64_t>
+:END:
+
+*** progress_total
+:PROPERTIES:
+:cpp_type: std::optional<std::int64_t>
+:END:
+
 ** get_workflow_steps_request
 :PROPERTIES:
 :subject: workflow.v1.ops.get_workflow_steps

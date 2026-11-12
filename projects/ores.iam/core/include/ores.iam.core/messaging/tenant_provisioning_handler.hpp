@@ -113,6 +113,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <memory>
@@ -1448,6 +1449,11 @@ private:
                                   std::to_string(retry_interval.count()) + "s";
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                     << "publish_party_curves: " << line;
+                // The count ready moves only as quotes arrive, so waiting is
+                // seen to progress or to stand still.
+                wf.progress(party_name + ": curves with their quotes",
+                            static_cast<std::int64_t>(plan.ready.size()),
+                            static_cast<std::int64_t>(plan.ready.size() + plan.waiting.size()));
                 step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
                                     .message = line,
                                     .context = {}});
@@ -1944,6 +1950,9 @@ private:
                                   std::to_string(retry_interval.count()) + "s";
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                     << "give_party_surface_blueprints: " << line;
+                wf.progress(party_name + ": surface blueprints with their quotes",
+                            static_cast<std::int64_t>(plan.ready.size()),
+                            static_cast<std::int64_t>(plan.ready.size() + plan.waiting.size()));
                 step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
                                     .message = line,
                                     .context = {}});
@@ -2256,6 +2265,9 @@ private:
                 throw std::runtime_error("The password of '" + usernames[i] +
                                          "' was not set: " + result.message);
             }
+            wf.progress("staff passwords",
+                        static_cast<std::int64_t>(set.size()),
+                        static_cast<std::int64_t>(account_ids.size()));
         }
 
         wf.complete(ores::utility::codec::json::write(
@@ -2774,11 +2786,13 @@ private:
         for (const auto& entry : assignments) {
             ++position;
             const auto entry_started = std::chrono::steady_clock::now();
+            const auto label = entry.name + " (" + std::to_string(position) + " of " +
+                               std::to_string(assignments.size()) + ")";
             const auto phase = [&](std::string_view what) {
                 BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                    << "generate_trades: " << entry.name << " (" << position << " of "
-                    << assignments.size() << "): " << what << " after "
+                    << "generate_trades: " << label << ": " << what << " after "
                     << seconds_since(entry_started) << "s";
+                wf.progress(label + ": " + std::string(what));
             };
             phase("finding the party " + entry.party);
             const auto party = find_party(discover, entry.party);
@@ -2830,7 +2844,9 @@ private:
                 ores::synthetic::domain::trade_population_trader{actor.account_id, actor.username});
             ores::synthetic::service::trade_population_service service(writer);
             phase("writing the population of config " + boost::uuids::to_string(config_id));
-            const auto run = service.run(config_id);
+            const auto run = service.run(config_id, [&](std::uint32_t done, std::uint32_t planned) {
+                wf.progress(label + ": trades", done, planned);
+            });
 
             result.configs.push_back(boost::uuids::to_string(config_id));
             result.parties.push_back(boost::uuids::to_string(party->id));

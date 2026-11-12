@@ -379,7 +379,13 @@ serve_step_commands(ores::nats::service::client& nats,
                      claimed_at] {
                         using ores::workflow::messaging::step_claim_renew_interval;
                         std::string state;
-                        const auto outcome = renew_step_claim(nats, step, tenant, owner, state);
+                        const auto outcome =
+                            renew_step_claim(nats,
+                                             step,
+                                             tenant,
+                                             owner,
+                                             state,
+                                             step_progress_board::instance().latest(step));
                         const auto held = std::chrono::duration<double>(
                                               std::chrono::steady_clock::now() - claimed_at)
                                               .count();
@@ -415,6 +421,14 @@ serve_step_commands(ores::nats::service::client& nats,
                         claimed_step,
                         served,
                         delivery = std::move(delivery)]() mutable {
+                // The step's report goes with its run, however the handler ends.
+                struct forget_progress final {
+                    const std::string& step;
+                    ~forget_progress() {
+                        if (!step.empty())
+                            step_progress_board::instance().forget(step);
+                    }
+                } const forget{claimed_step};
                 const auto started = std::chrono::steady_clock::now();
                 const auto ran_for = [&started] {
                     return std::chrono::duration<double>(std::chrono::steady_clock::now() - started)

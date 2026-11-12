@@ -25,6 +25,8 @@
 #include "ores.utility/codec/shaped_wire_traits.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <chrono>
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -205,6 +207,14 @@ struct renew_step_claim_request {
     std::string tenant_id;
     /// The holder the claim must still name; a claim another holder took is not renewed.
     std::string owner;
+    /// Whether the holder reports its progress with this renewal. A renewal without a
+    /// report leaves the stored progress as it was.
+    bool reports_progress = false;
+    /// What the step is doing, in its own words.
+    std::string progress;
+    /// How far through it is, and out of how much, when it counts.
+    std::optional<std::int64_t> progress_done;
+    std::optional<std::int64_t> progress_total;
 };
 
 /**
@@ -243,7 +253,11 @@ static_assert(utility::codec::names_every_member<claim_step_response>());
     return ::ores::utility::codec::field_list{
         utility::codec::field{"step_id", &renew_step_claim_request::step_id},
         utility::codec::field{"tenant_id", &renew_step_claim_request::tenant_id},
-        utility::codec::field{"owner", &renew_step_claim_request::owner}};
+        utility::codec::field{"owner", &renew_step_claim_request::owner},
+        utility::codec::field{"reports_progress", &renew_step_claim_request::reports_progress},
+        utility::codec::field{"progress", &renew_step_claim_request::progress},
+        utility::codec::field{"progress_done", &renew_step_claim_request::progress_done},
+        utility::codec::field{"progress_total", &renew_step_claim_request::progress_total}};
 }
 static_assert(utility::codec::names_every_member<renew_step_claim_request>());
 

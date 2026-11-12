@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 1023FD3C-A6ED-400A-BA75-422788B9FBE6
+:END:
+#+title: Task: Report a step's progress as its heartbeat
+#+description: A step states its progress on the heartbeat it already renews, the engine fails a step only when that heartbeat stalls, and the shell shows the progress.
+#+type: task
+#+level: s1
+#+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
+#+owner: marco
+#+branch: feature/keep-workflow-steps-alive-and-off-iam
+#+pr: 4660
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A step states its progress on the heartbeat it already renews, the engine fails a step only when that heartbeat stalls, and the shell shows the progress.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-12                               |
+
+* Acceptance
+
+- A step's heartbeat carries its progress, and the engine records the latest.
+- The engine fails a step only when its heartbeat has stalled for a bounded time, with no fixed per-step deadline.
+- The shell prints each running step's progress in place of a countdown.
+
+* Plan
+
+Today a worker renews its step's claim lease in the background, and each
+renewal moves =lease_expires_at= forward. The engine's deadline pass ignores
+the lease: it measures silence from =claimed_at= and fails the step when that
+passes the budget, so a live step is failed twenty minutes after its claim.
+The renewal carries no progress, so nothing can tell working from stuck.
+
+The user decided that reported progress is the stall signal: a step stuck
+inside a call keeps renewing its lease but stops progressing, and that is
+the stall to catch.
+
+1. The claim row gains the step's latest progress: a phase, a done and a
+   total count, and when the progress last changed. A claim starts with no
+   progress, changed at its claim.
+2. A step reports progress through its context, as it advances, in the
+   units natural to it. The renewal the worker already sends carries the
+   latest report, and the repository stores it, moving the changed time
+   only when the progress differs.
+3. The engine fails a claimed step when its progress has not changed for
+   the step's budget, which becomes a stall budget, or when its lease has
+   lapsed past a grace, because then its worker is gone. Elapsed time since
+   the claim no longer fails a step. An unclaimed step keeps today's queue
+   rule.
+4. The workflow's step status carries the progress, and the shell prints it
+   for a running step.
+5. The provisioning steps report progress: generate_trades per entry and
+   per trade written, set_staff_passwords per page, and the curve and
+   photo steps per item.
+6. Prove it on Acme provisioning under load, and with a test step that
+   stops progressing while it keeps its lease.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4660][#4660]] | [workflow,service,iam,shell] Fail a step for stalling, not for duration |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

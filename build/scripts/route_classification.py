@@ -853,6 +853,13 @@ RULES = (
          "The trade screens' reads at the address and in the shape the BFF answered: a page of"
          " the trade list enriched with what a person reads, one trade's page, and one trade"
          " at one version."),
+    Rule("the booking screens' route",
+         ("regex", r"^((GET|POST) /api/trades(/new|/\{id\}/links)?"
+                   r"|GET /api/(draft-reasons|trade-link-types))$"),
+         CPP, RESOURCE, "trading",
+         "The booking screens at the address and in the shape the BFF answered: what the"
+         " form offers, the reasons a deal is a draft, the link types a person records, a"
+         " link between two trades, and the booking write itself."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

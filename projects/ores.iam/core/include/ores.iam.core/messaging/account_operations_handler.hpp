@@ -509,7 +509,7 @@ public:
             return;
         }
         try {
-            auto token = ores::service::messaging::bearer_token(msg);
+            auto token = ores::service::messaging::caller_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -656,7 +656,7 @@ public:
             return;
         }
         try {
-            auto token = ores::service::messaging::bearer_token(msg);
+            auto token = ores::service::messaging::caller_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -703,7 +703,7 @@ public:
             return;
         }
         try {
-            auto token = ores::service::messaging::bearer_token(msg);
+            auto token = ores::service::messaging::caller_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -1140,7 +1140,7 @@ public:
             return;
         }
         try {
-            auto token = ores::service::messaging::bearer_token(msg);
+            auto token = ores::service::messaging::caller_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -1352,7 +1352,7 @@ public:
             return;
         }
         try {
-            auto token = ores::service::messaging::bearer_token(msg);
+            auto token = ores::service::messaging::caller_token(msg);
             if (token.empty()) {
                 reply(nats_,
                       msg,
@@ -1539,7 +1539,7 @@ private:
      */
     std::optional<std::pair<boost::uuids::uuid, ores::database::context>>
     self_request_scope(const ores::nats::message& msg) {
-        auto token = ores::service::messaging::bearer_token(msg);
+        auto token = ores::service::messaging::caller_token(msg);
         if (token.empty()) {
             error_reply(nats_, msg, ores::service::error_code::unauthorized);
             return std::nullopt;

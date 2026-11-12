@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 8FDEB666-F768-47C0-9D0E-40E91A84EBC7
 :END:
-#+title: Task: Forward the caller's session id with each request
-#+description: The gateway forwards the caller's token but not its session id, so IAM refuses a party switch from the C++ server: the account seems to hold no parties.
+#+title: Task: Read the caller's own token in IAM
+#+description: IAM's account handlers read the Authorization token, which from the gateway is the HTTP server's own, so a party switch, the self reads and a sign-out act on the server's account rather than the caller's.
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
@@ -20,7 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Send the caller's session id with every request the gateway forwards, as the BFF does, so a service that keys on the session, such as IAM's party switch, sees the same caller through either server.
+Make IAM's account handlers act on the caller a forwarded message speaks for:
+read the delegated token when the message carries one, as the request context
+already does, so a party switch, the self reads, a sign-out and a token refresh
+through the C++ server act on the person signed in, as they do through the BFF.
 
 * Status
 
@@ -35,32 +38,49 @@ Send the caller's session id with every request the gateway forwards, as the BFF
 
 * Acceptance
 
-- Every forwarded request carries the caller's session id when the token states one.
-- A party switch through the C++ server succeeds where the BFF's does, proved live.
-- A test proves the session id travels with a forwarded request.
+- One helper names the caller's token, the delegated one first, and every IAM
+  handler that validates the caller's token reads it.
+- A test proves the helper reads the delegated token, refuses a malformed one,
+  and reads the Authorization token when there is no delegation.
+- A party switch through the C++ server succeeds where the BFF's does, proved
+  live.
 
 * Plan
 
-Found while proving the trade reads live on Acme. A tenant administrator who
-signs in lands on the tenant's System Party, which holds no trades, and must
-switch to an operating party. The BFF's switch succeeds. The C++ server's
-answers 401 "Your session has ended": IAM logs "party ... not in account's
-party list (account has 0 parties)" for it, and logs a session_id for the
-BFF's request and none for the C++ server's. The BFF sends its session id on
-every authenticated call; the gateway forwarded the caller's token alone.
+Found while proving the trade reads live on Acme. A tenant administrator lands
+on the tenant's System Party, which holds no trades, and must switch to an
+operating party. The BFF's switch succeeds; the C++ server's answers 401 "Your
+session has ended", and IAM logs "party ... not in account's party list
+(account has 0 parties)".
+
+The first theory was the session id: IAM logged one for the BFF's request and
+none for the C++ server's. The gateway now forwards it, as the BFF does, and
+IAM logged it, and the switch still failed. That disproved the theory.
+
+The cause is the token IAM reads. The BFF is the caller's own client, so the
+Authorization it sends is the caller's token. The gateway sends its own token
+as the Authorization and the caller's as the X-Delegated-Authorization.
+=make_request_context= reads the delegated token first, but the account
+handlers that validate the token themselves -- the password and email changes,
+the default party, the party choice and switch, the self reads behind
+=self_request_scope=, the sign-out and the refresh, and the party provisioning
+step -- read the Authorization alone, so through the gateway they acted on the
+HTTP server's own account, which holds no parties.
 
 Decisions:
 
-- =forward_on= forwards on =caller_client=: the caller's token as a
-  delegation, and the session id the token's claims state as
-  =Nats-Session-Id=, through the NATS client's own =with_session_id=. Every
-  forwarded request goes through =forward_on=, so every service sees the
-  caller's session, as it does from the BFF.
-- The session id is read from the token's claims, so no route states it, and a
-  token that states none forwards as before.
-- =nats_client= keeps no accessor for the id, and adding one would rebuild every
-  component on =ores.nats=, so the test proves =caller_session_id= and the live
-  switch proves the header reaches IAM.
+- =bearer_token= becomes =caller_token=, with the request context's rule: a
+  delegated token names the caller when the message carries one, a delegated
+  header that is not a bearer token names nobody, and otherwise the
+  Authorization does. IAM's private reader in the auth handler is deleted, and
+  every caller of either moves to it. A service speaking for itself sends no
+  delegation, so its own calls read as before.
+- It is as safe as the Authorization it replaces: the handlers validate the
+  token they read as a signed JWT either way, so a delegated token names its
+  holder exactly as it would in the Authorization.
+- The gateway also forwards the session id the caller's token states, as the
+  BFF sends its own; it did not fix the switch, and it keeps the two servers'
+  requests alike.
 
 * Measurements
 

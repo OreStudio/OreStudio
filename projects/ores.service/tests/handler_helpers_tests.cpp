@@ -254,3 +254,28 @@ TEST_CASE("decode returns nothing for a payload the codec cannot read", "[handle
 
     REQUIRE_FALSE(decode<payload>(msg).has_value());
 }
+
+TEST_CASE("caller_token_names_the_caller_a_forwarded_message_speaks_for", "[handler_helpers]") {
+    using ores::service::messaging::caller_token;
+    const auto authorization = std::string(ores::nats::headers::authorization);
+    const auto delegated = std::string(ores::nats::headers::delegated_authorization);
+
+    ores::nats::message direct;
+    direct.headers[authorization] = "Bearer user-token";
+    CHECK(caller_token(direct) == "user-token");
+
+    ores::nats::message forwarded;
+    forwarded.headers[authorization] = "Bearer gateway-token";
+    forwarded.headers[delegated] = "Bearer user-token";
+    CHECK(caller_token(forwarded) == "user-token");
+
+    ores::nats::message malformed;
+    malformed.headers[authorization] = "Bearer gateway-token";
+    malformed.headers[delegated] = "user-token";
+    CHECK(caller_token(malformed).empty());
+
+    ores::nats::message anonymous;
+    CHECK(caller_token(anonymous).empty());
+    anonymous.headers[authorization] = "Basic abc";
+    CHECK(caller_token(anonymous).empty());
+}

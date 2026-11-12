@@ -118,6 +118,29 @@ Static loadings only. Per-regime loadings, global factors, calibration and
 derived =CORRELATION/RATE= quotes are later work, as the design note's
 "Later work" section lists them.
 
+** Progress
+
+| Step | State | Commit |
+|------+-------+--------|
+| 1. The keyed path | DONE 2026-11-12 | =0b29106307=, benchmark split in =52f21b5412= |
+| 2. The latent market | DONE 2026-11-12 | =1235e7d5d7= |
+| 3. The driven step | next | |
+| 4. The tick context carries the market | | |
+| 5. Configuration | | |
+| 6. The FX volatility surface | resumes the generator task | |
+
+Step 2 keeps the many case in view: a factor owns a path and a fifty-six byte
+walk, a series owns two doubles, and the loadings are one flat array written in
+a single pass while the market is built. Its tests recover the stated
+correlation with the Hayashi-Yoshida estimator under independent irregular
+sampling, and pin that a series is untouched by another series' ticks.
+
+What step 2 leaves to step 3 is the series' own motion: the market returns only
+the shared part of a driver's increment, and the process adds its own draw
+weighted by the square root of one less the squared loadings. A series with no
+loadings is therefore still to be handed its drawn normal unscaled, which is the
+migration test.
+
 ** Open-source work to copy from
 
 Copy the approach, and the code where its licence allows, before writing our

@@ -26,11 +26,11 @@ Make the JSON codec write null for an empty optional, as the msgpack codec write
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
@@ -107,3 +107,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The JSON codec writes null for an empty optional, as the msgpack wire writes
+nil, so every C++ HTTP answer carries the members the BFF's answers carry.
+Reads are unchanged. The schema marks an optional member nullable. The full
+test run found three tests that expected a member left out (the codec's object
+test, the site deployment's TLS members, the printed market data options); they
+expect null. The ores.web workaround for the calibration version is removed.
+
+Component audit: the task touched ores.utility (the codec and its schema), and
+tests in ores.http and ores.marketdata. No component changed shape.
+

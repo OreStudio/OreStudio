@@ -79,6 +79,33 @@ jobs:
             echo "should_build=false" >> "$GITHUB_OUTPUT"
           fi
 
+  image:
+    name: ci-image-ref
+    needs: guard
+    if: needs.guard.outputs.should_build == 'true'
+    # The build runs in the CI image that build/docker/ci describes. The tag
+    # holds a hash of the image inputs, so the build takes the image of the
+    # commit it builds. ci-image.yml publishes that tag when the inputs change
+    # on main.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      ref: ${{ steps.ref.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            build/docker/ci
+            build/scripts/install_llvm.sh
+          sparse-checkout-cone-mode: false
+
+      - name: Name the image
+        id: ref
+        run: |
+          ref="$(build/docker/ci/build.sh --image ghcr.io/orestudio/ores-ci --print-ref)"
+          echo "ref=${ref}" >> "$GITHUB_OUTPUT"
+          echo "Image: ${ref}"
+
   validate-sql:
     name: validate-sql-schema
     needs: guard
@@ -101,13 +128,18 @@ jobs:
           ./projects/ores.sql/utility/validate_schemas.sh
 
   build:
-    needs: guard
+    needs: [guard, image]
     if: needs.guard.outputs.should_build == 'true'
     name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
     concurrency:
       group: ci-${{github.ref}}-${{github.job}}-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
       cancel-in-progress: false
     runs-on: ubuntu-24.04
+    # The image has the compilers, CMake, Node.js, PostgreSQL, valgrind and the
+    # system packages, so the job installs none of them. vcpkg packages are not
+    # in the image; the vcpkg binary cache restores them.
+    container:
+      image: ${{ needs.image.outputs.ref }}
     environment: CI
     # The repository's default token is read-only; deleting the sccache entry
     # before saving its replacement needs actions: write.
@@ -128,18 +160,10 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup Python
-        uses: actions/setup-python@v7
-        with:
-          python-version: '3.12'
-
-      # The disk cleanup above deletes the image's Node.js, and ores.web needs
-      # npm. Without this step the component skips itself with a warning and the
-      # build still reports success, so the TypeScript is never compiled here.
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '22'
+      - name: Trust the workspace
+        # The container runs as root and the runner owns the workspace, so git
+        # refuses the repository without this.
+        run: git config --global --add safe.directory "${GITHUB_WORKSPACE}"
 
       - name: Check every Boost header has a vcpkg port behind it
         # Boost arrives as per-library ports, so a new library compiles for
@@ -149,17 +173,12 @@ jobs:
         # in seconds instead of after twenty minutes of compiling.
         run: python3 build/scripts/check_boost_dependencies.py
 
-      - name: Install Clang
-        # apt.llvm.org installs clang in seconds. The LLVM release tarball that
-        # this step downloaded before took 90 to 120 s. The version comes from
-        # the file that the CI image is built from, so both get the same
-        # compiler. CC and CXX send the vcpkg C ports to clang, as the old
-        # install action did.
+      - name: Use clang for the C ports
+        # The image has clang first on PATH. CC and CXX send the vcpkg C ports
+        # to it too.
         if: ${{ matrix.compiler == 'clang' }}
         run: |
           llvm_major="$(sed -n 's/^LLVM_MAJOR=//p' build/docker/ci/versions.env)"
-          ./build/scripts/install_llvm.sh "${llvm_major}"
-          echo "/usr/lib/llvm-${llvm_major}/bin" >> "$GITHUB_PATH"
           echo "CC=/usr/lib/llvm-${llvm_major}/bin/clang" >> "$GITHUB_ENV"
           echo "CXX=/usr/lib/llvm-${llvm_major}/bin/clang++" >> "$GITHUB_ENV"
 
@@ -191,9 +210,6 @@ jobs:
           max-size: ${{ matrix.buildtype == 'debug' && '4000M' || '1600M' }}
           save: false
 
-      - name: Install dev packages
-        run: ./projects/ores.compass/compass.sh env install-packages
-
       - name: Generate postgres password
         id: pg_password
         run: |
@@ -201,25 +217,15 @@ jobs:
           echo "admin_password=${PG_PASS}" >> $GITHUB_OUTPUT
           echo "PGPASSWORD=${PG_PASS}" >> $GITHUB_ENV
 
-      - name: Install PostgreSQL extensions
+      - name: Start PostgreSQL
         run: |
-          ./build/scripts/setup_postgres_extensions.sh --pg-version 18
-
-      - name: Setup postgres
-        uses: ikalnytskyi/action-setup-postgres@v9
-        with:
-          username: postgres
-          password: ${{ steps.pg_password.outputs.admin_password }}
-          database: oresdb
-          port: 5432
-          postgres-version: "18"
-        id: postgres
-
-      - name: Configure shared_preload_libraries
-        run: |
-          PGDATA="$RUNNER_TEMP/pgdata"
-          echo "shared_preload_libraries = 'timescaledb'" >> "$PGDATA/postgresql.conf"
-          pg_ctl restart --pgdata="$PGDATA" --wait
+          pg_major="$(sed -n 's/^PG_MAJOR=//p' build/docker/ci/versions.env)"
+          ./build/scripts/start_ci_postgres.sh "${pg_major}" oresdb
+          {
+            echo "PGHOST=localhost"
+            echo "PGPORT=5432"
+            echo "PGUSER=postgres"
+          } >> "$GITHUB_ENV"
 
       - name: Init environment
         env:
@@ -262,9 +268,6 @@ jobs:
       - name: Setup Database
         run: |
           ./projects/ores.compass/compass.sh db recreate -y -D ores_ci
-
-      - name: get-cmake
-        uses: lukka/get-cmake@v4.4.5
 
       - name: Cache vcpkg binary packages
         uses: actions/cache@v6

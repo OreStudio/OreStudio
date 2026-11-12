@@ -8,7 +8,7 @@
 #+filetags: :ci:build:make_the_build_faster:sprint_30:v0:
 #+owner: marco
 #+branch: feature/prebuild-the-ci-image
-#+pr: 4617
+#+pr: 4632
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -28,10 +28,10 @@ CI setup before the build takes at most 2 min instead of 7 to 10 min, because th
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F3AB6302-3325-4BDF-8106-70E0168C40F9][Make the build faster]] |
-| Now          | Phase 1 and the image Dockerfile in review. |
-| Waiting on   | Nothing.                               |
-| Next         | Measure phase 1 on main; publish the image to GHCR and run the build in it. |
-| Last touched | 2026-11-11                               |
+| Now          | Phase 1 and the image merged in #4617. Phase 2 moves the Linux build jobs into the image. |
+| Waiting on   | A continuous run of the phase 2 branch. |
+| Next         | Measure the setup time in the image against the runner. |
+| Last touched | 2026-11-12                               |
 
 * Acceptance
 
@@ -68,6 +68,19 @@ The work is in two phases. Each phase ends in a measured run.
    the Dockerfile or the scripts it copies change. Run the build job in that
    image. The Dockerfile is in the repository from phase 1, so the image can
    be built again at any time.
+   - The continuous build, the nightly build and the nightly include check
+     run in the image. A small job names the tag from =versions.env=, so each
+     run takes the image of the commit it builds.
+   - The image adds valgrind for the nightly memcheck, clang-tidy for the
+     include check, and gh for the cache steps.
+   - =build/scripts/start_ci_postgres.sh= starts the cluster of the image as
+     the postgres user, because the container runs as root and the setup
+     action cannot.
+   - The nightly SQL validation moves to its own job, as in the continuous
+     build, because the image has no pip packages.
+   - =nightly-format.yml= stays on the runner: it builds nothing. The unity
+     batch measurement stays on the runner, so its runs compare like with
+     like.
 
 * Measurements
 
@@ -95,6 +108,18 @@ task and name that file in the Command column.
 | CI image built locally; every tool matches versions.env | ores-ci:ubuntu24.04-clang19-gcc14-fe53a4311bc1, 1.41 GB | =build/docker/ci/build.sh --engine podman= | this branch |
 
 * Notes
+
+- actions/cache puts the cache path in the cache version, and a container
+  job sees the workspace as =/__w/OreStudio/OreStudio=, not
+  =/home/runner/work/OreStudio/OreStudio=. Run 43137261612 computed version
+  3349367a..., the hash of the =/__w= path with zstd, and missed both the
+  sccache and the vcpkg entries that main saved on the runner. The first
+  container build on main is cold, and later container builds hit. Phase 1
+  already makes that build cold, because the apt.llvm.org clang is a
+  different binary from the release tarball.
+- In run 43137261612 the setup before CTest took about 2 min in the image:
+  container start 20 to 31 s, checkout 36 to 39 s, PostgreSQL 4 to 7 s,
+  database 40 to 45 s. On the runner it took about 8 min.
 
 - Phase 1 keeps clang 19.1.7 but takes the binary from apt.llvm.org, not
   from the LLVM release tarball. sccache keys hash the compiler binary, so the
@@ -129,6 +154,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4632][#4632]] | [ci] Run the Linux build jobs in the CI image |
 | [[https://github.com/OreStudio/OreStudio/pull/4617][#4617]] | [ci] Add the Linux CI image and cut the continuous build setup |
 
 * Review

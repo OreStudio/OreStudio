@@ -27,9 +27,36 @@ permissions:
   pull-requests: write
 
 jobs:
+  image:
+    name: ci-image-ref
+    # clang-tidy runs in the CI image of the commit it checks. ci-image.yml
+    # publishes that tag when the image inputs change on main.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      ref: ${{ steps.ref.outputs.ref }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          sparse-checkout: |
+            build/docker/ci
+            build/scripts/install_llvm.sh
+          sparse-checkout-cone-mode: false
+
+      - name: Name the image
+        id: ref
+        run: |
+          ref="$(build/docker/ci/build.sh --image ghcr.io/orestudio/ores-ci --print-ref)"
+          echo "ref=${ref}" >> "$GITHUB_OUTPUT"
+          echo "Image: ${ref}"
+
   includes:
     name: misc-include-cleaner
+    needs: image
     runs-on: ubuntu-24.04
+    container:
+      image: ${{ needs.image.outputs.ref }}
 
     steps:
       - uses: actions/checkout@v7
@@ -37,19 +64,18 @@ jobs:
           ref: main
           submodules: recursive  # vcpkg toolchain lives in the submodule
 
-      - name: Install Clang
-        # Same LLVM version the linux-clang CI matrix builds with, so
-        # the suggestions match what developers see locally.
-        uses: KyleMayes/install-llvm-action@v2
-        with:
-          version: "19"
-          arch: x64
+      - name: Trust the workspace
+        # The container runs as root and the runner owns the workspace, so git
+        # refuses the repository without this.
+        run: git config --global --add safe.directory "${GITHUB_WORKSPACE}"
 
-      - name: get-cmake
-        uses: lukka/get-cmake@v4.4.5
-
-      - name: Install dev packages
-        run: ./projects/ores.compass/compass.sh env install-packages
+      - name: Use clang for the C ports
+        # The image has clang first on PATH. CC and CXX send the vcpkg C ports
+        # to it too, so the vcpkg cache of the clang build matches.
+        run: |
+          llvm_major="$(sed -n 's/^LLVM_MAJOR=//p' build/docker/ci/versions.env)"
+          echo "CC=/usr/lib/llvm-${llvm_major}/bin/clang" >> "$GITHUB_ENV"
+          echo "CXX=/usr/lib/llvm-${llvm_major}/bin/clang++" >> "$GITHUB_ENV"
 
       - name: Cache vcpkg binary packages
         # Same key the continuous-linux workflow uses, so the nightly

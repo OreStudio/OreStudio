@@ -81,6 +81,26 @@ int violation_count_of(const domain::fx_vol_surface_calibration& calibration) {
     return violations ? static_cast<int>(violations->size()) : 0;
 }
 
+}
+
+std::optional<std::string>
+blocking_failure_of(const domain::fx_vol_surface_calibration& calibration) {
+    const auto violations =
+        ores::utility::codec::json::read_expected<std::vector<msg::fx_vol_violation>>(
+            calibration.violations);
+    if (!violations)
+        return "Its arbitrage checks cannot be read, so it cannot be published under any rule.";
+    if (violations->empty())
+        return std::nullopt;
+    std::string out = "It breaks " + std::to_string(violations->size()) +
+                      " arbitrage condition(s), so it cannot be published under any rule:";
+    for (const auto& v : *violations)
+        out += " " + v.kind + " at " + v.expiry + ";";
+    return out;
+}
+
+namespace {
+
 /// Publishes the record and ends every live surface of its series, in one act, then tells. Refuses
 /// a surface older than the one live, which would put older data in its place.
 domain::fx_vol_surface_publish record_publication(const context& ctx,
@@ -230,6 +250,12 @@ fx_vol_surface_publish_service::publish(context ctx,
             throw std::invalid_argument("The blueprint " + blueprint.name +
                                         " has no calibration as of " +
                                         datetime::to_iso8601_utc(as_of) + ". Calibrate it first.");
+        // A rule closes a raise without a person, so a blocking failure is refused here, before
+        // anything is raised, and never left to a decider who may not exist.
+        if (const auto failure = blocking_failure_of(*calibration))
+            throw std::invalid_argument("The calibration of " + blueprint.name + " as of " +
+                                        datetime::to_iso8601_utc(as_of) + " is not publishable. " +
+                                        *failure);
 
         // One raise at a time: a second request for the same calibration would publish it twice.
         for (const auto& pending :

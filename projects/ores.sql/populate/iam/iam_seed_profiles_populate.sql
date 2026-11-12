@@ -253,6 +253,14 @@ cross join (values
         "ACME Corporation US Inc",
         "ACME Corporation HK Ltd"
     ]}'::jsonb),
+    -- Each legal entity calibrates its own surfaces from its volatility quotes and the forward
+    -- sets it has just published, and publishes the ones that pass their checks.
+    ('acme_demo', 'publish_party_surfaces', 68, '{"parties": [
+        "Acme Corporation Plc",
+        "ACME Corporation UK plc",
+        "ACME Corporation US Inc",
+        "ACME Corporation HK Ltd"
+    ]}'::jsonb),
     -- the generator. The counterparties are the entity's own
     -- tradeable links, which is why the step resolves them rather than the
     -- row naming them. No anchor is stated: the population is meant to sit

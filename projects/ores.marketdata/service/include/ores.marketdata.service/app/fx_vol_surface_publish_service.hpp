@@ -20,8 +20,11 @@
 #define ORES_MARKETDATA_SERVICE_APP_FX_VOL_SURFACE_PUBLISH_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.marketdata.api/domain/fx_vol_surface_calibration.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
+#include <optional>
+#include <string>
 #include <string_view>
 
 namespace ores::marketdata::service::app {
@@ -40,6 +43,15 @@ inline constexpr std::string_view fx_vol_surface_publish_kind_code =
  * calibration once, ends every live surface of the output series in the same act, and sends the
  * notice.
  */
+/**
+ * @brief Why a calibration may not be published under any rule, or nothing when it may.
+ *
+ * A surface with calendar or butterfly arbitrage fails a blocking check, and so does one whose
+ * checks cannot be read. A pillar error beyond the tolerance is advisory: the decider weighs it.
+ */
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::optional<std::string>
+blocking_failure_of(const ores::marketdata::domain::fx_vol_surface_calibration& calibration);
+
 class ORES_MARKETDATA_SERVICE_EXPORT fx_vol_surface_publish_service final {
 public:
     [[nodiscard]] static ores::marketdata::messaging::publish_fx_vol_surface_response

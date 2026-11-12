@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/calibrate-party-surfaces-in-provisioning
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Every provisioned party has published volatility surfaces. A step of its own, af
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -43,9 +43,14 @@ Every provisioned party has published volatility surfaces. A step of its own, af
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A step kind =publish_party_surfaces=, after =publish_party_forwards= and =give_party_surface_blueprints=, with the parties it names as its arguments.
+
+- For each party, the step reads the blueprints the party holds. A party that holds none fails the step.
+- For each blueprint, a published surface already found is left alone, so a rerun publishes nothing twice.
+- Otherwise the step calibrates at the present instant. A calibration the service refuses fails the step, named with its party.
+- A surface with arbitrage, a fit that did not converge or a pillar beyond the tolerance is held back and named. A decider would weigh it, and provisioning has none.
+- Otherwise the step raises the publish. Under the tenant's auto-approval it closes and publishes at once. A raise that is not published fails the step.
+- The surface publish service refuses to raise a calibration with arbitrage under any rule, as [[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][A candidate is computed and stored before a publish is raised]] states. Until now a raise a rule closed would have published it.
 
 * Measurements
 
@@ -59,7 +64,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Surfaces published per Acme party, of its blueprints | 10 of 10, for each of the four parties | =evidence/party_surfaces_check.sql= on a fresh Acme provisioning | f32a0d88e7 plus this change |
+| Surfaces whose calibration names the party's own published forward set of the pair | 40 of 40 | the same | f32a0d88e7 plus this change |
+| Requests and the rule that closed them | 40, all =tenant= | the same | f32a0d88e7 plus this change |
+| Surfaces held back or not published | 0 and 0 | the step's result | f32a0d88e7 plus this change |
+| Duration of the step | 1 min 39 s | =completed_at - started_at= of the step row | f32a0d88e7 plus this change |
 
 * Notes
 
@@ -87,3 +96,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The =publish_party_surfaces= step calibrates and publishes every party's surfaces in provisioning, and the surface publish refuses a calibration with arbitrage under any rule. On a fresh Acme provisioning all 40 blueprints of the four parties published, each from its party's own forward set and closed under the =tenant= rule.
+
+The run that proved it left out =generate_trades= in the local database only, because on main that step fails on swap conventions that name one index more than once ([[id:9137921C-B9C9-4C9F-84B6-847A07B61F28][Name GBP LIBOR 3M in one swap convention]]), and a failed run dispatches no later step. The committed profile still orders it.

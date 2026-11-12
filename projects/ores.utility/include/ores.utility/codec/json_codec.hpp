@@ -48,7 +48,10 @@ struct json_codec;
  * This is where the recursion lives. A field's own value is whatever its
  * member's carrier gives it, so a member that is itself a type with a wire form
  * carries another object, a vector carries an array of them and an optional
- * carries one or nothing -- no carrier knows any of those types by name.
+ * carries one or null -- no carrier knows any of those types by name. An empty
+ * optional is written as null rather than left out, as the msgpack carrier
+ * writes nil, so a reader of either form sees every member; a reader still
+ * takes a member left out as empty.
  */
 namespace detail {
 
@@ -62,11 +65,6 @@ write_object(yyjson_mut_doc* doc, const T& v, const field_list<field<T, Members>
         [&](const auto&... f) {
             (
                 [&] {
-                    using member_type = std::remove_cvref_t<decltype(v.*(f.member))>;
-                    if constexpr (is_optional_member<member_type>) {
-                        if (!(v.*(f.member)))
-                            return;
-                    }
                     // The key is copied into the document: the mutable API
                     // stores the pointer it is given, so a key held anywhere
                     // shorter-lived than the document would dangle between the

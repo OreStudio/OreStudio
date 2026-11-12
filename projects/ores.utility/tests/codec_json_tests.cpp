@@ -22,6 +22,7 @@
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -47,6 +48,20 @@ struct keeps_its_defaults {
 
 static_assert(::ores::utility::codec::names_every_member<keeps_its_defaults>(),
               "keeps_its_defaults gained a member its wire_fields does not name.");
+
+/**
+ * @brief A value with a member that may hold nothing.
+ */
+struct may_hold_nothing {
+    std::string label;
+    std::optional<int> count;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<may_hold_nothing>) {
+    using ::ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{field{"label", &may_hold_nothing::label},
+                                              field{"count", &may_hold_nothing::count}};
+}
 
 };
 
@@ -193,4 +208,15 @@ TEST_CASE("a strict read after a lenient read still refuses a member the text le
     REQUIRE(wire_json::read_lenient<keeps_its_defaults>(R"({})").has_value());
 
     CHECK_THROWS_AS(wire_json::read<keeps_its_defaults>(R"({"count":3})"), std::invalid_argument);
+}
+
+TEST_CASE("an empty optional member is written as null", "[codec][json]") {
+    CHECK(wire_json::write(may_hold_nothing{"a", std::nullopt}) == R"({"label":"a","count":null})");
+    CHECK(wire_json::write(may_hold_nothing{"a", 3}) == R"({"label":"a","count":3})");
+}
+
+TEST_CASE("an optional member read as null or left out is empty", "[codec][json]") {
+    CHECK_FALSE(wire_json::read<may_hold_nothing>(R"({"label":"a","count":null})").count);
+    CHECK_FALSE(wire_json::read<may_hold_nothing>(R"({"label":"a"})").count);
+    CHECK(wire_json::read<may_hold_nothing>(R"({"label":"a","count":3})").count == 3);
 }

@@ -56,13 +56,13 @@ TEST_CASE("an object's JSON is the one the wire carries", "[codec][object]") {
     CHECK(back.when == v.when);
 }
 
-TEST_CASE("an object with an absent member omits it", "[codec][object]") {
+TEST_CASE("an object with an absent member writes it as null", "[codec][object]") {
     const auto v = probe{boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000000"),
                          "beta",
                          std::nullopt};
 
     const auto mine = ores::utility::codec::object::write_json(v, probe_fields);
-    CHECK(mine == R"({"id":"00000000-0000-0000-0000-000000000000","label":"beta"})");
+    CHECK(mine == R"({"id":"00000000-0000-0000-0000-000000000000","label":"beta","when":null})");
 
     const auto back = ores::utility::codec::object::read_json(mine, probe_fields);
     CHECK_FALSE(back.when.has_value());

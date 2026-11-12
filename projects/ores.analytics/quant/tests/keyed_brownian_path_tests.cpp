@@ -422,6 +422,17 @@ TEST_CASE("a tick costs the depth, not the time since the run began",
                                  .count() /
                              static_cast<long long>(reads);
 
+        // The same time again and again: a pure cache hit, no draws at all.
+        keyed_walk repeat = make_keyed_walk(path);
+        keyed_walk_value(path, repeat, start_time);
+        started = std::chrono::steady_clock::now();
+        for (int i = 0; i < reads; ++i)
+            sink += keyed_walk_value(path, repeat, start_time);
+        const auto repeat_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                   std::chrono::steady_clock::now() - started)
+                                   .count() /
+                               static_cast<long long>(reads);
+
         // Every tick lands in a new span, so the bridge is walked in full.
         keyed_walk cold = make_keyed_walk(path);
         started = std::chrono::steady_clock::now();
@@ -432,8 +443,10 @@ TEST_CASE("a tick costs the depth, not the time since the run began",
                                  .count() /
                              static_cast<long long>(reads);
 
-        std::printf("depth %u: %lld ns a cached tick, %lld ns a cold tick (sink %g)\n",
+        std::printf("depth %u: %lld ns a repeat read, %lld ns a market tick, "
+                    "%lld ns a cold tick (sink %g)\n",
                     depth,
+                    static_cast<long long>(repeat_ns),
                     static_cast<long long>(warm_ns),
                     static_cast<long long>(cold_ns),
                     sink);

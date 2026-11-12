@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
-#+updated: 2026-11-11
+#+updated: 2026-11-12
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -30,12 +30,12 @@ gone.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:229811EA-0DC9-462B-93BA-AB3B438813D3][Own each durable NATS delivery with one RAII transaction]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-12                             |
 
 * Acceptance
 
@@ -81,7 +81,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.nats tests | 65 cases pass | =ores.nats.tests= | dbe9d4d420 |
+| Changed-component suites | 16 suites pass, 1 case skipped | each =<component>.tests= binary | dbe9d4d420 |
+| Acme provisioning | steps 1-12 complete; step 13 fails on the GBP convention defect | =compass shell -f .../how_do_i_provision_the_system_with_acme_corporation_holding_group.ores= | dbe9d4d420 |
 
 * Notes
 
@@ -109,3 +111,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores::nats::delivery= is the only owner of a durable cnats message. Both
+durable subscribe calls set =ManualAck=, so cnats no longer acknowledges and
+frees the message after the callback. That removes the double free that
+crashed IAM when a step ran on a worker thread. Every durable handler takes a
+delivery and settles it once; a dropped delivery rolls back. A subscription
+waits for its open deliveries before it is destroyed. =ack_guard=,
+=ack_handle= and the =ack= field of =message= are gone.
+
+All acceptance points are met:
+
+- =delivery= is move-only, its settlements are rvalue-qualified, and the
+  destructor rolls back. Eight unit tests pin this with a fake settler.
+- =keep_alive= runs on a thread the delivery owns and stops before the answer.
+- One function builds the durable options and sets =ManualAck=.
+- =drain_and_release= waits for open deliveries.
+- The 37 registrations and their handlers take a delivery.
+- An integration test keeps a delivery past its callback and settles it on
+  another thread.
+
+The build also fixed three IAM guard tests that named accounts the shared
+test database refuses, and the workflow engine tests now pass deliveries.
+
+Provisioning Acme on a fresh database completed steps 1 to 12 with no service
+crash. Step 13 (=generate_trades=) fails on the GBP swap convention defect,
+which the hotfix /Draw only swap indices with one convention/ fixes.
+

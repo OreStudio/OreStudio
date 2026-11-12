@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch: feature/build-the-fx-vol-surface-generator
+#+branch: feature/build-the-fx-vol-surface-generator-2
 #+pr: 4650
 #+blocked_on:
 #+blocked_since:

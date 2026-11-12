@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: 6325E19B-B7BE-45B9-B4FE-B54064A6A1E6
+:ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
+:END:
+#+title: ores.synthetic.fx_vol_surface_feed_expiry
+#+description: Codegen entity model for the synthetic fx_vol_surface_feed_expiry table; one quoted expiry of a synthetic FX volatility surface, with how its forward variance moves.
+#+type: ores.codegen.entity
+#+web_resource: fx-vol-surface-feed-expiries
+#+web_writes: many
+#+web_system_owned: true
+#+web_parent_filter: feed_id
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: fx_vol_surface_feed_expiry
+#+entity_plural: fx_vol_surface_feed_expiries
+#+entity_title: FX Volatility Surface Feed Expiry
+#+brief: One quoted expiry of a synthetic FX volatility surface, with how its forward variance moves.
+#+created: 2026-11-12
+#+updated: 2026-11-12
+
+One expiry an =fx_vol_surface_feed= quotes. The feed orders its expiries by
+length, so the row carries no position. The forward variance of the segment that
+ends at this expiry, from the expiry before it, is a Cox-Ingersoll-Ross process
+with this row's reversion and volatility.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this row.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:server_owned: true
+:END:
+
+Owning party: the system party, which runs the installation's feeds.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** feed_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:natural_key: true
+:filterable:  true
+:END:
+
+The =fx_vol_surface_feed= this expiry belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** tenor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:natural_key: true
+:END:
+
+The expiry, such as 1W, 3M or 1Y.
+
+#+begin_src cpp :name generator
+std::string("3M")
+#+end_src
+
+** variance_reversion
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+How fast the segment's forward variance reverts to its start, per year.
+
+#+begin_src cpp :name generator
+2.0
+#+end_src
+
+** variance_volatility
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The volatility of the segment's forward variance.
+
+#+begin_src cpp :name generator
+0.08
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_fx_vol_surface_feed_expiries_tbl
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "tenor" ~ '^[1-9][0-9]*[DWMY]$' |
+| "variance_reversion" >= 0 and "variance_reversion" < 'Infinity' |
+| "variance_volatility" >= 0 and "variance_volatility" < 'Infinity' |
+
+* Foreign keys
+
+** feed_id
+:PROPERTIES:
+:table:         ores_synthetic_fx_vol_surface_feeds_tbl
+:error_message: Invalid feed_id: %. No active fx_vol_surface_feed found with this id.
+:nullable:      false
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: fx_vol_surface_feed_expiry
+:entity_plural_short:   fx_vol_surface_feed_expiries
+:entity_singular_words: FX volatility surface feed expiry
+:entity_plural_words:   FX volatility surface feed expiries
+:system_tenant_visible: true
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: e
+:END:
+
+** Table display
+
+| column              | header     |
+|---------------------+------------|
+| tenor               | Expiry     |
+| variance_reversion  | Reversion  |
+| variance_volatility | Volatility |
+| version             | Version    |
+
+* See also
+
+- [[id:DE836AD8-09BF-4AF6-8BF6-5D4CEF227A6E][FX Volatility Surface Feed]] -- the feed this expiry belongs to.

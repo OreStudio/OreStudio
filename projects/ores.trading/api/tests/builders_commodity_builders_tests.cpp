@@ -459,7 +459,7 @@ commodity_forward_volatility_agreement_terms crude_fva() {
             .expiry = 2027y / 1 / 5,
             .settlement = 2027y / 1 / 7,
             .premium_date = 2026y / 7 / 8,
-            .implied_vol_strike = amount("0.3"),
+            .implied_vol_strike = 0.3,
             .position = option_position::long_option};
 }
 
@@ -582,7 +582,7 @@ TEST_CASE("a_commodity_forward_volatility_agreement_fixes_before_its_expiry", co
     REQUIRE(fva.has_value());
     CHECK(fva->instrument.fva_date == 2026y / 7 / 6);
     CHECK(fva->instrument.maturity_date == 2027y / 1 / 5);
-    CHECK(fva->instrument.implied_vol_strike == amount("0.3"));
+    CHECK(fva->instrument.implied_vol_strike == 0.3);
     CHECK(fva->instrument.position == "Long");
 }
 
@@ -674,17 +674,18 @@ TEST_CASE("a_commodity_rainbow_option_pays_its_payoff_on_its_basket", commodity_
 }
 
 TEST_CASE("a_commodity_rainbow_option_on_one_commodity_fails", commodity_tags) {
-    const auto option = commodity_rainbow_option_builder(
-                            {.basket = std::vector<commodity_basket_member>{
-                                 {commodity("NYMEX:CL"), 0.5}, {commodity("NYMEX:CL"), 0.5}},
-                             .currency = std::string("USD"),
-                             .notional = amount("1000"),
-                             .kind = option_kind::call,
-                             .payoff = rainbow_payoff::best_of_asset_or_cash,
-                             .strike = amount("80"),
-                             .expiry = 2027y / 1 / 5,
-                             .position = option_position::long_option})
-                            .build();
+    const auto option =
+        commodity_rainbow_option_builder(
+            {.basket = std::vector<commodity_basket_member>{{commodity("NYMEX:CL"), 0.5},
+                                                            {commodity("NYMEX:CL"), 0.5}},
+             .currency = std::string("USD"),
+             .notional = amount("1000"),
+             .kind = option_kind::call,
+             .payoff = rainbow_payoff::best_of_asset_or_cash,
+             .strike = amount("80"),
+             .expiry = 2027y / 1 / 5,
+             .position = option_position::long_option})
+            .build();
     REQUIRE_FALSE(option.has_value());
     CHECK(option.error().term == "basket");
 }
@@ -707,8 +708,7 @@ TEST_CASE("a_commodity_basket_variance_swap_squares_its_returns", commodity_tags
     CHECK(swap->schedules[0].schedule_role == "valuation_schedule");
 }
 
-TEST_CASE("a_commodity_basket_variance_swap_settling_before_its_maturity_fails",
-          commodity_tags) {
+TEST_CASE("a_commodity_basket_variance_swap_settling_before_its_maturity_fails", commodity_tags) {
     const auto swap =
         commodity_basket_variance_swap_builder({.basket = crude_gas_basket(),
                                                 .currency = std::string("USD"),
@@ -745,8 +745,7 @@ TEST_CASE("a_commodity_best_entry_option_triggering_above_the_initial_price_fail
 TEST_CASE("a_commodity_worst_of_basket_swap_funds_on_one_leg_and_pays_coupons_on_another",
           commodity_tags) {
     const auto swap =
-        commodity_worst_of_basket_swap_builder(funding_conventions(), crude_gas_worst_of())
-            .build();
+        commodity_worst_of_basket_swap_builder(funding_conventions(), crude_gas_worst_of()).build();
     REQUIRE(swap.has_value());
     REQUIRE(swap->legs.size() == 2);
     CHECK(swap->legs[0].leg_type_code == "Floating");
@@ -760,8 +759,7 @@ TEST_CASE("a_commodity_worst_of_basket_swap_funds_on_one_leg_and_pays_coupons_on
     CHECK(swap->periods.size() == 2);
 }
 
-TEST_CASE("a_commodity_worst_of_basket_swap_observing_past_its_maturity_fails",
-          commodity_tags) {
+TEST_CASE("a_commodity_worst_of_basket_swap_observing_past_its_maturity_fails", commodity_tags) {
     auto terms = crude_gas_worst_of();
     terms.observation_dates = std::vector<year_month_day>{2027y / 2 / 5};
     const auto swap = commodity_worst_of_basket_swap_builder(funding_conventions(), terms).build();

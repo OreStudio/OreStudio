@@ -5523,6 +5523,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.basket_swap_periods.list': {
+        asOf: true,
+        filter: [],
+        rows: ['basket_swap_periods'],
+    },
+    'trading.v1.basket_swap_periods_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.bond_forwards.list': {
         asOf: true,
         filter: ['trade_id_one_of'],
@@ -6019,16 +6029,6 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['equity_swap_instruments'],
     },
     'trading.v1.equity_swap_instruments_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'trading.v1.basket_swap_periods.list': {
-        asOf: true,
-        filter: [],
-        rows: ['basket_swap_periods'],
-    },
-    'trading.v1.basket_swap_periods_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

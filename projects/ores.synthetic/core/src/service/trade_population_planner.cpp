@@ -1065,7 +1065,8 @@ built_commodity_trade(const domain::trade_generation_scope& scope,
                           .expiry = end,
                           .settlement = year_month_day{sys_days{end} + days{2}},
                           .premium_date = year_month_day{sys_days{fva_date} + days{2}},
-                          .implied_vol_strike = money(0.2 + 0.2 * draw(name, 12)),
+                          .implied_vol_strike =
+                              std::round((0.2 + 0.2 * draw(name, 12)) * 100.0) / 100.0,
                           .position = position,
                           .unit = drawn.unit})
                          .build());

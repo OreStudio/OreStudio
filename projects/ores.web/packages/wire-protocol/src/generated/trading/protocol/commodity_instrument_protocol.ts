@@ -76,7 +76,7 @@ export interface CommodityInstrumentWrite {
     fva_date: string | null;
     premium_date: string | null;
     settlement_date: string | null;
-    implied_vol_strike: string | null;
+    implied_vol_strike: number | null;
     reset_strike: string | null;
     trigger_type: string | null;
     trigger_price: string | null;

@@ -85,7 +85,7 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     "fva_date" date null,
     "premium_date" date null,
     "settlement_date" date null,
-    "implied_vol_strike" numeric(38, 12) null,
+    "implied_vol_strike" double precision null,
     "reset_strike" numeric(38, 12) null,
     "trigger_type" text null,
     "trigger_price" numeric(38, 12) null,

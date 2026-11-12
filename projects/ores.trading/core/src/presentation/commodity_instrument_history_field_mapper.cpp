@@ -139,7 +139,7 @@ render_commodity_instrument_fields(const domain::commodity_instrument& v) {
                                                    std::string{}});
     fields.push_back(
         {.name = "Implied Vol Strike",
-         .value = v.implied_vol_strike ? v.implied_vol_strike->to_string() : std::string{}});
+         .value = v.implied_vol_strike ? std::to_string(*v.implied_vol_strike) : std::string{}});
     fields.push_back({.name = "Reset Strike",
                       .value = v.reset_strike ? v.reset_strike->to_string() : std::string{}});
     fields.push_back({.name = "Trigger Type", .value = v.trigger_type.value_or(std::string{})});

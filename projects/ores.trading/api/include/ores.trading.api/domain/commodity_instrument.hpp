@@ -300,8 +300,11 @@ struct commodity_instrument final {
     /**
      * @brief The volatility a forward volatility agreement strikes at, as ImpliedVolStrike states
      * it.
+     *
+     * A volatility is a continuous quantity and not money, so it is a binary float, as the variance
+     * strike is.
      */
-    std::optional<ores::utility::decimal::decimal> implied_vol_strike;
+    std::optional<double> implied_vol_strike;
 
     /**
      * @brief The strike a strike resettable option resets to when its trigger is hit, as

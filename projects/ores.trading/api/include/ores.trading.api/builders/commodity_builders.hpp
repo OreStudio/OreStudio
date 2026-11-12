@@ -493,7 +493,8 @@ struct commodity_forward_volatility_agreement_terms final {
     required<std::chrono::year_month_day> expiry;
     required<std::chrono::year_month_day> settlement;
     required<std::chrono::year_month_day> premium_date;
-    required<utility::decimal::decimal> implied_vol_strike;
+    /// The volatility struck at, such as 0.3 for thirty per cent.
+    required<double> implied_vol_strike;
     required<option_position> position;
     /// The unit the quantity counts, as the catalogue states it; empty when unstated.
     std::string unit;

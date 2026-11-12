@@ -97,7 +97,7 @@ struct commodity_instrument_entity {
     std::optional<std::chrono::year_month_day> fva_date;
     std::optional<std::chrono::year_month_day> premium_date;
     std::optional<std::chrono::year_month_day> settlement_date;
-    std::optional<ores::utility::decimal::decimal> implied_vol_strike;
+    std::optional<double> implied_vol_strike;
     std::optional<ores::utility::decimal::decimal> reset_strike;
     std::optional<std::string> trigger_type;
     std::optional<ores::utility::decimal::decimal> trigger_price;

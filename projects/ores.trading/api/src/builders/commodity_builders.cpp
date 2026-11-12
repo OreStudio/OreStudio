@@ -769,7 +769,7 @@ commodity_forward_volatility_agreement_builder::commodity_forward_volatility_agr
 commodity_result commodity_forward_volatility_agreement_builder::build() const {
     if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.quantity.get()))
         return std::unexpected(std::move(*refusal));
-    if (terms_.implied_vol_strike.get() <= decimal{})
+    if (!(terms_.implied_vol_strike.get() > 0.0))
         return std::unexpected(build_error{"implied_vol_strike", "must be positive"});
     if (!(terms_.fva_date.get() < terms_.expiry.get()))
         return std::unexpected(build_error{"fva_date", "must be before the expiry"});

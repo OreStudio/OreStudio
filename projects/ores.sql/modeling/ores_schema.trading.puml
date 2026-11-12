@@ -301,6 +301,47 @@ package "trading" #E8F5E9 {
     ORE XML unchanged. No conversion is introduced here.
     end note
 
+    entity ores_trading_basket_swap_periods_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * trade_activity_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+          period_date : date
+          knock_out_level : double
+          fixed_trigger_level : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_basket_swap_periods_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Basket Swap Period Table
+    One row per determination period of a worst-of basket swap, keyed to the
+    trade and the period's ordinal within the document.
+    ORE states the same worst-of basket swap on equities, FX and commodities, and
+    nothing in a period belongs to one of them, so the families share this table.
+    The levels are a list. A list is rows of a child table rather than an encoded
+    string, so the periods live here and not in the knock_out_levels_json and
+    fixed_trigger_levels_json columns that used to hold them. Both columns are
+    retired with this table.
+    The ORE document states KnockOutLevels and FixedTriggerLevels as two
+    unbounded lists that run beside the determination schedule, one entry per
+    date. They are therefore per period and not per constituent, which is why
+    they are not rows of a basket constituent: a basket of two underlyings
+    over four dates states two names and four levels.
+    The trade is the key. A period is reached through the trade that owns it and
+    by nothing else, so the pair of trade_id and sequence_number is the
+    primary key.
+    end note
+
     entity ores_trading_bg_swap_tranche_notionals_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -1384,6 +1425,7 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * underlying_code : text
           weight : double
+          initial_price : numeric(38, 12)
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1458,12 +1500,17 @@ package "trading" #E8F5E9 {
           fva_date : date
           premium_date : date
           settlement_date : date
-          implied_vol_strike : numeric(38, 12)
+          implied_vol_strike : double
           reset_strike : numeric(38, 12)
           trigger_type : text
           trigger_price : numeric(38, 12)
           premium_amount : numeric(38, 12)
           target_amount : numeric(38, 12)
+          multiplier : numeric(38, 12)
+          cap : numeric(38, 12)
+          trigger_level : numeric(38, 12)
+          reset_minimum : numeric(38, 12)
+          strike_date : date
           description : text
         * modified_by : text
         * performed_by : text
@@ -2324,45 +2371,6 @@ package "trading" #E8F5E9 {
     Routes ORE product types: EquitySwap, EquityWorstOfBasketSwap. For
     basket swaps, underlying_name is NULL and the basket is the constituent rows
     that name the trade; for single-name swaps, the constituents are absent.
-    end note
-
-    entity ores_trading_basket_swap_periods_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * trade_id : uuid <<PK, FK>>
-        * trade_activity_id : uuid <<PK, FK>>
-        * sequence_number : integer <<PK>>
-        --
-        * version : integer
-          period_date : date
-          knock_out_level : double
-          fixed_trigger_level : double
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_basket_swap_periods_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Basket Swap Period Table
-    One row per determination period of an equity worst-of basket swap, keyed to
-    the trade and the period's ordinal within the document.
-    The levels are a list. A list is rows of a child table rather than an encoded
-    string, so the periods live here and not in the knock_out_levels_json and
-    fixed_trigger_levels_json columns that used to hold them. Both columns are
-    retired with this table.
-    The ORE document states KnockOutLevels and FixedTriggerLevels as two
-    unbounded lists that run beside the determination schedule, one entry per
-    date. They are therefore per period and not per constituent, which is why
-    they are not rows of equity_basket_constituent: a basket of two underlyings
-    over four dates states two names and four levels.
-    The trade is the key. A period is reached through the trade that owns it and
-    by nothing else, so the pair of trade_id and sequence_number is the
-    primary key.
     end note
 
     entity ores_trading_equity_tarf_instruments_tbl <<temporal>> #C6F0D8 {

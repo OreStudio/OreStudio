@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/forward-the-callers-session-id
-#+pr:
+#+pr: 4658
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
@@ -113,7 +113,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4658][#4658]] | [iam] Read the caller's own token in the account handlers |
 
 * Review
 

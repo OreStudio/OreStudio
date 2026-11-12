@@ -28,10 +28,10 @@ CI setup before the build takes at most 2 min instead of 7 to 10 min, because th
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F3AB6302-3325-4BDF-8106-70E0168C40F9][Make the build faster]] |
-| Now          | Phase 1 and the image Dockerfile in review. |
-| Waiting on   | Nothing.                               |
-| Next         | Measure phase 1 on main; publish the image to GHCR and run the build in it. |
-| Last touched | 2026-11-11                               |
+| Now          | Phase 1 and the image merged in #4617. Phase 2 moves the Linux build jobs into the image. |
+| Waiting on   | A continuous run of the phase 2 branch. |
+| Next         | Measure the setup time in the image against the runner. |
+| Last touched | 2026-11-12                               |
 
 * Acceptance
 
@@ -68,6 +68,19 @@ The work is in two phases. Each phase ends in a measured run.
    the Dockerfile or the scripts it copies change. Run the build job in that
    image. The Dockerfile is in the repository from phase 1, so the image can
    be built again at any time.
+   - The continuous build, the nightly build and the nightly include check
+     run in the image. A small job names the tag from =versions.env=, so each
+     run takes the image of the commit it builds.
+   - The image adds valgrind for the nightly memcheck, clang-tidy for the
+     include check, and gh for the cache steps.
+   - =build/scripts/start_ci_postgres.sh= starts the cluster of the image as
+     the postgres user, because the container runs as root and the setup
+     action cannot.
+   - The nightly SQL validation moves to its own job, as in the continuous
+     build, because the image has no pip packages.
+   - =nightly-format.yml= stays on the runner: it builds nothing. The unity
+     batch measurement stays on the runner, so its runs compare like with
+     like.
 
 * Measurements
 

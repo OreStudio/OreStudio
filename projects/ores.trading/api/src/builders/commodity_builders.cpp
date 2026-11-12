@@ -256,23 +256,20 @@ void commodity_add_barrier(domain::commodity_instrument_data& out,
 
 std::string commodity_barrier_type_of(barrier_kind kind) {
     switch (kind) {
-    case barrier_kind::up_and_in:
-        return "UpAndIn";
-    case barrier_kind::up_and_out:
-        return "UpAndOut";
-    case barrier_kind::down_and_in:
-        return "DownAndIn";
-    case barrier_kind::down_and_out:
-        return "DownAndOut";
+        case barrier_kind::up_and_in:
+            return "UpAndIn";
+        case barrier_kind::up_and_out:
+            return "UpAndOut";
+        case barrier_kind::down_and_in:
+            return "DownAndIn";
+        case barrier_kind::down_and_out:
+            return "DownAndOut";
     }
     return {};
 }
 
-std::optional<build_error> commodity_fixing_refusal(const std::string& currency,
-                                                    decimal fixing_amount,
-                                                    decimal strike,
-                                                    ymd start,
-                                                    ymd expiry) {
+std::optional<build_error> commodity_fixing_refusal(
+    const std::string& currency, decimal fixing_amount, decimal strike, ymd start, ymd expiry) {
     if (currency.empty())
         return build_error{"currency", "must not be empty"};
     if (strike <= decimal{} || fixing_amount <= decimal{})

@@ -1,0 +1,6 @@
+# =get-fx-vol-surface-publish-subject=
+#
+# GENERATED from doc/recipes/shell/fx_vol_surface_operation/fx_vol_surface_operation.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+fx_vol_surface_operation get-fx-vol-surface-publish-subject __none__

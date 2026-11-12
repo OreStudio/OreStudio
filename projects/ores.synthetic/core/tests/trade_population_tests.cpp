@@ -344,6 +344,32 @@ TEST_CASE("a_credit_trade_names_the_credit_curve_of_its_reference_entity", "[tra
                              batch.credit_instruments.front().reference_entity_id + "?"));
 }
 
+namespace {
+
+/// Gives each swap convention a rival that names its index with other terms.
+void name_each_swap_index_twice(domain::trade_generation_scope& scope) {
+    const auto swaps = scope.conventions.swaps;
+    for (auto rival : swaps) {
+        rival.id += "-RIVAL";
+        rival.fixed_frequency = rival.fixed_frequency == "Annual" ? "Semiannual" : "Annual";
+        scope.conventions.swaps.push_back(rival);
+    }
+}
+
+}
+
+TEST_CASE("an_rpa_builds_its_underlying_swap_when_two_conventions_name_the_index",
+          "[trade_population]") {
+    auto scope = credit_scope();
+    scope.trade_type_codes = {"RiskParticipationAgreement"};
+    name_each_swap_index_twice(scope);
+
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
+    CHECK_FALSE(plan.slots.front().instruments.swap_legs.empty());
+}
+
 TEST_CASE("an_rpa_in_a_currency_no_swap_convention_floats_in_is_refused", "[trade_population]") {
     auto scope = credit_scope();
     scope.trade_type_codes = {"RiskParticipationAgreement"};
@@ -1458,4 +1484,16 @@ TEST_CASE("a_trade_type_the_class_does_not_book_is_refused", "[trade_population]
     scope.trade_type_codes = {"Bond"};
 
     REQUIRE_THROWS_AS(plan_of(scope), trade_population_error);
+}
+
+TEST_CASE("an_equity_swap_builds_its_funding_leg_when_two_conventions_name_the_index",
+          "[trade_population]") {
+    auto scope = equity_scope();
+    scope.trade_type_codes = {"EquitySwap"};
+    name_each_swap_index_twice(scope);
+
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
+    CHECK(plan.slots.front().instruments.equity_swap_instruments.size() == 1u);
 }

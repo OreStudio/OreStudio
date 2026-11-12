@@ -28,9 +28,9 @@ The gateway has no part for the trading area. Add the part with the adapter reci
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Groups 1 and 2 of 4 are done. The part serves the three trade reads and the five booking routes: 8 of its 24 routes. |
+| Now          | Groups 1 to 3 of 4 are done. The part serves the trade reads, the booking routes and the structure screens: 16 of its 24 routes. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve the structures (8), then the books (6). |
+| Next         | Serve the books and book changes (6), which is the last group. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
@@ -93,6 +93,23 @@ Decisions made in the second group:
 - The unit's helpers live in a =booking= namespace. Every unit of a component
   builds into one translation unit, so a helper named =array_of= in two units
   is a redefinition, not two functions.
+
+Decisions made in the third group:
+
+- The tree a structure's page draws is assembled in the gateway, as the BFF
+  assembled it: the store holds a parent as an id and a leg as a member row, so
+  the tenant's structures and members are read once and the root is found by
+  walking up.
+- A page's party is read from the legs, because a structure holds none of its
+  own and the database pins every leg to one party. Its name is empty: the
+  caller's token names the party by id, and the page already draws the id when
+  the name is empty.
+- The leg write states its body before it reads anything, so a caller that
+  cannot say which trade and why is refused for that and not for the state of
+  the structure.
+- The structure catalogue is read whole and joined here, as the BFF joined it:
+  a type's name is the catalogue's when it has one, and its home market decides
+  the asset class.
 
 * Measurements
 

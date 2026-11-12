@@ -186,6 +186,16 @@ PAIRS = {
     ("POST", "/api/trades/:id/links"): ("POST", "/api/trades/{id}/links"),
     ("GET", "/api/trade-link-types"): ("GET", "/api/trade-link-types"),
     ("GET", "/api/draft-reasons"): ("GET", "/api/draft-reasons"),
+    ("GET", "/api/structure-kinds"): ("GET", "/api/structure-kinds"),
+    ("GET", "/api/ungrouped-trades"): ("GET", "/api/ungrouped-trades"),
+    ("GET", "/api/structures"): ("GET", "/api/structures"),
+    ("POST", "/api/structures"): ("POST", "/api/structures"),
+    ("GET", "/api/structures/:key"): ("GET", "/api/structures/{key}"),
+    ("POST", "/api/structures/:key/legs"): ("POST", "/api/structures/{key}/legs"),
+    ("DELETE", "/api/structures/:key/legs/:tradeId"):
+        ("DELETE", "/api/structures/{key}/legs/{tradeId}"),
+    ("GET", "/api/structures/:key/leg-candidates"):
+        ("GET", "/api/structures/{key}/leg-candidates"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

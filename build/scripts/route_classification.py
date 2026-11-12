@@ -860,6 +860,14 @@ RULES = (
          "The booking screens at the address and in the shape the BFF answered: what the"
          " form offers, the reasons a deal is a draft, the link types a person records, a"
          " link between two trades, and the booking write itself."),
+    Rule("the structure screens' route",
+         ("regex", r"^((GET|POST|DELETE) /api/structures(/\{key\}(/legs(/\{tradeId\})?|/leg-candidates)?)?"
+                   r"|GET /api/(structure-kinds|ungrouped-trades))$"),
+         CPP, RESOURCE, "trading",
+         "The structure screens at the address and in the shape the BFF answered: the kinds a"
+         " grouping may choose, the trades no structure holds yet, the grouping write, the list"
+         " as a tree flattened for reading, one structure's page with its tree and legs, the leg"
+         " candidates, and the leg writes."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

@@ -22,5 +22,6 @@
 set(files
     "booking_routes_tests.cpp"
     "main.cpp"
+    "structure_routes_tests.cpp"
     "trade_read_routes_tests.cpp"
 )

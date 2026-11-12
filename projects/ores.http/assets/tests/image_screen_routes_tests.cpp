@@ -24,10 +24,13 @@
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/assets/image_screen_routes.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <map>
@@ -119,4 +122,58 @@ TEST_CASE("image_answer_serves_only_an_image_type", "[image_screen]") {
     CHECK(ores::http::net::image_answer("image/png\r\nX-Evil: 1", "x").content_type ==
           "application/octet-stream");
     CHECK(ores::http::net::image_answer("image/", "x").content_type == "application/octet-stream");
+}
+
+TEST_CASE("image_screen_routes_map_each_flag_and_fall_back_to_the_country", "[image_screen]") {
+    const auto id_of = [](const char* text) {
+        return boost::uuids::string_generator()(text);
+    };
+    const auto gb = id_of("00000000-0000-0000-0000-0000000000a1");
+    const auto gbp = id_of("00000000-0000-0000-0000-0000000000a2");
+    const auto boe = id_of("00000000-0000-0000-0000-0000000000a3");
+    const auto none = id_of("00000000-0000-0000-0000-0000000000a4");
+
+    ores::refdata::domain::currency pound;
+    pound.iso_code = "GBP";
+    pound.image_id = gbp;
+    ores::refdata::domain::currency unflagged;
+    unflagged.iso_code = "XAU";
+    ores::refdata::domain::country uk;
+    uk.alpha2_code = "GB";
+    uk.image_id = gb;
+    ores::refdata::domain::calendar own;
+    own.code = "BOE";
+    own.country_code = "GB";
+    own.image_id = boe;
+    ores::refdata::domain::calendar borrowed;
+    borrowed.code = "GBLO";
+    borrowed.country_code = "GB";
+    ores::refdata::domain::calendar orphan;
+    orphan.code = "ZZZZ";
+    orphan.country_code = "ZZ";
+    ores::refdata::domain::business_centre london;
+    london.code = "GBLO";
+    london.country_alpha2_code = "GB";
+    ores::assets::domain::image placeholder;
+    placeholder.id = none;
+    placeholder.code = "xx";
+    ores::assets::domain::image other;
+    other.code = "xxl";
+
+    const auto map = image_screen_routes::image_map_of(
+        {pound, unflagged}, {uk}, {own, borrowed, orphan}, {london}, {other, placeholder});
+    CHECK(map.currencies ==
+          std::map<std::string, std::string>{{"GBP", boost::uuids::to_string(gbp)}});
+    CHECK(map.countries == std::map<std::string, std::string>{{"GB", boost::uuids::to_string(gb)}});
+    CHECK(map.calendars ==
+          std::map<std::string, std::string>{{"BOE", boost::uuids::to_string(boe)},
+                                             {"GBLO", boost::uuids::to_string(gb)}});
+    CHECK(map.businessCentres ==
+          std::map<std::string, std::string>{{"GBLO", boost::uuids::to_string(gb)}});
+    CHECK(map.noFlag == boost::uuids::to_string(none));
+
+    const auto empty = image_screen_routes::image_map_of({}, {}, {}, {}, {other});
+    CHECK_FALSE(empty.noFlag.has_value());
+    CHECK(ores::utility::codec::json::write(empty) ==
+          R"({"currencies":{},"countries":{},"calendars":{},"businessCentres":{},"noFlag":null})");
 }

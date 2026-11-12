@@ -23,15 +23,24 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/image_answer.hpp"
 #include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.api/net/view_answer.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.refdata.api/messaging/business_centre_protocol.hpp"
+#include "ores.refdata.api/messaging/calendar_protocol.hpp"
+#include "ores.refdata.api/messaging/country_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <charconv>
+#include <chrono>
 #include <exception>
 #include <functional>
 #include <limits>
+#include <optional>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <vector>
@@ -99,6 +108,40 @@ image_screen_routes::read_upload(const std::string& body) {
     return upload{parsed->mimeType, parsed->data};
 }
 
+image_map image_screen_routes::image_map_of(
+    const std::vector<ores::refdata::domain::currency>& currencies,
+    const std::vector<ores::refdata::domain::country>& countries,
+    const std::vector<ores::refdata::domain::calendar>& calendars,
+    const std::vector<ores::refdata::domain::business_centre>& centres,
+    const std::vector<ores::assets::domain::image>& placeholders) {
+    const auto text_of = [](const std::optional<boost::uuids::uuid>& id) {
+        return id ? std::optional(boost::uuids::to_string(*id)) : std::nullopt;
+    };
+    image_map out;
+    for (const auto& c : currencies)
+        if (const auto id = text_of(c.image_id))
+            out.currencies[c.iso_code] = *id;
+    for (const auto& c : countries)
+        if (const auto id = text_of(c.image_id))
+            out.countries[c.alpha2_code] = *id;
+    const auto country_image = [&](const std::string& code) -> std::optional<std::string> {
+        const auto found = out.countries.find(code);
+        return found == out.countries.end() ? std::nullopt : std::optional(found->second);
+    };
+    for (const auto& c : calendars)
+        if (const auto id =
+                text_of(c.image_id).or_else([&] { return country_image(c.country_code); }))
+            out.calendars[c.code] = *id;
+    for (const auto& c : centres)
+        if (const auto id = country_image(c.country_alpha2_code))
+            out.businessCentres[c.code] = *id;
+    const auto placeholder =
+        std::ranges::find(placeholders, no_flag_code, &ores::assets::domain::image::code);
+    if (placeholder != placeholders.end())
+        out.noFlag = boost::uuids::to_string(placeholder->id);
+    return out;
+}
+
 void image_screen_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
@@ -116,6 +159,54 @@ void image_screen_routes::register_routes(
         router->add_route(built);
         registry->register_route(built);
     };
+
+    add(router->get("/api/image-map")
+            .description("A composed view owned by the assets service: which image every "
+                         "currency, country, calendar and business centre uses, by its code, "
+                         "and the placeholder for a code with none. Four whole reference data "
+                         "list reads and one image search. A calendar falls back to its "
+                         "country's image, and a business centre always uses its country's. "
+                         "The answer carries an ETag and stays fresh for five minutes, as the "
+                         "BFF kept it: every screen reads it, and a changed flag is rare and "
+                         "cosmetic.")
+            .response<image_map>(),
+        "The image map",
+        [&session](const http_request& req) {
+            return guarded<messaging::list_images_request>([&] {
+                namespace refdata = ores::refdata::messaging;
+                namespace forwarding = ores::http::forwarding;
+                const auto currencies =
+                    forwarding::forward_all(req,
+                                            session,
+                                            refdata::list_currencies_request{},
+                                            &refdata::list_currencies_response::currencies);
+                const auto countries =
+                    forwarding::forward_all(req,
+                                            session,
+                                            refdata::list_countries_request{},
+                                            &refdata::list_countries_response::countries);
+                const auto calendars =
+                    forwarding::forward_all(req,
+                                            session,
+                                            refdata::list_calendars_request{},
+                                            &refdata::list_calendars_response::calendars);
+                const auto centres =
+                    forwarding::forward_all(req,
+                                            session,
+                                            refdata::list_business_centres_request{},
+                                            &refdata::list_business_centres_response::centres);
+                messaging::list_images_request search;
+                search.limit = 50;
+                search.filter = messaging::images_filter{std::nullopt, std::string(no_flag_code)};
+                const auto placeholders = forwarding::forward(req, session, search);
+                rr::require_ok(placeholders.result);
+                return ores::http::net::view_answer(
+                    req,
+                    json::write(image_map_of(
+                        currencies, countries, calendars, centres, placeholders.images)),
+                    ores::http::net::view_cache_policy::fresh_for(std::chrono::minutes(5)));
+            });
+        });
 
     add(router->get("/api/images"),
         "Read a page of the tenant's images",

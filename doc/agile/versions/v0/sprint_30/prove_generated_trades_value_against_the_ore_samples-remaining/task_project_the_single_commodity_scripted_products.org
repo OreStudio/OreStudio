@@ -8,7 +8,7 @@
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/project-the-single-commodity-scripted-products
-#+pr:
+#+pr: 4630
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4630][#4630]] | [ore,trading,synthetic] Project and build the single commodity scripted products |
 
 * Review
 

@@ -64,7 +64,7 @@ std::string form_encoded(std::string_view text) {
     return out;
 }
 
-std::optional<std::chrono::month> month_of(std::string_view name) {
+std::optional<std::chrono::month> sora_month_of(std::string_view name) {
     for (unsigned m = 1; m <= 12; ++m)
         if (month_name(std::chrono::month{m}) == name)
             return std::chrono::month{m};
@@ -118,7 +118,7 @@ std::expected<std::vector<published_fixing>, std::string> parse_mas_sora_csv(std
         if (!cells[0].empty())
             year = number_of(cells[0]);
         if (!cells[1].empty())
-            month = month_of(cells[1]);
+            month = sora_month_of(cells[1]);
         const auto day = number_of(cells[2]);
         if (!year || !month || !day)
             return std::unexpected(std::format("a SORA row names no whole date: {}", *line));

@@ -99,7 +99,8 @@ struct options final {
      */
     std::string cnb_url;
     /**
-     * @brief The address of the Monetary Authority of Singapore's statistics site, which serves its domestic interest rates.
+     * @brief The address of the Monetary Authority of Singapore's statistics site, which serves its
+     * domestic interest rates.
      */
     std::string mas_url;
     /**

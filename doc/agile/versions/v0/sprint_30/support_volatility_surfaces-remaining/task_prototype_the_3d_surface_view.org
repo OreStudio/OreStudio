@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/prototype-a-3d-surface-view
-#+pr:
+#+pr: 4662
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4662][#4662]] | [doc] Prototype the 3D surface view |
 
 * Review
 

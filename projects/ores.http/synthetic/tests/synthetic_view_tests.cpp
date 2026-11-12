@@ -106,8 +106,7 @@ TEST_CASE("calibration_view_counts_the_coverage_of_the_class", "[synthetic_view]
 
     const auto defaults = json::write(calibration_routes::calibration_of(
         "fx", synthetic_messaging::calibrate_response{}, std::nullopt, false));
-    // A class with no policy row states no version; the screen reads that as null.
-    CHECK_FALSE(states(defaults, R"("version")"));
+    CHECK(states(defaults, R"("version":null)"));
     CHECK(states(defaults, R"("policyWritable":false)"));
 }
 

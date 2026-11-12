@@ -157,10 +157,10 @@ TEST_CASE("tenant_roster_routes_answer_the_overview_in_the_home_shape", "[tenant
               R"(},"reason":"setup-failed"},)"
               R"({"tenant":{)" +
               acme_fields +
-              R"(},"reason":"suspended"}],)"
+              R"(,"setup":null},"reason":"suspended"}],)"
               R"("tenants":[{)" +
               acme_fields +
-              R"(}],"totalCount":7,)"
+              R"(,"setup":null}],"totalCount":7,)"
               R"("activity":[{"instanceId":"run-1","tenantName":"Acme","status":"completed",)"
               R"("stepsDone":5,"stepCount":5,"error":"","at":"2026-11-11T07:00:00Z"}],)"
               R"("activityUnavailable":true})");

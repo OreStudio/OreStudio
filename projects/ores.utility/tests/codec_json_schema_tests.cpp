@@ -80,3 +80,9 @@ TEST_CASE("a member the shape leaves out is not required", "[codec][json][schema
     CHECK(schema.find(R"("required":["name","count","ratio","live","direction","codes"])") !=
           std::string::npos);
 }
+
+TEST_CASE("an optional member may be null", "[codec][json][schema]") {
+    const auto schema = ores::utility::codec::json_schema<schema_example::example_row>();
+
+    CHECK(schema.find(R"("note":{"type":"string","nullable":true})") != std::string::npos);
+}

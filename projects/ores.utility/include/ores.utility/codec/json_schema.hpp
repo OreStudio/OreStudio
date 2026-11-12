@@ -92,7 +92,9 @@ void write_object(json_value out) {
                         std::remove_cvref_t<decltype(std::declval<T>().*members.member)>;
                     auto slot = properties.add_object(members.name);
                     if constexpr (is_optional<member_type>::value) {
+                        // Written as null when empty, and may be left out of a body.
                         write_schema<typename member_type::value_type>(slot);
+                        slot.set("nullable", true);
                     } else {
                         required.push(members.name);
                         write_schema<member_type>(slot);

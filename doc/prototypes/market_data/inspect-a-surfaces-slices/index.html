@@ -42,7 +42,7 @@ td.num{text-align:right;font-family:var(--mono)}
 .urlbtn .edit{color:var(--accent);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
 .oresmd-overlay{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
 .oresmd-frame{width:min(1120px,96vw);height:min(840px,92vh);border:1px solid var(--line);border-radius:var(--radius);background:var(--bg)}
-.pc{margin:0}.pc svg{display:block;background:var(--panel-2);border:1px solid var(--line);border-radius:6px}.pc figcaption{margin-top:6px;font-size:.78rem}.pc-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:.78rem;color:var(--ink-dim)}.pc-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}</style>
+.pc{margin:0}.pc svg{display:block;background:var(--panel-2);border:1px solid var(--line);border-radius:6px}.pc svg.solid{touch-action:none;cursor:grab}.pc svg.solid:focus-visible{outline:2px solid var(--accent);outline-offset:2px}input[type=range]{accent-color:var(--accent);width:100%}.pc figcaption{margin-top:6px;font-size:.78rem}.pc-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:.78rem;color:var(--ink-dim)}.pc-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}</style>
 </head>
 <body>
 
@@ -72,6 +72,9 @@ const params = new URLSearchParams(location.search);
 const variant = params.get('variant') || 'a';
 const state = params.get('state') || 'clean';
 const tenor = params.get('tenor') || '5Y';
+const face = params.get('face') === 'swaption' ? 'swaption' : 'fx';
+const instantParam = params.get('instant');
+let instant = instantParam === null ? 2 : Math.min(4, Math.max(0, Math.round(Number(instantParam)) || 0));
 
 const deltas = [
   {k:'10P', label:'10d put', strike:2.40, jitter:0.12},
@@ -107,6 +110,38 @@ const mesh = surface.map(s => {
 const tvAll = mesh.flatMap(r => r.vols.map(v => (v / 100) ** 2 * r.T));
 const tvMin = Math.min(...tvAll), tvMax = Math.max(...tvAll);
 
+// The second mock market: EURUSD under SSVI, read in strike space. An FX
+// surface is quoted in delta and stored against absolute strikes, so the
+// strike axis is what a screen has to draw.
+const fxSpot = 1.0850;
+const fxStrikes = [1.02, 1.04, 1.06, 1.08, 1.10, 1.12, 1.14, 1.16, 1.18];
+const fxExpiries = [
+  {exp:'1W', T:7/365}, {exp:'1M', T:30/365}, {exp:'3M', T:91/365},
+  {exp:'6M', T:182/365}, {exp:'1Y', T:1}, {exp:'2Y', T:2}
+];
+const fxAtmVols = [6.2, 6.6, 7.0, 7.4, 7.9, 8.3];
+const fxInstants = ['08:00', '10:00', '12:00', '14:00', '16:00'];
+const fxShift = [0, -0.12, -0.18, 0.08, 0.30];
+
+// SSVI: one total-variance curve over log-moneyness, sharing curvature across expiries.
+function ssviTotalVariance(theta, rho, eta, gamma, x){
+  const phi = eta / (Math.pow(theta, gamma) * Math.pow(1 + theta, 1 - gamma));
+  return theta / 2 * (1 + rho * phi * x + Math.sqrt((phi * x + rho) ** 2 + (1 - rho * rho)));
+}
+
+function fxSurfaceAt(n){
+  const rho = -0.30 - 0.04 * n;
+  const z = fxExpiries.map((e, i) => {
+    const atm = (fxAtmVols[i] + fxShift[n]) / 100;
+    const theta = atm * atm * e.T;
+    return fxStrikes.map(k => {
+      const w = ssviTotalVariance(theta, rho, 0.62, 0.42, Math.log(k / fxSpot));
+      return Math.min(25, Math.max(2.5, Math.sqrt(w / e.T) * 100));
+    });
+  });
+  return {rows: fxExpiries, cols: fxStrikes, z};
+}
+
 function urlButton(url){
   return `<button class="urlbtn" type="button" data-url="${url}" title="Edit in the oresmd URL editor">`+
          `<span class="mono">${url}</span><span class="edit">edit</span></button>`;
@@ -131,19 +166,23 @@ function slice(exp){ return surface.find(s => s.exp === exp) || surface[3]; }
 function quad(s, i){ return s.vols[i - 1] - 2 * s.vols[i] + s.vols[i + 1]; }
 
 function header(){
+  const fx = face === 'fx' && variant === 'd';
+  const title = fx ? 'Surface: EURUSD vol (SSVI, candidate)' : 'Surface slices: USD swaption vol (candidate)';
+  const url = fx ? 'oresmd://vol/EURUSD?type=surface&amp;instrument=fx&amp;derivation=SSVI'
+                 : 'oresmd://vol/USD?type=surface&amp;instrument=swaption';
   return `
   <div class="top">
-    <h1>Surface slices: USD swaption vol (candidate)</h1>
+    <h1>${title}</h1>
     <span class="muted">candidate · not published</span>
     <a style="margin-left:auto" href="../../../knowledge/journeys/market_data/journey_inspect-a-surfaces-slices.html">the journey &rarr;</a>
   </div>
   <div class="panel">
     <h2>Surface and tenor picker</h2>
     <div class="row">
-      <div class="field"><label>Surface</label><div class="value mono">${urlButton('oresmd://vol/USD?type=surface&amp;instrument=swaption')}</div></div>
-      <div class="field"><label>Derivation</label><div class="value">volatility · SABR</div></div>
-      <div class="field"><label>As of</label><div class="value">now · 2026-10-06 14:00 <span class="faint">(no past read)</span></div></div>
-      <div class="field"><label>Quotes held</label><div class="value">42</div></div>
+      <div class="field"><label>Surface</label><div class="value mono">${urlButton(url)}</div></div>
+      <div class="field"><label>Derivation</label><div class="value">volatility · ${fx ? 'SSVI' : 'SABR'}</div></div>
+      <div class="field"><label>As of</label><div class="value">${fx ? fxInstants[instant] : 'now'} · 2026-10-06 ${fx ? fxInstants[instant] : '14:00'} <span class="faint">(no past read)</span></div></div>
+      <div class="field"><label>Quotes held</label><div class="value">${fx ? 54 : 42}</div></div>
       <button class="btn primary" data-act="read">Read surface</button>
     </div>
     <div class="row"><span class="muted">Tenors shown</span>
@@ -229,6 +268,124 @@ function meshPanel(){
       z: surface.map(s => s.vols), zLabel:'vol %', dp:1, h:400,
       caption:'The same mesh as a wireframe: the smile across strikes, the level across expiries.'})}
   </div>`;
+}
+
+// The view angles live outside render() so a drag redraws the surface in place.
+function angleParam(name, fallback){
+  const raw = params.get(name);
+  if (raw === null) return fallback;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : fallback;
+}
+const view = {yaw: angleParam('yaw', 0.65), pitch: angleParam('pitch', 1.02)};
+const DEFAULT_VIEW = {yaw: 0.65, pitch: 1.02};
+
+function faceData(){
+  if (face === 'swaption') {
+    return {
+      rows: surface.map(s => ({label: s.exp})),
+      cols: deltas.map(d => ({label: d.k})),
+      z: surface.map(s => s.vols),
+      xLabel: 'strike (delta)', mark: 2,
+      title: 'USD swaption surface, delta space'
+    };
+  }
+  const f = fxSurfaceAt(instant);
+  return {
+    rows: f.rows.map(e => ({label: e.exp})),
+    cols: f.cols.map(k => ({label: k.toFixed(2)})),
+    z: f.z,
+    xLabel: 'strike (K)', mark: f.cols.indexOf(1.08),
+    title: 'EURUSD surface, SSVI, strike space'
+  };
+}
+
+function solidOptions(){
+  const d = faceData();
+  return Object.assign({}, d, {
+    yaw: view.yaw, pitch: view.pitch, w: 940, h: 520, dp: 1,
+    zLabel: 'vol %', id: 'solid-svg',
+    notes: [`yaw ${view.yaw.toFixed(2)}`, `pitch ${view.pitch.toFixed(2)}`],
+    caption: 'Drag to rotate, arrow keys when the plot has focus, double-click to reset. Every angle is a URL: ?yaw=&pitch=. The marked band is the at-the-money strike.'
+  });
+}
+
+function solidPanel(){
+  const fx = face === 'fx';
+  const d = faceData();
+  const vals = d.z.flat();
+  return `
+  <div class="panel">
+    <h2>${fx ? 'EURUSD SSVI — strike space' : 'USD swaption — delta space'} in three dimensions</h2>
+    ${PC.solid(solidOptions())}
+    <div class="row">
+      <button class="btn" data-act="reset">Reset view</button>
+      ${fx ? `<div class="field" style="min-width:280px"><label for="instant">Instant — ${fxInstants[instant]}</label>
+        <input id="instant" type="range" min="0" max="${fxInstants.length - 1}" step="1" value="${instant}"></div>` : ''}
+      <span class="muted">${vals.length} points · the whole grid is drawn; nothing is smoothed</span>
+    </div>
+    <div class="notice">No read returns a surface as a mesh. <span class="mono">marketdata.v1.surface-mesh.get</span> does not exist, so this shape is computed in the page from the mock ${fx ? 'SSVI parameters (ρ from −0.30 to −0.46 across the day)' : 'SABR vols'}. ${fx ? 'The strikes are absolute levels, so the axis a delta quote hides is the axis this view makes visible.' : ''}</div>
+  </div>`;
+}
+
+function remember(o){
+  const p = new URLSearchParams(location.search);
+  Object.keys(o).forEach(k => p.set(k, o[k]));
+  history.replaceState(null, '', '?' + p.toString());
+}
+
+function redrawSolid(){
+  const svg = document.querySelector('svg.solid');
+  if (svg) svg.innerHTML = PC.solidBody(solidOptions());
+}
+
+function resetView(){
+  view.yaw = DEFAULT_VIEW.yaw; view.pitch = DEFAULT_VIEW.pitch;
+  redrawSolid(); remember({yaw: view.yaw.toFixed(2), pitch: view.pitch.toFixed(2)});
+}
+
+function wireSolid(){
+  const svg = document.querySelector('svg.solid');
+  if (!svg) return;
+  let drag = null;
+  svg.addEventListener('pointerdown', e => {
+    drag = {x: e.clientX, y: e.clientY, yaw: view.yaw, pitch: view.pitch};
+    svg.setPointerCapture(e.pointerId);
+    svg.style.cursor = 'grabbing';
+  });
+  svg.addEventListener('pointermove', e => {
+    if (!drag) return;
+    view.yaw = drag.yaw + (e.clientX - drag.x) * 0.011;
+    view.pitch = Math.max(0.18, Math.min(1.45, drag.pitch + (e.clientY - drag.y) * 0.008));
+    redrawSolid();
+  });
+  const release = () => {
+    if (!drag) return;
+    drag = null; svg.style.cursor = 'grab';
+    remember({yaw: view.yaw.toFixed(2), pitch: view.pitch.toFixed(2)});
+  };
+  svg.addEventListener('pointerup', release);
+  svg.addEventListener('pointercancel', release);
+  svg.addEventListener('keydown', e => {
+    const step = e.shiftKey ? 0.25 : 0.08;
+    const moves = {ArrowLeft: ['yaw', -step], ArrowRight: ['yaw', step], ArrowUp: ['pitch', step], ArrowDown: ['pitch', -step]};
+    const m = moves[e.key];
+    if (!m) return;
+    e.preventDefault();
+    if (m[0] === 'yaw') view.yaw += m[1];
+    else view.pitch = Math.max(0.18, Math.min(1.45, view.pitch + m[1]));
+    redrawSolid(); remember({yaw: view.yaw.toFixed(2), pitch: view.pitch.toFixed(2)});
+  });
+  svg.addEventListener('dblclick', resetView);
+  const reset = document.querySelector('[data-act="reset"]');
+  if (reset) reset.onclick = resetView;
+  const slider = document.getElementById('instant');
+  if (slider) slider.oninput = () => {
+    instant = Number(slider.value);
+    const label = document.querySelector('label[for="instant"]');
+    if (label) label.textContent = `Instant — ${fxInstants[instant]}`;
+    redrawSolid(); remember({instant: String(instant)});
+  };
 }
 
 function arbitragePanel(){
@@ -429,31 +586,176 @@ const PC = (() => {
       ${o.caption ? `<figcaption class="faint">${esc(o.caption)}</figcaption>` : ''}</figure>`;
   }
 
-  return {line, bars, heat, mesh, colours: C, heatColour};
+  // A surface as a rotatable solid: quads projected from a yawed, pitched
+  // camera and drawn back to front, with the grid it sits on behind them.
+  const AXIS_X = 1.7, AXIS_Y = 1.15, Z_SCALE = 0.62, PERSP = 3.2;
+  const LIGHT = (() => { const l = [-0.42, -0.62, 0.66], m = Math.hypot(...l); return l.map(c => c / m); })();
+
+  function solidBody(o){
+    const w = o.w || 940, h = o.h || 520;
+    const z = o.z, rows = z.length, cols = z[0].length;
+    const vals = z.flat().filter(v => v != null);
+    const lo = Math.min(...vals), hi = Math.max(...vals), span = (hi - lo) || 1;
+    const yaw = o.yaw ?? 0.65, pitch = o.pitch ?? 1.02;
+    const cosY = Math.cos(yaw), sinY = Math.sin(yaw);
+    const cosP = Math.cos(pitch), sinP = Math.sin(pitch);
+    const cx = w * 0.5, cy = h * 0.5;
+    const mark = o.mark ?? -1;
+
+    // Camera space: rotate about the vertical, then tilt. `k` is the
+    // perspective divide, so equal steps in depth shrink with distance.
+    function camera(u, v, hgt){
+      const X = (u - 0.5) * AXIS_X, Y = (v - 0.5) * AXIS_Y, Z = (hgt - 0.5) * Z_SCALE;
+      const xr = X * cosY - Y * sinY;
+      const yr = X * sinY + Y * cosY;
+      const y1 = yr * sinP - Z * cosP;
+      const z1 = yr * cosP + Z * sinP;
+      return {rx: xr / (1 + z1 / PERSP), ry: y1 / (1 + z1 / PERSP), x: xr, y: y1, z: z1, d: z1};
+    }
+
+    // Fit the turned object to the box, so every angle is centred and whole.
+    const corners = [[0,0],[1,0],[0,1],[1,1]];
+    const framing = corners.map(([u, v]) => camera(u, v, 0)).concat([camera(0, 0, 1)]);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const v = z[r][c];
+        framing.push(camera(c / (cols - 1), r / (rows - 1), v == null ? 0 : (v - lo) / span));
+      }
+    }
+    const margin = 30;
+    const xs = framing.map(p => p.rx), ys = framing.map(p => p.ry);
+    const spanX = Math.max(...xs) - Math.min(...xs), spanY = Math.max(...ys) - Math.min(...ys);
+    const scale = Math.min((w - 2 * margin) / Math.max(1e-6, spanX), (h - 2 * margin) / Math.max(1e-6, spanY));
+    const offX = cx - (Math.min(...xs) + Math.max(...xs)) / 2 * scale;
+    const offY = cy - (Math.min(...ys) + Math.max(...ys)) / 2 * scale;
+
+    function at(u, v, hgt){
+      const p = camera(u, v, hgt);
+      return {sx: offX + p.rx * scale, sy: offY + p.ry * scale, x: p.x, y: p.y, z: p.z, d: p.d};
+    }
+    const pt = (x, y) => at(x / (cols - 1), y / (rows - 1), 0);
+    const fixed = p => `${p.sx.toFixed(1)},${p.sy.toFixed(1)}`;
+    // Tick labels sit outside the solid and stay inside the box, so a rotated
+    // view never loses the axis it is labelled on.
+    const outward = (p, dist) => {
+      const dx = p.sx - cx, dy = p.sy - cy, m = Math.hypot(dx, dy) || 1;
+      return {
+        x: Math.max(14, Math.min(w - 14, p.sx + dx / m * dist)),
+        y: Math.max(16, Math.min(h - 8, p.sy + dy / m * dist))
+      };
+    };
+
+    const quads = [];
+    for (let i = 0; i < rows - 1; i++) {
+      for (let j = 0; j < cols - 1; j++) {
+        const four = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]].map(([r, c]) => {
+          const v = z[r][c];
+          return {v, p: at(c / (cols - 1), r / (rows - 1), v == null ? 0 : (v - lo) / span)};
+        });
+        const avg = four.reduce((s, q) => s + (q.v ?? 0), 0) / 4;
+        // The farthest corner sorts the quad, not its centre: a steep wing
+        // overlaps the flat ground behind it and the centre would draw it late.
+        quads.push({i, j, pts: four.map(q => q.p), avg, depth: Math.max(...four.map(q => q.p.d))});
+      }
+    }
+    quads.sort((a, b) => b.depth - a.depth);
+    const shade = q => {
+      const [a, b, c] = q.pts;
+      const e1 = [b.x - a.x, b.y - a.y, b.z - a.z], e2 = [c.x - a.x, c.y - a.y, c.z - a.z];
+      let n = [e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0]];
+      const m = Math.hypot(...n) || 1;
+      n = n.map(v => v / m);
+      return 0.42 + 0.58 * Math.min(1, Math.abs(n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]));
+    };
+    const tint = (t, s) => {
+      const rgb = heatColour(t).match(/\d+/g).map(Number);
+      return `rgb(${rgb.map(c => Math.round(Math.min(255, c * s))).join(',')})`;
+    };
+
+    const body = quads.map(q => {
+      const onMark = q.j === Math.max(0, mark - 1);
+      const fill = tint((q.avg - lo) / span, shade(q));
+      return `<polygon points="${q.pts.map(fixed).join(' ')}" fill="${fill}"
+        stroke="${onMark ? C.ink : '#0b0e13'}" stroke-width="${onMark ? 1.2 : .6}" stroke-opacity="${onMark ? .85 : .5}">`+
+        `<title>${esc(o.rows[q.i].label)} · ${esc(o.cols[q.j].label)}: ${esc(fmt(q.avg, o.dp))}</title></polygon>`;
+    }).join('');
+
+    const baseLines = [];
+    for (let i = 0; i < rows; i++) {
+      baseLines.push(`<path d="${Array.from({length: cols}, (_, j) => `${j ? 'L' : 'M'}${fixed(pt(j, i))}`).join(' ')}"
+        fill="none" stroke="${C.grid}" stroke-width="1" stroke-dasharray="2 4" opacity=".75"/>`);
+    }
+    for (let j = 0; j < cols; j++) {
+      baseLines.push(`<path d="${Array.from({length: rows}, (_, i) => `${i ? 'L' : 'M'}${fixed(pt(j, i))}`).join(' ')}"
+        fill="none" stroke="${C.grid}" stroke-width="1" stroke-dasharray="2 4" opacity=".75"/>`);
+    }
+
+    const foot = pt(0, 0), top = at(0, 0, 1);
+    const edge = (p, q, colour) => `<line x1="${p.sx.toFixed(1)}" y1="${p.sy.toFixed(1)}" x2="${q.sx.toFixed(1)}" y2="${q.sy.toFixed(1)}" stroke="${colour}" stroke-width="1.2"/>`;
+    const axes = edge(foot, pt(cols - 1, 0), C.accent) + edge(foot, pt(0, rows - 1), C.warn) +
+                 edge(foot, top, C.text) + edge(top, pt(0, rows - 1), C.text);
+    const label = (p, dist, text, anchor) => {
+      const t = outward(p, dist);
+      return `<text x="${t.x.toFixed(1)}" y="${t.y.toFixed(1)}" fill="${C.ink}" font-size="10" text-anchor="${anchor}"
+        style="paint-order:stroke" stroke="#0b0e13" stroke-width="3" stroke-linejoin="round">${text}</text>`;
+    };
+    // Labels ride the near edges, so a turn never leaves them behind the solid.
+    const nearRow = pt(0, 0).d + pt(cols - 1, 0).d > pt(0, rows - 1).d + pt(cols - 1, rows - 1).d ? rows - 1 : 0;
+    const nearCol = pt(0, 0).d + pt(0, rows - 1).d > pt(cols - 1, 0).d + pt(cols - 1, rows - 1).d ? cols - 1 : 0;
+    // The shared corner carries the expiry label only, so the two do not collide.
+    const colTicks = o.cols.map((c, j) => j === nearCol ? '' : label(pt(j, nearRow), 15, esc(c.label), 'middle')).join('');
+    const rowTicks = o.rows.map((r, i) => label(pt(nearCol, i), 17, esc(r.label), 'end')).join('');
+
+    return `${baseLines.join('')}${axes}${body}${colTicks}${rowTicks}`;
+  }
+
+  function solid(o){
+    const h = o.h || 520;
+    const vals = o.z.flat().filter(v => v != null);
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    const legend = `<div class="pc-legend">
+      <span><i style="background:${C.accent}"></i>${esc(o.xLabel || 'strike')} — ${esc(o.cols[0].label)} to ${esc(o.cols[o.cols.length - 1].label)}</span>
+      <span><i style="background:${C.warn}"></i>expiry — ${esc(o.rows[0].label)} to ${esc(o.rows[o.rows.length - 1].label)}</span>
+      <span><i style="background:${C.text}"></i>height: ${esc(o.zLabel || 'vol %')} ${esc(fmt(lo, o.dp))} to ${esc(fmt(hi, o.dp))}</span>
+      ${(o.notes || []).map(n => `<span class="faint">${esc(n)}</span>`).join('')}</div>`;
+    return `<figure class="pc"><svg id="${o.id || 'solid-svg'}" class="solid" viewBox="0 0 ${o.w || 940} ${h}"
+      width="100%" height="${h}" tabindex="0" role="img" aria-label="${esc(o.title || 'rotatable surface')}">${solidBody(o)}</svg>
+      ${legend}${o.caption ? `<figcaption class="faint">${esc(o.caption)}</figcaption>` : ''}</figure>`;
+  }
+
+  return {line, bars, heat, mesh, solid, solidBody, colours: C, heatColour};
 })();
 function render(){
   const app = document.getElementById('app');
   let body;
   if (variant === 'b') body = meshPanel() + termStructures() + arbitragePanel();
   else if (variant === 'c') body = termStructures() + arbitragePanel() + smilesTable();
+  else if (variant === 'd') body = solidPanel() + arbitragePanel();
   else body = smileChart() + termStructures() + smilesTable() + arbitragePanel();
   app.innerHTML = header() + body;
   document.getElementById('note').textContent =
-    `Prototype · inspect a surface's slices · variant ${variant.toUpperCase()} · market: ${state} · slice: ${tenor} · reads and diagnoses only`;
+    `Prototype · inspect a surface's slices · variant ${variant.toUpperCase()} · market: ${state} · slice: ${tenor}` +
+    (variant === 'd' ? ` · face: ${face} · instant: ${fxInstants[instant]}` : '') +
+    ` · reads and diagnoses only`;
   document.getElementById('bar').innerHTML =
     `<span class="label">View</span>` +
-    ['a','b','c'].map(v => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v.toUpperCase()} ${v === 'a' ? 'slice' : v === 'b' ? 'mesh' : 'arbitrage'}</button>`).join('') +
+    ['a','b','c','d'].map(v => `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${v.toUpperCase()} ${v === 'a' ? 'slice' : v === 'b' ? 'mesh' : v === 'c' ? 'arbitrage' : '3D'}</button>`).join('') +
     `<span class="sep">|</span><span class="label">Market</span>` +
     ['clean','butterfly'].map(s => `<button data-s="${s}" class="${s === state ? 'on' : ''}">${s}</button>`).join('') +
     `<span class="sep">|</span><span class="label">Slice</span>` +
-    surface.map(s => `<button data-t="${s.exp}" class="${s.exp === tenor ? 'on' : ''}">${s.exp}</button>`).join('');
+    surface.map(s => `<button data-t="${s.exp}" class="${s.exp === tenor ? 'on' : ''}">${s.exp}</button>`).join('') +
+    (variant === 'd' ? `<span class="sep">|</span><span class="label">Surface</span>` +
+      [['fx','EURUSD SSVI'],['swaption','USD swaption']].map(([f, l]) =>
+        `<button data-f="${f}" class="${f === face ? 'on' : ''}">${l}</button>`).join('') : '');
   document.querySelectorAll('#bar [data-v]').forEach(b => b.onclick = () => set('variant', b.dataset.v));
   document.querySelectorAll('#bar [data-s]').forEach(b => b.onclick = () => set('state', b.dataset.s));
   document.querySelectorAll('#bar [data-t]').forEach(b => b.onclick = () => set('tenor', b.dataset.t));
+  document.querySelectorAll('#bar [data-f]').forEach(b => b.onclick = () => set('face', b.dataset.f));
   document.querySelectorAll('#app [data-t]').forEach(b => b.onclick = () => set('tenor', b.dataset.t));
   document.querySelectorAll('[data-act]').forEach(b => b.onclick = () => {
     document.getElementById('note').textContent = `${b.textContent}: mock only — the subject it names is missing`;
   });
+  if (variant === 'd') wireSolid();
 }
 function set(k, v){ const p = new URLSearchParams(location.search); p.set(k, v); location.search = p.toString(); }
 render();

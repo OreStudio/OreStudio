@@ -2,12 +2,12 @@
 :ID: C5564FE4-258E-4807-B3FD-DBBAB086EA67
 :END:
 #+title: Inspect a surface's slices prototype
-#+description: Three views of a candidate surface — one slice, the mesh and the arbitrage report — over two mock markets, so the argument that a surface is read a slice at a time can be judged on the screen that carries it
+#+description: Four views of a candidate surface — one slice, the mesh, the arbitrage report and a rotatable solid — over a swaption market and an FX SSVI market, so the argument that a surface is read a slice at a time can be judged on the screen that carries it
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:surfaces:
 #+created: 2026-10-09
-#+updated: 2026-10-09
+#+updated: 2026-11-12
 
 | Item          | Where                                               |
 |---------------+-----------------------------------------------------|
@@ -19,9 +19,9 @@
 
 The surface slices prototype argues that a surface is read a slice at a time,
 and that the arbitrage checks are what make the slices trustworthy. It draws a
-candidate USD swaption vol surface from three views — one slice, the mesh and
-the arbitrage report — over two mock markets, so the argument can be judged on
-the screen that has to carry it.
+candidate surface from four views — one slice, the mesh, the arbitrage report
+and a rotatable solid — over a swaption market and an FX SSVI market in strike
+space, so the argument can be judged on the screen that has to carry it.
 
 It is throwaway. It is not production code, it reads no service, and every
 value on it is mock data. It exists because the
@@ -61,10 +61,13 @@ the view, which is the journey's central design question.
 | =a=     | slice     | One slice at a tenor: the fitted smile with the raw quotes over it, the ATM, RR and FLY term structures the surface is built from, the smiles across tenors, and the arbitrage checks at the foot. The default, and the closest to the journey, which reads a surface a slice at a time. |
 | =b=     | mesh      | The mesh: the surface as a shaded grid and as a wireframe, then the component term structures, then the arbitrage checks. The slice is absent, so the whole surface is read without the smile that makes it. |
 | =c=     | arbitrage | The arbitrage report: the term structures, the calendar and butterfly checks, then the smiles table. The faults come first. |
+| =d=     | 3D        | The mesh as one rotatable solid over an FX SSVI market in strike space, with the instants of the day scrubbed under it, then the arbitrage checks. The mesh stops being a still picture and becomes an object the reader turns. |
 
 The variants disagree about what a surface is, not about colour. *A* treats the
 slice as the unit, the mesh as something the reader assembles. *B* treats the
 mesh as the object. *C* tests the surface and reads the numbers as evidence.
+*D* asks whether turning the object finds structure that a still picture hides:
+the short end's convex wings, and the change of shape across the day.
 
 ** The states
 
@@ -81,23 +84,48 @@ every check proves nothing about the checks, while one that fails shows where a
 fault is named beside the smile that carries it. The violation is visible only
 on the =5Y= slice, so the =?state= and the =?tenor= are read together.
 
+** The second market
+
+Variant =d= adds a second mock market: EURUSD under SSVI, quoted in delta and
+drawn against absolute strikes. Switch it with the *Surface* buttons, or
+=?face=; =fx= is the default there.
+
+An FX surface carries its smile in strike, and a quote sheet carries it in
+delta, so the strike axis is the one a screen has to draw and the one a quote
+hides. The grid is computed in the page from four SSVI parameters: an ATM total
+variance per expiry, a shared =ρ= that moves from −0.30 to −0.46 across the day,
+=η= 0.62 and =γ= 0.42. The smile is convex in strike, and its wings lift as the
+expiry shortens.
+
+=?instant=0..4= scrubs 08:00 to 16:00. Each step moves the ATM level and the
+skew, so the surface twists through the day. That twist is the argument for the
+third dimension: a heatmap and a still wireframe both hide it.
+
 ** Driving it
 
 The picker is live. *Read surface* and *Read smiles* write one line into the
 strip at the top: that the subject they name is missing and nothing was read.
-The *View*, *Market* and *Slice* buttons rewrite the query string, so any
-combination is a URL. The surface field opens the oresmd URL editor beside the
-page and gets an edited URL back; every control is prototype chrome.
+The *View*, *Market*, *Slice* and *Surface* buttons rewrite the query string, so
+any combination is a URL. The surface field opens the oresmd URL editor beside
+the page and gets an edited URL back; every control is prototype chrome.
+
+In variant =d= the plot is an object. Drag it to turn it; the arrow keys turn it
+when it has focus, and a shift with the keys turns it faster. A double-click
+resets it to the default view. Every angle is a URL too, =?yaw=&pitch=, so a
+reader can hand someone the view they are looking at.
 
 ** What is fake
 
 Everything. The surface, its six expiries and five strikes, the 42 quotes it
 claims to hold, the fitted smiles, the jitter over each raw quote, the total
 variances, the implied densities, the =SABR= derivation, the =as of= time and
-the =oresmd= URL are constants in the page. There is no server, no session and
-no build step, and nothing is stored or published. The page states that
-=marketdata.v1.surface.get=, =.surface-slice.get= and =.surface.arbitrage= are
-missing.
+the =oresmd= URL are constants in the page. The FX market is mock in the same
+way: 54 vols over nine strikes and six expiries, computed from the SSVI
+parameters rather than read from a book, and the five instants are five fixed
+shifts of the level and the skew, not a replay of a day. There is no server, no
+session and no build step, and nothing is stored or published. The page states
+that =marketdata.v1.surface.get=, =.surface-slice.get= and =.surface.arbitrage=
+are missing, and that no read returns a surface as a mesh.
 
 ** Where the code lives
 
@@ -114,24 +142,32 @@ slice is the unit the person reasons in — one expiry, its strikes, its quotes
 against the fitted line — and the mesh is what the slices make together. The
 checks are the verdict on the slices above them, not a report at the foot.
 
-What stayed on the page as the record: the three views, the two markets and the
+What stayed on the page as the record: the views, the two markets and the
 tenor picker, kept because the argument must hold in every combination.
 
 ** What it does not settle
 
-Which view the screen opens on. Slice, mesh and arbitrage are drawn and none is
-chosen; the choice belongs to the screen that is built.
+Which view the screen opens on. Slice, mesh, arbitrage and 3D are drawn and none
+is chosen; the choice belongs to the screen that is built.
 
 Where the checks run and what they are called. No operation returns a total
 variance along an expiry axis, or a density along a smile.
 
 Whether a surface is read whole or a slice at a time, and whether the mesh is a
-read of its own. Both are drawn and no read exists for either.
+read of its own. All are drawn and no read exists for any.
+
+Whether turning the surface earns its keep. Variant =d= makes the argument that
+it does — the strike axis and the day's twist read better as an object — but no
+person has judged it on a screen that has to live with it. Two things would
+decide it: whether a reader turns the surface before they read a slice, and
+whether the turning ever changes a decision.
 
 The past. The =as of= field reads *now* with *no past read*, so the page draws
-one instant; watching a surface move is a different journey.
+one instant of one market; watching a surface move over a real range is a
+different journey, and the five instants are a mock of it, not a read.
 
-The strike axis. The page holds five strikes as levels; level against delta is not settled here.
+The strike axis. The page holds five delta levels and nine absolute strikes;
+how a stored grid carries either is not settled here.
 
 * See also
 

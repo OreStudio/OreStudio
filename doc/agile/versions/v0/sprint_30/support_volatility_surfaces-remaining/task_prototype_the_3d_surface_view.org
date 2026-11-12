@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 5917E17E-8DD9-4593-869A-274A29830479
+:END:
+#+title: Task: Prototype the 3D surface view
+#+description: A throwaway rotatable solid view of a candidate surface over an FX SSVI market in strike space, to judge whether turning the surface earns its place on the slices screen.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/prototype-a-3d-surface-view
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A candidate surface reads as a solid the person turns. The view carries an FX SSVI market in strike space, and the instants of the day scrub under it. The prototype answers one question: does turning the surface find structure that a still picture hides?
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-12                               |
+
+* Acceptance
+
+- Variant d of the surface slices prototype draws the surface as a solid that the reader turns.
+- The FX SSVI market is drawn against absolute strikes, not delta.
+- The instants of the day scrub under the surface and change its shape.
+
+* Plan
+
+The prototype extends the existing throwaway page, so nothing new has to run:
+one file, no build step, no server, no database.
+
+- A fourth variant, =d=, sits beside =a=, =b= and =c=. =b= stays as the
+  accepted record of the still mesh; =d= is the argument about turning it.
+- =PC.solid= projects the grid through a yawed, pitched camera, sorts the
+  quads by their farthest corner and draws them back to front over a dashed
+  grid. The projection fits itself to the plot box at every angle, and the axis
+  labels ride the near edges, so a turn never loses an axis.
+- The second market is EURUSD under SSVI: an ATM total variance per expiry, and
+  =φ(θ)= from =η= 0.62 and =γ= 0.42 with a shared =ρ=. Nine absolute strikes,
+  six expiries. The strike axis is the one a delta quote hides.
+- Five instants move the level and the skew, so the surface twists through the
+  day.
+- The angle is state, not a reload: =?yaw=&pitch=, written back on release. A
+  drag redraws the plot in place, so no turn costs a page load.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done on 2026-11-12. Variant =d= draws a candidate surface as a solid the person
+turns, with an FX SSVI market in strike space and five instants under it.
+
+What it settled: the strike axis and the day's skew read better as a turned
+object than as a still grid. That was the argument the variant was built to
+test, and the page now carries it.
+
+What it did not settle: whether the built screen keeps the 3D view. No person
+has used it outside this page, and the argument for it is the page itself. The
+question a screen has to answer is written in
+[[id:C5564FE4-258E-4807-B3FD-DBBAB086EA67][what the prototype does not settle]].
+
+Checked by headless Chrome renders at several angles and all five instants. A
+rendered-DOM diff of the committed page against this one shows three changes
+only: the fourth *View* button, the CSS the solid needs, and the new script.
+Variants =a=, =b= and =c= draw the same surface content as before; the bottom
+bar reflows to fit the fourth button, which is the one visible difference.

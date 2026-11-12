@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/project-the-commodity-basket-scripted-products
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ The scripted commodity products on a basket are written and read by the projecti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,23 @@ The scripted commodity products on a basket are written and read by the projecti
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+ORE's schema declares a =Commodity<Type>Data= element for all four types,
+and the engine reads each from =<TradeType>Data=.
+
+1. Rename the =equity_swap_period= entity to =basket_swap_period=, through
+   codegen, and move the equity carrier, projection and builder onto it.
+   Nothing in a period is equity's own, and ORE states the same worst-of
+   swap for FX and commodities, so the three families share one table.
+   Decided with the user.
+2. Give the commodity carrier the periods, in the shared rows.
+3. Add the four types to the projection's table of products. The rainbow
+   option and the basket variance swap state their basket through the
+   commodity basket constituents. The best entry option states one
+   underlying. The worst-of basket swap states its basket, its initial
+   prices and its periods, as the equity one does.
+4. Add a builder for each type, register it, and call it from the planner.
+5. Record the generated trades, run the ORE engine test, and update the
+   known lists.
 
 * Measurements
 

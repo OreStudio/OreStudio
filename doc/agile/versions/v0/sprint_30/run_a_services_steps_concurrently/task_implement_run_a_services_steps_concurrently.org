@@ -109,7 +109,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A delivery waiting for a worker is not kept alive and spends its budget | step_command_stream.hpp | Accepted | The claim and the keep-alive are taken on the delivery thread; only the handler call goes to the worker. |
+| 2 | Shutdown waits for running steps | step_workers.hpp | Accepted as designed | The class comment states it; a step that outlives the stop is ended by its claim's lease. |
+| 3 | A throw from post leaks a worker slot | step_workers.hpp | Accepted | The slot is restored when post throws, and the posted task is noexcept. |
+| 4 | Handlers now run side by side | registrar.cpp | Accepted | The plan's audit found only the token provider; the provisioning run found the two derived FX vol defects the hotfix fixes. |
+| 5 | The one-worker bypass duplicates run() | step_command_stream.hpp | Accepted | A comment says why the bypass stays. |
+| 6 | The token provider holds its lock across a renewal | service_token_provider.cpp | Accepted | The comment says the waiting callers reuse the renewed token. |
+| 7 | No test of serve_step_commands with several workers | step_command_stream.hpp | Declined | ores.service.tests has no live NATS harness to build one on; the fresh provisioning run exercises it end to end, with four workers. |
 
 * Result
 

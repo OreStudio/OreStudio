@@ -162,7 +162,9 @@ make_service_token_provider(ores::nats::service::client& nats,
     state->authenticate();
 
     // Every handler thread of the service calls the provider, and the cached
-    // token is shared, so one caller at a time reads or renews it.
+    // token is shared, so one caller at a time reads or renews it. A renewal
+    // holds the lock across its round-trip, so the callers waiting on it reuse
+    // its token rather than each signing in again.
     auto guard = std::make_shared<std::mutex>();
     return [state, guard](bool force) -> std::string {
         const std::scoped_lock lock(*guard);

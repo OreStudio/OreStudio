@@ -81,16 +81,25 @@ public:
             freed_.wait(lock, [this] { return free_ > 0; });
             --free_;
         }
-        boost::asio::post(pool_, [this, step = std::move(step)]() mutable {
-            step();
-            step = nullptr;
-            std::scoped_lock lock(mutex_);
-            ++free_;
-            freed_.notify_one();
-        });
+        try {
+            boost::asio::post(pool_, [this, step = std::move(step)]() mutable noexcept {
+                step();
+                step = nullptr;
+                release();
+            });
+        } catch (...) {
+            release();
+            throw;
+        }
     }
 
 private:
+    void release() noexcept {
+        std::scoped_lock lock(mutex_);
+        ++free_;
+        freed_.notify_one();
+    }
+
     std::size_t workers_;
     std::mutex mutex_;
     std::condition_variable freed_;

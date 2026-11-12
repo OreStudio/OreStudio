@@ -285,7 +285,10 @@ serve_step_commands(ores::nats::service::client& nats,
     BOOST_LOG_SEV(detail::lg(), info) << "Serving " << subjects.size() << " step command(s) on '"
                                       << stream << "' as '" << durable << "'";
 
-    auto serve = [by_subject, &nats, claim_owner](ores::nats::delivery delivery) {
+    // The workers belong to the subscription's callback, so they are joined
+    // when the subscription is: no step outlives the service that took it.
+    auto pool = std::make_shared<step_workers>(workers);
+    auto serve = [by_subject, &nats, claim_owner, pool](ores::nats::delivery delivery) {
         const auto& msg = delivery.msg();
         // A copy, because msg refers into the delivery, which the handler
         // takes below.
@@ -401,32 +404,61 @@ serve_step_commands(ores::nats::service::client& nats,
                     });
             }
 
-            const auto started = std::chrono::steady_clock::now();
-            const auto ran_for = [&started] {
-                return std::chrono::duration<double>(std::chrono::steady_clock::now() - started)
-                    .count();
-            };
             // The handler takes the delivery, and with it the keep-alive,
-            // which ends when the handler settles or drops it.
-            try {
-                handler(std::move(delivery));
-            } catch (const std::exception& e) {
+            // which ends when the handler settles or drops it. The claim and
+            // the keep-alive are taken here, on the delivery thread, so a
+            // delivery that waits for a free worker keeps its claim and tells
+            // the server it is in progress: the wait spends none of its
+            // deliveries.
+            auto run = [by_subject,
+                        &handler,
+                        claimed_step,
+                        served,
+                        delivery = std::move(delivery)]() mutable {
+                const auto started = std::chrono::steady_clock::now();
+                const auto ran_for = [&started] {
+                    return std::chrono::duration<double>(std::chrono::steady_clock::now() - started)
+                        .count();
+                };
+                try {
+                    handler(std::move(delivery));
+                } catch (const std::exception& e) {
+                    if (!claimed_step.empty())
+                        BOOST_LOG_SEV(detail::lg(), error)
+                            << "Step " << claimed_step << " handler for " << served
+                            << " threw after " << ran_for() << "s: " << e.what();
+                    throw;
+                } catch (...) {
+                    if (!claimed_step.empty())
+                        BOOST_LOG_SEV(detail::lg(), error)
+                            << "Step " << claimed_step << " handler for " << served
+                            << " threw a non-standard exception after " << ran_for() << "s";
+                    throw;
+                }
                 if (!claimed_step.empty())
-                    BOOST_LOG_SEV(detail::lg(), error)
-                        << "Step " << claimed_step << " handler for " << served << " threw after "
-                        << ran_for() << "s: " << e.what();
-                throw;
-            } catch (...) {
-                if (!claimed_step.empty())
-                    BOOST_LOG_SEV(detail::lg(), error)
+                    BOOST_LOG_SEV(detail::lg(), info)
                         << "Step " << claimed_step << " handler for " << served
-                        << " threw a non-standard exception after " << ran_for() << "s";
-                throw;
+                        << " returned after " << ran_for() << "s";
+            };
+            // One worker runs the step here, without a copy of the handler call.
+            if (pool->size() == 1) {
+                run();
+                return;
             }
-            if (!claimed_step.empty())
-                BOOST_LOG_SEV(detail::lg(), info)
-                    << "Step " << claimed_step << " handler for " << served << " returned after "
-                    << ran_for() << "s";
+            pool->run([run = std::move(run)]() mutable {
+                // A worker has no caller to answer an exception, so it ends
+                // here. The delivery was dropped unsettled as the exception
+                // left the handler, so the server delivers it again.
+                try {
+                    run();
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(detail::lg(), error)
+                        << "A step handler threw on a worker: " << e.what();
+                } catch (...) {
+                    BOOST_LOG_SEV(detail::lg(), error)
+                        << "A step handler threw a non-standard exception on a worker";
+                }
+            });
             return;
         }
         // The consumer filters exactly the declared subjects, so a delivery
@@ -438,36 +470,8 @@ serve_step_commands(ores::nats::service::client& nats,
         std::move(delivery).reject();
     };
 
-    // The workers belong to the subscription's callback, so they are joined
-    // when the subscription is: no step outlives the service that took it.
-    auto pool = std::make_shared<step_workers>(workers);
     auto sub = nats.js_queue_subscribe_multi(
-        filters,
-        durable,
-        service_name,
-        [serve, pool](ores::nats::delivery delivery) {
-            if (pool->size() == 1) {
-                serve(std::move(delivery));
-                return;
-            }
-            pool->run([serve, delivery = std::move(delivery)]() mutable {
-                // A worker has no caller to answer an exception, so it ends
-                // here. The delivery was dropped unsettled as the exception
-                // left the handler, so the server delivers it again.
-                try {
-                    serve(std::move(delivery));
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(detail::lg(), error)
-                        << "A step handler threw on a worker: " << e.what();
-                } catch (...) {
-                    BOOST_LOG_SEV(detail::lg(), error)
-                        << "A step handler threw a non-standard exception on a worker";
-                }
-            });
-        },
-        stream,
-        step_max_deliver,
-        step_ack_wait);
+        filters, durable, service_name, std::move(serve), stream, step_max_deliver, step_ack_wait);
 
     // The consumer that serves the whole family now exists, so the consumers
     // this service used to declare one subject at a time are dead weight: they

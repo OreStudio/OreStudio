@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-latent-market
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -52,7 +52,7 @@ the decision is OD-1 of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -136,6 +136,33 @@ own. Each entry names what to take.
 Check each licence at the version copied, and name the source in the file that
 carries the copied code.
 
+** What step 1 took
+
+No code is copied. The clones are pinned here for the record, and each one is
+read for the shape of its algorithm:
+
+| Project | Revision read | What stepped into our code |
+|---------+---------------+----------------------------|
+| Random123 | =9545ff6413f258be2f04c1d319d99aaef7521150= | Nothing new: =rng_stream= already carries Philox4x32-10 and its known answers. =draw_at= calls the same block function at a chosen counter, which is what makes a bridge node addressable. |
+| Diffrax =VirtualBrownianTree= | =e950aa2cf1974c02816c1542f20beabf7cca496b= | The level walk: bisect from the cell's endpoints toward the time asked for, one fresh draw a level, to a fixed depth. Diffrax stops at a tolerance where we stop at =depth=. |
+| torchsde =BrownianInterval= | =eb3a00e31cbd56176270066ed2f62c394cf6acb7= | The cache of recently read intervals, and three of its tests: =test_normality_conditional= (the bridge's residual variance), =test_determinism= (repeated reads), and its =cache_size= cases (the read pattern must not change a value). Its =_LRUDict= is a dict and an order list; ours is one span in a walk, because one clock reads every factor at the same time. |
+| QuantLib =BrownianBridge= | =ql/methods/montecarlo/brownianbridge.hpp= in =~/Vault/Development/ORE/Engine= | Its precomputed weights and standard deviations, built once at construction, are why the level table is built once a factor here. Its =test-suite/brownianbridge.cpp= =testVariates= checks the joint law rather than each margin, which is the covariance test. |
+
+The checkouts sit in =~/Vault/Development/{diffrax,torchsde,random123}=.
+
+** What the tests found
+
+The bridge's heap index counted intervals where it had to count nodes, so a
+draw was reused across levels. The midpoint's variance looked right while an
+increment's variance was double, which the covariance and residual tests caught
+at once; =quant/keyed_brownian_path_tests.cpp= now pins the addressing against
+the draw the stream returns at the documented index.
+
+** What step 1 does not do
+
+The walk is per factor and forward only. Per-series driver values, the loadings
+and the block anchor are step 2, and nothing here allocates or holds a series.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -148,7 +175,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| A repeat read, depth 16 and 30 | 10 ns | =publish/bin/ores.analytics.quant.tests "[.benchmark]"=, best of six runs | =52f21b5412= |
+| A market tick, depth 16 | 238 ns | same | =52f21b5412= |
+| A market tick, depth 30 | 415 ns | same | =52f21b5412= |
+| A cold tick, depth 16 | 912 ns | same | =52f21b5412= |
+| A cold tick, depth 30 | 1600 ns | same | =52f21b5412= |
+
+The host carried other environments' builds throughout, at a load average near
+24, so these are best-of-six rather than quiet-machine numbers. A cold tick at
+depth 30 is 30 normal quantiles, about 53 ns each; the depth is the cost, so the
+answer to the open question in
+[[id:25C467BE-07A3-432C-8CB8-6B194E748570][the design note]] is that a tick of
+30 levels costs about 1.6 microseconds, and a second read in the same instant
+costs nothing.
 
 * Notes
 

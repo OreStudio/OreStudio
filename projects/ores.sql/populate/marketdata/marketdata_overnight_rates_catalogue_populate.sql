@@ -90,6 +90,11 @@ values
      'CZEONIA, the overnight rate of the Czech crown, published each Czech business day in one file a year. The files need no key.',
      39, 'https://www.cnb.cz/en/privacy-statement-and-disclaimer/disclaimer-copyright/',
      'Source: CNB', true, '',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'mas', 0, 'Monetary Authority of Singapore', 'reference',
+     'SORA, the overnight rate of the Singapore dollar, published each Singapore business day on the domestic interest rates page, which needs no key.',
+     40, 'https://www.mas.gov.sg/terms-of-use',
+     'Source: Monetary Authority of Singapore, Domestic Interest Rates (SORA), under the MAS Open Data Licence', true, '',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -112,7 +117,8 @@ insert into t_overnight_inventory (provider_code, id_scheme, external_id, field,
     ('bcb', 'bcb_sgs', '4389', 'valor', 'oresmd://ir/BRL?type=fixing&index=ibor&name=CDI'),
     ('banxico', 'banxico_sie', 'SF331451', 'dato', 'oresmd://ir/MXN?type=fixing&index=ibor&name=FTIIE'),
     ('bcch', 'bcch_bde', 'F022.TIB.TIP.D001.NO.Z.D', 'value', 'oresmd://ir/CLP?type=fixing&index=ibor&name=CAMARA'),
-    ('cnb', 'cnb_czeonia', 'CZEONIA', 'Rate', 'oresmd://ir/CZK?type=fixing&index=ibor&name=CZEONIA');
+    ('cnb', 'cnb_czeonia', 'CZEONIA', 'Rate', 'oresmd://ir/CZK?type=fixing&index=ibor&name=CZEONIA'),
+    ('mas', 'mas_dir', 'SORA', 'SORA', 'oresmd://ir/SGD?type=fixing&index=ibor&name=SORA');
 
 insert into ores_marketdata_market_data_vendor_instruments_tbl (
     id, tenant_id, version, provider_code, id_scheme, external_id, field, minted, deviation_note,
@@ -221,6 +227,11 @@ values
      'cnb', 'cnb_czeonia', 'production', 'https://www.cnb.cz', '',
      '{"url":"https://www.cnb.cz","backfill_days":400,"poll_minutes":60}', true,
      'The session that reads the yearly CZEONIA files of the Czech National Bank.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('mas-dir', ores_utility_system_tenant_id_fn(), 0, 'MAS domestic interest rates',
+     'mas', 'mas_dir', 'production', 'https://eservices.mas.gov.sg', '',
+     '{"url":"https://eservices.mas.gov.sg","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads SORA from the domestic interest rates page of the Monetary Authority of Singapore.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -278,6 +289,10 @@ values
     ('8ae278b7-d2f0-4e89-85a6-9913aaef894a', ores_utility_system_tenant_id_fn(), 0,
      'cnb-czeonia', 'cnb', 'cnb-czeonia', 'end_of_day', 'CZEONIA', true,
      'CZEONIA as the Czech National Bank publishes it, read from its yearly files by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('6a6b550b-1845-440f-b4fc-ecfb67c65d45', ores_utility_system_tenant_id_fn(), 0,
+     'mas-sora', 'mas', 'mas-dir', 'end_of_day', 'SORA', true,
+     'SORA as the Monetary Authority of Singapore publishes it, read from its domestic interest rates page by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -302,7 +317,8 @@ from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR'),
              ('bcb-cdi', 'bcb', 'bcb_sgs', '4389'),
              ('banxico-tiie-fondeo', 'banxico', 'banxico_sie', 'SF331451'),
              ('bcch-camara', 'bcch', 'bcch_bde', 'F022.TIB.TIP.D001.NO.Z.D'),
-             ('cnb-czeonia', 'cnb', 'cnb_czeonia', 'CZEONIA'))
+             ('cnb-czeonia', 'cnb', 'cnb_czeonia', 'CZEONIA'),
+             ('mas-sora', 'mas', 'mas_dir', 'SORA'))
      as s(feed, provider, scheme, external_id)
 join ores_marketdata_feeds_tbl f
   on f.tenant_id = ores_utility_system_tenant_id_fn()
@@ -536,5 +552,23 @@ begin
         '8ae278b7-d2f0-4e89-85a6-9913aaef894a',
         current_user, current_user, 'system.initial_load',
         'The system party reads CZEONIA from the Czech National Bank'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '0105744b-e581-4ca7-9e8a-9a225c66c3f5', ores_utility_system_tenant_id_fn(), 0, v_party, 'mas',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes SORA of the Monetary Authority of Singapore for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'db0eda63-3ab8-46f9-a4c5-4b581a8853f3', ores_utility_system_tenant_id_fn(), 0, v_party, 'mas', 'interest_rates',
+        '6a6b550b-1845-440f-b4fc-ecfb67c65d45',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads SORA from the Monetary Authority of Singapore'
     ) on conflict do nothing;
 end $$;

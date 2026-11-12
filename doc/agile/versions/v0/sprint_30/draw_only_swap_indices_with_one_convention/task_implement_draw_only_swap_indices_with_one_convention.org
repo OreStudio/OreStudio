@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
-#+updated: 2026-11-11
+#+updated: 2026-11-12
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -27,12 +27,12 @@ curated DQ dataset, and a fresh environment provisions to completion.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C][Publish one curated convention set and provision to completion]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and verified.              |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-11                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-11-12                             |
 
 * Acceptance
 
@@ -115,3 +115,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=refdata.conventions= is a system DQ dataset with its own methodology, built
+from one curated table that names the source of each row: the ORE examples,
+the conventions built into the ORE engine, and the overnight index
+conventions seeded by hand. The three populate scripts that wrote index
+conventions straight into the system tenant are gone, and every dataset that
+names a convention depends on the new one.
+
+Provisioning stopped at =generate_trades= because several swap conventions
+name one index. The planner now draws a swap by its convention id, and the
+builders look a swap up by id. Aliases that state the same terms read as one
+index, and any schedule tenor reads as a cadence. An equity swap's funding
+leg and an RPA's underlying swap are drawn by their convention too.
+
+Provisioning to completion uncovered four more defects, all fixed here:
+
+- A generated accumulator or TaRF states a zero quantity, which the
+  commodity table refused. A zero quantity is accepted when the row states
+  an accumulation amount.
+- The credit legs now state ACT/360 as ORE's A360. The recorded trades were
+  re-recorded; the diff is only those eight day counts.
+- The derived FX vol source wrote ten pairs of history in one pass, about
+  four and a half minutes, and answered no demand meanwhile. It now keeps
+  one pair a pass.
+- The source kept one pending demand, so a burst of party subscriptions lost
+  the image that names the ids a party needs first. A replaced demand now
+  keeps the images of both.
+
+With /Run a service's steps concurrently/ merged, a fresh environment
+provisioned the system (3 of 3 steps) and Acme (17 of 17) to completion, with
+no failed unit and no crash in the journal.
+

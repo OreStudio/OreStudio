@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :trading:synthetic:conventions:sprint_30:v0:
 #+created: 2026-11-11
-#+updated: 2026-11-11
+#+updated: 2026-11-12
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -28,12 +28,12 @@ declared dependencies from each dataset that names a convention.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                   |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Building and proving the one convention set. |
+| Now           | All tasks done.                        |
 | Waiting on    | Nothing.                               |
-| Next          | Raise the PR.                          |
-| Last touched  | 2026-11-11                               |
+| Next          | Merge the PR.                          |
+| Last touched  | 2026-11-12                             |
 
 * Acceptance
 
@@ -53,7 +53,7 @@ declared dependencies from each dataset that names a convention.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:FE619375-32C0-4997-92C5-4167FBEB15BA][Scaffold story: Draw only swap indices with one convention]] | DONE | 2026-11-11 | 2026-11-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:F803A3DD-3D53-4BDF-8E92-81AFB914D7E1][Publish one curated convention set]] | STARTED | 2026-11-11 | | Replace the three sources of conventions with the refdata.conventions DQ dataset, fix the builders provisioning stopped on, and provision to completion. |
+| [[id:F803A3DD-3D53-4BDF-8E92-81AFB914D7E1][Publish one curated convention set]] | DONE | 2026-11-11 | 2026-11-12 | Replace the three sources of conventions with the refdata.conventions DQ dataset, fix the builders provisioning stopped on, and provision to completion. |
 
 * Decisions
 

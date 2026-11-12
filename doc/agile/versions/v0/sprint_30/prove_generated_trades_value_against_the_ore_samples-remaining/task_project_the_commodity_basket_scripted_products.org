@@ -26,11 +26,11 @@ The scripted commodity products on a basket are written and read by the projecti
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -72,9 +72,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trading API tests | 4429 test cases pass | =ores.trading.api.tests -r compact= | =47b9f41e27= |
+| Synthetic tests against ORE | 133 test cases pass | =ores.synthetic.core.tests -r compact=, with the ORE engine set | =47b9f41e27= |
+| Of the four types, the ones ORE builds | 4 | =ores.synthetic.core.tests '[generated]'= | =47b9f41e27= |
 
 * Notes
+
+- The user decided two models. The worst-of basket swap's periods live in
+  one =basket_swap_period= table that every family shares, renamed from
+  =equity_swap_period=. Its funding leg and fixed coupons live in the shared
+  swap leg rows rather than in new commodity columns.
+- The local checks found two defects that PR 4630 took to main. The implied
+  volatility strike was an exact decimal, and the money rule requires a
+  continuous quantity to be a binary float; this task makes it a float. The
+  commodity shell scripts and the ER diagram were stale, which another
+  session fixed on main.
+- Two checks fail for reasons this branch does not own:
+  =money-decimal-columns= names two FX forward publish columns from main,
+  and =xml-benchmark-recorded= names a nightly clang-format commit on main.
 
 * Test Scenarios
 
@@ -100,3 +115,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The projection writes and reads the four commodity basket scripted
+products: the rainbow option, the basket variance swap, the best entry
+option and the worst-of basket swap. Each has a builder in the registry,
+and the planner calls it. The worst-of basket swap's periods live in the
+shared basket swap period rows, which the equity worst-of now uses too, and
+its funding leg and coupons live in the shared leg rows. A commodity basket
+constituent gained its initial price, and the commodity row gained the best
+entry option's terms, through the codegen models. ORE builds all four.

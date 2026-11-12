@@ -62,6 +62,7 @@ target_link_libraries(${lib_target_name}
         ores.eventing.core.lib
         ores.iam.client.lib
         ores.nats.lib
+        ores.platform.lib
         ores.service.lib
         ores.telemetry.core.lib
         ores.utility.lib

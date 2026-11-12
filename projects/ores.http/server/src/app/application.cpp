@@ -47,6 +47,7 @@
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
@@ -56,7 +57,6 @@
 #include <boost/asio/detached.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <chrono>
-#include <cstdlib>
 #include <filesystem>
 #include <optional>
 #include <string>
@@ -192,11 +192,9 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
      */
     std::optional<http::site::loaded_site> site;
     try {
-        site = http::site::load_site(
-            cfg.site_config, cfg.site_env, [](std::string_view name) -> std::optional<std::string> {
-                const auto* value = std::getenv(std::string(name).c_str());
-                return value ? std::optional<std::string>(value) : std::nullopt;
-            });
+        site = http::site::load_site(cfg.site_config, cfg.site_env, [](std::string_view name) {
+            return ores::platform::environment::environment::get_value(std::string(name));
+        });
         BOOST_LOG_SEV(lg(), info) << "Serving site environment " << site->served.id << " from "
                                   << site->source;
     } catch (const std::exception& e) {

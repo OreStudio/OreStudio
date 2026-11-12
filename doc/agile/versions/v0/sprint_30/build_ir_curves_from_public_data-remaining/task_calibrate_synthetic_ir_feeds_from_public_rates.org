@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/calibrate-synthetic-ir-feeds-from-public-rates
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
 #+updated: 2026-11-10
-#+environment: prime_origin
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A synthetic IR curve feed with a public source starts from that source's latest 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing: SOFR, €STR, SONIA and CORRA are stored as fixings of their index items. |
@@ -45,6 +45,25 @@ A synthetic IR curve feed with a public source starts from that source's latest 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+Thirteen overnight rates are now stored, so every currency with a publisher
+can start its curve from a real rate.
+
+1. Add =overnight_currency_of= and =derive_overnight_items= beside the FX
+   derivation: an overnight index names no tenor, and the policy's provider
+   order ranks the publishers of a currency.
+2. Add =resolve_ir_start=: list the series, take the first overnight fixing
+   of the curve's currency on or before the clock, and accept a negative
+   rate. With none, keep the fixed initial rate and say why in the record.
+3. Let =make_ir_curve_feed= take the resolved start: replace the
+   =initial_rate= value for the run, record the start, and refuse a curve
+   the policy will not start. The factory resolves when the price source is
+   "fixing"; the registry passes the class policy.
+4. Seed the IR class policy with the thirteen publishers, and start the
+   Bloomberg curves from a fixing, except CHF, which keeps a fixed level
+   until a SIX Data License is decided.
+5. Prove it: unit tests, and a fresh provisioning whose curves log the rate
+   they started from.
 
 * Measurements
 

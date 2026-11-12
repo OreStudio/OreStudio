@@ -235,11 +235,16 @@ begin
         v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
         'Bloomberg IR Curve: ' || c.currency_code || '/' || c.currency_code || '-' || upper(c.index_family),
         'Simulated Bloomberg curve on ' || c.currency_code || '-' || upper(c.index_family)
-        || ': a Cox-Ingersoll-Ross short rate, from deposits to a 10Y swap.',
+        || ': a Cox-Ingersoll-Ross short rate, from deposits to a 10Y swap, starting at '
+        || case when c.currency_code = 'CHF'
+                then 'a fixed level: SIX counts a curve built from SARON as derived data, so the '
+                     || 'curve is not started from SARON without a SIX Data License.'
+                else 'the newest public overnight rate of the currency, or, when no source '
+                     || 'publishes one, at a fixed level.' end,
         true, true, c.currency_code, c.index_family, '', 'COX_INGERSOLL_ROSS',
         c.annual_kappa, c.theta, c.annual_sigma, c.theta,
         60, 'Quarterly',
-        'fixed', 'bloomberg'
+        case when c.currency_code = 'CHF' then 'fixed' else 'fixing' end, 'bloomberg'
     from t_bloomberg_ir c;
 
     insert into ores_dq_ir_curve_template_entries_artefact_tbl (
@@ -290,7 +295,7 @@ begin
         true, false, 'USD', 'sofr', 'FOMC', 'COX_INGERSOLL_ROSS',
         0.55, 0.04, 0.008, 0.04,
         60, 'Quarterly',
-        'fixed', 'bloomberg'
+        'fixing', 'bloomberg'
     );
 
     insert into ores_dq_ir_curve_template_entries_artefact_tbl (

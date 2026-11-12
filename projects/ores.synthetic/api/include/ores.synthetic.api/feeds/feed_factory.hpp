@@ -142,6 +142,8 @@ struct ir_curve_feed_build_input final {
      * generator is built, since a pillar with no id has nowhere to publish.
      */
     std::vector<ir_pillar_quote_target> adapter_targets;
+    /// The IR class policy a curve of price source "fixing" starts under.
+    feed::calibration_policy policy;
 };
 
 /**

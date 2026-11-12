@@ -33,6 +33,7 @@
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_definition.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/adapter_target.hpp"
+#include "ores.synthetic.api/feeds/fixing_calibration.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <functional>
@@ -146,6 +147,13 @@ public:
      */
     const std::string& published_subject() const;
 
+    std::optional<ores::marketdata::domain::feed_start> start_source() const override {
+        return start_source_;
+    }
+    void record_start_source(ores::marketdata::domain::feed_start s) {
+        start_source_ = std::move(s);
+    }
+
 private:
     ores::nats::service::client& nats_;
     std::string source_name_;
@@ -177,7 +185,34 @@ private:
     /// The last adapter tick of each pillar, by its external id, so a repeated tick is the one the
     /// pillar made before.
     std::map<std::string, ores::marketdata::messaging::adapter_tick> previous_ticks_;
+    ores::marketdata::domain::feed_start start_source_;
 };
+
+/**
+ * @brief Where a curve's short rate starts: the record of the run, and the rate a fixing set,
+ * or none when the curve keeps its fixed initial rate.
+ */
+struct ir_curve_start final {
+    ores::marketdata::domain::feed_start source;
+    /// The rate as the process reads it; the record keeps the value as published.
+    std::optional<double> rate;
+    /// The policy refuses to start a curve with no usable fixing.
+    bool refused = false;
+};
+
+/**
+ * @brief Resolve where a curve with price source "fixing" starts, without building it.
+ *
+ * Lists the series, keeps the overnight rate fixings of the curve's currency in the policy's
+ * provider order, and starts from the first with a fixing on or before the date of @p clock.
+ * A rate may be negative. When none has one, the curve keeps its fixed initial rate, and the
+ * record says why, or is refused when the policy says so.
+ */
+ORES_SYNTHETIC_API_EXPORT ir_curve_start
+resolve_ir_start(ores::nats::service::nats_client& auth_nats,
+                 const ores::synthetic::domain::ir_curve_generation_config& cfg,
+                 const calibration_policy& policy,
+                 const ores::marketdata::domain::market_clock* clock);
 
 /**
  * @brief The simulated years one tick of a curve covers: the market speed over the
@@ -204,8 +239,10 @@ constexpr double curve_step_years(double market_speed, double ticks_per_hour) {
  * validated by map_parameters_to_yield_curve_process(), which throws a clear message on
  * missing/unexpected/out-of-bounds parameters.
  *
- * The curve starts from the initial_rate parameter value as entered: "fixed" is its one price
- * source.
+ * A curve whose price source is "fixed" starts from the initial_rate parameter value as entered.
+ * One whose source is "fixing" starts from @p start, the rate resolve_ir_start found, and keeps
+ * its initial_rate when no fixing set one. Either way the feed records where it started, which
+ * start_source() reports.
  *
  * The publish subject is derived from cfg.source_name via producer_subject() and is
  * "synthetic.v1.ops.tick.<source>".
@@ -223,7 +260,8 @@ ORES_SYNTHETIC_API_EXPORT std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         definitions,
     const ir_curve_refdata_context& refctx,
     ores::analytics::quant::service::tick_scheduler& scheduler,
-    std::vector<ir_pillar_quote_target> adapter_targets = {});
+    std::vector<ir_pillar_quote_target> adapter_targets = {},
+    std::optional<ir_curve_start> start = std::nullopt);
 
 }
 #endif

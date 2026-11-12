@@ -385,13 +385,18 @@ feed_kind make_ir_curve_kind() {
                     }
                 }
 
+                // A curve of price source "fixing" starts under its class policy, or the
+                // defaults when the class has none.
+                auto policy = read_calibration_policy(ctx, cfg.asset_class_code)
+                                  .value_or(feed::calibration_policy{});
                 return {.input = feed::feed_build_input{ir_curve_feed_build_input{
                             cfg,
                             std::move(entries),
                             std::move(values),
                             read_definition_catalogue(ctx),
                             *refctx,
-                            std::move(targets)}},
+                            std::move(targets),
+                            std::move(policy)}},
                         .skip_reason = {}};
             };
             out.push_back(std::move(c));

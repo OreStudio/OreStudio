@@ -90,6 +90,17 @@ using yield_curve_process_type_web_save_body =
     rr::save_body<messaging::yield_curve_process_type_write>;
 
 /**
+ * @brief The key of one row that a removal names.
+ *
+ * A function, not a lambda in the handler: the handler is a coroutine, and g++
+ * refuses a lambda kept in a coroutine frame (-Wsubobject-linkage).
+ */
+std::string yield_curve_process_type_web_key_of(const std::string& raw) {
+    return rr::read<std::string>(rr::code(raw, "A row is named by a code of 1 to 100 characters."),
+                                 "key");
+}
+
+/**
  * @brief Why this session may not write the resource, or nothing when it may.
  *
  * A catalogue every tenant shares is written only from the system tenant, so a
@@ -289,14 +300,10 @@ yield_curve_process_type_web_routes::handle_delete(const http_request& req, nats
         std::sort(named.begin(), named.end());
         if (std::adjacent_find(named.begin(), named.end()) != named.end())
             rr::invalid("A removal names each row once.");
-        const auto key_of = [](const std::string& raw) {
-            return rr::read<std::string>(
-                rr::code(raw, "A row is named by a code of 1 to 100 characters."), "key");
-        };
         if (body->removals.size() == 1) {
             const auto& removal = body->removals.front();
             messaging::delete_yield_curve_process_type_request msg;
-            msg.removal.key.code = key_of(removal.key);
+            msg.removal.key.code = yield_curve_process_type_web_key_of(removal.key);
             msg.removal.precondition.kind =
                 removal.version ? ores::utility::domain::precondition_kind::must_match_version :
                                   ores::utility::domain::precondition_kind::any;
@@ -315,7 +322,7 @@ yield_curve_process_type_web_routes::handle_delete(const http_request& req, nats
         messaging::delete_many_yield_curve_process_types_request msg;
         for (const auto& removal : body->removals) {
             auto& item = msg.removals.emplace_back();
-            item.key.code = key_of(removal.key);
+            item.key.code = yield_curve_process_type_web_key_of(removal.key);
             item.precondition.kind = ores::utility::domain::precondition_kind::any;
         }
         msg.intent = body->intent;

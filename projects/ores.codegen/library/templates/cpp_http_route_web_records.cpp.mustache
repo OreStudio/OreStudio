@@ -72,6 +72,17 @@ using {{unit}}_removal_body = rr::removal_body<messaging::{{entity_singular}}_ke
 {{/writes_many}}
 {{#writes_many}}
 using {{unit}}_save_body = rr::save_body<messaging::{{entity_singular}}_write>;
+
+/**
+ * @brief The key of one row that a removal names.
+ *
+ * A function, not a lambda in the handler: the handler is a coroutine, and g++
+ * refuses a lambda kept in a coroutine frame (-Wsubobject-linkage).
+ */
+{{{removal_key_type}}} {{unit}}_key_of(const std::string& raw) {
+    return rr::read<{{{removal_key_type}}}>(
+        rr::code(raw, "A row is named by a code of 1 to 100 characters."), "key");
+}
 {{/writes_many}}
 
 /**
@@ -372,14 +383,10 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_delete(const http_
         std::sort(named.begin(), named.end());
         if (std::adjacent_find(named.begin(), named.end()) != named.end())
             rr::invalid("A removal names each row once.");
-        const auto key_of = [](const std::string& raw) {
-            return rr::read<{{{removal_key_type}}}>(
-                rr::code(raw, "A row is named by a code of 1 to 100 characters."), "key");
-        };
         if (body->removals.size() == 1) {
             const auto& removal = body->removals.front();
             messaging::{{delete_request}} msg;
-            msg.removal.key.{{removal_key_field}} = key_of(removal.key);
+            msg.removal.key.{{removal_key_field}} = {{unit}}_key_of(removal.key);
             msg.removal.precondition.kind =
                 removal.version ? ores::utility::domain::precondition_kind::must_match_version
                                 : ores::utility::domain::precondition_kind::any;
@@ -398,7 +405,7 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_delete(const http_
         messaging::{{delete_many_request}} msg;
         for (const auto& removal : body->removals) {
             auto& item = msg.removals.emplace_back();
-            item.key.{{removal_key_field}} = key_of(removal.key);
+            item.key.{{removal_key_field}} = {{unit}}_key_of(removal.key);
             item.precondition.kind = ores::utility::domain::precondition_kind::any;
         }
         msg.intent = body->intent;

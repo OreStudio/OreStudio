@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: F55B666A-60C3-428D-8255-D2B6B67879A7
+:END:
+#+title: Task: State each workflow request's deadline against its work
+#+description: Every request a provisioning step makes takes the shared 30-second default, so a calibration that needs longer fails the step on a healthy answer. State a deadline for each request, sized to its work, with the reason beside it.
+#+type: task
+#+level: s1
+#+filetags: :make_a_workflow_step_survive_a_slow_request:sprint_30:v0:
+#+owner: marco
+#+branch: feature/bound-the-work-of-a-request-task
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every request a provisioning step makes either takes the shared default deliberately or states its own deadline. A request whose work outlives the default states a longer one, with the reason in the code beside it, so a slow calibration no longer fails against a deadline set for a read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-12                               |
+
+* Acceptance
+
+- The audit names every request a provisioning step makes, the work it does and the deadline it should state.
+- A request whose work is a write or a fit states its own deadline, sized to a loaded p99 rather than a round number.
+- A request that keeps the shared default says so deliberately, beside its call site.
+- The stated exception is stated in one place, not repeated as a number at each call site.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

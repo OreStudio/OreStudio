@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: A9F04AFF-87C3-4F63-A771-B4118E7ED415
+:END:
+#+title: Task: Show a run's progress and failure in ores.shell
+#+description: The shell prints a step when its status changes, so the work a step reports while it runs is not shown, and a failure prints only the transport text. Print the progress lines as they arrive and print the failing work with its reason.
+#+type: task
+#+level: s1
+#+filetags: :make_a_workflow_step_survive_a_slow_request:sprint_30:v0:
+#+owner: marco
+#+branch: feature/bound-the-work-of-a-request-task
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person watching a provisioning run in the shell sees each progress line while the step works, and a failure names the work that failed and why. The shell prints the same lines the web shows, from the same progress read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-12                               |
+
+* Acceptance
+
+- The shell prints a new progress line while the step is still in progress, without waiting for the step to finish.
+- A failed step prints its name, its position, the work that failed and the reason.
+- A retry that succeeded is visible in the output, with the attempt it took.
+- The output stays readable when a step reports many progress lines.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

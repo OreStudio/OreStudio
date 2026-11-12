@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 961F9A06-18FF-4EDC-9EA0-6610DA942DED
+:END:
+#+title: Task: Classify a failed request and retry the transient ones
+#+description: A request that times out throws straight out of the step, so a transient failure fails the run on its first occurrence. Classify the failure, retry the transient one with backoff and jitter inside the step's remaining budget, and never retry a refusal.
+#+type: task
+#+level: s1
+#+filetags: :make_a_workflow_step_survive_a_slow_request:sprint_30:v0:
+#+owner: marco
+#+branch: feature/bound-the-work-of-a-request-task
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A step that hits a transient transport failure tries again with backoff and jitter while its budget remains, and a refusal fails at once. Each attempt is logged with its number and its reason, and the policy lives in one helper rather than at each call site.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-12                               |
+
+* Acceptance
+
+- The helper tells a timeout and a no-responders failure apart from a refusal, and retries only the first two.
+- The delay grows with jitter, so two steps that failed together do not return together.
+- The attempts stop at the step's remaining budget, so the step does not outlive its own deadline.
+- Every attempt is logged with its number and the reason the previous one failed.
+- A refusal is reported at once, with the server's reason.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

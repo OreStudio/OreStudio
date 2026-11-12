@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 459AB808-737A-4CA0-9BF1-955D629880B2
+:END:
+#+title: Task: Make each repeated request safe to repeat
+#+description: A retry is correct only when repeating the request changes nothing. Give each retried request a stable identity, have the step read the result an earlier attempt may have produced, and prove a repeat writes no second candidate or raises a second approval request.
+#+type: task
+#+level: s1
+#+filetags: :make_a_workflow_step_survive_a_slow_request:sprint_30:v0:
+#+owner: marco
+#+branch: feature/bound-the-work-of-a-request-task
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-12
+#+updated: 2026-11-12
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A retried request carries the same identity as the attempt it repeats, so a service that already did the work recognises it. A step reads the effect of an attempt that timed out before it asks again, and no repeat writes a second candidate or raises a second approval request.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-12                               |
+
+* Acceptance
+
+- A repeated calibration keeps its as-of, so its calibration id and its observations are the same rows as the first attempt.
+- A step checks whether the work already happened before it asks again, and completes from the result it finds.
+- A repeat raises no second approval request.
+- A test proves a repeat of each retried request leaves the store unchanged.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

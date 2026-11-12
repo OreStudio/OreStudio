@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_30:v0:
 #+created: 2026-11-08
-#+updated: 2026-11-09
+#+updated: 2026-11-12
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -24,10 +24,10 @@ it lands, and the browser keeps calling the BFF until the last one does.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The port is split into 27 tasks. No port task has started. |
+| Now           | 43 of 57 tasks are done. The gateway answers the access, auth, tenancy, reference-data and simulation areas, and the IAM, synthetic, image map and tenor catalogue views. 163 of the 324 BFF routes have no C++ equivalent yet. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task that pairs each BFF route with its C++ equivalent. |
-| Last touched  | 2026-11-09 |
+| Next          | Finish the trading part: 16 of its 24 routes remain, then its composed views. Then stand up the market data part. |
+| Last touched  | 2026-11-12 |
 
 * Acceptance
 
@@ -39,7 +39,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
       the search and the filter's own members.
 - [ ] The C++ server answers every route ores.web calls, including the routes the
       inventory classifies as not an API.
-- [ ] The coverage is counted from the route inventory, not claimed.
+- [x] The coverage is counted from the route inventory, not claimed.
 - [ ] ores.web passes its test after the switch, and a rollback to the BFF is one
       switch.
 - [ ] The local gate is green on every pull request.

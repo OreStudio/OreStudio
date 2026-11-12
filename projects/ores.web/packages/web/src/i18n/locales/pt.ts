@@ -3830,6 +3830,13 @@ const pt: SourceCatalogue = {
         'Give each party its surface blueprints': 'Dar a cada parte os seus modelos de superfícies',
         "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, and the step fails.":
             'Dá a cada parte que nomeia a sua própria cópia dos modelos de superfícies de volatilidade FX do sistema, lendo as cotações de volatilidade que as subscrições da parte entregam. Um modelo cujas cotações não chegam a tempo é nomeado com a sua parte, e o passo falha.',
+        "Publish each party's FX forwards": 'Publicar os câmbios a prazo de cada parte',
+        'Publishes a forward set for every currency pair convention each party it names can build from its spot and its published funding curves. A pair the party cannot build is named with the reason. A forward that does not publish is named with its party, and the step fails.':
+            'Publica um conjunto de câmbios a prazo para cada convenção de par de moedas que cada parte que nomeia consegue construir a partir do seu spot e das suas curvas de financiamento publicadas. Um par que a parte não consegue construir é nomeado com a razão. Um câmbio a prazo que não é publicado é nomeado com a sua parte, e o passo falha.',
+        "Publish each party's volatility surfaces":
+            'Publicar as superfícies de volatilidade de cada parte',
+        "Calibrates each surface blueprint of each party it names from the party's volatility quotes and published forward sets, and publishes it. A surface that fails its arbitrage or error checks is named and left unpublished. A surface that cannot be calibrated or does not publish is named with its party, and the step fails.":
+            'Calibra cada modelo de superfície de cada parte que nomeia a partir das cotações de volatilidade da parte e dos conjuntos de câmbios a prazo publicados, e publica-a. Uma superfície que falha os controlos de arbitragem ou de erro é nomeada e fica por publicar. Uma superfície que não pode ser calibrada ou não é publicada é nomeada com a sua parte, e o passo falha.',
         'Generate the trades': 'Gerar as transações',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             'Registra uma configuração de geração de transações para cada parte que o ponto de partida nomeia, e escreve a população que indica nos livros próprios dessa parte.',

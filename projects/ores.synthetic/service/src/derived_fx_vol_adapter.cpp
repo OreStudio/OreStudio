@@ -441,6 +441,8 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
         if (kept > 0)
             BOOST_LOG_SEV(lg(), info)
                 << "Kept " << kept << " day(s) of derived quotes of '" << source_name_ << "'";
+        // A pass that wrote nothing means every pair is whole or failed; a failed pair is
+        // tried again after the next refresh, as persist states.
         history_pending_ = kept > 0;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to keep the history of '" << source_name_

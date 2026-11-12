@@ -112,7 +112,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Every leg's day count now goes through the table; a day count outside it fails | day_count.hpp | Accepted | The database holds six day counts, all in the table. A seeder test checks that every day count conventions.tsv normalises to has a trade code. |
+| 2 | history_pending_ ends when every remaining pair fails | derived_fx_vol_adapter.cpp | Accepted | A comment says a failed pair is tried again after the next refresh. The loop sleeps 50 ms between passes. |
+| 3 | coalesce_demands may repeat an image id | derived_fx_vol_feed.cpp | Declined | demand() only erases the id's last-sent day, so a repeat is harmless. |
+| 4 | the_one_at depends on order with three aliases | convention_lookup.cpp | Declined | found stays in the first class seen, so any candidate of another class is refused whatever the order. |
+| 5 | funding_index_in and underlying_index_of take the first convention, not the least id | trade_population_planner.cpp | Declined | The draw passes the id it found, and the builder builds by it; the dataset order is stable. |
+| 6 | An empty frequency from a free-form period | cadence.hpp | Declined | The swap leg mapper stores an empty frequency as null, which the trigger skips. |
+| 7 | Zero commodity quantity for other types | commodity_instrument.org | Declined | The check accepts zero only with an accumulation amount, so other types still need a positive quantity. |
 
 * Result
 

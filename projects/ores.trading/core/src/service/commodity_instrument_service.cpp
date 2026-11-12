@@ -143,6 +143,15 @@ commodity_instrument_to_domain(const messaging::commodity_instrument_write& writ
     v.delivery_date = write.delivery_date;
     v.delivery_start = write.delivery_start;
     v.delivery_end = write.delivery_end;
+    v.fva_date = write.fva_date;
+    v.premium_date = write.premium_date;
+    v.settlement_date = write.settlement_date;
+    v.implied_vol_strike = write.implied_vol_strike;
+    v.reset_strike = write.reset_strike;
+    v.trigger_type = write.trigger_type;
+    v.trigger_price = write.trigger_price;
+    v.premium_amount = write.premium_amount;
+    v.target_amount = write.target_amount;
     v.description = write.description;
     return v;
 }

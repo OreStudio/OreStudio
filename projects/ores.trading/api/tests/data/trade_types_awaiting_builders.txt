@@ -2,16 +2,10 @@ Autocallable_01
 BondFutureOption
 CBO
 CashPosition
-CommodityAccumulator
-CommodityAsianOption
 CommodityBasketVarianceSwap
 CommodityBestEntryOption
-CommodityForwardVolatilityAgreement
-CommodityGenericBarrierOption
 CommodityPairwiseVarianceSwap
 CommodityRainbowOption
-CommodityStrikeResettableOption
-CommodityTaRF
 CommodityWindowBarrierOption
 CommodityWorstOfBasketSwap
 CompositeTrade

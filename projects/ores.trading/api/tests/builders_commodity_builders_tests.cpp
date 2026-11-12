@@ -290,7 +290,13 @@ TEST_CASE("the_registry_names_every_commodity_builder", commodity_tags) {
                              "CommodityDigitalAveragePriceOption",
                              "CommodityPosition",
                              "CommoditySpreadOption",
-                             "IntradayPowerForward"})
+                             "IntradayPowerForward",
+                             "CommodityAsianOption",
+                             "CommodityAccumulator",
+                             "CommodityTaRF",
+                             "CommodityGenericBarrierOption",
+                             "CommodityStrikeResettableOption",
+                             "CommodityForwardVolatilityAgreement"})
         CHECK(types.contains(type));
 }
 
@@ -402,4 +408,182 @@ TEST_CASE("an_intraday_power_forward_delivering_before_it_matures_fails", commod
     const auto forward = intraday_power_forward_builder(terms).build();
     REQUIRE_FALSE(forward.has_value());
     CHECK(forward.error().term == "delivery_date");
+}
+
+namespace {
+
+commodity_accumulator_terms crude_accumulator() {
+    return {.underlying = commodity("NYMEX:CL"),
+            .currency = std::string("USD"),
+            .fixing_amount = amount("100"),
+            .strike = amount("70"),
+            .knock_out = amount("90"),
+            .start = 2026y / 1 / 5,
+            .expiry = 2027y / 1 / 5,
+            .position = option_position::long_option};
+}
+
+commodity_tarf_terms crude_tarf() {
+    return {.underlying = commodity("NYMEX:CL"),
+            .currency = std::string("USD"),
+            .fixing_amount = amount("100"),
+            .strike = amount("70"),
+            .target_amount = amount("5000"),
+            .start = 2026y / 1 / 5,
+            .expiry = 2027y / 1 / 5,
+            .position = option_position::long_option};
+}
+
+commodity_strike_resettable_option_terms crude_resettable() {
+    return {.option = crude_call(),
+            .reset_strike = amount("75"),
+            .trigger = trigger_direction::up,
+            .trigger_price = amount("90"),
+            .observation_start = 2026y / 1 / 5,
+            .settlement = 2027y / 1 / 7,
+            .premium = amount("1200"),
+            .premium_date = 2026y / 1 / 7};
+}
+
+commodity_forward_volatility_agreement_terms crude_fva() {
+    return {.underlying = commodity("NYMEX:CL"),
+            .currency = std::string("USD"),
+            .quantity = amount("1000"),
+            .fva_date = 2026y / 7 / 6,
+            .expiry = 2027y / 1 / 5,
+            .settlement = 2027y / 1 / 7,
+            .premium_date = 2026y / 7 / 8,
+            .implied_vol_strike = amount("0.3"),
+            .position = option_position::long_option};
+}
+
+}
+
+TEST_CASE("a_commodity_asian_option_observes_monthly_to_its_expiry", commodity_tags) {
+    const auto option =
+        commodity_asian_option_builder({.option = crude_call(), .averaging_start = 2026y / 1 / 5})
+            .build();
+    REQUIRE(option.has_value());
+    REQUIRE(option->options.size() == 1);
+    CHECK(option->options[0].payoff_type == "Asian");
+    REQUIRE(option->schedules.size() == 1);
+    CHECK(option->schedules[0].schedule_role == "observation_schedule");
+    CHECK(option->schedules[0].start_date == 2026y / 1 / 5);
+    CHECK(option->schedules[0].end_date == 2027y / 1 / 5);
+    REQUIRE(option->instrument_underlyings.size() == 1);
+    CHECK(option->instrument_underlyings[0].underlying_type == "Commodity");
+}
+
+TEST_CASE("a_commodity_asian_option_averaging_past_its_expiry_fails", commodity_tags) {
+    const auto option =
+        commodity_asian_option_builder({.option = crude_call(), .averaging_start = 2027y / 2 / 5})
+            .build();
+    REQUIRE_FALSE(option.has_value());
+}
+
+TEST_CASE("a_commodity_accumulator_keeps_its_fixing_amount_rather_than_a_quantity",
+          commodity_tags) {
+    const auto accumulator = commodity_accumulator_builder(crude_accumulator()).build();
+    REQUIRE(accumulator.has_value());
+    CHECK(accumulator->instrument.accumulation_amount == amount("100"));
+    CHECK(accumulator->instrument.quantity == 0.0);
+    REQUIRE(accumulator->range_bounds.size() == 2);
+    CHECK(accumulator->range_bounds[0].range_to == amount("70"));
+    CHECK(accumulator->range_bounds[0].leverage == 2.0);
+    CHECK(accumulator->range_bounds[1].range_from == amount("70"));
+    REQUIRE(accumulator->barriers.size() == 1);
+    CHECK(accumulator->barriers[0].barrier_type == "UpAndOut");
+    REQUIRE(accumulator->barrier_levels.size() == 1);
+    CHECK(accumulator->barrier_levels[0].level == amount("90"));
+}
+
+TEST_CASE("a_commodity_accumulator_knocking_out_below_its_strike_fails", commodity_tags) {
+    auto terms = crude_accumulator();
+    terms.knock_out = amount("60");
+    const auto accumulator = commodity_accumulator_builder(terms).build();
+    REQUIRE_FALSE(accumulator.has_value());
+    CHECK(accumulator.error().term == "knock_out");
+}
+
+TEST_CASE("a_commodity_tarf_caps_its_gains_at_its_target", commodity_tags) {
+    const auto tarf = commodity_tarf_builder(crude_tarf()).build();
+    REQUIRE(tarf.has_value());
+    CHECK(tarf->instrument.target_amount == amount("5000"));
+    REQUIRE(tarf->barriers.size() == 1);
+    CHECK(tarf->barriers[0].barrier_type == "CumulatedProfitCap");
+    REQUIRE(tarf->barrier_levels.size() == 1);
+    CHECK(tarf->barrier_levels[0].level == amount("5000"));
+    REQUIRE(tarf->schedules.size() == 1);
+    CHECK(tarf->schedules[0].schedule_role == "product_schedule");
+}
+
+TEST_CASE("a_commodity_tarf_with_no_target_fails", commodity_tags) {
+    auto terms = crude_tarf();
+    terms.target_amount = amount("0");
+    const auto tarf = commodity_tarf_builder(terms).build();
+    REQUIRE_FALSE(tarf.has_value());
+    CHECK(tarf.error().term == "target_amount");
+}
+
+TEST_CASE("a_commodity_generic_barrier_option_monitors_its_barrier_monthly", commodity_tags) {
+    const auto option =
+        commodity_generic_barrier_option_builder({.option = crude_call(),
+                                                  .barrier = barrier_kind::up_and_out,
+                                                  .barrier_level = amount("100"),
+                                                  .monitoring_start = 2026y / 1 / 5})
+            .build();
+    REQUIRE(option.has_value());
+    REQUIRE(option->barriers.size() == 1);
+    CHECK(option->barriers[0].barrier_type == "UpAndOut");
+    CHECK(option->barrier_levels[0].level == amount("100"));
+    REQUIRE(option->schedules.size() == 1);
+    CHECK(option->schedules[0].schedule_role == "barrier_schedule");
+}
+
+TEST_CASE("a_commodity_generic_barrier_option_with_no_level_fails", commodity_tags) {
+    const auto option =
+        commodity_generic_barrier_option_builder({.option = crude_call(),
+                                                  .barrier = barrier_kind::down_and_in,
+                                                  .barrier_level = amount("0"),
+                                                  .monitoring_start = 2026y / 1 / 5})
+            .build();
+    REQUIRE_FALSE(option.has_value());
+    CHECK(option.error().term == "barrier_level");
+}
+
+TEST_CASE("a_commodity_strike_resettable_option_keeps_its_trigger", commodity_tags) {
+    const auto option = commodity_strike_resettable_option_builder(crude_resettable()).build();
+    REQUIRE(option.has_value());
+    CHECK(option->instrument.trigger_type == "Up");
+    CHECK(option->instrument.trigger_price == amount("90"));
+    CHECK(option->instrument.reset_strike == amount("75"));
+    CHECK(option->instrument.premium_amount == amount("1200"));
+    CHECK(option->instrument.position == "Short");
+    CHECK(option->instrument.exercise_type.empty());
+    CHECK(option->options.empty());
+}
+
+TEST_CASE("a_commodity_strike_resettable_option_settling_before_its_expiry_fails", commodity_tags) {
+    auto terms = crude_resettable();
+    terms.settlement = 2027y / 1 / 4;
+    const auto option = commodity_strike_resettable_option_builder(terms).build();
+    REQUIRE_FALSE(option.has_value());
+    CHECK(option.error().term == "settlement");
+}
+
+TEST_CASE("a_commodity_forward_volatility_agreement_fixes_before_its_expiry", commodity_tags) {
+    const auto fva = commodity_forward_volatility_agreement_builder(crude_fva()).build();
+    REQUIRE(fva.has_value());
+    CHECK(fva->instrument.fva_date == 2026y / 7 / 6);
+    CHECK(fva->instrument.maturity_date == 2027y / 1 / 5);
+    CHECK(fva->instrument.implied_vol_strike == amount("0.3"));
+    CHECK(fva->instrument.position == "Long");
+}
+
+TEST_CASE("a_commodity_forward_volatility_agreement_fixing_at_its_expiry_fails", commodity_tags) {
+    auto terms = crude_fva();
+    terms.fva_date = 2027y / 1 / 5;
+    const auto fva = commodity_forward_volatility_agreement_builder(terms).build();
+    REQUIRE_FALSE(fva.has_value());
+    CHECK(fva.error().term == "fva_date");
 }

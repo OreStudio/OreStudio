@@ -73,6 +73,15 @@ export interface CommodityInstrumentWrite {
     delivery_date: string | null;
     delivery_start: number | null;
     delivery_end: number | null;
+    fva_date: string | null;
+    premium_date: string | null;
+    settlement_date: string | null;
+    implied_vol_strike: string | null;
+    reset_strike: string | null;
+    trigger_type: string | null;
+    trigger_price: string | null;
+    premium_amount: string | null;
+    target_amount: string | null;
     description: string;
 }
 

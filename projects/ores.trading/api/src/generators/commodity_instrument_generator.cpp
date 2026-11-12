@@ -81,6 +81,27 @@ generate_synthetic_commodity_instrument(utility::generation::generation_context&
     r.swaption_expiry_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.delivery_date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+    r.fva_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+    r.premium_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+    r.settlement_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+    r.implied_vol_strike = ores::utility::decimal::decimal::from_string(
+                               std::to_string(faker::number::decimal<double>(0.05, 1.0)))
+                               .value();
+    r.reset_strike = ores::utility::decimal::decimal::from_string(
+                         std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                         .value();
+    r.trigger_price = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
+    r.premium_amount = ores::utility::decimal::decimal::from_string(
+                           std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                           .value();
+    r.target_amount = ores::utility::decimal::decimal::from_string(
+                          std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                          .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

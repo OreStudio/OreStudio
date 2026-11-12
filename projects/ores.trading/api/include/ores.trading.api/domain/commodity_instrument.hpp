@@ -279,6 +279,56 @@ struct commodity_instrument final {
     std::optional<int> delivery_end;
 
     /**
+     * @brief The day a forward volatility agreement fixes the volatility it settles on, as FvaDate
+     * states it.
+     */
+    std::optional<std::chrono::year_month_day> fva_date;
+
+    /**
+     * @brief The day a forward volatility agreement or a strike resettable option pays its premium,
+     * as PremiumDate states it.
+     */
+    std::optional<std::chrono::year_month_day> premium_date;
+
+    /**
+     * @brief The day a scripted commodity product settles, as SettlementDate states it.
+     */
+    std::optional<std::chrono::year_month_day> settlement_date;
+
+    /**
+     * @brief The volatility a forward volatility agreement strikes at, as ImpliedVolStrike states
+     * it.
+     */
+    std::optional<ores::utility::decimal::decimal> implied_vol_strike;
+
+    /**
+     * @brief The strike a strike resettable option resets to when its trigger is hit, as
+     * ResetStrike states it.
+     */
+    std::optional<ores::utility::decimal::decimal> reset_strike;
+
+    /**
+     * @brief Whether a strike resettable option triggers above or below its trigger price, as
+     * TriggerType states it.
+     */
+    std::optional<std::string> trigger_type;
+
+    /**
+     * @brief The price that resets a strike resettable option's strike, as TriggerPrice states it.
+     */
+    std::optional<ores::utility::decimal::decimal> trigger_price;
+
+    /**
+     * @brief The premium a strike resettable option pays, as Premium states it.
+     */
+    std::optional<ores::utility::decimal::decimal> premium_amount;
+
+    /**
+     * @brief The gain at which a TaRF knocks out, as TargetAmount states it.
+     */
+    std::optional<ores::utility::decimal::decimal> target_amount;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -343,6 +393,15 @@ struct commodity_instrument final {
     ores::utility::digest::append_member(out, "delivery_date", v.delivery_date);
     ores::utility::digest::append_member(out, "delivery_start", v.delivery_start);
     ores::utility::digest::append_member(out, "delivery_end", v.delivery_end);
+    ores::utility::digest::append_member(out, "fva_date", v.fva_date);
+    ores::utility::digest::append_member(out, "premium_date", v.premium_date);
+    ores::utility::digest::append_member(out, "settlement_date", v.settlement_date);
+    ores::utility::digest::append_member(out, "implied_vol_strike", v.implied_vol_strike);
+    ores::utility::digest::append_member(out, "reset_strike", v.reset_strike);
+    ores::utility::digest::append_member(out, "trigger_type", v.trigger_type);
+    ores::utility::digest::append_member(out, "trigger_price", v.trigger_price);
+    ores::utility::digest::append_member(out, "premium_amount", v.premium_amount);
+    ores::utility::digest::append_member(out, "target_amount", v.target_amount);
     out.push_back('}');
     return out;
 }

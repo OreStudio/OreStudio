@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/project-the-single-commodity-scripted-products
+#+pr: 4630
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -26,11 +26,11 @@ The scripted commodity products on one commodity are written and read by the pro
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -42,9 +42,33 @@ The scripted commodity products on one commodity are written and read by the pro
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+ORE reads each of these types from a =<TradeType>Data= element, as the
+engine's =fromXML= shows. The equity accumulator, TaRF and Asian option
+already state the same shapes, so the commodity writers and readers mirror
+them and use the same shared blocks.
+
+1. Give the commodity carrier the range bounds, in the shared range bound
+   rows the FX and equity accumulators use, and add its entry to the batch
+   mapper.
+2. Add the columns the forward volatility agreement and the strike
+   resettable option state flat, through codegen: the FVA date, the premium
+   date, the settlement date, the implied volatility strike, the reset
+   strike, the trigger type, the trigger price and the premium amount. They
+   land through the scalar terms table by their ORE elements. The option
+   expiry is the maturity date, and the underlying strike is the strike.
+3. Add the six types to the projection's table of products. Add commodity
+   tables for barrier holders and product schedules, as the equity
+   projection has, and read and write the range bounds of the accumulator
+   and the TaRF.
+4. Add a builder for each type, register it, and call it from the planner.
+5. Record the generated trades, run the ORE engine test, and update the
+   known lists.
+
+The window barrier option stays out of this task. ORE's engine reads
+=CommodityWindowBarrierOptionData=, but ORE's XSD does not declare it, so
+the generated schema refuses to write it. The bindings generator has no way
+to supplement ORE's schemas. That mechanism is a design of its own, so it
+goes in a task of its own, and the type stays a passthrough until then.
 
 * Measurements
 
@@ -58,9 +82,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trading API tests | 4418 test cases pass | =ores.trading.api.tests -r compact= | =5c1749f8c7= |
+| Synthetic tests against ORE | 130 test cases pass | =ores.synthetic.core.tests -r compact=, with the ORE engine set | =b582251e58= |
+| Of the six types, the ones ORE builds | 5 | =ores.synthetic.core.tests '[generated]'= | =b582251e58= |
 
 * Notes
+
+- The Asian option parses in ORE and does not build. The engine test runs
+  on the Products example's configuration, which names no pricing engine
+  for =CommodityAsianOptionArithmeticPrice=. The story's market data task
+  owns that configuration.
+- An accumulator or TaRF row keeps its fixing amount as its accumulation
+  amount, and its quantity is zero, so the row states each amount once.
+- The terms table now reads and writes =LongShort= as the row's position.
+  The recorded variance swaps did not change.
 
 * Test Scenarios
 
@@ -77,12 +112,33 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4630][#4630]] | [ore,trading,synthetic] Project and build the single commodity scripted products |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A TaRF states its target twice, as =TargetAmount= and a =CumulatedProfitCap= barrier | =commodity_builders.cpp= | Declined | ORE's schema requires the Barriers block beside the target, and the equity TaRF builder states the same pair. A change belongs to both families together. |
+| 2 | The scripted schedule hard-codes its tenor, calendar, convention and rule | =commodity_builders.cpp= | Accepted | A comment says the dates roll on the NYSE calendar, and another exchange's commodity needs the calendar as a term. |
+| 3 | The planner throws for a barrier type outside four | =trade_population_planner.cpp= | Declined | The commodity barrier draw states only =DownAndOut=. The throw refuses at the boundary, as the planner does elsewhere. |
+| 4 | The planner turns a missing draw into zero | =trade_population_planner.cpp= | Declined | The accumulator and TaRF draws always state the amounts, and the builder's refusal names the drawn term it refuses. |
+| 5 | The shell commands take 50 positional arguments | shell commands | Declined | Codegen produces them. Named flags are a codegen change of their own. |
+| 6 | The range bound products are a list, not a product flag | =commodity_instrument_projection.cpp= | Declined | The family's other block memberships, the underlyings, barriers and schedules, are tables too. |
+| 7 | The generator draws an implied volatility from 1 to 1000 | =commodity_instrument_generator.cpp= | Accepted | The model's generator draws it from 0.05 to 1. |
+| 8 | Add a repository round trip for the new columns | repository | Declined | The columns are codegen output, and no service test runs in this task, as the PR states. |
 
 * Result
+
+The projection writes and reads six of the seven single commodity scripted
+products: the Asian option, the accumulator, the TaRF, the generic barrier
+option, the strike resettable option and the forward volatility agreement.
+Each has a builder in the registry, and the planner calls it. The carrier
+holds the range bounds, and the row gained the flat terms these products
+state, through the codegen model. ORE builds five of the six; the Asian
+option stays in the known errors for the reason in the notes.
+
+The window barrier option is not done, so that acceptance line is not met.
+ORE's engine reads =CommodityWindowBarrierOptionData=, but ORE's XSD does
+not declare it, and the generated schema refuses an element it does not
+declare. It needs a way to supplement ORE's schemas, which is a task of its
+own, and it stays a passthrough until then.

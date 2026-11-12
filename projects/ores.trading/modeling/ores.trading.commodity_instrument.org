@@ -524,6 +524,108 @@ as =DeliveryStart= states it.
 The second of the delivery day an intraday power forward stops delivering,
 as =DeliveryEnd= states it.
 
+** fva_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The day a forward volatility agreement fixes the volatility it settles on,
+as =FvaDate= states it.
+
+** premium_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The day a forward volatility agreement or a strike resettable option pays
+its premium, as =PremiumDate= states it.
+
+** settlement_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The day a scripted commodity product settles, as =SettlementDate= states it.
+
+** implied_vol_strike
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The volatility a forward volatility agreement strikes at, as
+=ImpliedVolStrike= states it.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string(
+    std::to_string(faker::number::decimal<double>(0.05, 1.0)))
+    .value()
+#+end_src
+
+** reset_strike
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The strike a strike resettable option resets to when its trigger is hit, as
+=ResetStrike= states it.
+
+** trigger_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether a strike resettable option triggers above or below its trigger
+price, as =TriggerType= states it.
+
+** trigger_price
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The price that resets a strike resettable option's strike, as
+=TriggerPrice= states it.
+
+** premium_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The premium a strike resettable option pays, as =Premium= states it.
+
+** target_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The gain at which a TaRF knocks out, as =TargetAmount= states it.
+
 ** description
 :PROPERTIES:
 :type:     text

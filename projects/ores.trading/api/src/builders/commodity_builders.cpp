@@ -769,7 +769,8 @@ commodity_forward_volatility_agreement_builder::commodity_forward_volatility_agr
 commodity_result commodity_forward_volatility_agreement_builder::build() const {
     if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.quantity.get()))
         return std::unexpected(std::move(*refusal));
-    if (!(terms_.implied_vol_strike.get() > 0.0))
+    const auto vol = terms_.implied_vol_strike.get();
+    if (!(vol > 0.0) || !std::isfinite(vol))
         return std::unexpected(build_error{"implied_vol_strike", "must be positive"});
     if (!(terms_.fva_date.get() < terms_.expiry.get()))
         return std::unexpected(build_error{"fva_date", "must be before the expiry"});
@@ -844,7 +845,8 @@ commodity_basket_variance_swap_builder::commodity_basket_variance_swap_builder(
 commodity_result commodity_basket_variance_swap_builder::build() const {
     if (auto refusal = commodity_amount_refusal(terms_.currency.get(), terms_.notional.get()))
         return std::unexpected(std::move(*refusal));
-    if (!(terms_.variance_strike.get() > 0.0))
+    const auto variance = terms_.variance_strike.get();
+    if (!(variance > 0.0) || !std::isfinite(variance))
         return std::unexpected(build_error{"variance_strike", "must be positive"});
     if (auto refusal = refusals::period(terms_.start.get(), terms_.maturity.get()))
         return std::unexpected(std::move(*refusal));
@@ -881,11 +883,15 @@ commodity_result commodity_best_entry_option_builder::build() const {
     if (terms_.multiplier.get() <= decimal{} || terms_.cap.get() <= decimal{})
         return std::unexpected(build_error{"cap", "the multiplier and cap must be positive"});
     const decimal one = *decimal::from_string("1");
-    for (const auto& [term, value] : {std::pair{"trigger_level", terms_.trigger_level.get()},
-                                      std::pair{"reset_minimum", terms_.reset_minimum.get()}})
-        if (value <= decimal{} || one < value)
-            return std::unexpected(
-                build_error{term, "must be a fraction of the initial price above zero"});
+    const auto fraction = [&](const decimal& value) {
+        return decimal{} < value && !(one < value);
+    };
+    if (!fraction(terms_.trigger_level.get()))
+        return std::unexpected(
+            build_error{"trigger_level", "must be a fraction of the initial price"});
+    if (!fraction(terms_.reset_minimum.get()))
+        return std::unexpected(
+            build_error{"reset_minimum", "must be a fraction of the initial price"});
     if (terms_.premium.get() < decimal{})
         return std::unexpected(build_error{"premium", "must not be negative"});
     if (auto refusal = refusals::period(terms_.strike_date.get(), terms_.expiry.get()))

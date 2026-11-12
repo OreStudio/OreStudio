@@ -8,7 +8,7 @@
 #+filetags: :draw_only_swap_indices_with_one_convention:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/draw-only-swap-indices-with-one-convention
-#+pr:
+#+pr: 4643
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4643][#4643]] | [sql] Publish one curated convention set and provision to completion |
 
 * Review
 

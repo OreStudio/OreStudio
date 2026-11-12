@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/calibrate-party-surfaces-in-provisioning
-#+pr:
+#+pr: 4639
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4639][#4639]] | [iam,marketdata] Publish each party's volatility surfaces in provisioning |
 
 * Review
 

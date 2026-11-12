@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/publish-fx-forward-curves-in-provisioning
+#+pr: 4635
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,11 +26,11 @@ Every provisioned party has published FX forward curves. A step of its own, afte
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -43,9 +43,14 @@ Every provisioned party has published FX forward curves. A step of its own, afte
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A step kind =publish_party_forwards=, after =publish_party_curves=, with the same arguments: the parties it names.
+
+- The pairs are the tenant's currency pair conventions. The step does not choose which pairs a party can build: the forward service decides that from the party's spot and published funding curves, and the step records its answer. A copy of that rule in the step would drift from the service's.
+- For each party and pair, the step reads the party's published set. A pair with one is already published, so a rerun publishes nothing twice.
+- Otherwise it asks =marketdata.v1.ops.publish_fx_forward= at the present instant. Under the run's auto-approval the raise closes and the set publishes in the same call.
+- A pair the service refuses before raising a request is skipped, with the service's reason: a missing spot, convention or funding curve.
+- A pair whose request is raised and not published, waiting for a person or refused at apply, fails the step, named with its party. A rerun is safe.
+- The result names each party and pair published, already published, skipped and not published.
 
 * Measurements
 
@@ -59,7 +64,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Forward sets published per Acme party | 39 (17 USD pairs, 22 crosses) | =evidence/party_forwards_check.sql= on a fresh Acme provisioning | 6d8df1bf3a plus this change |
+| Requests and the rule that closed them | 156, all =tenant=, approved | the same | 6d8df1bf3a plus this change |
+| Pairs skipped, with the service's reason | 560 (140 per party, of 179 conventions) | the step's =forwards_skipped= | 6d8df1bf3a plus this change |
+| Cross conventions published of those held | 22 of 26; HUF, NOK and PLN have no funding curve | the same | 6d8df1bf3a plus this change |
+| Duration of the step | 1 min 39 s | =completed_at - started_at= of the step row | 6d8df1bf3a plus this change |
 
 * Notes
 
@@ -80,12 +89,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4635][#4635]] | [iam] Publish each party's FX forwards in provisioning |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The as-of is taken per pair; does a rerun's later as-of find the set an earlier run published? | =tenant_provisioning_handler.hpp= | Dismiss | =fx_forward_publish_service::read= answers the newest published set whose as-of is at or before the asked one, so a later as-of finds it. A comment now says so at the read. |
+| 2 | The "rerun is safe" message rests on point 1 | =tenant_provisioning_handler.hpp= | Dismiss | Point 1 holds. |
+| 3 | The convention paging trusts the service's total | =tenant_provisioning_handler.hpp= | Dismiss | A page with no conventions also ends the loop, so it never spins; a total below the real count is a service defect the convention list would show everywhere. |
+| 4 | A refusal for a reason other than the pair, such as a permission, reads as a skip and passes the step | =tenant_provisioning_handler.hpp= | Fix | A party that ends with no forward set at all, published or held, fails the step. |
+| 5 | Note the step's measured duration | task | Fix | 1 min 39 s live for 4 parties and 179 conventions, beside 1 min 5 s for the party curves. |
+| 6 | Test the new kind's dependency | =workflow_provision_tenant_workflow_tests.cpp= | Fix | A case checks that the forwards step waits for the party curves. |
+| 7 | Blank line before the closing namespace | =provision_step_arguments.hpp= | Dismiss | The project's clang-format removes it, so the file keeps the formatter's layout. |
 
 * Result
+
+The =publish_party_forwards= step publishes every party's forward sets in provisioning. On a fresh Acme provisioning it published 39 sets for each of the four parties, every request closed under the =tenant= rule, and it named each of the other 140 conventions per party with the service's reason. The run itself failed later, at =generate_trades=, on main's duplicate GBP swap convention, which [[id:9137921C-B9C9-4C9F-84B6-847A07B61F28][Name GBP LIBOR 3M in one swap convention]] records.

@@ -56,6 +56,7 @@ enum class provision_step_action {
     subscribe_market_data,
     publish_party_curves,
     give_party_surface_blueprints,
+    publish_party_forwards,
     generate_trades,
     schedule_reports,
     complete_provisioning,
@@ -109,6 +110,8 @@ enum class provision_step_action {
         return provision_step_action::publish_party_curves;
     if (kind == give_party_surface_blueprints_step_kind)
         return provision_step_action::give_party_surface_blueprints;
+    if (kind == publish_party_forwards_step_kind)
+        return provision_step_action::publish_party_forwards;
     if (kind == "generate_trades")
         return provision_step_action::generate_trades;
     if (kind == schedule_reports_step_kind)
@@ -759,6 +762,17 @@ parse_party_curves_arguments(const std::string& arguments_json) {
     return parse_report_schedule_arguments(arguments_json).parties;
 }
 
+/**
+ * @brief Reads a publish_party_forwards step's arguments: the parties that publish their own
+ * forward sets.
+ *
+ * The step states no pair. Each party is asked for every currency pair convention the tenant
+ * holds, so a convention the tenant gains reaches the parties without the profile changing.
+ */
+[[nodiscard]] inline std::vector<std::string>
+parse_party_forwards_arguments(const std::string& arguments_json) {
+    return parse_report_schedule_arguments(arguments_json).parties;
+}
 }
 
 #endif

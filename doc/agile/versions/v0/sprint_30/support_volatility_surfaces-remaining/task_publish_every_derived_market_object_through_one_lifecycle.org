@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:publish:approval:auto_approval:database:support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch: feature/publish-lifecycle-1-bound-context
+#+branch:
 #+pr: 4624
 #+blocked_on:
 #+blocked_since:
@@ -26,12 +26,12 @@ Curves, FX forward sets and FX volatility surfaces are published through the one
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                                |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Parked after PR 1 (#4624); the vol work goes first. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-11                               |
+| Next         | The provisioning grant and its rule, then one lifecycle for surfaces, forwards and curves, then the screens. |
+| Last touched | 2026-11-12                             |
 
 * Acceptance
 

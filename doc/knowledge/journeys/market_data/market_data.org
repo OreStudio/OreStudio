@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:marketdata:
 #+created: 2026-10-06
-#+updated: 2026-10-28
+#+updated: 2026-11-13
 
 A curve or a surface is a composite object the desk is responsible for: it is
 built from what the market sends, corrected by hand where the market is wrong
@@ -42,6 +42,11 @@ the provenance is what tells them apart.
 | [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] | trader | A manual point or a spread overlay, with a reason |
 | [[id:3AC1CC5B-3366-428A-A604-C5921CBEE2C8][Check a curve's fit]] | trader, quant | The candidate against the quotes it came from |
 | [[id:EB918DE7-51D7-47D6-BF7E-C48EBB21CBDD][Read a pair's FX forward ladder]] | trader, quant | Forward rates, discount factors, forward points and swap points of a USD pair |
+| [[id:CFD4FD54-40C1-44BC-9264-DB50CB568167][Find an instrument]] | trader, quant, operations | One list over every kind of instrument the party can see, with its source and its freshness |
+| [[id:F95E55E2-C87F-48D9-925B-177D6D6E17C6][Read a rate ladder]] | trader, quant | One currency's rungs, one column per provider, the consensus and the spread |
+| [[id:FB65AD71-0697-4835-9D47-31A672E9ADE3][Read the FX montage]] | trader, sales, risk | One base currency's crosses, the providers, and the move measured from a stated instant |
+| [[id:01ED4CA6-1215-40ED-9144-DE34553870F6][Inspect a curve's analytics]] | trader, quant | The market pillars and the bootstrapped zero rate, forward, discount factor and shift |
+| [[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] | trader, quant | The published surface, its grid and one smile, with the convention that makes a strike a number |
 | [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]] | trader, quant | The smiles and the mesh, and their arbitrage |
 | [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] | trader | The candidate set put to a second pair of eyes |
 | [[id:A85B6C4E-0F93-4410-BF2E-7167722849ED][Decide a publish]] | approver | Approve, refuse or hold, with a comment |

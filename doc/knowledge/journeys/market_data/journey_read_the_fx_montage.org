@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: FB65AD71-0697-4835-9D47-31A672E9ADE3
+:END:
+#+title: User Journey: Read the FX montage
+#+description: A trader reads one base currency's crosses at an as-of - each pair as a row, each provider as a column, with the change, the day's high and low, and the pair's day.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:marketdata:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader reads one base currency's crosses at an as-of - each pair as a row, each provider as a column, with the change, the day's high and low, and the pair's day.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to see one base currency across its crosses at this as-of: who quotes
+what, where they disagree, and how far each pair has moved today." The journey
+is done when the person has the wall of quotes and has opened one pair's day.
+
+* Actor and trigger
+
+The actor is the trader, the FX salesperson or the risk manager. The trigger is
+a currency that moved, a cross to price, a quote to check against a broker, or a
+pair a colleague asked about. The journey starts at *Market data / FX montage*
+and ends when the person leaves the page.
+
+The journey reads and changes nothing. It reads spot observations; a forward is
+a different read, with its own page and journey.
+
+* Steps
+
+1. *Open the montage.* The person opens *Market data / FX montage*. The system
+   opens the base currency the address states, or the last one read.
+2. *Choose the base.* The person picks =AUD=. The system answers every cross of
+   that base the party can see, including the pairs where AUD is on the quote
+   side, because a montage is for the base and not for the pair's spelling.
+3. *Read what the numbers mean.* The system states the base, the instrument, the
+   quote type, the pair count, the source count, the as-of, and that the
+   deployment quotes mid only.
+4. *Read a pair.* One row per pair: the pair name, one column per provider that
+   quotes it, the consensus, the age and the day's shape. A provider that does
+   not quote the pair is a gap, not a zero.
+5. *Read the move.* The system states the change, the day's high and the day's
+   low, and the instant they are measured from. A client does not decide what
+   "today" means: the trading session does, and the server states it.
+6. *Open one pair.* The person opens a pair. The system draws the pair's day
+   over the stated window and marks the high and the low on it. No new read is
+   needed: the row and the chart are one answer.
+7. *Meet an empty answer.* No provider quotes a cross of the base. The system
+   says so, and does not carry yesterday's price as if it were today's.
+8. *Leave.* The address holds the base, the provider set, the as-of and the
+   pair that is open.
+
+* Screens and wireframes
+
+One read-only page: the facts row, the controls, the montage table, and the
+chosen pair's day below it.
+
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| Open the montage | Breadcrumb, title, one sentence, Refresh | The standard draws it, RS-LIST-01 to RS-LIST-03 |
+| Choose the base | One picker and one as-of | A view no rule draws yet: a derived read, not a list of records |
+| Read what the numbers mean | Labelled values in one row | The standard draws it, RS-PAGE-05 |
+| Read a pair | Table, pairs as rows, providers as columns | A view no rule draws yet |
+| Read the move | Three figures and the instant they start from | A view no rule draws yet |
+| Open one pair | A chart under the table, high and low marked | A view no rule draws yet |
+
+The prototype is the visual record:
+[[file:../../prototypes/market_data/read-the-fx-montage/index.html][Read the FX montage]].
+
+* Prototype
+
+- Source :: =doc/prototypes/market_data/read-the-fx-montage/index.html=
+- Note :: =doc/prototypes/market_data/read-the-fx-montage.org=
+- Variants :: a a column per provider with a sparkline; b a board of moves with no provider columns
+- States :: =full=, =thin=, =stale=, =none=
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| market series identity | the series behind each provider's quote of a pair | [[id:6C7FBF9C-21F4-44FE-8E12-5731BCE14399][Market series identity]] |
+| market observation | the spot at the as-of and the window's history | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][Market observation]] |
+| provider | the column and its kind | [[id:5604CFFC-EDD8-4291-BF56-AB7EEE0007E7][Provider]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose the base | the instrument catalogue, to find the pairs | =marketdata.v1.ops.list_instruments= | missing |
+| Read a pair | the montage: spot per provider, consensus, change, high, low | =marketdata.v1.ops.get_fx_montage= | missing |
+| Open one pair | one series' ticks over the window | =marketdata.v1.ops.get_series_ticks= | exists |
+| Read a forward | the published forward set of a pair | =marketdata.v1.ops.get_published_fx_forward= | exists |
+
+The montage is not built from =get_series_ticks= per pair: that is one call per
+pair per provider, and the change, the high and the low would then be computed
+in each client. The operation states them once.
+
+* What is missing
+
+- =marketdata.v1.ops.get_fx_montage= — one answer for a base currency: the pairs,
+  the spot each provider quotes, the consensus, the change, the day's high and
+  low, and the instant the change is measured from. The prototype shows the
+  instant as a fact on the page precisely because a client must not choose it.
+- The window. The server states whether the change and the range are measured
+  from the trading session's open or from midnight UTC, and states the instant,
+  so a person can verify what "today" means.
+- The staleness verdict per quote, as a server decision.
+
+* Related journeys
+
+- [[id:CFD4FD54-40C1-44BC-9264-DB50CB568167][Find an instrument]] — where the montage is opened from.
+- [[id:EB918DE7-51D7-47D6-BF7E-C48EBB21CBDD][Read a pair's FX forward ladder]] — the forwards of the pair the montage opened.
+- [[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] — the vol of the pair.
+
+* Related knowledge
+
+- [[id:7D1DE23F-AA14-44AB-81D5-9961EF02533C][Market data ownership and the ticking guarantee]] — who owns an observation.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — the words pair, base, quote and cross.
+
+* See also
+
+- [[file:market_data.org][Market data journeys]] — the group this journey belongs to.
+- [[file:../../prototypes/market_data/read-the-fx-montage.org][Read the FX montage prototype]] — the design note.

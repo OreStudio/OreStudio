@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 9487E120-6D43-4EFB-8E28-E9CEBA7EB43A
+:END:
+#+title: User Journey: Read a published surface
+#+description: A trader reads a published volatility surface - its axes in draw order, the grid of vols, and one expiry as a smile, with the model, the strike convention and the delta type that make the numbers mean something.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:marketdata:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader reads a published volatility surface - its axes in draw order, the grid of vols, and one expiry as a smile, with the model, the strike convention and the delta type that make the numbers mean something.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want the vol surface my party published for this pair: the picture, the grid
+of numbers behind it, and one expiry's smile, knowing what a strike column means
+and what it was calibrated with." The journey is done when the person can read
+the vol at an expiry and a strike, and say what those two words mean.
+
+* Actor and trigger
+
+The actor is the trader, the FX option trader or the quant. The trigger is an
+option to price, a smile that moved, a delta quote to check, or a surface a
+colleague published. The journey starts at *Market data / Vol surface*, reached
+from the instrument search, and ends when the person leaves the page.
+
+The journey reads and changes nothing. It reads a published surface. It is not
+the calibration (that writes a candidate) and not the candidate's inspection
+(that is *Inspect a surface's slices*, which reads the smiles, the mesh and the
+arbitrage of a candidate).
+
+* Steps
+
+1. *Open the surface.* The person opens *Market data / Vol surface* on
+   =EURUSD_SSVI*. The system states the party, the pair, the model, the strike
+   convention, the delta type, the grid size, the range and when it was
+   published.
+2. *Read the axes.* The system states the two axes and their values in draw
+   order: expiries and strikes, with the strike codes the grid is indexed by
+   (=DEL/Spot/Put/25=) and the display labels a person reads.
+3. *Read the surface.* The person reads the surface as a picture. The picture is
+   the grid and cannot disagree with it, because both are drawn from the same
+   response.
+4. *Read the grid.* The person reads the numbers: one row per expiry, one column
+   per strike, with the ATM mid stated. The column headers are the axis values,
+   and the code behind each header is available rather than guessed.
+5. *Read one smile.* The person picks an expiry and reads the smile across the
+   strikes: the put wing, the ATM point and the call wing. A second operation is
+   not needed; the smile is the grid's row.
+6. *Read what a strike is.* The person reads the strike convention and the delta
+   type. A column called =25D put= is a delta, quoted spot, premium-adjusted or
+   not; without those three facts the number is not a vol.
+7. *Meet a stale verdict.* The system marks the surface stale against the
+   server's threshold for its kind, and says when it was published.
+8. *Meet nothing published.* The party holds the blueprint but has published no
+   surface. The system says so and draws no grid: an unpublished surface has no
+   numbers a person may price from.
+9. *Leave.* The address holds the blueprint, the as-of, the expiry and the view.
+
+* Screens and wireframes
+
+One read-only page: the header facts, the surface, the grid and the smile, in
+that order, because a person reads the picture, then the numbers, then one slice.
+
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| Open the surface | Breadcrumb, title, one sentence, Refresh | The standard draws it, RS-LIST-01 to RS-LIST-03 |
+| Read the axes | An axis strip under the plot | A view no rule draws yet: axes stated in draw order |
+| Read the surface | A boxed 3D mesh with ticks on three axes | A view no rule draws yet; ImPlot draws it, the server states the axes |
+| Read the grid | Table, expiries as rows, strikes as columns | A view no rule draws yet |
+| Read one smile | A chart of one row, with the strike codes under it | A view no rule draws yet |
+| Read what a strike is | Three labelled values in the header | The standard draws it, RS-PAGE-05 |
+| Meet a stale verdict | A badge with the publish instant | The standard's status badge |
+| Meet nothing published | A notice and no numbers | The standard's empty state, RS-LIST-10 |
+
+The prototype is the visual record:
+[[file:../../prototypes/market_data/read-a-published-surface/index.html][Read a published surface]].
+
+* Prototype
+
+- Source :: =doc/prototypes/market_data/read-a-published-surface/index.html=
+- Note :: =doc/prototypes/market_data/read-a-published-surface.org=
+- Variants :: a the surface; b the grid; c one expiry as a smile
+- States :: =published=, =stale=, =none=
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| FX vol surface publish | the published surface, its grid, the calibration and the approval behind it | [[id:DE07060F-9717-4B6E-991F-0EDEFD8D1FDA][FX vol surface publish]] |
+| market series identity | the surface as an instrument, with its two axes | [[id:6C7FBF9C-21F4-44FE-8E12-5731BCE14399][Market series identity]] |
+| series axis | the expiry and strike values, in draw order | [[id:D8551E84-3E2F-4A12-92A6-03714EBEFCE9][Series axis]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the surface | the published surface of a blueprint at an as-of | =marketdata.v1.ops.get_published_fx_vol_surface= | partial |
+| Read the axes | the axes in draw order, with their values | =marketdata.v1.ops.get_published_fx_vol_surface= | partial |
+| Read the grid | expiries, strikes and the row-major grid | =marketdata.v1.ops.get_published_fx_vol_surface= | exists |
+| Read one smile | one row of the grid, or a slice by expiry | =marketdata.v1.ops.get_series_slice= | exists, unreachable |
+| Read what a strike is | model, strike convention, delta type, conventions | =marketdata.v1.ops.get_published_fx_vol_surface= | missing |
+
+=marketdata.v1.ops.get_published_fx_vol_surface= already returns the expiries,
+the strikes and a row-major grid. It does not return the model, the strike
+convention, the delta type, the conventions, the axes in a stated order, the
+publish instant or the staleness verdict.
+
+* What is missing
+
+- The surface read must state =model=, =strike_convention=, =delta_type=,
+  =conventions=, =axes= (in draw order), =published_at= and =stale=. Without the
+  first three, the screen shows numbers whose meaning it cannot state.
+- The surface as an instrument. The smile needs the surface's =instrument_id= and
+  its axis field names, which =list_instruments= must expose; today a client has
+  no identity to slice by.
+- The staleness verdict, so the screen does not compute its own threshold.
+
+* Related journeys
+
+- [[id:CFD4FD54-40C1-44BC-9264-DB50CB568167][Find an instrument]] — where the surface is opened from.
+- [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]] — the candidate's smiles, mesh and arbitrage,
+  which is a different question from reading what was published.
+- [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]] — the act that produces a candidate.
+- [[id:FB65AD71-0697-4835-9D47-31A672E9ADE3][Read the FX montage]] — the spot the surface is for.
+
+* Related knowledge
+
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — the words expiry, strike, delta, ATM and SSVI.
+- [[id:7D1DE23F-AA14-44AB-81D5-9961EF02533C][Market data ownership and the ticking guarantee]] — who owns an observation.
+
+* See also
+
+- [[file:market_data.org][Market data journeys]] — the group this journey belongs to.
+- [[file:../../prototypes/market_data/read-a-published-surface.org][Read a published surface prototype]] — the design note.

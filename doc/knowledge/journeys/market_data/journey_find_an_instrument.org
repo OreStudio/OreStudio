@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: CFD4FD54-40C1-44BC-9264-DB50CB568167
+:END:
+#+title: User Journey: Find an instrument
+#+description: A trader or quant finds one instrument across every kind the party can see, reads the source and the freshness behind it, and opens the screen that fits its kind.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:marketdata:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or quant finds one instrument across every kind the party can see, reads the source and the freshness behind it, and opens the screen that fits its kind.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to find one thing — a rate ladder, a curve, a pair or a surface — by its
+currency, its pair, its name or the provider behind it, and open the screen that
+reads it." The journey is done when the person has one row and is on the screen
+its kind leads to.
+
+* Actor and trigger
+
+The actor is the trader, the quant or the operations person who reads market
+data for the party. The trigger is a price to check, a curve to read after a
+publish, a surface to inspect, or a currency a colleague named. The journey
+starts at *Market data / Find an instrument* and ends on the kind's own screen.
+
+The journey reads and changes nothing. It is the one door into the market-data
+area: every other screen in the group is reached from a row it returns.
+
+* Steps
+
+1. *Open the search.* The person opens *Market data / Find an instrument*. The
+   system focuses one input and states the party whose instruments it will
+   return. The party is the session's, not a filter: a client never decides
+   which party's data it sees.
+2. *Type a currency.* The person types =aud=. The system returns one row per
+   instrument the party can see that matches the currency on either side:
+   a rate ladder, a curve, two pairs (one found from its quote side) and a
+   surface.
+3. *Narrow by facet.* The person picks a provider or a kind. The system
+   narrows the same answer; it does not read again. A kind with no match drops
+   out of the answer rather than showing an empty section.
+4. *Read a row.* The person reads the kind badge, the display name, the source
+   list, what the instrument holds (rungs, pillars, grid) and its freshness.
+   The name and the kind are the server's: the client does not build a label
+   from a URI, and it does not decide whether a value is stale.
+5. *Open the kind's screen.* The person presses Enter. A LADDER opens the rate
+   ladder, a CURVE the curve inspector, a PAIR the FX montage, a SURFACE the
+   published surface. A FIXING opens the observations for that fixing.
+6. *Meet an empty answer.* The query matches nothing. The system says so in
+   words and names the facets that would match; it does not show an empty list
+   as if the read had failed, and it does not fall back to everything.
+7. *Leave.* The query and the facets are in the address, so the person can send
+   the view to someone else.
+
+* Screens and wireframes
+
+One screen: an input and three facets above a list. The badge on each row is
+what four separate curve and surface lists used to be.
+
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| Open the search | Page title, one sentence, one input, three facets | The standard draws it, RS-LIST-01 to RS-LIST-03 |
+| Type a currency | Row per instrument with a kind badge | A view no rule draws yet: one list over five kinds |
+| Narrow by facet | The same list, narrowed | The standard draws it, RS-LIST-04 |
+| Read a row | Kind, name, source, values, freshness | The standard's list cells hold a badge and a short text, RS-LIST-07 |
+| Open the kind's screen | Enter, with the legend of where each kind goes | A view no rule draws yet: one key, five destinations |
+| Meet an empty answer | A notice naming what would match | The standard's empty state, RS-LIST-10 |
+
+The prototype is the visual record:
+[[file:../../prototypes/market_data/find-an-instrument/index.html][Find an instrument]].
+
+* Prototype
+
+- Source :: =doc/prototypes/market_data/find-an-instrument/index.html=
+- Note :: =doc/prototypes/market_data/find-an-instrument.org=
+- Variants :: a one flat list; b the same rows grouped by kind
+- States :: =results=, =none=, =stale=
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| market series | the identity, the declared axes and the source of each instrument | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][Market series]] |
+| provider | the provider code and kind behind each source | [[id:5604CFFC-EDD8-4291-BF56-AB7EEE0007E7][Provider]] |
+| party | the owner the answer is scoped to | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][Party]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Type a currency | list the series the caller can see, with axes | =marketdata.v1.ops.list_series_identities= | partial |
+| Read a row | the instrument catalogue: kind, name, facets, freshness | =marketdata.v1.ops.list_instruments= | missing |
+| Narrow by facet | the same catalogue, filtered server-side | =marketdata.v1.ops.list_instruments= | missing |
+
+=marketdata.v1.ops.list_series_identities= returns series, not instruments: one
+entry per series with its axes, but no grouping into a curve or a surface, no
+display name, no provider facet, no kind and no freshness verdict.
+
+* What is missing
+
+- =marketdata.v1.ops.list_instruments= — the definition of an instrument. It
+  groups the series into one entry per instrument and states the kind, the
+  display name, the facets, the axes in draw order, the sources and the
+  staleness verdict. Until it exists the screen must group and name on the
+  client, which is the duplication this journey exists to remove.
+- The name rule. Three curves called =IR AUD IR_SWAP= and five called
+  =AUD-AONIA= differ only by forward start or provider, so the name must carry
+  the field that distinguishes peers (=IR AUD IR_SWAP 0D=) and leave the source
+  out, because a source is a facet and not an identity.
+- The party scoping. =list_series_identities= answers for every party the login
+  can see; a session must see one.
+
+* Related journeys
+
+- [[id:F95E55E2-C87F-48D9-925B-177D6D6E17C6][Read a rate ladder]] — Enter on a LADDER row.
+- [[id:01ED4CA6-1215-40ED-9144-DE34553870F6][Inspect a curve's analytics]] — Enter on a CURVE row.
+- [[id:FB65AD71-0697-4835-9D47-31A672E9ADE3][Read the FX montage]] — Enter on a PAIR row.
+- [[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] — Enter on a SURFACE row.
+
+* Related knowledge
+
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — the words instrument, series, provider and party.
+- [[id:7D1DE23F-AA14-44AB-81D5-9961EF02533C][Market data ownership and the ticking guarantee]] — the series model and the oresmd URI grammar the
+  server owns.
+
+* See also
+
+- [[file:market_data.org][Market data journeys]] — the group this journey belongs to.
+- [[file:../../prototypes/market_data/find-an-instrument.org][Find an instrument prototype]] — the design note.

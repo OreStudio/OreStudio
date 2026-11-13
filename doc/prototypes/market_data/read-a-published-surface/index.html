@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Read a published surface prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.lead{color:var(--ink-dim);font-size:.86rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.field{display:grid;gap:4px;min-width:150px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.kv{display:flex;gap:16px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.kv b{color:var(--ink);font-weight:600}
+.kv .sep{color:var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.chart{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:20px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.legend .sw{display:inline-block;width:12px;height:2px;background:#c084fc;vertical-align:3px;margin-right:6px}
+.axis-strip{display:flex;gap:22px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim);border-top:1px solid var(--line-soft);padding-top:8px}
+.axis-strip b{color:var(--ink);font-weight:600}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The person's "Read a published surface" screen
+  (doc/knowledge/journeys/market_data/journey_read-a-published-surface.org):
+  one published vol surface, its axes in the order the server states, the
+  grid of numbers the surface is drawn from, and one expiry as a smile.
+  This is not the candidate check (that is inspect-a-surfaces-slices): it
+  reads a surface the party has published, and it says what the strikes mean
+  - spot delta, premium-adjusted or not - because a strike column is not a
+  number without them.
+
+  Variants with ?variant=a|b|c: a the surface, b the grid, c one expiry as a
+  smile. The variant is the journey's design question: whether a surface is
+  read as a picture, as numbers, or as one slice at a time.
+  ?state=published|stale|none switches the mock answer.
+
+  Ported from hedgr's vol_surface_smile.html. The mesh is generated from the
+  grid by the same projection hedgr's vol_surface_generator.py used, so the
+  picture and the table cannot disagree.
+-->
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'published';
+const PARTY = 'ACME Corporation UK plc';
+const PUBLISHED = '2026-11-12T16:00:00Z';
+const AS_OF = '2026-11-13 14:31:07Z';
+const MODEL = 'ssvi';
+const STRIKE_CONVENTION = 'delta';
+const DELTA_TYPE = 'spot';
+
+const EXPIRIES = ['1W','1M','2M','3M','6M','9M','1Y'];
+const STRIKES = ['10D put','25D put','ATM','25D call','10D call'];
+const STRIKE_CODES = ['DEL/Spot/Put/10','DEL/Spot/Put/25','ATM','DEL/Spot/Call/25','DEL/Spot/Call/10'];
+
+/* the smile the model produces: a term lift, a wing lift and a put skew */
+function vol(u, v){
+  const k = u * 2 - 1;
+  const term = 0.0755 + 0.0105 * Math.sqrt(v);
+  const smile = 0.0090 * k * k + 0.0045 * Math.pow(k, 4);
+  const skew = -0.0062 * k;
+  return term + smile + skew;
+}
+const VOLS = EXPIRIES.map((_, i) => STRIKES.map((_, j) => vol(j / (STRIKES.length-1), i / (EXPIRIES.length-1))));
+const FLAT = VOLS.flat();
+const VMIN = Math.min(...FLAT), VMAX = Math.max(...FLAT);
+
+/* ---- the projection, from hedgr's generator ----------------------------- */
+function project(x, y, z){
+  const yaw = 36 * Math.PI / 180, pitch = 26 * Math.PI / 180;
+  const x1 = x * Math.cos(yaw) - y * Math.sin(yaw);
+  const y1 = x * Math.sin(yaw) + y * Math.cos(yaw);
+  const sx = x1;
+  const sy = y1 * Math.sin(pitch) - z * Math.cos(pitch);
+  const depth = y1 * Math.cos(pitch) + z * Math.sin(pitch);
+  const persp = 1 / (1 + 0.30 * depth);
+  return [sx * persp, sy * persp];
+}
+const WIDTH = 1100, HEIGHT = 380, HEIGHT_Z = 0.62, SPAN = 520;
+function screen(x, y, w){
+  const [px, py] = project(x, y, w * HEIGHT_Z);
+  return [px * SPAN + WIDTH / 2, -py * SPAN + HEIGHT * 0.62];
+}
+function norm(v){ return (v - VMIN) / (VMAX - VMIN); }
+function colour(w){
+  const lo = [30,58,138], hi = [192,132,252];
+  const c = lo.map((v, i) => Math.round(v + (hi[i] - v) * w));
+  return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+function meshSvg(){
+  const R = EXPIRIES.length, C = STRIKES.length;
+  const out = [];
+  /* the box: ticks on all three axes, dashed where an edge is behind */
+  const corners = {};
+  for (const xi of [0,1]) for (const yi of [0,1]) for (const zi of [0,1])
+    corners[[xi,yi,zi].join('')] = screen(xi, yi, zi);
+  const edges = [
+    [[0,0,0],[1,0,0]], [[0,0,0],[0,1,0]], [[0,0,0],[0,0,1]], [[1,0,0],[1,1,0]],
+    [[0,1,0],[1,1,0]], [[1,0,0],[1,0,1]], [[0,1,0],[0,1,1]], [[1,1,0],[1,1,1]],
+    [[0,0,1],[1,0,1]], [[0,0,1],[0,1,1]], [[1,0,1],[1,1,1]], [[0,1,1],[1,1,1]]
+  ];
+  let frame = '';
+  for (const [a, b] of edges){
+    const pa = corners[a.join('')], pb = corners[b.join('')];
+    const dash = (a[2] === 1 || b[2] === 1) ? ' stroke-dasharray="3 4"' : '';
+    frame += `<line x1="${pa[0].toFixed(1)}" y1="${pa[1].toFixed(1)}" x2="${pb[0].toFixed(1)}" y2="${pb[1].toFixed(1)}"${dash}/>`;
+  }
+  /* cells far to near, then the mesh over them */
+  const cells = [];
+  for (let i = 0; i < R - 1; i++) for (let j = 0; j < C - 1; j++){
+    const quad = [
+      screen(j/(C-1), i/(R-1), norm(VOLS[i][j])),
+      screen((j+1)/(C-1), i/(R-1), norm(VOLS[i][j+1])),
+      screen((j+1)/(C-1), (i+1)/(R-1), norm(VOLS[i+1][j+1])),
+      screen(j/(C-1), (i+1)/(R-1), norm(VOLS[i+1][j]))
+    ];
+    const mean = (VOLS[i][j] + VOLS[i][j+1] + VOLS[i+1][j+1] + VOLS[i+1][j]) / 4;
+    cells.push({depth:(i+1)/(R-1), quad, mean});
+  }
+  cells.sort((a, b) => b.depth - a.depth);
+  const fill = cells.map(({quad, mean}) =>
+    `<polygon points="${quad.map(p => p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${colour(norm(mean))}" fill-opacity="0.92" stroke="#0b1020" stroke-width="1"/>`).join('');
+  const wire = [];
+  for (let i = 0; i < R; i++) wire.push(STRIKES.map((_, j) => screen(j/(C-1), i/(R-1), norm(VOLS[i][j]))));
+  for (let j = 0; j < C; j++) wire.push(EXPIRIES.map((_, i) => screen(j/(C-1), i/(R-1), norm(VOLS[i][j]))));
+  const skeleton = wire.map(pts =>
+    `<polyline points="${pts.map(p => p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}"/>`).join('');
+  return `
+  <svg viewBox="0 0 ${WIDTH} ${HEIGHT}" role="img" aria-label="vol surface, boxed frame with the mesh">
+    <g stroke="#333c52" stroke-width="1" fill="none">${frame}</g>
+    <g>${fill}</g>
+    <g fill="none" stroke="#e6edf3" stroke-opacity="0.30" stroke-width="1">${skeleton}</g>
+    <g font-family="ui-monospace, Menlo, monospace" font-size="10">
+      <text x="24" y="96" fill="#71717a" letter-spacing="0.08em">VOL</text>
+      <text x="24" y="116" fill="#a1a1aa">${(VMAX*100).toFixed(2)}%</text>
+      <text x="24" y="300" fill="#71717a">${(VMIN*100).toFixed(2)}%</text>
+    </g>
+  </svg>`;
+}
+
+function title(){
+  return `
+  <div class="top">
+    <h1>EURUSD_SSVI</h1>
+    <span class="lead">a published vol surface: its axes in the order the server states, its grid, and one expiry as a smile</span>
+    <a style="margin-left:auto" href="../../../knowledge/journeys/market_data/journey_read-a-published-surface.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <div class="kv">
+      <span>Party <b>${PARTY}</b></span><span class="sep">|</span>
+      <span>Pair <b>EUR/USD</b></span><span class="sep">|</span>
+      <span>Model <b>${MODEL}</b></span><span class="sep">|</span>
+      <span>Strikes <b>${STRIKE_CONVENTION}</b></span><span class="sep">|</span>
+      <span>Delta <b>${DELTA_TYPE}</b></span><span class="sep">|</span>
+      <span>Grid <b>${EXPIRIES.length} × ${STRIKES.length}</b></span><span class="sep">|</span>
+      <span>Range <b>${(VMIN*100).toFixed(2)}% – ${(VMAX*100).toFixed(2)}%</b></span><span class="sep">|</span>
+      <span>Published <b class="mono">${PUBLISHED}</b></span>
+      ${state === 'stale'
+        ? '<span class="tag warn">STALE · published 1 day ago</span>'
+        : '<span class="tag ok">PUBLISHED · 1 day ago</span>'}
+    </div>
+    <div class="row">
+      <div class="field"><label>Expiry</label><select id="expiry">${EXPIRIES.map((e,i) =>
+        `<option value="${i}"${e === '1M' ? ' selected' : ''}>${e}</option>`).join('')}</select></div>
+      <div class="field"><label>Y axis</label><select><option>vol</option></select></div>
+      <div class="field"><label>Strikes</label><select><option>delta</option><option>absolute</option></select></div>
+      <span style="margin-left:auto"></span>
+      <button class="btn">Copy CSV</button>
+      <button class="btn">Refresh</button>
+    </div>
+  </div>`;
+}
+
+function surface(){
+  return `
+  <div class="panel">
+    <h2>Surface · strikes × expiries × vol</h2>
+    <div class="chart" style="padding:0;border:none;background:none">${meshSvg()}</div>
+    <div class="axis-strip">
+      <span><b>Strikes</b> ${STRIKE_CODES.join(' · ')}</span>
+      <span><b>Expiries</b> ${EXPIRIES.join(' · ')}</span>
+      <span><b>Vol</b> ${(VMIN*100).toFixed(2)}% – ${(VMAX*100).toFixed(2)}%</span>
+    </div>
+  </div>`;
+}
+
+function grid(){
+  return `
+  <div class="panel">
+    <h2>Grid · ${EXPIRIES.length} × ${STRIKES.length}</h2>
+    <table><thead><tr><th>Expiry</th>${STRIKES.map((s, j) =>
+      `<th style="text-align:right" title="${STRIKE_CODES[j]}">${s}</th>`).join('')}<th style="text-align:right">ATM mid</th></tr></thead>
+      <tbody>${EXPIRIES.map((e, i) => `<tr><td>${e}</td>${STRIKES.map((_, j) =>
+        `<td class="num">${(VOLS[i][j]*100).toFixed(3)}</td>`).join('')}
+        <td class="num muted">${(VOLS[i][2]*100).toFixed(3)}</td></tr>`).join('')}</tbody>
+    </table>
+    <div class="legend faint"><span>The column headers are the axis values; the title on each says the code the grid is indexed by.</span></div>
+  </div>`;
+}
+
+function smile(expiryIndex){
+  const vols = VOLS[expiryIndex].map(v => v * 100);
+  const lo = Math.min(...vols) - 0.5, hi = Math.max(...vols) + 0.5;
+  const W = 1040, H = 220, L = 58, R = 22, T = 18, B = 42;
+  const x = i => L + i * (W - L - R) / (vols.length - 1);
+  const y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const pts = vols.map((v, i) => x(i) + ',' + y(v).toFixed(1)).join(' ');
+  const ticks = [0,.5,1].map(t => {
+    const v = lo + (hi-lo)*t, yy = y(v).toFixed(1);
+    return `<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#21262d"/>` +
+           `<text x="${L-8}" y="${+yy+3}" text-anchor="end" fill="#71717a" font-size="10">${v.toFixed(2)}%</text>`;
+  }).join('');
+  const labels = STRIKES.map((s, i) =>
+    `<text x="${x(i)}" y="${H-14}" text-anchor="middle" fill="#71717a" font-size="10">${s}</text>`).join('');
+  const dots = vols.map((v, i) => `<circle cx="${x(i)}" cy="${y(v).toFixed(1)}" r="2.5" fill="#c084fc"/>`).join('');
+  return `
+  <div class="panel">
+    <h2>Smile · ${EXPIRIES[expiryIndex]}</h2>
+    <div class="legend">
+      <span><span class="sw"></span>EURUSD_SSVI, ${EXPIRIES[expiryIndex]}</span>
+      <span class="faint">ATM ${(vols[2]).toFixed(3)}% · strikes are ${STRIKE_CONVENTION} · ${DELTA_TYPE}
+        ${DELTA_TYPE === 'spot' ? ' (not premium-adjusted)' : ''}</span>
+    </div>
+    <div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="EUR/USD ${EXPIRIES[expiryIndex]} smile">
+      ${ticks}
+      <polyline points="${pts}" fill="none" stroke="#c084fc" stroke-width="2"/>
+      ${dots}${labels}
+    </svg></div>
+  </div>`;
+}
+
+function none(){
+  return `
+  <div class="panel">
+    <h2>Nothing published</h2>
+    <div class="notice">The party holds a <b>EURUSD_SSVI</b> blueprint but has published no surface from it, so
+      there is nothing to draw. The screen says so and draws no grid: an unpublished surface has no numbers a
+      person may price from.</div>
+  </div>`;
+}
+
+document.getElementById('note').textContent =
+  'PROTOTYPE · throwaway · mock data, no server · variant ' + variant + ' · state ' + state;
+const app = document.getElementById('app');
+app.innerHTML = title() +
+  (state === 'none' ? none()
+    : variant === 'a' ? surface()
+    : variant === 'b' ? grid()
+    : smile(1));
+document.getElementById('bar').innerHTML =
+  '<span class="label">Variant</span>' +
+  [['a','A · the surface'],['b','B · the grid'],['c','C · one smile']].map(([v,t]) =>
+    `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${t}</button>`).join('') +
+  '<span class="sep">·</span><span class="label">State</span>' +
+  [['published','published'],['stale','stale'],['none','nothing published']].map(([s,t]) =>
+    `<button data-s="${s}" class="${s === state ? 'on' : ''}">${t}</button>`).join('');
+document.getElementById('bar').addEventListener('click', e => {
+  const v = e.target.dataset.v, s = e.target.dataset.s;
+  const next = new URLSearchParams(location.search);
+  if (v) next.set('variant', v); if (s) next.set('state', s);
+  location.search = next.toString();
+});
+</script>
+</body>
+</html>

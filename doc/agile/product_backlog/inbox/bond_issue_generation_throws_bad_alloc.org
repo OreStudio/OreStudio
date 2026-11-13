@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 9232CDC9-8444-4856-8D3D-CA7CD4EFA5EC
+:END:
+#+title: Generating a bond issue fails with std::bad_alloc
+#+description: Acme provisioning now reaches generate_trades and fails on the first bond issue: 'Writing bond issue POP5ZCJP1NEQ1 failed: std::bad_alloc', with zero trades written and 29 GB free. The smoke run is 'compass smoke ticks --leave-running'. Find what allocates, and whether the generator asks for a size the data cannot justify.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

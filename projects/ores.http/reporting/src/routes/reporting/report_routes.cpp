@@ -535,6 +535,98 @@ std::string detail_json(const composed& decorated,
            ",\"unread\":" + unread_json(decorated) + "}";
 }
 
+
+/// The most runs of one report a page asks for.
+constexpr std::uint32_t runs_of_report_limit = 200;
+
+/// One run as the runs list draws it.
+struct run_view final {
+    boost::uuids::uuid id;
+    std::string name;
+    std::string state_name;
+    std::optional<std::string> health;
+    std::optional<std::chrono::system_clock::time_point> started_at;
+    std::optional<std::chrono::system_clock::time_point> completed_at;
+    std::optional<std::chrono::system_clock::time_point> priced_at;
+};
+
+/// The time from a run's start to its completion, or nothing until both are
+/// known and the completion does not precede the start.
+std::optional<std::int64_t> duration_ms(const run_view& run) {
+    if (!run.started_at || !run.completed_at)
+        return std::nullopt;
+    const auto elapsed =
+        std::chrono::duration_cast<std::chrono::milliseconds>(*run.completed_at - *run.started_at);
+    if (elapsed.count() < 0)
+        return std::nullopt;
+    return elapsed.count();
+}
+
+/// One run as the list states it.
+std::string run_json(const run_view& run) {
+    return "{\"id\":" + json::write(rr::as_text(run.id)) + ",\"name\":" + json::write(run.name) +
+           ",\"state_name\":" + json::write(run.state_name) +
+           ",\"health\":" + json::write(run.health) +
+           ",\"started_at\":" + json::write(run.started_at) +
+           ",\"completed_at\":" + json::write(run.completed_at) +
+           ",\"duration_ms\":" + json::write(duration_ms(run)) +
+           ",\"priced_at\":" + json::write(run.priced_at) + "}";
+}
+
+/// The runs of one definition, newest first, with the state each reached.
+///
+/// The health is read beside the runs, and a read of it that fails leaves every
+/// state out without failing the list: a run whose state cannot be read is still
+/// a run the person made.
+std::vector<run_view> runs_of_definition(const http_request& req,
+                                         nats_client& session,
+                                         const boost::uuids::uuid& definition_id) {
+    reporting_messaging::list_report_instances_request msg;
+    msg.limit = runs_of_report_limit;
+    msg.filter.emplace();
+    msg.filter->definition_id = definition_id;
+    const auto reply = forwarding::forward(req, session, msg);
+    rr::require_done(reply.result);
+
+    std::vector<run_view> runs;
+    for (const auto& instance : reply.instances)
+        runs.push_back({instance.id,
+                        instance.name,
+                        std::string(),
+                        std::nullopt,
+                        instance.started_at,
+                        instance.completed_at,
+                        instance.priced_at});
+    std::ranges::stable_sort(runs, [](const auto& left, const auto& right) {
+        if (!left.started_at || !right.started_at)
+            return left.started_at.has_value() && !right.started_at.has_value();
+        return *left.started_at > *right.started_at;
+    });
+
+    std::vector<boost::uuids::uuid> ids;
+    for (const auto& run : runs)
+        ids.push_back(run.id);
+    if (ids.empty())
+        return runs;
+
+    try {
+        reporting_messaging::get_report_instance_health_request stated;
+        stated.instance_ids = ids;
+        const auto health = forwarding::forward(req, session, stated);
+        if (health.result.outcome == ores::utility::domain::outcome::ok) {
+            for (auto& run : runs)
+                for (const auto& entry : health.health)
+                    if (entry.report_instance_id == run.id) {
+                        run.state_name = entry.state_name;
+                        run.health = health_of(entry.health);
+                    }
+        }
+    } catch (const std::exception&) {
+        // The runs are the person's own, and their state is a decoration of them.
+    }
+    return runs;
+}
+
 /// The refusal a shared name states, with the choices beside its words.
 std::string shared_name_body(const std::string& name,
                              const std::vector<reporting_domain::report_definition>& named,
@@ -658,6 +750,46 @@ void report_routes::register_routes(
                                                          decorated.fires) +
                                                ",\"total\":" + std::to_string(page.total) +
                                                ",\"unread\":" + unread_json(decorated) + "}");
+                });
+            }));
+
+    add(router->post("/api/reporting/reports/{id}/run")
+            .summary("Start a run of one report definition and answer the run it made")
+            .description("The run is the service's production run of the definition, for the "
+                         "caller's own tenant, and the answer names it so the page can follow it.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<reporting_messaging::trigger_report_instance_request>([&] {
+                    const auto raw = req.get_path_param("id");
+                    if (!rr::is_uuid(raw))
+                        rr::invalid("The address names an id that is not a uuid.");
+                    const auto& claims = req.authenticated_user;
+                    if (!claims || !claims->tenant_id || claims->tenant_id->empty())
+                        rr::invalid("The caller's own token names no tenant.");
+                    reporting_messaging::trigger_report_instance_request msg;
+                    msg.report_definition_id = boost::uuids::string_generator()(raw);
+                    msg.tenant_id = boost::uuids::string_generator()(*claims->tenant_id);
+                    const auto reply = forwarding::forward(req, session, msg);
+                    rr::require_done(reply.result);
+                    return http_response::json(
+                        "{\"runId\":" + json::write(reply.report_instance_id) + "}");
+                });
+            }));
+
+    add(router->get("/api/reporting/reports/{id}/runs")
+            .summary("The runs of one report, newest first, with the state each reached")
+            .description("A run whose state cannot be read is still a run the person made, so "
+                         "the state is left out rather than the page.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<reporting_messaging::list_report_instances_request>([&] {
+                    const auto raw = req.get_path_param("id");
+                    if (!rr::is_uuid(raw))
+                        rr::invalid("The address names an id that is not a uuid.");
+                    rr::refuse_unknown_params(req, {});
+                    std::vector<std::string> written;
+                    for (const auto& run :
+                         runs_of_definition(req, session, boost::uuids::string_generator()(raw)))
+                        written.push_back(run_json(run));
+                    return http_response::json("{\"runs\":" + rr::array_of(written) + "}");
                 });
             }));
 

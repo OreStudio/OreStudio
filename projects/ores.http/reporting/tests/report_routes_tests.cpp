@@ -196,3 +196,36 @@ TEST_CASE("reports_refuse_a_write_they_do_not_read", "[report]") {
               R"("post_processing":"","skipped_families":""},)"
               R"("intent":{"reason_code":"system.update"}})") == http_status::bad_gateway);
 }
+
+TEST_CASE("reports_refuse_a_run_address_that_names_no_definition", "[report]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the run routes' addresses";
+
+    const auto status =
+        [](http_method method, const std::string& address, const std::string& pattern) {
+            return answer_at<report_routes>(method, address, http_request{}, pattern).status;
+        };
+    CHECK(status(http_method::post,
+                 "/api/reporting/reports/not-an-id/run",
+                 "/api/reporting/reports/{id}/run") == http_status::bad_request);
+    CHECK(status(http_method::get,
+                 "/api/reporting/reports/not-an-id/runs",
+                 "/api/reporting/reports/{id}/runs") == http_status::bad_request);
+    CHECK(status(http_method::get,
+                 "/api/reporting/reports/" + std::string(report_id) + "/runs",
+                 "/api/reporting/reports/{id}/runs") == http_status::bad_gateway);
+}
+
+TEST_CASE("reports_refuse_a_run_started_by_a_token_that_names_no_tenant", "[report]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a run start without a tenant";
+
+    http_request req;
+    req.authenticated_user.emplace();
+
+    CHECK(answer_at<report_routes>(http_method::post,
+                                   "/api/reporting/reports/" + std::string(report_id) + "/run",
+                                   req,
+                                   "/api/reporting/reports/{id}/run")
+              .status == http_status::bad_request);
+}

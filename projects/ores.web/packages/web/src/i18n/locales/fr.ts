@@ -7889,9 +7889,9 @@ const fr: SourceCatalogue = {
             notional: 'Notionnel',
             counterparty: 'Contrepartie',
             noRun: "Ce rapport n'a aucune exécution à lire.",
-            noRows: "Cette exécution n'a aucun résultat. Elle n'a stocké aucun chiffre pour aucune transaction. L'onglet Erreurs indique ce qui a échoué.",
+            noRows: "Cette exécution n'a aucun résultat. Elle n'a stocké aucun chiffre pour aucune transaction. L'onglet Journal indique ce qui a échoué.",
             noFigures:
-                "Cette exécution n'a aucun résultat à afficher. Ses lignes ne nomment ni transaction ni NPV. L'onglet Erreurs indique ce qui a échoué.",
+                "Cette exécution n'a aucun résultat à afficher. Ses lignes ne nomment ni transaction ni NPV. L'onglet Journal indique ce qui a échoué.",
             selectedTrade: 'La transaction ouverte',
             tradeErrors: "Ce que l'exécution a enregistré sur cette transaction",
             noTradeError: "L'exécution n'a enregistré aucune erreur sur cette transaction.",

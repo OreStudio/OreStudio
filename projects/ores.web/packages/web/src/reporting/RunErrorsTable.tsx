@@ -353,7 +353,7 @@ export function RunErrorsOverview({
 function ErrorsHead({ rows }: { readonly rows: readonly ReportRunErrorView[] }): ReactNode {
     const { t } = useTranslation();
     const field = 'reporting.run.errors';
-    const errors = rows.filter((row) => row.severity === 'error').slice(0, ERRORS_IN_HEAD);
+    const errors = rows.filter((row) => row.severity === 'error').slice(-ERRORS_IN_HEAD);
     return (
         <section className="card p-6">
             <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
@@ -490,7 +490,7 @@ export function RunErrorsTable({
                 source={localSource<ReportRunErrorView>({
                     key: `run-errors-${runId}`,
                     rows: shown,
-                    revision: `${scope ?? ''}:${severity}:${shown.length}`,
+                    revision: `${scope ?? ''}:${file ?? ''}:${severity}:${shown.length}`,
                     searchOf: (row) =>
                         `${row.scope} ${row.about} ${row.message} ${row.filename ?? ''} ${row.location ?? ''}`,
                 })}

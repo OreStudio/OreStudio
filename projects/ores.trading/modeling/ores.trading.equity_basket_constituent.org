@@ -220,6 +220,12 @@ Reads every current constituent of the given instruments, ordered by
 instrument and ordinal, in one statement. An empty input reads nothing.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief The current constituents of every given instrument, in one statement.
+     *
+     * An empty input reads nothing, so a caller with no instruments pays
+     * no query.
+     */
 std::vector<domain::equity_basket_constituent>
 read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
 #+end_src

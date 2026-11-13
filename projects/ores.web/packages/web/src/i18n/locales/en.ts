@@ -7772,9 +7772,9 @@ export const en: SourceCatalogue = {
             notional: 'Notional',
             counterparty: 'CounterParty',
             noRun: 'This report has no run to read.',
-            noRows: 'This run has no results. It stored no figure for any trade. The Errors tab shows what went wrong.',
+            noRows: 'This run has no results. It stored no figure for any trade. The Log tab shows what went wrong.',
             noFigures:
-                'This run has no results to show. Its stored rows name no trade and no NPV. The Errors tab shows what went wrong.',
+                'This run has no results to show. Its stored rows name no trade and no NPV. The Log tab shows what went wrong.',
             selectedTrade: 'The trade you opened',
             tradeErrors: 'What the run recorded about this trade',
             noTradeError: 'The run recorded no error against this trade.',

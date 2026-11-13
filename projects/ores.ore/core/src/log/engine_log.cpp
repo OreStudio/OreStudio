@@ -406,14 +406,13 @@ bool is_memory_report(const engine_log_event& event) {
 }
 
 /**
- * @brief Gives an error or a warning a scope when the engine stated no group.
+ * @brief Gives a line a scope when the engine stated no group.
  *
  * The engine states a group in its structured lines and states none in its
- * plain ones, where a warning about a convention or an input arrives with no
- * group at all. A reader still needs to see it, so such a line is recorded as
- * the engine's own: the scope says the engine spoke and named no part of
- * itself, which is what the engine said. A notice keeps no scope, because the
- * run does not store one.
+ * plain ones, where a warning about a convention, a notice about a parameter or
+ * anything else it printed arrives with no group at all. A reader still needs to
+ * see it, so such a line is recorded as the engine's own: the scope says the
+ * engine spoke and named no part of itself, which is what the engine said.
  */
 void assign_unstated_scope(engine_log_event& event) {
     /*

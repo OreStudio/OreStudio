@@ -7828,9 +7828,9 @@ const pt: SourceCatalogue = {
             notional: 'Notional',
             counterparty: 'Contraparte',
             noRun: 'Este relatório não tem execução para ler.',
-            noRows: 'Esta execução não tem resultados. Não guardou nenhum valor para nenhuma transação. O separador Erros mostra o que falhou.',
+            noRows: 'Esta execução não tem resultados. Não guardou nenhum valor para nenhuma transação. O separador Registo mostra o que falhou.',
             noFigures:
-                'Esta execução não tem resultados para mostrar. As suas linhas não indicam transação nem NPV. O separador Erros mostra o que falhou.',
+                'Esta execução não tem resultados para mostrar. As suas linhas não indicam transação nem NPV. O separador Registo mostra o que falhou.',
             selectedTrade: 'A transação aberta',
             tradeErrors: 'O que a execução registou sobre esta transação',
             noTradeError: 'A execução não registou erros sobre esta transação.',

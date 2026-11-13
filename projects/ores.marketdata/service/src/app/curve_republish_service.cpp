@@ -39,6 +39,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cstdint>
 #include <format>
 #include <optional>
 #include <stdexcept>
@@ -49,6 +50,10 @@ namespace ores::marketdata::service::app {
 using namespace ores::logging;
 
 namespace {
+
+/// How many rows of a catalogue one read asks for. A request names one config,
+/// so its own rows fit in a page and the next page is the rare case.
+constexpr std::uint32_t curve_catalogue_page_size = 500;
 
 // The FOMC meeting dates the RATES_SPOT_FOMC schedule walk steps along, read
 // from the event store. Sorted ascending explicitly: the walk's
@@ -64,13 +69,22 @@ read_config(ores::database::context ctx, const boost::uuids::uuid& bootstrap_con
     return configs.front();
 }
 
+// The config's own pillars, asked of the store by the config they name. Reading
+// the whole pillar catalogue here and narrowing it in memory made every
+// bootstrap cost what every curve in the tenant costs.
 std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar>
 read_pillars(ores::database::context ctx, const boost::uuids::uuid& bootstrap_config_id) {
     ores::refdata::repository::ir_curve_bootstrap_pillar_repository pillar_repo;
+    ores::refdata::messaging::ir_curve_bootstrap_pillars_filter wanted;
+    wanted.bootstrap_config_id = bootstrap_config_id;
     std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar> pillars;
-    for (auto& p : pillar_repo.read_latest(ctx))
-        if (p.bootstrap_config_id == bootstrap_config_id)
+    for (std::uint32_t offset = 0;; offset += curve_catalogue_page_size) {
+        auto page = pillar_repo.read_latest(ctx, offset, curve_catalogue_page_size, {}, wanted);
+        for (auto& p : page)
             pillars.push_back(std::move(p));
+        if (page.size() < curve_catalogue_page_size)
+            break;
+    }
     if (pillars.empty())
         throw std::invalid_argument("curve_republish_service: bootstrap config has no pillars: " +
                                     boost::uuids::to_string(bootstrap_config_id));

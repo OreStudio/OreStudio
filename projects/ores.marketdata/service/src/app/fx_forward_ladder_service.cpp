@@ -34,6 +34,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -47,6 +48,10 @@ namespace quant = ores::analytics::quant;
 namespace refdata_repo = ores::refdata::repository;
 using ores::database::context;
 using time_point = std::chrono::system_clock::time_point;
+
+/// How many rows of a catalogue one read asks for. A request names one pair, so
+/// the curves it reads fit in a page and the next page is the rare case.
+constexpr std::uint32_t forward_curve_page_size = 500;
 
 /// A missing input of the ladder, whose message the reply carries.
 struct refused final : std::runtime_error {
@@ -126,11 +131,22 @@ funding_curve read_funding_curve(context ctx,
                                  const std::string& party_id,
                                  time_point as_of) {
     refdata_repo::ir_curve_bootstrap_config_repository config_repo;
+    // The currency's funding curves, asked of the store by currency and family.
+    // Reading the whole curve catalogue here and narrowing it in memory made
+    // every forward set cost what every curve in the tenant costs. The party is
+    // narrowed below, because the store keeps no filter for it.
+    ores::refdata::messaging::ir_curve_bootstrap_configs_filter funding;
+    funding.currency_code = currency;
+    funding.curve_family_role = std::string{"FUNDING"};
     std::vector<ores::refdata::domain::ir_curve_bootstrap_config> configs;
-    for (auto& config : config_repo.read_latest(ctx))
-        if (config.currency_code == currency && config.curve_family_role == "FUNDING" &&
-            (party_id.empty() || boost::uuids::to_string(config.party_id) == party_id))
-            configs.push_back(std::move(config));
+    for (std::uint32_t offset = 0;; offset += forward_curve_page_size) {
+        auto page = config_repo.read_latest(ctx, offset, forward_curve_page_size, {}, funding);
+        for (auto& config : page)
+            if (party_id.empty() || boost::uuids::to_string(config.party_id) == party_id)
+                configs.push_back(std::move(config));
+        if (page.size() < forward_curve_page_size)
+            break;
+    }
     if (configs.empty())
         throw refused("No funding curve is configured for " + currency + ".");
     if (configs.size() > 1)

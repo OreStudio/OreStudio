@@ -37,6 +37,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cstdint>
 #include <optional>
 #include <stdexcept>
 
@@ -48,6 +49,10 @@ namespace msg = ores::marketdata::messaging;
 using ores::database::context;
 using ores::platform::time::datetime;
 using time_point = std::chrono::system_clock::time_point;
+
+/// How many rows of a catalogue one read asks for. A request names one
+/// blueprint, so the raises it has made fit in a page and the next is rare.
+constexpr std::uint32_t surface_raise_page_size = 500;
 
 auto& publish_log() {
     static auto instance =
@@ -258,17 +263,26 @@ fx_vol_surface_publish_service::publish(context ctx,
                                         *failure);
 
         // One raise at a time: a second request for the same calibration would publish it twice.
-        for (const auto& pending :
-             repository::fx_vol_surface_publish_repository{}.read_latest(ctx)) {
-            if (pending.blueprint_id != blueprint.id || pending.as_of != as_of ||
-                pending.published_at)
-                continue;
-            const auto open = ores::inbox::service::approval_lifecycle(ctx).request(
-                boost::uuids::to_string(pending.request_id));
-            if (open && (open->state_code == "waiting" || open->state_code == "approved"))
-                throw std::invalid_argument(
-                    "Request " + boost::uuids::to_string(pending.request_id) +
-                    " already asks to publish this calibration and is " + open->state_code + ".");
+        // The blueprint's own raises are asked of the store by blueprint, so the guard costs what
+        // this blueprint has raised and not what every surface in the tenant has.
+        msg::fx_vol_surface_publishes_filter raised_here;
+        raised_here.blueprint_id = blueprint.id;
+        for (std::uint32_t offset = 0;; offset += surface_raise_page_size) {
+            auto page = repository::fx_vol_surface_publish_repository{}.read_latest(
+                ctx, offset, surface_raise_page_size, {}, raised_here);
+            for (const auto& pending : page) {
+                if (pending.as_of != as_of || pending.published_at)
+                    continue;
+                const auto open = ores::inbox::service::approval_lifecycle(ctx).request(
+                    boost::uuids::to_string(pending.request_id));
+                if (open && (open->state_code == "waiting" || open->state_code == "approved"))
+                    throw std::invalid_argument(
+                        "Request " + boost::uuids::to_string(pending.request_id) +
+                        " already asks to publish this calibration and is " + open->state_code +
+                        ".");
+            }
+            if (page.size() < surface_raise_page_size)
+                break;
         }
 
         // The kind, the asker and the rule that may close the raise are read before

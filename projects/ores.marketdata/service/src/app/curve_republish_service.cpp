@@ -31,6 +31,7 @@
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/observation_lineage_service.hpp"
 #include "ores.marketdata.core/service/series_shape_writer.hpp"
+#include "ores.marketdata.service/app/catalogue_page.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
 #include "ores.refdata.core/mapping/quant_codes.hpp"
@@ -51,10 +52,6 @@ using namespace ores::logging;
 
 namespace {
 
-/// How many rows of a catalogue one read asks for. A request names one config,
-/// so its own rows fit in a page and the next page is the rare case.
-constexpr std::uint32_t curve_catalogue_page_size = 500;
-
 // The FOMC meeting dates the RATES_SPOT_FOMC schedule walk steps along, read
 // from the event store. Sorted ascending explicitly: the walk's
 // nth_on_or_after silently yields a wrong "n-th meeting" on unsorted input,
@@ -69,22 +66,16 @@ read_config(ores::database::context ctx, const boost::uuids::uuid& bootstrap_con
     return configs.front();
 }
 
-// The config's own pillars, asked of the store by the config they name. Reading
-// the whole pillar catalogue here and narrowing it in memory made every
-// bootstrap cost what every curve in the tenant costs.
+// The config's own pillars, read through the filter the store applies, so a
+// bootstrap costs what this config holds.
 std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar>
 read_pillars(ores::database::context ctx, const boost::uuids::uuid& bootstrap_config_id) {
     ores::refdata::repository::ir_curve_bootstrap_pillar_repository pillar_repo;
     ores::refdata::messaging::ir_curve_bootstrap_pillars_filter wanted;
     wanted.bootstrap_config_id = bootstrap_config_id;
-    std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar> pillars;
-    for (std::uint32_t offset = 0;; offset += curve_catalogue_page_size) {
-        auto page = pillar_repo.read_latest(ctx, offset, curve_catalogue_page_size, {}, wanted);
-        for (auto& p : page)
-            pillars.push_back(std::move(p));
-        if (page.size() < curve_catalogue_page_size)
-            break;
-    }
+    auto pillars = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
+        return pillar_repo.read_latest(ctx, offset, limit, {}, wanted);
+    });
     if (pillars.empty())
         throw std::invalid_argument("curve_republish_service: bootstrap config has no pillars: " +
                                     boost::uuids::to_string(bootstrap_config_id));

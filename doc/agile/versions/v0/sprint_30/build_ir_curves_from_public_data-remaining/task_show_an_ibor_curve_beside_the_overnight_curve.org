@@ -76,6 +76,11 @@ task and name that file in the Command column.
   inspector drawn for two curves at once, with the conventions strip for each and a panel
   that states the four differences (underlying, fixing, use, why the shape differs). It is
   static data for the design; the task builds the live version against it.
+- Signed off on 2026-11-13. The inspector keeps all three read-outs of a curve — zero rates,
+  forward rates and discount factors — because each carries part of the comparison: zero for
+  the level, forward for where the term premium sits, and the discount factor for what a
+  curve that discounts actually does. Forward is the view to open first when a term curve is
+  present. The build must carry the switch; it is not a prototype-only convenience.
 
 * Test Scenarios
 

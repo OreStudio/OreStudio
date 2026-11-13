@@ -45,6 +45,8 @@ export const INDEX_FAMILIES = [
     'shibor',
     'tiie',
     'taibor',
+    'shir',
+    'hufonia',
 ] as const;
 
 /** The families whose index has a term, such as EURIBOR 6M. The others are overnight rates. */

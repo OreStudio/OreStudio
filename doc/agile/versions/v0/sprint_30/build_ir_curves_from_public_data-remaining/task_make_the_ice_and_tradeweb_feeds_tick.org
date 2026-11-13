@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 0A87FC5F-F15E-40D8-8CF6-572D24A203EE
+:END:
+#+title: Task: Make the ICE and Tradeweb feeds tick
+#+description: ICE and Tradeweb have no provider notation and no feed route, so their LIBOR and EURIBOR quotes are published as internal ticks and dropped before ingest. Implement both notations, seed their catalogue feeds, routes and subscriptions, and prove a LIBOR quote lands in a series.
+#+type: task
+#+level: s1
+#+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/make-the-ice-and-tradeweb-feeds-tick
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The ICE and Tradeweb synthetic feeds publish quotes that reach the market data store: each provider's instrument spellings are written by a notation, each has a feed, a route and a subscription, and a quote lands in the series its identity names.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- The ICE and Tradeweb notations write the external id, field and oresmd item for every instrument those providers quote, and a test covers the spellings.
+- The catalogue seeds a feed, a route and a system-party subscription for both providers.
+- A feed run stores its LIBOR and EURIBOR quotes into the series their identities name; a check states it.
+- The vendor instrument seed carries the ids for both providers, so no quote is left without one.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The notation is registered in =projects/ores.marketdata/core/src/vendor/provider_notation.cpp=
+  (only =bloomberg=, =lseg= and =demo= today). A provider with no notation gets no adapter
+  target (feed_adapter_targets.hpp), so its feed publishes an internal market_tick only.
+- The catalogue to extend: =projects/ores.sql/populate/marketdata/marketdata_catalogue_populate.sql=
+  seeds the providers, feeds, routes and subscriptions; =ice-a= and =tradeweb-a= do not exist.
+- The instrument spellings to write: ICE's LIBOR tickers (USD 1M/6M, GBP 3M, CHF 3M, JPY 3M) and
+  Tradeweb's composites (EURIBOR 1M/6M, GBP 1M, CHF 6M, JPY 1M). The simulated seed rows are the
+  source of the (currency, index family, tenor) matrix.
+- The vendor instrument seed already carries an unmapped row for each of those instruments
+  (marketdata_vendor_instruments_populate.sql: the "no notation" block). Once a notation exists,
+  regenerate that block with =tools/vendor_catalogue= and the ids appear.
+- Proof: a feed run must store a quote into the series its identity names, and the oresmd item
+  must resolve. The identity of an IR quote is (currency, instrument, fwd_start, tenor, term);
+  a LIBOR 3M pillar is =fwd_start=3M&tenor=3M=, not the overnight =tenor=1D=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

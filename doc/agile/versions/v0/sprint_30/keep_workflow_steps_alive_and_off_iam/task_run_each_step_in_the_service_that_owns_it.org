@@ -28,10 +28,10 @@ Each provisioning step is dispatched to the service that owns its work, so iam r
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Not yet started.                       |
+| Now          | Stage 1: the dispatch names an owner per kind, and refdata serves the calendar step. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-12                               |
+| Next         | Stage 2: move generate_trades into ores.synthetic and drop its core link. |
+| Last touched | 2026-11-13                               |
 
 * Acceptance
 
@@ -41,9 +41,30 @@ Each provisioning step is dispatched to the service that owns its work, so iam r
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Every step of a provisioning run is dispatched to one subject,
+=iam.v1.ops.provision_tenant_step=, served by ores.iam. That is why iam links
+the synthetic and refdata cores: it compiles code for work its own data has
+nothing to do with. It is also why the parallel steps of a run queue: one
+service takes them.
+
+The move is one kind at a time, because each kind drags its own dependencies:
+
+1. State the owner of each kind once, where the definition states a step's
+   subject, so the engine stores the owner with the row and every service reads
+   the same table. Done here, as =step_subject_for_kind=.
+2. Move a kind whose work a service already owns, end to end, and drop the
+   executor and the link it needed from iam. Start with =build_calendars=: the
+   work is refdata's own, the step calls a request to refdata today, and no iam
+   state is involved, so it proves the dispatch with the least code moved.
+3. Then =generate_trades= into ores.synthetic, which drops iam's
+   =ores.synthetic.core= link and takes the longest step off iam's workers.
+4. Then the marketdata kinds: the curve, forward and surface publishes, the
+   surface blueprints and the subscription setup.
+5. Then the reporting, dq and inbox kinds: =schedule_reports=,
+   =publish_bundle= and the two approval-mode steps.
+
+Each stage is its own PR, because each one moves an executor and its link, and
+a stage that lands alone is a stage a run can be proved against.
 
 * Measurements
 
@@ -57,7 +78,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Step kinds the definition can declare | 17 | =grep -c "_step_kind," projects/ores.iam/api/include/ores.iam.api/workflow/provision_tenant_workflow.hpp= inside =provision_executed_step_kinds= | =d7e9d200cd= |
+| Step kinds ores.refdata serves | 1 | =grep -rn "routes.on" projects/ores.refdata/service/src/messaging/provisioning_step_registrar.cpp= | =d7e9d200cd= |
+| Core libraries ores.iam no longer links | 1 (=ores.marketdata.core=) | =grep -n "core.lib" projects/ores.iam/core/src/CMakeLists.txt= | =d7e9d200cd= |
+| Core libraries ores.iam still links for other services' work | 2 (=ores.refdata.core=, =ores.synthetic.core=) | the same command | =d7e9d200cd= |
+| =ores.iam.api.tests= | passed, 3.3 s | =compass test run -- -R ores.iam.api.tests= | =d7e9d200cd= |
+| =ores.iam.core.tests= | passed, 27.5 s | =compass test run -- -R ores.iam.core.tests= | =d7e9d200cd= |
 
 * Notes
 
@@ -85,3 +111,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Stage 1 is done: the dispatch names the service that owns each kind, and
+ores.refdata serves the calendar step in its own process.
+
+- =step_subject_for_kind()= states the owner of a kind once, beside the words
+  and the budget the definition already keeps there, and =make_step= stores the
+  owner on the step the engine persists. A kind no service serves is sent to
+  ores.iam, which refuses it, so an unserved kind fails where a person can read
+  it instead of waiting for nobody.
+- ores.refdata serves =build_calendars= on
+  =refdata.v1.ops.provision_tenant_step=, through the same =step_routes= and
+  =serve_step_commands= the book-apply steps use, so the step is a durable
+  consumer on refdata's own stream. It calls the calendar materialisation
+  service directly rather than sending refdata a request about refdata's data.
+- ores.iam no longer has an executor for the calendar step, and no longer links
+  =ores.marketdata.core=, which nothing it compiled had used.
+- A test states the dispatch two ways: the table's answer for a kind, and the
+  subject a built definition puts on the step.
+
+What this stage does not do, and the plan's later stages cover: the remaining
+16 kinds still run in ores.iam, and it still links =ores.synthetic.core= for
+=generate_trades=. The parallel steps of a run now reach two services, and they
+reach the rest as the stages land.
+
+Not yet proven end to end: a provisioning run on this branch has not been made,
+so the dispatch is proven by the definition tests and the handler by
+compilation, not by a run in which refdata answers the calendar step. The check
+that closes it is =compass build=, =compass deploy= and =compass smoke ticks=.

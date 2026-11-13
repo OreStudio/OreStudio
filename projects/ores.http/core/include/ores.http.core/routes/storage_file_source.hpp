@@ -41,12 +41,17 @@ namespace ores::http::server::routes {
  */
 class ORES_HTTP_CORE_EXPORT storage_file_source final : public domain::body_source {
 public:
+    /// A length that runs to the end of the file.
+    static constexpr std::uint64_t to_end = ~std::uint64_t{0};
+
     /**
-     * @brief Opens the file for reading.
+     * @brief Opens the file for reading, or the part of it a range names.
      *
      * @throws std::runtime_error when the file cannot be opened.
      */
-    explicit storage_file_source(std::filesystem::path path);
+    explicit storage_file_source(std::filesystem::path path,
+                                 std::uint64_t offset = 0,
+                                 std::uint64_t length = to_end);
 
     [[nodiscard]] std::optional<std::uint64_t> size() const override;
 
@@ -56,6 +61,7 @@ private:
     std::filesystem::path path_;
     std::ifstream in_;
     std::uint64_t size_ = 0;
+    std::uint64_t produced_ = 0;
 };
 
 }

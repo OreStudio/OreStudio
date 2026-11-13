@@ -20,6 +20,7 @@
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.core/routes/storage_entry_source.hpp"
 #include "ores.http.core/routes/storage_file_source.hpp"
 #include "ores.http.core/routes/storage_upload_sink.hpp"
 #include "ores.iam.api/domain/permission_codes.hpp"
@@ -29,6 +30,7 @@
 #include <algorithm>
 #include <charconv>
 #include <iomanip>
+#include <optional>
 #include <sstream>
 
 namespace ores::http::server::routes {
@@ -98,6 +100,67 @@ std::string json_escape(std::string_view text) {
         }
     }
     return out;
+}
+
+/**
+ * @brief The part of a body a caller asked for, in its own bytes.
+ */
+struct byte_range final {
+    std::uint64_t offset = 0;
+    /// How many bytes were asked for, or =to_end= for the rest.
+    std::uint64_t length = ~std::uint64_t{0};
+};
+
+/**
+ * @brief Reads a single =bytes= range, or nothing when none was asked for.
+ *
+ * A range is a convenience, so a header this reader does not understand is
+ * ignored and the whole body is sent. A range that starts past the end states
+ * no bytes, which is what the caller is told.
+ */
+std::optional<byte_range> parse_range(std::string_view header, std::uint64_t total) {
+    constexpr std::string_view unit = "bytes=";
+    if (!header.starts_with(unit))
+        return std::nullopt;
+    header.remove_prefix(unit.size());
+    // A set of ranges is not answered in parts: the whole body is simpler, and
+    // no caller in this estate asks for more than one.
+    if (header.find(',') != std::string_view::npos)
+        return std::nullopt;
+
+    const auto dash = header.find('-');
+    if (dash == std::string_view::npos)
+        return std::nullopt;
+    const auto first = header.substr(0, dash);
+    const auto last = header.substr(dash + 1);
+
+    const auto digits = [](std::string_view text, std::uint64_t& into) {
+        if (text.empty())
+            return false;
+        const auto* end = text.data() + text.size();
+        const auto rc = std::from_chars(text.data(), end, into);
+        return rc.ec == std::errc{} && rc.ptr == end;
+    };
+
+    std::uint64_t value = 0;
+    if (first.empty()) {
+        // "bytes=-N" is the last N bytes, which needs the whole length.
+        if (!digits(last, value) || value == 0 || total == 0)
+            return std::nullopt;
+        const auto taken = std::min(value, total);
+        return byte_range{total - taken, taken};
+    }
+    if (!digits(first, value))
+        return std::nullopt;
+    if (value >= total)
+        return byte_range{total, 0};
+
+    if (last.empty())
+        return byte_range{value, ~std::uint64_t{0}};
+    std::uint64_t stop = 0;
+    if (!digits(last, stop) || stop < value)
+        return std::nullopt;
+    return byte_range{value, stop - value + 1};
 }
 
 /**
@@ -185,9 +248,16 @@ void storage_routes::register_routes(
 
     router->add_route(router->get(object_pattern)
                           .summary("Download storage object")
-                          .description("Download an object from the named bucket by key")
+                          .description("Download an object from the named bucket by key, or one "
+                                       "file out of the package it holds. A Range asks for part "
+                                       "of it, stated in the bytes of the object or of the entry.")
                           .tags({"storage"})
                           .auth_required()
+                          .query_param("entry",
+                                       "string",
+                                       "",
+                                       false,
+                                       "A file inside the package; empty for the object itself")
                           .handler([this](const http_request& req) { return handle_get(req); })
                           .build());
 
@@ -327,12 +397,57 @@ asio::awaitable<http_response> storage_routes::handle_get(const http_request& re
      * The object is read as the socket asks for it, so a large one costs a buffer
      * and not itself. The file's own length rides out as Content-Length, which is
      * what lets the caller show progress.
+     *
+     * A caller that names an entry reads one file out of a package: the archive
+     * is walked where it lies and only that file is copied out, so reading a
+     * result out of a run's output costs the result and not the run.
      */
+    const auto entry = req.get_query_param("entry");
     try {
         http_response resp;
         resp.status = http_status::ok;
         resp.content_type = "application/octet-stream";
-        resp.body_stream = std::make_shared<storage_file_source>(*path);
+        resp.headers["Accept-Ranges"] = "bytes";
+
+        if (!entry.empty()) {
+            /*
+             * The range is stated in the entry's own bytes, because that is what
+             * the caller asked for and what the headers describe. It is parsed
+             * after the entry's length is known, which the stream states.
+             */
+            auto packed = std::make_shared<storage_entry_source>(*path, entry);
+            if (!packed->found())
+                co_return http_response::not_found(bucket + "/" + key + " has no " + entry);
+            const auto total = packed->size().value_or(0);
+            const auto range = parse_range(req.get_header("Range"), total);
+            if (range) {
+                if (range->length == 0)
+                    co_return http_response::range_not_satisfiable(total);
+                packed = std::make_shared<storage_entry_source>(
+                    *path, entry, range->offset, range->length);
+                const auto last = range->offset + packed->size().value_or(0) - 1;
+                resp.status = http_status::partial_content;
+                resp.headers["Content-Range"] = "bytes " + std::to_string(range->offset) + "-" +
+                                                std::to_string(last) + "/" + std::to_string(total);
+            }
+            resp.body_stream = std::move(packed);
+            co_return resp;
+        }
+
+        const auto total = store_.size(bucket, key).value_or(0);
+        const auto range = parse_range(req.get_header("Range"), total);
+        if (!range) {
+            resp.body_stream = std::make_shared<storage_file_source>(*path);
+            co_return resp;
+        }
+        if (range->length == 0)
+            co_return http_response::range_not_satisfiable(total);
+        resp.status = http_status::partial_content;
+        resp.body_stream =
+            std::make_shared<storage_file_source>(*path, range->offset, range->length);
+        const auto last = range->offset + resp.body_stream->size().value_or(0) - 1;
+        resp.headers["Content-Range"] = "bytes " + std::to_string(range->offset) + "-" +
+                                        std::to_string(last) + "/" + std::to_string(total);
         co_return resp;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "GET error: " << e.what();

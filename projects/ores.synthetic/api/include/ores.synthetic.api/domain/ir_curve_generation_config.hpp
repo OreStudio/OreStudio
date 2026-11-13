@@ -85,10 +85,10 @@ struct ir_curve_generation_config final {
      * indices, or one of the overnight/RFR-style families -- sofr/estr/sonia/tona/
      * saron/aonia/corra/honia/sora/swestr/nowa/kofr/mibor/
      * zaronia/destr/polonia/nzonia/shibor/tiie/taibor/cdi/
-     * czeonia/buboron/telboron/tlref/camara/ibr/hibor), stored as a fixed lower-case token rather
-     * than the full ISDA/ORE code the predecessor index_name column held ("USD-SOFR") --
-     * currency_code already carries the currency half of that pair. Only the check below limits the
-     * family. The (currency_code, index_family) pair names an overnight_index_convention or
+     * czeonia/buboron/telboron/tlref/camara/ibr/hibor/ shir/hufonia), stored as a fixed lower-case
+     * token rather than the full ISDA/ORE code the predecessor index_name column held ("USD-SOFR")
+     * -- currency_code already carries the currency half of that pair. Only the check below limits
+     * the family. The (currency_code, index_family) pair names an overnight_index_convention or
      * ibor_index_convention, whose own id is currency_code + "-" + upper(index_family); the feed
      * itself reads no convention, so a curve whose pair has no convention seeded still ticks.
      */

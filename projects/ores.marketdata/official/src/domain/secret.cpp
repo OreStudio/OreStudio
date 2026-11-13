@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.official/domain/secret.hpp"
-#include <cstdlib>
+#include "ores.platform/environment/real_environment_provider.hpp"
 
 namespace ores::marketdata::official::domain {
 
@@ -29,15 +29,16 @@ std::expected<std::string, std::string> resolve_secret(std::string_view ref,
         return std::unexpected("'" + std::string(ref) +
                                "' is not a credential ref: it needs the form env:NAME");
     const std::string name(ref.substr(env_prefix.size()));
-    const char* value = lookup(name.c_str());
-    if (value == nullptr || *value == '\0')
+    const auto value = lookup(name.c_str());
+    if (!value || value->empty())
         return std::unexpected("the variable " + name +
                                " is not set: put the key in the environment's .env");
-    return std::string(value);
+    return *value;
 }
 
 std::expected<std::string, std::string> resolve_secret(std::string_view ref) {
-    return resolve_secret(ref, [](const char* name) { return std::getenv(name); });
+    const ores::platform::environment::real_environment_provider environment;
+    return resolve_secret(ref, [&environment](const char* name) { return environment.get(name); });
 }
 
 }

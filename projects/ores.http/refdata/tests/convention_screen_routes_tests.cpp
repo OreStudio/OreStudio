@@ -41,7 +41,7 @@ using namespace ores::logging;
 namespace {
 
 const convention_screen_routes::family&
-family_named(const std::vector<convention_screen_routes::family>& all, const std::string& key) {
+family_named(const std::vector<convention_screen_routes::family>& all, std::string_view key) {
     const auto found = std::ranges::find(all, key, &convention_screen_routes::family::key);
     REQUIRE(found != all.end());
     return *found;

@@ -45,10 +45,11 @@ class adapter_routes {
 public:
     /**
      * @brief The adapters as the screen reads them: each status with the kind of
-     * source its feed reads, or nothing when the catalogue no longer holds it.
+     * source its feed reads, or nothing when the catalogue no longer holds it,
+     * beside the service's own success and message.
      */
     static std::string
-    adapters_json(const std::vector<ores::marketdata::messaging::adapter_status>& adapters,
+    adapters_json(const ores::marketdata::messaging::list_adapter_status_response& reply,
                   const std::vector<ores::marketdata::domain::feed>& feeds,
                   const std::vector<ores::marketdata::domain::session>& sessions);
 

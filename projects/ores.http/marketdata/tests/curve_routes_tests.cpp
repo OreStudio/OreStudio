@@ -72,6 +72,22 @@ TEST_CASE("curves_refuse_a_body_they_do_not_read", "[curve]") {
                        R"("as_of":"not an instant"})") == http_status::bad_request);
 }
 
+TEST_CASE("curves_refuse_a_slice_that_names_no_component", "[curve]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a slice's component";
+
+    const auto slice = [](const std::string& field) {
+        return with_identity(R"(,"component_field":")" + field +
+                             R"(","component_value":"ATM",)"
+                             R"("from_instant":"2026-03-14 00:00:00Z",)"
+                             R"("to_instant":"2026-03-15 00:00:00Z")");
+    };
+
+    CHECK(curve_status("/api/curves/slice", slice("")) == http_status::bad_request);
+    CHECK(curve_status("/api/curves/slice", slice(std::string(101, 'a'))) ==
+          http_status::bad_request);
+}
+
 TEST_CASE("curves_refuse_a_slice_whose_range_ends_before_it_starts", "[curve]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing a slice's range";
@@ -155,6 +171,29 @@ TEST_CASE("curves_refuse_a_withdrawal_that_names_no_set", "[curve]") {
     CHECK(curve_status("/api/curves/published/withdraw",
                        R"({"publish_id":"00000000-0000-0000-0000-0000000000a1",)"
                        R"("reason_code":"system.retired"})") == http_status::bad_gateway);
+}
+
+TEST_CASE("curves_refuse_a_series_set_larger_than_a_page", "[curve]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the read of the series a blueprint names";
+
+    std::string ids;
+    for (int at = 0; at < 201; ++at) {
+        ids += (at == 0 ? "" : ",") + std::string(R"("00000000-0000-0000-0000-0000000000f1")");
+    }
+    CHECK(curve_status("/api/curves/series-by-id", "{\"ids\":[" + ids + "]}") ==
+          http_status::bad_request);
+}
+
+TEST_CASE("curves_refuse_a_published_set_that_names_no_series", "[curve]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a published set's series";
+
+    CHECK(curve_status("/api/curves/published-sets", R"({"series_id":"not-an-id"})") ==
+          http_status::bad_request);
+    CHECK(curve_status("/api/curves/published-sets",
+                       R"({"series_id":"00000000-0000-0000-0000-0000000000f1"})") ==
+          http_status::bad_gateway);
 }
 
 TEST_CASE("curves_read_the_series_of_a_party_without_asking_for_ids", "[curve]") {

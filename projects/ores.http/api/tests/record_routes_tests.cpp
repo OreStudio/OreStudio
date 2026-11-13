@@ -182,3 +182,20 @@ TEST_CASE("record_routes_states_a_reply_without_the_protocols_own_words", "[reco
     CHECK(rr::object_without_members("[]", {"success"}) == "[]");
     CHECK(rr::object_without_members("", {"success"}).empty());
 }
+
+TEST_CASE("record_routes_states_a_screens_write_refusal_by_its_outcome", "[record_routes]") {
+    // A screen's write keeps the BFF's answer, which withheld no outcome's status.
+    const auto status_of = [](outcome o) {
+        return record_routes_refusal_of(
+            [&] { rr::require_done(result{o, "", "The service said why.", {}}); });
+    };
+    CHECK_FALSE(status_of(outcome::ok).has_value());
+    CHECK(status_of(outcome::conflict)->status == http_status::conflict);
+    CHECK(status_of(outcome::conflict)->code == "invalid-request");
+    CHECK(status_of(outcome::invalid)->status == http_status::bad_request);
+    CHECK(status_of(outcome::denied)->status == http_status::forbidden);
+    CHECK(status_of(outcome::missing)->status == http_status::not_found);
+    CHECK(status_of(outcome::unavailable)->status == http_status::bad_gateway);
+    CHECK(status_of(outcome::failed)->code == "upstream-unavailable");
+    CHECK(status_of(outcome::missing)->message == "The service said why.");
+}

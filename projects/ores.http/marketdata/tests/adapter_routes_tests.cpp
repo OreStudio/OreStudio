@@ -68,15 +68,33 @@ TEST_CASE("adapters_state_the_kind_of_source_their_feed_reads", "[adapter]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing the kind of source an adapter names";
 
-    const auto answer = adapter_routes::adapters_json({status_of("bloomberg"), status_of("orphan")},
-                                                      {feed_of("bloomberg", "S1")},
-                                                      {session_of("S1", "supplier")});
+    marketdata_messaging::list_adapter_status_response reply;
+    reply.success = true;
+    reply.adapters = {status_of("bloomberg"), status_of("orphan")};
+    const auto answer = adapter_routes::adapters_json(
+        reply, {feed_of("bloomberg", "S1")}, {session_of("S1", "supplier")});
 
     CHECK(holds(answer, R"("adapter_id":"bloomberg")"));
     CHECK(holds(answer, R"("kind":"supplier")"));
     CHECK(holds(answer, R"("adapter_id":"orphan")"));
     CHECK(holds(answer, R"("kind":"")"));
     CHECK(holds(answer, R"("success":true)"));
+    CHECK(holds(answer, "\"message\":\"\""));
+}
+
+TEST_CASE("adapters_state_the_service_own_words", "[adapter]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the message an adapter read forwards";
+
+    marketdata_messaging::list_adapter_status_response reply;
+    reply.success = false;
+    reply.message = "The adapters are starting.";
+
+    const auto answer = adapter_routes::adapters_json(reply, {}, {});
+
+    CHECK(holds(answer, R"("adapters":[])"));
+    CHECK(holds(answer, R"("success":false)"));
+    CHECK(holds(answer, R"("message":"The adapters are starting.")"));
 }
 
 TEST_CASE("adapters_refuse_a_read_without_a_service", "[adapter]") {

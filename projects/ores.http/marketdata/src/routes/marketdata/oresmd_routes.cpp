@@ -67,12 +67,6 @@ constexpr std::string_view schema_max_age = "private, max-age=300";
 /// What a route states when the body is not the shape the browser sends.
 constexpr std::string_view malformed = "An ORE URI route states the body this screen sends.";
 
-/// One field of a URI, as the editor states it.
-struct uri_field {
-    std::string name;
-    std::string text;
-};
-
 /// One URI to read.
 struct parse_body {
     std::string uri;
@@ -89,26 +83,20 @@ struct compose_body {
     std::string instrument;
     std::optional<std::string> quote;
     std::optional<std::string> subject;
-    std::optional<std::vector<uri_field>> fields;
+    std::optional<std::vector<marketdata_messaging::oresmd_uri_field>> fields;
 };
 
-inline auto wire_fields(std::type_identity<uri_field>) {
-    using ores::utility::codec::field;
-    return ores::utility::codec::field_list{field{"name", &uri_field::name},
-                                            field{"text", &uri_field::text}};
-}
-
-inline auto wire_fields(std::type_identity<parse_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<parse_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"uri", &parse_body::uri}};
 }
 
-inline auto wire_fields(std::type_identity<parse_many_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<parse_many_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"uris", &parse_many_body::uris}};
 }
 
-inline auto wire_fields(std::type_identity<compose_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<compose_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"kind", &compose_body::kind},
                                             field{"instrument", &compose_body::instrument},
@@ -127,31 +115,16 @@ void check_text(const std::string& text) {
         rr::invalid(std::string(malformed));
 }
 
-/// The body read as its own shape, refused by the sentence when it is another.
-template <typename Body>
-Body body_of(const http_request& req, std::initializer_list<std::string_view> members) {
-    rr::refuse_unknown_members(req.body, members, std::string(malformed));
-    const auto body = rr::read_body<Body>(req.body);
-    if (!body)
-        rr::invalid(std::string(malformed));
-    return *body;
-}
-
-/// The parts of a URI as the codec writes them.
-std::vector<marketdata_messaging::oresmd_uri_field> fields_of(const std::vector<uri_field>& in) {
+/// The parts of a URI as the codec reads them, refused when one is too long.
+std::vector<marketdata_messaging::oresmd_uri_field>
+fields_of(std::vector<marketdata_messaging::oresmd_uri_field> in) {
     if (in.size() > most_fields)
         rr::invalid(std::string(malformed));
-    std::vector<marketdata_messaging::oresmd_uri_field> out;
-    out.reserve(in.size());
     for (const auto& field : in) {
         check_text(field.name);
         check_text(field.text);
-        marketdata_messaging::oresmd_uri_field named;
-        named.name = field.name;
-        named.text = field.text;
-        out.push_back(std::move(named));
     }
-    return out;
+    return in;
 }
 
 }
@@ -197,7 +170,7 @@ void oresmd_routes::register_routes(
                          "beside the success rather than as a fault.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::parse_oresmd_uri_request>([&] {
-                    const auto body = body_of<parse_body>(req, {"uri"});
+                    const auto body = rr::body_of<parse_body>(req, {"uri"}, std::string(malformed));
                     check_text(body.uri);
                     marketdata_messaging::parse_oresmd_uri_request msg;
                     msg.uri = body.uri;
@@ -212,7 +185,8 @@ void oresmd_routes::register_routes(
                          "a call for every row.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::parse_oresmd_uri_request>([&] {
-                    const auto body = body_of<parse_many_body>(req, {"uris"});
+                    const auto body =
+                        rr::body_of<parse_many_body>(req, {"uris"}, std::string(malformed));
                     if (body.uris.size() > most_batch)
                         rr::invalid(std::string(malformed));
                     std::vector<std::string> parts;
@@ -232,8 +206,10 @@ void oresmd_routes::register_routes(
                          "parts make a URI, so a refusal is the codec's words and not a fault.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::compose_oresmd_uri_request>([&] {
-                    const auto body = body_of<compose_body>(
-                        req, {"kind", "instrument", "quote", "subject", "fields"});
+                    const auto body = rr::body_of<compose_body>(
+                        req,
+                        {"kind", "instrument", "quote", "subject", "fields"},
+                        std::string(malformed));
                     check_text(body.kind);
                     check_text(body.instrument);
                     marketdata_messaging::compose_oresmd_uri_request msg;
@@ -243,7 +219,8 @@ void oresmd_routes::register_routes(
                     msg.subject = body.subject.value_or(std::string());
                     check_text(msg.quote);
                     check_text(msg.subject);
-                    msg.fields = fields_of(body.fields.value_or(std::vector<uri_field>{}));
+                    msg.fields = fields_of(body.fields.value_or(
+                        std::vector<marketdata_messaging::oresmd_uri_field>{}));
                     return http_response::json(json::write(forwarding::forward(req, session, msg)));
                 });
             }));

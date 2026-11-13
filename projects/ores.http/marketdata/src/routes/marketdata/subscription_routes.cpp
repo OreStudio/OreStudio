@@ -75,7 +75,7 @@ struct new_subscription {
     bool derived{};
 };
 
-inline auto wire_fields(std::type_identity<new_subscription>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<new_subscription>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{
         field{"provider_code", &new_subscription::provider_code},
@@ -90,7 +90,7 @@ struct new_route {
     std::string feed_id;
 };
 
-inline auto wire_fields(std::type_identity<new_route>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<new_route>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"publisher_code", &new_route::publisher_code},
                                             field{"feed_id", &new_route::feed_id}};
@@ -104,7 +104,7 @@ struct removal {
     std::optional<std::string> commentary;
 };
 
-inline auto wire_fields(std::type_identity<removal>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<removal>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"version", &removal::version},
                                             field{"reason_code", &removal::reason_code},
@@ -157,27 +157,6 @@ std::uint32_t removal_version(const removal& body) {
     if (body.version < 0)
         rr::invalid(std::string(malformed_body));
     return static_cast<std::uint32_t>(body.version);
-}
-
-/// The body read as its own shape, refused by the sentence when it is another.
-template <typename Body>
-Body body_of(const http_request& req, std::initializer_list<std::string_view> members) {
-    rr::refuse_unknown_members(req.body, members, std::string(malformed_body));
-    const auto body = rr::read_body<Body>(req.body);
-    if (!body)
-        rr::invalid(std::string(malformed_body));
-    return *body;
-}
-
-/// The body read as its own shape, with each member the screen leaves out at its
-/// default, refused by the sentence when it is another shape.
-template <typename Body>
-Body lenient_body_of(const http_request& req, std::initializer_list<std::string_view> members) {
-    rr::refuse_unknown_members(req.body, members, std::string(malformed_body));
-    const auto body = json::read_lenient<Body>(req.body);
-    if (!body)
-        rr::invalid(std::string(malformed_body));
-    return *body;
 }
 
 /// Every subscription the caller may read.
@@ -253,8 +232,10 @@ void subscription_routes::register_routes(
                          "displaying, or to compute new values from the data.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::put_subscription_request>([&] {
-                    const auto body = lenient_body_of<new_subscription>(
-                        req, {"provider_code", "display", "non_display", "derived"});
+                    const auto body = rr::lenient_body_of<new_subscription>(
+                        req,
+                        {"provider_code", "display", "non_display", "derived"},
+                        std::string(malformed_body));
                     if (!body.display && !body.non_display && !body.derived)
                         rr::invalid("A subscription needs at least one right.");
                     marketdata_messaging::subscription_write write;
@@ -285,8 +266,8 @@ void subscription_routes::register_routes(
                     const auto provider =
                         code_of(req.get_path_param("provider"),
                                 "The address does not name a provider of 1 to 100 characters.");
-                    const auto body =
-                        body_of<removal>(req, {"version", "reason_code", "commentary"});
+                    const auto body = rr::body_of<removal>(
+                        req, {"version", "reason_code", "commentary"}, std::string(malformed_body));
                     marketdata_messaging::delete_subscription_request msg;
                     msg.removal.key.provider_code = provider;
                     msg.removal.precondition.kind =
@@ -306,7 +287,8 @@ void subscription_routes::register_routes(
                          "holds a subscription to it.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::put_route_request>([&] {
-                    const auto body = body_of<new_route>(req, {"publisher_code", "feed_id"});
+                    const auto body = rr::body_of<new_route>(
+                        req, {"publisher_code", "feed_id"}, std::string(malformed_body));
                     if (!rr::is_uuid(rr::trimmed(body.feed_id)))
                         rr::invalid("A route names the feed that serves it.");
                     marketdata_messaging::route_write write;
@@ -334,8 +316,8 @@ void subscription_routes::register_routes(
                     const auto publisher =
                         code_of(req.get_path_param("publisher"),
                                 "The address does not name a publisher of 1 to 100 characters.");
-                    const auto body =
-                        body_of<removal>(req, {"version", "reason_code", "commentary"});
+                    const auto body = rr::body_of<removal>(
+                        req, {"version", "reason_code", "commentary"}, std::string(malformed_body));
                     marketdata_messaging::delete_route_request msg;
                     msg.removal.key.publisher_code = publisher;
                     msg.removal.precondition.kind =

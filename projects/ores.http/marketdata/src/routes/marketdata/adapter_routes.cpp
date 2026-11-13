@@ -45,7 +45,7 @@ using ores::nats::service::nats_client;
 }
 
 std::string
-adapter_routes::adapters_json(const std::vector<marketdata_messaging::adapter_status>& adapters,
+adapter_routes::adapters_json(const marketdata_messaging::list_adapter_status_response& reply,
                               const std::vector<ores::marketdata::domain::feed>& feeds,
                               const std::vector<ores::marketdata::domain::session>& sessions) {
     std::map<std::string, std::string> session_of_feed;
@@ -56,7 +56,7 @@ adapter_routes::adapters_json(const std::vector<marketdata_messaging::adapter_st
         environment_of_session[session.code] = session.environment;
 
     std::vector<std::string> rows;
-    for (const auto& adapter : adapters) {
+    for (const auto& adapter : reply.adapters) {
         std::string kind;
         const auto feed = session_of_feed.find(adapter.adapter_id);
         if (feed != session_of_feed.end()) {
@@ -67,9 +67,10 @@ adapter_routes::adapters_json(const std::vector<marketdata_messaging::adapter_st
         rows.push_back(
             rr::object_with_members(json::write(adapter), {{"kind", json::write(kind)}}));
     }
-    /* The answer keeps the BFF's success and message beside the rows, so a
-     * screen that reads either keeps working. */
-    return "{\"adapters\":" + rr::array_of(rows) + ",\"success\":true,\"message\":\"\"}";
+    /* The answer keeps the service's success and message beside the rows, as the
+     * BFF forwarded them, so a screen that reads either keeps working. */
+    return "{\"adapters\":" + rr::array_of(rows) + ",\"success\":" + json::write(reply.success) +
+           ",\"message\":" + json::write(reply.message) + "}";
 }
 
 void adapter_routes::register_routes(
@@ -109,7 +110,7 @@ void adapter_routes::register_routes(
                         session,
                         marketdata_messaging::list_sessions_request{},
                         &marketdata_messaging::list_sessions_response::sessions);
-                    return http_response::json(adapters_json(reply.adapters, feeds, sessions));
+                    return http_response::json(adapters_json(reply, feeds, sessions));
                 });
             }));
 }

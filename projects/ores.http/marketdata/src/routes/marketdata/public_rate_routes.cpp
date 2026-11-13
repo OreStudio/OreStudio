@@ -82,18 +82,18 @@ struct terms_accept_many {
     std::vector<terms_choice> providers;
 };
 
-inline auto wire_fields(std::type_identity<terms_accept>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<terms_accept>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"version", &terms_accept::version}};
 }
 
-inline auto wire_fields(std::type_identity<terms_choice>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<terms_choice>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"code", &terms_choice::code},
                                             field{"version", &terms_choice::version}};
 }
 
-inline auto wire_fields(std::type_identity<terms_accept_many>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<terms_accept_many>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"providers", &terms_accept_many::providers}};
 }
@@ -101,16 +101,6 @@ inline auto wire_fields(std::type_identity<terms_accept_many>) {
 }
 
 namespace rates {
-
-/// The body read as its own shape, refused by the sentence when it is another.
-template <typename Body>
-Body body_of(const http_request& req, std::initializer_list<std::string_view> members) {
-    rr::refuse_unknown_members(req.body, members, std::string(malformed_body));
-    const auto body = rr::read_body<Body>(req.body);
-    if (!body)
-        rr::invalid(std::string(malformed_body));
-    return *body;
-}
 
 /// A publisher named in the address.
 std::string publisher_of(const http_request& req) {
@@ -127,7 +117,7 @@ int read_version(int version) {
 
 /// The series a screen asks for, in the order it names them and without
 /// repeats, refused when it names more than a page holds or a text that is no id.
-std::vector<boost::uuids::uuid> series_of(const http_request& req) {
+std::vector<boost::uuids::uuid> series_ids_of(const http_request& req) {
     const auto raw = req.get_query_param("series");
     if (rr::trimmed(raw).empty())
         rr::invalid("A read of fixings names the series to read.");
@@ -209,7 +199,7 @@ void public_rate_routes::register_routes(
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::list_market_fixings_request>([&] {
                     rr::refuse_unknown_params(req, {"series"});
-                    const auto ids = series_of(req);
+                    const auto ids = series_ids_of(req);
                     marketdata_messaging::list_market_fixings_request msg;
                     msg.filter.emplace();
                     msg.filter->series_id_one_of = ids;
@@ -228,7 +218,8 @@ void public_rate_routes::register_routes(
                          "person accepts the terms they read and no others.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::accept_provider_terms_request>([&] {
-                    const auto body = body_of<terms_accept>(req, {"version"});
+                    const auto body =
+                        rr::body_of<terms_accept>(req, {"version"}, std::string(malformed_body));
                     marketdata_messaging::accept_provider_terms_request msg;
                     msg.provider_code = publisher_of(req);
                     msg.provider_version = read_version(body.version);
@@ -265,7 +256,8 @@ void public_rate_routes::register_routes(
                          "outcome rather than an error.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::accept_many_provider_terms_request>([&] {
-                    const auto body = body_of<terms_accept_many>(req, {"providers"});
+                    const auto body = rr::body_of<terms_accept_many>(
+                        req, {"providers"}, std::string(malformed_body));
                     if (body.providers.empty() || body.providers.size() > most_providers)
                         rr::invalid(std::string(malformed_body));
                     marketdata_messaging::accept_many_provider_terms_request msg;

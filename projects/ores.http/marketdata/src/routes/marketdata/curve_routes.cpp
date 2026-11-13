@@ -94,12 +94,6 @@ constexpr std::string_view backwards = "The range ends before it starts.";
 /// What an evolution states when it names no instant at all.
 constexpr std::string_view no_range = "State the instants, or state both ends of the range.";
 
-/// One field of an identity, such as a currency or a curve id.
-struct identity_field {
-    std::string name;
-    std::string text;
-};
-
 /// The typed identity of a curve, which is what every read of one takes.
 struct identity {
     std::string asset;
@@ -108,7 +102,7 @@ struct identity {
     std::string quote_type;
     std::string party_id;
     std::string provider_code;
-    std::vector<identity_field> fields;
+    std::vector<marketdata_messaging::series_identity_field> fields;
 };
 
 struct identity_body {
@@ -189,13 +183,7 @@ struct withdraw_body {
     std::string approval_request_id;
 };
 
-inline auto wire_fields(std::type_identity<identity_field>) {
-    using ores::utility::codec::field;
-    return ores::utility::codec::field_list{field{"name", &identity_field::name},
-                                            field{"text", &identity_field::text}};
-}
-
-inline auto wire_fields(std::type_identity<identity>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<identity>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"asset", &identity::asset},
                                             field{"scope", &identity::scope},
@@ -206,22 +194,22 @@ inline auto wire_fields(std::type_identity<identity>) {
                                             field{"fields", &identity::fields}};
 }
 
-inline auto wire_fields(std::type_identity<identity_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<identity_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"identity", &identity_body::identity}};
 }
 
-inline auto wire_fields(std::type_identity<series_list_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<series_list_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"party_id", &series_list_body::party_id}};
 }
 
-inline auto wire_fields(std::type_identity<series_by_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<series_by_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"ids", &series_by_body::ids}};
 }
 
-inline auto wire_fields(std::type_identity<key_point_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<key_point_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{
         field{"identity", &key_point_body::identity},
@@ -231,20 +219,20 @@ inline auto wire_fields(std::type_identity<key_point_body>) {
         field{"change_commentary", &key_point_body::change_commentary}};
 }
 
-inline auto wire_fields(std::type_identity<clear_point_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<clear_point_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"identity", &clear_point_body::identity},
                                             field{"coordinates", &clear_point_body::coordinates}};
 }
 
-inline auto wire_fields(std::type_identity<snapshot_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<snapshot_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{
         field{"identity", &snapshot_body::identity},
         field{"include_provenance", &snapshot_body::include_provenance}};
 }
 
-inline auto wire_fields(std::type_identity<slice_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<slice_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"identity", &slice_body::identity},
                                             field{"component_field", &slice_body::component_field},
@@ -253,7 +241,7 @@ inline auto wire_fields(std::type_identity<slice_body>) {
                                             field{"to_instant", &slice_body::to_instant}};
 }
 
-inline auto wire_fields(std::type_identity<evolution_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<evolution_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"identity", &evolution_body::identity},
                                             field{"from_instant", &evolution_body::from_instant},
@@ -261,14 +249,14 @@ inline auto wire_fields(std::type_identity<evolution_body>) {
                                             field{"instants", &evolution_body::instants}};
 }
 
-inline auto wire_fields(std::type_identity<compute_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<compute_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{
         field{"bootstrap_config_id", &compute_body::bootstrap_config_id},
         field{"as_of", &compute_body::as_of}};
 }
 
-inline auto wire_fields(std::type_identity<published_list_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<published_list_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{
         field{"party_id", &published_list_body::party_id},
@@ -280,7 +268,7 @@ inline auto wire_fields(std::type_identity<published_list_body>) {
         field{"limit", &published_list_body::limit}};
 }
 
-inline auto wire_fields(std::type_identity<published_sets_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<published_sets_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{
         field{"series_id", &published_sets_body::series_id},
@@ -288,13 +276,13 @@ inline auto wire_fields(std::type_identity<published_sets_body>) {
         field{"include_candidates", &published_sets_body::include_candidates}};
 }
 
-inline auto wire_fields(std::type_identity<ladder_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ladder_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{field{"pair_code", &ladder_body::pair_code},
                                             field{"as_of", &ladder_body::as_of}};
 }
 
-inline auto wire_fields(std::type_identity<withdraw_body>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_body>) {
     using ores::utility::codec::field;
     return ores::utility::codec::field_list{
         field{"publish_id", &withdraw_body::publish_id},
@@ -343,27 +331,6 @@ std::chrono::system_clock::time_point instant_of(const std::string& raw) {
     }
 }
 
-/// The body read as its own shape, refused by the sentence when it is another.
-template <typename Body>
-Body body_of(const http_request& req, std::initializer_list<std::string_view> members) {
-    rr::refuse_unknown_members(req.body, members, std::string(malformed));
-    const auto body = rr::read_body<Body>(req.body);
-    if (!body)
-        rr::invalid(std::string(malformed));
-    return *body;
-}
-
-/// The body read as its own shape, with each member the screen leaves out at
-/// its default.
-template <typename Body>
-Body lenient_body_of(const http_request& req, std::initializer_list<std::string_view> members) {
-    rr::refuse_unknown_members(req.body, members, std::string(malformed));
-    const auto body = json::read_lenient<Body>(req.body);
-    if (!body)
-        rr::invalid(std::string(malformed));
-    return *body;
-}
-
 /// The typed identity as the service reads it.
 marketdata_messaging::resolve_series_identity_request identity_of(const identity& in) {
     marketdata_messaging::resolve_series_identity_request out;
@@ -401,7 +368,7 @@ std::vector<std::string> coordinates_of(const std::vector<std::string>& in) {
 /// The answer an operation's reply states: its payload alone, or the server's
 /// refusal at the status the BFF answered it with.
 template <typename Reply>
-http_response answered(const Reply& reply) {
+http_response payload_of(const Reply& reply) {
     if (!reply.success)
         rr::refuse(http_status::unprocessable_content, "invalid-request", reply.message);
     return http_response::json(
@@ -410,8 +377,10 @@ http_response answered(const Reply& reply) {
 
 /// The series a screen asks for: the ids it states, or the party's whole
 /// catalogue when it states none.
-std::vector<marketdata_domain::market_series>
-series_of(const http_request& req, nats_client& session, const std::vector<std::string>& stated) {
+std::vector<marketdata_domain::market_series> series_rows_of(
+    const http_request& req, nats_client& session, const std::vector<std::string>& stated) {
+    if (stated.size() > series_page)
+        rr::invalid(std::string(malformed));
     std::vector<boost::uuids::uuid> ids;
     for (const auto& id : stated)
         ids.push_back(boost::uuids::string_generator()(uuid_of(id)));
@@ -456,10 +425,11 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                          "it, so no caller builds an oresmd URI and no caller matches on one.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::resolve_series_identity_request>([&] {
-                    const auto body = body_of<identity_body>(req, {"identity"});
+                    const auto body =
+                        rr::body_of<identity_body>(req, {"identity"}, std::string(malformed));
                     marketdata_messaging::resolve_series_identity_request msg =
                         identity_of(body.identity);
-                    return answered(forwarding::forward(req, session, msg));
+                    return payload_of(forwarding::forward(req, session, msg));
                 });
             }));
 
@@ -470,9 +440,10 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                          "asks for every series the caller's party holds.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::list_market_series_request>([&] {
-                    const auto body = lenient_body_of<series_by_body>(req, {"ids"});
+                    const auto body =
+                        rr::lenient_body_of<series_by_body>(req, {"ids"}, std::string(malformed));
                     std::vector<std::string> written;
-                    for (const auto& series : series_of(req, session, body.ids))
+                    for (const auto& series : series_rows_of(req, session, body.ids))
                         written.push_back("{\"id\":" + json::write(rr::as_text(series.id)) +
                                           ",\"uri\":" + json::write(series.oresmd_uri) + "}");
                     return http_response::json("{\"series\":" + rr::array_of(written) + "}");
@@ -485,11 +456,12 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                          "answer, so a refusal is the recipe's or the market's.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::compute_curve_request>([&] {
-                    const auto body = body_of<compute_body>(req, {"bootstrap_config_id", "as_of"});
+                    const auto body = rr::body_of<compute_body>(
+                        req, {"bootstrap_config_id", "as_of"}, std::string(malformed));
                     marketdata_messaging::compute_curve_request msg;
                     msg.bootstrap_config_id = uuid_of(body.bootstrap_config_id);
                     msg.as_of = instant_of(body.as_of);
-                    return answered(forwarding::forward(req, session, msg));
+                    return payload_of(forwarding::forward(req, session, msg));
                 });
             }));
 
@@ -499,10 +471,11 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                          "session sees.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::list_series_identities_request>([&] {
-                    const auto body = lenient_body_of<series_list_body>(req, {"party_id"});
+                    const auto body = rr::lenient_body_of<series_list_body>(
+                        req, {"party_id"}, std::string(malformed));
                     marketdata_messaging::list_series_identities_request msg;
                     msg.party_id = optional_uuid_of(body.party_id);
-                    return answered(forwarding::forward(req, session, msg));
+                    return payload_of(forwarding::forward(req, session, msg));
                 });
             }));
 
@@ -512,12 +485,13 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                          "again only then.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::key_manual_point_request>([&] {
-                    const auto body = body_of<key_point_body>(req,
-                                                              {"identity",
-                                                               "coordinates",
-                                                               "value",
-                                                               "change_reason_code",
-                                                               "change_commentary"});
+                    const auto body = rr::body_of<key_point_body>(req,
+                                                                  {"identity",
+                                                                   "coordinates",
+                                                                   "value",
+                                                                   "change_reason_code",
+                                                                   "change_commentary"},
+                                                                  std::string(malformed));
                     marketdata_messaging::key_manual_point_request msg;
                     msg.identity = identity_of(body.identity);
                     msg.coordinates = coordinates_of(body.coordinates);
@@ -530,7 +504,7 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                     if (note.empty() || rr::characters_of(note) > 2000)
                         rr::invalid(std::string(malformed));
                     msg.change_commentary = note;
-                    return answered(forwarding::forward(req, session, msg));
+                    return payload_of(forwarding::forward(req, session, msg));
                 });
             }));
 
@@ -539,11 +513,12 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
             .description("The feed value shows again once the manual point is cleared.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::clear_manual_point_request>([&] {
-                    const auto body = body_of<clear_point_body>(req, {"identity", "coordinates"});
+                    const auto body = rr::body_of<clear_point_body>(
+                        req, {"identity", "coordinates"}, std::string(malformed));
                     marketdata_messaging::clear_manual_point_request msg;
                     msg.identity = identity_of(body.identity);
                     msg.coordinates = coordinates_of(body.coordinates);
-                    return answered(forwarding::forward(req, session, msg));
+                    return payload_of(forwarding::forward(req, session, msg));
                 });
             }));
 
@@ -553,12 +528,12 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                          "an age from the market and not from its own clock.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::get_curve_snapshot_request>([&] {
-                    const auto body =
-                        lenient_body_of<snapshot_body>(req, {"identity", "include_provenance"});
+                    const auto body = rr::lenient_body_of<snapshot_body>(
+                        req, {"identity", "include_provenance"}, std::string(malformed));
                     marketdata_messaging::get_curve_snapshot_request msg;
                     msg.identity = identity_of(body.identity);
                     msg.include_provenance = body.include_provenance;
-                    return answered(forwarding::forward(req, session, msg));
+                    return payload_of(forwarding::forward(req, session, msg));
                 });
             }));
 
@@ -568,21 +543,22 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                          "oldest instant first.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::get_series_slice_request>([&] {
-                    const auto body = body_of<slice_body>(req,
-                                                          {"identity",
-                                                           "component_field",
-                                                           "component_value",
-                                                           "from_instant",
-                                                           "to_instant"});
+                    const auto body = rr::body_of<slice_body>(req,
+                                                              {"identity",
+                                                               "component_field",
+                                                               "component_value",
+                                                               "from_instant",
+                                                               "to_instant"},
+                                                              std::string(malformed));
                     marketdata_messaging::get_series_slice_request msg;
                     msg.identity = identity_of(body.identity);
-                    msg.component_field = rr::trimmed(body.component_field);
-                    msg.component_value = rr::trimmed(body.component_value);
+                    msg.component_field = word_of(body.component_field);
+                    msg.component_value = word_of(body.component_value);
                     msg.from_instant = instant_of(body.from_instant);
                     msg.to_instant = instant_of(body.to_instant);
                     if (msg.to_instant < msg.from_instant)
                         rr::invalid(std::string(backwards));
-                    return answered(forwarding::forward(req, session, msg));
+                    return payload_of(forwarding::forward(req, session, msg));
                 });
             }));
 
@@ -592,8 +568,10 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                          "not sent with it.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::get_series_evolution_request>([&] {
-                    const auto body = lenient_body_of<evolution_body>(
-                        req, {"identity", "from_instant", "to_instant", "instants"});
+                    const auto body = rr::lenient_body_of<evolution_body>(
+                        req,
+                        {"identity", "from_instant", "to_instant", "instants"},
+                        std::string(malformed));
                     if (body.instants.size() > most_instants)
                         rr::invalid(std::string(malformed));
                     marketdata_messaging::get_series_evolution_request msg;
@@ -611,7 +589,7 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                         for (const auto& instant : body.instants)
                             msg.instants.push_back(instant_of(instant));
                     }
-                    return answered(forwarding::forward(req, session, msg));
+                    return payload_of(forwarding::forward(req, session, msg));
                 });
             }));
 
@@ -621,14 +599,16 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                          "the service's, so a screen never filters a page it was given.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::list_published_curves_request>([&] {
-                    const auto body = lenient_body_of<published_list_body>(req,
-                                                                           {"party_id",
-                                                                            "search",
-                                                                            "include_candidates",
-                                                                            "include_ended",
-                                                                            "request_id_one_of",
-                                                                            "offset",
-                                                                            "limit"});
+                    const auto body =
+                        rr::lenient_body_of<published_list_body>(req,
+                                                                 {"party_id",
+                                                                  "search",
+                                                                  "include_candidates",
+                                                                  "include_ended",
+                                                                  "request_id_one_of",
+                                                                  "offset",
+                                                                  "limit"},
+                                                                 std::string(malformed));
                     marketdata_messaging::list_published_curves_request msg;
                     msg.party_id = optional_uuid_of(body.party_id);
                     const auto search = rr::trimmed(body.search);
@@ -645,7 +625,7 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                         rr::invalid(std::string(malformed));
                     msg.offset = static_cast<std::uint32_t>(body.offset);
                     msg.limit = static_cast<std::uint32_t>(body.limit);
-                    return answered(forwarding::forward(req, session, msg));
+                    return payload_of(forwarding::forward(req, session, msg));
                 });
             }));
 
@@ -656,18 +636,15 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                          "not that.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::get_published_curve_sets_request>([&] {
-                    const auto body = lenient_body_of<published_sets_body>(
-                        req, {"series_id", "limit", "include_candidates"});
+                    const auto body = rr::lenient_body_of<published_sets_body>(
+                        req, {"series_id", "limit", "include_candidates"}, std::string(malformed));
                     marketdata_messaging::get_published_curve_sets_request msg;
-                    const auto series = rr::trimmed(body.series_id);
-                    if (series.empty() || rr::characters_of(series) > 100)
-                        rr::invalid(std::string(malformed));
-                    msg.series_id = series;
+                    msg.series_id = uuid_of(body.series_id);
                     if (body.limit < 1 || body.limit > 20)
                         rr::invalid(std::string(malformed));
                     msg.limit = static_cast<std::uint32_t>(body.limit);
                     msg.include_candidates = body.include_candidates;
-                    return answered(forwarding::forward(req, session, msg));
+                    return payload_of(forwarding::forward(req, session, msg));
                 });
             }));
 
@@ -677,11 +654,12 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
             .description("The party is the session's, so the body names none.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::get_published_fx_forward_request>([&] {
-                    const auto body = body_of<ladder_body>(req, {"pair_code", "as_of"});
+                    const auto body = rr::body_of<ladder_body>(
+                        req, {"pair_code", "as_of"}, std::string(malformed));
                     marketdata_messaging::get_published_fx_forward_request msg;
                     msg.pair_code = word_of(body.pair_code);
                     msg.as_of = instant_of(body.as_of);
-                    return answered(forwarding::forward(req, session, msg));
+                    return payload_of(forwarding::forward(req, session, msg));
                 });
             }));
 
@@ -692,8 +670,10 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                          "behind it.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::withdraw_curve_request>([&] {
-                    const auto body = lenient_body_of<withdraw_body>(
-                        req, {"publish_id", "reason_code", "comment", "approval_request_id"});
+                    const auto body = rr::lenient_body_of<withdraw_body>(
+                        req,
+                        {"publish_id", "reason_code", "comment", "approval_request_id"},
+                        std::string(malformed));
                     marketdata_messaging::withdraw_curve_request msg;
                     msg.publish_id = uuid_of(body.publish_id);
                     msg.reason_code = word_of(body.reason_code);
@@ -702,7 +682,7 @@ void curve_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                         rr::invalid(std::string(malformed));
                     msg.comment = comment;
                     msg.approval_request_id = optional_uuid_of(body.approval_request_id);
-                    return answered(forwarding::forward(req, session, msg));
+                    return payload_of(forwarding::forward(req, session, msg));
                 });
             }));
 }

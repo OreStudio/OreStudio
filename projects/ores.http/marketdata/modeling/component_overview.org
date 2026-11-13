@@ -63,9 +63,8 @@ The units answer under the =market-data= area of the route inventory.
 - =ores.http.nats= -- the gateway's one forwarding step to the services.
 - =ores.nats= -- NATS transport for service calls.
 - =ores.marketdata.api= -- the canonical protocol messages the units send.
-- =ores.refdata.api= -- the book and counterparty reads that name a trade's rows.
 - =ores.utility= -- the codecs and the wire support types.
-- =ores.logging= -- logger factory.
+- =ores.logging= -- the logger factory the part's tests log through.
 
 * See also
 

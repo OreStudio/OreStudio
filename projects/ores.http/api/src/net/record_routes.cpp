@@ -144,8 +144,21 @@ void require_ok(const ores::utility::domain::result& result) {
 }
 
 void require_done(const ores::utility::domain::result& result) {
-    if (result.outcome != ores::utility::domain::outcome::ok)
-        refuse(http_status::conflict, "invalid-request", result.message);
+    using ores::utility::domain::outcome;
+    switch (result.outcome) {
+        case outcome::ok:
+            return;
+        case outcome::conflict:
+            refuse(http_status::conflict, "invalid-request", result.message);
+        case outcome::invalid:
+            invalid(result.message);
+        case outcome::denied:
+            refuse(http_status::forbidden, "forbidden", result.message);
+        case outcome::missing:
+            refuse(http_status::not_found, "not-found", result.message);
+        default:
+            refuse(http_status::bad_gateway, "upstream-unavailable", result.message);
+    }
 }
 
 namespace {

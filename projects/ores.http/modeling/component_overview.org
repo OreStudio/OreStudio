@@ -12,15 +12,15 @@
 #+full_name: ores.http
 #+brief: HTTP gateway
 #+component_kind: composite
-#+parts: api assets client core iam marketdata nats refdata server synthetic trading
+#+parts: api assets client core iam marketdata nats refdata reporting server synthetic trading
 
 * Summary
 
 =ores.http= is the platform's REST gateway. It terminates HTTP,
 authenticates the caller, and forwards each request to the owning service
 over NATS, so it depends on the services' wire protocols and not on their
-libraries. It is a composite of eight parts: three hand-written
-infrastructure parts, four adapters — one per domain whose routes it
+libraries. It is a composite of eleven parts: three hand-written
+infrastructure parts, seven adapters — one per domain whose routes it
 serves — and a client, through which the system reads outside HTTP APIs.
 
 * Sub-components
@@ -36,4 +36,5 @@ serves — and a client, through which the system reads outside HTTP APIs.
 | [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]] | Process entry point that wires the routes and runs the event loop. |
 | [[id:B8376009-B47E-4B2F-ADD8-AD6B79D1A7AC][ores.http.synthetic]] | Generated route units for the synthetic domain. |
 | [[id:486707D5-F459-4C97-95EA-A6C0D7F7043D][ores.http.trading]] | Route units for the trading domain. |
-| [[id:486707D5-F459-4C97-95EA-A6C0D7F7043D][ores.http.marketdata]] | Route units for the market data domain. |
+| [[id:F3B8D35B-DA83-4F94-AFBD-7E2A77128D6F][ores.http.marketdata]] | Route units for the market data domain. |
+| [[id:94D94398-6DFC-414C-B139-BB01C297805D][ores.http.reporting]] | Route units for the reporting and analytics domains. |

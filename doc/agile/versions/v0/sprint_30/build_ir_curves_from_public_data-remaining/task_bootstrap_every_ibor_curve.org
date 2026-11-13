@@ -58,9 +58,27 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| IBOR bootstrap configs seeded | 10 | =select count(*) from ores_refdata_ir_curve_bootstrap_configs_tbl where curve_family_role='PROJECTION'= | eb9acd465c |
+| IBOR bootstrap pillars seeded | 70 | same table joined to the pillars where the role is =PROJECTION= | eb9acd465c |
+| IBOR market series seeded | 40 (10 output, 30 quote) | =select count(*) from ores_marketdata_market_series_tbl where oresmd_uri like 'oresmd://ir/%tenor=1M'...= | eb9acd465c |
+| Fresh database with the seeds | recreate passes | =./compass.sh db recreate -y -k= | eb9acd465c |
 
 * Notes
+
+- The seeds: =marketdata_market_series_ibor_curves_populate.sql= holds the 40 series and
+  their junctions, and =refdata_ir_curve_bootstrap_ibor_configs_populate.sql= the ten configs
+  and their seventy pillars. The IBOR config seed must run *after* the overnight config seed,
+  because a projection config resolves its discount curve by name as the file runs; the first
+  order put it before and the insert failed with a NULL discount.
+- What the fresh run showed about ordering: the sweep publishes funding and projection configs
+  in one pass, and a projection attempted before its funding curve has a live set fails with
+  =curve_bootstrap_engine: discount_curve was supplied but is empty=. On a database whose
+  funding curves are not yet published, every IBOR curve fails on the first sweep and needs a
+  later one. The sweep should publish FUNDING before PROJECTION, which is the remaining change
+  in this task.
+- The quotes themselves need the synthetic feeds started: after a fresh recreate the dataset
+  must be published and the synthetic service restarted so the adapters announce and the feeds
+  run, as the previous task's live run showed.
 
 - The overnight chain is the template: two market_series rows (the curve output with
   =instrument=discount...curve_id=<name>= and the quote ladder with =instrument=ir_swap=), one

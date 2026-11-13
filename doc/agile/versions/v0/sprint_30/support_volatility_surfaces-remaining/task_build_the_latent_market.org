@@ -127,7 +127,7 @@ derived =CORRELATION/RATE= quotes are later work, as the design note's
 | 3. The driven step | DONE 2026-11-12, five processes drivable | =5f127589f0=, =b31521e545= |
 | 4. The tick context carries the market | the mixture and its variance wrapper take the normal; the feeds and the service are outstanding, and land with step 6 | =a5b1881944= |
 | 5. Configuration | the model and the depth rule done; the block's correlations are already typed columns of =fx_vol_surface_feed=, so what remains is the read, the tab and the shell verbs | =cf90e7236a= |
-| 6. The FX volatility surface | resumes the generator task | |
+| 6. The FX volatility surface | the quant seam is done: the three numbers build the block, and the generator takes the market's normals; the feed in =ores.synthetic= is next | =1ea0ec0df1=, =d8c6acb028= |
 
 Step 2 keeps the many case in view: a factor owns a path and a fifty-six byte
 walk, a series owns two doubles, and the loadings are one flat array written in
@@ -181,6 +181,34 @@ What does not exist is the read. No code outside =ores.analytics.quant= reads
 those columns, and the FX feeds screen does not show them. The remaining
 configuration work is therefore a read over the run's market and somewhere to
 show it, not a table.
+
+The same holds for the surface's own laws. =fx_vol_surface_feed_expiry= carries
+=variance_reversion= and =variance_volatility= for each segment, and the feed's
+own row carries the skew's and the curvature's, so between the two tables the
+generator has every number it needs. Nothing is missing from the configuration.
+
+** How the surface and the market divide the correlation
+
+The generator applies the three numbers through its own Cholesky root, and the
+latent market applies them through a block's loadings. Two modules cannot both
+own the correlation, so the market does and the generator is given the identity:
+it then keeps the normals it is handed, and a test pins that, so the two sides
+cannot drift apart. =fx_vol_surface_block= builds the block from the three
+numbers and names the drivers in the order the generator reads them, and
+=fx_vol_surface_correlation= is the one place the matrix is built. Both refuse
+three numbers that are not a correlation.
+
+Two surfaces on one spot share its factor and its series, because a run has
+thousands of surfaces on a handful of spots and two copies of one spot would let
+two surfaces on one pair drift apart.
+
+** What step 6 still owes
+
+The feed itself, in =ores.synthetic=: a =fx_vol_surface= kind that reads its row,
+its expiry rows and its contributors, builds the generator, ticks it once for
+each surface it publishes, and publishes the quotes the contributors observe.
+Then the service owns one latent market per run, installs its driver source, and
+both the spot feed and the surface feed read their drivers from the tick context.
 
 ** Open-source work to copy from
 

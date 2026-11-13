@@ -194,6 +194,28 @@ std::string fx_pair_member_code(std::string_view base, std::string_view quote) {
     return std::string(base) + "/" + std::string(quote);
 }
 
+std::expected<fx_vol_market_inputs, std::string>
+fx_vol_board_inputs(const ores::analytics::quant::domain::market_board& values,
+                    ores::analytics::quant::domain::market_board::member_id base_curve,
+                    ores::analytics::quant::domain::market_board::member_id quote_curve,
+                    ores::analytics::quant::domain::market_board::member_id spot) {
+    // The base currency first, then the quote, then the pair's spot: the order a reader of the
+    // run would look in, so the member a stopped curve left behind is the one named.
+    const auto base = values.view(base_curve);
+    if (!base.published)
+        return std::unexpected(std::format("curve:{}", base.code));
+    const auto quote = values.view(quote_curve);
+    if (!quote.published)
+        return std::unexpected(std::format("curve:{}", quote.code));
+    const auto level = values.view(spot);
+    if (!level.published)
+        return std::unexpected(std::format("spot:{}", level.code));
+    return fx_vol_market_inputs{.spot = fx_market{.spot = level.spot},
+                                .base = base.points,
+                                .quote = quote.points,
+                                .spot_date = base.spot_date};
+}
+
 std::expected<void, std::string>
 fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
                       std::span<const ores::analytics::quant::domain::date_period> periods,
@@ -232,18 +254,16 @@ fx_vol_surface_feed::fx_vol_surface_feed(
 
     const auto& base = input.config.base_currency_code;
     const auto& quote = input.config.quote_currency_code;
-    base_code_ = base;
-    quote_code_ = quote;
-    pair_label_ = fx_pair_member_code(base, quote);
-    // The three values this surface reads, resolved once, off the loop.
+    // The three values this surface reads, resolved once, off the loop. The pair's spot is named
+    // by the one function its feed publishes it under, so the two agree by construction.
     {
         auto& values = market_.values();
         base_curve_id_ =
             values.member_of(ores::analytics::quant::domain::market_member_kind::curve, base);
         quote_curve_id_ =
             values.member_of(ores::analytics::quant::domain::market_member_kind::curve, quote);
-        spot_id_ =
-            values.member_of(ores::analytics::quant::domain::market_member_kind::spot, pair_label_);
+        spot_id_ = values.member_of(ores::analytics::quant::domain::market_member_kind::spot,
+                                    fx_pair_member_code(base, quote));
     }
     // The expiry each market is solved at, in the order the emitter quotes them: the emitter
     // sorted the expiries, so the periods are taken from its order rather than sorted again,
@@ -302,21 +322,11 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
     // The market of each expiry, from the three values this surface reads: the pair's spot
     // and its two currencies' curves. A curve moves when its feed ticks, so a strike moves
     // with it and no restart is needed.
-    const auto base = market_.values().view(*base_curve_id_);
-    if (!base.published)
-        return std::format("no market: curve:{}", base_code_);
-    const auto quote = market_.values().view(*quote_curve_id_);
-    if (!quote.published)
-        return std::format("no market: curve:{}", quote_code_);
-    const auto level = market_.values().view(*spot_id_);
-    if (!level.published)
-        return std::format("no market: spot:{}", pair_label_);
-
-    const fx_vol_market_inputs inputs{.spot = fx_market{.spot = level.spot},
-                                      .base = base.points,
-                                      .quote = quote.points,
-                                      .spot_date = base.spot_date};
-    if (const auto built = fx_vol_expiry_markets(inputs, expiry_periods_, markets_); !built)
+    const auto inputs =
+        fx_vol_board_inputs(market_.values(), *base_curve_id_, *quote_curve_id_, *spot_id_);
+    if (!inputs)
+        return "no market: " + inputs.error();
+    if (const auto built = fx_vol_expiry_markets(*inputs, expiry_periods_, markets_); !built)
         return "no market: " + built.error();
     const auto points = emitter_.step(context.drivers, markets_);
     const auto& codec = ores::nats::default_wire_codec();

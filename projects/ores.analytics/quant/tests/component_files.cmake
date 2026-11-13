@@ -70,6 +70,7 @@ set(files
     "risk_recentering_tests.cpp"
     "rng_stream_tests.cpp"
     "run_clock_tests.cpp"
+    "run_market_benchmark_tests.cpp"
     "run_market_tests.cpp"
     "scheduler_trace_tests.cpp"
     "service_calendar_arithmetic_tests.cpp"

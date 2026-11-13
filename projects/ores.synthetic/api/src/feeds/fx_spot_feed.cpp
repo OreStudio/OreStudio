@@ -427,17 +427,17 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     if (!compatibility.valid)
         throw std::invalid_argument("make_fx_spot_feed: " + compatibility.message);
 
-    auto feed =
-        std::make_shared<fx_spot_feed>(nats,
-                                       cfg.oresmd_uri,
-                                       cfg.source_name,
-                                       producer_subject(cfg.source_name),
-                                       std::move(process),
-                                       arrival,
-                                       market,
-                                       cfg.sensitivity,
-                                       std::move(adapter),
-                                       cfg.base_currency_code + "/" + cfg.quote_currency_code);
+    auto feed = std::make_shared<fx_spot_feed>(
+        nats,
+        cfg.oresmd_uri,
+        cfg.source_name,
+        producer_subject(cfg.source_name),
+        std::move(process),
+        arrival,
+        market,
+        cfg.sensitivity,
+        std::move(adapter),
+        fx_pair_member_code(cfg.base_currency_code, cfg.quote_currency_code));
     feed->record_start_source(std::move(start));
     return feed;
 }

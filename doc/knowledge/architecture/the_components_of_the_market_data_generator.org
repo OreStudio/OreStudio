@@ -238,6 +238,13 @@ the quant block =math::pair_market_at= is the one rule both it and the party-sid
 calibration use ([[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][the design page]] states why
 that matters).
 
+The decision is two free functions rather than logic buried in the body:
+=fx_vol_board_inputs= answers the three values or names the member it could not read, and
+=fx_vol_expiry_markets= answers one market per expiry. What is left in the body is the
+walk over the points and the publish. So a test publishes to a board, reads it back
+through the surface's own read, and asserts both the sentence and the markets without a
+socket -- =feeds_fx_vol_surface_tick_tests.cpp=.
+
 *** What a person can change, and what it moves
 
 | Control | Reaches | Effect |

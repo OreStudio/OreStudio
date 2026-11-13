@@ -127,7 +127,7 @@ derived =CORRELATION/RATE= quotes are later work, as the design note's
 | 3. The driven step | DONE 2026-11-12, five processes drivable | =5f127589f0=, =b31521e545= |
 | 4. The tick context carries the market | the mixture and its variance wrapper take the normal; the feeds and the service are outstanding, and land with step 6 | =a5b1881944= |
 | 5. Configuration | the model and the depth rule done; the block's correlations are already typed columns of =fx_vol_surface_feed=, so what remains is the read, the tab and the shell verbs | =cf90e7236a= |
-| 6. The FX volatility surface | configured, stepping, startable by the service and driven by a market the run owns; the assembly that builds that market from the loaded configuration remains | =1ea0ec0df1=, =d8c6acb028=, =d31c9ae527=, =27b0c97626=, =9e6497d4f8=, =3bf225e457=, =2b25f7d9d5=, =e25104b0c0= |
+| 6. The FX volatility surface | DONE 2026-11-13: configured, stepping, startable, and driven by the market the run builds | =1ea0ec0df1=, =d8c6acb028=, =d31c9ae527=, =27b0c97626=, =9e6497d4f8=, =3bf225e457=, =2b25f7d9d5=, =e25104b0c0=, =6d590e5850=, =eb43def310= |
 
 Step 2 keeps the many case in view: a factor owns a path and a fifty-six byte
 walk, a series owns two doubles, and the loadings are one flat array written in
@@ -201,6 +201,32 @@ three numbers that are not a correlation.
 Two surfaces on one spot share its factor and its series, because a run has
 thousands of surfaces on a handful of spots and two copies of one spot would let
 two surfaces on one pair drift apart.
+
+** What the feed does now
+
+The feed is complete enough to start and run. A person states a surface as a feed
+row, one expiry row for each segment and one contributor row for each observer;
+the service reads them, builds the surface from the levels and laws they state,
+and publishes every point each contributor observes under the market data
+notation. An integration test starts one over NATS through the same handler a
+person's request reaches.
+
+Three things it does not do yet, each stated rather than hidden:
+
+- *The pair's curves.* The market the surface is quoted against has no rates and a
+  spot of one. That is exact while the two discounts are equal, because a smile is
+  read at a moneyness and a common scale cancels, so the quoted volatilities are
+  the surface's own. It is not exact once the pair's curves differ, and reading
+  them is the next wiring.
+- *The pair's convention.* A refdata row holds it, and the mapping from that row
+  lives in the market data service. The feed states the convention the derived
+  source quotes until it is handed that mapping.
+- *The finest gap.* A second, until the arrival laws are read at assembly. Every
+  configured rate is far slower, so nothing is interpolated.
+
+A surface started after the run built its market has no block in it, because a
+block's loadings are written in one pass while the market is made. It publishes
+nothing and says what it is missing, rather than stepping on zeros.
 
 ** What step 6 still owes
 

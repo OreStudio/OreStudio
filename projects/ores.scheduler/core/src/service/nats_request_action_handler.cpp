@@ -68,7 +68,7 @@ nats_request_action_handler::execute(const action_context& ctx) {
         // The answer carries the callee's own outcome, so its body is not read
         // here. An envelope refusal is the only failure this action can name,
         // and it must reach the job record rather than be discarded.
-        const auto reply = svc_nats_.authenticated_request(subject, parsed.body);
+        const auto reply = svc_nats_.authenticated_request(subject, parsed.body.value_or("{}"));
         const auto err = reply.headers.find(std::string(ores::nats::headers::x_error));
         if (err != reply.headers.end()) {
             const auto msg = "Subject " + subject + " refused the request: " + err->second;

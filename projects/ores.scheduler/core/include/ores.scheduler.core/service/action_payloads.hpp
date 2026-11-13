@@ -70,7 +70,7 @@ static_assert(utility::codec::names_every_member<nats_publish_payload>());
 // request; a job whose request needs arguments states them here.
 struct nats_request_payload {
     std::string subject;
-    std::string body = "{}";
+    std::optional<std::string> body;
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_request_payload>) {

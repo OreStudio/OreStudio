@@ -114,9 +114,9 @@ TEST_CASE("a job's action payload reads from the wire it", tags) {
     // A request job that states no body sends the empty object.
     const auto request = read_json<nats_request_payload>(R"({"subject": "c.d"})");
     CHECK(request.subject == "c.d");
-    CHECK(request.body == "{}");
-    CHECK(read_json<nats_request_payload>(R"({"subject": "c.d", "body": "{\"e\": 1}"})").body ==
-          R"({"e": 1})");
+    CHECK_FALSE(request.body.has_value());
+    CHECK(read_json<nats_request_payload>(R"({"subject": "c.d", "body": "{\"e\": 1}"})")
+              .body.value_or("{}") == R"({"e": 1})");
 
     CHECK_THROWS_WITH(read_json<mq_payload_fields>(R"({"queue_id": "q1"})"),
                       Catch::Matchers::ContainsSubstring("Missing member"));

@@ -86,7 +86,7 @@
   <div class="grid">
     <div style="display:grid;gap:14px">
       <section class="panel">
-        <h2>Zero rates <span class="right">12 pillars · SPOT-1M to 30Y</span></h2>
+        <h2><span id="metric-title">Zero rates</span> <span class="right">12 pillars · SPOT-1M to 30Y</span></h2>
         <div class="conventions">
           <div class="conv"><div class="k">Overnight index</div><div class="v ok">AONIA</div></div>
           <div class="conv"><div class="k">Term index</div><div class="v acc">LIBOR 3M</div></div>
@@ -109,8 +109,8 @@
           </svg>
         </div>
         <div class="legend">
-          <span><span class="dot" style="background:var(--ok)"></span>AONIA zero (discount)</span>
-          <span><span class="dot" style="background:var(--accent)"></span>LIBOR 3M zero (projection)</span>
+          <span><span class="dot" style="background:var(--ok)"></span>AONIA (discount curve)</span>
+          <span><span class="dot" style="background:var(--accent)"></span>LIBOR 3M (projection curve)</span>
           <span><span class="dot" style="background:var(--warn)"></span>difference, bps</span>
         </div>
       </section>
@@ -120,7 +120,7 @@
         <div class="body" style="padding-top:10px">
           <table class="table">
             <thead>
-              <tr><th>Tenor</th><th>AONIA</th><th>LIBOR 3M</th><th>Difference</th><th class="why">What makes the gap here</th></tr>
+              <tr><th>Tenor</th><th id="h-aonia">AONIA zero</th><th id="h-libor">LIBOR 3M zero</th><th id="h-gap">Difference</th><th class="why">What makes the gap here</th></tr>
             </thead>
             <tbody id="rows"></tbody>
           </table>
@@ -186,9 +186,10 @@
   <button data-view="aonia">Overnight only</button>
   <button data-view="ibor">Term only</button>
   <span class="sep">|</span>
-  <span class="label">Chart</span>
-  <button class="on" data-scale="auto">Auto scale</button>
-  <button data-scale="zero">From zero</button>
+  <span class="label">Metric</span>
+  <button class="on" data-metric="zero">Zero</button>
+  <button data-metric="forward">Forward</button>
+  <button data-metric="df">Discount factor</button>
 </div>
 
 <script>
@@ -196,43 +197,63 @@
   // an IR curve is built on. The AONIA column sits around the configured level the
   // system seeds (4.30%); the LIBOR 3M column is set a little above it, the way a
   // term curve historically sat above the overnight average. Nothing here is read
-  // from the system.
+  // from the system; the forward and discount-factor views are computed from it.
   const PILLARS = [
-    { tenor: "1M",  aonia: 4.28, libor: 4.36, why: "Short end: the term premium is small" },
-    { tenor: "3M",  aonia: 4.30, libor: 4.42, why: "Credit and liquidity of the panel" },
-    { tenor: "6M",  aonia: 4.30, libor: 4.50, why: "Term premium grows with the period" },
-    { tenor: "1Y",  aonia: 4.32, libor: 4.60, why: "Expectations plus premium" },
-    { tenor: "2Y",  aonia: 4.38, libor: 4.72, why: "Mid-curve premium peaks" },
-    { tenor: "3Y",  aonia: 4.43, libor: 4.80, why: "Still premium, easing" },
-    { tenor: "5Y",  aonia: 4.50, libor: 4.88, why: "Long end flattens" },
-    { tenor: "7Y",  aonia: 4.54, libor: 4.92, why: "Converging expectations" },
-    { tenor: "10Y", aonia: 4.57, libor: 4.95, why: "Gap narrows at the long end" },
-    { tenor: "15Y", aonia: 4.59, libor: 4.96, why: "Almost flat" },
-    { tenor: "20Y", aonia: 4.60, libor: 4.94, why: "Slight inversion in the term curve" },
-    { tenor: "30Y", aonia: 4.58, libor: 4.90, why: "Term curve below the overnight" }
+    { tenor: "1M",  years: 1/12, aonia: 4.28, libor: 4.36, why: "Short end: the term premium is small" },
+    { tenor: "3M",  years: 0.25, aonia: 4.30, libor: 4.42, why: "Credit and liquidity of the panel" },
+    { tenor: "6M",  years: 0.5,  aonia: 4.30, libor: 4.50, why: "Term premium grows with the period" },
+    { tenor: "1Y",  years: 1,    aonia: 4.32, libor: 4.60, why: "Expectations plus premium" },
+    { tenor: "2Y",  years: 2,    aonia: 4.38, libor: 4.72, why: "Mid-curve premium peaks" },
+    { tenor: "3Y",  years: 3,    aonia: 4.43, libor: 4.80, why: "Still premium, easing" },
+    { tenor: "5Y",  years: 5,    aonia: 4.50, libor: 4.88, why: "Long end flattens" },
+    { tenor: "7Y",  years: 7,    aonia: 4.54, libor: 4.92, why: "Converging expectations" },
+    { tenor: "10Y", years: 10,   aonia: 4.57, libor: 4.95, why: "Gap narrows at the long end" },
+    { tenor: "15Y", years: 15,   aonia: 4.59, libor: 4.96, why: "Almost flat" },
+    { tenor: "20Y", years: 20,   aonia: 4.60, libor: 4.94, why: "Slight inversion in the term curve" },
+    { tenor: "30Y", years: 30,   aonia: 4.58, libor: 4.90, why: "Term curve below the overnight" }
   ];
 
-  const W = 720, H = 250, left = 46, right = 700, topPad = 8, bottom = 210;
-  let yMin = 4.2, yMax = 5.0;
-  const ns = "http://www.w3.org/2000/svg";
-  const sx = i => left + (i / (PILLARS.length - 1)) * (right - left);
-  const sy = v => bottom - ((v - yMin) / (yMax - yMin)) * (bottom - topPad);
-  const line = key => PILLARS.map((p, i) => `${i ? "L" : "M"}${sx(i).toFixed(1)},${sy(p[key]).toFixed(1)}`).join(" ");
-
-  function text(x, y, value, anchor) {
-    const t = document.createElementNS(ns, "text");
-    t.setAttribute("class", "tick");
-    t.setAttribute("x", x); t.setAttribute("y", y);
-    t.setAttribute("text-anchor", anchor);
-    t.textContent = value;
-    return t;
+  // The three read-outs of one curve: the zero rate, the discount factor it makes,
+  // and the forward rate between two pillars. Continuous compounding throughout.
+  PILLARS.forEach(p => {
+    p.dfA = Math.exp(-p.aonia / 100 * p.years);
+    p.dfL = Math.exp(-p.libor / 100 * p.years);
+    p.fwdA = p.aonia;
+    p.fwdL = p.libor;
+  });
+  for (let i = 1; i < PILLARS.length; i++) {
+    const p = PILLARS[i], q = PILLARS[i - 1];
+    p.fwdA = (p.aonia * p.years - q.aonia * q.years) / (p.years - q.years);
+    p.fwdL = (p.libor * p.years - q.libor * q.years) / (p.years - q.years);
   }
 
+  const METRICS = {
+    zero:    { title: "Zero rates",       a: "AONIA zero",      l: "LIBOR 3M zero",      gap: "Difference",       domain: [4.2, 5.0],  unit: "bps",  dp: 2 },
+    forward: { title: "Forward rates",    a: "AONIA forward",   l: "LIBOR 3M forward",   gap: "Difference",       domain: [4.0, 5.4],  unit: "bps",  dp: 2 },
+    df:      { title: "Discount factors", a: "AONIA DF",        l: "LIBOR 3M DF",        gap: "Difference",       domain: [0.2, 1.0],  unit: "pts",  dp: 4 }
+  };
+
+  const W = 720, H = 250, left = 46, right = 700, topPad = 8, bottom = 210;
+  const ns = "http://www.w3.org/2000/svg";
+  let metric = "zero";
+  let yMin = METRICS.zero.domain[0], yMax = METRICS.zero.domain[1];
+
+  const value = (p, side) => metric === "zero" ? p[side] : metric === "forward" ? p[side === "aonia" ? "fwdA" : "fwdL"] : p[side === "aonia" ? "dfA" : "dfL"];
+  const sx = i => left + (i / (PILLARS.length - 1)) * (right - left);
+  const sy = v => bottom - ((v - yMin) / (yMax - yMin)) * (bottom - topPad);
+  const line = side => PILLARS.map((p, i) => `${i ? "L" : "M"}${sx(i).toFixed(1)},${sy(value(p, side)).toFixed(1)}`).join(" ");
+
+  function text(x, y, v, anchor) {
+    const t = document.createElementNS(ns, "text");
+    t.setAttribute("class", "tick");
+    t.setAttribute("x", x); t.setAttribute("y", y); t.setAttribute("text-anchor", anchor);
+    t.textContent = v;
+    return t;
+  }
   function gridLine(x1, x2, y1, y2) {
     const g = document.createElementNS(ns, "line");
     g.setAttribute("class", "gridline");
-    g.setAttribute("x1", x1); g.setAttribute("x2", x2);
-    g.setAttribute("y1", y1); g.setAttribute("y2", y2);
+    g.setAttribute("x1", x1); g.setAttribute("x2", x2); g.setAttribute("y1", y1); g.setAttribute("y2", y2);
     return g;
   }
 
@@ -245,8 +266,10 @@
       gx.appendChild(text(sx(i), 228, p.tenor, "middle"));
       gg.appendChild(gridLine(sx(i), sx(i), topPad, bottom));
     });
-    for (let v = Math.ceil(yMin / 0.2) * 0.2; v <= yMax + 1e-9; v += 0.2) {
-      gy.appendChild(text(40, sy(v) + 3, v.toFixed(1), "end"));
+    const step = (yMax - yMin) / 5;
+    for (let k = 0; k <= 5; k++) {
+      const v = yMin + k * step;
+      gy.appendChild(text(40, sy(v) + 3, v.toFixed(metric === "df" ? 2 : 1), "end"));
       gg.appendChild(gridLine(left, right, sy(v), sy(v)));
     }
   }
@@ -254,13 +277,13 @@
   function drawCurves() {
     document.getElementById("curve-aonia").setAttribute("d", line("aonia"));
     document.getElementById("curve-libor").setAttribute("d", line("libor"));
-    for (const [id, key, cls] of [["nodes-aonia", "aonia", "node-ok"], ["nodes-libor", "libor", "node-acc"]]) {
+    for (const [id, side, cls] of [["nodes-aonia", "aonia", "node-ok"], ["nodes-libor", "libor", "node-acc"]]) {
       const g = document.getElementById(id);
       g.replaceChildren();
       PILLARS.forEach((p, i) => {
         const c = document.createElementNS(ns, "circle");
         c.setAttribute("class", cls);
-        c.setAttribute("cx", sx(i)); c.setAttribute("cy", sy(p[key]));
+        c.setAttribute("cx", sx(i)); c.setAttribute("cy", sy(value(p, side)));
         c.setAttribute("r", 2.6);
         g.appendChild(c);
       });
@@ -268,14 +291,23 @@
   }
 
   function drawRows() {
+    const m = METRICS[metric];
+    document.getElementById("metric-title").textContent = m.title;
+    document.getElementById("h-aonia").textContent = m.a;
+    document.getElementById("h-libor").textContent = m.l;
+    document.getElementById("h-gap").textContent = m.gap;
     const body = document.getElementById("rows");
     body.replaceChildren();
     PILLARS.forEach(p => {
+      const a = value(p, "aonia"), l = value(p, "libor");
+      const diff = metric === "df"
+        ? `${(l - a).toFixed(4)} pts`
+        : `${Math.round((l - a) * 100)} bps`;
       const tr = document.createElement("tr");
       tr.innerHTML = `<td>${p.tenor}</td>` +
-        `<td class="ok-c">${p.aonia.toFixed(2)}</td>` +
-        `<td class="acc-c">${p.libor.toFixed(2)}</td>` +
-        `<td class="warn-c">${Math.round((p.libor - p.aonia) * 100)} bps</td>` +
+        `<td class="ok-c">${a.toFixed(m.dp)}</td>` +
+        `<td class="acc-c">${l.toFixed(m.dp)}</td>` +
+        `<td class="warn-c">${diff}</td>` +
         `<td class="why">${p.why}</td>`;
       body.appendChild(tr);
     });
@@ -288,8 +320,9 @@
     document.getElementById("nodes-libor").style.display = view === "aonia" ? "none" : "";
   }
 
-  function applyScale(scale) {
-    if (scale === "zero") { yMin = 0; yMax = 5.2; } else { yMin = 4.2; yMax = 5.0; }
+  function applyMetric(next) {
+    metric = next;
+    [yMin, yMax] = METRICS[metric].domain;
     drawAxes(); drawCurves(); drawRows();
   }
 
@@ -300,11 +333,11 @@
       applyView(btn.dataset.view);
     });
   });
-  document.querySelectorAll("[data-scale]").forEach(btn => {
+  document.querySelectorAll("[data-metric]").forEach(btn => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll("[data-scale]").forEach(b => b.classList.remove("on"));
+      document.querySelectorAll("[data-metric]").forEach(b => b.classList.remove("on"));
       btn.classList.add("on");
-      applyScale(btn.dataset.scale);
+      applyMetric(btn.dataset.metric);
     });
   });
 

@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 99138429-7EC3-4D68-B1FD-90E49A0BC4E0
+:END:
+#+title: Task: Investigate the forward a synthetic surface is struck against
+#+description: Decide where the forward a synthetic FX vol surface solves its strikes against comes from, given the system tenant is the vendor and publishes raw quotes only: the run's own latent curve, a party's published set, or a published system curve. Analysis against Kienitz and van den Berg.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The system states where the forward a synthetic volatility surface is struck against comes from, and the answer holds together with the approach note's constraints, with the vendor's ownership of raw quotes only, and with the frameworks the surface is judged against.
+
+The answer this task reaches is [[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][The forward a synthetic surface is struck against]]: the run shares its own latent curve, and the vendor publishes no curve.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | The investigation is written; it waits on the owner for the choices it lists. |
+| Waiting on   | The owner's confirmation of Path B and of the four choices under it. |
+| Next         | Take the decisions, then raise the board and the surface's read of it as work of its own. |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- The investigation names the framework requirement each path must meet: constraint 1 and constraint 3 of the approach note, and the forward-relative construction of Kienitz and of van den Berg's two papers.
+- It records that the run already holds a latent curve per currency, and what that curve is in code.
+- It rejects each path that would make the vendor publish derived data, or read a party's.
+- It states what changing the surface's forward changes in the emitter, and what it does not.
+- It leaves the owner's open choices explicit rather than settling them silently.
+- The parent story's =* Decisions= records the outcome once the owner confirms it.
+
+* Plan
+
+Read, not run, and written as an investigation rather than as code: the constraint is in the approach note and the design, not in a failing test. The deliverable is [[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][the investigation]], and the parent story's Decisions entry follows the owner's confirmation.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

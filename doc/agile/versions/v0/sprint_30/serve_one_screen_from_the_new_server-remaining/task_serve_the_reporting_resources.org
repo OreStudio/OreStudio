@@ -28,10 +28,10 @@ The gateway has no part for the reporting area. Add the part with the adapter re
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The part is stood up, linked into the server and answers the first group: the codes a report's edit form offers. One route of the fifty is paired in the inventory. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Serve the report definitions and the runs they raise. |
+| Last touched | 2026-11-13                               |
 
 * Acceptance
 
@@ -44,9 +44,30 @@ The gateway has no part for the reporting area. Add the part with the adapter re
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The part is stood up by the adapter recipe, copied from =ores.http.marketdata=:
+its model, its CMake files, the composite's parts list, the umbrella header,
+the aggregate, the file lists, the diagram, and the server's link and
+registration. It links =ores.reporting.api=, =ores.analytics.api= and
+=ores.refdata.api=.
+
+The area's routes are ported in groups:
+
+| Group | Routes | BFF source |
+|-------+--------+------------|
+| The part and the form's codes | 1 | =reporting.ts= |
+| The report definitions and their runs | 15 | =reporting.ts= |
+| The cuts, the cut kinds and the configurations | 10 | =reporting.ts= |
+| The pricing engines | 10 | =pricing-engines.ts= |
+| The engine settings and the ORE files | 9 | =engine-settings.ts= |
+| The ORE value sets and the moved reference data reads | 5 | =ore-value-sets.ts=, =curve-configuration.ts= |
+
+Fifty routes in all, of which one is served. The conventions documents and
+the curve configurations are the five routes the task's Acceptance moves here
+from the reference data and pick list tasks.
+
+The composed views belong to their own tasks: the report health tally, the
+publishing queue and the run board among them, which is why the health tally
+is not in the count above.
 
 * Measurements
 
@@ -60,7 +81,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The part's test suite | 3 cases, 12 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | c105efb3dc |
+| The reporting area's routes the C++ server answers | 1 of 49 paired | =python3 build/scripts/route_inventory.py --check= | c105efb3dc |
+| The gateway's routes in the inventory | 1297 routes, 207 of the BFF's 324 paired | =python3 build/scripts/route_inventory.py --check= | c105efb3dc |
 
 * Notes
 

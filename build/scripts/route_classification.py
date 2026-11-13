@@ -383,6 +383,11 @@ RULES = (
          BFF, NOT_API, NO_AREA,
          "The option lists one form's controls need, keyed by the control's own name and"
          " joined by nothing; each list is a collection a client reads at its own resource."),
+    Rule("an edit form's codes route",
+         ("exact", "GET /api/reporting/choices"),
+         CPP, NOT_API, NO_AREA,
+         "The codes the report edit form offers, kept so the form works when the BFF goes;"
+         " they are the form's option set and not a resource."),
     Rule("an edit form's codes",
          ("exact", "GET /api/reporting/choices"),
          BFF, NOT_API, NO_AREA,

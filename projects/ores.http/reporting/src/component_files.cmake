@@ -20,11 +20,13 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "routes/reporting/choice_routes.cpp"
     "routes/reporting/reporting_routes.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.reporting.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/choice_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/reporting_routes.hpp"
 )

@@ -28,6 +28,7 @@
 
 namespace {
 
+using ores::iam::service::call_with_retry;
 using ores::iam::service::classify_request_failure;
 using ores::iam::service::request_failure_class;
 using ores::iam::service::request_retry_policy;
@@ -177,4 +178,31 @@ TEST_CASE("A request is not retried past the caller's deadline", "[request_retry
     CHECK_THROWS_AS(request_with_retry(client, test_request{}, options), std::runtime_error);
     CHECK(client.calls == 1);
     CHECK(waits.waits.empty());
+}
+
+TEST_CASE("A repeat takes the result an earlier attempt already produced", "[request_retry]") {
+    wait_recorder waits;
+    int publishes = 0;
+    int attempts = 0;
+    bool published = false;
+
+    // The first attempt publishes and loses the reply. The second reads what
+    // the first published, so the work happens once and the answer is taken.
+    const auto answer = call_with_retry(
+        [&]() -> int {
+            ++attempts;
+            if (published)
+                return 7;
+            ++publishes;
+            published = true;
+            throw nats_connect_error(nats_error_kind::request_timeout, "reply lost");
+        },
+        {.deadline = std::chrono::steady_clock::now() + std::chrono::seconds{30},
+         .what = "a surface publish",
+         .policy = waits.policy()});
+
+    CHECK(answer == 7);
+    CHECK(attempts == 2);
+    CHECK(publishes == 1);
+    CHECK(waits.waits.size() == 1);
 }

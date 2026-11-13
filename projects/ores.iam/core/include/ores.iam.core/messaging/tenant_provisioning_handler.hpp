@@ -1122,6 +1122,7 @@ private:
      */
     curve_publish_outcome
     publish_curves(internal_request_client& client,
+                   const boost::uuids::uuid& party_id,
                    const std::vector<std::pair<std::string, std::string>>& curves,
                    std::string_view reason,
                    std::string_view label,
@@ -1151,12 +1152,11 @@ private:
                 preview.bootstrap_config_id = it->first;
                 preview.as_of = as_of;
                 const auto curve_work = std::string(label) + ": " + names.at(it->first);
-                const auto computed = request_with_retry(
-                    client,
-                    preview,
-                    {.deadline = deadline,
-                     .attempt_timeout = work_request_deadline,
-                     .what = curve_work + " curve bootstrap"});
+                const auto computed = request_with_retry(client,
+                                                         preview,
+                                                         {.deadline = deadline,
+                                                          .attempt_timeout = work_request_deadline,
+                                                          .what = curve_work + " curve bootstrap"});
                 if (!computed.success) {
                     it->second = computed.message;
                     ++it;
@@ -1167,12 +1167,20 @@ private:
                 publish.bootstrap_config_id = it->first;
                 publish.as_of = as_of;
                 publish.reason = std::string(reason);
-                const auto published = request_with_retry(
-                    client,
-                    publish,
-                    {.deadline = deadline,
-                     .attempt_timeout = work_request_deadline,
-                     .what = curve_work + " curve publish"});
+                const auto published = ores::iam::service::call_with_retry(
+                    [&]() -> ores::marketdata::messaging::publish_curve_response {
+                        // An attempt that timed out may have published already. The read
+                        // answers what is published, so taking it raises no second request.
+                        if (const auto found = published_curve_of(client, party_id, it->first))
+                            return {.success = true,
+                                    .message = "Published by an earlier attempt.",
+                                    .approval_request_id = found->request_id,
+                                    .state_code = "approved",
+                                    .published_at = found->published_at,
+                                    .published_by = found->published_by};
+                        return client.request(publish, work_request_deadline);
+                    },
+                    {.deadline = deadline, .what = curve_work + " curve publish"});
                 if (published.success && published.published_at) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                         << label << ": published " << names.at(it->first) << " at "
@@ -1276,6 +1284,7 @@ private:
         result.kind = command.kind;
         std::vector<ores::workflow::messaging::step_log_entry> step_log;
         auto outcome = publish_curves(client,
+                                      admin->party_id,
                                       curves,
                                       publish_reason,
                                       "publish_system_curves",
@@ -1443,6 +1452,23 @@ private:
         return out;
     }
 
+    /// The published set of one curve configuration, or nothing when it has none.
+    ///
+    /// Read before a publish is repeated: a set an earlier attempt published
+    /// answers for the work, so the repeat raises no second request.
+    static std::optional<ores::marketdata::messaging::published_curve_set>
+    published_curve_of(internal_request_client& party_client,
+                       const boost::uuids::uuid& party_id,
+                       const std::string& config_id) {
+        ores::marketdata::messaging::list_published_curves_request request;
+        request.party_id = boost::uuids::to_string(party_id);
+        request.limit = 1000;
+        for (const auto& set : party_client.request(request).sets)
+            if (set.bootstrap_config_id == config_id)
+                return set;
+        return std::nullopt;
+    }
+
     /**
      * @brief Gives each party the step names its own funding curves.
      *
@@ -1525,6 +1551,7 @@ private:
                     curves.emplace_back(id, curve.name);
             }
             auto outcome = publish_curves(party_client,
+                                          party->id,
                                           curves,
                                           publish_reason,
                                           "publish_party_curves " + party_name,
@@ -1636,12 +1663,24 @@ private:
                 publish.pair_code = pair;
                 publish.as_of = as_of;
                 publish.reason = std::string(publish_reason);
-                const auto answer = request_with_retry(
-                    party_client,
-                    publish,
-                    {.deadline = step_deadline,
-                     .attempt_timeout = work_request_deadline,
-                     .what = line + " forward set"});
+                const auto answer = ores::iam::service::call_with_retry(
+                    [&]() -> ores::marketdata::messaging::publish_fx_forward_response {
+                        // An attempt that timed out may have published already. The read
+                        // answers what is published, so taking it raises no second request.
+                        ores::marketdata::messaging::get_published_fx_forward_request read;
+                        read.pair_code = pair;
+                        read.as_of = as_of;
+                        const auto found = party_client.request(read, work_request_deadline);
+                        if (found.success)
+                            return {.success = true,
+                                    .message = "Published by an earlier attempt.",
+                                    .approval_request_id = found.request_id,
+                                    .state_code = "approved",
+                                    .published_at = found.published_at,
+                                    .published_by = found.published_by};
+                        return party_client.request(publish, work_request_deadline);
+                    },
+                    {.deadline = step_deadline, .what = line + " forward set"});
                 if (answer.success && answer.published_at) {
                     ++published;
                     result.forwards.push_back(
@@ -1754,12 +1793,12 @@ private:
                 ores::marketdata::messaging::calibrate_fx_vol_surface_request calibrate;
                 calibrate.blueprint_id = id;
                 calibrate.as_of = as_of;
-                const auto calibrated = request_with_retry(
-                    party_client,
-                    calibrate,
-                    {.deadline = step_deadline,
-                     .attempt_timeout = work_request_deadline,
-                     .what = line + " surface calibration"});
+                const auto calibrated =
+                    request_with_retry(party_client,
+                                       calibrate,
+                                       {.deadline = step_deadline,
+                                        .attempt_timeout = work_request_deadline,
+                                        .what = line + " surface calibration"});
                 if (!calibrated.success) {
                     result.surfaces_not_published.push_back(line + ": " + calibrated.message);
                     continue;
@@ -1773,12 +1812,24 @@ private:
                 publish.blueprint_id = id;
                 publish.as_of = calibrated.as_of;
                 publish.reason = std::string(publish_reason);
-                const auto answer = request_with_retry(
-                    party_client,
-                    publish,
-                    {.deadline = step_deadline,
-                     .attempt_timeout = work_request_deadline,
-                     .what = line + " surface publish"});
+                const auto answer = ores::iam::service::call_with_retry(
+                    [&]() -> ores::marketdata::messaging::publish_fx_vol_surface_response {
+                        // An attempt that timed out may have published already. The read
+                        // answers what is published, so taking it raises no second request.
+                        ores::marketdata::messaging::get_published_fx_vol_surface_request read;
+                        read.blueprint_id = id;
+                        read.as_of = calibrated.as_of;
+                        const auto found = party_client.request(read, work_request_deadline);
+                        if (found.success)
+                            return {.success = true,
+                                    .message = "Published by an earlier attempt.",
+                                    .approval_request_id = found.publish_request_id,
+                                    .state_code = "approved",
+                                    .published_at = found.published_at,
+                                    .published_by = found.published_by};
+                        return party_client.request(publish, work_request_deadline);
+                    },
+                    {.deadline = step_deadline, .what = line + " surface publish"});
                 if (answer.success && answer.published_at) {
                     ++published;
                     result.surfaces.push_back(
@@ -2084,12 +2135,11 @@ private:
         ores::refdata::messaging::regenerate_calendar_dates_request request;
         request.in_use_only = true;
         request.end_year = last_generated_holiday_year;
-        const auto response = request_with_retry(
-            client,
-            request,
-            {.deadline = deadline_of(command.kind),
-             .attempt_timeout = bulk_request_deadline,
-             .what = "the holiday calendars"});
+        const auto response = request_with_retry(client,
+                                                 request,
+                                                 {.deadline = deadline_of(command.kind),
+                                                  .attempt_timeout = bulk_request_deadline,
+                                                  .what = "the holiday calendars"});
         if (!response.success)
             throw std::runtime_error("The calendars were not built: " + response.message);
 

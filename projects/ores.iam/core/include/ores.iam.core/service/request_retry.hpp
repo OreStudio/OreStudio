@@ -33,6 +33,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <type_traits>
 
 namespace ores::iam::service {
 
@@ -122,7 +123,19 @@ struct retry_request_options {
 };
 
 /**
- * @brief Issues @p req, and asks again while a transient failure may pass.
+ * @brief What one retried call is for, and how long it may take.
+ */
+struct retry_call_options {
+    /// The instant past which the caller gives up.
+    std::chrono::steady_clock::time_point deadline;
+    /// The work, in a person's words, for the log line and the error.
+    std::string what;
+    /// How many attempts, and how they wait.
+    request_retry_policy policy{};
+};
+
+/**
+ * @brief Runs @p operation, and runs it again while a transient failure may pass.
  *
  * A transient failure is retried with a backoff that grows and is jittered, so
  * two steps that failed together do not return together. A refusal and a
@@ -130,21 +143,23 @@ struct retry_request_options {
  * attempts stop at @c policy.max_attempts and at @c deadline, whichever comes
  * first, and never wait past it.
  *
- * The request sent on each attempt is the same request, so the caller must
- * state one whose repeat is safe: the same identity, the same as-of.
+ * The operation is a callable rather than a request so that it can first read
+ * whether an earlier attempt already did the work. A repeat that would write a
+ * second row, raise a second request or publish a second set is the caller's to
+ * prevent, and that is where it is prevented.
  *
- * @throws std::runtime_error when the request is not answered and will not be
+ * @throws std::runtime_error when the operation is not answered and will not be
  *         tried again, naming @c what, the attempts it took and the reason.
  */
-template <typename Client, typename Request>
-typename Request::response_type
-request_with_retry(Client& client, const Request& req, const retry_request_options& options) {
+template <typename Operation>
+auto call_with_retry(Operation&& operation, const retry_call_options& options)
+    -> std::invoke_result_t<Operation> {
     static auto lg = ores::logging::make_logger("ores.iam.service.request_retry");
 
     auto delay = options.policy.first_delay;
     for (int attempt = 1;; ++attempt) {
         try {
-            return client.request(req, options.attempt_timeout);
+            return operation();
         } catch (const std::exception& failure) {
             const auto kind = classify_request_failure(failure);
             const auto remaining = options.deadline - std::chrono::steady_clock::now();
@@ -171,6 +186,23 @@ request_with_retry(Client& client, const Request& req, const retry_request_optio
             delay = std::min(delay * 2, options.policy.max_delay);
         }
     }
+}
+
+/**
+ * @brief Issues @p req through @p client, and asks again while a transient
+ * failure may pass.
+ *
+ * The request sent on each attempt is the same request, so the caller must
+ * state one whose repeat changes nothing: the same identity, the same as-of.
+ * A request whose repeat would write something must go through
+ * call_with_retry() with a read of what an earlier attempt did.
+ */
+template <typename Client, typename Request>
+typename Request::response_type
+request_with_retry(Client& client, const Request& req, const retry_request_options& options) {
+    return call_with_retry(
+        [&client, &req, &options] { return client.request(req, options.attempt_timeout); },
+        {.deadline = options.deadline, .what = options.what, .policy = options.policy});
 }
 
 }

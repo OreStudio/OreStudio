@@ -8,7 +8,7 @@
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/bootstrap-the-curves-as-quotes-move
-#+pr:
+#+pr: 4672
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
@@ -132,7 +132,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4672][#4672]] | [marketdata] Republish the system curves on a schedule |
 
 * Review
 

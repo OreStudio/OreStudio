@@ -24,6 +24,7 @@
 #include "ores.compute.api/messaging/host_protocol.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
 #include "ores.compute.api/messaging/result_protocol.hpp"
+#include "ores.compute.api/messaging/run_files_protocol.hpp"
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.api/messaging/workunit_protocol.hpp"
@@ -37,6 +38,7 @@
 #include "ores.compute.core/messaging/report_submit_handler.hpp"
 #include "ores.compute.core/messaging/result_registrar.hpp"
 #include "ores.compute.core/messaging/result_submit_handler.hpp"
+#include "ores.compute.core/messaging/run_files_handler.hpp"
 #include "ores.compute.core/messaging/telemetry_handler.hpp"
 #include "ores.compute.core/messaging/work_handler.hpp"
 #include "ores.compute.core/messaging/workunit_registrar.hpp"
@@ -112,6 +114,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
         get_node_series_request::nats_subject,
         "ores.compute.service",
         [th](ores::nats::message msg) { th->get_node_series(std::move(msg)); }));
+    // The packages one run read and wrote, which is this service's own tree.
+    auto rf = std::make_shared<run_files_handler>(nats, ctx, verifier);
+    subs.push_back(nats.queue_subscribe(
+        list_run_files_request::nats_subject,
+        "ores.compute.service",
+        [rf](ores::nats::message msg) { rf->list_run_files(std::move(msg)); }));
     // A free node asks for its next job. The handler serves it from the work ledger.
     auto claims = std::make_shared<claim_handler>(nats, ctx, outbound_nats);
     subs.push_back(

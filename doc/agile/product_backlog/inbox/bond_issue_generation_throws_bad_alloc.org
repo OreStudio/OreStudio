@@ -2,7 +2,7 @@
 :ID: 9232CDC9-8444-4856-8D3D-CA7CD4EFA5EC
 :END:
 #+title: Generating a bond issue fails with std::bad_alloc
-#+description: The first bond issue of a generated population fails the composite write with std::bad_alloc. It is not the payload and not the service's memory: the same step completes on a retry, and the trading service's cgroup peaked at 276 MiB of an 8 GiB limit. The failure is a single absurd allocation and is value-dependent.
+#+description: The first bond issue of a generated population fails the composite write with std::bad_alloc, once. It has not been reproduced: the retry of the step drew different terms and completed. Whether the fault is value-dependent or transient under load is open, and the replay of the original config is the experiment that settles it.
 #+type: capture
 #+level: cross
 #+filetags: 
@@ -14,16 +14,45 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 * What
 
 The first bond issue of a generated trade population fails its composite write
-with =std::bad_alloc=. It is a single absurd allocation, not a large payload and
-not a service out of memory, and it is value-dependent: a retry of the same
-step, which draws new terms, completes.
+with =std::bad_alloc=. It has happened once and has not been reproduced. The
+request is about a kilobyte, so payload size does not explain it. Two
+explanations remain live, and the evidence so far does not choose between them:
+
+- *A size taken from a drawn value.* The retry of the step drew different bond
+  terms, so its success says nothing about the failing draw.
+- *A transient allocation failure while the host was loaded.* At 14:05 two
+  other environments were building on this machine.
 
 * Why
 
 The failure stops a provisioning run, and the message names no cause beyond
-=std::bad_alloc=. The step-level retry recovers, so it is not urgent, but an
-allocation sized from a drawn value is a real defect: the next draw can hit it
-again, and the message cannot tell anyone why.
+=std::bad_alloc=. The step-level retry recovers, so it is not urgent. But if the
+cause is an allocation sized from data, the next draw can hit it again, and the
+message cannot tell anyone why.
+
+** What is proven
+
+- One failure, at =trading.v1.ops.put_bond_issue_composite=, in the trading
+  service's =trade_operations_handler=, at 2026-11-13 14:05:15.767.
+- The request is small: the bond issue builder emits 1 leg, 2 amounts, 1 rate
+  and 1 schedule row, and the writer sends no schedule dates, amortisations,
+  call dates or conversion targets
+  (=ores.trading.api/src/builders/bond_builders.cpp=, =bond_issue_builder::build=).
+- The retry of the step completed: 17 of 17 steps, 6,541 trades, 37 bond
+  issues, 80 surface publishes.
+
+** What is not proven
+
+- That the fault is value-dependent. The retry mints a *new* config, and the
+  drawn terms are seeded by the config id, so the retry is not a replay of the
+  failing inputs. Its success shows only that a different draw passes.
+- That the service was short of memory, or not. The trading cgroup
+  (=memory.max= 8 GiB) now shows =memory.peak= 276 MiB, but that peak may cover
+  only the process started at the 14:10 restart: the service was restarted, and
+  the sandbox could not query systemd to learn whether the cgroup was recreated.
+  So the peak is not evidence that the failing process stayed small.
+- That the fault is transient. It happened once, under a loaded host, and one
+  occurrence cannot separate the two explanations.
 
 ** Evidence
 
@@ -35,17 +64,19 @@ again, and the message cannot tell anyone why.
   and 1 schedule row, and the writer sends no schedule dates, amortisations,
   call dates or conversion targets (=ores.trading.api/src/builders/bond_builders.cpp=,
   =bond_issue_builder::build=).
-- It is not the service running out of memory. The trading service's cgroup
-  (=memory.max= 8 GiB) peaked at 276 MiB *across both runs*, including the
-  6,541 trades the successful retry wrote
+- The trading service's cgroup (=memory.max= 8 GiB) now reports =memory.peak=
+  276 MiB
   (=/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/ores.trading.service-merry_newton.service/memory.peak=).
+  That peak is consistent with the service never being near its limit, but it
+  may cover only the process restarted at 14:10, so it does not settle whether
+  the failing process was short of memory.
 - The retry of =generate_trades= on the same run completed: 17 of 17 steps,
   6,541 trades, 37 bond issues, 80 surface publishes
   (=select count(*) from ores_trading_trades_tbl= and its siblings).
 - =generate_trades= records a *new* config on every run, and the generated
-  terms are seeded by the config id, so the retry drew different bond terms.
-  The failure is therefore data-dependent. The failing draw is the one for
-  config =b1640880-afea-5340-9c14-3c83dce8334d= (bond, =1Y= to =10Y=,
+  terms are seeded by the config id, so the retry drew different bond terms and
+  is not a replay of the failing inputs. The failing draw is the one for config
+  =b1640880-afea-5340-9c14-3c83dce8334d= (bond, =1Y= to =10Y=,
   =ACME ACMCOR bonds=, book =Group Intercompany Loans=), whose first issue is
   =POP5ZCJP1NEQ1=.
 - Led to the retry by the story
@@ -85,3 +116,14 @@ draws new terms and does not reproduce it.
 * See also
 
 -
+
+** What settles it
+
+Replay the failing config. Its draws are seeded by its id, so running the
+population for =b1640880-afea-5340-9c14-3c83dce8334d= again either fails the
+same way, which proves a value-dependent allocation, or passes, which points at
+a transient allocation at 14:05. There is no request subject for a single
+population run today, so the replay needs a small harness or a test that plans
+from that config and calls =put_bond_issue_composite= with the plan's first
+issue rows. Run it under =gdb -ex 'catch throw'= and the =bad_alloc= yields a
+stack either way.

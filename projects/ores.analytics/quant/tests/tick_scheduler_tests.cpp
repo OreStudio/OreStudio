@@ -528,3 +528,27 @@ TEST_CASE("a reading carries the ticks a second every law asks for", "[tick_sche
     // Four a second at a pace of two, with no heat.
     CHECK(readings.back().intensity == Catch::Approx(8.0));
 }
+
+TEST_CASE("the tick context carries the market's driver", "[tick_scheduler]") {
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, no_heat, 42);
+
+    std::vector<double> seen;
+    const series_spec a{.series = 7, .arrival = per_second("periodic", 4.0), .sensitivity = 1.0};
+    scheduler.add(a, [&seen](const tick_context& context) {
+        seen.push_back(context.driver);
+        return std::string("ok");
+    });
+
+    scheduler.set_driver_source([](std::uint64_t, double) { return 1.25; });
+    REQUIRE(scheduler.step());
+    CHECK(seen.size() == 1);
+    CHECK(seen[0] == 1.25);
+
+    // Without a source the driver is zero, so a feed that draws its own normal and
+    // a feed that reads the context start from the same number.
+    scheduler.set_driver_source({});
+    REQUIRE(scheduler.step());
+    CHECK(seen.size() == 2);
+    CHECK(seen[1] == 0.0);
+}

@@ -385,10 +385,12 @@ std::optional<fired_tick> tick_scheduler::fire(std::unique_lock<std::mutex>& loc
     const double simulated_elapsed = market_.simulated() - s.last_simulated;
     s.last_tau = market_.tau();
     s.last_simulated = market_.simulated();
+    const double driver = driver_source_ ? driver_source_(s.spec.series, *due) : 0.0;
     const tick_context context{.elapsed_seconds = *due - s.last_fired,
                                .observed_at = clock_.wall(time_at(*due)),
                                .simulated_seconds = simulated_elapsed,
-                               .tail_tilt = market_.tail_tilt()};
+                               .tail_tilt = market_.tail_tilt(),
+                               .driver = driver};
     record(trace_kind::tick, s.spec.series, s.gap, context.elapsed_seconds, compensated);
     ++fired_since_sample_;
     by_second_.tick(*due, s.group);
@@ -473,5 +475,10 @@ void tick_scheduler::set_hooks(published_hook on_published, failure_hook on_fail
     on_published_ = std::move(on_published);
     on_failed_ = std::move(on_failed);
 }
+void tick_scheduler::set_driver_source(driver_source source) {
+    const auto guard = std::lock_guard(mutex_);
+    driver_source_ = std::move(source);
+}
+
 
 }

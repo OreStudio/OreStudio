@@ -57,6 +57,10 @@ struct tick_context final {
     /// How far the market tilts a price's shape toward its tails now; zero leaves it as
     /// configured.
     double tail_tilt = 0.0;
+    /// The standard normal the latent market hands this series' step. Zero when
+    /// the run has no market, so a feed that reads it and a feed that draws its
+    /// own normal see the same number to begin with.
+    double driver = 0.0;
 };
 
 /// What a scheduler needs to know about a series to schedule it.
@@ -201,6 +205,10 @@ struct market_history final {
 class ORES_ANALYTICS_QUANT_EXPORT tick_scheduler final {
 public:
     using stream_body = std::function<std::string(const tick_context&)>;
+    /// Where a series' standard normal comes from, given its stream id and the
+    /// instant it ticks at. The latent market answers it; a run without one
+    /// leaves it unset and every driver is zero.
+    using driver_source = std::function<double(std::uint64_t series, double at)>;
     using published_hook = std::function<void(std::uint64_t, const std::string&)>;
     using failure_hook = std::function<void(const std::exception&)>;
 
@@ -309,6 +317,9 @@ public:
 
     void set_hooks(published_hook on_published, failure_hook on_failed);
 
+    /// Where each tick's standard normal comes from; unset means zero.
+    void set_driver_source(driver_source source);
+
     [[nodiscard]] std::uint64_t publish_count() const {
         return published_.load(std::memory_order_relaxed);
     }
@@ -398,6 +409,7 @@ private:
     std::atomic<bool> stop_flag_{false};
     std::atomic<std::uint64_t> published_{0};
     published_hook on_published_;
+    driver_source driver_source_;
     failure_hook on_failed_;
 };
 

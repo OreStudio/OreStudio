@@ -12,7 +12,7 @@
 #+brief: The marketdata component's domain operations.
 #+filetags: :model:operation:marketdata:
 #+created: 2026-09-30
-#+updated: 2026-09-30
+#+updated: 2026-11-13
 
 These are the component's messages that are not entity verbs. Each one acts
 on an aggregate, a live computation or a whole-tenant export rather than on
@@ -745,6 +745,316 @@ The series the caller can see, in a stable order.
 :END:
 
 True when the caller can see more series than the list holds.
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** instrument_axis
+
+One axis of an instrument's shape: the coordinate field and its values in the
+order a client draws them.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One axis of an instrument's shape, with its values in draw order.
+ *
+ * The field is the oresmd field code the shape stores, such as `tenor` or
+ * `strike_label`, never a display name. The values are in the order the server
+ * states, so a plot draws them without sorting.
+ */
+#+end_src
+
+*** field
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The oresmd field code, such as `tenor`, `expiry` or `strike_label`.
+
+*** values
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The values of this axis, in the order to draw, in the spelling the shape stores.
+
+** instrument_source
+
+One source that carries an instrument, and whether its value is current.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One source behind an instrument, and whether its value is current.
+ *
+ * The provider kind is the provider table's own code, so a client can hide
+ * reference definitions without a second read. The verdict is the server's
+ * against the configured threshold for the instrument kind; a client may draw
+ * it and must not recompute it.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** provider_kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The series this source reads, which the tick and slice reads accept.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The newest observation this source holds for the instrument.
+
+*** age_seconds
+:PROPERTIES:
+:cpp_type: std::int64_t
+:END:
+
+Whole seconds from the source's as-of to the server's now, never negative.
+
+*** stale
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+True when the source is older than its kind's configured threshold.
+
+** market_instrument
+
+One instrument: a group of series that a person reads as one thing.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One instrument: the series a person reads as one thing.
+ *
+ * This is the definition of an instrument. A curve is one entry and never one
+ * entry per pillar; a pair is one entry with no axes; a surface is one entry
+ * whose two axes are its strikes and its expiries. The name is the server's and
+ * is unique within the party and the kind, because it is what a person types
+ * into the search.
+ */
+#+end_src
+
+*** instrument_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+A stable identity, unique within the party, that a client may cache by. It is
+not a URI the client builds.
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+One of `pair`, `curve`, `surface`, `ladder`, `fixing`.
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The display name, unique within the party and the kind.
+
+*** currency
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The single currency of a rate instrument, or empty.
+
+*** base_currency
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+*** quote_currency
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+*** instrument_type
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The schema's spelling, such as `ir_swap`.
+
+*** quote_type
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The schema's spelling, such as `rate`.
+
+*** forward_start
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+A rate ladder's forward start, or empty.
+
+*** axes
+:PROPERTIES:
+:cpp_type: std::vector<instrument_axis>
+:END:
+
+The shape, in the order to draw. Empty for an instrument with no axes.
+
+*** sources
+:PROPERTIES:
+:cpp_type: std::vector<instrument_source>
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The owning party. Only the caller's party's instruments are ever returned.
+
+*** stale
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+True when every source is stale, or when the instrument has no sources.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The newest source's instant, or the zero time when there is none.
+
+** list_instruments_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.list_instruments
+:response: list_instruments_response
+:END:
+
+Reads the instrument catalogue: one entry per instrument the caller's party can
+see, whatever its kind, so a client searches instruments rather than series.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the instrument catalogue of the caller's party.
+ *
+ * An instrument is a group of series that shares an asset, a subject, an
+ * instrument type, a quote type, a party and a provider, and differs in exactly
+ * one identity field: that field is the instrument's axis, and its values are
+ * the axis values in draw order. A group that differs in no field is a
+ * single-value instrument, such as a pair. A shape the schema declares is one
+ * instrument, not one per node.
+ *
+ * An empty `party_id` means the session's own party. A client never decides
+ * which party's data it sees.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional; empty means the session's own party.
+
+*** query
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional free text, matched against the currency, the pair's two sides, the
+name and the provider.
+
+*** kinds
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+Optional; any of `pair`, `curve`, `surface`, `ladder`, `fixing`. Empty means all.
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional; only instruments with a source by this provider.
+
+*** offset
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+Zero means the server's default page, not everything.
+
+** list_instruments_response
+
+The instruments the caller can see, in a stable order, and the size of the whole
+filtered set.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instruments the caller can see, in a stable order.
+ *
+ * The order is by kind and then by name, so a client draws the list as it
+ * arrives. `total` is the size of the whole filtered set, so a screen pages
+ * without a second read.
+ */
+#+end_src
+
+*** instruments
+:PROPERTIES:
+:cpp_type: std::vector<market_instrument>
+:END:
+
+*** total
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+*** truncated
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
 
 *** success
 :PROPERTIES:

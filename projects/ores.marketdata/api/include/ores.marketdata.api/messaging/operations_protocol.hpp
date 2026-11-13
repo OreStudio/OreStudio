@@ -366,6 +366,119 @@ struct list_series_identities_response {
                            const list_series_identities_response&) = default;
 };
 
+/**
+ * @brief One axis of an instrument's shape, with its values in draw order.
+ *
+ * The field is the oresmd field code the shape stores, such as `tenor` or
+ * `strike_label`, never a display name. The values are in the order the server
+ * states, so a plot draws them without sorting.
+ */
+struct instrument_axis {
+    std::string field;
+    std::vector<std::string> values;
+
+    friend bool operator==(const instrument_axis&, const instrument_axis&) = default;
+};
+
+/**
+ * @brief One source behind an instrument, and whether its value is current.
+ *
+ * The provider kind is the provider table's own code, so a client can hide
+ * reference definitions without a second read. The verdict is the server's
+ * against the configured threshold for the instrument kind; a client may draw
+ * it and must not recompute it.
+ */
+struct instrument_source {
+    std::string provider_code;
+    std::string provider_kind;
+    std::string series_id;
+    std::chrono::system_clock::time_point as_of;
+    std::int64_t age_seconds{};
+    bool stale = false;
+
+    friend bool operator==(const instrument_source&, const instrument_source&) = default;
+};
+
+/**
+ * @brief One instrument: the series a person reads as one thing.
+ *
+ * This is the definition of an instrument. A curve is one entry and never one
+ * entry per pillar; a pair is one entry with no axes; a surface is one entry
+ * whose two axes are its strikes and its expiries. The name is the server's and
+ * is unique within the party and the kind, because it is what a person types
+ * into the search.
+ */
+struct market_instrument {
+    std::string instrument_id;
+    std::string kind;
+    std::string name;
+    std::string currency = "";
+    std::string base_currency = "";
+    std::string quote_currency = "";
+    std::string instrument_type = "";
+    std::string quote_type = "";
+    std::string forward_start = "";
+    std::vector<instrument_axis> axes;
+    std::vector<instrument_source> sources;
+    std::string party_id;
+    bool stale = false;
+    std::chrono::system_clock::time_point as_of;
+
+    friend bool operator==(const market_instrument&, const market_instrument&) = default;
+};
+
+/**
+ * @brief Reads the instrument catalogue of the caller's party.
+ *
+ * An instrument is a group of series that shares an asset, a subject, an
+ * instrument type, a quote type, a party and a provider, and differs in exactly
+ * one identity field: that field is the instrument's axis, and its values are
+ * the axis values in draw order. A group that differs in no field is a
+ * single-value instrument, such as a pair. A shape the schema declares is one
+ * instrument, not one per node.
+ *
+ * An empty `party_id` means the session's own party. A client never decides
+ * which party's data it sees.
+ */
+struct list_instruments_request {
+    using response_type = struct list_instruments_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.list_instruments";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string party_id;
+    std::string query;
+    std::vector<std::string> kinds;
+    std::string provider_code;
+    std::int64_t offset = 0;
+    std::int64_t limit = 0;
+
+    friend bool operator==(const list_instruments_request&,
+                           const list_instruments_request&) = default;
+};
+
+/**
+ * @brief The instruments the caller can see, in a stable order.
+ *
+ * The order is by kind and then by name, so a client draws the list as it
+ * arrives. `total` is the size of the whole filtered set, so a screen pages
+ * without a second read.
+ */
+struct list_instruments_response {
+    std::vector<market_instrument> instruments;
+    std::int64_t total = 0;
+    bool truncated = false;
+    bool success = false;
+    std::string message;
+
+    friend bool operator==(const list_instruments_response&,
+                           const list_instruments_response&) = default;
+};
+
 struct crm_rate_item {
     std::string crm_name;
     std::string base_currency_code;
@@ -1852,6 +1965,104 @@ struct store_market_state_response {
 }
 
 /**
+ * @brief The members of instrument_axis, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_axis>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"field", &instrument_axis::field},
+        ::ores::utility::codec::field{"values", &instrument_axis::values},
+    };
+}
+
+/**
+ * @brief The members of instrument_source, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_source>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"provider_code", &instrument_source::provider_code},
+        ::ores::utility::codec::field{"provider_kind", &instrument_source::provider_kind},
+        ::ores::utility::codec::field{"series_id", &instrument_source::series_id},
+        ::ores::utility::codec::field{"as_of", &instrument_source::as_of},
+        ::ores::utility::codec::field{"age_seconds", &instrument_source::age_seconds},
+        ::ores::utility::codec::field{"stale", &instrument_source::stale},
+    };
+}
+
+/**
+ * @brief The members of market_instrument, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<market_instrument>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"instrument_id", &market_instrument::instrument_id},
+        ::ores::utility::codec::field{"kind", &market_instrument::kind},
+        ::ores::utility::codec::field{"name", &market_instrument::name},
+        ::ores::utility::codec::field{"currency", &market_instrument::currency},
+        ::ores::utility::codec::field{"base_currency", &market_instrument::base_currency},
+        ::ores::utility::codec::field{"quote_currency", &market_instrument::quote_currency},
+        ::ores::utility::codec::field{"instrument_type", &market_instrument::instrument_type},
+        ::ores::utility::codec::field{"quote_type", &market_instrument::quote_type},
+        ::ores::utility::codec::field{"forward_start", &market_instrument::forward_start},
+        ::ores::utility::codec::field{"axes", &market_instrument::axes},
+        ::ores::utility::codec::field{"sources", &market_instrument::sources},
+        ::ores::utility::codec::field{"party_id", &market_instrument::party_id},
+        ::ores::utility::codec::field{"stale", &market_instrument::stale},
+        ::ores::utility::codec::field{"as_of", &market_instrument::as_of},
+    };
+}
+
+/**
+ * @brief The members of list_instruments_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_instruments_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"party_id", &list_instruments_request::party_id},
+        ::ores::utility::codec::field{"query", &list_instruments_request::query},
+        ::ores::utility::codec::field{"kinds", &list_instruments_request::kinds},
+        ::ores::utility::codec::field{"provider_code", &list_instruments_request::provider_code},
+        ::ores::utility::codec::field{"offset", &list_instruments_request::offset},
+        ::ores::utility::codec::field{"limit", &list_instruments_request::limit},
+    };
+}
+
+/**
+ * @brief The members of list_instruments_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_instruments_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"instruments", &list_instruments_response::instruments},
+        ::ores::utility::codec::field{"total", &list_instruments_response::total},
+        ::ores::utility::codec::field{"truncated", &list_instruments_response::truncated},
+        ::ores::utility::codec::field{"success", &list_instruments_response::success},
+        ::ores::utility::codec::field{"message", &list_instruments_response::message},
+    };
+}
+
+/**
  * @brief The members of crm_rate_item, named as the wire names them and in the order
  * the type declares them.
  *
@@ -2874,6 +3085,60 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::list_series_identities_response& v);
     static ores::marketdata::messaging::list_series_identities_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::instrument_axis> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::instrument_axis& v);
+    static ores::marketdata::messaging::instrument_axis read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::instrument_axis& v);
+    static ores::marketdata::messaging::instrument_axis
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::instrument_source> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::instrument_source& v);
+    static ores::marketdata::messaging::instrument_source read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::instrument_source& v);
+    static ores::marketdata::messaging::instrument_source
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::market_instrument> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::market_instrument& v);
+    static ores::marketdata::messaging::market_instrument read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::market_instrument& v);
+    static ores::marketdata::messaging::market_instrument
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_instruments_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::list_instruments_request& v);
+    static ores::marketdata::messaging::list_instruments_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_instruments_request& v);
+    static ores::marketdata::messaging::list_instruments_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_instruments_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::list_instruments_response& v);
+    static ores::marketdata::messaging::list_instruments_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_instruments_response& v);
+    static ores::marketdata::messaging::list_instruments_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

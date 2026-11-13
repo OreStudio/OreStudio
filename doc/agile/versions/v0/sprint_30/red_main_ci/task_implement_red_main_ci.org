@@ -27,11 +27,11 @@ Windows link error, and the stale =ores.web.tests= fixture.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:30AA2C7B-8C84-4E7B-8910-1E3C21338C2C][Hotfix: Main CI is red on Windows, GCC, and tests]] |
-| Now          | All three fixes written and verified against the failing signal. |
-| Waiting on   | The next nightly run.                  |
-| Next         | PR.                                    |
+| Now          | Nothing. |
+| Waiting on   | The PR review, then the next nightly.  |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -107,4 +107,16 @@ via its "Verifies task" field.
 
 * Result
 
-All three fixes verified locally. CI confirmation waits on the next nightly.
+The three fixes are in and each was proven against the signal that failed:
+
+- GCC: the original file reproduces the exact CI error under
+  =g++ -fsyntax-only=; the fixed file exits 0 with the same flags.
+- Windows: the multiprecision type that =billing.cpp= now uses on clang-cl
+  gives identical results to =__int128= for both expressions, so the link fix
+  does not change the charge.
+- Web: the BFF suite goes from 1276 passed and 1 failed to 1277 passed, and
+  the package typechecks.
+
+The local check gate was not run: the fixes are three small edits and the
+gate's heavy half would recreate the development database. CI is the first
+full build of these changes.

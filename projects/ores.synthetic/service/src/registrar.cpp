@@ -164,6 +164,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // edit here.
     for (const auto* k : registry.all()) {
         const std::string subject = k->simulate_subject;
+        // A kind with no simulator states no subject. Subscribing to one would
+        // build a subject whose last token is empty, which the client refuses
+        // and which aborts registration before the service can announce ready.
+        if (subject.empty())
+            continue;
         const std::string kind = k->kind;
         subs.push_back(nats.queue_subscribe(
             subject, queue, [&nats, ctx, verifier, &registry, kind](ores::nats::message msg) {

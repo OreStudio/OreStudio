@@ -243,10 +243,12 @@ private:
 
 }
 
-TEST_CASE("make_default_feed_factory registers both kinds", "[feed_factory]") {
+TEST_CASE("make_default_feed_factory registers every kind", "[feed_factory]") {
     const auto factory = make_default_feed_factory();
-    CHECK(factory.kinds() == std::vector<std::string>{std::string(fx_spot_feed_kind),
-                                                      std::string(ir_curve_feed_kind)});
+    CHECK(factory.kinds() ==
+          std::vector<std::string>{std::string(fx_spot_feed_kind),
+                                   std::string(ores::synthetic::feed::fx_vol_surface_feed_kind),
+                                   std::string(ir_curve_feed_kind)});
 }
 
 TEST_CASE("factory::make constructs an fx_spot_feed from its persisted config", "[feed_factory]") {

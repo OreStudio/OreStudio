@@ -710,28 +710,45 @@ export interface ComputeCurveResponse {
  * @brief Request to bootstrap and publish every IR curve the system tenant holds
  * a bootstrap config for -- the sweep a scheduler job fires on its cadence.
  *
- * Each curve goes through the same compute/publish pair a person's publish
- * takes, so each publish supersedes the previous one. A curve whose compute or
- * publish fails keeps its previous publish, and the response names it.
+ * The curves are visited in the order their declared inputs allow: a curve that
+ * discounts off another is visited after it, so one firing can build a funding
+ * curve and the projections that read it. Each curve goes through the same
+ * compute/publish pair a person's publish takes, so each publish supersedes the
+ * previous one. A curve that cannot build keeps its previous publish, and the
+ * response names it and says whether it was deferred or failed.
  */
 export interface PublishDueCurvesRequest {}
 
 /**
  * @brief What the sweep did for one curve: the curve's name, its as-of, how
- * long it took, and whether it published or why it did not.
+ * long it took, and what became of it.
  */
 export interface CurveRepublishOutcome {
     bootstrap_config_id: string;
     name: string;
     as_of: string;
     duration_ms: number;
-    published: boolean;
+    /**
+     * @brief What became of the curve: published, deferred, failed, refused or
+     * raised.
+     *
+     * Published moved the curve's set. Deferred means the build did not run because
+     * an input the curve declares is not there yet, so the curve keeps the set it
+     * published before and the next firing tries again. Failed means the build ran
+     * and broke. Refused is the gate's no. Raised means the curve's publish waits on
+     * a decision.
+     */
+    status: string;
     message: string;
 }
 
 /**
- * @brief What one firing did: whether every curve it visited published, and
- * one outcome per curve with its name, as-of, duration and result.
+ * @brief What one firing did: whether nothing it visited failed, a line for a
+ * person carrying the counts, and one outcome per curve with its name, as-of,
+ * duration and result.
+ *
+ * A deferred curve does not make the firing a failure: it is a curve whose
+ * inputs have not arrived, and the next firing tries it again.
  */
 export interface PublishDueCurvesResponse {
     success: boolean;

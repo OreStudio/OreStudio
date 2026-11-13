@@ -67,7 +67,7 @@ TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build",
         return one.bootstrap_config_id == boost::uuids::to_string(f.config_id);
     });
     REQUIRE(first != resp.curves.end());
-    CHECK(first->published);
+    CHECK(first->status == "published");
     CHECK(first->duration_ms >= 0);
     CHECK(f.output_point_count() == 2);
 
@@ -75,8 +75,65 @@ TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build",
         return one.bootstrap_config_id != boost::uuids::to_string(f.config_id);
     });
     REQUIRE(second != resp.curves.end());
-    CHECK_FALSE(second->published);
+    CHECK(second->status == "failed");
     CHECK_FALSE(second->message.empty());
+}
+
+TEST_CASE("one_firing_builds_the_funding_curve_and_the_projection_that_reads_it",
+          curve_republish_tags) {
+    curve_fixture f;
+    zero_approval_kind zeroed(f.h);
+    const auto maker = seed_person(f.h);
+    // The projection discounts off the fixture's funding curve, so the plan must
+    // visit the funding curve first: its set has to be live before the projection
+    // can read it, and nothing but the order makes that true.
+    const auto projection_id = f.seed_projection_curve();
+
+    const auto ctx =
+        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
+    const auto resp = publish_due_curves_handler::publish_all(ctx);
+
+    REQUIRE(resp.success);
+    REQUIRE(resp.curves.size() == 2);
+    CHECK(resp.message.find("published 2 of 2") != std::string::npos);
+
+    CHECK(resp.curves[0].bootstrap_config_id == boost::uuids::to_string(f.config_id));
+    CHECK(resp.curves[0].status == "published");
+    CHECK(resp.curves[1].bootstrap_config_id == boost::uuids::to_string(projection_id));
+    CHECK(resp.curves[1].status == "published");
+}
+
+TEST_CASE("a_projection_whose_funding_curve_cannot_build_is_deferred_not_failed",
+          curve_republish_tags) {
+    curve_fixture f;
+    zero_approval_kind zeroed(f.h);
+    const auto maker = seed_person(f.h);
+    // A configuration with no pillars cannot build, and the projection reads it.
+    // Its input never publishes, so the projection is deferred rather than failed:
+    // an input that has not arrived is not a break.
+    const auto broken_id = f.seed_second_curve();
+    const auto projection_id = f.seed_projection_curve(broken_id);
+
+    const auto ctx =
+        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
+    const auto resp = publish_due_curves_handler::publish_all(ctx);
+
+    // The funding curve of the fixture still publishes, so the firing broke once.
+    CHECK_FALSE(resp.success);
+    REQUIRE(resp.curves.size() == 3);
+
+    const auto projection = std::ranges::find_if(resp.curves, [&](const auto& one) {
+        return one.bootstrap_config_id == boost::uuids::to_string(projection_id);
+    });
+    REQUIRE(projection != resp.curves.end());
+    CHECK(projection->status == "deferred");
+    CHECK(projection->message.find("published nothing yet") != std::string::npos);
+
+    const auto broken = std::ranges::find_if(resp.curves, [&](const auto& one) {
+        return one.bootstrap_config_id == boost::uuids::to_string(broken_id);
+    });
+    REQUIRE(broken != resp.curves.end());
+    CHECK(broken->status == "failed");
 }
 
 TEST_CASE("each_firing_supersedes_the_publish_the_one_before_it_made", curve_republish_tags) {

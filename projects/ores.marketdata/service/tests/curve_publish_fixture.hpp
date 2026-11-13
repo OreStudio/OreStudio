@@ -188,7 +188,7 @@ public:
         write_series(output_series_id, output_series_uri());
         write_config();
         write_pillar_series();
-        write_pillars();
+        write_pillars(config_id, pillar_series);
         write_market();
     }
 
@@ -209,6 +209,27 @@ public:
         const auto series_id = uuid_gen();
         write_series(series_id, output_series_uri("USD-SOFR-SECOND"));
         write_config(id, series_id);
+        return id;
+    }
+
+    /**
+     * @brief Seeds a projection curve that discounts off a funding curve.
+     *
+     * The projection walks the fixture's own ladder and reads its own quotes, so
+     * the funding curve's points cover every date the projection needs: one
+     * firing can build both, provided it visits the funding curve first.
+     *
+     * @param discounts_off The funding curve it reads; the fixture's own by
+     * default.
+     */
+    boost::uuids::uuid seed_projection_curve(
+        const std::optional<boost::uuids::uuid>& discounts_off = std::nullopt) {
+        const auto id = uuid_gen();
+        const auto series_id = uuid_gen();
+        write_series(series_id, output_series_uri("USD-LIBOR-3M-PROJECTION-" +
+                                                  boost::uuids::to_string(id).substr(0, 8)));
+        write_config(id, series_id, "PROJECTION", discounts_off.value_or(config_id));
+        write_pillars(id, pillar_series);
         return id;
     }
 
@@ -297,7 +318,10 @@ private:
         write_config(config_id, output_series_id);
     }
 
-    void write_config(const boost::uuids::uuid& id, const boost::uuids::uuid& series) {
+    void write_config(const boost::uuids::uuid& id,
+                      const boost::uuids::uuid& series,
+                      const std::string& role = "FUNDING",
+                      const std::optional<boost::uuids::uuid>& discounts_off = std::nullopt) {
         ores::refdata::domain::ir_curve_bootstrap_config c;
         c.id = id;
         c.version = 0;
@@ -308,8 +332,8 @@ private:
         c.name = "USD-SOFR-" + boost::uuids::to_string(id).substr(0, 8);
         c.currency_code = "USD";
         c.index_tenor = "1D";
-        c.curve_family_role = "FUNDING";
-        c.discount_curve_config_id = std::nullopt;
+        c.curve_family_role = role;
+        c.discount_curve_config_id = discounts_off;
         c.interpolation_method = "FLAT_FORWARD_THEN_LOG_LINEAR";
         c.day_count_convention = "A360";
         c.tenor_convention_code = "RATES_SPOT_FORWARD";
@@ -375,7 +399,8 @@ private:
         }
     }
 
-    void write_pillars() {
+    void write_pillars(const boost::uuids::uuid& config,
+                       const std::map<std::string, boost::uuids::uuid>& series_by_end_tenor) {
         ores::refdata::repository::ir_curve_bootstrap_pillar_repository repo;
         int seq = 0;
         for (const auto& [start, end, role] : pillar_ladder()) {
@@ -384,12 +409,12 @@ private:
             p.version = 0;
             p.tenant_id = h.tenant_id();
             p.party_id = party_id;
-            p.bootstrap_config_id = config_id;
+            p.bootstrap_config_id = config;
             p.sequence_index = seq++;
             p.start_tenor_code = start;
             p.end_tenor_code = end;
             p.curve_role_code = role;
-            p.market_series_id = pillar_series.at(end);
+            p.market_series_id = series_by_end_tenor.at(end);
             p.modified_by = h.db_user();
             p.performed_by = h.db_user();
             p.change_reason_code = "system.test";

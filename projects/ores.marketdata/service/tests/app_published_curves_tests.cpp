@@ -74,7 +74,9 @@ published_set publish_one(curve_fixture& f,
     const auto verdict = verdict_on_publish(maker.ctx, id, subject);
     REQUIRE(verdict.approved);
     REQUIRE(verdict.record.has_value());
-    curve_republish_service::republish(*f.party, subject.bootstrap_config_id, subject.as_of);
+    const auto built =
+        curve_republish_service::republish(*f.party, subject.bootstrap_config_id, subject.as_of);
+    REQUIRE(built.has_value());
     const auto published = record_publication(*f.party, *verdict.record, maker.account.username);
     return {.publish_id = published.id, .request_id = raised.id};
 }

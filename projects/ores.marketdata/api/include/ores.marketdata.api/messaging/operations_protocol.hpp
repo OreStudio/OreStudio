@@ -959,9 +959,12 @@ struct compute_curve_response {
  * @brief Request to bootstrap and publish every IR curve the system tenant holds
  * a bootstrap config for -- the sweep a scheduler job fires on its cadence.
  *
- * Each curve goes through the same compute/publish pair a person's publish
- * takes, so each publish supersedes the previous one. A curve whose compute or
- * publish fails keeps its previous publish, and the response names it.
+ * The curves are visited in the order their declared inputs allow: a curve that
+ * discounts off another is visited after it, so one firing can build a funding
+ * curve and the projections that read it. Each curve goes through the same
+ * compute/publish pair a person's publish takes, so each publish supersedes the
+ * previous one. A curve that cannot build keeps its previous publish, and the
+ * response names it and says whether it was deferred or failed.
  */
 struct publish_due_curves_request {
     using response_type = struct publish_due_curves_response;
@@ -980,14 +983,24 @@ struct publish_due_curves_request {
 
 /**
  * @brief What the sweep did for one curve: the curve's name, its as-of, how
- * long it took, and whether it published or why it did not.
+ * long it took, and what became of it.
  */
 struct curve_republish_outcome {
     std::string bootstrap_config_id;
     std::string name;
     std::chrono::system_clock::time_point as_of;
     std::int64_t duration_ms = 0;
-    bool published = false;
+    /**
+     * @brief What became of the curve: published, deferred, failed, refused or
+     * raised.
+     *
+     * Published moved the curve's set. Deferred means the build did not run because
+     * an input the curve declares is not there yet, so the curve keeps the set it
+     * published before and the next firing tries again. Failed means the build ran
+     * and broke. Refused is the gate's no. Raised means the curve's publish waits on
+     * a decision.
+     */
+    std::string status;
     std::string message;
 
     friend bool operator==(const curve_republish_outcome&,
@@ -995,8 +1008,12 @@ struct curve_republish_outcome {
 };
 
 /**
- * @brief What one firing did: whether every curve it visited published, and
- * one outcome per curve with its name, as-of, duration and result.
+ * @brief What one firing did: whether nothing it visited failed, a line for a
+ * person carrying the counts, and one outcome per curve with its name, as-of,
+ * duration and result.
+ *
+ * A deferred curve does not make the firing a failure: it is a curve whose
+ * inputs have not arrived, and the next firing tries it again.
  */
 struct publish_due_curves_response {
     bool success = false;
@@ -2829,7 +2846,7 @@ struct store_market_state_response {
         ::ores::utility::codec::field{"name", &curve_republish_outcome::name},
         ::ores::utility::codec::field{"as_of", &curve_republish_outcome::as_of},
         ::ores::utility::codec::field{"duration_ms", &curve_republish_outcome::duration_ms},
-        ::ores::utility::codec::field{"published", &curve_republish_outcome::published},
+        ::ores::utility::codec::field{"status", &curve_republish_outcome::status},
         ::ores::utility::codec::field{"message", &curve_republish_outcome::message},
     };
 }

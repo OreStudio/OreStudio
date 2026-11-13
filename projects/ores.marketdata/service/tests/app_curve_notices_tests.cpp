@@ -168,8 +168,9 @@ void apply(const ores::database::context& publishing,
     const auto subject = f.subject();
     const auto verdict = verdict_on_publish(publishing, request_id, subject);
     REQUIRE(verdict.approved);
-    ores::marketdata::service::app::curve_republish_service::republish(
+    const auto built = ores::marketdata::service::app::curve_republish_service::republish(
         *f.party, subject.bootstrap_config_id, subject.as_of);
+    REQUIRE(built.has_value());
     // The record's own write raises the notice, once, so this is the whole of
     // what a publish tells.
     published = record_publication(as_the_publisher, *verdict.record, as_the_publisher.actor());

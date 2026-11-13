@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch: feature/make-the-ice-and-tradeweb-feeds-tick
 #+pr:
-#+blocked_on: A provisioned environment: the synthetic service times out at start without stored public fixings, so the adapters go stale before their ticks flow.
-#+blocked_since: 2026-11-13
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-11-13
 #+updated: 2026-11-13
 #+environment: clever_dijkstra
@@ -26,11 +26,11 @@ The ICE and Tradeweb synthetic feeds publish quotes that reach the market data s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                                 |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -78,8 +78,9 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | IBOR quote series at any tenor but 1D, before | 0 | =select count(*) from ores_marketdata_market_series_identity_tbl where instrument_type='ir_swap' and tenor is distinct from '1D'= | fe592ba578 |
-| IBOR quote series after the notation and the provisioning run | 30 (ICE 15, Tradeweb 15) | =select provider_code, count(*) from ores_marketdata_market_series_tbl where provider_code in ('ice','tradeweb')= | 21a0a4f1da |
-| Observations stored on any synthetic provider's series | 0 | =... left join observations ... where provider_code in ('ice','tradeweb','bloomberg','demo','lseg')= | 21a0a4f1da |
+| IBOR quote series after the notation and the provisioning run | 30 (ICE 15, Tradeweb 15) | =select provider_code, count(*) from ores_marketdata_market_series_tbl where provider_code in ('ice','tradeweb')= | 5776adee92 |
+| Ticks stored for =ice-a= / =tradeweb-a= | 259 / 245 | =select f.name, count(*) from ores_marketdata_ticks_tbl t join ores_marketdata_feeds_tbl f on f.id=t.feed_id group by 1= | 5776adee92 |
+| Ingest of =ice-a= at the last status line | 210 ticks, last 0 s ago | marketdata log, =INGEST STATUS= | 5776adee92 |
 | ICE / Tradeweb vendor instruments with an id | 35 / 35 | =tools/vendor_catalogue --write=, then the seed's own guard | 21a0a4f1da |
 | ICE / Tradeweb vendor instruments without an id | 0 / 0 | same | 21a0a4f1da |
 | Marketdata core suite | 1/1, 633 s | =./compass.sh test run -- -R 'ores\.marketdata\.core'= | 21a0a4f1da |
@@ -92,13 +93,13 @@ task and name that file in the Command column.
   with the identities the design names, for example
   =oresmd://ir/CHF?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M=; before this
   task there were none.
-- What does not happen is the tick landing: observations on the series of every synthetic
-  provider are 0 (bloomberg, demo, lseg, ice, tradeweb alike), while the public providers store
-  tens of thousands. The provisioning run agrees: it published 4 of 20 curves from public
-  fixings and logged "no observed rate for pillar '3M'" for the rest, then failed at
-  =generate_trades= because the synthetic service was no longer handling its subjects.
-- That is one environment fault in synthetic tick delivery, not a difference between providers,
-  and it is the reason the third acceptance bullet stays open.
+- The tick landing was the open item, and the merged provisioning fixes closed it. After
+  rebasing onto main and rerunning the provisioning, the tick store holds =ice-a= 259,
+  =tradeweb-a= 245, =bloomberg-a= 8184, =demo-a= 3746, =lseg-a= 2190 and =derived-fx-vol= 350;
+  the =ice-a= ingest reports 210 ticks with the last 0 s ago.
+- The provisioning run still fails later, at =publish_party_surfaces=, because the surface
+  quotes it carries are dated a day before the spot date. That is a separate fault and does not
+  touch these feeds.
 - That is environment provisioning, not this change: the same timeout affects Bloomberg's feeds.
   With a provisioned database the live check is one observation query.
 
@@ -141,3 +142,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped and verified live. ICE and Tradeweb now have a notation, a feed, a route and a
+subscription, and their quotes reach the store.
+
+- =ice_notation= and =tradeweb_notation= write an interest rate pillar under the schemes
+  =ice_ticker= and =tradeweb_ticker=, with the field =BID=. The id carries the curve's index
+  tenor, because one currency may quote two curves of a family that differ only in it.
+- The contract gained =ir_curve_pillar::index_tenor= and
+  =provider_notation::names_index_tenor()=; only a notation that names the tenor is given one,
+  and the others refuse a non-empty one. Without it, ICE USD 1M and 6M collapsed onto the same
+  ids and one mapping pointed at two items.
+- The catalogue seeds =ice-a= and =tradeweb-a= with rate cards, the system party's
+  subscriptions and =ir= routes. The vendor instrument seed is regenerated: 35 ids for each
+  provider, none without.
+- The provider pages now state what the simulator writes and keep it apart from the live
+  providers' own schemes.
+
+Measurements: 30 IBOR quote series where there were none; ticks stored for both feeds; the
+marketdata core suite passes. The live path was proven by the provisioning run after the
+synthetic start fix landed.

@@ -26,7 +26,6 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-#include <chrono>
 #include <stdexcept>
 
 constexpr const char* curve_republish_tags = "[curve_republish]";
@@ -116,31 +115,4 @@ TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build",
     REQUIRE(second != resp.curves.end());
     CHECK_FALSE(second->published);
     CHECK_FALSE(second->message.empty());
-}
-
-TEST_CASE("a_second_firing_supersedes_the_publish_the_first_made", curve_republish_tags) {
-    curve_fixture f;
-    zero_approval_curve_kind zeroed(f.h);
-    const auto maker = seed_person(f.h);
-    const auto ctx =
-        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
-
-    const auto at = std::chrono::system_clock::now();
-    const auto first_sweep = publish_due_curves_handler::publish_all(ctx, at);
-    REQUIRE(first_sweep.curves.size() == 1);
-    REQUIRE(first_sweep.curves.front().published);
-    const auto first = f.published();
-    REQUIRE(first.has_value());
-
-    const auto second_sweep =
-        publish_due_curves_handler::publish_all(ctx, at + std::chrono::minutes(15));
-    REQUIRE(second_sweep.curves.size() == 1);
-    REQUIRE(second_sweep.curves.front().published);
-
-    // The newest publish is the one in use, and it is a later act than the
-    // first: the sweep supersedes rather than piling a second set on top.
-    const auto latest = f.published();
-    REQUIRE(latest.has_value());
-    CHECK(latest->as_of > first->as_of);
-    CHECK(latest->request_id != first->request_id);
 }

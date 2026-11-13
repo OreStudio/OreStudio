@@ -26,11 +26,11 @@ The gateway has no part for the market data area. Add the part with the adapter 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The part answers every resource route of the area: the adapters read, the six subscription and route reads and writes, the public rates' fixings and three terms writes, the thirteen curve routes, the series observations and the four codec routes. All twenty-nine are paired in the inventory. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the pull request and answer its review. |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -151,6 +151,8 @@ Twenty-nine routes: twenty-five in the area and the four codec routes.
 The six routes still unpaired in the area are the composed views their own
 tasks serve: the catalogue, the connectivity list, the fixing series, the
 public rates view and its coverage and its file.
+
+Merged as [#4679](https://github.com/OreStudio/OreStudio/pull/4679).
 
 **Deviations, each recorded where it was decided.**
 

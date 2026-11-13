@@ -693,24 +693,35 @@ feed_kind make_fx_vol_surface_kind() {
                             .skip_reason = "Feed config has no Contributor rows: " +
                                            boost::uuids::to_string(cfg.id)};
 
+                /*
+                 * A pair's forward needs both currencies' curves, so a surface whose pair the
+                 * run carries no curve feed for has nothing to be struck against. That is a
+                 * configuration error and it is refused here, naming the currency, rather than
+                 * discovered a tick at a time as a surface that publishes nothing.
+                 */
+                {
+                    std::set<std::string> quoted;
+                    repo::ir_curve_generation_config_repository curve_repo;
+                    for (const auto& curve : curve_repo.read_latest(ctx))
+                        quoted.insert(curve.currency_code);
+                    for (const auto& ccy : {cfg.base_currency_code, cfg.quote_currency_code})
+                        if (!quoted.contains(ccy))
+                            return {.input = std::nullopt,
+                                    .skip_reason = "No curve feed quotes " + ccy +
+                                                   ", so the surface " + cfg.base_currency_code +
+                                                   "/" + cfg.quote_currency_code +
+                                                   " has no forward to be struck against"};
+                }
+
                 fx_vol_surface_feed_build_input in;
                 in.config = cfg;
                 in.expiries = std::move(expiries);
                 in.contributors = std::move(contributors);
                 /*
-                 * Each expiry is quoted against its own market, because each is discounted to
-                 * its own value date. The spot is left at one: a smile is read at a moneyness,
-                 * so a common scale of the spot cancels and only the ratio of the two discount
-                 * factors moves a quoted volatility. That ratio is still one here, so the
-                 * forward is flat and the quotes are the pair's vol surface as if it had no
-                 * rates. Reading the two discount factors from the pair's published curves is
-                 * what this row is waiting on.
+                 * The market is not a fact of the row: the feed reads its pair's spot and its
+                 * two currencies' curves from the run's values on every tick, and solves each
+                 * expiry against the forward they imply.
                  */
-                for (const auto& expiry : in.expiries)
-                    in.markets.push_back({.expiry_id = expiry.tenor,
-                                          .market = {.spot = 1.0,
-                                                     .domestic_discount = 1.0,
-                                                     .foreign_discount = 1.0}});
                 /*
                  * The pair's own convention is a refdata row, and the mapping from it lives in
                  * the market data service. Until the feed is handed that mapping, it quotes

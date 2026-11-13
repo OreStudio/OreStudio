@@ -477,25 +477,25 @@ struct config_fixture {
         start_sub = nats.queue_subscribe(
             test_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.market_);
                 h.start(std::move(msg));
             });
         stop_sub = nats.queue_subscribe(
             test_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.market_);
                 h.stop(std::move(msg));
             });
         list_sub = nats.queue_subscribe(
             test_list_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.market_);
                 h.list(std::move(msg));
             });
         calibrate_sub = nats.queue_subscribe(
             test_calibrate_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
-                    nats, auth_nats, fleet, db.context(), verifier, registry, run.scheduler);
+                    nats, auth_nats, fleet, db.context(), verifier, registry, run.market_);
                 h.calibrate(std::move(msg));
             });
     }

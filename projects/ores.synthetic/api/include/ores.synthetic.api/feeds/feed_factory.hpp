@@ -71,8 +71,9 @@ struct feed_build_context final {
     /// The clock every feed asks for the date it starts from, so no two feeds start from two days.
     std::shared_ptr<const ores::marketdata::domain::market_clock> clock =
         std::make_shared<ores::marketdata::domain::system_market_clock>();
-    /// The run's one loop: it owns the market and decides when every feed ticks.
-    ores::analytics::quant::service::tick_scheduler& scheduler;
+    /// The run's one market: its loop decides when every feed ticks, and its values are
+    /// what the feeds publish for each other.
+    ores::analytics::quant::service::run_market& market;
 };
 
 /**

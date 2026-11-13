@@ -54,7 +54,6 @@ set(files
     "messaging/yield_curve_process_parameter_definition_event_registrar.cpp"
     "messaging/yield_curve_process_type_event_registrar.cpp"
     "registrar.cpp"
-    "run_market.cpp"
     "simulator_adapter.cpp"
 )
 

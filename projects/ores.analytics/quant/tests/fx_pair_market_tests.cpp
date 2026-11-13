@@ -144,3 +144,55 @@ TEST_CASE("a set that cannot answer a day says why", "[fx_pair_market]") {
         CHECK(market.error().find("spot") != std::string::npos);
     }
 }
+
+TEST_CASE("two currencies' curves resolve a pair's market without sharing a grid",
+          "[fx_pair_market]") {
+    // The curves a run holds are per currency, so the two sides need not quote the same dates.
+    const std::vector<fx_curve_point> usd{{.date = day_after_spot(0), .discount_factor = 1.0},
+                                          {.date = day_after_spot(90), .discount_factor = 0.9926},
+                                          {.date = day_after_spot(365), .discount_factor = 0.9704}};
+    const std::vector<fx_curve_point> eur{{.date = day_after_spot(0), .discount_factor = 1.0},
+                                          {.date = day_after_spot(180), .discount_factor = 0.9951}};
+
+    // A day only one side quotes is interpolated on the other side, by the same rule.
+    const auto market = pair_market_at(1.0842, market_spot_date, eur, usd, day_after_spot(90), "");
+    REQUIRE(market);
+    // Half way in days between the spot date at one and the only point beyond it.
+    CHECK(market->foreign_discount ==
+          Catch::Approx(std::exp(0.5 * std::log(0.9951))).epsilon(1e-12));
+    CHECK(market->domestic_discount == Catch::Approx(0.9926).epsilon(1e-12));
+    CHECK(market->spot == 1.0842);
+
+    // A day past the end of either side is refused, naming the side.
+    const auto late = pair_market_at(1.0842, market_spot_date, eur, usd, day_after_spot(300), "");
+    REQUIRE_FALSE(late);
+    CHECK(late.error().find("base") != std::string::npos);
+
+    // Each of the sides' own refusals reaches the caller.
+    const auto empty_base =
+        pair_market_at(1.0842, market_spot_date, {}, usd, day_after_spot(90), "");
+    REQUIRE_FALSE(empty_base);
+    CHECK(empty_base.error().find("empty") != std::string::npos);
+
+    auto unsorted = usd;
+    std::swap(unsorted[1], unsorted[2]);
+    const auto jumbled =
+        pair_market_at(1.0842, market_spot_date, unsorted, eur, day_after_spot(90), "");
+    REQUIRE_FALSE(jumbled);
+    CHECK(jumbled.error().find("date order") != std::string::npos);
+
+    auto negative = usd;
+    negative[1].discount_factor = -0.5;
+    const auto broken =
+        pair_market_at(1.0842, market_spot_date, negative, eur, day_after_spot(90), "");
+    REQUIRE_FALSE(broken);
+    CHECK(broken.error().find("not above zero") != std::string::npos);
+
+    // Sorted, but starting before the spot date: the curve is refused for that, not for order.
+    auto early = usd;
+    early.insert(early.begin(), {.date = day_after_spot(-5), .discount_factor = 1.0});
+    const auto before_spot =
+        pair_market_at(1.0842, market_spot_date, early, eur, day_after_spot(90), "");
+    REQUIRE_FALSE(before_spot);
+    CHECK(before_spot.error().find("before the spot date") != std::string::npos);
+}

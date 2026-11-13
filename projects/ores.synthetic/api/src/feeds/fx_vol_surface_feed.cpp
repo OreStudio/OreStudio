@@ -18,15 +18,19 @@
  *
  */
 #include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
+#include "ores.analytics.quant/math/fx_pair_market.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
+#include "ores.analytics.quant/service/calendar_arithmetic.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include <algorithm>
 #include <charconv>
 #include <chrono>
 #include <format>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -43,7 +47,7 @@ using ores::analytics::quant::service::fx_vol_surface_dynamics;
 using ores::analytics::quant::service::ssvi_expiry_fit;
 using ores::analytics::quant::service::ssvi_parameters;
 using ores::analytics::quant::service::tick_context;
-using ores::analytics::quant::service::tick_scheduler;
+using ores::analytics::quant::service::run_market;
 
 namespace {
 
@@ -157,23 +161,7 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::u
     const auto size = static_cast<Eigen::Index>(ordered.size() + 3);
     dynamics.correlation = Eigen::MatrixXd::Identity(size, size);
 
-    std::vector<fx_vol_slice_market> markets;
-    markets.reserve(ordered.size());
-    for (const auto& expiry : start.expiries) {
-        const auto known =
-            std::ranges::find(input.markets, expiry.expiry_id, &fx_vol_expiry_market::expiry_id);
-        if (known == input.markets.end())
-            return std::unexpected(std::format(
-                "The expiry '{}' has no market to be quoted against.", expiry.expiry_id));
-        markets.push_back({.expiry_id = expiry.expiry_id,
-                           .market = known->market,
-                           .convention = input.convention});
-    }
-    for (const auto& given : input.markets)
-        if (std::ranges::find(start.expiries, given.expiry_id, &ssvi_expiry_fit::expiry_id) ==
-            start.expiries.end())
-            return std::unexpected(std::format(
-                "The market of '{}' names no expiry the surface is quoted in.", given.expiry_id));
+    // The convention is the pair's and does not move; the market arrives with each step.
 
     std::vector<fx_vol_contributor_spec> contributors;
     contributors.reserve(input.contributors.size());
@@ -197,9 +185,31 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::u
     return fx_vol_surface_emitter::make(start,
                                         std::move(dynamics),
                                         1.0 / days_in_a_year,
-                                        std::move(markets),
+                                        input.convention,
                                         input.deltas,
                                         std::move(contributors));
+}
+
+std::string fx_pair_member_code(std::string_view base, std::string_view quote) {
+    return std::string(base) + "/" + std::string(quote);
+}
+
+std::expected<void, std::string>
+fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
+                      std::span<const ores::analytics::quant::domain::date_period> periods,
+                      std::vector<ores::analytics::quant::math::fx_market>& out) {
+    out.clear();
+    out.reserve(periods.size());
+    for (const auto& period : periods) {
+        const auto value_date = ores::analytics::quant::service::calendar_arithmetic::add_period(
+            inputs.spot_date, period);
+        auto resolved = ores::analytics::quant::math::pair_market_at(
+            inputs.spot.spot, inputs.spot_date, inputs.base, inputs.quote, value_date, {});
+        if (!resolved)
+            return std::unexpected(resolved.error());
+        out.push_back(*resolved);
+    }
+    return {};
 }
 
 fx_vol_surface_feed::fx_vol_surface_feed(
@@ -208,7 +218,7 @@ fx_vol_surface_feed::fx_vol_surface_feed(
     std::string nats_subject,
     const fx_vol_surface_feed_build_input& input,
     std::uint64_t run_seed,
-    tick_scheduler& scheduler,
+    run_market& market,
     double sensitivity,
     const ores::analytics::quant::domain::arrival_spec& arrival)
     : nats_(nats)
@@ -216,12 +226,46 @@ fx_vol_surface_feed::fx_vol_surface_feed(
     , nats_subject_(std::move(nats_subject))
     , emitter_(surface_or_throw(input, run_seed, source_name_))
     , arrival_(arrival)
-    , scheduler_(scheduler)
+    , market_(market)
     , sensitivity_(sensitivity) {
     ticks_per_second_ = static_cast<double>(input.config.ticks_per_hour) / 3600.0;
 
     const auto& base = input.config.base_currency_code;
     const auto& quote = input.config.quote_currency_code;
+    base_code_ = base;
+    quote_code_ = quote;
+    pair_label_ = fx_pair_member_code(base, quote);
+    // The three values this surface reads, resolved once, off the loop.
+    {
+        auto& values = market_.values();
+        base_curve_id_ =
+            values.member_of(ores::analytics::quant::domain::market_member_kind::curve, base);
+        quote_curve_id_ =
+            values.member_of(ores::analytics::quant::domain::market_member_kind::curve, quote);
+        spot_id_ =
+            values.member_of(ores::analytics::quant::domain::market_member_kind::spot, pair_label_);
+    }
+    // The expiry each market is solved at, in the order the emitter quotes them: the emitter
+    // sorted the expiries, so the periods are taken from its order rather than sorted again,
+    // which two equal-year tenors could order differently.
+    {
+        std::map<std::string, ores::analytics::quant::domain::date_period> periods;
+        for (const auto& expiry : input.expiries) {
+            const auto period = ores::refdata::mapping::parse_tenor_text(expiry.tenor);
+            if (!period)
+                throw std::invalid_argument("fx_vol_surface_feed: the expiry '" + expiry.tenor +
+                                            "' does not read as a tenor");
+            periods[expiry.tenor] = *period;
+        }
+        for (const auto& expiry : emitter_.surface().expiries) {
+            const auto found = periods.find(expiry.expiry_id);
+            if (found == periods.end())
+                throw std::invalid_argument("fx_vol_surface_feed: the emitter quotes an expiry '" +
+                                            expiry.expiry_id + "' the row does not carry");
+            expiry_periods_.push_back(found->second);
+        }
+        markets_.reserve(expiry_periods_.size());
+    }
     // The points repeat for every contributor, so one contributor's block names them all.
     for (std::size_t i = 0; i < emitter_.points_per_contributor(); ++i) {
         const auto& point = emitter_.points()[i];
@@ -238,7 +282,7 @@ fx_vol_surface_feed::fx_vol_surface_feed(
 void fx_vol_surface_feed::start() {
     if (handle_)
         return;
-    handle_ = scheduler_.add(
+    handle_ = market_.loop().add(
         {.series = series_key(source_name_),
          .arrival = arrival_,
          .sensitivity = sensitivity_,
@@ -255,7 +299,26 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
     const auto wanted = static_cast<std::size_t>(emitter_.surface().expiries.size() + 2);
     if (context.drivers.size() != wanted)
         return std::format("no market: {} of {} driver(s)", context.drivers.size(), wanted);
-    const auto points = emitter_.step(context.drivers);
+    // The market of each expiry, from the three values this surface reads: the pair's spot
+    // and its two currencies' curves. A curve moves when its feed ticks, so a strike moves
+    // with it and no restart is needed.
+    const auto base = market_.values().view(*base_curve_id_);
+    if (!base.published)
+        return std::format("no market: curve:{}", base_code_);
+    const auto quote = market_.values().view(*quote_curve_id_);
+    if (!quote.published)
+        return std::format("no market: curve:{}", quote_code_);
+    const auto level = market_.values().view(*spot_id_);
+    if (!level.published)
+        return std::format("no market: spot:{}", pair_label_);
+
+    const fx_vol_market_inputs inputs{.spot = fx_market{.spot = level.spot},
+                                      .base = base.points,
+                                      .quote = quote.points,
+                                      .spot_date = base.spot_date};
+    if (const auto built = fx_vol_expiry_markets(inputs, expiry_periods_, markets_); !built)
+        return "no market: " + built.error();
+    const auto points = emitter_.step(context.drivers, markets_);
     const auto& codec = ores::nats::default_wire_codec();
     const auto now = context.observed_at;
     std::size_t sent = 0;
@@ -281,7 +344,7 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
 
 void fx_vol_surface_feed::stop() {
     if (handle_) {
-        scheduler_.remove(*handle_);
+        market_.loop().remove(*handle_);
         handle_.reset();
     }
 }

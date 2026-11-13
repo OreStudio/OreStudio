@@ -49,13 +49,9 @@ std::expected<fx_vol_surface_emitter, std::string>
 fx_vol_surface_emitter::make(ssvi_parameters start,
                              ores::analytics::quant::service::fx_vol_surface_dynamics dynamics,
                              double dt,
-                             std::vector<fx_vol_slice_market> markets,
+                             ores::analytics::quant::math::fx_quote_convention convention,
                              std::vector<double> deltas,
                              std::vector<fx_vol_contributor_spec> contributors) {
-    if (markets.size() != start.expiries.size())
-        return std::unexpected(std::format("The surface has {} expiry(ies) and {} quote market(s).",
-                                           start.expiries.size(),
-                                           markets.size()));
     for (const double delta : deltas)
         if (!(delta > 0.0 && delta <= atm_delta))
             return std::unexpected(std::format("The delta {} is not inside (0, 0.5].", delta));
@@ -78,7 +74,13 @@ fx_vol_surface_emitter::make(ssvi_parameters start,
         return std::unexpected(generator.error());
 
     fx_vol_surface_emitter emitter(std::move(*generator));
-    emitter.markets_ = std::move(markets);
+    // The slices are laid out once: the expiry and the convention are fixed, and a step only
+    // writes the market into them, so a tick copies no string.
+    emitter.convention_ = convention;
+    emitter.slices_.reserve(start.expiries.size());
+    for (const auto& expiry : start.expiries)
+        emitter.slices_.push_back(
+            {.expiry_id = expiry.expiry_id, .market = {}, .convention = convention});
     emitter.deltas_ = std::move(deltas);
     emitter.per_contributor_ = start.expiries.size() * (1 + 2 * emitter.deltas_.size());
     emitter.names_.reserve(contributors.size());
@@ -112,15 +114,26 @@ fx_vol_surface_emitter::make(ssvi_parameters start,
     return emitter;
 }
 
-std::span<const fx_vol_point_tick> fx_vol_surface_emitter::step(std::span<const double> drivers) {
+std::span<const fx_vol_point_tick>
+fx_vol_surface_emitter::step(std::span<const double> drivers,
+                             std::span<const ores::analytics::quant::math::fx_market> markets) {
     if (drivers.size() != generator_.factor_count())
         throw std::invalid_argument(std::format(
             "A step reads {} driver(s), not {}.", generator_.factor_count(), drivers.size()));
 
     // Nothing is left for spot's own shock to move: the market has already correlated
     // the drivers this step advances on.
+    // Checked before the surface advances: a step handed the wrong number of markets must not
+    // move the state it would then have to undo.
+    if (markets.size() != slices_.size())
+        throw std::invalid_argument(
+            std::format("A step reads {} market(s), not {}.", slices_.size(), markets.size()));
     const auto& surface = generator_.step(0.0, drivers);
-    const auto quotes = fx_vol_surface_quotes(surface, markets_, deltas_);
+    // The market of each expiry, as the caller hands it in: the feed resolved it from the run's
+    // values this tick, so a curve's move reaches the strikes without a restart.
+    for (std::size_t i = 0; i < markets.size(); ++i)
+        slices_[i].market = markets[i];
+    const auto quotes = fx_vol_surface_quotes(surface, slices_, deltas_);
     if (!quotes)
         throw std::invalid_argument(quotes.error());
 

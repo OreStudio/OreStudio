@@ -206,6 +206,8 @@ section depends on it.
 6. [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]]. The process interface and the seeding rule.
 7. [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]. The mathematics.
 8. [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]]. The dry-run operations.
+9. [[id:1F404EE8-215D-4E62-AB09-B2D34BE9C12F][The components of the market data generator]].
+   The implementation foundations: the types, how a run is put together, the dynamics of one tick, and the rules the shape holds.
 
 After this section a reader is competent at reading a generator config as a recipe
 and at saying which parts of a new asset class are config and which are code.

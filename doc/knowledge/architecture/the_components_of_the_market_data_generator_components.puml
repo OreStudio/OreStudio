@@ -1,0 +1,73 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51
+' Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+'
+@startuml
+skinparam componentStyle rectangle
+hide empty description
+
+package "Control plane" {
+    [feed_config_handler] as handlers
+    [feed_kind_registry] as registry
+    [feed_factory] as factory
+}
+
+package "Generators" {
+    [fx_spot_feed] as spot
+    [ir_curve_feed] as curve
+    [fx_vol_surface_feed] as surface
+}
+
+package "The run's market" {
+    [run_market] as market
+    [tick_scheduler] as loop
+    [latent_market] as noise
+    [market_board] as values
+}
+
+package "Processes and engines" {
+    [i_stochastic_process] as process
+    [i_yield_curve_process] as ycurve
+    [fx_vol_surface_generator] as engine
+}
+
+cloud "NATS" {
+    [tick subjects] as ticks
+    [tick.&lt;source&gt; display] as display
+}
+
+handlers --> registry : kinds and build inputs
+registry --> factory : kind, input, context
+factory --> spot
+factory --> curve
+factory --> surface
+spot --> market : loop(), values()
+curve --> market : loop(), values()
+surface --> market : loop(), values()
+market *-- loop
+market *-- noise
+market *-- values
+loop --> noise : driver hook, one call a tick
+spot --> process
+curve --> ycurve
+surface --> engine
+spot --> ticks
+curve --> ticks
+surface --> ticks
+surface --> display
+ticks --> [marketdata ingest]
+@enduml

@@ -79,17 +79,16 @@ ores::nats::service::nats_client& auth_nats() {
     return instance;
 }
 
-// A scheduler that is never run: a test steps it, or only builds feeds against it.
-ores::analytics::quant::service::tick_scheduler& idle_scheduler() {
+/// A run with no blocks: its loop and its values, which is all a factory test needs.
+ores::analytics::quant::service::run_market& idle_market() {
     static ores::analytics::quant::service::manual_run_clock clock(
         std::chrono::system_clock::time_point{});
-    static ores::analytics::quant::service::tick_scheduler instance(clock, {}, 42);
+    static ores::analytics::quant::service::run_market instance(clock, {}, 42);
     return instance;
 }
 
 feed_build_context make_build_context() {
-    return feed_build_context{
-        .nats = nats(), .auth_nats = auth_nats(), .scheduler = idle_scheduler()};
+    return feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .market = idle_market()};
 }
 
 gmm_component make_component(double mean, double stdev, double weight) {
@@ -517,9 +516,9 @@ TEST_CASE("two feeds register with one scheduler and leave it on stop", "[feed_f
     // stopping it takes the body out again.
     ores::analytics::quant::service::manual_run_clock clock(
         std::chrono::system_clock::time_point{});
-    ores::analytics::quant::service::tick_scheduler scheduler(clock, {}, 42);
+    ores::analytics::quant::service::run_market market(clock, {}, 42);
     const auto context =
-        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .scheduler = scheduler};
+        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .market = market};
 
     const auto factory = make_default_feed_factory();
     auto fx = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};
@@ -538,14 +537,14 @@ TEST_CASE("two feeds register with one scheduler and leave it on stop", "[feed_f
 
     first->start();
     second->start();
-    CHECK(scheduler.size() == 2);
+    CHECK(market.loop().size() == 2);
 
     // The scheduler owns the order, so a step is one tick of one series.
-    CHECK(scheduler.step().has_value());
+    CHECK(market.loop().step().has_value());
 
     first->stop();
     second->stop();
-    CHECK(scheduler.size() == 0);
+    CHECK(market.loop().size() == 0);
 }
 
 TEST_CASE("one clock drives every feed and each counts what it ticks", "[feed_factory]") {
@@ -553,9 +552,9 @@ TEST_CASE("one clock drives every feed and each counts what it ticks", "[feed_fa
     // no longer runs, so it read zero however many ticks the scheduler made.
     ores::analytics::quant::service::manual_run_clock clock(
         std::chrono::system_clock::time_point{});
-    ores::analytics::quant::service::tick_scheduler scheduler(clock, {}, 42);
+    ores::analytics::quant::service::run_market market(clock, {}, 42);
     const auto context =
-        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .scheduler = scheduler};
+        feed_build_context{.nats = nats(), .auth_nats = auth_nats(), .market = market};
 
     const auto factory = make_default_feed_factory();
     auto eur = fx_spot_feed_build_input{make_fx_config(), {make_component(0.0, 0.1, 1.0)}};
@@ -574,7 +573,7 @@ TEST_CASE("one clock drives every feed and each counts what it ticks", "[feed_fa
 
     constexpr int ticks = 20;
     for (int i = 0; i < ticks; ++i)
-        REQUIRE(scheduler.step().has_value());
+        REQUIRE(market.loop().step().has_value());
 
     // One series ticks per step, so the two counts add up to the steps taken.
     CHECK(first->publish_count() + second->publish_count() == ticks);
@@ -627,7 +626,7 @@ TEST_CASE("a_curve_started_from_a_fixing_records_it_and_takes_its_rate", "[feed_
     start.rate = -0.0005;
 
     const auto feed = ores::synthetic::feed::make_ir_curve_feed(
-        ctx.nats, f.config, f.entries, f.values, f.definitions, f.refctx, ctx.scheduler, {}, start);
+        ctx.nats, f.config, f.entries, f.values, f.definitions, f.refctx, ctx.market, {}, start);
 
     const auto recorded = feed->start_source();
     REQUIRE(recorded.has_value());
@@ -643,7 +642,7 @@ TEST_CASE("a_curve_with_no_fixing_records_the_fixed_rate_it_kept_and_why", "[fee
     start.source.note = "No series of the class policy publishes an overnight rate in CHF";
 
     const auto feed = ores::synthetic::feed::make_ir_curve_feed(
-        ctx.nats, f.config, f.entries, f.values, f.definitions, f.refctx, ctx.scheduler, {}, start);
+        ctx.nats, f.config, f.entries, f.values, f.definitions, f.refctx, ctx.market, {}, start);
 
     const auto recorded = feed->start_source();
     REQUIRE(recorded.has_value());
@@ -665,7 +664,7 @@ TEST_CASE("a_curve_the_policy_refuses_to_start_without_a_fixing_does_not_start",
                                                               f.values,
                                                               f.definitions,
                                                               f.refctx,
-                                                              ctx.scheduler,
+                                                              ctx.market,
                                                               {},
                                                               start),
                     std::runtime_error);

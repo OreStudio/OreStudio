@@ -20,6 +20,8 @@
 #ifndef ORES_SYNTHETIC_API_FEEDS_FX_VOL_SURFACE_FEED_HPP
 #define ORES_SYNTHETIC_API_FEEDS_FX_VOL_SURFACE_FEED_HPP
 
+#include "ores.analytics.quant/domain/date_convention.hpp"
+#include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.nats/service/client.hpp"
@@ -55,22 +57,6 @@ inline constexpr std::string_view fx_vol_surface_feed_kind = "fx_vol_surface";
 fx_vol_tenor_years(std::string_view tenor);
 
 /**
- * @brief The market one expiry is quoted against.
- *
- * A surface's expiries do not share a market: each one is discounted to its own value date,
- * so the pair's two discount factors differ from one expiry to the next. The spot does not
- * travel here because a smile is read at a moneyness -- the strike over the forward -- so a
- * common scale of the spot cancels through the delta solve and the quoted volatilities are
- * the same at any spot level. What the quotes do depend on is the ratio of the two
- * discount factors, which is the forward over the spot.
- */
-struct fx_vol_expiry_market final {
-    /// The expiry row's tenor, as the feed's expiry rows spell it.
-    std::string expiry_id;
-    ores::analytics::quant::math::fx_market market;
-};
-
-/**
  * @brief Everything a surface feed reads, gathered by the caller.
  *
  * The caller resolves the pair's market and convention because it alone holds the
@@ -85,12 +71,43 @@ struct fx_vol_surface_feed_build_input final {
     /// Their noise profiles, in the same order; empty means every one is the clean contributor.
     std::vector<ores::analytics::quant::service::fx_vol_noise_profile> contributor_profiles;
     /// The market of each expiry, one entry for each expiry row.
-    std::vector<fx_vol_expiry_market> markets;
-    /// The pair's quoting convention, shared by every expiry.
+    /// The pair's quoting convention, which every expiry of the surface is quoted in.
     ores::analytics::quant::math::fx_quote_convention convention;
     /// The deltas, besides ATM, to quote a risk reversal and a butterfly at.
     std::vector<double> deltas;
 };
+
+/// The three values a surface reads from the run: its pair's spot and its two currencies.
+struct fx_vol_market_inputs final {
+    ores::analytics::quant::math::fx_market spot{};
+    std::span<const ores::analytics::quant::math::fx_curve_point> base{};
+    std::span<const ores::analytics::quant::math::fx_curve_point> quote{};
+    std::chrono::year_month_day spot_date{};
+};
+
+/**
+ * @brief One market per expiry, from the run's values at one instant.
+ *
+ * The whole of a surface's tick that is worth testing without a wire: the value date is the
+ * spot date plus the expiry's period, and the pair's market there is resolved by the same quant
+ * block the calibration uses. Written into @p out so a tick allocates nothing at a stable size.
+ *
+ * @param periods One period per expiry, in the emitter's expiry order.
+ * @return Nothing, or why the run cannot price an expiry.
+ */
+[[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::expected<void, std::string>
+fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
+                      std::span<const ores::analytics::quant::domain::date_period> periods,
+                      std::vector<ores::analytics::quant::math::fx_market>& out);
+
+/**
+ * @brief The member code a pair's spot is published under, such as =EUR/USD=.
+ *
+ * The spot feed and the surface feed both name a pair, and they must name it the same way, so
+ * the string is built in one place.
+ */
+[[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::string fx_pair_member_code(std::string_view base,
+                                                                        std::string_view quote);
 
 /**
  * @brief The emitter a row describes, at its start.
@@ -126,7 +143,7 @@ public:
                         std::string nats_subject,
                         const fx_vol_surface_feed_build_input& input,
                         std::uint64_t run_seed,
-                        ores::analytics::quant::service::tick_scheduler& scheduler,
+                        ores::analytics::quant::service::run_market& market,
                         double sensitivity,
                         const ores::analytics::quant::domain::arrival_spec& arrival);
 
@@ -161,6 +178,18 @@ public:
     }
 
 private:
+    /// Where this surface's three inputs are on the run's values, resolved when it is built.
+    std::optional<ores::analytics::quant::domain::market_board::member_id> base_curve_id_;
+    std::optional<ores::analytics::quant::domain::market_board::member_id> quote_curve_id_;
+    std::optional<ores::analytics::quant::domain::market_board::member_id> spot_id_;
+    std::string base_code_;
+    std::string quote_code_;
+    std::string pair_label_;
+    /// One period per expiry, in the emitter's own expiry order.
+    std::vector<ores::analytics::quant::domain::date_period> expiry_periods_;
+    /// One market per expiry, rebuilt every tick into the same storage.
+    std::vector<ores::analytics::quant::math::fx_market> markets_;
+
     ores::nats::service::client& nats_;
     std::string source_name_;
     std::string nats_subject_;
@@ -168,7 +197,7 @@ private:
     std::vector<std::string> series_uris_;
     fx_vol_surface_emitter emitter_;
     ores::analytics::quant::domain::arrival_spec arrival_;
-    ores::analytics::quant::service::tick_scheduler& scheduler_;
+    ores::analytics::quant::service::run_market& market_;
     double ticks_per_second_ = 1.0;
     double sensitivity_ = 1.0;
     std::optional<std::size_t> handle_;

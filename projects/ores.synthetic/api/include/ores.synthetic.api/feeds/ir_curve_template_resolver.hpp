@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_API_FEEDS_IR_CURVE_TEMPLATE_RESOLVER_HPP
 
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
+#include "ores.analytics.quant/domain/market_board.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/instrument_code.hpp"
 #include "ores.refdata.api/domain/payment_frequency.hpp"
@@ -147,6 +148,21 @@ ORES_SYNTHETIC_API_EXPORT std::vector<ir_curve_resolved_entry>
 resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
         const ir_curve_refdata_context& ctx,
         const std::string& fixed_leg_payment_frequency_code);
+
+/**
+ * @brief The curve a run's board holds: the spot date at one, then the discount factor of
+ * each resolved entry's end date, as the process implies it now.
+ *
+ * Written into @p out rather than returned, because a feed calls this on every tick and
+ * @p out is the feed's own buffer: after the first tick of a curve of this size the call
+ * allocates nothing. Entries whose end date does not advance are left out, so the points
+ * answer in ascending date order, which is what a reader interpolates over.
+ */
+ORES_SYNTHETIC_API_EXPORT void
+append_curve_points(std::chrono::year_month_day spot_date,
+                    const std::vector<ir_curve_resolved_entry>& entries,
+                    const ores::analytics::quant::domain::i_yield_curve_process& process,
+                    std::vector<ores::analytics::quant::domain::curve_point>& out);
 
 /**
  * @brief Builds the refdata inputs resolve() needs by reading the tenor/instrument_code/

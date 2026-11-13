@@ -382,7 +382,7 @@ struct cascade_fixture {
             "ores.synthetic.service",
             [this](ores::nats::message msg) {
                 ores::synthetic::service::folder_feed_control_handler h(
-                    nats, fleet, auth_nats, db.context(), verifier, registry, run.scheduler);
+                    nats, fleet, auth_nats, db.context(), verifier, registry, run.market_);
                 h.start(std::move(msg));
             });
         stop_sub = nats.queue_subscribe(
@@ -390,19 +390,19 @@ struct cascade_fixture {
             "ores.synthetic.service",
             [this](ores::nats::message msg) {
                 ores::synthetic::service::folder_feed_control_handler h(
-                    nats, fleet, auth_nats, db.context(), verifier, registry, run.scheduler);
+                    nats, fleet, auth_nats, db.context(), verifier, registry, run.market_);
                 h.stop(std::move(msg));
             });
         select_start_sub = nats.queue_subscribe(
             test_select_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_selection_handler h(
-                    nats, fleet, auth_nats, db.context(), verifier, registry, run.scheduler);
+                    nats, fleet, auth_nats, db.context(), verifier, registry, run.market_);
                 h.start(std::move(msg));
             });
         select_stop_sub = nats.queue_subscribe(
             test_select_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_selection_handler h(
-                    nats, fleet, auth_nats, db.context(), verifier, registry, run.scheduler);
+                    nats, fleet, auth_nats, db.context(), verifier, registry, run.market_);
                 h.stop(std::move(msg));
             });
     }

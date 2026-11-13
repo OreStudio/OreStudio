@@ -30,7 +30,9 @@
  * A source name says which provider and which instance, and never the kind. The kind is in its
  * own column.
  *
- * Sources of the other providers are installed with their adapters.
+ * Sources of the other providers are installed with their adapters. The simulated sources
+ * bloomberg-a, lseg-a, ice-a and tradeweb-a are installed here, and the system party takes their
+ * interest rate quotes so the ingest stores the ticks they publish.
  *
  * This script is idempotent - uses INSERT ON CONFLICT DO NOTHING.
  */
@@ -108,6 +110,14 @@ values
      'lseg-a', 'lseg', 'synthetic-local', 'real_time', '', true,
      'The values that the simulator generates for the ids of LSEG.',
      current_user, current_user, 'system.initial_load', 'Initial population of feeds'),
+    ('082e749a-8c4d-4cc3-b2fb-8e6d3ef61aaf', ores_utility_system_tenant_id_fn(), 0,
+     'ice-a', 'ice', 'synthetic-local', 'real_time', '', true,
+     'The values that the simulator generates for the ids of ICE Data Services.',
+     current_user, current_user, 'system.initial_load', 'Initial population of feeds'),
+    ('86ce767d-2280-432c-80f5-7950c01d3245', ores_utility_system_tenant_id_fn(), 0,
+     'tradeweb-a', 'tradeweb', 'synthetic-local', 'real_time', '', true,
+     'The values that the simulator generates for the ids of Tradeweb.',
+     current_user, current_user, 'system.initial_load', 'Initial population of feeds'),
     ('8c0aa62c-3e8e-4174-9dca-010180c6fed0', ores_utility_system_tenant_id_fn(), 0,
      'demo-a', 'demo', 'synthetic-local', 'real_time', '', true,
      'The values that the simulator generates for the exercises and demonstrations.',
@@ -140,6 +150,8 @@ from (values
     ('26772cc0-57d6-4fac-be36-2ae75eb56b6b'::uuid),
     ('0a42775e-3da7-4c61-a732-6b62cb9f948f'::uuid),
     ('c0f53bf1-a03a-4557-9906-7213091fcd82'::uuid),
+    ('082e749a-8c4d-4cc3-b2fb-8e6d3ef61aaf'::uuid),
+    ('86ce767d-2280-432c-80f5-7950c01d3245'::uuid),
     ('8c0aa62c-3e8e-4174-9dca-010180c6fed0'::uuid)
 ) as s(feed_id)
 cross join (values
@@ -159,6 +171,48 @@ where not exists (
       and x.valid_to = ores_utility_infinity_timestamp_fn()
 );
 
+\echo '--- Market Data Subscriptions and Routes of the System Party ---'
+
+-- A series ticks only for a party the ingest finds a route to its source. The system party reads
+-- the simulated quotes of every data vendor, so it takes the ICE and Tradeweb quotes too. The
+-- subscription is the entitlement to the provider's feeds and the route names the source that
+-- serves the party; the route trigger refuses a route without the subscription.
+do $$
+declare
+    v_party uuid := ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn());
+begin
+    if v_party is null then
+        raise notice 'No system party yet: the ICE and Tradeweb subscriptions wait for it';
+        return;
+    end if;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values
+        ('5bf94c1d-081c-4c6c-b910-52b203d9b166', ores_utility_system_tenant_id_fn(), 0, v_party,
+         'ice', true, true, false, current_user, current_user, 'system.initial_load',
+         'The system party takes the simulated ICE LIBOR quotes'),
+        ('db2ba623-9406-4c08-9a85-0b250f4dbbd2', ores_utility_system_tenant_id_fn(), 0, v_party,
+         'tradeweb', true, true, false, current_user, current_user, 'system.initial_load',
+         'The system party takes the simulated Tradeweb EURIBOR and LIBOR quotes')
+    on conflict do nothing;
+
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values
+        ('2a3bf312-916f-4dc9-9ef9-3a9eb78a8325', ores_utility_system_tenant_id_fn(), 0, v_party,
+         'ice', 'ir', '082e749a-8c4d-4cc3-b2fb-8e6d3ef61aaf',
+         current_user, current_user, 'system.initial_load',
+         'The system party reads the simulated ICE quotes through ice-a'),
+        ('876aa8cf-c78b-497e-a07d-b6884db37eb3', ores_utility_system_tenant_id_fn(), 0, v_party,
+         'tradeweb', 'ir', '86ce767d-2280-432c-80f5-7950c01d3245',
+         current_user, current_user, 'system.initial_load',
+         'The system party reads the simulated Tradeweb quotes through tradeweb-a')
+    on conflict do nothing;
+end $$;
+
 -- Summary
 select 'marketdata_providers' as entity, count(*) as count
 from ores_marketdata_providers_tbl
@@ -168,4 +222,18 @@ union all
 select 'marketdata_feeds', count(*)
 from ores_marketdata_feeds_tbl
 where tenant_id = ores_utility_system_tenant_id_fn()
+  and valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'marketdata_subscriptions (system party)', count(*)
+from ores_marketdata_subscriptions_tbl
+where tenant_id = ores_utility_system_tenant_id_fn()
+  and party_id = ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn())
+  and provider_code in ('ice', 'tradeweb')
+  and valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'marketdata_routes (system party)', count(*)
+from ores_marketdata_routes_tbl
+where tenant_id = ores_utility_system_tenant_id_fn()
+  and party_id = ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn())
+  and publisher_code in ('ice', 'tradeweb')
   and valid_to = ores_utility_infinity_timestamp_fn();

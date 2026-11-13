@@ -37,6 +37,7 @@ set(files
     "fx_forward_publish_spot_eventing_integration_tests.cpp"
     "fx_vol_surface_calibration_eventing_integration_tests.cpp"
     "fx_vol_surface_publish_eventing_integration_tests.cpp"
+    "ice_notation_tests.cpp"
     "main.cpp"
     "market_data_mapping_eventing_integration_tests.cpp"
     "market_data_vendor_instrument_eventing_integration_tests.cpp"
@@ -87,6 +88,7 @@ set(files
     "subscription_interval_eventing_integration_tests.cpp"
     "supplier_eventing_integration_tests.cpp"
     "terms_provider_terms_tests.cpp"
+    "tradeweb_notation_tests.cpp"
     "vendor_notation_catalogue_tests.cpp"
     "vendor_notation_corpus_tests.cpp"
 )

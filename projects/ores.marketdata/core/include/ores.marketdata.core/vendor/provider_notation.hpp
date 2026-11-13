@@ -80,6 +80,18 @@ public:
     /// The side that the provider's main price field carries.
     [[nodiscard]] virtual price_side primary_side() const = 0;
 
+    /**
+     * @brief Whether the provider's id names the tenor of the curve's index itself.
+     *
+     * A provider whose id does not name it writes a pillar that carries none, and a caller that
+     * holds the curve's own index tenor leaves it out of the description it passes. A provider
+     * that quotes two curves of one currency and family, which differ only in that tenor, must
+     * name it so its ids name one quote each.
+     */
+    [[nodiscard]] virtual bool names_index_tenor() const {
+        return false;
+    }
+
     /// What @p id describes, or why the notation does not read it.
     [[nodiscard]] virtual std::expected<quote_description, notation_error>
     read(const messaging::vendor_id& id) const = 0;

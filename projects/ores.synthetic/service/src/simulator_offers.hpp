@@ -117,7 +117,12 @@ system_generator_offers(const feed_kind_registry& registry,
         std::vector<ir_pillar_quote_target> pillar_targets;
         std::vector<msg::vendor_id> ids;
         for (const auto& pillar : candidate.pillars) {
-            const auto written = target_of(pillar);
+            // A provider whose id does not name the curve's index tenor is given none, so the
+            // description is one the notation writes.
+            auto described = pillar;
+            if (!notation->names_index_tenor())
+                described.index_tenor.clear();
+            const auto written = target_of(described);
             if (!written)
                 continue;
             ids.push_back(written->id);

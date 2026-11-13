@@ -123,8 +123,11 @@ TEST_CASE("the_registry_lists_the_providers_that_have_a_notation", "[vendor_nota
         REQUIRE(found != nullptr);
         CHECK(found->provider() == provider);
     }
+    // ICE and Tradeweb have a notation, but no corpus here: their own test files prove the
+    // spellings of the curves their feeds quote.
+    CHECK(vendor::notation_of("ice") != nullptr);
+    CHECK(vendor::notation_of("tradeweb") != nullptr);
     CHECK(vendor::notation_of("ore") == nullptr);
-    CHECK(vendor::notation_of("ice") == nullptr);
     CHECK(vendor::notation_of("") == nullptr);
 }
 

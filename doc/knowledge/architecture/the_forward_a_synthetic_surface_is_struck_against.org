@@ -60,6 +60,17 @@ A curve reaches a surface in five steps. Each step names the code that holds it.
    calibration uses, so the two sides of the system resolve a market by one rule:
    an exact date takes the row's discounts, a date between two rows takes both
    interpolated log-linearly in days from the spot date.
+
+   The date itself is the spot date plus the expiry's period, which is what the
+   calibration discounts to, and it comes from
+   =ores.analytics.quant= =calendar_arithmetic::add_period= -- QuantLib's
+   =Date::advance= semantics, a month-end clamp and no calendar consulted -- on
+   both sides. No business-day adjustment is applied and the date may be a
+   weekend, which is the calibration's existing behaviour; a reader who expects
+   an adjusted date should read that as a known limit, not an oversight. The
+   calendar machinery that would adjust it already exists in quant
+   (=business_day_calendar_set=, =business_day_convention=, =advance=), so a
+   decision to adjust is a call, not a port.
 4. *The forward and the strikes.* =F(t,T) = S(t) P_f(t,T) / P_d(t,T)=. The ATM
    strike is that forward for a =forward= ATM convention and the
    delta-neutral strike otherwise (=fx_atm_strike=), and each risk reversal and

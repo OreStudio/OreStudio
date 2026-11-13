@@ -126,7 +126,7 @@ derived =CORRELATION/RATE= quotes are later work, as the design note's
 | 2. The latent market | DONE 2026-11-12 | =1235e7d5d7= |
 | 3. The driven step | DONE 2026-11-12, five processes drivable | =5f127589f0=, =b31521e545= |
 | 4. The tick context carries the market | | |
-| 5. Configuration | | |
+| 5. Configuration | the model and the depth rule done; the codegen tables, the Market regime tab and the shell remain | =0d0b6c1d1=? |
 | 6. The FX volatility surface | resumes the generator task | |
 
 Step 2 keeps the many case in view: a factor owns a path and a fifty-six byte

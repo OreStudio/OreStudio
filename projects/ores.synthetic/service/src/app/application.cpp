@@ -50,7 +50,6 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
-#include <stop_token>
 #include <map>
 #include <memory>
 #include <optional>
@@ -401,15 +400,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                   << run_market_of_the_run.market().series_id.size() << " series";
     }
 
-    // A destructor join on a thread that ignores its token turns every startup
-    // failure into a silent hang, because the throw waits on a scheduler that
-    // never returns. Wire the token to the scheduler's own stop, so a request to
-    // stop the thread is a request to stop the scheduler.
-    ores::platform::concurrency::jthread scheduler_thread(
-        [&scheduler](ores::platform::concurrency::stop_token stop) {
-            std::stop_callback on_stop(stop, [&scheduler] { scheduler.stop(); });
-            scheduler.run();
-        });
+    ores::platform::concurrency::jthread scheduler_thread([&scheduler] { scheduler.run(); });
+
+    // The scheduler runs until something stops it, so this guard stops it on
+    // every exit path, including a throw. Declared after the thread, it is
+    // destroyed first, which is what makes the thread joinable when its own
+    // destructor runs: a startup failure reports itself instead of hanging
+    // until systemd kills the process.
+    struct stop_scheduler_on_exit final {
+        ores::analytics::quant::service::tick_scheduler& scheduler;
+        ~stop_scheduler_on_exit() {
+            scheduler.stop();
+        }
+    } stop_on_exit{scheduler};
 
     // The simulator is an adapter of the market data service for each simulated source. It
     // serves the system collections of the provider of the source, and it starts a generator for

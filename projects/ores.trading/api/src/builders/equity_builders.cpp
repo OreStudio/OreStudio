@@ -625,11 +625,55 @@ equity_result equity_position_builder::build() const {
     return equity_position_of(trade_type, terms_);
 }
 
-equity_option_position_builder::equity_option_position_builder(equity_position_terms terms)
+equity_option_position_builder::equity_option_position_builder(
+    equity_option_position_terms terms)
     : terms_(std::move(terms)) {}
 
 equity_result equity_option_position_builder::build() const {
-    return equity_position_of(trade_type, terms_);
+    if (terms_.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must not be empty"});
+    if (!(terms_.quantity.get() > 0.0))
+        return std::unexpected(build_error{"quantity", "must be positive"});
+    if (terms_.price.get() <= decimal{})
+        return std::unexpected(build_error{"price", "must be positive"});
+    const auto& entries = terms_.entries.get();
+    if (entries.empty())
+        return std::unexpected(
+            build_error{"entries", "must name at least one underlying for the position to hold"});
+
+    domain::equity_position_instrument row{};
+    row.identity.trade_type_code = std::string(trade_type);
+    row.currency = terms_.currency.get();
+    row.quantity = terms_.quantity.get();
+    row.price = terms_.price.get();
+    domain::equity_instrument_data out;
+    /*
+     * The store refuses a position that names no underlying on its own row, and
+     * the document's first entry is the name that row carries. The projection
+     * writes the entries and never this name, so the two cannot disagree.
+     */
+    const auto* first = entries.front().underlying.get().index();
+    row.underlying_name =
+        first != nullptr ? first->subject() : entries.front().underlying.get().uri();
+    out.instrument = std::move(row);
+
+    int number = 0;
+    for (const auto& entry : entries) {
+        domain::equity_position_option_underlying underlying{};
+        underlying.sequence_number = ++number;
+        underlying.underlying_name = entry.underlying.get().uri();
+        if (const auto* index = entry.underlying.get().index())
+            underlying.underlying_name = index->subject();
+        underlying.strike = entry.strike.get();
+        underlying.long_short = entry.long_short.get();
+        underlying.option_type = entry.option_type;
+        underlying.exercise_type = entry.exercise_type;
+        underlying.settlement_type = entry.settlement_type;
+        underlying.exercise_date = entry.exercise_date;
+        underlying.weight = entry.weight;
+        out.underlyings.push_back(std::move(underlying));
+    }
+    return out;
 }
 
 }

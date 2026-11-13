@@ -2790,11 +2790,27 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                                          .price = money(level)})
                 .build());
     if (type == "EquityOptionPosition")
+        /*
+         * The position holds one entry per underlying it observes, and each
+         * entry states its own option: the strike it is written at, the
+         * direction the slot drew, and a European cash settlement that expires
+         * with the trade. A position with no entry has nothing for the engine
+         * to price, so one entry is the fewest it can hold.
+         */
         return built(tb::equity_option_position_builder(
-                         {.underlying = address,
-                          .currency = currency,
+                         {.currency = currency,
                           .quantity = std::max(1.0, std::round(notional / level)),
-                          .price = money(level)})
+                          .price = money(level),
+                          .entries = std::vector<tb::equity_position_option_entry>{
+                              tb::equity_position_option_entry{
+                                  .underlying = address,
+                                  .strike = money(level),
+                                  .long_short = tb::long_short_of(position),
+                                  .option_type = "Call",
+                                  .exercise_type = "European",
+                                  .settlement_type = "Cash",
+                                  .exercise_date = end,
+                                  .weight = std::nullopt}}})
                          .build());
     throw trade_population_error("The equity trade type " + type +
                                  " states no builder this planner knows.");

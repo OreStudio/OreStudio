@@ -464,9 +464,11 @@ void check_known(const std::set<std::string>& found, const std::set<std::string>
 
 /// The generated trade types the writer refuses. Asserted exactly.
 const std::set<std::string>& known_refusals() {
-    static const std::set<std::string> known = {
-        "EquityOptionPosition",
-    };
+    /*
+     * Empty: every generated type now states what the schema requires of it, so
+     * the writer refuses none of them.
+     */
+    static const std::set<std::string> known;
     return known;
 }
 

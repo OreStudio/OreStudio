@@ -52,6 +52,7 @@
 \echo ''
 \echo '--- FOMC Segment Market Series Seed Data ---'
 \ir ./marketdata_market_series_ir_curve_populate.sql
+\ir ./marketdata_market_series_ibor_curves_populate.sql
 \ir ./marketdata_market_series_overnight_curves_populate.sql
 
 \echo ''

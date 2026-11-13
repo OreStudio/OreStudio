@@ -8,7 +8,7 @@
 #+filetags: :build:compilation:headers:analysis:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
 #+branch: feature/find-the-headers-that-couple-the-build
-#+pr:
+#+pr: 4683
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -120,7 +120,7 @@ Forward declaration is not free: a type named only by reference can still need i
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4683][#4683]] | [build] Analyse the headers that couple the build |
 
 * Review
 

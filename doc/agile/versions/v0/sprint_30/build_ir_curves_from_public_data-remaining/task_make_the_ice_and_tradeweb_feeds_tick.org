@@ -78,6 +78,8 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | IBOR quote series at any tenor but 1D, before | 0 | =select count(*) from ores_marketdata_market_series_identity_tbl where instrument_type='ir_swap' and tenor is distinct from '1D'= | fe592ba578 |
+| IBOR quote series after the notation and the provisioning run | 30 (ICE 15, Tradeweb 15) | =select provider_code, count(*) from ores_marketdata_market_series_tbl where provider_code in ('ice','tradeweb')= | 21a0a4f1da |
+| Observations stored on any synthetic provider's series | 0 | =... left join observations ... where provider_code in ('ice','tradeweb','bloomberg','demo','lseg')= | 21a0a4f1da |
 | ICE / Tradeweb vendor instruments with an id | 35 / 35 | =tools/vendor_catalogue --write=, then the seed's own guard | 21a0a4f1da |
 | ICE / Tradeweb vendor instruments without an id | 0 / 0 | same | 21a0a4f1da |
 | Marketdata core suite | 1/1, 633 s | =./compass.sh test run -- -R 'ores\.marketdata\.core'= | 21a0a4f1da |
@@ -86,10 +88,17 @@ task and name that file in the Command column.
 
 - The live attempt: both adapters announce and the ICE and Tradeweb generators start (the log
   shows 35 ids demanded, 35 accepted, 5 generators running per provider), and the marketdata
-  service opens ingest loops for =ice-a= and =tradeweb-a=. But =ores.synthetic.service= then
-  times out at start (systemd, 90 s) because the derived FX volatility adapter finds no stored
-  public fixings in a fresh database; the service is killed, the adapters go stale, and the
-  ingest loops report =ticks=0 last_tick=never=.
+  service opens ingest loops for =ice-a= and =tradeweb-a=. The 30 IBOR quote series now exist
+  with the identities the design names, for example
+  =oresmd://ir/CHF?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M=; before this
+  task there were none.
+- What does not happen is the tick landing: observations on the series of every synthetic
+  provider are 0 (bloomberg, demo, lseg, ice, tradeweb alike), while the public providers store
+  tens of thousands. The provisioning run agrees: it published 4 of 20 curves from public
+  fixings and logged "no observed rate for pillar '3M'" for the rest, then failed at
+  =generate_trades= because the synthetic service was no longer handling its subjects.
+- That is one environment fault in synthetic tick delivery, not a difference between providers,
+  and it is the reason the third acceptance bullet stays open.
 - That is environment provisioning, not this change: the same timeout affects Bloomberg's feeds.
   With a provisioned database the live check is one observation query.
 

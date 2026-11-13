@@ -54,9 +54,9 @@ the decision is OD-1 of
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The driven step reaches the FX spot's law; no feed reads its driver yet. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 1, the keyed path.                |
+| Next         | The surface feed, which lands with the spot's wiring. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
@@ -125,8 +125,8 @@ derived =CORRELATION/RATE= quotes are later work, as the design note's
 | 1. The keyed path | DONE 2026-11-12 | =0b29106307=, benchmark split in =52f21b5412= |
 | 2. The latent market | DONE 2026-11-12 | =1235e7d5d7= |
 | 3. The driven step | DONE 2026-11-12, five processes drivable | =5f127589f0=, =b31521e545= |
-| 4. The tick context carries the market | | |
-| 5. Configuration | the model and the depth rule done; the codegen tables, the Market regime tab and the shell remain | =0d0b6c1d1=? |
+| 4. The tick context carries the market | the mixture and its variance wrapper take the normal; the feeds and the service are outstanding, and land with step 6 | =a5b1881944= |
+| 5. Configuration | the model and the depth rule done; the block's correlations are already typed columns of =fx_vol_surface_feed=, so what remains is the read, the tab and the shell verbs | =cf90e7236a= |
 | 6. The FX volatility surface | resumes the generator task | |
 
 Step 2 keeps the many case in view: a factor owns a path and a fifty-six byte
@@ -144,14 +144,43 @@ migration test.
 ** Which processes can be driven
 
 A process is drivable only when its step is a function of one standard normal.
-Five are: Ornstein-Uhlenbeck, Hull-White, Black-Karasinski, single-factor
-Heath-Jarrow-Morton, and Vasicek through its inner process. Nine are not, and
-refuse by the interface's default: the affine and quadratic Gaussian processes
-and Libor market model draw one normal a factor, the two-factor Gaussian draws
-two, the Gaussian mixtures draw a component as well, Cox-Ingersoll-Ross draws a
-Poisson and a normal, and Black-Derman-Toy walks a lattice node. Widening any of
-them means widening the driven step to a vector of normals, which is a decision
-for the step that needs it, not a mechanical change.
+Eight are: Ornstein-Uhlenbeck, Hull-White, Black-Karasinski, single-factor
+Heath-Jarrow-Morton, Vasicek through its inner process, both Gaussian mixtures,
+and the GJR-GARCH variance wrapper over any of them. Six are not, and refuse by
+the interface's default: the affine and quadratic Gaussian processes and Libor
+market model draw one normal a factor, the two-factor Gaussian draws two,
+Cox-Ingersoll-Ross draws a Poisson and a normal, and Black-Derman-Toy walks a
+lattice node. Widening any of them means widening the driven step to a vector of
+normals, which is a decision for the step that needs it, not a mechanical change.
+
+A mixture is driven conditionally on its component. The component stays the
+process's own draw and the market's normal is the step's direction, so the price's
+correlation with the factor is exactly the loading while the mixture's shape is
+untouched. One normal is therefore one tick, because the component is drawn per
+tick, and a driven step over several ticks is that many driven ticks.
+
+** Steps 4 and 6 are one increment
+
+A spot feed on its own has nothing to correlate with. Driving it changes every
+synthetic FX price for a correlation no screen can show, so its wiring lands with
+the surface that loads on it rather than before it. What lands first is what makes
+the wiring possible: the driven step reaching the mixture and its variance
+wrapper.
+
+** Where the loadings are configured
+
+Nothing in codegen has to be built for a block's loadings. The
+=fx_vol_surface_feed= entity already carries the three numbers its matrix is
+built from, =spot_variance_correlation=, =spot_skew_correlation= and
+=segment_correlation=, with their SQL checks, the domain type, the codec, the
+wire protocol and the shell's =fx_vol_surface_feeds add|set= verbs. A spot
+anchors a block by being the series its surface names, so its own row states no
+loading. The block's factors are derived from the block, not stored.
+
+What does not exist is the read. No code outside =ores.analytics.quant= reads
+those columns, and the FX feeds screen does not show them. The remaining
+configuration work is therefore a read over the run's market and somewhere to
+show it, not a table.
 
 ** Open-source work to copy from
 

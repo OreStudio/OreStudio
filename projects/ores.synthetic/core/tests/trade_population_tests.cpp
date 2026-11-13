@@ -1132,6 +1132,32 @@ TEST_CASE("a_scripted_population_states_a_script_and_the_names_it_observes", "[t
     CHECK(observed.size() > 1u);
 }
 
+TEST_CASE("a_scripted_product_that_states_two_underlyings_is_given_two", "[trade_population]") {
+    /*
+     * The double digital and the performance option name two underlying types
+     * in their parameters, and the engine reads one underlying for each. A
+     * trade given one name exports with no second underlying, and the engine
+     * refuses it with a null node, so the count decides whether the trade is
+     * priced at all.
+     */
+    const auto scope = scripted_scope();
+    const auto plan = plan_of(scope);
+
+    const auto names_in = [](const std::string& stated) {
+        return static_cast<std::size_t>(std::ranges::count(stated, '"')) / 2;
+    };
+    std::map<std::string, std::size_t> names_by_type;
+    for (const auto& slot : plan.slots) {
+        REQUIRE(slot.instruments.scripted_instruments.size() == 1u);
+        const auto& row = slot.instruments.scripted_instruments.front();
+        names_by_type[row.identity.trade_type_code] = names_in(row.underlyings_json);
+    }
+
+    CHECK(names_by_type["DoubleDigitalOption"] == 2u);
+    CHECK(names_by_type["PerformanceOption_01"] == 2u);
+    CHECK(names_by_type["ScriptedTrade"] == 1u);
+}
+
 TEST_CASE("a_scripted_population_that_names_no_underlying_is_refused", "[trade_population]") {
     auto scope = scripted_scope();
     scope.equity_underlyings.clear();

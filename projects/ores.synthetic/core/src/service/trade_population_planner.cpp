@@ -2335,10 +2335,17 @@ construct_scripted_batch(const domain::trade_generation_scope& scope,
     /*
      * The underlyings cycle the tenant's catalogue, so a population longer than
      * the catalogue states every name it holds and none it does not.
+     *
+     * The two products that state a pair, the double digital and the
+     * performance option, take two names: their parameters name two types, and
+     * the engine reads one underlying for each. A trade given one name exports
+     * with no second underlying and the engine refuses it.
      */
     const auto& first = scope.equity_underlyings[slot % scope.equity_underlyings.size()];
     const auto& second = scope.equity_underlyings[(slot + 1) % scope.equity_underlyings.size()];
-    const auto underlyings = trade_type == "PerformanceOption_01" ?
+    const auto names_two =
+        trade_type == "DoubleDigitalOption" || trade_type == "PerformanceOption_01";
+    const auto underlyings = names_two ?
                                  std::format(R"(["{}","{}"])", first.code, second.code) :
                                  std::format(R"(["{}"])", first.code);
 

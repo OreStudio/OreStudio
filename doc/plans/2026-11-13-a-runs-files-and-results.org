@@ -4,7 +4,7 @@
 #+title: A run's files and results: where the work belongs
 #+description: The four BFF routes that draw a report run's files and results compose a tree across three services and fetch every object whole over HTTP. This states the problem and the options before any of it is ported.
 #+type: plan
-#+status: DRAFT
+#+status: AGREED
 #+created: 2026-11-13
 #+updated: 2026-11-13
 #+filetags: :plan:http:reporting:
@@ -63,65 +63,74 @@ unpacked bytes to serve one 2 KB result file.
 - **The file service.** It already owns the objects and can stream and range
   them, but the BFF asks it for whole objects and does the slicing itself.
 
-* Options
+* The decisions
 
-** A. Port it as it stands
+** Who owns the join: compute, and the gateway stitches
 
-The gateway reads the three services and fetches whole objects, using the
-existing =ores.http.client= (a GET over TLS behind a replaceable interface). It
-ships a tar reader and a gzip unwrap.
+The tree is run -> batch -> workunit -> result -> archive. Every link but the
+first is compute's own row, and the batch states the run in its external
+reference. Reporting owns the run and its state and nothing below it, so it
+should not learn the storage keys of results it does not own, and the gateway
+should not find a batch by searching for the run id.
 
-- Pro: faithful, no service changes, one unit of work.
-- Con: the cost above becomes the gateway's permanently; archive parsing is
-  business logic in the HTTP layer; every reader of a run pays the walk.
+So =ores.compute= answers one read, =list_run_files=, keyed by the run's id: the
+tree it already holds, each archive node stating the object key and the packed
+size. It is one call, it replaces the search and the per-workunit reads, and it
+puts the join in the service whose rows make it.
 
-** B. Compose in the service that owns it, stream at the file service
+The gateway then asks =ores.storage= for the entries of those archives in one
+batched call, and stitches the two answers into the screen's tree. The gateway
+composes; it holds no model and no bytes.
 
-- The reporting service answers one =files_of_run= read: the tree, each file's
-  identity, size, kind and the key it is stored under. One NATS call per page,
-  no fan-out in the gateway.
-- The file service learns to serve a named entry and an HTTP =Range=, so the
-  gateway streams bytes through with the headers it already sets and never
-  buffers an object or parses an archive.
-- Pro: the model stays with its owner; the gateway keeps only what HTTP owns
-  (headers, status, streaming); memory is bounded by the stream buffer.
-- Con: two service changes, and the reporting service needs the storage keys
-  the compute service already holds.
+** Storage does storage
 
-** C. Unpack at run time, so nothing has to unpack later
+=ores.storage= answers two things it should have answered all along:
 
-The worker writes each entry of an output package as its own object under the
-result's prefix, and the manifest lists them. A package becomes a prefix, and
-every reader lists a prefix and streams one object.
+- =list_archive_entries=: for each object key asked for, the entries of the
+  tarball it holds -- name, size and offset -- unpacking in the service that
+  holds the object, not in its callers. One call for every archive of a run.
+- a file fetch that names an entry and honours =Range=: =GET
+  /files/<key>?entry=<name>= answers the entry's bytes, and a range answers the
+  part asked for, so a caller streams and never buffers a package to read one
+  file out of it.
 
-- Pro: no archive parsing anywhere in the read path; range and cache work per
-  file; a person can fetch one file without the package being read.
-- Con: the worker changes, and the store holds more objects; the existing
-  packages stay as they are until a backfill.
+** The gateway streams, and states what it cannot reach
 
-* Recommendation
+A file route streams the file service's bytes through with the headers it
+already sets -- =Content-Type=, =Content-Disposition=, =Cache-Control: private,
+no-store= -- and a file service that does not answer is =502
+upstream-unavailable= with its own words in the journal, as the BFF answered
+it. No object is read into the gateway whole.
 
-**B now, C when the worker is next opened.** B removes the fan-out and the
-buffering without touching how runs are produced, and it puts each answer in
-the layer that owns it. C is the better end state but it changes production,
-and production is not what this task is about.
+* What a screen costs now
 
-Both need a decision this task cannot make alone:
+| Step | Today | Agreed |
+|------+-------+--------|
+| Find the run's batch | one search over the batch collection | part of compute's one read |
+| The tree | 1 run + 1 batch + 1 workunits page + 1 result read and 2 object fetches per workunit | 1 =list_run_files= |
+| The entries | one gzip unpack and tar walk per archive, in the BFF | 1 =list_archive_entries= for every archive |
+| One file's bytes | whole package fetched and unpacked, then sliced | 1 ranged fetch, streamed |
 
-1. Does =ores.reporting= learn the storage keys of a run's results, or does
-   =ores.compute= answer the tree and reporting passes it through? The tree
-   names workunits and results, which are compute's, and files, which are the
-   file service's. Someone has to own the join.
-2. Does the file service answer =?entry=<path>= and =Range=, and who does that
-   work? Without it the gateway keeps the archive reader, whichever option for
-   the tree is chosen.
-3. What does the gateway do while the answer is unavailable? Today it buffers
-   and unpacks; under B it streams and the file service's errors travel as
-   =502= unless a status is named.
+A run with fifty workunits goes from roughly 150 round trips and 150
+whole-object fetches to three calls and one ranged fetch per file opened.
 
-* What this means for the task
+* The work, and who does it
 
-The other three families can be served without answering these: the cuts, the
-schedule writes and the ORE value sets each compose reads the gateway can make
-in one or two calls without owning a model or parsing a file. This family
-should wait for the decision above, and the task's Result should say so.
+| Work | Owner |
+|------+-------|
+| =list_run_files= in =ores.compute=: the tree of a run with each archive's key and size | compute |
+| =list_archive_entries= in =ores.storage=: tarball entries per key, unpacked in the service | storage |
+| =?entry== and =Range= on the storage file service | storage |
+| The four gateway routes: stitch the tree, stream a file, state a file's info and the results | this task |
+
+The gateway routes land after the two service reads exist; until then the four
+routes stay unpaired and this note is the record of why. The =report-run-files=
+and =grid-downloads= modules of the BFF are retired with them, and the tar walk
+they keep leaves the estate entirely once storage answers entries.
+
+* What this does not change
+
+A run's results stay rows of the compute service and files stay objects of the
+storage service. Nothing is copied, no manifest grows a second source of truth,
+and the gateway keeps no cache: a file is fetched when a person opens it and
+the headers say so.

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_HTTP_ROUTES_TRADING_TRADING_ROUTES_HPP
-#define ORES_HTTP_ROUTES_TRADING_TRADING_ROUTES_HPP
+#ifndef ORES_HTTP_ROUTES_MARKETDATA_MARKETDATA_ROUTES_HPP
+#define ORES_HTTP_ROUTES_MARKETDATA_MARKETDATA_ROUTES_HPP
 
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"

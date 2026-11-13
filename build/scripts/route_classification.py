@@ -94,6 +94,11 @@ RULES = (
     # The IAM composed views ores.http answers, ahead of the rules for the screen
     # routes they share a part with; each keeps the BFF's view name, so its
     # obligations are stated once.
+    Rule("the adapters screen's route",
+         ("exact", "GET /api/marketdata/adapters"),
+         CPP, RESOURCE, "market-data",
+         "Every adapter the market data service tracks, with what it serves, what it was asked to"
+         " serve, and the kind of source its feed reads, joined from the feeds and the sessions."),
     Rule("the blotter",
          ("exact", "GET /api/blotter"),
          CPP, COMPOSED, "trading",

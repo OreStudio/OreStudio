@@ -22,14 +22,14 @@
  * Template: cpp_component_header.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_TRADING_HPP
-#define ORES_TRADING_HPP
+#ifndef ORES_MARKETDATA_HPP
+#define ORES_MARKETDATA_HPP
 
 /**
  * @brief HTTP market data route units
  *
- * The HTTP gateway's market data adapter part. Holds the route units that project the market data domain
- * onto the REST surface.
+ * The HTTP gateway's market data adapter part. Holds the route units that project the market data
+ * domain onto the REST surface.
  */
 namespace ores::http::marketdata {}
 

@@ -19,10 +19,6 @@
  */
 #include "ores.http/routes/marketdata/marketdata_routes.hpp"
 #include "ores.http/routes/marketdata/adapter_routes.hpp"
-#include "ores.http/routes/marketdata/book_routes.hpp"
-#include "ores.http/routes/marketdata/booking_routes.hpp"
-#include "ores.http/routes/marketdata/structure_routes.hpp"
-#include "ores.http/routes/marketdata/trade_read_routes.hpp"
 
 namespace ores::http::routes::marketdata {
 
@@ -31,10 +27,6 @@ void marketdata_routes::register_routes(
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     ores::nats::service::nats_client& session) {
     adapter_routes::register_routes(router, registry, session);
-    trade_read_routes::register_routes(router, registry, session);
-    booking_routes::register_routes(router, registry, session);
-    structure_routes::register_routes(router, registry, session);
-    book_routes::register_routes(router, registry, session);
 }
 
 }

@@ -25,7 +25,7 @@ Hedgr prototyped five market-data screens for its own terminal. ORE Studio has n
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | The five screens and their journeys are done. The instrument catalogue and the rate ladder answer from the service, with 14 green cases. The remaining four contracts are specified but not implemented. |
 | Waiting on    | Nothing.                               |
-| Next          | Curve analytics, the FX montage, the surface metadata and the staleness verdict. Each needs a window over observations, which the store reads one point at a time today. |
+| Next          | Curve analytics, then the staleness threshold in configuration. The surface read needs a test before either. |
 | Last touched  | 2026-11-13                               |
 
 * Acceptance
@@ -106,11 +106,11 @@ and the market-data prototypes in =doc/prototypes/market_data=, on 2026-11-13.
 | =list_instruments= | yes | yes | 11 cases |
 | =get_rate_ladder= | yes | yes | 3 cases |
 | =get_curve_analytics= | no | no | — |
-| =get_fx_montage= | no | no | — |
-| surface metadata and slice | partial (the read exists without model, strike convention, delta type, axes or staleness) | no | — |
-| staleness as a server verdict | carried ad hoc on the two reads that exist | no threshold in configuration | — |
+| =get_fx_montage= | yes | yes | 4 cases |
+| surface metadata | yes: model, strike convention, delta type and stale join the grid | yes | no test yet |
+| staleness as a server verdict | an hour's constant on every read that states one | no threshold in configuration | — |
 
-** What the next four need
+** What the remaining work needs
 
 - =get_curve_analytics=: the bootstrap already computes the discount factors and
   the market rates it read them from; the read needs those exposed from

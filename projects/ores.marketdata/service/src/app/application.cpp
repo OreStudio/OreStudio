@@ -44,6 +44,7 @@
 #include "ores.marketdata.service/messaging/composite_input_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
 #include "ores.marketdata.service/messaging/curve_publish_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/curve_analytics_handler.hpp"
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
 #include "ores.marketdata.service/messaging/delivery_count_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/demand_interval_event_registrar.hpp"
@@ -434,6 +435,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                   queue,
                                   [&n, c, v](ores::nats::message msg) mutable {
                                       mm::fx_montage_handler h(n, c, v);
+                                      h.read(std::move(msg));
+                                  }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::get_curve_analytics_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::curve_analytics_handler h(n, c, v);
                                       h.read(std::move(msg));
                                   }));
             return subs;

@@ -661,6 +661,111 @@ struct get_fx_montage_response {
                            const get_fx_montage_response&) = default;
 };
 
+/**
+ * @brief The conventions the curve was built under.
+ *
+ * `compounding` describes the curve's own convention. The `zero_rate` column is
+ * always continuously compounded, so a client never has to know how to convert
+ * it; the two are stated apart on purpose.
+ */
+struct curve_conventions {
+    std::string index_name;
+    std::string day_count;
+    std::string compounding;
+    std::string interpolation;
+    std::string calendar;
+    int spot_lag_days = 0;
+    int pillar_count = 0;
+
+    friend bool operator==(const curve_conventions&, const curve_conventions&) = default;
+};
+
+/**
+ * @brief One pillar as the market quoted it.
+ *
+ * The rate is the observation the bootstrap read, and the series is where it
+ * read it, so a person can go and look at the quote.
+ */
+struct curve_market_pillar {
+    std::string tenor;
+    std::chrono::year_month_day maturity_date;
+    double year_fraction{};
+    double rate{};
+    std::string provider_code;
+    std::string series_id;
+    std::chrono::system_clock::time_point as_of;
+
+    friend bool operator==(const curve_market_pillar&, const curve_market_pillar&) = default;
+};
+
+/**
+ * @brief What the curve makes of one pillar.
+ *
+ * `zero_rate` is continuously compounded. `implied_forward` is the rate the
+ * segment ending at this pillar implies, so the first pillar carries its own
+ * zero rate. `shift_bps` is the bootstrapped zero rate less the market rate at
+ * the pillar: the distance between the curve and the market, not an applied
+ * parallel shift.
+ */
+struct curve_bootstrapped_point {
+    std::string tenor;
+    std::chrono::year_month_day maturity_date;
+    double year_fraction{};
+    double discount_factor{};
+    double zero_rate{};
+    double implied_forward{};
+    double shift_bps{};
+
+    friend bool operator==(const curve_bootstrapped_point&,
+                           const curve_bootstrapped_point&) = default;
+};
+
+/**
+ * @brief Reads a curve's conventions, its market pillars and its bootstrapped points.
+ *
+ * This is not the publish record and not a candidate's check: it reads the
+ * curve a bootstrap configuration produces as of an instant, so a person can
+ * say why the curve differs from the market.
+ */
+struct get_curve_analytics_request {
+    using response_type = struct get_curve_analytics_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_curve_analytics";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string party_id;
+    std::string instrument_id;
+    std::chrono::system_clock::time_point as_of;
+
+    friend bool operator==(const get_curve_analytics_request&,
+                           const get_curve_analytics_request&) = default;
+};
+
+/**
+ * @brief The curve's facts, its market pillars and its bootstrapped points.
+ *
+ * A market pillar and a bootstrapped point for the same tenor are a pair, and
+ * both state the same maturity date so a reader can check that they are.
+ */
+struct get_curve_analytics_response {
+    bool success = false;
+    std::string message;
+    std::string instrument_id;
+    std::string name;
+    std::chrono::system_clock::time_point as_of;
+    bool stale = false;
+    curve_conventions conventions;
+    std::vector<curve_market_pillar> market_pillars;
+    std::vector<curve_bootstrapped_point> bootstrapped;
+
+    friend bool operator==(const get_curve_analytics_response&,
+                           const get_curve_analytics_response&) = default;
+};
+
 struct crm_rate_item {
     std::string crm_name;
     std::string base_currency_code;
@@ -2420,6 +2525,108 @@ struct store_market_state_response {
 }
 
 /**
+ * @brief The members of curve_conventions, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_conventions>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"index_name", &curve_conventions::index_name},
+        ::ores::utility::codec::field{"day_count", &curve_conventions::day_count},
+        ::ores::utility::codec::field{"compounding", &curve_conventions::compounding},
+        ::ores::utility::codec::field{"interpolation", &curve_conventions::interpolation},
+        ::ores::utility::codec::field{"calendar", &curve_conventions::calendar},
+        ::ores::utility::codec::field{"spot_lag_days", &curve_conventions::spot_lag_days},
+        ::ores::utility::codec::field{"pillar_count", &curve_conventions::pillar_count},
+    };
+}
+
+/**
+ * @brief The members of curve_market_pillar, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_market_pillar>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"tenor", &curve_market_pillar::tenor},
+        ::ores::utility::codec::field{"maturity_date", &curve_market_pillar::maturity_date},
+        ::ores::utility::codec::field{"year_fraction", &curve_market_pillar::year_fraction},
+        ::ores::utility::codec::field{"rate", &curve_market_pillar::rate},
+        ::ores::utility::codec::field{"provider_code", &curve_market_pillar::provider_code},
+        ::ores::utility::codec::field{"series_id", &curve_market_pillar::series_id},
+        ::ores::utility::codec::field{"as_of", &curve_market_pillar::as_of},
+    };
+}
+
+/**
+ * @brief The members of curve_bootstrapped_point, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_bootstrapped_point>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"tenor", &curve_bootstrapped_point::tenor},
+        ::ores::utility::codec::field{"maturity_date", &curve_bootstrapped_point::maturity_date},
+        ::ores::utility::codec::field{"year_fraction", &curve_bootstrapped_point::year_fraction},
+        ::ores::utility::codec::field{"discount_factor",
+                                      &curve_bootstrapped_point::discount_factor},
+        ::ores::utility::codec::field{"zero_rate", &curve_bootstrapped_point::zero_rate},
+        ::ores::utility::codec::field{"implied_forward",
+                                      &curve_bootstrapped_point::implied_forward},
+        ::ores::utility::codec::field{"shift_bps", &curve_bootstrapped_point::shift_bps},
+    };
+}
+
+/**
+ * @brief The members of get_curve_analytics_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_analytics_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"party_id", &get_curve_analytics_request::party_id},
+        ::ores::utility::codec::field{"instrument_id", &get_curve_analytics_request::instrument_id},
+        ::ores::utility::codec::field{"as_of", &get_curve_analytics_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of get_curve_analytics_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_curve_analytics_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &get_curve_analytics_response::success},
+        ::ores::utility::codec::field{"message", &get_curve_analytics_response::message},
+        ::ores::utility::codec::field{"instrument_id",
+                                      &get_curve_analytics_response::instrument_id},
+        ::ores::utility::codec::field{"name", &get_curve_analytics_response::name},
+        ::ores::utility::codec::field{"as_of", &get_curve_analytics_response::as_of},
+        ::ores::utility::codec::field{"stale", &get_curve_analytics_response::stale},
+        ::ores::utility::codec::field{"conventions", &get_curve_analytics_response::conventions},
+        ::ores::utility::codec::field{"market_pillars",
+                                      &get_curve_analytics_response::market_pillars},
+        ::ores::utility::codec::field{"bootstrapped", &get_curve_analytics_response::bootstrapped},
+    };
+}
+
+/**
  * @brief The members of crm_rate_item, named as the wire names them and in the order
  * the type declares them.
  *
@@ -3588,6 +3795,66 @@ struct ORES_MARKETDATA_API_EXPORT
     static ores::marketdata::messaging::get_fx_montage_response read_json(std::string_view text);
     static std::string write_msgpack(const ores::marketdata::messaging::get_fx_montage_response& v);
     static ores::marketdata::messaging::get_fx_montage_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::curve_conventions> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::curve_conventions& v);
+    static ores::marketdata::messaging::curve_conventions read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::curve_conventions& v);
+    static ores::marketdata::messaging::curve_conventions
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::curve_market_pillar> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::curve_market_pillar& v);
+    static ores::marketdata::messaging::curve_market_pillar read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::curve_market_pillar& v);
+    static ores::marketdata::messaging::curve_market_pillar
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::curve_bootstrapped_point> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::curve_bootstrapped_point& v);
+    static ores::marketdata::messaging::curve_bootstrapped_point read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::curve_bootstrapped_point& v);
+    static ores::marketdata::messaging::curve_bootstrapped_point
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_curve_analytics_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_curve_analytics_request& v);
+    static ores::marketdata::messaging::get_curve_analytics_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_curve_analytics_request& v);
+    static ores::marketdata::messaging::get_curve_analytics_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_curve_analytics_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_curve_analytics_response& v);
+    static ores::marketdata::messaging::get_curve_analytics_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_curve_analytics_response& v);
+    static ores::marketdata::messaging::get_curve_analytics_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

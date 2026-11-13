@@ -1517,6 +1517,259 @@ The base's crosses, ordered by pair name, and the window their move covers.
 :cpp_type: std::vector<fx_montage_pair>
 :END:
 
+** curve_conventions
+
+The conventions a curve's numbers rest on, stated once for the whole answer.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The conventions the curve was built under.
+ *
+ * `compounding` describes the curve's own convention. The `zero_rate` column is
+ * always continuously compounded, so a client never has to know how to convert
+ * it; the two are stated apart on purpose.
+ */
+#+end_src
+
+*** index_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** day_count
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** compounding
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** interpolation
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** calendar
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** spot_lag_days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** pillar_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+** curve_market_pillar
+
+One pillar as the market quoted it: the rate the bootstrap read, and where it
+read it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One pillar as the market quoted it.
+ *
+ * The rate is the observation the bootstrap read, and the series is where it
+ * read it, so a person can go and look at the quote.
+ */
+#+end_src
+
+*** tenor
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** maturity_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** year_fraction
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** rate
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+** curve_bootstrapped_point
+
+What the curve makes of one pillar: the discount factor it bootstrapped and the
+rates a desk reads off it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the curve makes of one pillar.
+ *
+ * `zero_rate` is continuously compounded. `implied_forward` is the rate the
+ * segment ending at this pillar implies, so the first pillar carries its own
+ * zero rate. `shift_bps` is the bootstrapped zero rate less the market rate at
+ * the pillar: the distance between the curve and the market, not an applied
+ * parallel shift.
+ */
+#+end_src
+
+*** tenor
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** maturity_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** year_fraction
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** discount_factor
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** zero_rate
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** implied_forward
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** shift_bps
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+** get_curve_analytics_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_curve_analytics
+:response: get_curve_analytics_response
+:END:
+
+Reads a curve's conventions, the market pillars it was bootstrapped through,
+and the zero rate, implied forward and discount factor at each pillar.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads a curve's conventions, its market pillars and its bootstrapped points.
+ *
+ * This is not the publish record and not a candidate's check: it reads the
+ * curve a bootstrap configuration produces as of an instant, so a person can
+ * say why the curve differs from the market.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional; empty means the session's own party.
+
+*** instrument_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The bootstrap configuration that produces the curve.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+Empty means now, resolved server-side.
+
+** get_curve_analytics_response
+
+The curve's facts, its market pillars and its bootstrapped points, in pillar
+order.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The curve's facts, its market pillars and its bootstrapped points.
+ *
+ * A market pillar and a bootstrapped point for the same tenor are a pair, and
+ * both state the same maturity date so a reader can check that they are.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** instrument_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** stale
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** conventions
+:PROPERTIES:
+:cpp_type: curve_conventions
+:END:
+
+*** market_pillars
+:PROPERTIES:
+:cpp_type: std::vector<curve_market_pillar>
+:END:
+
+*** bootstrapped
+:PROPERTIES:
+:cpp_type: std::vector<curve_bootstrapped_point>
+:END:
+
 ** crm_rate_item
 
 One CRM rate: direct or triangulated, indistinguishable to the caller -- see

@@ -168,6 +168,29 @@ TEST_CASE("ores::marketdata::messaging::get_fx_montage_response", "[codec][round
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_fx_montage_response>();
 }
 
+TEST_CASE("ores::marketdata::messaging::curve_conventions", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::curve_conventions>();
+}
+
+TEST_CASE("ores::marketdata::messaging::curve_market_pillar", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::curve_market_pillar>();
+}
+
+TEST_CASE("ores::marketdata::messaging::curve_bootstrapped_point", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::curve_bootstrapped_point>();
+}
+
+TEST_CASE("ores::marketdata::messaging::get_curve_analytics_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_curve_analytics_request>();
+}
+
+TEST_CASE("ores::marketdata::messaging::get_curve_analytics_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::marketdata::messaging::get_curve_analytics_response>();
+}
+
 TEST_CASE("ores::marketdata::messaging::crm_rate_item", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::crm_rate_item>();
 }

@@ -31,7 +31,9 @@
 #include <cstddef>
 #include <exception>
 #include <memory>
+#include <mutex>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -110,6 +112,27 @@ inline auto& lg() {
 }
 
 /**
+ * @brief Records that this process serves @p stream, and refuses a second family.
+ *
+ * One stream holds one family of step commands. A second family on the same
+ * stream replaces the first one's consumer filter when it subscribes, so the
+ * service would serve the second and silently stop serving the first: a step of
+ * the first family then waits for a consumer that no longer exists, and fails
+ * for standing still twenty minutes later with nothing in the log to say why.
+ *
+ * @throws std::logic_error when @p stream is already served by this process.
+ */
+inline void claim_step_stream(const std::string& stream) {
+    static std::mutex declared_mutex;
+    static std::set<std::string> declared;
+    const std::lock_guard<std::mutex> guard(declared_mutex);
+    if (!declared.insert(stream).second)
+        throw std::logic_error("A service may serve one family of step commands per stream, and '" +
+                               stream +
+                               "' is already served. Give the second family a group of its own.");
+}
+
+/**
  * @brief The name of the stream that holds one family of a service's step
  *        commands.
  *
@@ -119,6 +142,9 @@ inline auto& lg() {
  *
  * @param group Names the family when one service serves two of them. Leave it
  *        empty for the service's only family.
+ *
+ * @throws std::logic_error when this process already serves a family on @p group's
+ *         stream.
  */
 [[nodiscard]] inline std::string step_stream_name(const ores::nats::service::client& nats,
                                                   std::string_view service_name,
@@ -240,10 +266,11 @@ private:
  * A delivery moves to its worker, which settles it; the subscription ends only
  * once its workers have.
  *
- * @throws std::invalid_argument when the service declares no subjects, and
- *         std::runtime_error when the stream cannot be created. For a service
- *         whose steps are its work, either is fatal: no step can then be
- *         delivered.
+ * @throws std::invalid_argument when the service declares no subjects,
+ *         std::runtime_error when the stream cannot be created, and
+ *         std::logic_error when this process already serves a family on the
+ *         stream @p routes names. For a service whose steps are its work, any
+ *         of them is fatal: no step can then be delivered.
  */
 [[nodiscard]] inline ores::nats::service::subscription
 serve_step_commands(ores::nats::service::client& nats,
@@ -260,6 +287,9 @@ serve_step_commands(ores::nats::service::client& nats,
     auto admin = nats.make_admin();
     admin.ensure_stream(
         stream, nats.covering_subjects(subjects), step_stream_max_age_days, step_stream_retention);
+    // Claimed once the stream is up, so a stream the server refused does not
+    // hold the name against a later attempt in the same process.
+    claim_step_stream(stream);
 
     // The consumer filters relative subjects; a delivery names the fully
     // prefixed one, so the dispatch table is built on the same prefixing.

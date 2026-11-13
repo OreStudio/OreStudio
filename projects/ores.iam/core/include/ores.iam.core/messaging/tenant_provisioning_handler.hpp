@@ -71,7 +71,6 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
-#include "ores.refdata.api/messaging/calendar_materialisation_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_blueprint_protocol.hpp"
@@ -783,16 +782,6 @@ private:
     static constexpr auto work_request_deadline = std::chrono::seconds{120};
 
     /**
-     * @brief How long a request waits that regenerates a whole table.
-     *
-     * The calendar dates are 13,515 days per calendar, 35 calendars in use.
-     * The request wrote them in 168.4 s on a quiet host after the batch write
-     * replaced a read per day, and it timed out at 600 s before that. The
-     * deadline keeps the value the step already stated, now named once.
-     */
-    static constexpr auto bulk_request_deadline = std::chrono::seconds{600};
-
-    /**
      * @brief The instant a step's requests must stop being tried.
      *
      * The engine gives a step a budget of standing still, not of wall clock
@@ -1000,9 +989,6 @@ private:
                                        resolve_step_actor(command),
                                        false,
                                        "Provisioning is finished, so people decide from here on.");
-                return;
-            case provision_step_action::build_calendars:
-                build_calendars_step(wf, command, resolve_step_actor(command));
                 return;
             case provision_step_action::import_lei_hierarchy:
                 import_lei_hierarchy_step(wf, command, resolve_step_actor(command));
@@ -2205,47 +2191,6 @@ private:
         provision_step_result result;
         result.kind = command.kind;
         wf.complete(ores::utility::codec::json::write(result));
-    }
-
-    /// The last year generate_calendar_exceptions writes. Later days would be
-    /// built as weekdays with no holidays.
-    static constexpr int last_generated_holiday_year = 2060;
-
-    /**
-     * @brief Extends every calendar in use to the last year this step writes.
-     *
-     * Each calendar builds about 13,000 days, one row at a time, so the
-     * operation outlives the client's default patience.
-     *
-     * The request is repeated without a read of what an earlier attempt wrote,
-     * because its repeat cannot write twice: it extends each calendar from the
-     * watermark the store already holds up to the year it names, so a second
-     * attempt finds those days already there and writes none of them again.
-     */
-    void build_calendars_step(const ores::service::messaging::workflow_step_context& wf,
-                              const ores::iam::workflow::provision_tenant_step_command& command,
-                              const step_actor& actor) {
-        auto client =
-            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
-        ores::refdata::messaging::regenerate_calendar_dates_request request;
-        request.in_use_only = true;
-        request.end_year = last_generated_holiday_year;
-        std::vector<ores::workflow::messaging::step_log_entry> step_log;
-        wf.progress("the holiday calendars");
-        const auto response = request_with_retry(client,
-                                                 request,
-                                                 {.deadline = deadline_of(command.kind),
-                                                  .attempt_timeout = bulk_request_deadline,
-                                                  .what = "the holiday calendars",
-                                                  .note = attempts_recorded_in(step_log, wf)});
-        if (!response.success)
-            throw std::runtime_error("The calendars were not built: " + response.message);
-
-        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-            << "build_calendars: wrote " << response.rows_written << " day(s)";
-        provision_step_result result;
-        result.kind = command.kind;
-        wf.complete(ores::utility::codec::json::write(result), step_log);
     }
 
     /// Publishes each bundle the step names, one nested run each, and reports

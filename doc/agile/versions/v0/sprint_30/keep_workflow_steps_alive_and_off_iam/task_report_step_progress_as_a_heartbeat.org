@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-12
 #+updated: 2026-11-12
-#+environment: jolly_knuth
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A step states its progress on the heartbeat it already renews, the engine fails 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-12                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-13                               |
 
 * Acceptance
 
@@ -83,7 +83,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Claim repository cases covering progress | 6 | =grep -c "TEST_CASE" projects/ores.workflow/core/tests/repository_step_claim_repository_tests.cpp= | =a4488c0d54= |
+| The merge that carried the work | #4660 | =git log --oneline --merges --grep 4660= | =a4488c0d54= |
 
 * Notes
 
@@ -111,3 +112,35 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged as [[https://github.com/OreStudio/OreStudio/pull/4660][#4660]], =a4488c0d54=.
+The claim the worker renews now carries what the step last reported, and the
+engine measures silence from the last time that report moved.
+
+- The claim row holds the step's latest progress — a phase, a done and a total
+  count — and =progressed_at=, which moves only when the report differs from the
+  one stored. Six repository cases hold it: a claim starts with no progress at
+  its claim, a renewal reporting new progress moves the time, one reporting the
+  same progress leaves it, one reporting nothing keeps the stored progress, and
+  a takeover starts it afresh
+  (=projects/ores.workflow/core/tests/repository_step_claim_repository_tests.cpp=).
+- The engine fails a claimed step for standing still, not for taking long. The
+  silence it measures runs from the later of the dispatch and the last progress
+  the step reported, so a step that waited in a queue gets its whole budget once
+  a worker takes it, and every report starts that budget again
+  (=workflow_engine.cpp=, the deadline pass). Elapsed time since the claim no
+  longer fails a step; the case "workflow_engine gives a claimed step its whole
+  budget" proves a claim restarts the clock after two minutes of queueing, and
+  the unclaimed-queue rule still refuses a command no service has picked up.
+- The step summary carries the progress, and the shell prints it as it moves
+  rather than a countdown (=workflow_run_commands.cpp=, =progress_line=).
+- The provisioning steps report as they go: =generate_trades= per trade and per
+  entry, =set_staff_passwords= per page, and the curve, forward and surface steps
+  per item. The wire carries it to both clients.
+
+What this does not prove: no case drives a step that keeps renewing its lease
+while its progress stands still, so the stall path itself rests on the engine
+code and the claim repository cases rather than on a test of its own. The live
+Acme run on a recreated database is recorded in
+[[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]],
+which shows the progress arriving while a step runs.

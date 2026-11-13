@@ -38,6 +38,7 @@ const std::string provisioned_tenant_id("44444444-4444-4444-8444-444444444444");
 const std::string admin_account_id("22222222-2222-4222-8222-222222222222");
 const std::string correlation_id("33333333-3333-4333-8333-333333333333");
 
+using ores::iam::workflow::build_calendars_step_kind;
 using ores::iam::workflow::complete_provisioning_step_kind;
 using ores::iam::workflow::detail::unique_step_name;
 using ores::iam::workflow::is_declared_step_kind;
@@ -50,6 +51,7 @@ using ores::iam::workflow::provision_step_kinds;
 using ores::iam::workflow::provision_tenant_step;
 using ores::iam::workflow::provision_tenant_step_command;
 using ores::iam::workflow::publish_system_curves_step_kind;
+using ores::iam::workflow::refdata_provision_tenant_step_subject;
 using ores::iam::workflow::provision_tenant_step_subject;
 using ores::iam::workflow::provision_tenant_workflow_request;
 using ores::iam::workflow::provision_tenant_workflow_type;
@@ -57,7 +59,9 @@ using ores::iam::workflow::register_provision_party_workflow;
 using ores::iam::workflow::register_provision_tenant_workflow;
 using ores::iam::workflow::register_tenant_setup_workflow;
 using ores::iam::workflow::schedule_reports_step_kind;
+using ores::iam::workflow::step_subject_for_kind;
 using ores::iam::workflow::start_tenant_setup_step_kind;
+using ores::iam::workflow::load_staff_step_kind;
 using ores::iam::workflow::system_provision_step_kind;
 using ores::iam::workflow::tenant_setup_workflow_type;
 using ores::workflow::service::workflow_definition;
@@ -224,6 +228,30 @@ TEST_CASE("the setup run's kinds become steps in order, with the completing step
         CHECK_FALSE(step.label.empty());
         CHECK_FALSE(step.description.empty());
     }
+}
+
+TEST_CASE("a step is dispatched to the service that owns the work it does", "[workflow]") {
+    // The calendars are refdata's data, so the step that materialises them is
+    // served there and reaches the store directly.
+    CHECK(step_subject_for_kind(build_calendars_step_kind) ==
+          refdata_provision_tenant_step_subject);
+    // The identity steps stay in ores.iam, which owns the run and the people.
+    CHECK(step_subject_for_kind(load_staff_step_kind) == provision_tenant_step_subject);
+    CHECK(step_subject_for_kind(system_provision_step_kind) == provision_tenant_step_subject);
+    // A kind this build does not know is sent to ores.iam, which refuses it:
+    // a step must fail where a person can read it, not wait for no service.
+    CHECK(step_subject_for_kind("a_kind_no_service_serves") == provision_tenant_step_subject);
+
+    // The definition states the owner on the step the engine persists.
+    const auto def = setup_definition();
+    const auto steps =
+        def.build_steps(request_json({declared("build_calendars"), declared("load_staff")}),
+                        tenant_id,
+                        correlation_id);
+    REQUIRE(steps.size() == 3);
+    CHECK(steps[0].command_subject == refdata_provision_tenant_step_subject);
+    CHECK(steps[1].command_subject == provision_tenant_step_subject);
+    CHECK(steps[2].command_subject == provision_tenant_step_subject);
 }
 
 TEST_CASE("the setup run's steps declare which steps must answer first", "[workflow]") {

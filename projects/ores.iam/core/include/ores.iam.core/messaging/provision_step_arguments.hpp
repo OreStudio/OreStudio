@@ -50,7 +50,6 @@ enum class provision_step_action {
     load_staff,
     set_staff_passwords,
     attach_photos,
-    build_calendars,
     start_auto_approval,
     end_auto_approval,
     subscribe_market_data,
@@ -103,8 +102,6 @@ enum class provision_step_action {
         return provision_step_action::start_auto_approval;
     if (kind == "end_auto_approval")
         return provision_step_action::end_auto_approval;
-    if (kind == "build_calendars")
-        return provision_step_action::build_calendars;
     if (kind == "subscribe_market_data")
         return provision_step_action::subscribe_market_data;
     if (kind == publish_party_curves_step_kind)

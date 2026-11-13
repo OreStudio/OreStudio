@@ -24,6 +24,7 @@ set(files
     "handler_helpers_tests.cpp"
     "host_runner_tests.cpp"
     "main.cpp"
+    "messaging_step_command_stream_tests.cpp"
     "messaging_step_progress_board_tests.cpp"
     "rate_limiter_tests.cpp"
     "request_context_tests.cpp"

@@ -59,7 +59,9 @@ TEST_CASE("the executor classifies each kind it executes into its own action", "
     CHECK(classify_step_kind("import_lei_hierarchy") ==
           provision_step_action::import_lei_hierarchy);
     CHECK(classify_step_kind("provision_party") == provision_step_action::provision_party);
-    CHECK(classify_step_kind("build_calendars") == provision_step_action::build_calendars);
+    // The calendars are refdata's work, so the executor has no action for it
+    // and the step is refused here rather than worked by the wrong service.
+    CHECK(classify_step_kind("build_calendars") == provision_step_action::refuse);
     CHECK(classify_step_kind("start_auto_approval") == provision_step_action::start_auto_approval);
     CHECK(classify_step_kind("end_auto_approval") == provision_step_action::end_auto_approval);
     CHECK(classify_step_kind("load_staff") == provision_step_action::load_staff);

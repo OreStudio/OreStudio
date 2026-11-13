@@ -200,8 +200,8 @@ ORES_ANALYTICS_QUANT_EXPORT driver_increment latent_tick(latent_market& market,
  * own next(), which draws from the same stream, and that is what keeps today's
  * path bit for bit.
  */
-ORES_ANALYTICS_QUANT_EXPORT double latent_driver(latent_market& market, std::uint32_t series,
-                                                 double t);
+ORES_ANALYTICS_QUANT_EXPORT double
+latent_driver(latent_market& market, std::uint32_t series, double t);
 
 }
 

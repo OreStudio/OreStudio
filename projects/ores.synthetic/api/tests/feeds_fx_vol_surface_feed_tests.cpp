@@ -30,9 +30,8 @@ using namespace ores::synthetic::feed;
 
 namespace {
 
-const fx_market feed_eur_usd{.spot = 1.0842,
-                             .domestic_discount = 0.9752,
-                             .foreign_discount = 0.9851};
+const fx_market feed_eur_usd{
+    .spot = 1.0842, .domestic_discount = 0.9752, .foreign_discount = 0.9851};
 const fx_quote_convention feed_convention{.atm = fx_atm_type::delta_neutral,
                                           .delta = fx_delta_type::spot,
                                           .favour = fx_risk_reversal_favour::call,
@@ -58,8 +57,7 @@ ores::synthetic::domain::fx_vol_surface_feed feed_row() {
     return row;
 }
 
-ores::synthetic::domain::fx_vol_surface_feed_expiry
-feed_expiry(std::string tenor, double atm_vol) {
+ores::synthetic::domain::fx_vol_surface_feed_expiry feed_expiry(std::string tenor, double atm_vol) {
     ores::synthetic::domain::fx_vol_surface_feed_expiry row;
     row.tenor = std::move(tenor);
     row.atm_vol = atm_vol;
@@ -72,9 +70,7 @@ fx_vol_surface_feed_build_input feed_input() {
     fx_vol_surface_feed_build_input in;
     in.config = feed_row();
     // Given out of order, so the maker's own ordering is what the test sees.
-    in.expiries = {feed_expiry("6M", 0.075),
-                   feed_expiry("1M", 0.070),
-                   feed_expiry("3M", 0.0725)};
+    in.expiries = {feed_expiry("6M", 0.075), feed_expiry("1M", 0.070), feed_expiry("3M", 0.0725)};
     in.contributors = {"reference"};
     in.market = feed_eur_usd;
     in.convention = feed_convention;
@@ -97,8 +93,7 @@ TEST_CASE("a tenor names a year fraction, or nothing", "[fx_vol_surface_feed]") 
     CHECK_FALSE(fx_vol_tenor_years("1.5Y").has_value());
 }
 
-TEST_CASE("a feed row makes an emitter that starts where the row says",
-          "[fx_vol_surface_feed]") {
+TEST_CASE("a feed row makes an emitter that starts where the row says", "[fx_vol_surface_feed]") {
     const auto in = feed_input();
     auto emitter = make_fx_vol_surface_emitter(in, 99);
     REQUIRE(emitter);
@@ -123,8 +118,7 @@ TEST_CASE("a feed row makes an emitter that starts where the row says",
     CHECK(*points[0].value == Catch::Approx(0.070).margin(1e-3));
 }
 
-TEST_CASE("a feed row whose expiries cannot make a surface is refused",
-          "[fx_vol_surface_feed]") {
+TEST_CASE("a feed row whose expiries cannot make a surface is refused", "[fx_vol_surface_feed]") {
     // A tenor that does not read.
     auto bad_tenor = feed_input();
     bad_tenor.expiries[0].tenor = "6X";

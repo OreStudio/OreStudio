@@ -373,6 +373,7 @@ package "synthetic" #F9FBE7 {
         * party_id : uuid <<FK>>
         * feed_id : uuid <<FK>>
         * tenor : text
+        * atm_vol : double
         * variance_reversion : double
         * variance_volatility : double
         * modified_by : text
@@ -420,6 +421,8 @@ package "synthetic" #F9FBE7 {
         * spot_variance_correlation : double
         * spot_skew_correlation : double
         * segment_correlation : double
+        * start_skew : double
+        * start_curvature : double
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

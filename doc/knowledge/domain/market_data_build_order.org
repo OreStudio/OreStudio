@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 12FEEA51-92A0-45C1-A9DA-67C7DB670C2C
+:END:
+#+title: Market Data Build Order
+#+description: The order in which the producer builds market data: each artefact declares the artefacts it reads, a plan orders them, and a node whose input is not live is deferred rather than failed.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:marketdata:build:order:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+* Summary
+
+Market data is built, not fetched: a curve is bootstrapped from quotes, an
+FX forward ladder from two curves and a spot, a surface from curves and
+spots. What is built therefore has inputs, and an input must exist before
+the artefact that reads it. The producer builds in the order its inputs
+allow: a *plan* orders the artefacts, a node whose input is not live is
+*deferred*, and a node whose inputs are ready but whose build errors is
+*failed*. The plan is a pure function of the artefacts and their declared
+edges, and every builder — the scheduled sweep, a manual publish, a
+provisioning step — uses it.
+
+* Detail
+
+** The build graph
+
+The nodes are the artefacts a service builds from other market data. The
+edges are the inputs each artefact declares, and nothing else: an edge that
+is not in a record is not in the plan. The graph is a DAG by a
+configuration rule, and a cycle is rejected when the plan is made rather
+than discovered by a retry. The closure and the topological order are the
+general theory of
+[[id:C573A598-52FF-46F7-A1C0-D008F4364601][Market Data Dependency
+Resolution]]; this page is its producer.
+
+** The edge a curve declares
+
+An interest rate curve records the curve it discounts off. For a projection
+curve that record points at the funding curve of its currency, which is the
+one construction-time edge a
+[[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][curve family]] has: the funding
+curve is bootstrapped against its own instruments, and every projection
+curve is repriced against it. A projection curve never names another
+projection curve, so the edge is one level deep and the
+[[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][build order it imposes]] is a
+funding level followed by an independent projection level.
+
+** Readiness is a question about data
+
+A node is ready when every input it declares has a live set and its own
+quotes are available at the build instant. Readiness is not order: the plan
+says what may be attempted first, and readiness says whether it can be
+attempted now. A curve whose discount curve has no live set is not ready
+even when the plan reaches it first; a curve whose quote series hold no
+observation is not ready either, and neither condition is a fault in the
+curve.
+
+** Three outcomes, and why deferral is one of them
+
+A build returns one of three outcomes:
+
+- *built*: the artefact produced a new set and published it;
+- *deferred*: an input it declares is not live or its quotes are not yet
+  available, so the build did not run, and the reason names the input;
+- *failed*: the inputs were ready and the build started, but it errored.
+
+Deferral is not an error. It is the normal state of a projection curve in
+the pass that publishes its funding curve, and of any curve before its
+quotes arrive. Treating it as a failure makes a read of the log unable to
+tell an ordering from a break.
+
+** The plan is a pure function
+
+The plan takes the artefacts and their declared edges and returns the
+levels: level zero holds the nodes with no input inside the set, and each
+later level holds nodes whose inputs are all in earlier levels. A node whose
+input is outside the set is reported with that input named. The plan
+performs no I/O, so ordering, missing inputs and cycles are tested without a
+database or a service.
+
+** One planner serves every builder
+
+The scheduled sweep, a manual publish of one curve, and the provisioning
+step that publishes an environment's curves are the same operation applied
+to different sets. All three take their order from the plan, so a fresh
+environment builds the same rows in the same sequence as a running one, and
+the outcome vocabulary is the same wherever it is read.
+
+** Within a level, order does not matter**
+
+Nodes in one level share no edge, so they may be built in any order or in
+parallel; the level boundary is the only barrier. A projection level of a
+currency is therefore a set of independent bootstraps once its funding
+curve is live.
+
+** What a build writes
+
+A built node writes its set through the curve-set store and keeps the
+lineage of the quotes it read — see
+[[id:71E4EB7A-20EA-46E1-8832-05D103C330EF][Curve Sets Storage]] and
+[[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]]. The
+plan decides the order of those writes; it does not change what a write
+contains.
+
+* See also
+
+- [[id:C573A598-52FF-46F7-A1C0-D008F4364601][Market Data Dependency Resolution]] — the closure and the theory of the order.
+- [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]] — the funding-then-projection edge and its cycle caveat.
+- [[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] — the family whose edge the plan reads.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — what one bootstrap produces.
+- [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][IR Curve Producer]] — the service that builds and publishes a curve.
+- [[id:71E4EB7A-20EA-46E1-8832-05D103C330EF][Curve Sets Storage]] — where a built set is kept.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — the quotes a built point came from.

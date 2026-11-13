@@ -66,6 +66,31 @@ archive_entry* next_archive_header(archive* a) {
     return entry;
 }
 
+/// Opens the file as an archive this build reads, or throws.
+reader_ptr open_archive_file(const std::filesystem::path& packed) {
+    reader_ptr a(archive_read_new());
+    archive_read_support_filter_gzip(a.get());
+    archive_read_support_format_tar(a.get());
+#ifdef _WIN32
+    const auto rc = archive_read_open_filename_w(a.get(), packed.c_str(), 16384);
+#else
+    const auto rc = archive_read_open_filename(a.get(), packed.c_str(), 16384);
+#endif
+    if (rc != ARCHIVE_OK)
+        throw std::runtime_error(std::string("archive_reader: cannot read the archive ") +
+                                 packed.string() + ": " + reader_error_string(a.get()));
+    return a;
+}
+
+/// Whether a header names a regular file, and what that file is called.
+bool named_regular_file(archive_entry* header, std::string& name) {
+    if (archive_entry_filetype(header) != AE_IFREG)
+        return false;
+    const auto* stated = archive_entry_pathname(header);
+    name = stated == nullptr ? std::string() : std::string(stated);
+    return true;
+}
+
 }
 
 std::vector<archive_reader::entry> archive_reader::index(std::span<const std::byte> packed) {
@@ -107,6 +132,101 @@ std::vector<std::byte> archive_reader::extract(std::span<const std::byte> packed
         return out;
     }
     return {};
+}
+
+std::vector<archive_reader::entry> archive_reader::index_file(const std::filesystem::path& packed) {
+    auto a = open_archive_file(packed);
+    std::vector<entry> entries;
+    std::string name;
+    while (auto* header = next_archive_header(a.get())) {
+        if (!named_regular_file(header, name))
+            continue;
+        entries.push_back({name, static_cast<std::uint64_t>(archive_entry_size(header))});
+    }
+    return entries;
+}
+
+archive_reader::stream::stream(std::filesystem::path packed,
+                               std::string_view name,
+                               std::uint64_t offset,
+                               std::uint64_t length) {
+    auto a = open_archive_file(packed);
+    std::string entry_name;
+    while (auto* header = next_archive_header(a.get())) {
+        if (!named_regular_file(header, entry_name) || name != entry_name)
+            continue;
+        const auto stated = static_cast<std::uint64_t>(archive_entry_size(header));
+        const auto start = std::min(offset, stated);
+        const auto rest = stated - start;
+        skip_ = start;
+        size_ = length == to_end ? rest : std::min(length, rest);
+        found_ = true;
+        break;
+    }
+    archive_ = a.release();
+}
+
+archive_reader::stream::~stream() {
+    if (archive_ != nullptr)
+        archive_read_free(archive_);
+}
+
+archive_reader::stream::stream(stream&& other) noexcept
+    : archive_(other.archive_)
+    , skip_(other.skip_)
+    , size_(other.size_)
+    , produced_(other.produced_)
+    , found_(other.found_) {
+    other.archive_ = nullptr;
+    other.size_ = 0;
+}
+
+archive_reader::stream& archive_reader::stream::operator=(stream&& other) noexcept {
+    if (this == &other)
+        return *this;
+    if (archive_ != nullptr)
+        archive_read_free(archive_);
+    archive_ = other.archive_;
+    skip_ = other.skip_;
+    size_ = other.size_;
+    produced_ = other.produced_;
+    found_ = other.found_;
+    other.archive_ = nullptr;
+    other.size_ = 0;
+    return *this;
+}
+
+void archive_reader::stream::skip_to_the_range_start() {
+    std::array<std::byte, 16384> discard{};
+    while (skip_ > 0) {
+        const auto want = static_cast<std::size_t>(std::min<std::uint64_t>(skip_, discard.size()));
+        const auto got = archive_read_data(archive_, discard.data(), want);
+        if (got < 0)
+            throw std::runtime_error(std::string("archive_reader: cannot read an entry: ") +
+                                     reader_error_string(archive_));
+        if (got == 0) {
+            skip_ = 0;
+            return;
+        }
+        skip_ -= static_cast<std::uint64_t>(got);
+    }
+}
+
+std::size_t archive_reader::stream::read(std::span<std::byte> into) {
+    if (!found_ || archive_ == nullptr)
+        return 0;
+    if (skip_ > 0)
+        skip_to_the_range_start();
+    const auto remaining = size_ - produced_;
+    if (remaining == 0 || into.empty())
+        return 0;
+    const auto want = static_cast<std::size_t>(std::min<std::uint64_t>(remaining, into.size()));
+    const auto got = archive_read_data(archive_, into.data(), want);
+    if (got < 0)
+        throw std::runtime_error(std::string("archive_reader: cannot read an entry: ") +
+                                 reader_error_string(archive_));
+    produced_ += static_cast<std::uint64_t>(got);
+    return static_cast<std::size_t>(got);
 }
 
 }

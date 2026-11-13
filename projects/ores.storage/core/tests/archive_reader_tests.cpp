@@ -24,6 +24,7 @@
 #include "ores.storage.core/filesystem/archiver.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
+#include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <cstring>
 #include <filesystem>
@@ -106,4 +107,77 @@ TEST_CASE("archive_reader_refuses_bytes_that_are_no_archive", "[filesystem]") {
     std::memcpy(packed.data(), not_an_archive.data(), not_an_archive.size());
 
     CHECK_THROWS_AS(archive_reader::index(packed), std::runtime_error);
+}
+
+TEST_CASE("archive_reader_scans_an_archive_where_it_lies", "[filesystem]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_temp_directory source;
+    write_archive_file(source.path() / "manifest.txt", "name=ores.reporting\n");
+    write_archive_file(source.path() / "output" / "fx.csv", "pair,value\nEUR/USD,1.09\n");
+
+    scoped_temp_file archive;
+    archiver::pack(source.path(), archive.path());
+
+    // The same answer as the in-memory read, without the archive being read
+    // into memory first.
+    auto on_disk = archive_reader::index_file(archive.path());
+    auto in_memory = archive_reader::index(packed_of(archive.path()));
+    std::ranges::sort(on_disk, {}, &archive_reader::entry::name);
+    std::ranges::sort(in_memory, {}, &archive_reader::entry::name);
+    REQUIRE(on_disk.size() == in_memory.size());
+    for (std::size_t i = 0; i < on_disk.size(); ++i) {
+        CHECK(on_disk[i].name == in_memory[i].name);
+        CHECK(on_disk[i].size == in_memory[i].size);
+    }
+}
+
+TEST_CASE("archive_reader_streams_one_file_out_of_a_package", "[filesystem]") {
+    auto lg(make_logger(test_suite));
+
+    const std::string content = "pair,value\nEUR/USD,1.09\nGBP/USD,1.27\n";
+    scoped_temp_directory source;
+    write_archive_file(source.path() / "manifest.txt", "name=ores.reporting\n");
+    write_archive_file(source.path() / "output" / "fx.csv", content);
+
+    scoped_temp_file archive;
+    archiver::pack(source.path(), archive.path());
+
+    SECTION("the whole entry, a buffer at a time") {
+        archive_reader::stream entry(archive.path(), "output/fx.csv");
+        REQUIRE(entry.found());
+        CHECK(entry.size() == content.size());
+
+        std::string read;
+        std::array<std::byte, 7> buffer{};
+        for (auto got = entry.read(buffer); got > 0; got = entry.read(buffer))
+            read.append(reinterpret_cast<const char*>(buffer.data()), got);
+        CHECK(read == content);
+    }
+
+    SECTION("a byte range of the entry") {
+        // "pair,value\n" is eleven bytes, so the pair's name starts there.
+        archive_reader::stream entry(archive.path(), "output/fx.csv", 11, 6);
+        REQUIRE(entry.found());
+        CHECK(entry.size() == 6);
+
+        std::array<std::byte, 32> buffer{};
+        const auto got = entry.read(buffer);
+        CHECK(std::string(reinterpret_cast<const char*>(buffer.data()), got) == "EUR/US");
+        CHECK(entry.read(buffer) == 0);
+    }
+
+    SECTION("a range that runs past the end stops at it") {
+        archive_reader::stream entry(archive.path(), "output/fx.csv", content.size() - 4, 100);
+        REQUIRE(entry.found());
+        CHECK(entry.size() == 4);
+    }
+
+    SECTION("a name the archive does not hold") {
+        archive_reader::stream entry(archive.path(), "output/none.csv");
+        CHECK_FALSE(entry.found());
+        CHECK(entry.size() == 0);
+        std::array<std::byte, 8> buffer{};
+        CHECK(entry.read(buffer) == 0);
+    }
 }

@@ -149,6 +149,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:F0233265-8B56-4FEB-BD0C-422D765CA5FC][Hotfix: Fix the warnings and the macOS database tests]] | STARTED | 2026-11-13 | | The macOS database tests fail on exception type matching, and the compiler warnings block re-enabling warnings-as-errors. |
 | [[id:89470119-4A17-45F1-ABB4-0F92596703F9][Run the Linux CI on GCC 16]] | STARTED | 2026-11-13 | | The Linux CI image builds with the GCC of Ubuntu 24.04; move it to GCC 16, the compiler the worktrees run. |
 | [[id:7A5A1EDD-5C79-4EDF-AA10-B7917C9327AD][Move the Linux CI image to Ubuntu 26.04]] | BACKLOG | | | The CI image runs Ubuntu 24.04 with clang 19; move it to the latest LTS and the toolchain that LTS ships. |
+| [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] | BACKLOG | | | Give ORE Studio the market-data screens hedgr prototyped - instrument search, a rates ladder, an FX spot montage, a curve inspector and a published vol surface - with the journeys they answer to and the server reads they need. |
 
 * Achievements
 

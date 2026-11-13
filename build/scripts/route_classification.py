@@ -106,6 +106,17 @@ RULES = (
          "The fixings the store holds for up to a dozen series, oldest first, and the three"
          " answers a person gives to a publisher's terms: accept one at the version read,"
          " withdraw one, and accept many in one request."),
+    Rule("the ORE URI codec route",
+         ("regex", r"^(GET|POST) /api/oresmd"),
+         CPP, TRANSPORT, NO_AREA,
+         "The codec's own table, the read of a URI into its parts, a batch of them, and the"
+         " write of parts into a URI, at the addresses and in the shapes the BFF answered,"
+         " storing nothing."),
+    Rule("a series' observations route",
+         ("exact", "GET /api/series/{id}/observations"),
+         CPP, RESOURCE, "market-data",
+         "One series' observations inside a window, oldest first, the count read as the cap on"
+         " the answer, at the address and in the shape the BFF answered."),
     Rule("the curves' route",
          ("regex", r"^POST /api/curves/(series|series-by-id|series-list|slice|evolution"
                    r"|snapshot|manual-point(/clear)?|compute|fx-forward-ladder"

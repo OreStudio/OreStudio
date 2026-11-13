@@ -72,7 +72,7 @@ an API publishes no area, so it is counted under =(none)=.
 | auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
 | grid | grid-app-versions, grid-downloads, grid-jobs, operations | 14 | composed view 3, resource 11 |
-| market-data | adapters, connectivity, curves, fixing-series, marketdata, public-rates, series, subscriptions | 55 | composed view 6, resource 49 |
+| market-data | adapters, connectivity, curves, fixing-series, marketdata, public-rates, series, subscriptions | 56 | composed view 6, resource 50 |
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 301 | composed view 2, resource 299 |
@@ -81,7 +81,7 @@ an API publishes no area, so it is counted under =(none)=.
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
 | trading | blotter, book-changes, booking, books, structures, trades, trading | 48 | composed view 4, resource 44 |
 | workflow | inbox, server, timeline | 18 | composed view 6, resource 12 |
-| (none) | books, classifications, conventions, core, counterparties, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 423 | not an API 405, transport capability 18 |
+| (none) | books, classifications, conventions, core, counterparties, marketdata, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 427 | not an API 405, transport capability 22 |
 
 * The composed views
 
@@ -150,7 +150,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
 | grid | 14 | 0 | 14 |
-| market-data | 31 | 24 | 7 |
+| market-data | 31 | 25 | 6 |
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 25 | 5 |
@@ -159,8 +159,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 0 | 18 |
-| (none) | 35 | 22 | 13 |
-| total | 324 | 201 | 123 |
+| (none) | 35 | 26 | 9 |
+| total | 324 | 206 | 118 |
 
 * The pairing
 
@@ -310,10 +310,10 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/operations/grid/usage= | none |
 | GET =/api/operations/logs= | none |
 | GET =/api/operations/services= | none |
-| POST =/api/oresmd/compose= | none |
-| POST =/api/oresmd/parse= | none |
-| POST =/api/oresmd/parse-many= | none |
-| GET =/api/oresmd/schema= | none |
+| POST =/api/oresmd/compose= | POST /api/oresmd/compose |
+| POST =/api/oresmd/parse= | POST /api/oresmd/parse |
+| POST =/api/oresmd/parse-many= | POST /api/oresmd/parse-many |
+| GET =/api/oresmd/schema= | GET /api/oresmd/schema |
 | GET =/api/overview= | GET /api/overview |
 | GET =/api/parties= | GET /api/parties |
 | GET =/api/password-policy= | GET /api/password-policy |
@@ -405,7 +405,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/roles/:roleId/permissions/changes= | POST /api/roles/{roleId}/permissions/changes |
 | GET =/api/roles/page= | GET /api/roles/page |
 | GET =/api/seed-profiles= | GET /api/seed-profiles |
-| GET =/api/series/:id/observations= | none |
+| GET =/api/series/:id/observations= | GET /api/series/{id}/observations |
 | DELETE =/api/session= | DELETE /api/session |
 | GET =/api/session= | GET /api/session |
 | POST =/api/session= | POST /api/session |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1291 routes: 324 answered by the BFF and 967 by ores.http.
+1296 routes: 324 answered by the BFF and 972 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -901,9 +901,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | operations | get | =/api/operations/logs= | bff | projects/ores.web/packages/bff/src/operations.ts:640 | One page of telemetry entries a filter selects, with the count of everything it matches. |
 | resource | operations | get | =/api/operations/services= | bff | projects/ores.web/packages/bff/src/operations.ts:386 | Every expected service instance with the age of its last report, read from the telemetry samples. |
 | transport capability | (none) | post | =/api/oresmd/compose= | bff | projects/ores.web/packages/bff/src/oresmd.ts:136 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| transport capability | (none) | post | =/api/oresmd/compose= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/oresmd_routes.cpp:229 | The codec's own table, the read of a URI into its parts, a batch of them, and the write of parts into a URI, at the addresses and in the shapes the BFF answered, storing nothing. |
 | transport capability | (none) | post | =/api/oresmd/parse= | bff | projects/ores.web/packages/bff/src/oresmd.ts:106 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| transport capability | (none) | post | =/api/oresmd/parse= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/oresmd_routes.cpp:193 | The codec's own table, the read of a URI into its parts, a batch of them, and the write of parts into a URI, at the addresses and in the shapes the BFF answered, storing nothing. |
 | transport capability | (none) | post | =/api/oresmd/parse-many= | bff | projects/ores.web/packages/bff/src/oresmd.ts:121 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| transport capability | (none) | post | =/api/oresmd/parse-many= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/oresmd_routes.cpp:208 | The codec's own table, the read of a URI into its parts, a batch of them, and the write of parts into a URI, at the addresses and in the shapes the BFF answered, storing nothing. |
 | transport capability | (none) | get | =/api/oresmd/schema= | bff | projects/ores.web/packages/bff/src/oresmd.ts:86 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| transport capability | (none) | get | =/api/oresmd/schema= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/oresmd_routes.cpp:173 | The codec's own table, the read of a URI into its parts, a batch of them, and the write of parts into a URI, at the addresses and in the shapes the BFF answered, storing nothing. |
 | composed view | tenancy | get | =/api/overview= | bff | projects/ores.web/packages/bff/src/server.ts:1989 | The system administrator's home: the tenant roster divided into in service, on evaluation and setting up, the first page of the roster and the newest setups, every count a separate list read that asks for its total. |
 | composed view | tenancy | get | =/api/overview= | ores.http | projects/ores.http/iam/src/routes/iam/tenant_roster_routes.cpp:423 | The system administrator's home answered by ores.http at the address and in the shape the BFF answered: the roster counted by status, the tenants that need the administrator, the first page and the newest setups. |
 | resource | tenancy | get | =/api/parties= | bff | projects/ores.web/packages/bff/src/server.ts:2462 | One page of the session's own tenant's parties, scoped by row-level security so the route names no tenant. |
@@ -1130,6 +1134,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | tenancy | get | =/api/seed-profiles= | bff | projects/ores.web/packages/bff/src/server.ts:2519 | The starting points a new tenant may be provisioned from, each with the step kinds it orders and the parameters its form declares. |
 | resource | tenancy | get | =/api/seed-profiles= | ores.http | projects/ores.http/iam/src/routes/iam/provisioning_routes.cpp:202 | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
 | resource | market-data | get | =/api/series/:id/observations= | bff | projects/ores.web/packages/bff/src/series.ts:77 | One series' observations inside a window, oldest first, the count read as the cap on the answer. |
+| resource | market-data | get | =/api/series/{id}/observations= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_routes.cpp:138 | One series' observations inside a window, oldest first, the count read as the cap on the answer, at the address and in the shape the BFF answered. |
 | transport capability | auth | delete | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1025 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
 | resource | auth | delete | =/api/session= | ores.http | projects/ores.http/iam/src/routes/iam/browser_session_routes.cpp:360 | The browser's session at the address and in the shape the BFF answered: sign in, read, sign out, choose the party a login waits on, and move to another party. |
 | transport capability | auth | get | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1017 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |

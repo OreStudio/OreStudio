@@ -15,8 +15,12 @@
 #
 # The Linux CI image: the toolchain, the system packages and PostgreSQL with
 # TimescaleDB that the continuous build otherwise installs at the start of every
-# job. The versions match the ones that build installs, so a job in this image
-# compiles with the same tools.
+# job.
+#
+# Every tool comes from the Ubuntu image itself, at the version that image
+# ships: no third-party repository, no compiler PPA, no downloaded archive. A
+# developer on the same Ubuntu release installs the same packages, so a warning
+# the CI reports is a warning anyone can reproduce.
 #
 # The image holds no vcpkg packages. The build restores them from the actions
 # cache in about a second, and an image without them does not go stale when
@@ -34,86 +38,47 @@ LABEL org.opencontainers.image.source=https://github.com/OreStudio/OreStudio
 
 ARG LLVM_MAJOR
 ARG GCC_MAJOR
-ARG CMAKE_VERSION
-ARG NINJA_VERSION
-ARG NODE_VERSION
 ARG PG_MAJOR
 
 # Stop at once when a version is missing, which happens when the image is built
 # without build.sh.
-RUN : "${LLVM_MAJOR:?}" "${GCC_MAJOR:?}" "${CMAKE_VERSION:?}" \
-      "${NINJA_VERSION:?}" "${NODE_VERSION:?}" "${PG_MAJOR:?}"
+RUN : "${LLVM_MAJOR:?}" "${GCC_MAJOR:?}" "${PG_MAJOR:?}"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8
 
-# The Ubuntu archive of 24.04 carries GCC 14, and the build runs the newest
-# release. The Ubuntu toolchain PPA carries the newer compiler for the LTS, so
-# the base image stays where it is and only GCC comes from elsewhere.
-RUN apt-get update -q -o Acquire::Retries=3 \
- && apt-get install -y -q -o Acquire::Retries=3 --no-install-recommends \
-        ca-certificates software-properties-common \
- && add-apt-repository -y ppa:ubuntu-toolchain-r/test \
- && rm -rf /var/lib/apt/lists/*
-
-# The baseline of compass env install-packages, plus the tools that the GitHub
-# runner image has and the build uses: a C compiler for the vcpkg ports, git,
-# archive tools, Python for the scripts, sudo for the scripts that call it,
-# valgrind for the nightly memcheck, and libraries that the vcpkg ports link
-# against. Clang takes the C++ standard
-# library of the newest GCC it finds; g++-${GCC_MAJOR} gives it the same
-# libstdc++ as the runner image.
+# The baseline of compass env install-packages, plus the tools that the build
+# uses: a C compiler for the vcpkg ports, git, archive tools, Python for the
+# scripts, sudo for the scripts that call it, valgrind for the nightly memcheck,
+# the coverage runtime, and libraries that the vcpkg ports link against. Clang
+# takes the C++ standard library of the newest GCC it finds, and
+# g++-${GCC_MAJOR} gives it that libstdc++.
 RUN apt-get update -q -o Acquire::Retries=3 \
  && apt-get install -y -q -o Acquire::Retries=3 --no-install-recommends \
         autoconf autoconf-archive automake bison build-essential \
-        ca-certificates curl file flex "g++-${GCC_MAJOR}" gnupg gperf git libltdl-dev libssl-dev \
-        libtool linux-libc-dev lsb-release nasm openssl pkg-config python3 \
-        procps python3-pip python3-venv sudo tar tzdata unzip valgrind xz-utils zip zstd \
+        ca-certificates curl file flex gnupg gperf git \
+        "clang-${LLVM_MAJOR}" "clang-tidy-${LLVM_MAJOR}" "llvm-${LLVM_MAJOR}" \
+        "libclang-rt-${LLVM_MAJOR}-dev" \
+        cmake "g++-${GCC_MAJOR}" gh libltdl-dev libssl-dev libtool \
+        linux-libc-dev lsb-release nasm ninja-build nodejs npm openssl \
+        pkg-config python3 procps python3-pip python3-venv sudo tar tzdata \
+        unzip valgrind xz-utils zip zstd \
  && rm -rf /var/lib/apt/lists/*
 
 # The gcc preset names g++ and takes it from PATH, so the versioned pair the
-# file states becomes the default through the first directory on PATH. This is
-# the same way install_llvm.sh puts clang first.
+# file states becomes the default through the first directory on PATH.
 RUN ln -sf "/usr/bin/gcc-${GCC_MAJOR}" /usr/local/bin/gcc \
  && ln -sf "/usr/bin/g++-${GCC_MAJOR}" /usr/local/bin/g++
 
-# The cache steps of the build jobs call the GitHub API with gh.
-RUN curl -fsSL -o /usr/share/keyrings/githubcli-archive-keyring.gpg \
-        https://cli.github.com/packages/githubcli-archive-keyring.gpg \
- && echo "deb [signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
-        > /etc/apt/sources.list.d/github-cli.list \
- && apt-get update -q -o Acquire::Retries=3 \
- && apt-get install -y -q -o Acquire::Retries=3 --no-install-recommends gh \
- && rm -rf /var/lib/apt/lists/*
-
-COPY build/scripts/install_llvm.sh /tmp/install_llvm.sh
-RUN /tmp/install_llvm.sh "${LLVM_MAJOR}" \
- && rm -rf /tmp/install_llvm.sh /var/lib/apt/lists/*
-ENV PATH=/usr/lib/llvm-${LLVM_MAJOR}/bin:${PATH}
-
-RUN curl -fsSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz" \
-        | tar -xz -C /opt \
- && ln -s "/opt/cmake-${CMAKE_VERSION}-linux-x86_64/bin/"* /usr/local/bin/ \
- && curl -fsSL -o /tmp/ninja.zip "https://github.com/ninja-build/ninja/releases/download/v${NINJA_VERSION}/ninja-linux.zip" \
- && unzip -q /tmp/ninja.zip -d /usr/local/bin \
- && rm /tmp/ninja.zip
-
-RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
-        | tar -xJ -C /opt \
- && ln -s "/opt/node-v${NODE_VERSION}-linux-x64/bin/"* /usr/local/bin/
-
-# The same PGDG repository and packages as setup_postgres_extensions.sh. The
-# package creates the main cluster, and build/scripts/start_ci_postgres.sh
-# starts it in the build jobs.
-RUN curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
-        | gpg --batch --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg \
- && echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
-        > /etc/apt/sources.list.d/pgdg.list \
- && apt-get update -q -o Acquire::Retries=3 \
+# PostgreSQL and TimescaleDB come from the Ubuntu image too. The package creates
+# the main cluster, and build/scripts/start_ci_postgres.sh starts it in the
+# build jobs.
+RUN apt-get update -q -o Acquire::Retries=3 \
  && apt-get install -y -q -o Acquire::Retries=3 --no-install-recommends \
         "postgresql-${PG_MAJOR}" "postgresql-${PG_MAJOR}-timescaledb" \
         "postgresql-client-${PG_MAJOR}" libpq-dev \
  && rm -rf /var/lib/apt/lists/* \
  && echo "shared_preload_libraries = 'timescaledb'" \
         > "/etc/postgresql/${PG_MAJOR}/main/conf.d/timescaledb.conf"
-ENV PATH=/usr/lib/postgresql/${PG_MAJOR}/bin:${PATH}
+
+ENV PATH=/usr/lib/llvm-${LLVM_MAJOR}/bin:/usr/lib/postgresql/${PG_MAJOR}/bin:${PATH}

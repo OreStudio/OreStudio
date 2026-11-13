@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 7A5A1EDD-5C79-4EDF-AA10-B7917C9327AD
+:END:
+#+title: Story: Move the Linux CI image to Ubuntu 26.04
+#+description: The CI image runs Ubuntu 24.04 with clang 19; move it to the latest LTS and the toolchain that LTS ships.
+#+type: story
+#+level: s2
+#+filetags: :build:ci:image:sprint_30:v0:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Run the Linux CI image on the latest LTS with the tools that image ships, so a
+developer on the same release builds with the same compiler and sees the same
+warnings.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The image installs only Ubuntu 26.04 packages and the new tag is built. |
+| Waiting on    | The first continuous and nightly run on the new image. |
+| Next          | Confirm the tree compiles with clang 21, then revisit warnings-as-errors. |
+| Last touched  | 2026-11-13                               |
+
+* Acceptance
+
+- The image tag names =ubuntu26.04-clang21-gcc16=.
+- Every package comes from the Ubuntu archive; no PPA, no apt.llvm.org, no
+  downloaded archive.
+- The image build passes, and the tool checks inside the container pass.
+- The Linux builds compile on the image.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7664866A-A08E-401A-BB05-A9AF688CC4C4][Scaffold story: Move the Linux CI image to Ubuntu 26.04]] | STARTED | 2026-11-13 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:81814E65-A2AF-4C32-BB89-07E5C3E5DF7C][Implement Move the Linux CI image to Ubuntu 26.04]] | STARTED | 2026-11-13 | | The image rewrite.
+
+* Decisions
+
+- No external repository is used. The 26.04 archive carries clang 21.1.8, GCC
+  16, cmake 4.2.3, ninja 1.13.2, node 22.22.1, gh 2.46 and both PostgreSQL 18
+  and its TimescaleDB package, so the PPA, apt.llvm.org, the GitHub CLI
+  repository, the PGDG repository and three downloaded archives all go.
+- The cmake, ninja and node pins go with them. Those tools are no longer chosen
+  by the file, so the file no longer states a version it does not set.
+- Overriding a package stays an option, and versions.env says so, but only for
+  a tool the image ships too old to build the project. Nothing in 26.04 is.
+
+* Out of scope
+
+- macOS and Windows, which already track the latest: the macOS job runs on
+  =macos-26= and selects Xcode 26, and the Windows job runs on
+  =windows-latest= with the MSVC that image carries.

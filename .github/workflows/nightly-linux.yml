@@ -90,7 +90,6 @@ jobs:
           ref: main
           sparse-checkout: |
             build/docker/ci
-            build/scripts/install_llvm.sh
           sparse-checkout-cone-mode: false
 
       - name: Name the image

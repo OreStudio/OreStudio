@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: F4ACEC79-4CA6-4920-B72E-80D73B99F422
+:END:
+#+title: Purge the test tenant at teardown
+#+description: The test helper only terminates its tenant, so every suite leaves its rows behind; the pre-run sweep that was meant to clean them is never called. A full ctest leaves four marketdata tenants and their curve publishes in the development database.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Purge a suite's tenant when the suite ends, and delete the pre-run sweep that
+was meant to clean up after an aborted run but is never called.
+
+A suite's tenant is created once per test binary and its teardown calls
+=terminate_test_tenant=, which "marks tenant as terminated but preserves all
+data". Nothing deletes the rows. On 2026-11-13 the development database held
+five terminated tenants: four =ores_marketdata_service_te_*= tenants with 57,
+57, 62 and 62 curve publishes under random users and a test as-of, and one
+scheduler tenant. =register_pre_run_sweep_table= has no caller, so
+=close_orphaned_synthetic_rows= never runs.
+
+* Why
+
+Every full ctest adds rows to the development database that no person can see
+in a screen and no read counts as a curve, so the residue is invisible until
+someone queries by tenant. A terminated tenant is also still a tenant row, an
+account or four, and whatever else the suite wrote.
+
+=ores_iam_purge_tenant_fn= already exists and is what =compass db reset-tenant=
+calls. The risk is cost and lock contention: a purge takes longer than a status
+write, and the pgTAP suite's purge deadlocked against the tick smoke when both
+ran at once. A lighter option is to delete the suite tenant's curve publishes
+and published sets itself and keep the tenant row.
+
+The dead sweep is separate: either call it in the lifecycle listener before the
+suite runs, or delete it so the next reader does not believe it runs.
+
+* References
+
+- =projects/ores.testing/src/database_lifecycle_listener.cpp=: the teardown that terminates only.
+- =projects/ores.testing/include/ores.testing/database_lifecycle_listener.hpp=: the sweep declaration with no caller.
+- =projects/ores.sql/create/iam/iam_tenant_purger_create.sql=: the purge function.
+- [[id:37E35846-59E3-41E8-A9AF-6B9F1E167EB3][Keep the curve publishes of the integration tests out of the development database]]: where this was found.
+
+* See also
+
+-

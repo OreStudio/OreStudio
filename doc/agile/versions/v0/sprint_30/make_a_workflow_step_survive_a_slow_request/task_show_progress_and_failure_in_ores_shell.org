@@ -93,8 +93,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 The shell needed no change. What was missing was on the run's own record, and
 that is now carried there: each transient failure writes one line into the
 step's log, and the engine answers that log to every client.

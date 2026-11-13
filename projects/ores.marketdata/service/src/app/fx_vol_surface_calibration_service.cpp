@@ -32,6 +32,7 @@
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/observation_lineage_service.hpp"
 #include "ores.marketdata.core/service/series_shape_writer.hpp"
+#include "ores.marketdata.service/app/catalogue_page.hpp"
 #include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
@@ -47,9 +48,11 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <format>
 #include <set>
 #include <stdexcept>
+#include <vector>
 
 namespace ores::marketdata::service::app {
 
@@ -57,6 +60,7 @@ namespace {
 
 namespace mm = ores::marketdata::messaging;
 namespace qs = ores::analytics::quant::service;
+namespace refdata_msg = ores::refdata::messaging;
 namespace refdata_repo = ores::refdata::repository;
 using time_point = std::chrono::system_clock::time_point;
 using context = ores::database::context;
@@ -79,15 +83,26 @@ read_recipe(context ctx, const std::string& blueprint_id, const boost::uuids::uu
     if (recipe.blueprint.party_id != party)
         throw std::invalid_argument("The blueprint " + recipe.blueprint.name +
                                     " belongs to another party, and a party calibrates its own.");
+    // One blueprint's pillars, read through the filter the store applies, so a
+    // calibration costs what this blueprint holds.
+    refdata_msg::fx_vol_surface_pillars_filter pillars_of_the_blueprint;
+    pillars_of_the_blueprint.blueprint_id = recipe.blueprint.id;
+    recipe.pillars = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
+        return refdata_repo::fx_vol_surface_pillar_repository{}.read_latest(
+            ctx, offset, limit, {}, pillars_of_the_blueprint);
+    });
     std::set<boost::uuids::uuid> pillar_ids;
-    for (auto& p : refdata_repo::fx_vol_surface_pillar_repository{}.read_latest(ctx))
-        if (p.blueprint_id == recipe.blueprint.id) {
-            pillar_ids.insert(p.id);
-            recipe.pillars.push_back(std::move(p));
-        }
-    for (auto& s : refdata_repo::fx_vol_surface_pillar_source_repository{}.read_latest(ctx))
-        if (pillar_ids.contains(s.pillar_id))
-            recipe.sources.push_back(std::move(s));
+    for (const auto& p : recipe.pillars)
+        pillar_ids.insert(p.id);
+    if (!pillar_ids.empty()) {
+        refdata_msg::fx_vol_surface_pillar_sources_filter sources_of_those_pillars;
+        sources_of_those_pillars.pillar_id_one_of =
+            std::vector<boost::uuids::uuid>(pillar_ids.begin(), pillar_ids.end());
+        recipe.sources = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
+            return refdata_repo::fx_vol_surface_pillar_source_repository{}.read_latest(
+                ctx, offset, limit, {}, sources_of_those_pillars);
+        });
+    }
     const auto conventions = refdata_repo::fx_option_convention_repository{}.read_latest(
         ctx, recipe.blueprint.fx_option_convention_id);
     if (!conventions.empty())

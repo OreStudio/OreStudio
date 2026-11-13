@@ -24,6 +24,7 @@
 #include "ores.marketdata.core/repository/fx_vol_surface_calibration_repository.hpp"
 #include "ores.marketdata.core/repository/fx_vol_surface_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
+#include "ores.marketdata.service/app/catalogue_page.hpp"
 #include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
@@ -37,6 +38,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cstdint>
 #include <optional>
 #include <stdexcept>
 
@@ -258,10 +260,14 @@ fx_vol_surface_publish_service::publish(context ctx,
                                         *failure);
 
         // One raise at a time: a second request for the same calibration would publish it twice.
-        for (const auto& pending :
-             repository::fx_vol_surface_publish_repository{}.read_latest(ctx)) {
-            if (pending.blueprint_id != blueprint.id || pending.as_of != as_of ||
-                pending.published_at)
+        msg::fx_vol_surface_publishes_filter raised_here;
+        raised_here.blueprint_id = blueprint.id;
+        const auto raises = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
+            return repository::fx_vol_surface_publish_repository{}.read_latest(
+                ctx, offset, limit, {}, raised_here);
+        });
+        for (const auto& pending : raises) {
+            if (pending.as_of != as_of || pending.published_at)
                 continue;
             const auto open = ores::inbox::service::approval_lifecycle(ctx).request(
                 boost::uuids::to_string(pending.request_id));

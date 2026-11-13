@@ -59,18 +59,25 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 - A forward set reads its pair's calendars to lay out the ladder. A fresh provision therefore builds the calendars before the forwards; the two ran at once, and a pair whose calendar was still being materialised was refused.
 - The thirteen rates are already stored, so AUD, NZD and JPY now start from a public rate. CHF keeps a fixed level until the SIX Data License question is settled.
 
-- Replaced the ceased and misnamed synthetic feeds on 2026-11-13. USD, GBP, JPY and CHF lost
-  their LIBOR feeds, and ICE's dataset went with them, because the four currencies already
-  have an overnight feed (SOFR, SONIA, TONA, SARON) and LIBOR has no public source. ILS now
+- Corrected the ceased and misnamed feeds on 2026-11-13, and kept the IBOR feeds. ILS now
   names SHIR, which replaced TELBOR on 2025-06-30, and HUF names HUFONIA, the overnight
   average, where it named BUBOR's overnight quote. CNH keeps HIBOR and TWD keeps TAIBOR: the
   O/N fixing of each family is the currency's overnight rate, and no other family exists for
-  either. PLN keeps POLONIA, which is the central bank's overnight rate; what is unsettled is
-  the route that would read it, so the feed keeps its fixed level with the reason.
+  either. PLN keeps POLONIA, the central bank's overnight rate; what is unsettled is the route
+  that would read it, so the feed keeps its fixed level with the reason.
+- The LIBOR feeds stay, as learning material: LIBOR is retired, and a simulated IBOR curve is
+  a case a person should be able to build and compare against the overnight curve. The ICE
+  dataset and the Tradeweb LIBOR tenors are seeded again, described as retired benchmarks. They
+  are term curves: the publisher gives every =libor= or =euribor= feed the role =projection=,
+  so no consumer takes an IBOR curve for a discount curve, and the automatic calibration never
+  starts one from a public overnight fixing because their price source is =fixed=.
 - No public rate is stored for SHIR or HUFONIA, so the two feeds keep their synthetic level,
   as the calibration already does for a currency with no source. The conventions carry the
   two indices; the ACME discount curves name them. The ORE sample artefacts (northwind,
   acme_uk) keep their own index names, because they copy external ORE documents.
+- The next step for IBOR is the visual comparison: a bootstrap config for the IBOR curve of a
+  currency beside its overnight curve, so a person can open both, and the coverage screen
+  groups by currency and family rather than taking one row per currency.
 
 * Out of scope
 

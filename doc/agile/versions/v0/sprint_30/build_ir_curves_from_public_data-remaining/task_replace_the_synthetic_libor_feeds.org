@@ -84,13 +84,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| LIBOR feeds in the seeded artefact data | 0 | =select count(*) ... where index_family='libor'= | 0b09aa104c |
+| LIBOR feeds in the seeded artefact data | 8 | =select count(*) ... where index_family='libor'= | acfa26ad1d |
+| Published IBOR feeds with role =projection= | 10 of 10 | =select index_family, role, count(*) ... where index_family in ('libor','euribor')= | acfa26ad1d |
 | Feeds naming a ceased or misnamed index | 0 | =select count(*) ... where index_family in ('telboron','buboron')= | 0b09aa104c |
 | Feeds naming the replacements | 2 | =select count(*) ... where index_family in ('shir','hufonia')= | 0b09aa104c |
-| ICE instruments and LIBOR external ids | 0 / 0 | =select count(*) ... from ores_marketdata_market_data_vendor_instruments_tbl= | 0b09aa104c |
+| ICE instruments and LIBOR external ids | 56 / 56 | =select count(*) ... from ores_marketdata_market_data_vendor_instruments_tbl= | acfa26ad1d |
 | Instrument rows naming SHIR / HUFONIA | 12 / 12 | same table, =external_id like 'ILS SHIR%'/='HUF HUFONIA%'= | 0b09aa104c |
 
-Raw rows: =evidence/ceased_feed_seeds_2026-11-13.log=.
+Raw rows: =evidence/ceased_feed_seeds_2026-11-13.log= and =evidence/ibor_feeds_2026-11-13.log=.
 
 * Notes
 
@@ -122,9 +123,11 @@ via its "Verifies task" field.
 Shipped. The seeds carry no feed of a ceased or misnamed index, and a fresh
 database provisions that way.
 
-- USD, GBP, JPY and CHF: the LIBOR feeds are gone. =synthetic.feeds.ice=,
-  which published only LIBOR, is removed as a dataset, its bundle membership
-  and the two pages that listed it. Tradeweb keeps its two EURIBOR curves.
+- USD, GBP, JPY and CHF: the LIBOR feeds stay, as learning material, because
+  a simulated IBOR curve is a case a person should be able to build. ICE's
+  dataset and the Tradeweb LIBOR tenors are seeded again and described as
+  retired benchmarks. Every =libor=/=euribor= feed publishes with role
+  =projection=, so a consumer never takes it for a discount curve.
 - ILS: =telboron= became =shir= in the feed, the model's family check, the
   conventions and the ACME discount curve.
 - HUF: =buboron= became =hufonia= in the same places; the overnight index rows
@@ -132,8 +135,8 @@ database provisions that way.
 - CNH and TWD keep =hibor= and =taibor=, and PLN keeps =polonia=, each with its
   reason in the story's Decisions.
 - The vendor instrument seed was regenerated from the fresh data by
-  =tools/vendor_catalogue=, so no LIBOR or ICE instrument remains and the ILS
-  and HUF pillars carry the new names.
+  =tools/vendor_catalogue=, so the ILS and HUF pillars carry the new names and
+  the ICE and Tradeweb LIBOR pillars keep their ids.
 
 Verification: a full =compass db recreate= completed twice, the second time
 with the regenerated catalogue, and these counts held afterwards.

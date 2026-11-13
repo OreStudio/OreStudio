@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-13
 #+updated: 2026-11-13
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The ICE and Tradeweb synthetic feeds publish quotes that reach the market data s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -45,6 +45,25 @@ The ICE and Tradeweb synthetic feeds publish quotes that reach the market data s
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+The chain that fails: a feed's quote gets an adapter target only if its provider has a
+notation; without one the feed emits an internal market_tick and the ingest drops it as
+unbound. ICE and Tradeweb have neither a notation nor a feed, a route or a subscription, so
+their quotes reach nothing.
+
+1. Write =ice_notation= and =tradeweb_notation= against the =provider_notation= contract,
+   modelled on the LSEG pillar spelling: currency, index family, instrument and the two
+   tenors, with the provider's own scheme. These are simulated providers, so the header
+   states the spelling is ours and must read back what it writes.
+2. Register both in the one place that lists notations.
+3. Test the contract: a round trip for every instrument each provider quotes, plus the
+   refusals (wrong scheme, malformed, not representable).
+4. Seed the catalogue so each provider has a feed, a route and the system party's
+   subscription, as Bloomberg does; without the feed the tick is still unbound.
+5. Regenerate the vendor instrument seed with =tools/vendor_catalogue= now that the ids can
+   be written, so no ICE or Tradeweb quote is left without an external id.
+6. Prove it at the seam that failed: a quote resolves to an adapter target, the feed binds,
+   and its tick lands in the series the identity names.
 
 * Measurements
 

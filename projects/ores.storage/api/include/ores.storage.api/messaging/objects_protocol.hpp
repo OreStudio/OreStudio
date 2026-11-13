@@ -223,6 +223,84 @@ struct list_objects_response {
 };
 
 /**
+ * @brief One regular file a package holds.
+ *
+ * A directory or a link is not a file a person opens, so neither is stated.
+ */
+struct archive_entry {
+    /**
+     * @brief The file's path inside the package, as the package states it.
+     */
+    std::string name;
+    std::uint64_t size_bytes = 0;
+
+    friend bool operator==(const archive_entry&, const archive_entry&) = default;
+};
+
+/**
+ * @brief What one object the caller named holds, or why it could not be read.
+ *
+ * A key that is missing, or that holds bytes no archive reader accepts, is
+ * stated here rather than failing the whole reply, so one unreadable package
+ * does not cost the caller every other package's listing.
+ */
+struct archive_listing {
+    std::string key;
+    /**
+     * @brief The size of the object as the store holds it, packed.
+     */
+    std::uint64_t size_bytes = 0;
+    bool success = true;
+    std::string message;
+    std::vector<archive_entry> entries;
+
+    friend bool operator==(const archive_listing&, const archive_listing&) = default;
+};
+
+/**
+ * @brief Asks what the files inside a set of packages are.
+ *
+ * The caller that wants one package's contents wants every package's contents,
+ * because they are one screen: a run's inputs and outputs arrive together, and
+ * a call per package would put the walk back in the caller. So the keys travel
+ * as a set and the reply states each one.
+ *
+ * The unpacking happens here, in the service that holds the object, so no
+ * caller needs an archive reader of its own.
+ */
+struct list_archive_entries_request {
+    using response_type = struct list_archive_entries_response;
+    static constexpr std::string_view nats_subject = "storage.v1.objects.list_archive_entries";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string bucket;
+    /**
+     * @brief The objects to read, in one bucket. An empty set asks for nothing.
+     */
+    std::vector<std::string> keys;
+
+    friend bool operator==(const list_archive_entries_request&,
+                           const list_archive_entries_request&) = default;
+};
+
+/**
+ * @brief What each object the caller named holds, in the order it named them.
+ */
+struct list_archive_entries_response {
+    bool success = true;
+    std::string message;
+    std::vector<archive_listing> archives;
+
+    friend bool operator==(const list_archive_entries_response&,
+                           const list_archive_entries_response&) = default;
+};
+
+/**
  * @brief The members of put_objects_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -370,6 +448,70 @@ struct list_objects_response {
     };
 }
 
+/**
+ * @brief The members of archive_entry, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<archive_entry>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"name", &archive_entry::name},
+        ::ores::utility::codec::field{"size_bytes", &archive_entry::size_bytes},
+    };
+}
+
+/**
+ * @brief The members of archive_listing, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<archive_listing>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"key", &archive_listing::key},
+        ::ores::utility::codec::field{"size_bytes", &archive_listing::size_bytes},
+        ::ores::utility::codec::field{"success", &archive_listing::success},
+        ::ores::utility::codec::field{"message", &archive_listing::message},
+        ::ores::utility::codec::field{"entries", &archive_listing::entries},
+    };
+}
+
+/**
+ * @brief The members of list_archive_entries_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_archive_entries_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"bucket", &list_archive_entries_request::bucket},
+        ::ores::utility::codec::field{"keys", &list_archive_entries_request::keys},
+    };
+}
+
+/**
+ * @brief The members of list_archive_entries_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_archive_entries_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &list_archive_entries_response::success},
+        ::ores::utility::codec::field{"message", &list_archive_entries_response::message},
+        ::ores::utility::codec::field{"archives", &list_archive_entries_response::archives},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -460,6 +602,47 @@ struct ORES_STORAGE_API_EXPORT wire_traits<ores::storage::messaging::list_object
     static ores::storage::messaging::list_objects_response read_json(std::string_view text);
     static std::string write_msgpack(const ores::storage::messaging::list_objects_response& v);
     static ores::storage::messaging::list_objects_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_STORAGE_API_EXPORT wire_traits<ores::storage::messaging::archive_entry> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::storage::messaging::archive_entry& v);
+    static ores::storage::messaging::archive_entry read_json(std::string_view text);
+    static std::string write_msgpack(const ores::storage::messaging::archive_entry& v);
+    static ores::storage::messaging::archive_entry read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_STORAGE_API_EXPORT wire_traits<ores::storage::messaging::archive_listing> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::storage::messaging::archive_listing& v);
+    static ores::storage::messaging::archive_listing read_json(std::string_view text);
+    static std::string write_msgpack(const ores::storage::messaging::archive_listing& v);
+    static ores::storage::messaging::archive_listing read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_STORAGE_API_EXPORT wire_traits<ores::storage::messaging::list_archive_entries_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::storage::messaging::list_archive_entries_request& v);
+    static ores::storage::messaging::list_archive_entries_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::storage::messaging::list_archive_entries_request& v);
+    static ores::storage::messaging::list_archive_entries_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_STORAGE_API_EXPORT
+    wire_traits<ores::storage::messaging::list_archive_entries_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::storage::messaging::list_archive_entries_response& v);
+    static ores::storage::messaging::list_archive_entries_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::storage::messaging::list_archive_entries_response& v);
+    static ores::storage::messaging::list_archive_entries_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

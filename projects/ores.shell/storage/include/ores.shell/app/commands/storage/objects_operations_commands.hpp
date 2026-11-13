@@ -89,6 +89,13 @@ public:
     static void process_list_objects(std::ostream& out,
                                      ores::nats::service::nats_client& session,
                                      const std::vector<std::string>& args);
+
+    /**
+     * @brief list-archive-entries <bucket> <keys>
+     */
+    static void process_list_archive_entries(std::ostream& out,
+                                             ores::nats::service::nats_client& session,
+                                             const std::vector<std::string>& args);
 };
 
 }

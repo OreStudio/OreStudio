@@ -38,6 +38,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 |------+-------+-------+-----+-------------|
 | [[id:75EF50B6-00B2-4C77-B737-E56F0A1480AE][Scaffold story: Start the synthetic service on a fresh database]] | DONE | 2026-11-13 | 2026-11-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:61CA1B8D-000F-4E0D-871C-16D372D35D56][Skip a kind with no simulator and let the clock stop]] | BACKLOG | | | Initial task for: Start the synthetic service on a fresh database |
+| [[id:B036AA61-F8F3-4EA3-98FC-CAFE1F9ED75E][Stop the scheduler the portable way]] | BACKLOG | | | The first fix named std::stop_callback, which the portable-stop gate refuses, and left the file unformatted. Stop the scheduler from a guard declared after the thread instead. |
 
 * Decisions
 

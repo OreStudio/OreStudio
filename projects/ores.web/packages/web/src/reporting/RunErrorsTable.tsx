@@ -76,11 +76,16 @@ export function ErrorSubject({ error }: { readonly error: ReportRunErrorView }):
 
 const VIEWS = ['overview', 'list'] as const;
 
-const OUTER = { tab: 'errors' } as const;
+const OUTER = { tab: 'log' } as const;
 
 /** The address of the list view narrowed to one scope. */
 function scopeAddress(scope: string): string {
     return `?${new URLSearchParams({ ...OUTER, view: 'list', scope }).toString()}`;
+}
+
+/** The address of the list view narrowed to one log. */
+function fileAddress(file: string): string {
+    return `?${new URLSearchParams({ ...OUTER, view: 'list', file }).toString()}`;
 }
 
 /**
@@ -93,7 +98,7 @@ export function RunErrors({ runId }: { readonly runId: string }): ReactNode {
     const field = 'reporting.run.errors';
     const errors = useRunErrors(runId);
     const { tab: view, bar } = useTabs({
-        label: t('reporting.run.tabs.errors'),
+        label: t('reporting.run.tabs.log'),
         tabs: VIEWS,
         param: 'view',
         keep: OUTER,
@@ -121,26 +126,41 @@ export function RunErrors({ runId }: { readonly runId: string }): ReactNode {
     );
 }
 
-/** One scope's rows, counted apart by severity. */
-export interface ScopeCount {
-    readonly scope: string;
+/** One group's rows, counted apart by severity. */
+export interface Tally {
     readonly errors: number;
     readonly warnings: number;
     readonly infos: number;
 }
 
-/** A scope's three figures while they are still being counted. */
-interface ScopeTally {
+/** A scope's rows, counted apart by severity. */
+export interface ScopeCount extends Tally {
+    readonly scope: string;
+}
+
+/** A log file's rows, counted apart by severity. */
+export interface FileCount extends Tally {
+    /** The log the rows came from, or empty for a row the platform wrote itself. */
+    readonly file: string;
+}
+
+/** Every group's three figures while they are still being counted. */
+interface MutableTally {
     errors: number;
     warnings: number;
     infos: number;
 }
 
-/** How many rows fell in each scope, by severity, from the most to the fewest. */
-export function scopeCounts(rows: readonly ReportRunErrorView[]): readonly ScopeCount[] {
-    const counts = new Map<string, ScopeTally>();
+/** The rows counted by whatever names a group, from the most to the fewest. */
+function tallyBy<Count extends Tally>(
+    rows: readonly ReportRunErrorView[],
+    keyOf: (row: ReportRunErrorView) => string,
+    build: (key: string, tally: MutableTally) => Count,
+): readonly Count[] {
+    const counts = new Map<string, MutableTally>();
     for (const row of rows) {
-        const count = counts.get(row.scope) ?? { errors: 0, warnings: 0, infos: 0 };
+        const key = keyOf(row);
+        const count = counts.get(key) ?? { errors: 0, warnings: 0, infos: 0 };
         if (row.severity === 'error') {
             count.errors += 1;
         } else if (row.severity === 'warning') {
@@ -148,65 +168,87 @@ export function scopeCounts(rows: readonly ReportRunErrorView[]): readonly Scope
         } else {
             count.infos += 1;
         }
-        counts.set(row.scope, count);
+        counts.set(key, count);
     }
-    const total = (count: ScopeTally): number => count.errors + count.warnings + count.infos;
+    const total = (count: MutableTally): number => count.errors + count.warnings + count.infos;
     return [...counts.entries()]
-        .map(([scope, count]) => ({ scope, ...count }))
+        .map(([key, count]) => build(key, count))
         .sort((left, right) => total(right) - total(left));
 }
 
-/** The problems of a run counted by scope: the shape as a ring, the figures in a table. */
-export function RunErrorsOverview({
-    rows,
+/** How many rows fell in each scope, by severity, from the most to the fewest. */
+export function scopeCounts(rows: readonly ReportRunErrorView[]): readonly ScopeCount[] {
+    return tallyBy(
+        rows,
+        (row) => row.scope,
+        (scope, tally) => ({ scope, ...tally }),
+    );
+}
+
+/** How many rows came from each log, by severity, from the most to the fewest. */
+export function fileCounts(rows: readonly ReportRunErrorView[]): readonly FileCount[] {
+    return tallyBy(
+        rows,
+        (row) => row.filename ?? '',
+        (file, tally) => ({ file, ...tally }),
+    );
+}
+
+/**
+ * One grouping's figures: the group, how many rows of each severity it holds and
+ * the total. The name opens the list narrowed to that group when the caller
+ * states where it leads.
+ */
+function TallyTable({
+    heading,
+    nameHeader,
+    nameOf,
+    counts,
+    addressOf,
 }: {
-    readonly rows: readonly ReportRunErrorView[];
+    readonly heading: string;
+    readonly nameHeader: string;
+    readonly nameOf: (name: string) => string;
+    readonly counts: readonly (Tally & { readonly name: string })[];
+    readonly addressOf?: (name: string) => string | undefined;
 }): ReactNode {
     const { t } = useTranslation();
     const field = 'reporting.run.errors';
-    const scopeName = (scope: string): string => scope || t(`${field}.unscoped`);
     return (
-        <div className="grid gap-4 lg:grid-cols-2">
-            <section className="card p-6">
-                <Donut
-                    title={t(`${field}.byScope`)}
-                    caption={t(`${field}.byScopeCaption`)}
-                    parts={problemsOf(rows, t(`${field}.unscoped`), t(`${field}.otherScopes`))}
-                    format={(value) => String(value)}
-                />
-            </section>
-            <section className="card p-6">
-                <table className="w-full text-left text-sm">
-                    <thead>
-                        <tr className="border-b border-line text-xs text-ink-muted">
-                            <th className="px-2 py-2 font-medium">{t(`${field}.scope`)}</th>
-                            <th className="px-2 py-2 text-right font-medium">
-                                {t(`${field}.errorsCount`)}
-                            </th>
-                            <th className="px-2 py-2 text-right font-medium">
-                                {t(`${field}.warningsCount`)}
-                            </th>
-                            <th className="px-2 py-2 text-right font-medium">
-                                {t(`${field}.infosCount`)}
-                            </th>
-                            <th className="px-2 py-2 text-right font-medium">
-                                {t(`${field}.total`)}
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {scopeCounts(rows).map((count) => (
-                            <tr key={count.scope} className="border-b border-line-subtle">
+        <section className="card p-6">
+            <h3 className="mb-3 text-sm font-medium">{heading}</h3>
+            <table className="w-full text-left text-sm">
+                <thead>
+                    <tr className="border-b border-line text-xs text-ink-muted">
+                        <th className="px-2 py-2 font-medium">{nameHeader}</th>
+                        <th className="px-2 py-2 text-right font-medium">
+                            {t(`${field}.errorsCount`)}
+                        </th>
+                        <th className="px-2 py-2 text-right font-medium">
+                            {t(`${field}.warningsCount`)}
+                        </th>
+                        <th className="px-2 py-2 text-right font-medium">
+                            {t(`${field}.infosCount`)}
+                        </th>
+                        <th className="px-2 py-2 text-right font-medium">{t(`${field}.total`)}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {counts.map((count) => {
+                        const address = addressOf?.(count.name);
+                        return (
+                            <tr key={count.name} className="border-b border-line-subtle">
                                 <td className="px-2 py-2">
-                                    <Link
-                                        to={scopeAddress(count.scope)}
-                                        aria-label={t(`${field}.openScope`, {
-                                            scope: scopeName(count.scope),
-                                        })}
-                                        className="text-accent hover:text-accent-bright"
-                                    >
-                                        {scopeName(count.scope)}
-                                    </Link>
+                                    {address === undefined ? (
+                                        nameOf(count.name)
+                                    ) : (
+                                        <Link
+                                            to={address}
+                                            className="text-accent hover:text-accent-bright"
+                                        >
+                                            {nameOf(count.name)}
+                                        </Link>
+                                    )}
                                 </td>
                                 <td className="px-2 py-2 text-right tabular-nums">
                                     {count.errors}
@@ -219,11 +261,80 @@ export function RunErrorsOverview({
                                     {count.errors + count.warnings + count.infos}
                                 </td>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </section>
-        </div>
+                        );
+                    })}
+                </tbody>
+            </table>
+        </section>
+    );
+}
+
+/**
+ * The rows of a run in two groupings, because a row states two different things:
+ * the part of the run it is about, which is its scope, and the log it came from,
+ * which is its file. A run leaves several logs and each says something the others
+ * do not, so the two are never one distribution: the engine's whole account and
+ * the platform's own word about the run are counted apart, log by log.
+ */
+export function RunErrorsOverview({
+    rows,
+}: {
+    readonly rows: readonly ReportRunErrorView[];
+}): ReactNode {
+    const { t } = useTranslation();
+    const field = 'reporting.run.errors';
+    const scopeName = (scope: string): string => scope || t(`${field}.unscoped`);
+    const fileName = (file: string): string => file || t(`${field}.noLog`);
+    return (
+        <section className="space-y-4">
+            <div className="grid gap-4 lg:grid-cols-2">
+                <section className="card p-6">
+                    <Donut
+                        title={t(`${field}.byLog`)}
+                        caption={t(`${field}.byLogCaption`)}
+                        parts={fileCounts(rows).map((count) => ({
+                            name: fileName(count.file),
+                            value: count.errors + count.warnings + count.infos,
+                        }))}
+                        format={(value) => String(value)}
+                    />
+                </section>
+                <section className="card p-6">
+                    <Donut
+                        title={t(`${field}.byScope`)}
+                        caption={t(`${field}.byScopeCaption`)}
+                        parts={problemsOf(rows, t(`${field}.unscoped`), t(`${field}.otherScopes`))}
+                        format={(value) => String(value)}
+                    />
+                </section>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+                <TallyTable
+                    heading={t(`${field}.byLogTable`)}
+                    nameHeader={t(`${field}.logFile`)}
+                    nameOf={fileName}
+                    counts={fileCounts(rows).map((count) => ({
+                        name: count.file,
+                        errors: count.errors,
+                        warnings: count.warnings,
+                        infos: count.infos,
+                    }))}
+                    addressOf={(file) => (file === '' ? undefined : fileAddress(file))}
+                />
+                <TallyTable
+                    heading={t(`${field}.byScopeTable`)}
+                    nameHeader={t(`${field}.scope`)}
+                    nameOf={scopeName}
+                    counts={scopeCounts(rows).map((count) => ({
+                        name: count.scope,
+                        errors: count.errors,
+                        warnings: count.warnings,
+                        infos: count.infos,
+                    }))}
+                    addressOf={scopeAddress}
+                />
+            </div>
+        </section>
     );
 }
 
@@ -244,10 +355,22 @@ export function RunErrorsTable({
 }): ReactNode {
     const { t } = useTranslation();
     const field = 'reporting.run.errors';
-    const [search] = useSearchParams();
+    const [search, setSearch] = useSearchParams();
     const scope = search.get('scope');
+    const file = search.get('file');
     const [severity, setSeverity] = useState<SeverityChoice>('all');
-    const rows = scope === null ? all : all.filter((row) => row.scope === scope);
+    const inScope = scope === null ? all : all.filter((row) => row.scope === scope);
+    const rows = file === null ? inScope : inScope.filter((row) => (row.filename ?? '') === file);
+    const files = [...new Set(inScope.map((row) => row.filename ?? ''))].sort();
+    const chooseFile = (chosen: string): void => {
+        const next = new URLSearchParams(search);
+        if (chosen === '') {
+            next.delete('file');
+        } else {
+            next.set('file', chosen);
+        }
+        setSearch(next, { replace: true });
+    };
     const counts: Readonly<Record<SeverityChoice, number>> = {
         all: rows.length,
         error: rows.filter((row) => row.severity === 'error').length,
@@ -278,6 +401,21 @@ export function RunErrorsTable({
                 labelOf={(choice, count) => t(`${field}.filter.${choice}`, { count })}
                 onChoose={setSeverity}
             />
+            {files.length > 1 && (
+                <CountFilter
+                    choices={['', ...files]}
+                    chosen={file ?? ''}
+                    countOf={(choice) =>
+                        choice === ''
+                            ? inScope.length
+                            : inScope.filter((row) => (row.filename ?? '') === choice).length
+                    }
+                    labelOf={(choice, count) =>
+                        `${choice === '' ? t(`${field}.everyLog`) : choice} (${count})`
+                    }
+                    onChoose={chooseFile}
+                />
+            )}
             <RecordTable<ReportRunErrorView>
                 source={localSource<ReportRunErrorView>({
                     key: `run-errors-${runId}`,

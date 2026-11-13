@@ -7646,7 +7646,7 @@ const pt: SourceCatalogue = {
             tabs: {
                 details: 'Detalhes',
                 results: 'Resultados',
-                errors: 'Erros',
+                log: 'Registo',
                 downloads: 'Transferências',
             },
             definition: 'Relatório',
@@ -7742,6 +7742,13 @@ const pt: SourceCatalogue = {
                 location: 'Localização',
                 filename: 'Ficheiro',
                 views: { overview: 'Visão geral', list: 'Lista' },
+                byLog: 'As linhas da execução por registo',
+                byLogCaption: 'Cada linha registada, contada pelo registo de onde veio.',
+                byLogTable: 'Por registo',
+                logFile: 'Registo',
+                noLog: 'Sem registo: a palavra da execução',
+                everyLog: 'Todos os registos',
+                byScopeTable: 'Por âmbito',
                 byScope: 'As linhas da execução por âmbito',
                 byScopeCaption:
                     'Cada linha registada, contada pela parte da execução a que pertence.',

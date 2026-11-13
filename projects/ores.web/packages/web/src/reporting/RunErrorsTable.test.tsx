@@ -46,7 +46,7 @@ const error = (over: Partial<ReportRunErrorView>): ReportRunErrorView => ({
     cause: null,
     time: '2026-10-25 09:51:53.527119Z',
     location: null,
-    filename: null,
+    filename: 'log.txt',
     ...over,
 });
 
@@ -100,12 +100,13 @@ describe('the errors tab of a run', () => {
                 subject_id: null,
                 message: 'group = setup : nThreads = 1',
                 location: 'OREAnalytics/orea/app/parameters.cpp:144',
+                filename: 'engine.log',
             }),
         ]);
         const html = renderToStaticMarkup(
             <QueryClientProvider client={client}>
                 <TranslationProvider>
-                    <MemoryRouter initialEntries={[`/reporting/runs/${run}?tab=errors`]}>
+                    <MemoryRouter initialEntries={[`/reporting/runs/${run}?tab=log`]}>
                         <RunErrors runId={run} />
                     </MemoryRouter>
                 </TranslationProvider>
@@ -121,7 +122,10 @@ describe('the errors tab of a run', () => {
             'Warnings',
             'Info',
             'Total',
+            'rows by log',
             'rows by scope',
+            'log.txt',
+            'engine.log',
         ]) {
             expect(html).toContain(label);
         }

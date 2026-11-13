@@ -7589,7 +7589,7 @@ export const en: SourceCatalogue = {
             tabs: {
                 details: 'Details',
                 results: 'Results',
-                errors: 'Errors',
+                log: 'Log',
                 downloads: 'Downloads',
             },
             definition: 'Report',
@@ -7685,6 +7685,13 @@ export const en: SourceCatalogue = {
                 location: 'Location',
                 filename: 'File',
                 views: { overview: 'Overview', list: 'List' },
+                byLog: "The run's rows by log",
+                byLogCaption: 'Every row the run recorded, counted by the log it came from.',
+                byLogTable: 'By log',
+                logFile: 'Log',
+                noLog: "No log: the run's own word",
+                everyLog: 'Every log',
+                byScopeTable: 'By scope',
                 byScope: "The run's rows by scope",
                 byScopeCaption:
                     'Every row the run recorded, counted by the part of the run it belongs to.',

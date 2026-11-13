@@ -7707,7 +7707,7 @@ const fr: SourceCatalogue = {
             tabs: {
                 details: 'Détails',
                 results: 'Résultats',
-                errors: 'Erreurs',
+                log: 'Journal',
                 downloads: 'Téléchargements',
             },
             definition: 'Rapport',
@@ -7803,6 +7803,13 @@ const fr: SourceCatalogue = {
                 location: 'Emplacement',
                 filename: 'Fichier',
                 views: { overview: 'Aperçu', list: 'Liste' },
+                byLog: "Les lignes de l'exécution par journal",
+                byLogCaption: 'Chaque ligne enregistrée, comptée par le journal dont elle vient.',
+                byLogTable: 'Par journal',
+                logFile: 'Journal',
+                noLog: "Aucun journal : le mot de l'exécution",
+                everyLog: 'Tous les journaux',
+                byScopeTable: 'Par portée',
                 byScope: "Les lignes de l'exécution par portée",
                 byScopeCaption:
                     "Chaque ligne enregistrée, comptée par la partie de l'exécution à laquelle elle appartient.",

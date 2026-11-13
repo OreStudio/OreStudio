@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
-#+updated: 2026-11-08
+#+updated: 2026-11-13
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -82,7 +82,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Acme curve publishes before / after the suite | 320 / 320 | =select count(*) ... join tenants where code='acme_corporation'= | be5967b218 |
+| Acme curve publishes before / after the suite | 320 / 320 | =select count(*) ... join tenants where code='acme_corporation'=; raw rows in =evidence/test_curve_publish_counts_2026-11-13.log= | be5967b218 |
 | =system.test= curve publishes before / after | 0 / 0 | =select count(*) from ores_marketdata_curve_publishes_tbl where change_reason_code='system.test'= | be5967b218 |
 | Live curve-publish rule after the suite | =system_tenant= | =select auto_approval_code from ores_inbox_approval_kinds_tbl where code='marketdata.curve_publish' and valid_to=...= | be5967b218 |
 | Marketdata service suite | 251 cases, all passed | =./compass.sh test run -- -R 'ores\.marketdata\.service'= | be5967b218 |
@@ -110,7 +110,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The heal builds the zero rule from the pre-heal snapshot | fixture | accepted | The shared fixture builds from the seeded row (b9032a5f). |
+| 2 | The two zero-approval fixtures duplicate the heal | tests | accepted | One fixture in =curve_publish_fixture.hpp=; both suites use it. |
+| 3 | The restore leaves =change_reason_code = system.test= on the live row | fixture | accepted | The restore writes the seeded =system.initial_load=, so no test row stays open. |
+| 4 | The heal branch is untested | tests | accepted | A test seeds a leaked rule and asserts the fixture restores the seed. |
+| 5 | The heal only runs when a fixture is next constructed, so the claim that an abort cannot leave the rule open overstates it | task doc | noted | The Result now says a later run repairs it, not that the window is zero. |
+| 6 | Acceptance 1 is unmet: terminated suite tenants keep publishes | task doc | declined | The acceptance says a *provisioned* tenant; Acme gained none. The terminated suite tenants are the capture's subject. |
+| 7 | Acceptance 2 needs a full ctest run | task doc | noted | The marketdata suite was run; the full run is stated as not done in the Result. |
+| 8 | Filing the ores.http task here is scope creep | task doc | declined | The owner asked for it in the session that produced this branch; the PR body says so. |
+| 9 | The capture's description is one long sentence | capture | accepted | Shortened. |
 
 * Result
 
@@ -131,9 +139,10 @@ no caller.
 
 Limitations:
 
-- The fixtures still append a =system.test= version per run (restoring the
-  seeded rule), so the kind's history holds test versions even though the live
-  rule is correct.
+- The fixtures still append one version per run (restoring the seeded row), so
+  the kind's history grows with a row that carries the seed's reason.
 - The curve publishes that remain under terminated suite tenants are not
   removed; the capture states the purge.
-- No manual QA scenario; the suites and the SQL counts are the evidence.
+- No manual QA scenario; the suite and the SQL counts are the evidence. The
+  acceptance's second clause asks for a full ctest run; only the marketdata
+  service suite was run.

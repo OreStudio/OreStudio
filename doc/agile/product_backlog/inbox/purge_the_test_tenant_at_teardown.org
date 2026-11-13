@@ -2,7 +2,7 @@
 :ID: F4ACEC79-4CA6-4920-B72E-80D73B99F422
 :END:
 #+title: Purge the test tenant at teardown
-#+description: The test helper only terminates its tenant, so every suite leaves its rows behind; the pre-run sweep that was meant to clean them is never called. A full ctest leaves four marketdata tenants and their curve publishes in the development database.
+#+description: The test helper terminates its tenant instead of purging it, so every suite leaves its rows behind, and the pre-run sweep meant to clean them is never called.
 #+type: capture
 #+level: cross
 #+filetags: 

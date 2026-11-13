@@ -125,10 +125,19 @@ Each repository already offered the filtered, paged read: the handlers were
 simply not using it. Each read is paged, so a request cannot be made unbounded
 again by a tenant that adds rows.
 
-Two request types still grow with the data, and both are recorded rather than
-fixed: =regenerate_calendar_dates= runs as a step with a 600 s deadline and
-writes in one batch, though its read of the existing days is unpaged; and
-=attach_account_pictures= attaches one picture per account of the tenant, read
-10,000 at a time, and belongs with the step that moves to its owning service.
+Two request types needed more than a filtered read, and neither is an unbounded
+read any more:
+
+- =regenerate_calendar_dates= is bounded by the year and the calendars the
+  request names, which the service caps, and it runs as a step with a 600 s
+  deadline, so the story's second clause covers it. Its read of the existing
+  days loads a whole calendar into memory to subtract them, which is a memory
+  cost and is named in the recommendations.
+- =attach_account_pictures= is the one request on this path that nothing bounds:
+  it attaches a picture to every account of the tenant that names one, read
+  10,000 at a time, and drops the rest without a word. It is captured as
+  [[id:7849DEEF-9C8A-40C2-BA80-20C90505AB75][Attaching account pictures does a whole tenant's work in one request]]
+  for the step that moves to its owning service.
+
 The =put_many_*= handlers are bounded by the rows they are handed, but pay 2N+1
 queries for N rows, which the recommendations name.

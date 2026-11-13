@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 7849DEEF-9C8A-40C2-BA80-20C90505AB75
+:END:
+#+title: Attaching account pictures does a whole tenant's work in one request
+#+description: attach_account_pictures_request reads up to 10,000 accounts and attaches one picture to each that names one, so its work follows the tenant's account count and silently drops the accounts past the ceiling. Page the request, or retire it in favour of the provisioning step that moves to the owning service.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=attach_account_pictures_request= reads the tenant's accounts with a limit of
+10,000 and attaches one picture to each account that names one: one
+=ensure_image= and one attach per account. Its work follows the account count,
+and every account past the ceiling is dropped without a word.
+
+Give the request a page of accounts it names, or retire it and let the
+provisioning step do the work one page at a time.
+
+* Why
+
+The story [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] rules
+that no request handler does work that grows with the data. This is the one
+request on the provisioning path that still does, and it is the shape that
+failed =set_staff_passwords= before it was paged.
+
+* References
+
+- The work it does now, at
+  [[file:../../versions/v0/sprint_30/keep_workflow_steps_alive_and_off_iam/investigation_request_bounds.org][The work each provisioning request does, and what bounds it]].
+- The step that calls it: =attach_staff_photos= in
+  =projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp=.
+
+* See also
+
+- [[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]]

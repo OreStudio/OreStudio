@@ -73,7 +73,7 @@ pages, and the write path was left alone.
 | =get_published_fx_vol_surface_request= | The published surface of the blueprint it names, then its grid. | =O(page)= by surface |
 | =put_many_account_parties_request= | One write and one read for each link the request names. | =O(page)= by links |
 | =put_many_ir_curve_bootstrap_configs_request=, =put_many_ir_curve_bootstrap_pillars_request=, =put_many_fx_vol_surface_blueprints_request=, =put_many_fx_vol_surface_pillars_request=, =put_many_fx_vol_surface_pillar_sources_request=, =put_many_market_series_request=, =put_many_trade_generation_books_request=, =put_many_trade_generation_counterparties_request=, =put_many_trade_generation_trade_types_request= | One read per row before the write, one batched write, one read back per row: 2N+1 queries for N rows. Bounded by =changes=, which no handler caps. | =O(page)=, with N+1 |
-| =schedule_report_definitions_request= | One schedule per definition id the request names: an id read, an FSM read, a grant, a scheduler call and a save each. The provisioning step fills =ids= from the party's catalogue, paging it 100 at a time. | =O(page)= by ids |
+| =schedule_report_definitions_request= | One schedule per definition id the request names: an id read, an FSM read, a grant, a scheduler call and a save each. The provisioning step lists the party's catalogue a page at a time and sends every selected id in one request with a 600 s deadline. | =O(page)= by ids |
 | =complete_system_onboarding_request=, =complete_party_onboarding_request= | The tenant's settings are read twice, once to refresh the cache and once per save. Tens of rows, fixed by the platform and not by the tenant's business data. | =O(catalogue)= of settings |
 
 ** 5 request types were unbounded and now cost what they name
@@ -89,15 +89,16 @@ pages, and the write path was left alone.
 
 | Request | Shape | Why it is left |
 |---------+-------+----------------|
-| =regenerate_calendar_dates_request= | One row per day, up to about 37,000 per calendar per call, times the calendars when the call names all of them. | It runs as a step with a 600 s deadline, which the story allows, and it writes in one batch. Its read of the existing days is unpaged, so that is the piece to fix. |
-| =attach_account_pictures_request= | One attach, and two image requests, for each account of the tenant that names a picture, read 10,000 at a time. | The provisioning caller is a step, but the request itself is unbounded and silently drops accounts past the ceiling. It belongs with the step that moves to the owning service. |
+| =regenerate_calendar_dates_request= | One row per day, up to about 37,000 per calendar per call, times the calendars when the call names all of them. | Bounded by the year the request names, which the service caps, and by the calendars it names. It runs as a step with a 600 s deadline and writes in one batch, so the story's second clause covers it. Its read of the existing days loads a whole calendar into memory to subtract them, which is a memory cost rather than a longer request. |
+| =attach_account_pictures_request= | One attach, and two image requests, for each account of the tenant that names a picture, read 10,000 at a time. | The one request on this path that nothing bounds: it is captured as [[id:7849DEEF-9C8A-40C2-BA80-20C90505AB75][Attaching account pictures does a whole tenant's work in one request]] for the step that moves to the owning service. |
 
 * Recommendations
 
-- Page the existing-days read in =calendar_materialisation_service= and keep the
-  per-day loop out of the request: the batched write is already there.
+- Let the calendar materialisation ask the store which of the days it is about
+  to write already exist, instead of loading every existing day into memory to
+  subtract it.
 - Give =attach_account_pictures_request= a page, or retire it in favour of the
-  step, when the step moves out of iam.
+  step, when the step moves out of iam: it is captured for that.
 - Use the batch =read_latest(ctx, ids)= the repositories already offer in the
   =put_many_*= handlers, so a hundred-row write stops costing two hundred reads.
 - Keep the rule in review: a handler that reads a catalogue and narrows it in

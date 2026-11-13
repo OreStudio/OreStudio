@@ -53,6 +53,7 @@ set(files
     "latent_market_tests.cpp"
     "libor_market_model_process_tests.cpp"
     "main.cpp"
+    "market_board_tests.cpp"
     "mixture_tilt_tests.cpp"
     "nelder_mead_tests.cpp"
     "normal_and_root_tests.cpp"

@@ -20,20 +20,23 @@
 #define ORES_DATABASE_CONTEXT_HPP
 
 #include "ores.database/export.hpp"
-#include "ores.database/pq/connection.hpp"
-#include "ores.database/pq/pool.hpp"
-#include "ores.database/pq/transaction.hpp"
+#include "ores.database/pq/options.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <memory>
-#include <mutex>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace ores::database {
+
+namespace pq {
+class pool;
+class transaction;
+struct session_context;
+}
 
 /**
  * @brief Context for the operations on a postgres database.
@@ -48,7 +51,7 @@ namespace ores::database {
  * Copies share one libpq pool, opened on first use. A context bound to a unit
  * of work runs every call on that unit of work's transaction.
  */
-class context {
+class ORES_DATABASE_EXPORT context {
 public:
     /**
      * @brief Constructs a tenant-only context.
@@ -57,12 +60,7 @@ public:
                      utility::uuid::tenant_id tenant_id,
                      std::string actor = "",
                      std::string service_account = "",
-                     pq::open_policy policy = {})
-        : options_(std::move(options))
-        , policy_(std::move(policy))
-        , tenant_id_(std::move(tenant_id))
-        , actor_(std::move(actor))
-        , service_account_(std::move(service_account)) {}
+                     pq::open_policy policy = {});
 
     /**
      * @brief Constructs a tenant-and-party-aware context.
@@ -73,14 +71,7 @@ public:
                      std::vector<boost::uuids::uuid> visible_party_ids,
                      std::string actor = "",
                      std::string service_account = "",
-                     pq::open_policy policy = {})
-        : options_(std::move(options))
-        , policy_(std::move(policy))
-        , tenant_id_(std::move(tenant_id))
-        , party_id_(party_id)
-        , visible_party_ids_(std::move(visible_party_ids))
-        , actor_(std::move(actor))
-        , service_account_(std::move(service_account)) {}
+                     pq::open_policy policy = {});
 
     /**
      * @brief The transaction of the unit of work this context is bound to, if
@@ -190,9 +181,7 @@ public:
     /**
      * @brief The number of connections the pool opens, when it opens.
      */
-    void set_pq_pool_size(std::size_t size) {
-        pq_->size = size;
-    }
+    void set_pq_pool_size(std::size_t size);
 
     /**
      * @brief The session a transaction of this context sets.
@@ -221,12 +210,16 @@ private:
     std::optional<std::vector<std::string>> roles_;
     pq::transaction* active_transaction_ = nullptr;
 
-    struct pq_slot {
-        std::mutex mutex;
-        std::unique_ptr<pq::pool> pool;
-        std::size_t size = 2;
-    };
-    std::shared_ptr<pq_slot> pq_ = std::make_shared<pq_slot>();
+    /**
+     * @brief The slot that holds the shared pool and its lock.
+     *
+     * Declared here and defined in the implementation, so that this header
+     * names neither =libpq=, =<mutex>= nor the pool. Every copy of a context
+     * shares one slot, which is why the slot is shared and not copied.
+     */
+    struct pq_slot;
+
+    std::shared_ptr<pq_slot> pq_;
 };
 
 }

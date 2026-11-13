@@ -183,3 +183,45 @@ TEST_CASE("a process with no time-scaled law refuses a step other than one tick"
     CHECK_THROWS_AS(p.next(2.0), std::invalid_argument);
     CHECK_THROWS_AS(p.next(0.5), std::invalid_argument);
 }
+
+TEST_CASE("gaussian_mixture_model_process takes the normal its step is built on",
+          "[gaussian_mixture_model_process]") {
+    // One component and a standard deviation of one, so the price is exp(z) and
+    // the expected value is a literal.
+    gaussian_mixture_model_process p({0.0}, {1.0}, {1.0}, 100.0, price_stream(42));
+    CHECK(p.supports_external_normal());
+    CHECK(p.next_with_normal(0.0) == Catch::Approx(100.0));
+    CHECK(p.next_with_normal(1.0) == Catch::Approx(100.0 * std::exp(1.0)));
+    CHECK(p.next_with_normal(-0.5) == Catch::Approx(100.0 * std::exp(0.5)));
+}
+
+TEST_CASE("gaussian_mixture_model_process builds the driven step from the component's "
+          "dispersion",
+          "[gaussian_mixture_model_process]") {
+    // One component, so every tick's log return is the mean plus the deviation
+    // times the driver's normal: the correlation with the factor is exactly one.
+    const std::vector<double> normals{0.3, -1.2, 2.0, 0.0, -0.4};
+    gaussian_mixture_model_process p({0.001}, {0.02}, {1.0}, 100.0, price_stream(11));
+    double last = p.current();
+    for (const double z : normals) {
+        const double now = p.next_with_normal(z);
+        CHECK(std::log(now / last) == Catch::Approx(0.001 + 0.02 * z).margin(1e-12));
+        last = now;
+    }
+}
+
+TEST_CASE("gaussian_mixture_model_process still draws the component when it is driven",
+          "[gaussian_mixture_model_process]") {
+    // A zero-variance component leaves the step to its mean, so the driver's
+    // normal reaches the price only through the component's dispersion.
+    gaussian_mixture_model_process p({0.05}, {0.0}, {1.0}, 100.0, price_stream(3));
+    CHECK(p.next_with_normal(5.0) == Catch::Approx(100.0 * std::exp(0.05)));
+    CHECK(p.next_with_normal(-5.0) == Catch::Approx(100.0 * std::exp(0.1)));
+}
+
+TEST_CASE("gaussian_mixture_model_process scales the driven step by its volatility multiplier",
+          "[gaussian_mixture_model_process]") {
+    gaussian_mixture_model_process p({0.01}, {0.01}, {1.0}, 100.0, price_stream(5));
+    p.set_volatility_multiplier(2.0);
+    CHECK(p.next_with_normal(1.0) == Catch::Approx(100.0 * std::exp(0.01 + 0.02)));
+}

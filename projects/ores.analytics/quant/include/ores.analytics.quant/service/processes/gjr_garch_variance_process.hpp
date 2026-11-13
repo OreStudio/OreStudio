@@ -69,6 +69,8 @@ public:
 
     double next() override;
     double next(double elapsed_ticks) override;
+    double next_with_normal(double standard_normal) override;
+    bool supports_external_normal() const override;
     bool supports_variable_step() const override;
     void set_tail_tilt(double tilt) override;
     double max_step() const override;

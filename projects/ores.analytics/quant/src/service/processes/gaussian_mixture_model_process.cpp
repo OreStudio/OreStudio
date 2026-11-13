@@ -60,6 +60,23 @@ double gaussian_mixture_model_process::next() {
     return next(1.0);
 }
 
+double gaussian_mixture_model_process::next_with_normal(double standard_normal) {
+    // The component is the process's own draw and the market's normal is the
+    // step's direction, so a driven step keeps the mixture's shape and takes its
+    // correlation from the factor: the component's dispersion multiplies a
+    // standard normal, which leaves the correlation with the factor unchanged.
+    const int k = component_dist_(rng_);
+    const double sd = multiplier_ * stdevs_[k];
+    const double mean = mean_of(k);
+    const double log_return = sd > 0.0 ? mean + sd * standard_normal : mean;
+    price_ *= std::exp(log_return);
+    return price_;
+}
+
+bool gaussian_mixture_model_process::supports_external_normal() const {
+    return true;
+}
+
 double gaussian_mixture_model_process::next(double elapsed_ticks) {
     if (elapsed_ticks <= 0.0)
         throw std::invalid_argument(

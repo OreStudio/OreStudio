@@ -103,6 +103,22 @@ void gjr_garch_variance_process::roll() {
     day_open_ = close;
 }
 
+double gjr_garch_variance_process::next_with_normal(double standard_normal) {
+    // The inner law's dispersion already carries the day's variance, so the market's
+    // normal passes through unchanged. One normal is one tick, because the inner
+    // process draws its component per tick; a tick that crosses the end of the day
+    // belongs to the day it completes, since one normal cannot be split there.
+    static_cast<void>(inner_->next_with_normal(standard_normal));
+    ticks_into_day_ += 1.0;
+    if (ticks_into_day_ >= frame_.ticks_per_day - tick_tolerance)
+        roll();
+    return inner_->current();
+}
+
+bool gjr_garch_variance_process::supports_external_normal() const {
+    return inner_->supports_external_normal();
+}
+
 bool gjr_garch_variance_process::supports_variable_step() const {
     return inner_->supports_variable_step();
 }

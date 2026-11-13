@@ -137,3 +137,43 @@ TEST_CASE("arithmetic_gaussian_mixture_model_process: a non-positive elapsed is 
     CHECK_THROWS_AS(p.next(0.0), std::invalid_argument);
     CHECK(p.supports_variable_step());
 }
+
+TEST_CASE("arithmetic_gaussian_mixture_model_process takes the normal its step is built on",
+          "[arithmetic_gaussian_mixture_model_process]") {
+    // One component and a standard deviation of one, so the price moves by z.
+    arithmetic_gaussian_mixture_model_process p({0.0}, {1.0}, {1.0}, 100.0, price_stream(42));
+    CHECK(p.supports_external_normal());
+    CHECK(p.next_with_normal(2.0) == Catch::Approx(102.0));
+    CHECK(p.next_with_normal(-0.5) == Catch::Approx(101.5));
+}
+
+TEST_CASE("arithmetic_gaussian_mixture_model_process builds the driven step from the "
+          "component's dispersion",
+          "[arithmetic_gaussian_mixture_model_process]") {
+    // One component, so every tick's change is the mean plus the deviation times
+    // the driver's normal: the correlation with the factor is exactly one.
+    const std::vector<double> normals{0.3, -1.2, 2.0, 0.0, -0.4};
+    arithmetic_gaussian_mixture_model_process p({0.001}, {0.02}, {1.0}, 100.0, price_stream(11));
+    double last = p.current();
+    for (const double z : normals) {
+        const double now = p.next_with_normal(z);
+        CHECK(now - last == Catch::Approx(0.001 + 0.02 * z).margin(1e-12));
+        last = now;
+    }
+}
+
+TEST_CASE("arithmetic_gaussian_mixture_model_process still draws the component when it is "
+          "driven",
+          "[arithmetic_gaussian_mixture_model_process]") {
+    arithmetic_gaussian_mixture_model_process p({0.05}, {0.0}, {1.0}, 100.0, price_stream(3));
+    CHECK(p.next_with_normal(5.0) == Catch::Approx(100.05));
+    CHECK(p.next_with_normal(-5.0) == Catch::Approx(100.10));
+}
+
+TEST_CASE("arithmetic_gaussian_mixture_model_process scales the driven step by its volatility "
+          "multiplier",
+          "[arithmetic_gaussian_mixture_model_process]") {
+    arithmetic_gaussian_mixture_model_process p({0.01}, {0.01}, {1.0}, 100.0, price_stream(5));
+    p.set_volatility_multiplier(2.0);
+    CHECK(p.next_with_normal(1.0) == Catch::Approx(100.01 + 0.02));
+}

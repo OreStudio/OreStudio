@@ -7809,6 +7809,7 @@ const fr: SourceCatalogue = {
                 logFile: 'Journal',
                 noLog: "Aucun journal : le mot de l'exécution",
                 noLogChip: 'Aucun journal',
+                chip: '{name} ({count})',
                 everyLog: 'Tous les journaux',
                 latestTitle: 'Les 5 dernières erreurs',
                 latestCaption: 'Cinq des erreurs enregistrées ; la liste les montre toutes.',

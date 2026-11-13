@@ -291,6 +291,13 @@ export function RunErrorsOverview({
     const field = 'reporting.run.errors';
     const scopeName = (scope: string): string => scope || t(`${field}.unscoped`);
     const fileName = (file: string): string => file || t(`${field}.noLog`);
+    const logs = fileCounts(rows).map((count) => ({ name: count.file, ...count }));
+    const scopes = scopeCounts(rows).map((count) => ({ name: count.scope, ...count }));
+    const partsOf = (counts: readonly (Tally & { readonly name: string })[]) =>
+        counts.map((count) => ({
+            name: count.name,
+            value: count.errors + count.warnings + count.infos,
+        }));
     return (
         <section className="space-y-4">
             <div className="grid gap-4 lg:grid-cols-2">
@@ -298,9 +305,9 @@ export function RunErrorsOverview({
                     <Donut
                         title={t(`${field}.byLog`)}
                         caption={t(`${field}.byLogCaption`)}
-                        parts={fileCounts(rows).map((count) => ({
-                            name: fileName(count.file),
-                            value: count.errors + count.warnings + count.infos,
+                        parts={partsOf(logs).map((part) => ({
+                            ...part,
+                            name: fileName(part.name),
                         }))}
                         format={(value) => String(value)}
                     />
@@ -319,24 +326,14 @@ export function RunErrorsOverview({
                     heading={t(`${field}.byLogTable`)}
                     nameHeader={t(`${field}.logFile`)}
                     nameOf={fileName}
-                    counts={fileCounts(rows).map((count) => ({
-                        name: count.file,
-                        errors: count.errors,
-                        warnings: count.warnings,
-                        infos: count.infos,
-                    }))}
+                    counts={logs}
                     addressOf={fileAddress}
                 />
                 <TallyTable
                     heading={t(`${field}.byScopeTable`)}
                     nameHeader={t(`${field}.scope`)}
                     nameOf={scopeName}
-                    counts={scopeCounts(rows).map((count) => ({
-                        name: count.scope,
-                        errors: count.errors,
-                        warnings: count.warnings,
-                        infos: count.infos,
-                    }))}
+                    counts={scopes}
                     addressOf={scopeAddress}
                 />
             </div>
@@ -481,7 +478,15 @@ export function RunErrorsTable({
                             : inScope.filter((row) => (row.filename ?? '') === choice).length
                     }
                     labelOf={(choice, count) =>
-                        `${choice === EVERY_LOG ? t(`${field}.everyLog`) : choice === '' ? t(`${field}.noLogChip`) : choice} (${count})`
+                        t(`${field}.chip`, {
+                            name:
+                                choice === EVERY_LOG
+                                    ? t(`${field}.everyLog`)
+                                    : choice === ''
+                                      ? t(`${field}.noLogChip`)
+                                      : choice,
+                            count,
+                        })
                     }
                     onChoose={chooseFile}
                 />

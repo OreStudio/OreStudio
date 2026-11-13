@@ -7748,6 +7748,7 @@ const pt: SourceCatalogue = {
                 logFile: 'Registo',
                 noLog: 'Sem registo: a palavra da execução',
                 noLogChip: 'Sem registo',
+                chip: '{name} ({count})',
                 everyLog: 'Todos os registos',
                 latestTitle: 'Últimos 5 erros',
                 latestCaption: 'Cinco dos erros registados; a lista mostra todos.',

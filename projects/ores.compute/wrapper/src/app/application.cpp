@@ -455,6 +455,20 @@ std::string format_cmdline(const std::string& exe, const std::vector<std::string
 /**
  * @brief Read up to max_lines from a text file, returning them joined by '\n'.
  */
+/// The last line the events state as an error, or empty when none does.
+std::string last_error_of(const std::vector<ores::ore::log::engine_log_event>& events) {
+    std::string stated;
+    for (const auto& event : events)
+        if (event.severity == "error")
+            stated = event.message;
+    return stated;
+}
+
+/// The last line of the events, whatever it states, or empty when there are none.
+std::string last_line_of(const std::vector<ores::ore::log::engine_log_event>& events) {
+    return events.empty() ? std::string{} : events.back().message;
+}
+
 std::string tail_file(const fs::path& path, int max_lines = 50) {
     std::ifstream f(path);
     if (!f)
@@ -873,16 +887,12 @@ void process_assignment(ores::nats::service::client& nats,
              * it printed its reason and stopped — so the last line it printed on
              * its stream is the reason in that case.
              */
-            std::string stated;
-            for (const auto& event : ores::ore::log::parse_engine_log_text(ore_log, "log.txt"))
-                if (event.severity == "error")
-                    stated = event.message;
-            if (stated.empty())
-                for (const auto& event :
-                     ores::ore::log::parse_engine_log_text(engine_output, "engine.log"))
-                    stated = event.message;
+            auto reason = last_error_of(ores::ore::log::parse_engine_log_text(ore_log, "log.txt"));
+            if (reason.empty())
+                reason = last_line_of(
+                    ores::ore::log::parse_engine_log_text(engine_output, "engine.log"));
             error_message = "Engine exited with code " + std::to_string(exit_code) +
-                            (stated.empty() ? std::string{} : ": " + stated);
+                            (reason.empty() ? std::string{} : ": " + reason);
             BOOST_LOG_SEV(lg, error) << "Engine exited with code " << exit_code;
             if (!ore_log.empty())
                 BOOST_LOG_SEV(lg, error) << "Engine log:\n" << ore_log;

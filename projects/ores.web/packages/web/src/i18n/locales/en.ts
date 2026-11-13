@@ -7691,6 +7691,7 @@ export const en: SourceCatalogue = {
                 logFile: 'Log',
                 noLog: "No log: the run's own word",
                 noLogChip: 'No log',
+                chip: '{name} ({count})',
                 everyLog: 'Every log',
                 latestTitle: 'Last 5 errors',
                 latestCaption:

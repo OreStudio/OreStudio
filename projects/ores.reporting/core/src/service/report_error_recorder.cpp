@@ -134,15 +134,22 @@ domain::report_error_event make_error(const utility::uuid::tenant_id& tenant_id,
 
 namespace {
 
+/// Whether the run already holds a row of the given severity.
+bool run_holds_a(const ores::database::context& ctx,
+                 const std::string& instance_id,
+                 std::string severity) {
+    messaging::report_error_events_filter only;
+    only.severity = std::move(severity);
+    return !repository::report_error_event_repository()
+                .read_latest_by_report_instance_id(ctx, instance_id, 0, 1, {}, only)
+                .empty();
+}
+
 /// Whether the run already holds the errors of its analytics. A warning row the
 /// recorder wrote for an unplaceable scope is not one of them, so it never
 /// stands in for a batch that has not been read yet.
 bool run_holds_errors(const ores::database::context& ctx, const std::string& instance_id) {
-    messaging::report_error_events_filter only_errors;
-    only_errors.severity = std::string("error");
-    return !repository::report_error_event_repository()
-                .read_latest_by_report_instance_id(ctx, instance_id, 0, 1, {}, only_errors)
-                .empty();
+    return run_holds_a(ctx, instance_id, "error");
 }
 
 /// Whether the run already holds a row its log gave it.
@@ -158,14 +165,7 @@ bool run_holds_errors(const ores::database::context& ctx, const std::string& ins
 /// the vocabulary does not hold, and that warning must not stand in for a log
 /// that has not been read.
 bool run_holds_log_rows(const ores::database::context& ctx, const std::string& instance_id) {
-    const auto holds = [&](std::string severity) {
-        messaging::report_error_events_filter filter;
-        filter.severity = std::move(severity);
-        return !repository::report_error_event_repository()
-                    .read_latest_by_report_instance_id(ctx, instance_id, 0, 1, {}, filter)
-                    .empty();
-    };
-    return holds("error") || holds("info");
+    return run_holds_a(ctx, instance_id, "error") || run_holds_a(ctx, instance_id, "info");
 }
 
 }

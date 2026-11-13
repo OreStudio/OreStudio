@@ -33,6 +33,17 @@ constexpr std::string_view log_expected_header =
     "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,filename,location";
 
 /**
+ * @brief The header the node wrote before the row named its file.
+ *
+ * A row of that contract states the log it came from in its last field and
+ * states no place inside the engine. A release ships the node and this reader
+ * together, but a node still running an older build while this one reads must
+ * not lose its run's whole account to a header it cannot state.
+ */
+constexpr std::string_view log_previous_header =
+    "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source";
+
+/**
  * @brief The records of a file, and what the scan refused.
  */
 struct log_record_scan {
@@ -136,21 +147,24 @@ log_read_outcome read_canonical_log_csv(std::string_view csv) {
     }
 
     const auto stated_header = log_join_record(scan.records.front());
-    if (stated_header != log_expected_header) {
+    const auto previous_contract = stated_header == log_previous_header;
+    if (!previous_contract && stated_header != log_expected_header) {
         outcome.refusals.push_back("the log rows state a header of '" + stated_header + "', not '" +
-                                   std::string(log_expected_header) + "'.");
+                                   std::string(log_expected_header) + "' nor '" +
+                                   std::string(log_previous_header) + "'.");
         return outcome;
     }
+    const auto stated_fields = previous_contract ? log_field_count - 1 : log_field_count;
 
     for (std::size_t i = 1; i < scan.records.size(); ++i) {
         const auto& fields = scan.records[i];
         const auto record_number = i + 1;
         if (fields.size() == 1 && fields[0].find_first_not_of(" \t") == std::string::npos)
             continue;
-        if (fields.size() != log_field_count) {
+        if (fields.size() != stated_fields) {
             outcome.refusals.push_back("record " + std::to_string(record_number) + " states " +
                                        std::to_string(fields.size()) + " fields, not " +
-                                       std::to_string(log_field_count) + ".");
+                                       std::to_string(stated_fields) + ".");
             continue;
         }
         if (fields[1].empty() || fields[3].empty()) {
@@ -169,7 +183,9 @@ log_read_outcome read_canonical_log_csv(std::string_view csv) {
         row.detail = fields[7];
         row.event_time = fields[8];
         row.filename = fields[9];
-        row.location = fields[10];
+        // A row of the previous contract names its file and no place.
+        if (!previous_contract)
+            row.location = fields[10];
         outcome.rows.push_back(std::move(row));
     }
 

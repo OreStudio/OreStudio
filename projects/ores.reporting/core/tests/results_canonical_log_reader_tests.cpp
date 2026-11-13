@@ -117,6 +117,20 @@ TEST_CASE("a quoted message keeps its comma and its quote", "[results][canonical
     CHECK(outcome.rows[0].subject_id == "T1");
 }
 
+TEST_CASE("a file the node wrote before the row named its log is still read",
+          "[results][canonical_log_reader]") {
+    const auto outcome = read_canonical_log_csv(
+        "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source\n"
+        "1,error,Curve,yield curve building failed,,,HKD-HONIA,,2026-Oct-27 19:42:07,log.txt\n");
+
+    REQUIRE(outcome.refusals.empty());
+    REQUIRE(outcome.rows.size() == 1);
+    // The file is the last field of that contract, and the place inside the
+    // engine was not stated at all.
+    CHECK(outcome.rows[0].filename == "log.txt");
+    CHECK(outcome.rows[0].location.empty());
+}
+
 TEST_CASE("an empty log file is refused rather than read as no events",
           "[results][canonical_log_reader]") {
     const auto outcome = read_canonical_log_csv("");

@@ -23,9 +23,9 @@ Hedgr prototyped five market-data screens for its own terminal. ORE Studio has n
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The five screens are prototyped, their journeys written, the machinery they read confirmed, and the instrument catalogue contract is on the wire. |
+| Now           | The five screens and their journeys are done. The instrument catalogue and the rate ladder answer from the service, with 14 green cases. The remaining four contracts are specified but not implemented. |
 | Waiting on    | Nothing.                               |
-| Next          | Answer the instrument catalogue from the service, then the four reads that follow it. |
+| Next          | Curve analytics, the FX montage, the surface metadata and the staleness verdict. Each needs a window over observations, which the store reads one point at a time today. |
 | Last touched  | 2026-11-13                               |
 
 * Acceptance
@@ -97,6 +97,31 @@ and the market-data prototypes in =doc/prototypes/market_data=, on 2026-11-13.
 - [[id:3C677D04-06E4-48F0-9F41-F3CA45861EEB][What an instrument is, against the datum schema]] — the schema is the
   grouping rule, a ladder is one series across =term=, and the party is what
   multiplies series rows.
+
+** Where the server work stands
+
+#+ATTR_HTML: :class hug-leading
+| Contract | Contract on the wire | Service answer | Tested |
+|----------+----------------------+----------------+--------|
+| =list_instruments= | yes | yes | 11 cases |
+| =get_rate_ladder= | yes | yes | 3 cases |
+| =get_curve_analytics= | no | no | — |
+| =get_fx_montage= | no | no | — |
+| surface metadata and slice | partial (the read exists without model, strike convention, delta type, axes or staleness) | no | — |
+| staleness as a server verdict | carried ad hoc on the two reads that exist | no threshold in configuration | — |
+
+** What the next four need
+
+- =get_curve_analytics=: the bootstrap already computes the discount factors and
+  the market rates it read them from; the read needs those exposed from
+  =curve_republish_service=, plus the zero rate, the segment forward and the
+  curve-less-market shift stated once in the protocol.
+- =get_fx_montage= and the surface metadata: both need a *window* over
+  observations, not the latest point. The store reads one datum at a time, so
+  each needs a query over =observation_datetime= rather than
+  =read_latest_for_series=.
+- Staleness: the threshold has to move into configuration before the four reads
+  can state one verdict; today the two shipped reads carry a constant.
 
 * Out of scope
 

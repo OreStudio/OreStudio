@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/show-the-ir-coverage
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
 #+updated: 2026-11-08
-#+environment: prime_origin
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A person can see at a glance which currencies have a public source, a calibrated
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The plan is written. Start with the coverage assembly in the BFF. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-04                               |
+| Next         | =calibrationCoverage= for the interest rates class, and the IR rows it reads. |
+| Last touched | 2026-11-13                              |
 
 * Acceptance
 
@@ -43,6 +43,36 @@ A person can see at a glance which currencies have a public source, a calibrated
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+The screen is the calibration screen with the interest rates class beside
+fx, not a new screen: a person reads one place for "which currencies are
+covered". A row is one supported currency and states its source, the IR
+calibration policy it is read under, its bootstrap config and its latest
+published curve with its as-of; a gap states which of the four is missing
+and the recorded reason.
+
+1. Assemble the rows in the BFF, where the class is already a parameter
+   (=/api/synthetic/calibration/:assetClass=). A row joins three existing
+   reads: the class's synthetic feeds (source and calibration outcome), the
+   IR curve bootstrap configs (the config and its output series), and the
+   published sets of each output series (the latest publish and its as-of).
+   The universe is the union of the feeds and the configs, so a currency
+   that has one and not the other is a row with a gap.
+2. State the gap and its reason per row, in the order a person needs them:
+   no public source, no bootstrap config, no published curve, and a publish
+   older than the feed's cadence. The reason is the one the system records,
+   not a new sentence.
+3. Render the interest rates class on the calibration screen as a coverage
+   table, following =doc/knowledge/ui/feed_screen_standard.org= and the
+   colour rules in =doc/knowledge/ui/ux_language.org=; a gap carries the
+   missing badge the language fixes, not a bespoke colour.
+4. Prove it: a BFF test for the join and each gap reason, and a web test
+   that a row renders its four facts and a gap.
+
+Out of scope: the per-curve inspector. The AUD-AONIA prototype that Gemini
+produced is the right vocabulary for a row's drill-in, but it is a single
+curve's pillars, chart and conventions, with no server contract yet. It is
+captured for a later task, and this task links it.
 
 * Measurements
 

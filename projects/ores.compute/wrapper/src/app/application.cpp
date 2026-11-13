@@ -861,8 +861,21 @@ void process_assignment(ores::nats::service::client& nats,
             const fs::path ore_log_path = job_dir / "Output" / "log.txt";
             const auto ore_log = fs::exists(ore_log_path) ? tail_file(ore_log_path) : std::string{};
             const auto engine_output = ore_log.empty() ? tail_file(engine_log_path) : ore_log;
+            /*
+             * The message names the reason, not the log. Every line the engine
+             * wrote is parsed into the rows the run already carries, so pasting
+             * the log here would state the same thing twice and bury the reason
+             * among notices. The last line that states an error is the reason
+             * the engine gave; when it gave none, the exit code is all that is
+             * known.
+             */
+            const auto events = ores::ore::log::parse_engine_log_text(engine_output, "log.txt");
+            std::string stated;
+            for (const auto& event : events)
+                if (event.severity == "error")
+                    stated = event.message;
             error_message = "Engine exited with code " + std::to_string(exit_code) +
-                            (engine_output.empty() ? "" : "\n" + engine_output);
+                            (stated.empty() ? std::string{} : ": " + stated);
             BOOST_LOG_SEV(lg, error) << "Engine exited with code " << exit_code;
             if (!engine_output.empty())
                 BOOST_LOG_SEV(lg, error) << "Engine output:\n" << engine_output;

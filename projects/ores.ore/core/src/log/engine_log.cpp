@@ -416,8 +416,13 @@ bool is_memory_report(const engine_log_event& event) {
  * run does not store one.
  */
 void assign_unstated_scope(engine_log_event& event) {
-    const auto spoken = event.severity == "error" || event.severity == "warning";
-    if (spoken && event.scope.empty())
+    /*
+     * Every line the run keeps needs a scope, and the engine groups only its
+     * structured lines. A notice about a parameter is as much the engine's word
+     * as a warning about a convention, so a line with no group is the engine's
+     * own whatever its severity.
+     */
+    if (event.scope.empty())
         event.scope = std::string(unstated_scope);
 }
 

@@ -99,26 +99,29 @@ TEST_CASE("a warning is a warning and an alert is an error", "[ore][log]") {
     CHECK(events[4].severity == "info");
 }
 
-TEST_CASE("an error or a warning that states no group is the engine's own", "[ore][log]") {
+TEST_CASE("a line that states no group is the engine's own, whatever its severity", "[ore][log]") {
     /*
      * The engine groups its structured lines and groups nothing in its plain
-     * ones, so a warning about a convention arrives with no group at all. The
-     * run stores it as the engine's own rather than losing it, because a reader
-     * still needs to see what the engine said.
+     * ones, so a warning about a convention and a notice about a parameter both
+     * arrive with no group at all. The run keeps every line it is given, so each
+     * needs a scope: the one that says the engine spoke and named no part of
+     * itself.
      */
     const auto events = parse_engine_log_text(
         "WARNING  [2026-Nov-12 22:03:08.596549]  "
         "(OREData/ored/configuration/conventions.cpp:2866) : Exception parsing convention "
         "CAD-CORRA: Convention already exists for id CAD-CORRA.\n"
-        "INFO     [2026-Nov-12 20:00:00.000000] (a.cpp:5) : news\n",
+        "NOTICE   [2026-Nov-13 15:20:05.206712]    (OREAnalytics/orea/app/parameters.cpp:144) : "
+        "group = markets : pricing = default\n",
         "log.txt");
 
     REQUIRE(events.size() == 2);
     CHECK(events[0].severity == "warning");
     CHECK(events[0].scope == "Engine");
     CHECK(events[0].message.starts_with("Exception parsing convention CAD-CORRA"));
-    // A notice is not stored, so it needs no scope.
-    CHECK(events[1].scope.empty());
+    CHECK(events[1].severity == "notice");
+    CHECK(events[1].scope == "Engine");
+    CHECK(events[1].message == "group = markets : pricing = default");
 }
 
 TEST_CASE("a line the reader cannot structure is kept as what it says", "[ore][log]") {

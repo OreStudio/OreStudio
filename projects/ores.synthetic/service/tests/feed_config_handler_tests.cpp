@@ -420,6 +420,7 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id",
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
                                    "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::fx_vol_surface_feeds:read",
                                    "synthetic::feeds:run"});
 
     // FX start by config_id: the server resolves the config, its children,
@@ -508,6 +509,7 @@ TEST_CASE("feed_config_reports_not_found_and_disabled_uniformly",
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
                                    "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::fx_vol_surface_feeds:read",
                                    "synthetic::feeds:run"});
 
     const auto missing_id = boost::uuids::to_string(boost::uuids::random_generator()());
@@ -585,6 +587,7 @@ TEST_CASE("feed_config_start_rejects_missing_children", "[feed_config_handler][i
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",
                                    "synthetic::ir_curve_generation_configs:read",
+                                   "synthetic::fx_vol_surface_feeds:read",
                                    "synthetic::feeds:run"});
 
     const auto fx_no_comps = send_request<start_feed_request, start_feed_response>(

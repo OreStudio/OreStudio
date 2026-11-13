@@ -38,6 +38,9 @@
 #include "ores.synthetic.core/repository/folder_repository.hpp"
 #include "ores.synthetic.core/repository/fx_spot_fixing_item_repository.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
+#include "ores.synthetic.core/repository/fx_vol_surface_feed_contributor_repository.hpp"
+#include "ores.synthetic.core/repository/fx_vol_surface_feed_expiry_repository.hpp"
+#include "ores.synthetic.core/repository/fx_vol_surface_feed_repository.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
@@ -620,11 +623,110 @@ void feed_kind_registry::reply_unknown_kind(ores::nats::service::client& nats,
         feed_simulation_result{.success = false, .message = "Unknown feed kind: " + kind});
 }
 
+
+/**
+ * @brief The synthetic volatility surface kind.
+ *
+ * The surface has no path to simulate, so its simulate closures refuse and it answers no
+ * subject. Its quotes are read from the surface it steps, which only a running feed has.
+ */
+feed_kind make_fx_vol_surface_kind() {
+    using ores::synthetic::feed::fx_vol_surface_feed_build_input;
+    using ores::synthetic::feed::fx_vol_surface_feed_kind;
+    namespace repo = ores::synthetic::repository;
+
+    feed_kind k;
+    k.kind = std::string(fx_vol_surface_feed_kind);
+    k.config_permission = "synthetic::fx_vol_surface_feeds:read";
+
+    k.candidates = [](const ores::database::context& ctx, const std::string& id) {
+        repo::fx_vol_surface_feed_repository feed_repo;
+        const auto rows = id.empty() ? feed_repo.read_latest(ctx) : feed_repo.read_latest(ctx, id);
+
+        std::vector<feed_kind_candidate> out;
+        out.reserve(rows.size());
+        for (const auto& cfg : rows) {
+            feed_kind_candidate c;
+            c.feed_config_id = boost::uuids::to_string(cfg.id);
+            c.container_id = cfg.config_id;
+            c.source_name = cfg.source_name;
+            c.display_name = cfg.base_currency_code + "/" + cfg.quote_currency_code;
+            c.enabled = cfg.enabled;
+            c.auto_start = cfg.auto_start;
+            c.folder_id = cfg.folder_id;
+            c.asset_class_code = cfg.asset_class_code;
+            c.fx_pair = std::pair{cfg.base_currency_code, cfg.quote_currency_code};
+            c.build_input = [ctx, cfg](const feed::feed_adapter& adapter) -> feed_build_outcome {
+                static_cast<void>(adapter);
+
+                repo::fx_vol_surface_feed_expiry_repository expiry_repo;
+                std::vector<ores::synthetic::domain::fx_vol_surface_feed_expiry> expiries;
+                for (auto& e : expiry_repo.read_latest(ctx))
+                    if (e.feed_id == cfg.id)
+                        expiries.push_back(std::move(e));
+                if (expiries.empty())
+                    return {.input = std::nullopt,
+                            .skip_reason = "Feed config has no Expiry rows: " +
+                                           boost::uuids::to_string(cfg.id)};
+
+                repo::fx_vol_surface_feed_contributor_repository contributor_repo;
+                std::vector<std::string> contributors;
+                for (auto& row : contributor_repo.read_latest(ctx))
+                    if (row.feed_id == cfg.id)
+                        contributors.push_back(boost::uuids::to_string(row.contributor_id));
+                if (contributors.empty())
+                    return {.input = std::nullopt,
+                            .skip_reason = "Feed config has no Contributor rows: " +
+                                           boost::uuids::to_string(cfg.id)};
+
+                fx_vol_surface_feed_build_input in;
+                in.config = cfg;
+                in.expiries = std::move(expiries);
+                in.contributors = std::move(contributors);
+                /*
+                 * The surface is quoted against a market with no rates and a spot of one.
+                 * The quoted volatilities do not depend on the spot level: the moneyness a
+                 * smile is read at is the strike over the forward, and a common scale
+                 * cancels. So this is the pair's own vol surface rather than an
+                 * approximation of it, until the pair's curves are wired and the market is
+                 * read from them.
+                 */
+                in.market = {.spot = 1.0, .domestic_discount = 1.0, .foreign_discount = 1.0};
+                /*
+                 * The pair's own convention is a refdata row, and the mapping from it lives in
+                 * the market data service. Until the feed is handed that mapping, it quotes
+                 * the convention the derived source quotes and states that it does.
+                 */
+                in.convention = {
+                    .atm = ores::analytics::quant::math::fx_atm_type::delta_neutral,
+                    .delta = ores::analytics::quant::math::fx_delta_type::spot,
+                    .favour = ores::analytics::quant::math::fx_risk_reversal_favour::call,
+                    .butterfly = ores::analytics::quant::math::fx_butterfly_style::smile};
+                in.deltas = {0.25, 0.10};
+                return {.input = feed::feed_build_input{std::move(in)}, .skip_reason = {}};
+            };
+            out.push_back(std::move(c));
+        }
+        return out;
+    };
+
+    k.simulate_subject.clear();
+    k.decode_simulate = [](const ores::nats::message&) -> std::optional<feed_simulate_envelope> {
+        return std::nullopt;
+    };
+    k.reply_simulate = [](ores::nats::service::client&,
+                          const ores::nats::message&,
+                          const feed_simulation_result&) {
+    };
+    return k;
+}
+
 feed_kind_registry
 make_default_feed_kind_registry(feed_kind_registry::adapter_lookup_fn adapter_of_provider) {
     feed_kind_registry registry(std::move(adapter_of_provider));
     registry.register_kind(make_fx_spot_kind());
     registry.register_kind(make_ir_curve_kind());
+    registry.register_kind(make_fx_vol_surface_kind());
     return registry;
 }
 

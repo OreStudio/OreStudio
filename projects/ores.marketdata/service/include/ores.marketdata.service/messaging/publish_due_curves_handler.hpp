@@ -114,7 +114,7 @@ public:
      *
      * Lists the current tenant's IR curve bootstrap configs and publishes each
      * one at @p as_of through the person's publish path. The firing states the
-     * instant; a test states its own, so two firings can be told apart.
+     * instant for every curve it publishes.
      */
     static publish_due_curves_response
     publish_all(const ores::database::context& req_ctx,
@@ -148,7 +148,7 @@ public:
                 outcome.published = answer.success && answer.published_at.has_value();
                 outcome.message = answer.message;
                 if (answer.success && !answer.published_at)
-                    outcome.message = "raised. " + answer.message;
+                    outcome.message = "Raised; it waits on a decision. " + answer.message;
             } catch (const std::exception& e) {
                 outcome.message = e.what();
             }
@@ -167,7 +167,10 @@ public:
             resp.curves.push_back(std::move(outcome));
         }
 
-        resp.success = true;
+        // The sweep succeeded only when every curve it visited published. A
+        // curve that failed is named in its own outcome, so the response can
+        // say that the firing did not do what it was asked.
+        resp.success = published == configs.size();
         resp.message = "published " + std::to_string(published) + " of " +
                        std::to_string(configs.size()) + " curve(s)";
         BOOST_LOG_SEV(publish_due_curves_handler_lg(), info)

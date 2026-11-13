@@ -61,15 +61,16 @@ superseded.
    the caller's own token. It measures each curve, logs its name, as-of,
    duration and outcome, and names a failure in the response. A curve
    whose compute or publish fails keeps its previous publish.
-2. Let the scheduler send an authenticated request: extend the
-   =nats_publish= action payload with =authenticated= and =body=. When
-   =authenticated= is set, send an =authenticated_request= with the
-   scheduler's service token; the report path keeps its own shape.
+2. Let the scheduler send an authenticated request. As built, this is a new
+   =nats_request= action rather than a flag on =nats_publish=: that action
+   already shapes a report trigger from its payload, and mixing an empty
+   request into it would make one kind guess another's body. The request is
+   the no-member body, encoded in the process wire format.
 3. Grant =SchedulerService= the curve compute and publish permissions in
    the IAM role seed, so the scheduler's token passes the handlers.
 4. Seed one job, =ores.marketdata.curve_republish=, every 15 minutes,
-   action =nats_publish=, subject =marketdata.v1.ops.publish_due_curves=,
-   authenticated. The job row states the cadence.
+   action =nats_request=, subject =marketdata.v1.ops.publish_due_curves=.
+   The job row states the cadence.
 5. Prove it: tests for the sweep (publishes and supersedes, keeps the
    previous publish on a failed compute, names the failure), for the
    scheduler payload, and for the permission refusal; then fire the job
@@ -157,18 +158,21 @@ Acceptance:
   publish supersedes the previous one. Met: the 14:15 firing published 20 of
   20 curves and left 40 earlier set records superseded.
 - The log names each curve, its as-of and its duration, and a failed bootstrap
-  leaves the previous curve published. Met: each line carries the name, the
-  as-of and the duration; the service test covers the failing curve keeping
-  its previous publish and being named.
+  leaves the previous curve published. Met in part: each line carries the
+  name, the as-of and the duration, and the service test names the curve whose
+  bootstrap fails. That the failure leaves the previous publish in place is the
+  gate's write order, not covered by a test.
 
 The cadence is the job row's, not a per-curve column: the curves share one
 market, and a per-curve interval is a later change.
 
 Limitations:
 
-- The sweep acts in the caller's tenant. The system tenant auto-approves the
-  publish; any other tenant raises a request and waits for a decider, and the
-  response says so.
+- The sweep acts in the caller's tenant, because the repository reads through
+  the request context. The seeded job's caller is the scheduler service
+  account, which works in the system tenant, so a firing publishes the
+  installation's curves. The system tenant auto-approves the publish; any other
+  tenant raises a request and waits for a decider, and the response says so.
 - The full local gate did not reach green: the =web= check fails on trunk
   because the BFF workflow-progress fixture lacks the progress members that
   #4660 added. That failure is covered elsewhere.

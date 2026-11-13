@@ -4991,6 +4991,28 @@ export const en: SourceCatalogue = {
             assetClass: 'Asset class',
             classes: {
                 fx: 'FX spot',
+                interest_rates: 'IR curves',
+            },
+            ir: {
+                title: 'IR curve coverage',
+                lead: 'One row per currency the system holds a curve for: the source it reads, the bootstrap config that builds its curve, and the latest curve published.',
+                currency: 'Currency',
+                source: 'Source',
+                window: 'Window (days)',
+                bootstrap: 'Bootstrap config',
+                published: 'Latest published',
+                stateHeader: 'State',
+                empty: 'No currency holds an IR curve.',
+                state: {
+                    published: 'Published',
+                    no_feed: 'No feed',
+                    no_source: 'No public source',
+                    no_curve_config: 'No curve config',
+                    no_publish: 'No publish',
+
+                    not_live: 'Not in use',
+                    stale_publish: 'Stale publish',
+                },
             },
             policyLine: {
                 automatic: 'Automatic: {window}-day window, {inverse}, {order}, {fallback}.',

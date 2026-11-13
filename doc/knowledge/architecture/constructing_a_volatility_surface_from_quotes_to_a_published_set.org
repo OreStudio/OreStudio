@@ -86,7 +86,13 @@ expiry is resolved to a date through the reference data, as a curve's tenor is
 ([[id:0220F3F7-C674-47EE-91CE-1C04804B4558][Tenor and Curve Bootstrapping Architecture]]),
 and each strike label is resolved to a strike through the pair's delta and ATM
 conventions and the forward to the expiry, which the compute reads from the
-published curves of the two currencies.
+party's *own* published curves of the two currencies -- not from the curves of
+whoever published the quotes. This is the party side of the forward question;
+the vendor's side, which is where the quotes' own strikes came from, is
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]]. Because the vendor strikes
+its quotes against one forward and the party re-reads them against a bootstrap of
+them, the two agree to the fit of the party's bootstrap and not exactly, which is
+the tolerance that side's round trip states.
 
 A missing observation is not a refusal by itself, because contributors are
 expected to leave points out. A pillar with no observation from any of its

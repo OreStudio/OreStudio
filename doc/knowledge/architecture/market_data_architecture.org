@@ -199,11 +199,13 @@ section depends on it.
 2. [[id:0CB45982-0B4C-49DC-87AA-C69C6B7E7A98][The FX spot generation config]], then [[id:7493D798-DD0D-43A5-8DAB-6E63377253DC][The GMM component]], then [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]]. One asset class end to end.
 3. [[id:316F0EA0-2DA4-4E96-87D5-F4EAE7490938][The IR curve generation config]], then [[id:F15697C8-091E-4FA7-804E-C49021B9BDEF][The IR curve template and its parameters]], then [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]], then [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]].
    The second asset class.
-4. [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]].
+4. [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]].
+   How a curve reaches a surface: the run's own latent curve, the market board it publishes to, the pair's market at each expiry, and the strike solve. Read after the IR curve because it is the step between the two.
+5. [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]].
    The third asset class, the FX volatility surface, read after the IR curve because its generator follows the curve's, with the one step a curve does not need: contributors between the state and the quotes.
-5. [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]]. The process interface and the seeding rule.
-6. [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]. The mathematics.
-7. [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]]. The dry-run operations.
+6. [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]]. The process interface and the seeding rule.
+7. [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]]. The mathematics.
+8. [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]]. The dry-run operations.
 
 After this section a reader is competent at reading a generator config as a recipe
 and at saying which parts of a new asset class are config and which are code.

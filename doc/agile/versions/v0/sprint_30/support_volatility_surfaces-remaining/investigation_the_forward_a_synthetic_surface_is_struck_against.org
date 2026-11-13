@@ -275,6 +275,37 @@ Decisions for the owner before the work is raised:
   round-trip test, the alternative is to state the tolerance the test may
   assume, as the surface tests already do.
 
+* Outcome
+
+The analysis was carried into the design rather than left here. The durable
+statements now live on
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]], and the pages that own
+their subjects were corrected where they were ambiguous:
+
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] -- the curve is named as the
+  generator's state with the quotes as its observations (interest rate curves);
+  a new subsection, "Where the forward comes from", states the interface and the
+  two measured facts (from state to quotes); and a new section, "How this compares
+  to the literature", places the design beside Kienitz and van den Berg's two
+  papers.
+- [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]] --
+  "the two discount curves last published" named no publisher. It now names the
+  run's own board, and says why a party's published curves cannot be the source.
+- [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]] --
+  states that the vendor holds the curve every surface is struck against, and
+  that the contributor layer sits on top of it.
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] -- "the
+  published curves of the two currencies" is now explicitly the party's own, with
+  the bootstrap difference stated.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] -- the new page is item 4 of the synthetic
+  generation reading order.
+
+What is still the owner's: the four choices under Recommendations are recorded in
+the design with the alternatives weighed and a recommendation beside each, and the
+story's Decisions entry carries them as proposed. No code changed as a result of
+this investigation: the branch's code change is the shared market resolution,
+which stands on its own.
+
 * See also
 
 - [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Read the pair's curves and show the run's market]] -- the task whose first

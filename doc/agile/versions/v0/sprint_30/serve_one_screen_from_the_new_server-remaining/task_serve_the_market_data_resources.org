@@ -28,9 +28,9 @@ The gateway has no part for the market data area. Add the part with the adapter 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The part is stood up and answers the adapters read. Its other groups are listed in the Plan. |
+| Now          | The part is stood up, linked into the server and answers group 1: the adapters read, paired in the inventory. Groups 2 to 6 are listed in the Plan and none has started. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve the subscriptions and routes group. |
+| Next         | Serve the subscriptions and routes group (6 routes). |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -75,7 +75,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The part's test suite | 2 cases, 10 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.marketdata.tests= | 82e03ecd4e |
+| The market-data area's routes the C++ server answers | 1 of 31 paired | =python3 build/scripts/route_inventory.py --check= | 82e03ecd4e |
 
 * Notes
 

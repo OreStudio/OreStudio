@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/build-the-runs-market-board
-#+pr:
+#+pr: 4686
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -223,7 +223,7 @@ The ordering risk is real and is the point of the tick-time gate: the scheduler'
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4686][#4686]] | [quant,synthetic] Strike every surface against the run's curve |
 
 * Review
 
@@ -294,7 +294,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4686][#4686]] | [quant,synthetic] Strike every surface against the run's curve |
 
 * Review
 

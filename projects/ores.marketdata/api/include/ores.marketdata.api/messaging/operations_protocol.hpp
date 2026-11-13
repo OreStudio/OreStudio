@@ -479,6 +479,107 @@ struct list_instruments_response {
                            const list_instruments_response&) = default;
 };
 
+/**
+ * @brief One provider's quote of one rung.
+ *
+ * A provider that does not quote a rung has no entry, rather than a zero: a
+ * gap is what the desk needs to see.
+ */
+struct rung_quote {
+    std::string provider_code;
+    double value{};
+    std::chrono::system_clock::time_point as_of;
+    std::int64_t age_seconds{};
+    bool stale = false;
+    std::string series_id;
+
+    friend bool operator==(const rung_quote&, const rung_quote&) = default;
+};
+
+/**
+ * @brief The value the server derives across the quoting providers.
+ *
+ * The method is a word the server states, so the column can say what it is.
+ * A consensus over one value says so by naming a count of one.
+ */
+struct ladder_consensus {
+    double value{};
+    std::string method;
+    int providers_used = 0;
+
+    friend bool operator==(const ladder_consensus&, const ladder_consensus&) = default;
+};
+
+/**
+ * @brief One rung: a tenor, its maturity and its quotes.
+ *
+ * The maturity date and the year fraction are the server's, because the
+ * calendar, the day count and the tenor convention are server facts. A
+ * client cannot compute either, and must not try.
+ */
+struct rate_ladder_rung {
+    std::string tenor;
+    std::chrono::year_month_day maturity_date;
+    double year_fraction{};
+    std::vector<rung_quote> quotes;
+    ladder_consensus consensus;
+
+    friend bool operator==(const rate_ladder_rung&, const rate_ladder_rung&) = default;
+};
+
+/**
+ * @brief Reads one currency's rate ladder at an as-of.
+ *
+ * A ladder is one series read across its term axis, not several series joined:
+ * the provider dimension is one series row per provider, and each row states
+ * every rung. The maturity dates and their order are the server's.
+ *
+ * Rungs are ordered by maturity date, so a rung quoted with a convention (ON,
+ * TN, SN) sorts before 1W and carries its own date.
+ */
+struct get_rate_ladder_request {
+    using response_type = struct get_rate_ladder_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_rate_ladder";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string party_id;
+    std::string currency;
+    std::string instrument_type;
+    std::string forward_start;
+    std::chrono::system_clock::time_point as_of;
+    std::vector<std::string> providers;
+    std::int64_t limit = 0;
+
+    friend bool operator==(const get_rate_ladder_request&,
+                           const get_rate_ladder_request&) = default;
+};
+
+/**
+ * @brief The ladder, in maturity order, and the facts its numbers rest on.
+ *
+ * The counts and the as-of travel with the rungs so a person never reads a
+ * rate without the instrument, the forward start and the currency it belongs
+ * to.
+ */
+struct get_rate_ladder_response {
+    bool success = false;
+    std::string message;
+    std::string currency;
+    std::string instrument_type;
+    std::string forward_start;
+    std::chrono::system_clock::time_point as_of;
+    int provider_count = 0;
+    std::vector<rate_ladder_rung> rungs;
+
+    friend bool operator==(const get_rate_ladder_response&,
+                           const get_rate_ladder_response&) = default;
+};
+
 struct crm_rate_item {
     std::string crm_name;
     std::string base_currency_code;
@@ -2063,6 +2164,101 @@ struct store_market_state_response {
 }
 
 /**
+ * @brief The members of rung_quote, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<rung_quote>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"provider_code", &rung_quote::provider_code},
+        ::ores::utility::codec::field{"value", &rung_quote::value},
+        ::ores::utility::codec::field{"as_of", &rung_quote::as_of},
+        ::ores::utility::codec::field{"age_seconds", &rung_quote::age_seconds},
+        ::ores::utility::codec::field{"stale", &rung_quote::stale},
+        ::ores::utility::codec::field{"series_id", &rung_quote::series_id},
+    };
+}
+
+/**
+ * @brief The members of ladder_consensus, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<ladder_consensus>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"value", &ladder_consensus::value},
+        ::ores::utility::codec::field{"method", &ladder_consensus::method},
+        ::ores::utility::codec::field{"providers_used", &ladder_consensus::providers_used},
+    };
+}
+
+/**
+ * @brief The members of rate_ladder_rung, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<rate_ladder_rung>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"tenor", &rate_ladder_rung::tenor},
+        ::ores::utility::codec::field{"maturity_date", &rate_ladder_rung::maturity_date},
+        ::ores::utility::codec::field{"year_fraction", &rate_ladder_rung::year_fraction},
+        ::ores::utility::codec::field{"quotes", &rate_ladder_rung::quotes},
+        ::ores::utility::codec::field{"consensus", &rate_ladder_rung::consensus},
+    };
+}
+
+/**
+ * @brief The members of get_rate_ladder_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_rate_ladder_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"party_id", &get_rate_ladder_request::party_id},
+        ::ores::utility::codec::field{"currency", &get_rate_ladder_request::currency},
+        ::ores::utility::codec::field{"instrument_type", &get_rate_ladder_request::instrument_type},
+        ::ores::utility::codec::field{"forward_start", &get_rate_ladder_request::forward_start},
+        ::ores::utility::codec::field{"as_of", &get_rate_ladder_request::as_of},
+        ::ores::utility::codec::field{"providers", &get_rate_ladder_request::providers},
+        ::ores::utility::codec::field{"limit", &get_rate_ladder_request::limit},
+    };
+}
+
+/**
+ * @brief The members of get_rate_ladder_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_rate_ladder_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &get_rate_ladder_response::success},
+        ::ores::utility::codec::field{"message", &get_rate_ladder_response::message},
+        ::ores::utility::codec::field{"currency", &get_rate_ladder_response::currency},
+        ::ores::utility::codec::field{"instrument_type",
+                                      &get_rate_ladder_response::instrument_type},
+        ::ores::utility::codec::field{"forward_start", &get_rate_ladder_response::forward_start},
+        ::ores::utility::codec::field{"as_of", &get_rate_ladder_response::as_of},
+        ::ores::utility::codec::field{"provider_count", &get_rate_ladder_response::provider_count},
+        ::ores::utility::codec::field{"rungs", &get_rate_ladder_response::rungs},
+    };
+}
+
+/**
  * @brief The members of crm_rate_item, named as the wire names them and in the order
  * the type declares them.
  *
@@ -3139,6 +3335,58 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::list_instruments_response& v);
     static ores::marketdata::messaging::list_instruments_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::rung_quote> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::rung_quote& v);
+    static ores::marketdata::messaging::rung_quote read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::rung_quote& v);
+    static ores::marketdata::messaging::rung_quote read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::ladder_consensus> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::ladder_consensus& v);
+    static ores::marketdata::messaging::ladder_consensus read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::ladder_consensus& v);
+    static ores::marketdata::messaging::ladder_consensus
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::rate_ladder_rung> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::rate_ladder_rung& v);
+    static ores::marketdata::messaging::rate_ladder_rung read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::rate_ladder_rung& v);
+    static ores::marketdata::messaging::rate_ladder_rung
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_rate_ladder_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_rate_ladder_request& v);
+    static ores::marketdata::messaging::get_rate_ladder_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::get_rate_ladder_request& v);
+    static ores::marketdata::messaging::get_rate_ladder_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_rate_ladder_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_rate_ladder_response& v);
+    static ores::marketdata::messaging::get_rate_ladder_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_rate_ladder_response& v);
+    static ores::marketdata::messaging::get_rate_ladder_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

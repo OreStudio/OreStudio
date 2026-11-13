@@ -1067,6 +1067,252 @@ filtered set.
 :cpp_type: std::string
 :END:
 
+** rung_quote
+
+One provider's quote of one rung, with the instant it was taken and the
+server's verdict on it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One provider's quote of one rung.
+ *
+ * A provider that does not quote a rung has no entry, rather than a zero: a
+ * gap is what the desk needs to see.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** value
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+The rate as a decimal, never a percentage.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** age_seconds
+:PROPERTIES:
+:cpp_type: std::int64_t
+:END:
+
+*** stale
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The series the quote was read from, which the tick read accepts.
+
+** ladder_consensus
+
+The value the server derives across the providers that quote a rung.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The value the server derives across the quoting providers.
+ *
+ * The method is a word the server states, so the column can say what it is.
+ * A consensus over one value says so by naming a count of one.
+ */
+#+end_src
+
+*** value
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** method
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** providers_used
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+** rate_ladder_rung
+
+One rung of the ladder: its tenor, the date the server resolved, and the
+quotes the providers gave for it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One rung: a tenor, its maturity and its quotes.
+ *
+ * The maturity date and the year fraction are the server's, because the
+ * calendar, the day count and the tenor convention are server facts. A
+ * client cannot compute either, and must not try.
+ */
+#+end_src
+
+*** tenor
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The rung's tenor in the spelling the shape stores.
+
+*** maturity_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** year_fraction
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** quotes
+:PROPERTIES:
+:cpp_type: std::vector<rung_quote>
+:END:
+
+*** consensus
+:PROPERTIES:
+:cpp_type: ladder_consensus
+:END:
+
+** get_rate_ladder_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_rate_ladder
+:response: get_rate_ladder_response
+:END:
+
+Reads one currency's rate ladder at an as-of: every rung in maturity order,
+one quote per provider, and the consensus the server derives.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads one currency's rate ladder at an as-of.
+ *
+ * A ladder is one series read across its term axis, not several series joined:
+ * the provider dimension is one series row per provider, and each row states
+ * every rung. The maturity dates and their order are the server's.
+ *
+ * Rungs are ordered by maturity date, so a rung quoted with a convention (ON,
+ * TN, SN) sorts before 1W and carries its own date.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional; empty means the session's own party.
+
+*** currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** instrument_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The schema's spelling, such as `ir_swap`.
+
+*** forward_start
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional; empty matches any forward start.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+Empty means now, resolved server-side.
+
+*** providers
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+Optional; empty means every provider that quotes the ladder.
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+Zero means the server's default page, not everything.
+
+** get_rate_ladder_response
+
+The ladder, in maturity order, and the facts its numbers rest on.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The ladder, in maturity order, and the facts its numbers rest on.
+ *
+ * The counts and the as-of travel with the rungs so a person never reads a
+ * rate without the instrument, the forward start and the currency it belongs
+ * to.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** instrument_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** forward_start
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** provider_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** rungs
+:PROPERTIES:
+:cpp_type: std::vector<rate_ladder_rung>
+:END:
+
 ** crm_rate_item
 
 One CRM rate: direct or triangulated, indistinguishable to the caller -- see

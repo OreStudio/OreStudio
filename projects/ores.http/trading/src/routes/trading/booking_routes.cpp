@@ -92,14 +92,6 @@ boost::uuids::uuid stated_by_the_service() {
     return ores::utility::uuid::tenant_id::system().to_uuid();
 }
 
-/// Each object written as JSON, in an array.
-std::string array_of(const std::vector<std::string>& objects) {
-    std::string out = "[";
-    for (const auto& object : objects)
-        out += (out.size() == 1 ? "" : ",") + object;
-    return out + "]";
-}
-
 /// Why the deal is a draft, and what the desk stated to book it.
 struct trade_body final {
     std::string bookId;
@@ -263,7 +255,7 @@ trading_messaging::put_trade_link_request link_of(const http_request& req) {
     const auto body = rr::read_body<booking::link_body>(req.body);
     if (!body)
         rr::invalid(sentence);
-    const auto link_type = rr::trimmed(body->linkType);
+    const auto& link_type = body->linkType;
     if (link_type.empty() || rr::characters_of(link_type) > 80)
         rr::invalid(sentence);
     trading_messaging::put_trade_link_request msg;
@@ -361,7 +353,7 @@ booking_of(const http_request& req, const boost::uuids::uuid& trade_id, const st
 
 }
 
-} // namespace booking
+}
 
 std::vector<std::string>
 booking_routes::party_books_json(const std::vector<ores::refdata::domain::book>& books,
@@ -390,7 +382,8 @@ booking_routes::identifier_schemes_json(const std::vector<trading_domain::trade_
             if (!row.id_type.empty())
                 codes.push_back(row.id_type);
     std::sort(codes.begin(), codes.end());
-    codes.erase(std::unique(codes.begin(), codes.end()), codes.end());
+    if (declared.empty())
+        codes.erase(std::unique(codes.begin(), codes.end()), codes.end());
     std::vector<std::string> out;
     out.reserve(codes.size());
     for (const auto& code : codes)
@@ -438,8 +431,9 @@ void booking_routes::register_routes(
                                           used_identifiers(req, session) :
                                           std::vector<trading_domain::trade_identifier>{};
                     return http_response::json(
-                        "{\"books\":" + array_of(books) + ",\"issues\":" + json::write(issues) +
-                        ",\"idTypes\":" + array_of(identifier_schemes_json(declared, used)) + "}");
+                        "{\"books\":" + rr::array_of(books) + ",\"issues\":" + json::write(issues) +
+                        ",\"idTypes\":" + rr::array_of(identifier_schemes_json(declared, used)) +
+                        "}");
                 });
             }));
 

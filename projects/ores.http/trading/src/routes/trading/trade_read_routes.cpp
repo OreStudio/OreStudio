@@ -76,53 +76,12 @@ constexpr int trade_page_most_rows = 1000;
 /// The identifier types a desk quotes, in the order the screen prefers them.
 constexpr std::array<std::string_view, 4> identifier_order{"Internal", "UTI", "USI", "ORE"};
 
-/// A JSON object with each named member set, replacing a member of the same name.
-std::string with_members(const std::string& object,
-                         const std::vector<std::pair<std::string, std::string>>& members) {
-    const std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> doc(
-        yyjson_read(object.data(), object.size(), 0), &yyjson_doc_free);
-    if (!doc || !yyjson_is_obj(yyjson_doc_get_root(doc.get())))
-        throw std::logic_error("A trade row is not written as an object.");
-    const std::unique_ptr<yyjson_mut_doc, decltype(&yyjson_mut_doc_free)> out(
-        yyjson_doc_mut_copy(doc.get(), nullptr), &yyjson_mut_doc_free);
-    auto* root = yyjson_mut_doc_get_root(out.get());
-    for (const auto& [name, value] : members) {
-        const std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> parsed(
-            yyjson_read(value.data(), value.size(), 0), &yyjson_doc_free);
-        if (!parsed)
-            throw std::logic_error("A member added to a trade row is not JSON.");
-        yyjson_mut_obj_put(root,
-                           yyjson_mut_strncpy(out.get(), name.data(), name.size()),
-                           yyjson_val_mut_copy(out.get(), yyjson_doc_get_root(parsed.get())));
-    }
-    std::size_t length = 0;
-    char* text = yyjson_mut_write(out.get(), 0, &length);
-    if (text == nullptr)
-        throw std::runtime_error("A trade row could not be written as JSON.");
-    std::string written(text, length);
-    std::free(text);
-    return written;
-}
-
 std::string text_of(const boost::uuids::uuid& id) {
     return boost::uuids::to_string(id);
 }
 
 std::string text_of(const std::optional<boost::uuids::uuid>& id) {
     return id ? boost::uuids::to_string(*id) : std::string();
-}
-
-/// Each row written as JSON, in an array.
-template <typename Row>
-std::string array_of(const std::vector<Row>& rows) {
-    return json::write(rows);
-}
-
-std::string array_of(const std::vector<std::string>& objects) {
-    std::string out = "[";
-    for (const auto& o : objects)
-        out += (out.size() == 1 ? "" : ",") + o;
-    return out + "]";
 }
 
 /// The ids named, without repeats, in the order first named.
@@ -134,13 +93,14 @@ std::vector<boost::uuids::uuid> distinct(const std::vector<boost::uuids::uuid>& 
     return out;
 }
 
-/// The rows a read the page can do without answers, or none when it refuses.
+/// The rows a read the page can do without answers, or none when the caller may
+/// not read them. A service that cannot answer is not the same thing, so it
+/// travels rather than reading as an empty page.
 template <typename Request, typename Rows>
 auto optional_all(const http_request& req, nats_client& session, Request msg, Rows member) {
     try {
         return forwarding::forward_all(req, session, std::move(msg), member);
     } catch (const rr::refusal&) {
-    } catch (const std::exception&) {
     }
     return std::remove_cvref_t<decltype(std::declval<typename Request::response_type>().*member)>{};
 }
@@ -331,7 +291,7 @@ std::string instrument_members(const http_request& req,
             issue = json::write(issues.front());
     }
     return R"("routed":true,"refused":false,"terms":)" +
-           with_members(json::write(terms), {{"issue", issue}});
+           rr::object_with_members(json::write(terms), {{"issue", issue}});
 }
 
 }
@@ -400,7 +360,7 @@ std::vector<std::string> trade_read_routes::enriched_rows(
         const auto id = text_of(s.id);
         const auto trade = trade_of.find(id);
         const bool is_structure = s.row_kind == "structure";
-        out.push_back(with_members(
+        out.push_back(rr::object_with_members(
             json::write(s),
             {{"identifier",
               json::write(is_structure ? found_in(structure_reference, id) :
@@ -446,11 +406,11 @@ std::string trade_read_routes::links_json(const std::vector<trading_domain::trad
     for (const auto& l : links) {
         const auto other = text_of(other_is_to ? l.to_trade_id : l.from_trade_id);
         const auto label = labels.find(other);
-        rows.push_back(with_members(
+        rows.push_back(rr::object_with_members(
             json::write(l),
             {{"other_label", json::write(label == labels.end() ? std::string() : label->second)}}));
     }
-    return array_of(rows);
+    return rr::array_of(rows);
 }
 
 void trade_read_routes::register_routes(
@@ -474,7 +434,7 @@ void trade_read_routes::register_routes(
                     const auto reply = forwarding::forward(req, session, page_of(req));
                     rr::require_ok(reply.result);
                     return http_response::json(
-                        "{\"rows\":" + array_of(enrich(req, session, reply.trade_summaries)) +
+                        "{\"rows\":" + rr::array_of(enrich(req, session, reply.trade_summaries)) +
                         ",\"total\":" + std::to_string(reply.total) + "}");
                 });
             }));
@@ -598,15 +558,15 @@ void trade_read_routes::register_routes(
                         &trading_messaging::list_trade_versions_response::versions);
 
                     return http_response::json(
-                        "{\"trade\":" + trade + ",\"identifiers\":" + array_of(identifiers) +
-                        ",\"roles\":" + array_of(roles) + ",\"booking\":" +
+                        "{\"trade\":" + trade + ",\"identifiers\":" + json::write(identifiers) +
+                        ",\"roles\":" + json::write(roles) + ",\"booking\":" +
                         (bookings.empty() ? std::string("null") : json::write(bookings.front())) +
                         "," +
                         instrument_members(req, session, summaries.front().instrument_type, id) +
                         ",\"links\":{\"from\":" + links_json(from_links, true, labels) +
                         ",\"to\":" + links_json(to_links, false, labels) + "}" +
                         ",\"structures\":" + structures_json(memberships, references) +
-                        ",\"history\":" + array_of(versions) + "}");
+                        ",\"history\":" + json::write(versions) + "}");
                 });
             }));
 

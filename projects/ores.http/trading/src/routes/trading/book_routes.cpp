@@ -68,19 +68,6 @@ constexpr std::size_t most_lines = 1000;
 /// The largest text a line's commentary columns hold.
 constexpr std::size_t long_text = 2000;
 
-/// Each object written as JSON, in an array.
-std::string array_of(const std::vector<std::string>& objects) {
-    std::string out = "[";
-    for (std::size_t i = 0; i < objects.size(); ++i)
-        out += (i == 0 ? "" : ",") + objects[i];
-    return out + "]";
-}
-
-/// The text without its leading and trailing spaces.
-std::string trimmed(const std::string& raw) {
-    return rr::trimmed(raw);
-}
-
 /// The claim a write makes about the row: new when no version is stated.
 ores::utility::domain::precondition claim_of(std::optional<std::uint32_t> version) {
     using ores::utility::domain::precondition_kind;
@@ -116,61 +103,51 @@ struct portfolio_write_body final {
                                               field{"write", &portfolio_write_body::write}};
 }
 
-/// One proposed write, as the client states it.
+/// One proposed write, as the screen states it.
 struct change_line final {
-    int version = 0;
-    std::string id;
-    std::string request_id;
-    int line_no = 0;
     std::string operation;
-    int base_version = 0;
-    bool applied = false;
-    std::string entity_id;
-    std::string party_id;
+    std::string entityId;
+    int baseVersion = 0;
+    std::string partyId;
     std::string name;
     std::string description;
-    std::string parent_portfolio_id;
-    std::optional<std::string> owner_unit_id;
-    std::string functional_currency;
-    std::string gl_account_ref;
-    std::string cost_center;
-    std::string book_status;
-    std::string regulatory_book_type;
-    std::string book_purpose_type;
-    std::string ledger_feed_type;
-    bool is_sweepable = false;
-    bool restricts_product_types = false;
-    std::string rates_centre_code;
-    std::optional<std::string> sandbox_id;
+    std::string parentPortfolioId;
+    std::optional<std::string> ownerUnitId;
+    std::string functionalCurrency;
+    std::string glAccountRef;
+    std::string costCenter;
+    std::string bookStatus;
+    std::string regulatoryBookType;
+    std::string bookPurposeType;
+    std::string ledgerFeedType;
+    bool isSweepable = false;
+    bool restrictsProductTypes = false;
+    std::string ratesCentreCode;
+    std::optional<std::string> sandboxId;
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<change_line>) {
     using ores::utility::codec::field;
     return ::ores::utility::codec::field_list{
-        field{"version", &change_line::version},
-        field{"id", &change_line::id},
-        field{"request_id", &change_line::request_id},
-        field{"line_no", &change_line::line_no},
         field{"operation", &change_line::operation},
-        field{"base_version", &change_line::base_version},
-        field{"applied", &change_line::applied},
-        field{"entity_id", &change_line::entity_id},
-        field{"party_id", &change_line::party_id},
+        field{"entityId", &change_line::entityId},
+        field{"baseVersion", &change_line::baseVersion},
+        field{"partyId", &change_line::partyId},
         field{"name", &change_line::name},
         field{"description", &change_line::description},
-        field{"parent_portfolio_id", &change_line::parent_portfolio_id},
-        field{"owner_unit_id", &change_line::owner_unit_id},
-        field{"functional_currency", &change_line::functional_currency},
-        field{"gl_account_ref", &change_line::gl_account_ref},
-        field{"cost_center", &change_line::cost_center},
-        field{"book_status", &change_line::book_status},
-        field{"regulatory_book_type", &change_line::regulatory_book_type},
-        field{"book_purpose_type", &change_line::book_purpose_type},
-        field{"ledger_feed_type", &change_line::ledger_feed_type},
-        field{"is_sweepable", &change_line::is_sweepable},
-        field{"restricts_product_types", &change_line::restricts_product_types},
-        field{"rates_centre_code", &change_line::rates_centre_code},
-        field{"sandbox_id", &change_line::sandbox_id}};
+        field{"parentPortfolioId", &change_line::parentPortfolioId},
+        field{"ownerUnitId", &change_line::ownerUnitId},
+        field{"functionalCurrency", &change_line::functionalCurrency},
+        field{"glAccountRef", &change_line::glAccountRef},
+        field{"costCenter", &change_line::costCenter},
+        field{"bookStatus", &change_line::bookStatus},
+        field{"regulatoryBookType", &change_line::regulatoryBookType},
+        field{"bookPurposeType", &change_line::bookPurposeType},
+        field{"ledgerFeedType", &change_line::ledgerFeedType},
+        field{"isSweepable", &change_line::isSweepable},
+        field{"restrictsProductTypes", &change_line::restrictsProductTypes},
+        field{"ratesCentreCode", &change_line::ratesCentreCode},
+        field{"sandboxId", &change_line::sandboxId}};
 }
 
 /// The lines one proposal states.
@@ -257,12 +234,15 @@ ores::utility::domain::change_intent write_intent_of(const rr::stated_intent& st
 void check_row(const std::string& id, const std::string& party_id, const std::string& name) {
     const std::string sentence =
         "A write states the row's id, its party and a name of 1 to 200 characters.";
-    if (!rr::is_uuid(id) || !rr::is_uuid(party_id) || trimmed(name).empty() ||
-        rr::characters_of(trimmed(name)) > 200)
+    if (!rr::is_uuid(id) || !rr::is_uuid(party_id) || rr::trimmed(name).empty() ||
+        rr::characters_of(rr::trimmed(name)) > 200)
         rr::invalid(sentence);
 }
 
 /// A line as the service reads it, refused by the sentence when it is malformed.
+///
+/// The screen states the columns a person edits; the request, the line number
+/// and the provenance are the server's to state, so this states them itself.
 refdata_domain::book_change line_of(const change_line& in, const std::string& sentence) {
     const auto id_of = [&](const std::string& text) {
         if (!rr::is_uuid(text))
@@ -274,33 +254,28 @@ refdata_domain::book_change line_of(const change_line& in, const std::string& se
             return std::optional<boost::uuids::uuid>();
         return std::optional<boost::uuids::uuid>(id_of(*text));
     };
-    /* The request, the line number and the provenance are the server's to
-     * state, so a client that names them is read as naming the entity again. */
     refdata_domain::book_change out;
-    out.version = in.version;
-    out.id = in.id.empty() ? id_of(in.entity_id) : id_of(in.id);
-    out.request_id = in.request_id.empty() ? id_of(in.entity_id) : id_of(in.request_id);
-    out.line_no = in.line_no;
-    out.operation = trimmed(in.operation);
-    out.base_version = in.base_version;
-    out.applied = in.applied;
-    out.entity_id = id_of(in.entity_id);
-    out.party_id = id_of(in.party_id);
-    out.name = trimmed(in.name);
+    out.id = id_of(in.entityId);
+    out.request_id = id_of(in.entityId);
+    out.entity_id = id_of(in.entityId);
+    out.operation = rr::trimmed(in.operation);
+    out.base_version = in.baseVersion;
+    out.party_id = id_of(in.partyId);
+    out.name = rr::trimmed(in.name);
     out.description = in.description;
-    out.parent_portfolio_id = id_of(in.parent_portfolio_id);
-    out.owner_unit_id = optional_id(in.owner_unit_id);
-    out.functional_currency = trimmed(in.functional_currency);
-    out.gl_account_ref = in.gl_account_ref;
-    out.cost_center = in.cost_center;
-    out.book_status = trimmed(in.book_status);
-    out.regulatory_book_type = trimmed(in.regulatory_book_type);
-    out.book_purpose_type = trimmed(in.book_purpose_type);
-    out.ledger_feed_type = trimmed(in.ledger_feed_type);
-    out.is_sweepable = in.is_sweepable;
-    out.restricts_product_types = in.restricts_product_types;
-    out.rates_centre_code = in.rates_centre_code;
-    out.sandbox_id = optional_id(in.sandbox_id);
+    out.parent_portfolio_id = id_of(in.parentPortfolioId);
+    out.owner_unit_id = optional_id(in.ownerUnitId);
+    out.functional_currency = rr::trimmed(in.functionalCurrency);
+    out.gl_account_ref = in.glAccountRef;
+    out.cost_center = in.costCenter;
+    out.book_status = rr::trimmed(in.bookStatus);
+    out.regulatory_book_type = rr::trimmed(in.regulatoryBookType);
+    out.book_purpose_type = rr::trimmed(in.bookPurposeType);
+    out.ledger_feed_type = rr::trimmed(in.ledgerFeedType);
+    out.is_sweepable = in.isSweepable;
+    out.restricts_product_types = in.restrictsProductTypes;
+    out.rates_centre_code = in.ratesCentreCode;
+    out.sandbox_id = optional_id(in.sandboxId);
     out.change_reason_code = "system.update";
     return out;
 }
@@ -313,19 +288,19 @@ Body proposal_of(const http_request& req, const std::string& sentence) {
         rr::invalid(sentence);
     for (const auto& line : body.lines) {
         const bool operation_ok =
-            trimmed(line.operation) == "put" || trimmed(line.operation) == "delete";
-        const bool text_ok = !trimmed(line.name).empty() &&
-                             rr::characters_of(trimmed(line.name)) <= 200 &&
+            rr::trimmed(line.operation) == "put" || rr::trimmed(line.operation) == "delete";
+        const bool text_ok = !rr::trimmed(line.name).empty() &&
+                             rr::characters_of(rr::trimmed(line.name)) <= 200 &&
                              rr::characters_of(line.description) <= long_text &&
-                             rr::characters_of(line.gl_account_ref) <= long_text &&
-                             rr::characters_of(line.cost_center) <= long_text &&
-                             rr::characters_of(line.rates_centre_code) <= long_text &&
-                             rr::characters_of(line.functional_currency) <= 16 &&
-                             rr::characters_of(line.book_status) <= 100 &&
-                             rr::characters_of(line.regulatory_book_type) <= 100 &&
-                             rr::characters_of(line.book_purpose_type) <= 100 &&
-                             rr::characters_of(line.ledger_feed_type) <= 100;
-        if (!operation_ok || line.base_version < 0 || !text_ok)
+                             rr::characters_of(line.glAccountRef) <= long_text &&
+                             rr::characters_of(line.costCenter) <= long_text &&
+                             rr::characters_of(line.ratesCentreCode) <= long_text &&
+                             rr::characters_of(line.functionalCurrency) <= 16 &&
+                             rr::characters_of(line.bookStatus) <= 100 &&
+                             rr::characters_of(line.regulatoryBookType) <= 100 &&
+                             rr::characters_of(line.bookPurposeType) <= 100 &&
+                             rr::characters_of(line.ledgerFeedType) <= 100;
+        if (!operation_ok || line.baseVersion < 0 || !text_ok)
             rr::invalid(sentence);
     }
     return body;
@@ -333,7 +308,7 @@ Body proposal_of(const http_request& req, const std::string& sentence) {
 
 }
 
-} // namespace
+}
 
 std::string
 book_routes::preview_json(const std::vector<refdata_messaging::book_line_outcome>& lines,
@@ -346,8 +321,7 @@ book_routes::preview_json(const std::vector<refdata_messaging::book_line_outcome
                        ",\"columns\":" + json::write(line.columns) +
                        ",\"partCodes\":" + json::write(line.part_codes) + "}");
     }
-    return "{\"lines\":" + books::array_of(rows) + ",\"partCodes\":" + json::write(part_codes) +
-           "}";
+    return "{\"lines\":" + rr::array_of(rows) + ",\"partCodes\":" + json::write(part_codes) + "}";
 }
 
 std::string book_routes::raise_json(const std::vector<refdata_messaging::book_line_outcome>& lines,
@@ -434,7 +408,7 @@ void book_routes::register_routes(std::shared_ptr<ores::http::net::router> route
                               body.write.name);
                     refdata_messaging::put_book_request msg;
                     msg.change.write = body.write;
-                    msg.change.write.name = trimmed(msg.change.write.name);
+                    msg.change.write.name = rr::trimmed(msg.change.write.name);
                     msg.change.precondition = claim_of(body.version);
                     msg.intent = write_intent_of(body.intent);
                     const auto written = forwarding::forward(req, session, msg);
@@ -458,7 +432,7 @@ void book_routes::register_routes(std::shared_ptr<ores::http::net::router> route
                               body.write.name);
                     refdata_messaging::put_portfolio_request msg;
                     msg.change.write = body.write;
-                    msg.change.write.name = trimmed(msg.change.write.name);
+                    msg.change.write.name = rr::trimmed(msg.change.write.name);
                     msg.change.precondition = claim_of(body.version);
                     msg.intent = write_intent_of(body.intent);
                     const auto written = forwarding::forward(req, session, msg);
@@ -502,7 +476,7 @@ void book_routes::register_routes(std::shared_ptr<ores::http::net::router> route
                         "lines, each an operation of put or delete, a row, its base version and "
                         "its columns.";
                     auto body = proposal_of<raise_body>(req, sentence);
-                    body.reason = trimmed(body.reason);
+                    body.reason = rr::trimmed(body.reason);
                     if (body.reason.empty() || rr::characters_of(body.reason) > 500)
                         rr::invalid(sentence);
                     refdata_messaging::raise_book_changes_request msg;

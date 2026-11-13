@@ -157,11 +157,11 @@ TEST_CASE("books_refuse_a_malformed_request", "[book]") {
     CHECK(book_write_status("/api/books/portfolios", rate_of) == http_status::bad_request);
 
     const std::string line = R"({"operation":"put",)"
-                             R"("entity_id":"00000000-0000-0000-0000-0000000000c1",)"
-                             R"("base_version":0,)"
-                             R"("party_id":"00000000-0000-0000-0000-0000000000d1",)"
+                             R"("entityId":"00000000-0000-0000-0000-0000000000c1",)"
+                             R"("baseVersion":0,)"
+                             R"("partyId":"00000000-0000-0000-0000-0000000000d1",)"
                              R"("name":"Rates",)"
-                             R"("parent_portfolio_id":"00000000-0000-0000-0000-0000000000c2"})";
+                             R"("parentPortfolioId":"00000000-0000-0000-0000-0000000000c2"})";
     const auto preview_of = [](const std::string& lines) {
         return R"({"lines":)" + lines + "}";
     };

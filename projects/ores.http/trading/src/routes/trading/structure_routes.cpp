@@ -105,40 +105,6 @@ std::string text_of(const std::optional<boost::uuids::uuid>& id) {
     return id ? boost::uuids::to_string(*id) : std::string();
 }
 
-/// Each object written as JSON, in an array.
-std::string array_of(const std::vector<std::string>& objects) {
-    std::string out = "[";
-    for (std::size_t i = 0; i < objects.size(); ++i)
-        out += (i == 0 ? "" : ",") + objects[i];
-    return out + "]";
-}
-
-/// The written document with one member set, replacing a member of that name.
-std::string
-with_member(const std::string& object, const std::string& name, const std::string& value) {
-    const std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> doc(
-        yyjson_read(object.data(), object.size(), 0), &yyjson_doc_free);
-    if (!doc || !yyjson_is_obj(yyjson_doc_get_root(doc.get())))
-        throw std::logic_error("A structure is not written as an object.");
-    const std::unique_ptr<yyjson_mut_doc, decltype(&yyjson_mut_doc_free)> out(
-        yyjson_doc_mut_copy(doc.get(), nullptr), &yyjson_mut_doc_free);
-    auto* root = yyjson_mut_doc_get_root(out.get());
-    const std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> parsed(
-        yyjson_read(value.data(), value.size(), 0), &yyjson_doc_free);
-    if (!parsed)
-        throw std::logic_error("A member added to a structure is not JSON.");
-    yyjson_mut_obj_put(root,
-                       yyjson_mut_strncpy(out.get(), name.data(), name.size()),
-                       yyjson_val_mut_copy(out.get(), yyjson_doc_get_root(parsed.get())));
-    std::size_t length = 0;
-    char* written = yyjson_mut_write(out.get(), 0, &length);
-    if (written == nullptr)
-        throw std::runtime_error("A structure could not be written as JSON.");
-    std::string text(written, length);
-    std::free(written);
-    return text;
-}
-
 /// The bodies the structure screens send, beside the wire_fields each is used with.
 /// The grouping a person states: a kind, and the trades to put in it.
 struct group_body final {
@@ -469,9 +435,28 @@ std::vector<boost::uuids::uuid> distinct(const std::vector<boost::uuids::uuid>& 
     return out;
 }
 
+/// The trades no structure holds yet, newest first, with the reference each one
+/// carries.
+std::pair<std::vector<trading_domain::trade_summary>, std::map<std::string, std::string>>
+unheld_trades(const http_request& req, nats_client& session) {
+    const auto members = all_members(req, session);
+    std::vector<boost::uuids::uuid> taken;
+    for (const auto& member : members)
+        taken.push_back(member.trade_id);
+    std::vector<trading_domain::trade_summary> free;
+    std::vector<boost::uuids::uuid> free_ids;
+    for (const auto& row : recent_trades(req, session)) {
+        if (row.row_kind != "trade" || std::ranges::find(taken, row.id) != taken.end())
+            continue;
+        free.push_back(row);
+        free_ids.push_back(row.id);
+    }
+    return {std::move(free), trade_references(req, session, distinct(free_ids))};
 }
 
-} // namespace
+}
+
+}
 
 std::string structure_routes::humanised(const std::string& code) {
     std::string spaced;
@@ -595,7 +580,7 @@ structure_routes::tree_json(const boost::uuids::uuid& structure_id,
                    ",\"role\":" + json::write(role) +
                    ",\"sequence_number\":" + std::to_string(sequence) + ",\"product\":\"\"" +
                    ",\"asset_class\":\"\",\"external_version\":null,\"children\":" +
-                   array_of(children) + "}";
+                   rr::array_of(children) + "}";
         };
     return assemble(root_id, "", 0);
 }
@@ -637,21 +622,7 @@ void structure_routes::register_routes(
             .summary("The trades no structure has grouped yet, as the picker shows them")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<trading_messaging::list_trade_summaries_request>([&] {
-                    const auto members = all_members(req, session);
-                    std::vector<boost::uuids::uuid> taken;
-                    for (const auto& member : members)
-                        taken.push_back(member.trade_id);
-                    const auto summaries = recent_trades(req, session);
-                    std::vector<trading_domain::trade_summary> free;
-                    std::vector<boost::uuids::uuid> free_ids;
-                    for (const auto& row : summaries) {
-                        if (row.row_kind != "trade" ||
-                            std::ranges::find(taken, row.id) != taken.end())
-                            continue;
-                        free.push_back(row);
-                        free_ids.push_back(row.id);
-                    }
-                    const auto references = trade_references(req, session, distinct(free_ids));
+                    auto [free, references] = unheld_trades(req, session);
                     std::vector<boost::uuids::uuid> counterparty_ids;
                     for (const auto& row : free)
                         if (row.counterparty_id &&
@@ -676,7 +647,7 @@ void structure_routes::register_routes(
                             (row.trade_date ? json::write(*row.trade_date) : std::string("\"\"")) +
                             "}");
                     }
-                    return http_response::json("{\"rows\":" + array_of(out) + "}");
+                    return http_response::json("{\"rows\":" + rr::array_of(out) + "}");
                 });
             }));
 
@@ -1015,9 +986,9 @@ void structure_routes::register_routes(
                             ",\"parent_id\":" + json::write(row.parent_id) +
                             ",\"depth\":" + std::to_string(row.depth) + "}");
                     }
-                    return http_response::json("{\"rows\":" + array_of(page) +
+                    return http_response::json("{\"rows\":" + rr::array_of(page) +
                                                ",\"total\":" + std::to_string(ordered.size()) +
-                                               ",\"kinds\":" + array_of(kinds) + "}");
+                                               ",\"kinds\":" + rr::array_of(kinds) + "}");
                 });
             }));
 
@@ -1051,7 +1022,8 @@ void structure_routes::register_routes(
                     try {
                         states = states_of(req, session, all_trade_ids);
                     } catch (const rr::refusal&) {
-                    } catch (const std::exception&) {
+                        /* A caller who may read the deal and not the trade list
+                         * still gets the deal, with no state drawn. */
                     }
 
                     std::vector<const trading_domain::structure_member*> legs;
@@ -1108,13 +1080,13 @@ void structure_routes::register_routes(
                                 req, session, std::vector{structure.counterparty_id});
                     const auto named_counterparty = counterparties.find(counterparty_id);
                     const auto parent = text_of(structure.parent_structure_id);
-                    const auto written =
-                        with_member(json::write(structure),
-                                    "counterparty_name",
-                                    json::write(named_counterparty == counterparties.end() ||
-                                                        named_counterparty->second.empty() ?
-                                                    counterparty_id :
-                                                    named_counterparty->second));
+                    const auto written = rr::object_with_members(
+                        json::write(structure),
+                        {{"counterparty_name",
+                          json::write(named_counterparty == counterparties.end() ||
+                                              named_counterparty->second.empty() ?
+                                          counterparty_id :
+                                          named_counterparty->second)}});
                     return http_response::json(
                         "{\"structure\":" + written + ",\"reference\":" +
                         json::write(structure_refs.contains(structure_id) ?
@@ -1134,7 +1106,7 @@ void structure_routes::register_routes(
                                   trades,
                                   named.names,
                                   named.classes) +
-                        ",\"legs\":" + array_of(legs_json) + ",\"roles\":[\"" +
+                        ",\"legs\":" + rr::array_of(legs_json) + ",\"roles\":[\"" +
                         std::string(free_role) + "\"]}");
                 });
             }));
@@ -1181,21 +1153,7 @@ void structure_routes::register_routes(
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<trading_messaging::list_trade_summaries_request>([&] {
                     const auto structure = resolve_structure(req, session, key_of(req));
-                    const auto members = all_members(req, session);
-                    std::vector<boost::uuids::uuid> taken;
-                    for (const auto& member : members)
-                        taken.push_back(member.trade_id);
-                    const auto summaries = recent_trades(req, session);
-                    std::vector<trading_domain::trade_summary> free;
-                    std::vector<boost::uuids::uuid> free_ids;
-                    for (const auto& row : summaries) {
-                        if (row.row_kind != "trade" ||
-                            std::ranges::find(taken, row.id) != taken.end())
-                            continue;
-                        free.push_back(row);
-                        free_ids.push_back(row.id);
-                    }
-                    const auto references = trade_references(req, session, distinct(free_ids));
+                    auto [free, references] = unheld_trades(req, session);
                     std::vector<std::string> out;
                     for (const auto& row : free) {
                         const auto id = text_of(row.id);
@@ -1208,7 +1166,7 @@ void structure_routes::register_routes(
                     }
                     return http_response::json(
                         "{\"structure_id\":" + json::write(text_of(structure.id)) +
-                        ",\"rows\":" + array_of(out) + "}");
+                        ",\"rows\":" + rr::array_of(out) + "}");
                 });
             }));
 

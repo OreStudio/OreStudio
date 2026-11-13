@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/strike-every-surface-against-the-runs-own-curve
-#+pr:
+#+pr: 4680
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -66,7 +66,7 @@ Where the forward comes from at run time is
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4680][#4680]] | [quant,marketdata,synthetic,docs] Resolve a pair's market once, shared by the calibration and the surface |
 
 * Review
 

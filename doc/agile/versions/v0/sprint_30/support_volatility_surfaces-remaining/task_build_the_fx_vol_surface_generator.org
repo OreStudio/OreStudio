@@ -28,10 +28,10 @@ Synthetic FX volatility quotes move through the day with spot. A generator of ki
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Parts 1 and 2 of the plan have landed: the engine in quant with its no-arbitrage and correlation measurements, the =fx_vol_surface= feed with its contributors and noise profiles, and the latent market that drives it (#4673, #4675). Part 3 has not. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-03                               |
+| Next         | Part 3, the catalogue and the routing, whose live check is the last acceptance line: a blueprint that reads contributor quotes calibrates through the same operation as one that reads derived quotes. |
+| Last touched | 2026-11-13                             |
 
 * Acceptance
 

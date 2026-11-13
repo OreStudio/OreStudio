@@ -72,7 +72,8 @@ fx_vol_surface_feed_build_input feed_input() {
     // Given out of order, so the maker's own ordering is what the test sees.
     in.expiries = {feed_expiry("6M", 0.075), feed_expiry("1M", 0.070), feed_expiry("3M", 0.0725)};
     in.contributors = {"reference"};
-    in.market = feed_eur_usd;
+    for (const auto& e : in.expiries)
+        in.markets.push_back({.expiry_id = e.tenor, .market = feed_eur_usd});
     in.convention = feed_convention;
     in.deltas = {0.25, 0.10};
     return in;
@@ -150,6 +151,43 @@ TEST_CASE("a feed row whose expiries cannot make a surface is refused", "[fx_vol
     auto no_deltas = feed_input();
     no_deltas.deltas.clear();
     CHECK_FALSE(make_fx_vol_surface_emitter(no_deltas, 1).has_value());
+}
+
+TEST_CASE("every expiry is quoted against its own market", "[fx_vol_surface_feed]") {
+    // An expiry with no market cannot be quoted, and a market for an expiry the surface does
+    // not quote is a mistake in the row rather than something to ignore.
+    auto missing = feed_input();
+    missing.markets.pop_back();
+    const auto refused = make_fx_vol_surface_emitter(missing, 1);
+    REQUIRE_FALSE(refused);
+    CHECK(refused.error().find("has no market") != std::string::npos);
+
+    auto stranger = feed_input();
+    stranger.markets.push_back({.expiry_id = "9M", .market = feed_eur_usd});
+    const auto stray = make_fx_vol_surface_emitter(stranger, 1);
+    REQUIRE_FALSE(stray);
+    CHECK(stray.error().find("names no expiry") != std::string::npos);
+
+    // The market of an expiry is the one that expiry is read in, not the one beside it.
+    auto swapped = feed_input();
+    const fx_market other{.spot = 1.0, .domestic_discount = 0.97, .foreign_discount = 0.99};
+    for (auto& m : swapped.markets)
+        m.market = other;
+    auto with_other = make_fx_vol_surface_emitter(swapped, 1);
+    auto with_first = make_fx_vol_surface_emitter(feed_input(), 1);
+    REQUIRE(with_other);
+    REQUIRE(with_first);
+    std::vector<double> drivers(swapped.expiries.size() + 2, 0.0);
+    const auto moved = with_other->step(drivers);
+    const auto flat = with_first->step(drivers);
+    REQUIRE(moved.size() == flat.size());
+    bool any_differ = false;
+    for (std::size_t i = 0; i < moved.size(); ++i) {
+        REQUIRE(moved[i].value);
+        REQUIRE(flat[i].value);
+        any_differ = any_differ || std::abs(*moved[i].value - *flat[i].value) > 1e-6;
+    }
+    CHECK(any_differ);
 }
 
 TEST_CASE("each contributor of a surface is its own stream", "[fx_vol_surface_feed]") {

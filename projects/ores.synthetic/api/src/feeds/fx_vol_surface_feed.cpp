@@ -40,6 +40,7 @@ using ores::analytics::quant::math::series_key;
 using ores::analytics::quant::math::stream_key;
 using ores::analytics::quant::service::fx_vol_slice_market;
 using ores::analytics::quant::service::fx_vol_surface_dynamics;
+using ores::analytics::quant::service::ssvi_expiry_fit;
 using ores::analytics::quant::service::ssvi_parameters;
 using ores::analytics::quant::service::tick_context;
 using ores::analytics::quant::service::tick_scheduler;
@@ -158,10 +159,21 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::u
 
     std::vector<fx_vol_slice_market> markets;
     markets.reserve(ordered.size());
-    for (const auto& expiry : start.expiries)
+    for (const auto& expiry : start.expiries) {
+        const auto known =
+            std::ranges::find(input.markets, expiry.expiry_id, &fx_vol_expiry_market::expiry_id);
+        if (known == input.markets.end())
+            return std::unexpected(std::format(
+                "The expiry '{}' has no market to be quoted against.", expiry.expiry_id));
         markets.push_back({.expiry_id = expiry.expiry_id,
-                           .market = input.market,
+                           .market = known->market,
                            .convention = input.convention});
+    }
+    for (const auto& given : input.markets)
+        if (std::ranges::find(start.expiries, given.expiry_id, &ssvi_expiry_fit::expiry_id) ==
+            start.expiries.end())
+            return std::unexpected(std::format(
+                "The market of '{}' names no expiry the surface is quoted in.", given.expiry_id));
 
     std::vector<fx_vol_contributor_spec> contributors;
     contributors.reserve(input.contributors.size());

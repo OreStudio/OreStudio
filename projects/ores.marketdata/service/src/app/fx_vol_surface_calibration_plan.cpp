@@ -17,6 +17,7 @@
  *
  */
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
+#include "ores.analytics.quant/math/fx_pair_market.hpp"
 #include "ores.marketdata.api/datum/value.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -120,41 +121,6 @@ int days_between(std::chrono::year_month_day a, std::chrono::year_month_day b) {
     return static_cast<int>((std::chrono::sys_days(b) - std::chrono::sys_days(a)).count());
 }
 
-/// The two discount factors at a value date: the tenor's own row when the set has it, otherwise a
-/// log-linear interpolation in days between the rows around the date, from 1 at the spot date.
-std::expected<std::pair<double, double>, std::string>
-discounts_at(const surface_forward_set& forwards,
-             const std::vector<surface_forward_point>& by_date,
-             const std::string& tenor,
-             std::chrono::year_month_day value_date) {
-    for (const auto& p : forwards.points)
-        if (p.tenor == tenor)
-            return std::pair{p.base_discount, p.quote_discount};
-    if (by_date.empty() ||
-        std::chrono::sys_days(value_date) > std::chrono::sys_days(by_date.back().value_date))
-        return std::unexpected(std::format(
-            "the forward set {} ends before the {} expiry", forwards.publish_id, tenor));
-    surface_forward_point before{.tenor = "spot",
-                                 .value_date = forwards.spot_date,
-                                 .base_discount = 1.0,
-                                 .quote_discount = 1.0};
-    for (const auto& after : by_date) {
-        if (std::chrono::sys_days(after.value_date) >= std::chrono::sys_days(value_date)) {
-            const double span = days_between(before.value_date, after.value_date);
-            const double share =
-                span > 0 ? days_between(before.value_date, value_date) / span : 1.0;
-            const auto lerp = [&](double lo, double hi) {
-                return std::exp(std::log(lo) + share * (std::log(hi) - std::log(lo)));
-            };
-            return std::pair{lerp(before.base_discount, after.base_discount),
-                             lerp(before.quote_discount, after.quote_discount)};
-        }
-        before = after;
-    }
-    return std::unexpected("the forward set " + forwards.publish_id + " has no row near the " +
-                           tenor + " expiry");
-}
-
 /// An expiry's time, market and convention, as the engine reads them.
 struct expiry_terms final {
     double years = 0.0;
@@ -164,23 +130,24 @@ struct expiry_terms final {
 
 std::expected<expiry_terms, std::string> terms_at(const surface_calibration_recipe& recipe,
                                                   const surface_forward_set& forwards,
-                                                  const std::vector<surface_forward_point>& by_date,
+                                                  std::span<const qm::fx_discount_point> by_date,
                                                   const std::string& code,
                                                   qd::date_period period,
                                                   std::chrono::year_month_day as_of) {
     const auto convention = mapping::to_quote_convention(*recipe.convention, period);
     if (!convention)
         return std::unexpected("expiry " + code + ": " + convention.error());
-    const auto discounts =
-        discounts_at(forwards, by_date, code, add_period(forwards.spot_date, period));
-    if (!discounts)
-        return std::unexpected(discounts.error());
+    const auto market = qm::pair_market_at(forwards.spot,
+                                           forwards.spot_date,
+                                           by_date,
+                                           add_period(forwards.spot_date, period),
+                                           "expiry " + code);
+    if (!market)
+        return std::unexpected(market.error());
     // An FX option expires a tenor after the trade and delivers a tenor after spot, so its time
     // runs from the as-of and its discounting from the spot date.
     return expiry_terms{.years = days_between(as_of, add_period(as_of, period)) / 365.0,
-                        .market = {.spot = forwards.spot,
-                                   .domestic_discount = discounts->second,
-                                   .foreign_discount = discounts->first},
+                        .market = *market,
                         .convention = *convention};
 }
 
@@ -322,9 +289,13 @@ prepare_calibration(const surface_calibration_recipe& recipe,
                     double pillar_tolerance) {
     if (!(forwards.spot > 0.0))
         return std::unexpected("the forward set " + forwards.publish_id + " has no spot");
-    auto by_date = forwards.points;
-    std::ranges::sort(
-        by_date, {}, [](const auto& p) { return std::chrono::sys_days(p.value_date); });
+    std::vector<qm::fx_discount_point> by_date;
+    by_date.reserve(forwards.points.size());
+    for (const auto& p : forwards.points)
+        by_date.push_back({.date = p.value_date,
+                           .base_discount = p.base_discount,
+                           .quote_discount = p.quote_discount});
+    std::ranges::sort(by_date, {}, [](const auto& p) { return std::chrono::sys_days(p.date); });
 
     prepared_surface_calibration out;
     out.request.pillar_tolerance = pillar_tolerance;

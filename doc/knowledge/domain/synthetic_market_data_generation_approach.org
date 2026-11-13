@@ -116,6 +116,17 @@ rate space, then bootstrap to a zero curve with QuantLib =PiecewiseYieldCurve=.
 Negative-rate environments (CHF, EUR pre-2022) require careful stationarity
 checks on the GMM components.
 
+The curve is the generator's state and the quotes are its observations, not the
+other way round.  As implemented, one short-rate model per currency
+([[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][the yield curve process type catalogue]]) answers for the discount factor at
+any horizon, and every pillar a feed publishes -- deposit, FRA, swap -- is priced
+off that one state.  A currency's quote vector and its curve are therefore two
+views of one object.  The curve is *not* published as market data: the tenant
+that generates it plays the vendor, and curves are derived data a party owns
+(the decision of 2026-11-09).  The run shares the curve with its other feeds
+instead, which is what makes the FX forward of step 4 available without
+publishing anything; see [[#the-forward-a-surface-is-struck-against][where the forward comes from]].
+
 ** FX spot and forwards
 
 | Asset class | ORE quote types | Primary technique | Notes |
@@ -407,6 +418,51 @@ then observed by synthetic contributors, as
 describes, so a tenant receives what a broker feed carries rather than the
 surface itself.
 
+*** Where the forward comes from
+:PROPERTIES:
+:CUSTOM_ID: the-forward-a-surface-is-struck-against
+:END:
+
+A surface's parameters are expressed relative to a forward, so the forward is part
+of the surface rather than an input that a flat guess can stand in for.  The
+forward enters the quotes twice: the ATM strike *is* the forward, and the delta
+that places every wing strike is computed from it
+($\delta_{spot} = P_f N(d_1)$ with
+$d_1 = (\ln(F/K) + \sigma^2 T/2)/(\sigma\sqrt{T})$).  A surface quoted against
+a forward its pair does not have is not the pair's surface, however well its SSVI
+parameters behave.
+
+The forward is therefore the run's own curve, read at each expiry, and never a
+party's published set -- a party derives its curves from these very quotes, so
+reading one back would invert the dependency.  In steps: the curve feed holds the
+latent curve and publishes its dated discount factors to the run's market board;
+a surface feed builds one market per expiry from its pair's spot and the two
+currencies' discounts; the strikes are solved in that market; the clean quotes
+are observed by the contributors.  The interface, the code that holds each step
+and the four choices it settles are
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]].
+
+Two measured facts say how much of the curve a surface actually needs.  Its
+quoted volatilities are invariant to the *level* of the spot, to $10^{-12}$, when
+the two discounts are held, because a smile is read at a moneyness and a common
+scale cancels; and they move by $7.8 \times 10^{-5}$, about $0.008$ volatility
+points, when the ratio of the two discounts moves from one to $0.99/0.97$.  So the
+requirement is the discount ratio at each expiry, which is the forward in units of
+the spot -- small, and not the same as saying the choice of curve does not matter.
+
+The vendor publishes no curve, and this does not loosen the consistency the
+constraint table asks for.  A party bootstraps its own curve from the clean pillar
+quotes, and "the clean pillar quotes and their bootstrap give the true curve"
+([[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]), so
+a party recovers the vendor's curve to the fit of its own bootstrap.  A surface
+struck against the vendor's curve and re-read against a party's forward set differ
+by that fit, which a test states as a tolerance rather than a design claims as an
+identity.
+
+The first implemented feed quoted against a unit market, before the board existed;
+that is a known defect with a measured size, tracked by
+[[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Read the pair's curves and show the run's market]].
+
 *** Limits
 
 The surfaces are free of static arbitrage, each on its own.  The sequence of
@@ -457,6 +513,13 @@ means the quantity is never sampled but always computed from its inputs.
 | 8 | =CDS/CREDIT_SPREAD= ↔ =IR_SWAP/RATE= | Credit spreads typically widen when risk-free rates fall (risk-off) | Steps 1, 2 | Not enforced automatically; post-generation plausibility check — verify CDS spread quartiles vs rate level quartiles |
 | 9 | =COMMODITY_FWD/PRICE= + =IR_SWAP/RATE= (precious metals) | =COMMODITY_FWD ≈ COMMODITY_SPOT × exp(r × T)= | Steps 1, 8 | Post-generation carry consistency check for gold, silver; not required for energy where the forward curve IS the price discovery instrument |
 | 10 | =ZC_INFLATIONSWAP/RATE= + =IR_SWAP/RATE= → real rate | Real rate = nominal rate − inflation ≥ −1% (sustained negative real rate indicates an implausible scenario) | Steps 1, 9 | Post-generation check — compute implied real rate vector from generated nominal and inflation ZC swap rates; flag scenarios where real rate < −1% for review |
+
+Constraints 1, 3 and 4 all rest on step 4, the derived forward, and step 4 rests
+on the curves of step 1.  The generator satisfies them by holding the curves
+itself rather than reading a curve from anywhere: a run's curve feeds publish
+their discount factors to the run's market board, and every derived quantity is
+built from that.  What the board carries and what a surface does with it is
+[[#the-forward-a-surface-is-struck-against][where the forward comes from]].
 
 * P-to-Q measure bridge
 :PROPERTIES:
@@ -520,6 +583,56 @@ The GMM-generated par swap rate or FX spot level is a direct input to ORE's
 curve bootstrapping infrastructure and requires no Q-measure adjustment.
 The P/Q distinction matters only for option surfaces (implied vols), because
 option prices are model-dependent and must be consistent with no-arbitrage.
+
+* How this compares to the literature
+:PROPERTIES:
+:CUSTOM_ID: literature-comparison
+:END:
+
+Three papers carry the methods this document chose, and their summaries state
+each one in full:
+[[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Kienitz (2024)]], the Gaussian
+mixture;
+[[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][van den Berg (2026a)]], the
+mixture-preserving surface interpolation; and
+[[id:3F849D36-022B-49CC-AD71-791481F36581][van den Berg (2026b)]], the
+error-bounded option pricing network.  None of them was written for a live
+simulator, and none of them asks a vendor to publish a curve, but all three state
+a volatility surface relative to a forward.  That is the property this document's
+constraint 3 expresses, and it is why the generator holds its own curves.
+
+| | Kienitz 2024 | van den Berg 2026a | van den Berg 2026b | ORE Studio |
+|---+--------------+--------------------+--------------------+------------|
+| What is generated | a joint observation vector, by a Gaussian mixture | an interpolated surface between quoted pillars | option prices from a terminal-density surrogate | live price paths and their quotes, on one clock |
+| Measure | P throughout | Q | Q, under the model's terminal density | P for the states, Q for the surfaces -- [[#measure-bridge][the split below]] |
+| Where the rate state lives | a coordinate of the observation vector | not modelled; the forward is an input | the drift of the underlying process | a short-rate model per currency, inside the run |
+| How the forward is obtained | implied by the joint draw, through the closed-form conditional | an input: strikes are moneyness | an input: the density is of $S_T/F$ | derived by covered interest parity from the run's own latent curves |
+| What the surface is | a component of, or a conditional of, the joint law | a mixture of densities over the terminal underlying | the terminal return density of a GARCH process | an SSVI parameterisation held inside the no-arbitrage bounds |
+| What we take | the conditional structure: the surface is the curve's conditional | the arbitrage conditions are forward-relative | the surface is a density of the underlying, so discounting precedes the smile | -- |
+| What we do not take | the daily joint draw, which cannot follow feeds that tick at their own times | the mixture family, since SSVI's conditions are closed form | the network surrogate, since we price from paths | -- |
+
+Three differences are worth stating plainly, because a reader of those papers will
+look for them.
+
+- *Conditional, not independent.*  Kienitz's method is at its most useful in its
+  conditionals -- "given this yield curve, what vol surface is consistent?".  A
+  surface generated with no reference to the curve is not that conditional; it is
+  an independent draw in the same parameterisation.  This document adopts the
+  conditional structure and the regime reading of it -- a regime that carries its
+  own loadings is the mixture's components in continuous time -- and not the GMM
+  itself.  A daily joint draw is the right shape for a batch of snapshots and the
+  wrong shape for a simulator whose feeds tick at their own times, which is why
+  [[id:8D5466B2-74B5-4C0D-B6DC-528CD466A47F][the joint-market investigation]] chose shared Brownian factors instead.
+- *A hybrid measure.*  Kienitz works in P throughout and van den Berg in Q.  This
+  system is deliberately hybrid: the states are P, the surfaces are Q
+  parameterisations, and the guarantee is static arbitrage per emitted surface.
+  [[#measure-bridge][The measure bridge]] argues why that is enough for ORE, and the limits below
+  state what it does not cover.
+- *Generated, not inferred.*  We are in a stronger position than any of the three
+  on one point: we do not have to infer the curve from a fitted joint law, nor take
+  the forward from the market.  The quotes come from a short-rate model, so the
+  forward is the generator's own state.  See
+  [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]].
 
 * Time evolution strategy
 :PROPERTIES:

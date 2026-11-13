@@ -80,6 +80,19 @@ leaves the construction to the tenant's surface blueprint, as
 [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]]
 describes.
 
+** Every surface is struck against a curve the vendor holds
+
+A surface's quotes are volatilities at delta labels, and a delta becomes a strike
+only against the forward of its expiry. The generator therefore holds, per
+currency, the latent curve its rate quotes come from -- it is the state of the
+short-rate model each IR curve feed steps -- and strikes every surface against it
+without publishing it. A contributor's quote is an observation of a surface solved
+in that market, so the whole contributor layer sits on top of one forward per
+expiry and one curve per currency. The design, the interface and the four choices
+it settles are [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]]; the reason a
+party's own curve differs from it by the bootstrap is
+[[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
+
 ** Every quote is a mid
 
 Valuation runs on mids, so a contributor publishes a mid for every point. The

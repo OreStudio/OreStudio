@@ -270,7 +270,10 @@ is studied here but not part of this design.
 The first implementation holds block factors only: an FX pair's spot and its
 surface. Static loadings come first; per-regime loadings follow. A surface's
 strikes are solved against the forward $F(t, T) = S(t)\, P_f(t, T) / P_d(t, T)$
-built from the spot and the two discount curves last published.
+built from the spot and the two discount curves the run's own curve feeds
+publish to its market board -- not from a party's published curves, which are
+derived from these very quotes. The design is
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]].
 
 ** Later work
 

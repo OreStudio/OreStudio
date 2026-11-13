@@ -30,9 +30,9 @@ consensus.
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | Not yet started.                       |
+| Now          | The service answers the ladder, scoped to the caller's party, with the rungs it can date and the ones it cannot named. 14 catalogue/ladder cases are green. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Confirm against the seeded tenant that 1Y resolves; the seed has no resolution row for it under RATES_SPOT_FORWARD. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance

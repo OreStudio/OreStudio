@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/replace-the-synthetic-libor-feeds
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
 #+updated: 2026-11-08
-#+environment: prime_origin
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ No synthetic feed quotes an index that is no longer published, or names a term r
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-13                              |
 
 * Acceptance
 
@@ -45,6 +45,33 @@ No synthetic feed quotes an index that is no longer published, or names a term r
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+The decisions, per currency, and what each does to the seeds:
+
+1. USD, GBP, JPY, CHF: the LIBOR feeds are removed. =synthetic.feeds.ice=
+   and =synthetic.feeds.tradeweb= publish them; every LIBOR row goes, and
+   nothing replaces it, because the four currencies already have an
+   overnight feed (SOFR, SONIA, TONA, SARON) and LIBOR has no public
+   source. ICE published only LIBOR, so its dataset goes with the feeds;
+   Tradeweb keeps its EURIBOR rows. The dataset bundle and the pages that
+   describe ICE follow the removal.
+2. ILS: TELBOR O/N ceased on 2025-06-30, and SHIR replaced it. The family
+   token =telboron= becomes =shir= in the model's check, the Bloomberg
+   seed and the vendor instruments.
+3. HUF: =buboron= names BUBOR's overnight quote, not the overnight
+   average. It becomes =hufonia=.
+4. CNH and TWD: =hibor= and =taibor= stay. Their overnight piece is the
+   O/N fixing of the family, which is the currency's overnight rate, and
+   the store has no other family for either currency. The reason is
+   recorded rather than a token renamed.
+5. PLN: =polonia= is already the central bank's overnight rate. What is
+   unsettled is the route that would read it; the feed keeps its fixed
+   level with the recorded reason.
+
+The model change adds =shir= and =hufonia= to the family check and keeps
+=telboron= and =buboron= so rows that predate it stay valid. The create SQL
+is regenerated from the model, and a fresh environment is provisioned to
+prove the seeds carry no LIBOR feed and the two new families tick.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -57,7 +84,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| LIBOR feeds in the seeded artefact data | 0 | =select count(*) ... where index_family='libor'= | 0b09aa104c |
+| Feeds naming a ceased or misnamed index | 0 | =select count(*) ... where index_family in ('telboron','buboron')= | 0b09aa104c |
+| Feeds naming the replacements | 2 | =select count(*) ... where index_family in ('shir','hufonia')= | 0b09aa104c |
+| ICE instruments and LIBOR external ids | 0 / 0 | =select count(*) ... from ores_marketdata_market_data_vendor_instruments_tbl= | 0b09aa104c |
+| Instrument rows naming SHIR / HUFONIA | 12 / 12 | same table, =external_id like 'ILS SHIR%'/='HUF HUFONIA%'= | 0b09aa104c |
+
+Raw rows: =evidence/ceased_feed_seeds_2026-11-13.log=.
 
 * Notes
 
@@ -85,3 +118,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped. The seeds carry no feed of a ceased or misnamed index, and a fresh
+database provisions that way.
+
+- USD, GBP, JPY and CHF: the LIBOR feeds are gone. =synthetic.feeds.ice=,
+  which published only LIBOR, is removed as a dataset, its bundle membership
+  and the two pages that listed it. Tradeweb keeps its two EURIBOR curves.
+- ILS: =telboron= became =shir= in the feed, the model's family check, the
+  conventions and the ACME discount curve.
+- HUF: =buboron= became =hufonia= in the same places; the overnight index rows
+  for both are seeded.
+- CNH and TWD keep =hibor= and =taibor=, and PLN keeps =polonia=, each with its
+  reason in the story's Decisions.
+- The vendor instrument seed was regenerated from the fresh data by
+  =tools/vendor_catalogue=, so no LIBOR or ICE instrument remains and the ILS
+  and HUF pillars carry the new names.
+
+Verification: a full =compass db recreate= completed twice, the second time
+with the regenerated catalogue, and these counts held afterwards.
+
+Limitations:
+
+- No public rate is stored for SHIR or HUFONIA, so the two feeds keep their
+  synthetic level until a route is read. No bootstrap config was added for
+  either currency; the existing 20 stay.
+- The published feed rows fill when the feeds dataset publishes, which a fresh
+  database does not trigger by itself; the counts above are of the seeded
+  artefact data a provision writes.
+- LIBOR still names conventions and ORE catalogue entries elsewhere in the
+  store. They describe instruments, not feeds, and no synthetic feed reads
+  them.
+- The ORE sample artefacts (northwind, acme_uk) keep their own index names
+  because they copy external ORE documents.
+- No manual QA scenario.

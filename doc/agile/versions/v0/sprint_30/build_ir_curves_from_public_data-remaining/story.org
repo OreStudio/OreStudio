@@ -43,7 +43,7 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 | [[id:619CE2BF-C972-47CF-8900-AC2742AC2CD9][Calibrate the synthetic IR feeds from the public rates]] | DONE | 2026-11-12 | 2026-11-12 | The IR asset class gets a calibration policy, as FX has, so each synthetic overnight-index feed starts from its currency's latest public rate and its fit is reviewed like an FX fit. |
 | [[id:37E35846-59E3-41E8-A9AF-6B9F1E167EB3][Keep the curve publishes of the integration tests out of the development database]] | DONE | 2026-11-13 | 2026-11-13 | The integration tests leave curve publishes, withdrawals and supersessions in the development database under random users and a test as-of, so a provisioned tenant appears to hold published curves it never published. |
 | [[id:C0BA69C1-6E68-4AD2-896C-0F6283BD3BAF][Read the public overnight rates through an adapter]] | ABANDONED | | | Moved to the story [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]], which has one specialised adapter for each publisher. |
-| [[id:4B5701D6-16C6-445B-BDD4-C60050FED95C][Replace the synthetic feeds of ceased or misnamed indices]] | BACKLOG | | | The system tenant runs synthetic feeds of indices that have ceased or are not the currency's overnight average: LIBOR for USD, GBP, JPY and CHF, TELBOR for ILS, HIBOR for CNH, the BUBOR overnight quote for HUF and TAIBOR for TWD; decide per currency what replaces each, and remove or replace the feed. |
+| [[id:4B5701D6-16C6-445B-BDD4-C60050FED95C][Replace the synthetic feeds of ceased or misnamed indices]] | DONE | 2026-11-13 | 2026-11-13 | The system tenant runs synthetic feeds of indices that have ceased or are not the currency's overnight average: LIBOR for USD, GBP, JPY and CHF, TELBOR for ILS, HIBOR for CNH, the BUBOR overnight quote for HUF and TAIBOR for TWD; decide per currency what replaces each, and remove or replace the feed. |
 | [[id:7FC9444F-77FA-44E2-A288-A8ED85A48DA7][Show the IR coverage of each currency]] | DONE | 2026-11-13 | 2026-11-13 | A screen shows, for each supported currency, its public source, its calibration policy, its bootstrap config and its latest published curve, as the calibration screen shows the FX coverage. |
 
 * Decisions
@@ -58,6 +58,19 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 - The start record covers a fixed curve too. A curve that took no fixing records the level it kept, so a later edit of the config does not rewrite where an earlier run began.
 - A forward set reads its pair's calendars to lay out the ladder. A fresh provision therefore builds the calendars before the forwards; the two ran at once, and a pair whose calendar was still being materialised was refused.
 - The thirteen rates are already stored, so AUD, NZD and JPY now start from a public rate. CHF keeps a fixed level until the SIX Data License question is settled.
+
+- Replaced the ceased and misnamed synthetic feeds on 2026-11-13. USD, GBP, JPY and CHF lost
+  their LIBOR feeds, and ICE's dataset went with them, because the four currencies already
+  have an overnight feed (SOFR, SONIA, TONA, SARON) and LIBOR has no public source. ILS now
+  names SHIR, which replaced TELBOR on 2025-06-30, and HUF names HUFONIA, the overnight
+  average, where it named BUBOR's overnight quote. CNH keeps HIBOR and TWD keeps TAIBOR: the
+  O/N fixing of each family is the currency's overnight rate, and no other family exists for
+  either. PLN keeps POLONIA, which is the central bank's overnight rate; what is unsettled is
+  the route that would read it, so the feed keeps its fixed level with the reason.
+- No public rate is stored for SHIR or HUFONIA, so the two feeds keep their synthetic level,
+  as the calibration already does for a currency with no source. The conventions carry the
+  two indices; the ACME discount curves name them. The ORE sample artefacts (northwind,
+  acme_uk) keep their own index names, because they copy external ORE documents.
 
 * Out of scope
 

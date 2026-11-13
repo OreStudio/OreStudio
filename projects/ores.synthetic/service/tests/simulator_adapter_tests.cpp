@@ -48,6 +48,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -1107,8 +1108,27 @@ TEST_CASE("a_feed_quotes_the_id_its_provider_writes", "[simulator_adapter][adapt
     CHECK(target->subject == domain::adapter_ingress_subject("demo-a", "USD/sofr/DEPO/SPOT/3M"));
     CHECK(domain::ingest_consumes(target->subject));
 
+    // The simulated ICE and Tradeweb curves take their ids from the same place, and each names
+    // the tenor of its own index, so the two USD ICE curves do not share an id.
+    for (const auto& c : {std::pair{"ice-a", "ice"}, std::pair{"tradeweb-a", "tradeweb"}}) {
+        const auto one = ores::synthetic::service::adapter_target_of(
+            c.first, c.second, vendor::ir_curve_pillar{"USD", "libor", "DEPO", "SPOT", "3M", "3M"});
+        REQUIRE(one.has_value());
+        CHECK(one->id.id_scheme == std::string(c.second) + "_ticker");
+        CHECK(one->id.external_id == "USDLIBOR3M.DEPO.SPOT.3M=");
+        CHECK(domain::ingest_consumes(one->subject));
+    }
+    const auto ice_1m = ores::synthetic::service::adapter_target_of(
+        "ice-a", "ice", vendor::ir_curve_pillar{"USD", "libor", "DEPO", "SPOT", "3M", "1M"});
+    const auto ice_6m = ores::synthetic::service::adapter_target_of(
+        "ice-a", "ice", vendor::ir_curve_pillar{"USD", "libor", "DEPO", "SPOT", "3M", "6M"});
+    REQUIRE(ice_1m.has_value());
+    REQUIRE(ice_6m.has_value());
+    CHECK(ice_1m->id.external_id != ice_6m->id.external_id);
+
     // A provider with no notation writes no id, so a feed of it has nothing to quote.
-    CHECK_FALSE(ores::synthetic::service::adapter_target_of(
-                    "ice-a", "ice", vendor::ir_curve_pillar{"USD", "sofr", "DEPO", "SPOT", "3M"})
-                    .has_value());
+    CHECK_FALSE(
+        ores::synthetic::service::adapter_target_of(
+            "ore-import", "ore", vendor::ir_curve_pillar{"USD", "sofr", "DEPO", "SPOT", "3M"})
+            .has_value());
 }

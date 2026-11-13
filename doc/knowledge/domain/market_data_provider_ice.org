@@ -17,7 +17,9 @@ ICE Data Services publishes pricing and reference data through its Consolidated 
 
 ** The id scheme
 
-The scheme code is =ice_symbol=. The Consolidated Feed uses its own symbology, based on exchange tickers. The feed also accepts other identifiers: RIC, CUSIP, ISIN, SEDOL and Bloomberg ticker. A catalogue row uses the ICE symbol. If a row needs an alternative identifier, it has its own scheme code such as =isin=, so a row never mixes two notations.
+The live provider's scheme code is =ice_symbol=. The Consolidated Feed uses its own symbology, based on exchange tickers. The feed also accepts other identifiers: RIC, CUSIP, ISIN, SEDOL and Bloomberg ticker. A catalogue row uses the ICE symbol. If a row needs an alternative identifier, it has its own scheme code such as =isin=, so a row never mixes two notations.
+
+The simulated ICE curves use a second scheme, =ice_ticker=, because they quote interest rate pillars in a spelling of our own (see *What the simulator does*). The two schemes are kept apart so a live ICE id is never read as a simulated one.
 
 ** The fields
 
@@ -48,7 +50,7 @@ The same rule applies. A minted ICE symbol has the form of an ICE symbol, and th
 
 ** What the simulator does
 
-The simulated ICE source publishes ticks with =ice_symbol=, a symbol and a field. It does not speak any ICE feed protocol.
+The simulated ICE source publishes interest rate pillars with the scheme =ice_ticker= and the field =BID=. An id is the currency and the index family, with the curve's own index tenor run into the family word, then the instrument and the two tenors the pillar spans: =USDLIBOR3M.DEPO.SPOT.6M= or =GBPLIBOR3M.FRA.3M.6M=. The index tenor is part of the id because one currency may quote two curves of the same family that differ only in it (USD LIBOR 1M and 6M). The spelling is ours, not ICE's, and the notation writes what it reads. It does not speak any ICE feed protocol.
 
 ** External references
 

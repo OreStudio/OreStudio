@@ -328,13 +328,15 @@ feed_kind make_ir_curve_kind() {
             c.enabled = cfg.enabled;
             c.auto_start = cfg.auto_start;
             c.folder_id = cfg.folder_id;
+            const auto index_tenor = feed::ir_curve_index_tenor(cfg);
             for (const auto& e : all_entries)
                 if (e.ir_curve_config_id == cfg.id)
                     c.pillars.push_back(vendor::ir_curve_pillar{cfg.currency_code,
                                                                 cfg.index_family,
                                                                 e.instrument_code,
                                                                 e.start_tenor_code,
-                                                                e.end_tenor_code});
+                                                                e.end_tenor_code,
+                                                                index_tenor});
             c.build_input = [ctx, cfg](const feed::feed_adapter& adapter) -> feed_build_outcome {
                 repo::ir_curve_template_entry_repository entry_repo;
                 std::vector<ores::synthetic::domain::ir_curve_template_entry> entries;
@@ -371,6 +373,11 @@ feed_kind make_ir_curve_kind() {
                 // publishes every pillar under its own vendor id, as the simulator's offer does.
                 std::vector<feed::ir_pillar_quote_target> targets;
                 if (adapter.has_adapter()) {
+                    // Only a provider whose id names the curve's index tenor is given it.
+                    const auto* notation = vendor::notation_of(adapter.provider_code);
+                    const auto index_tenor = notation != nullptr && notation->names_index_tenor() ?
+                                                 feed::ir_curve_index_tenor(cfg) :
+                                                 std::string{};
                     targets.reserve(entries.size());
                     for (const auto& e : entries) {
                         auto target = target_for(adapter,
@@ -378,7 +385,8 @@ feed_kind make_ir_curve_kind() {
                                                                          cfg.index_family,
                                                                          e.instrument_code,
                                                                          e.start_tenor_code,
-                                                                         e.end_tenor_code});
+                                                                         e.end_tenor_code,
+                                                                         index_tenor});
                         if (!target)
                             return {.input = std::nullopt, .skip_reason = target.error()};
                         targets.push_back(

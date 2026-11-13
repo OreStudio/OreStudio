@@ -53,7 +53,6 @@ from pathlib import Path
 PARAMETER_RE = re.compile(
     r"(?<!\w)((?:\w+::)*)context (ctx|base_ctx|db_ctx|system_ctx)"
     r"(?=\s*(?:[,)]|\{\{))")
-MOVE_MEMBER_RE = re.compile(r"\b(\w+)_\(std::move\(\1\)\)")
 CONTEXT_NAMES = ("ctx", "base_ctx", "db_ctx", "system_ctx")
 MOVE_CALL_RE = re.compile(r"std::move\(ctx\)")
 GENERATED_MARKER = "AUTO-GENERATED FILE"
@@ -109,9 +108,10 @@ def edit_text(text: str, moves: bool) -> tuple[str, int]:
             r"const \1context& \2", line)
         changed += count
         if moves:
-            new_line = MOVE_MEMBER_RE.sub(r"\1_(\1)", new_line)
             # A handler receives the context from its registrar; with a
-            # const& parameter there is nothing to move.
+            # const& parameter there is nothing to move. Only the context is
+            # unwrapped: a sibling member that is moved on purpose, such as
+            # faults_(std::move(faults)), keeps its move.
             for name in CONTEXT_NAMES:
                 new_line = new_line.replace(f"std::move({name})", name)
         out.append(new_line)
@@ -146,7 +146,11 @@ def run_sources(root: Path, include_generated: bool = False) -> int:
         text = path.read_text(encoding="utf-8", errors="replace")
         if any(skip in str(path) for skip in MUST_COPY_FILES):
             continue
-        if not text or "context ctx" not in text:
+        # The parameter is not always named ctx. A file whose only context
+        # parameter is a base_ctx, db_ctx or system_ctx is opened too, or the
+        # sweep silently skips the handlers that store the context.
+        if not text or not any(f"context {name}" in text
+                               for name in CONTEXT_NAMES):
             continue
         generated = GENERATED_MARKER in text
         if generated and not include_generated:
@@ -223,7 +227,7 @@ def run_models(root: Path) -> int:
             elif in_cpp and not is_comment(line):
                 new_line, count = PARAMETER_RE.subn(r"const \1context& \2", line)
                 changed += count
-                line = MOVE_MEMBER_RE.sub(r"\1_(\1)", new_line)
+                line = new_line
                 for name in CONTEXT_NAMES:
                     line = line.replace(f"std::move({name})", name)
             out.append(line)

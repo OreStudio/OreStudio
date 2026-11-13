@@ -99,8 +99,19 @@ const FLAT = VOLS.flat();
 const VMIN = Math.min(...FLAT), VMAX = Math.max(...FLAT);
 
 /* ---- the projection, from hedgr's generator ----------------------------- */
-function project(x, y, z){
-  const yaw = 36 * Math.PI / 180, pitch = 26 * Math.PI / 180;
+/* The view angles live outside the renderer so a drag redraws the mesh in
+   place, exactly as the sibling candidate-inspection prototype does. */
+function angle(name, fallback){
+  const raw = params.get(name);
+  if (raw === null) return fallback;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : fallback;
+}
+const view = {yaw: angle('yaw', 36), pitch: angle('pitch', 26)};
+const DEFAULT_VIEW = {yaw: 36, pitch: 26};
+
+function project(x, y, z, v = view){
+  const yaw = v.yaw * Math.PI / 180, pitch = v.pitch * Math.PI / 180;
   const x1 = x * Math.cos(yaw) - y * Math.sin(yaw);
   const y1 = x * Math.sin(yaw) + y * Math.cos(yaw);
   const sx = x1;
@@ -109,10 +120,26 @@ function project(x, y, z){
   const persp = 1 / (1 + 0.30 * depth);
   return [sx * persp, sy * persp];
 }
-const WIDTH = 1100, HEIGHT = 380, HEIGHT_Z = 0.62, SPAN = 520;
-function screen(x, y, w){
-  const [px, py] = project(x, y, w * HEIGHT_Z);
-  return [px * SPAN + WIDTH / 2, -py * SPAN + HEIGHT * 0.62];
+/* A rotatable surface wants a squarer frame than a static one: the box is
+   fitted to this viewport on every angle. */
+const WIDTH = 1000, HEIGHT = 560, HEIGHT_Z = 0.62;
+/* The box is fitted to the viewport on every rotation, so a turned surface
+   fills the frame instead of leaving it. */
+function fitter(){
+  const pts = [];
+  for (const xi of [0,1]) for (const yi of [0,1]) for (const zi of [0,1])
+    pts.push(project(xi, yi, zi * HEIGHT_Z));
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const margin = 40;
+  const scale = Math.min((WIDTH - 2*margin) / (maxX - minX || 1),
+                         (HEIGHT - 2*margin) / (maxY - minY || 1));
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  return (x, y, z) => {
+    const p = project(x, y, z);
+    return [WIDTH/2 + (p[0] - cx) * scale, HEIGHT/2 - (p[1] - cy) * scale];
+  };
 }
 function norm(v){ return (v - VMIN) / (VMAX - VMIN); }
 function colour(w){
@@ -123,11 +150,12 @@ function colour(w){
 
 function meshSvg(){
   const R = EXPIRIES.length, C = STRIKES.length;
+  const screen = fitter();
   const out = [];
   /* the box: ticks on all three axes, dashed where an edge is behind */
   const corners = {};
   for (const xi of [0,1]) for (const yi of [0,1]) for (const zi of [0,1])
-    corners[[xi,yi,zi].join('')] = screen(xi, yi, zi);
+    corners[[xi,yi,zi].join('')] = screen(xi, yi, zi * HEIGHT_Z);
   const edges = [
     [[0,0,0],[1,0,0]], [[0,0,0],[0,1,0]], [[0,0,0],[0,0,1]], [[1,0,0],[1,1,0]],
     [[0,1,0],[1,1,0]], [[1,0,0],[1,0,1]], [[0,1,0],[0,1,1]], [[1,1,0],[1,1,1]],
@@ -143,10 +171,10 @@ function meshSvg(){
   const cells = [];
   for (let i = 0; i < R - 1; i++) for (let j = 0; j < C - 1; j++){
     const quad = [
-      screen(j/(C-1), i/(R-1), norm(VOLS[i][j])),
-      screen((j+1)/(C-1), i/(R-1), norm(VOLS[i][j+1])),
-      screen((j+1)/(C-1), (i+1)/(R-1), norm(VOLS[i+1][j+1])),
-      screen(j/(C-1), (i+1)/(R-1), norm(VOLS[i+1][j]))
+      screen(j/(C-1), i/(R-1), norm(VOLS[i][j]) * HEIGHT_Z),
+      screen((j+1)/(C-1), i/(R-1), norm(VOLS[i][j+1]) * HEIGHT_Z),
+      screen((j+1)/(C-1), (i+1)/(R-1), norm(VOLS[i+1][j+1]) * HEIGHT_Z),
+      screen(j/(C-1), (i+1)/(R-1), norm(VOLS[i+1][j]) * HEIGHT_Z)
     ];
     const mean = (VOLS[i][j] + VOLS[i][j+1] + VOLS[i+1][j+1] + VOLS[i+1][j]) / 4;
     cells.push({depth:(i+1)/(R-1), quad, mean});
@@ -155,12 +183,12 @@ function meshSvg(){
   const fill = cells.map(({quad, mean}) =>
     `<polygon points="${quad.map(p => p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${colour(norm(mean))}" fill-opacity="0.92" stroke="#0b1020" stroke-width="1"/>`).join('');
   const wire = [];
-  for (let i = 0; i < R; i++) wire.push(STRIKES.map((_, j) => screen(j/(C-1), i/(R-1), norm(VOLS[i][j]))));
-  for (let j = 0; j < C; j++) wire.push(EXPIRIES.map((_, i) => screen(j/(C-1), i/(R-1), norm(VOLS[i][j]))));
+  for (let i = 0; i < R; i++) wire.push(STRIKES.map((_, j) => screen(j/(C-1), i/(R-1), norm(VOLS[i][j]) * HEIGHT_Z)));
+  for (let j = 0; j < C; j++) wire.push(EXPIRIES.map((_, i) => screen(j/(C-1), i/(R-1), norm(VOLS[i][j]) * HEIGHT_Z)));
   const skeleton = wire.map(pts =>
     `<polyline points="${pts.map(p => p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}"/>`).join('');
   return `
-  <svg viewBox="0 0 ${WIDTH} ${HEIGHT}" role="img" aria-label="vol surface, boxed frame with the mesh">
+  <svg id="solid" viewBox="0 0 ${WIDTH} ${HEIGHT}" role="img" aria-label="vol surface, boxed frame with the mesh, rotated ${view.yaw} by ${view.pitch}">
     <g stroke="#333c52" stroke-width="1" fill="none">${frame}</g>
     <g>${fill}</g>
     <g fill="none" stroke="#e6edf3" stroke-opacity="0.30" stroke-width="1">${skeleton}</g>
@@ -209,11 +237,16 @@ function surface(){
   return `
   <div class="panel">
     <h2>Surface · strikes × expiries × vol</h2>
-    <div class="chart" style="padding:0;border:none;background:none">${meshSvg()}</div>
+    <div class="chart" id="surface-host" role="application" aria-label="vol surface, drag or arrow keys to rotate" style="padding:0;border:none;background:none">${meshSvg()}</div>
     <div class="axis-strip">
       <span><b>Strikes</b> ${STRIKE_CODES.join(' · ')}</span>
       <span><b>Expiries</b> ${EXPIRIES.join(' · ')}</span>
       <span><b>Vol</b> ${(VMIN*100).toFixed(2)}% – ${(VMAX*100).toFixed(2)}%</span>
+    </div>
+    <div class="row">
+      <button class="btn" id="reset-view">Reset view</button>
+      <span class="faint" id="angles">yaw ${view.yaw.toFixed(0)}° · pitch ${view.pitch.toFixed(0)}°</span>
+      <span class="faint" style="margin-left:auto">Drag to rotate · arrow keys when the plot has focus · double-click to reset</span>
     </div>
   </div>`;
 }
@@ -294,6 +327,59 @@ document.getElementById('bar').addEventListener('click', e => {
   if (v) next.set('variant', v); if (s) next.set('state', s);
   location.search = next.toString();
 });
+
+/* ---- rotation: drag, arrow keys, double-click ---------------------------------
+   The probe agrees with the product that a surface is read by turning it. The
+   angles are state outside the renderer, and each is a URL parameter, so a view
+   can be sent to someone else. */
+function drawSurface(){
+  const host = document.getElementById('surface-host');
+  if (!host) return;
+  host.innerHTML = meshSvg();
+  const angles = document.getElementById('angles');
+  if (angles) angles.textContent =
+    'yaw ' + view.yaw.toFixed(0) + '\u00b0 \u00b7 pitch ' + view.pitch.toFixed(0) + '\u00b0';
+  const url = new URLSearchParams(location.search);
+  url.set('yaw', view.yaw.toFixed(0));
+  url.set('pitch', view.pitch.toFixed(0));
+  history.replaceState(null, '', '?' + url.toString());
+}
+
+function wireSurface(){
+  const host = document.getElementById('surface-host');
+  if (!host) return;
+  host.tabIndex = 0;
+  let drag = null;
+  host.addEventListener('pointerdown', e => {
+    drag = {x: e.clientX, y: e.clientY};
+    if (host.setPointerCapture) host.setPointerCapture(e.pointerId);
+  });
+  host.addEventListener('pointermove', e => {
+    if (!drag) return;
+    view.yaw = ((view.yaw + (e.clientX - drag.x) * 0.4) % 360 + 360) % 360;
+    view.pitch = Math.max(-10, Math.min(80, view.pitch + (e.clientY - drag.y) * 0.3));
+    drag = {x: e.clientX, y: e.clientY};
+    drawSurface();
+  });
+  const end = () => { drag = null; };
+  host.addEventListener('pointerup', end);
+  host.addEventListener('pointercancel', end);
+  host.addEventListener('dblclick', () => { Object.assign(view, DEFAULT_VIEW); drawSurface(); });
+  host.addEventListener('keydown', e => {
+    const step = e.shiftKey ? 12 : 3;
+    if (e.key === 'ArrowLeft') view.yaw = (view.yaw - step + 360) % 360;
+    else if (e.key === 'ArrowRight') view.yaw = (view.yaw + step) % 360;
+    else if (e.key === 'ArrowUp') view.pitch = Math.min(80, view.pitch + step);
+    else if (e.key === 'ArrowDown') view.pitch = Math.max(-10, view.pitch - step);
+    else return;
+    e.preventDefault();
+    drawSurface();
+  });
+  const reset = document.getElementById('reset-view');
+  if (reset) reset.onclick = () => { Object.assign(view, DEFAULT_VIEW); drawSurface(); };
+}
+
+wireSurface();
 </script>
 </body>
 </html>

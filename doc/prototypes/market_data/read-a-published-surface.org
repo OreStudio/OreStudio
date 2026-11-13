@@ -22,7 +22,9 @@ A surface is three readings of one answer: the picture, the grid and one smile.
 The prototype argues they must be drawn from a single response so they cannot
 disagree, that the strike column's meaning is part of the surface (a delta,
 spot-quoted, not premium-adjusted), and that a surface nobody published is a
-notice and not a grid.
+notice and not a grid. The surface turns: drag it, use the arrow keys, or
+double-click to reset, and every angle is a URL parameter. A picture read at one
+fixed angle hides the wing the desk is looking at.
 
 It is ported from hedgr's =prototypes/vol_surface_smile.html=. It is the
 published surface; the candidate's smiles, mesh and arbitrage checks are the
@@ -78,7 +80,8 @@ called =25D put= is ambiguous until the delta convention is stated.
 | Tabs | Surface, Grid, Smile | Variants of one page | The prototype switcher is how this group compares arguments |
 | Strike meaning | Implied by column labels | =model=, =strike convention= and =delta type= in the facts row | A strike is not a number without them |
 | Chrome | A dialog | A page with a facts row | Prototypes read as the product |
-| Mesh | Generated once into the HTML | Generated from the grid in the page | The picture cannot drift from the table |
+| Mesh | Generated once into the HTML, at one fixed angle | Generated from the grid, and turned by drag, arrow keys or URL | A surface is read from the angle that shows the fault, as the sibling =inspect-a-surfaces-slices= prototype already argued |
+| Frame | A fixed 1100 × 380 box | A squarer 1000 × 560 frame, fitted to the box on every angle | A turned box leaves a short frame, so the fit follows the angle |
 | Staleness | A printed badge | A badge from the server's verdict | The threshold is configuration, not a client constant |
 
 * See also

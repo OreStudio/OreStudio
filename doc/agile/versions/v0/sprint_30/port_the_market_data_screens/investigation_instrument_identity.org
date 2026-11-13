@@ -105,7 +105,7 @@ catalogue shows five of everything.
 | ladder | =ir_swap=, =mm=, =fra=, =basis_swap= | =term= | =ccy= | =fwd_start= and =tenor= are identity, so they distinguish peers |
 | surface | =fx_option= | =expiry=, =strike_label= | =unit_ccy= | pair in the identity, smile in the coordinates |
 | surface (published) | =fx_vol_surface= | =expiry=, =strike= | =unit_ccy= | =surface_id= names it |
-| fixing | not a datum | — | — | =ores_marketdata_market_fixings_tbl=, a separate table |
+| fixing | =type=fixing= URI | none | =index= family's subject | A fixing is an *index*, not a datum: its identity is read by =oresmd_uri_codec::read_index=, and its values are rows in =market_fixings= |
 
 The declaration order of a type's coordinates is the draw order, which is what
 the screens need for =axes[].values=.
@@ -126,9 +126,13 @@ the screens need for =axes[].values=.
    a read that omits the party multiplies the catalogue.
 4. *A pair needs no axes and a surface needs two*, and both come from the same
    rule, so the catalogue has one algorithm rather than five.
-5. *Fixings are not datums.* The fifth kind in the specification's list is not
-   in this schema, so the catalogue either reads =market_fixings= separately or
-   drops the kind. That is a real decision, not a detail.
+5. *A fixing is an index, not a datum.* It does have an oresmd address —
+   =oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=KRW= — read by
+   =oresmd_uri_codec::read_index= into a =market_index= identity, and its values
+   are rows in =market_fixings= (series, date, value, source) rather than
+   observations. So the catalogue can list a fixing kind, but it must classify
+   =type=fixing= URIs separately and take the freshness of a fixing from the
+   newest =fixing_date=, not from =get_series_ticks=.
 
 * Recommendations
 
@@ -143,9 +147,10 @@ the screens need for =axes[].values=.
 3. Correct the ladder contract in the light of finding 2: its columns are
    provider *series rows*, and its rungs are the =term= coordinates of one of
    them. hedgr's spec should be amended where it assumes several series.
-4. Decide the fixing kind before the catalogue ships: either read the fixings
-   table, or remove =fixing= from the kind vocabulary and from the search
-   screen's badge list.
+4. Give the catalogue a fixing branch: a =type=fixing= URI whose identity is a
+   =market_index=, with its freshness read from the newest =market_fixings= row
+   of that series. Until it exists the catalogue must refuse a fixing-only query
+   in words rather than answering an empty list.
 5. Take the party from the session and never from the request, as the
    specification already says; the row counts above show why.
 

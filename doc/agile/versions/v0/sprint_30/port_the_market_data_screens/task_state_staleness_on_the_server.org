@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-13
 #+updated: 2026-11-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ on every value block, so no client keeps its own threshold.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | Not yet started.                       |
+| Now          | The policy exists and four reads ask it; the surface was the last to keep its own hour (40c82037). The threshold is one number from ORES_MARKETDATA_STALE_SECONDS, not per instrument kind. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | State the threshold per instrument kind, with hedgr's fx and ir values as the starting point. The call-site half is done. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -63,6 +63,15 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The call-site half is in: the catalogue, the ladder, the montage and the
+  surface all ask =staleness_policy=, and no read carries a literal hour.
+- The threshold is still one number for the whole service. It cannot move into
+  the options struct as it stands: =run_host_async= parses the configuration and
+  constructs the service in one call, so an option would be inert. The variable
+  is the honest interim.
+- A publication with no instant is stale: the read asks =is_stale= with no
+  instant, which the policy answers with stale.
 
 * Test Scenarios
 

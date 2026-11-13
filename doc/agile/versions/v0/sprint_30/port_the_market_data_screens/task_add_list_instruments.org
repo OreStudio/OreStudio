@@ -8,7 +8,7 @@
 #+filetags: :port_the_market_data_screens:sprint_30:v0:
 #+owner: marco
 #+branch: feature/port-the-market-data-screens
-#+pr:
+#+pr: 4688
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -28,11 +28,11 @@ scoped to the caller's party.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | The service answers the read, and the kind and naming rules are proven against the deployment's own URIs. The database path is not yet tested, and fixings are refused in words. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Prove the read against the test database with two providers on one identity, then give fixings their branch. |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4688][#4688]] | [marketdata] Port the hedgr market data screens and serve their reads |
 
 * Review
 
@@ -94,6 +94,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The catalogue answers from the service: one entry per instrument, with its
+kind, its name, its facets, its axes in draw order, its sources and the
+verdict on each source's newest point, scoped to the caller's party. Merged in
+#4688. Five naming cases and the read are in =app_instrument_catalogue_tests=
+and =app_instrument_catalogue_read_tests=.
 
 * Notes
 

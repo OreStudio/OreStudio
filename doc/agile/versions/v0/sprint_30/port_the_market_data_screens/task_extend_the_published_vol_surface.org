@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-13
 #+updated: 2026-11-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ instrument identity so a smile can be sliced.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | Not yet started.                       |
+| Now          | The read states the model, the delta type, the strike convention and the staleness verdict, and a fixture publishes a surface so four cases assert them. The slice case is not written yet. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Add the slice case: one expiry's numbers equal that row of the grid. Then raise the pull request and close. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -66,6 +66,15 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The axes are the grid's two lists, =expiries= and =strikes=, not a separate
+  axes array: the acceptance's =axes[0]= and =axes[1]= are those two lengths. A
+  slice is the same read with =expiry= or =strike= stated, and =surface_grid_of=
+  cuts it.
+- The metadata, the verdict and their test are commits 40c82037 and 1d53ac05b
+  on =feature/port-the-market-data-screens=. The test writes the four records a
+  publish leaves behind rather than running the calibration, so it does not
+  depend on the publish flow being revisited.
 
 * Test Scenarios
 

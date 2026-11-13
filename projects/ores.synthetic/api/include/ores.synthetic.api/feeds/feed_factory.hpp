@@ -152,9 +152,8 @@ struct ir_curve_feed_build_input final {
 /**
  * @brief One of the per-kind build inputs, discriminated by the kind string passed to make().
  */
-using feed_build_input =
-    std::variant<fx_spot_feed_build_input, ir_curve_feed_build_input,
-                 fx_vol_surface_feed_build_input>;
+using feed_build_input = std::
+    variant<fx_spot_feed_build_input, ir_curve_feed_build_input, fx_vol_surface_feed_build_input>;
 
 /**
  * @brief Maps a feed kind to the producer builder that constructs that kind from its persisted

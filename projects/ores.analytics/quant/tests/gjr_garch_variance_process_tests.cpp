@@ -448,12 +448,17 @@ TEST_CASE("a GJR-GARCH process hands the market's normal to the inner law",
                                      .inner_daily_variance = 1e-4,
                                      .inner_daily_drift = 0.0,
                                      .measure = return_measure::log_return};
-    auto inner = std::make_unique<service::gaussian_mixture_model_process>(
-        std::vector<double>{0.0}, std::vector<double>{0.01}, std::vector<double>{1.0}, 100.0,
-        price_stream(17));
-    service::gaussian_mixture_model_process plain(
-        std::vector<double>{0.0}, std::vector<double>{0.01}, std::vector<double>{1.0}, 100.0,
-        price_stream(17));
+    auto inner =
+        std::make_unique<service::gaussian_mixture_model_process>(std::vector<double>{0.0},
+                                                                  std::vector<double>{0.01},
+                                                                  std::vector<double>{1.0},
+                                                                  100.0,
+                                                                  price_stream(17));
+    service::gaussian_mixture_model_process plain(std::vector<double>{0.0},
+                                                  std::vector<double>{0.01},
+                                                  std::vector<double>{1.0},
+                                                  100.0,
+                                                  price_stream(17));
     gjr_garch_variance_process gjr(std::move(inner), model, frame, 1e-4);
     CHECK(gjr.supports_external_normal());
     // The initial variance is the inner law's own, so the day's multiplier is one
@@ -463,16 +468,18 @@ TEST_CASE("a GJR-GARCH process hands the market's normal to the inner law",
         CHECK(gjr.next_with_normal(z) == plain.next_with_normal(z));
 }
 
-TEST_CASE("a driven GJR-GARCH day closes on the tick that completes it",
-          "[gjr_garch_variance]") {
+TEST_CASE("a driven GJR-GARCH day closes on the tick that completes it", "[gjr_garch_variance]") {
     const auto model = decorated_model_of({.alpha = 0.1, .gamma = 0.2, .beta = 0.6}, 1e-4);
     const daily_variance_frame frame{.ticks_per_day = 2.0,
                                      .inner_daily_variance = 1e-4,
                                      .inner_daily_drift = 0.0,
                                      .measure = return_measure::log_return};
-    auto inner = std::make_unique<service::gaussian_mixture_model_process>(
-        std::vector<double>{0.0}, std::vector<double>{0.01}, std::vector<double>{1.0}, 100.0,
-        price_stream(21));
+    auto inner =
+        std::make_unique<service::gaussian_mixture_model_process>(std::vector<double>{0.0},
+                                                                  std::vector<double>{0.01},
+                                                                  std::vector<double>{1.0},
+                                                                  100.0,
+                                                                  price_stream(21));
     gjr_garch_variance_process gjr(std::move(inner), model, frame, 1e-4);
     const double open = gjr.daily_variance();
     gjr.next_with_normal(3.0);

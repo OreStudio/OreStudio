@@ -52,11 +52,11 @@ the decision is OD-1 of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | The driven step reaches the FX spot's law; no feed reads its driver yet. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The surface feed, which lands with the spot's wiring. |
+| Next         | Nothing. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
@@ -373,3 +373,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered as PR #4673, 30 commits, rebased onto =origin/main= at =9bd4c66a29=
+before the suites were run.
+
+The plan's six steps are done. A factor's value at any time comes from a keyed
+cell grid and a dyadic bridge; the market holds block factors built from stated
+correlations and one flat loadings array; fourteen processes take the standard
+normal their step is built from, nine of them including both Gaussian mixtures and
+the GJR-GARCH wrapper so the FX spot can be driven at all; the FX spot reads its
+driver from the tick context; the surface's levels and laws are configured through
+codegen and its three correlations build its block; and a surface is a feed the
+service starts, ticking on the market's normals and publishing every point each
+contributor observes.
+
+Two acceptance lines are re-homed rather than met, and
+[[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Read the pair's curves and show the run's market]]
+owns them: a surface's strikes are solved against a forward from a market with no
+rates and a spot of one, and the factors and loadings are set from the shell but
+are not yet shown on the Market regime tab. The spot level is proven immaterial to
+the quoted volatilities to 1e-12; the missing discount curves move them by about
+0.008 volatility points per 2% of forward displacement, which is why the curves are
+worth doing.
+
+Verified: quant 691 cases, synthetic API 1007, core 137 with one skipped for a
+missing ORE engine, service 83 including a surface started over NATS through the
+real handler, shell 391, http 145 -- all green after the rebase. The local gate's
+nine checks that bear on these changes pass: format, unity collisions, the ER
+diagram, the shell tangles, the SQL model, generated column references, protocol
+twins, shell command units and the drift sweep.

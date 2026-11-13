@@ -49,7 +49,7 @@ namespace {
 constexpr int days_in_a_year = 365;
 constexpr int months_in_a_year = 12;
 
-double year_fraction(std::string_view count, char unit) {
+double fx_vol_year_fraction(std::string_view count, char unit) {
     int n = 0;
     const auto parsed = std::from_chars(count.data(), count.data() + count.size(), n);
     static_cast<void>(parsed);
@@ -86,7 +86,7 @@ std::optional<double> fx_vol_tenor_years(std::string_view tenor) {
         return std::nullopt;
     if (!std::all_of(tenor.begin(), tenor.end() - 1, [](char c) { return c >= '0' && c <= '9'; }))
         return std::nullopt;
-    const double years = year_fraction(tenor.substr(0, tenor.size() - 1), unit);
+    const double years = fx_vol_year_fraction(tenor.substr(0, tenor.size() - 1), unit);
     if (!(years > 0.0))
         return std::nullopt;
     return years;

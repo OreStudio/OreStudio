@@ -84,15 +84,15 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_buil
 std::shared_ptr<ores::marketdata::domain::i_feed>
 build_fx_vol_surface(const feed_build_context& ctx, const feed_build_input& input) {
     const auto& in = std::get<fx_vol_surface_feed_build_input>(input);
-    return std::make_shared<fx_vol_surface_feed>(
-        ctx.nats,
-        in.config.source_name,
-        std::string("synthetic.v1.ops.tick.") + in.config.source_name,
-        in,
-        ctx.scheduler.run_seed(),
-        ctx.scheduler,
-        in.config.sensitivity,
-        to_arrival_spec(in.config));
+    return std::make_shared<fx_vol_surface_feed>(ctx.nats,
+                                                 in.config.source_name,
+                                                 std::string("synthetic.v1.ops.tick.") +
+                                                     in.config.source_name,
+                                                 in,
+                                                 ctx.scheduler.run_seed(),
+                                                 ctx.scheduler,
+                                                 in.config.sensitivity,
+                                                 to_arrival_spec(in.config));
 }
 
 } // namespace

@@ -26,7 +26,6 @@ on:  # yamllint disable-line rule:truthy
       - main
     paths:
       - 'build/docker/ci/**'
-      - 'build/scripts/install_llvm.sh'
       - '.github/workflows/ci-image.yml'
   workflow_dispatch:
 

@@ -89,7 +89,22 @@ public:
         const auto found = lifecycle.kind(std::string(curve_publish_kind_code));
         if (!found)
             throw std::runtime_error("The curve publish kind is not seeded.");
-        was_ = *found;
+        // An aborted run can leave the zero-approval rule open in the installation's
+        // tenant, which would approve every tenant's publish. Put the seeded rule
+        // back before reading it, so this fixture never starts from a test rule.
+        if (found->change_reason_code == "system.test" &&
+            found->auto_approval_code != "system_tenant") {
+            auto healed = *found;
+            healed.auto_approval_code = "system_tenant";
+            healed.change_reason_code = "system.test";
+            healed.change_commentary = "Restored after an aborted zero-approval test";
+            ores::inbox::repository::approval_kind_repository repo;
+            repo.write(ctx_, healed);
+        }
+        const auto seeded = lifecycle.kind(std::string(curve_publish_kind_code));
+        if (!seeded)
+            throw std::runtime_error("The curve publish kind is not seeded.");
+        was_ = *seeded;
         auto zeroed = *found;
         // The policy is how a kind says that nobody decides it; a count of zero
         // would only write a request no person could ever answer.

@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-trading-resources
-#+pr:
+#+pr: 4663
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -163,7 +163,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4663][#4663]] | [http] Serve the trading area from the gateway |
 
 * Review
 

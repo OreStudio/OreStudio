@@ -34,6 +34,9 @@
 
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.api/domain/approval_kind.hpp"
+#include "ores.inbox.core/repository/approval_kind_repository.hpp"
+#include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -64,6 +67,77 @@
 namespace ores::marketdata::service::tests {
 
 using ores::marketdata::service::app::curve_publish_kind_code;
+
+/**
+ * @brief The seeded curve publish kind, approving every raise for one test.
+ *
+ * A kind states through its =auto_approval_code= which raises close without a
+ * person. The fixture restores the seeded rule even when a previous run
+ * aborted while the zero rule was open, so a suite never starts from a rule
+ * that would approve every tenant's publish.
+ */
+class zero_approval_kind {
+public:
+    explicit zero_approval_kind(ores::testing::scoped_database_helper& h)
+        : ctx_(h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user())) {
+        restore_the_seed();
+        const auto seeded = live();
+        if (!seeded)
+            throw std::runtime_error("The curve publish kind is not seeded.");
+        was_ = *seeded;
+        auto zeroed = *seeded;
+        // The policy is how a kind says that nobody decides it; a count of zero
+        // would only write a request no person could ever answer.
+        zeroed.auto_approval_code = "every_request";
+        zeroed.change_reason_code = "system.test";
+        zeroed.change_commentary = "Every raise approved, for the zero-approval test";
+        ores::inbox::repository::approval_kind_repository repo;
+        repo.write(ctx_, zeroed);
+    }
+
+    ~zero_approval_kind() {
+        try {
+            ores::inbox::repository::approval_kind_repository repo;
+            repo.write(ctx_, was_);
+        } catch (...) {
+            // The rule is the seeded one; a failure here must not fail a suite
+            // that has already asserted what it came for.
+        }
+    }
+
+    zero_approval_kind(const zero_approval_kind&) = delete;
+    zero_approval_kind& operator=(const zero_approval_kind&) = delete;
+
+private:
+    static std::optional<ores::inbox::domain::approval_kind> kind_of(const ores::database::context& ctx) {
+        return ores::inbox::service::approval_lifecycle(ctx)
+            .kind(std::string(curve_publish_kind_code));
+    }
+
+    std::optional<ores::inbox::domain::approval_kind> live() const {
+        return kind_of(ctx_);
+    }
+
+    /// The seeded rule, written back if a run left a test rule open.
+    void restore_the_seed() {
+        const auto found = live();
+        if (!found)
+            throw std::runtime_error("The curve publish kind is not seeded.");
+        if (found->auto_approval_code == "system_tenant" &&
+            found->change_reason_code == "system.initial_load")
+            return;
+        auto healed = *found;
+        healed.auto_approval_code = "system_tenant";
+        healed.change_reason_code = "system.initial_load";
+        healed.change_commentary = "The seeded curve publish rule";
+        ores::inbox::repository::approval_kind_repository repo;
+        repo.write(ctx_, healed);
+    }
+
+    ores::database::context ctx_;
+    ores::inbox::domain::approval_kind was_;
+};
+
 using ores::marketdata::service::app::publish_subject;
 using ores::marketdata::service::app::resolve_publish_subject;
 

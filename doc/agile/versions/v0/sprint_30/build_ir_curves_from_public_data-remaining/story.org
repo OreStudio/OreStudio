@@ -45,6 +45,7 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 | [[id:C0BA69C1-6E68-4AD2-896C-0F6283BD3BAF][Read the public overnight rates through an adapter]] | ABANDONED | | | Moved to the story [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]], which has one specialised adapter for each publisher. |
 | [[id:4B5701D6-16C6-445B-BDD4-C60050FED95C][Replace the synthetic feeds of ceased or misnamed indices]] | DONE | 2026-11-13 | 2026-11-13 | The system tenant runs synthetic feeds of indices that have ceased or are not the currency's overnight average: LIBOR for USD, GBP, JPY and CHF, TELBOR for ILS, HIBOR for CNH, the BUBOR overnight quote for HUF and TAIBOR for TWD; decide per currency what replaces each, and remove or replace the feed. |
 | [[id:7FC9444F-77FA-44E2-A288-A8ED85A48DA7][Show the IR coverage of each currency]] | DONE | 2026-11-13 | 2026-11-13 | A screen shows, for each supported currency, its public source, its calibration policy, its bootstrap config and its latest published curve, as the calibration screen shows the FX coverage. |
+| [[id:52257743-2F40-4DFD-98B2-B08311947335][Show an IBOR curve beside the overnight curve]] | BACKLOG | | | A person can open a currency's overnight curve and its IBOR curve, see both on one screen, and read which one discounts and which one projects. The first slice of teaching the difference between an overnight average and a term IBOR. |
 
 * Decisions
 

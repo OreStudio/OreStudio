@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-reporting-resources
-#+pr:
+#+pr: 4685
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4685][#4685]] | [http] Stand up the reporting part and serve the definitions |
 
 * Review
 

@@ -139,7 +139,19 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The sweep reads the caller's tenant, not the system tenant | publish_due_curves_handler.hpp | noted | By design: the read goes through the request context, and the job's caller is the scheduler service account in the system tenant. The Result says so. |
+| 2 | Plan step 2 does not describe the action that shipped | task doc | accepted | The Plan now states the =nats_request= action and why it is not a flag on =nats_publish=. |
+| 3 | No test proves a firing supersedes the previous set | tests | accepted | Added (7ef785046c): two records, one live, the live one later. |
+| 4 | "Keeps the previous publish" is claimed but untested | task doc | accepted | The Result now says the write order keeps it and no test covers it; the gate's refused-publish test covers the write order. |
+| 5 | No test of the permission refusal | handler | declined | The handler uses the standard =has_permission= check, covered by the other handlers' tests. |
+| 6 | The scheduler action's =execute= is untested | nats_request_action_handler.cpp | declined | It needs a live NATS service; the payload and the X-Error path follow the tested =nats_publish= action. |
+| 7 | The test rewrites the seeded approval kind | tests | declined | The gate test uses the same technique and restores the row; the suite expects the seeded value after it. |
+| 8 | =resp.success= is true even when every curve fails | handler | accepted | Success now means every visited curve published. |
+| 9 | "raised. Raised." double wording | handler | accepted | One wording. |
+| 10 | The response has no =@brief= | operations model | accepted | The model carries it and the protocol and TypeScript twin are regenerated. |
+| 11 | Stale comments in the test and the plan | tests, task doc | accepted | Both corrected. |
+| 12 | The two scheduler action handlers duplicate their request path | nats_request_action_handler.cpp | declined | The actions differ in what they send and report; the shared part is the two-line X-Error check. |
+| 13 | The test destructor swallows every exception | tests | declined | It matches the gate test, and the comment states why the restore may not fail a suite that has already asserted. |
 
 * Result
 

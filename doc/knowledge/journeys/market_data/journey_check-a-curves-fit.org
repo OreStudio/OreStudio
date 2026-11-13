@@ -199,6 +199,7 @@ register history providers.
 - [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — see which raw quote failed before the check.
 - [[id:239E4C3C-12E7-4A87-9DE3-16B9F093BC14][Ask for a publish to be approved]] — send a sound candidate to a second pair of eyes.
 - [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — compare the candidate with the published curve it would replace.
+- [[id:01ED4CA6-1215-40ED-9144-DE34553870F6][Inspect a curve's analytics]] — the published curve this candidate becomes, read as numbers rather than as a fit.
 
 * Related knowledge
 

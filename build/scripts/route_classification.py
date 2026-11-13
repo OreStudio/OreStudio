@@ -682,6 +682,14 @@ RULES = (
          "One page of the report definitions the caller's parties own, each row the"
          " definition with its latest run, its health word, its problem counts, its next"
          " fire and the party's own name, so a cell that cannot be read says why."),
+    Rule("a report definition's route",
+         ("regex", r"^((GET /api/reporting/reports/(by-name/\{name\}|\{segment\}|"
+                   r"\{id\}/configurations))|(PUT /api/reporting/reports/\{id\}))$"),
+         CPP, RESOURCE, "reporting",
+         "One report definition at the address and in the shape the BFF answered: the id a name "
+         "resolves to, the page an id or an older name opens with the choices a shared name "
+         "offers, the configurations it binds, and the write that rebuilds the record from the "
+         "fields the form shows."),
     Rule("the report definitions",
          ("regex", r"^GET /api/reporting/reports"),
          BFF, RESOURCE, "reporting",

@@ -23,6 +23,9 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
+#include "ores.reporting.api/messaging/configuration_protocol.hpp"
+#include "ores.reporting.api/messaging/configuration_type_protocol.hpp"
+#include "ores.reporting.api/messaging/report_configuration_protocol.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.api/messaging/report_error_event_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
@@ -237,6 +240,325 @@ std::string row_json(const reporting_domain::report_definition& definition,
            ",\"nextFireAt\":" + json::write(next_fire_of(fires, definition.id)) + "}";
 }
 
+
+/// The fields the report edit form offers, and the only ones a save may change.
+struct edit_change {
+    std::string description;
+    std::string report_type;
+    std::string concurrency_policy;
+    std::string schedule_expression;
+    bool is_official{};
+    std::optional<std::string> regulatory_book_type;
+    std::string pre_processing;
+    std::string prepared_input_key;
+    std::string post_processing;
+    std::string skipped_families;
+};
+
+/// A write as the form states it: the version read, the fields and the reason.
+struct edit_body {
+    int version{};
+    edit_change change;
+    rr::stated_intent intent;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<edit_change>) {
+    using ores::utility::codec::field;
+    return ores::utility::codec::field_list{
+        field{"description", &edit_change::description},
+        field{"report_type", &edit_change::report_type},
+        field{"concurrency_policy", &edit_change::concurrency_policy},
+        field{"schedule_expression", &edit_change::schedule_expression},
+        field{"is_official", &edit_change::is_official},
+        field{"regulatory_book_type", &edit_change::regulatory_book_type},
+        field{"pre_processing", &edit_change::pre_processing},
+        field{"prepared_input_key", &edit_change::prepared_input_key},
+        field{"post_processing", &edit_change::post_processing},
+        field{"skipped_families", &edit_change::skipped_families}};
+}
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<edit_body>) {
+    using ores::utility::codec::field;
+    return ores::utility::codec::field_list{field{"version", &edit_body::version},
+                                            field{"change", &edit_body::change},
+                                            field{"intent", &edit_body::intent}};
+}
+
+/// The sentence a write states when the form is not the shape it sends.
+constexpr std::string_view malformed_write =
+    "A write names the version it was read at, the fields it changes and its reason.";
+
+/// A text of at most this many characters, as the form states it.
+bool within(const std::string& text, std::size_t most) {
+    return rr::characters_of(text) <= most;
+}
+
+/// A code the form names: 1 to this many characters once trimmed.
+bool code_of(const std::string& text, std::size_t most) {
+    const auto trimmed = rr::trimmed(text);
+    return !trimmed.empty() && rr::characters_of(trimmed) <= most;
+}
+
+/// The edit as the form states it, refused when a field is not the shape the
+/// form offers.
+void check_edit(const edit_change& change) {
+    const bool ok = within(change.description, 2000) && code_of(change.report_type, 100) &&
+                    code_of(change.concurrency_policy, 100) &&
+                    code_of(change.schedule_expression, 200) &&
+                    (!change.regulatory_book_type || code_of(*change.regulatory_book_type, 100)) &&
+                    within(change.pre_processing, 2000) && within(change.prepared_input_key, 500) &&
+                    within(change.post_processing, 2000) && within(change.skipped_families, 2000);
+    if (!ok)
+        rr::invalid(std::string(malformed_write));
+}
+
+/// Everything the screens read beside a definition, and the reads that failed.
+struct composed final {
+    std::optional<std::vector<report_routes::party_name>> parties;
+    std::optional<std::vector<report_routes::run_row>> runs;
+    std::vector<report_routes::health_row> health;
+    std::optional<std::vector<report_routes::count_row>> counts;
+    std::optional<std::vector<report_routes::fire_row>> fires;
+    std::vector<unread> unread;
+};
+
+/// The unread list as the answer states it.
+std::string unread_json(const composed& decorated) {
+    std::vector<std::string> written;
+    for (const auto& entry : decorated.unread)
+        written.push_back("{\"cell\":" + json::write(entry.cell) +
+                          ",\"message\":" + json::write(entry.message) + "}");
+    return rr::array_of(written);
+}
+
+/// One definition's party name and short code, or an empty cell when the
+/// parties read failed or does not hold the party.
+std::string definition_row_json(const reporting_domain::report_definition& definition,
+                                const composed& decorated) {
+    std::optional<std::string> party_code;
+    if (party_found(decorated.parties, definition.party_id)) {
+        const auto code = party_field(
+            decorated.parties, definition.party_id, &report_routes::party_name::short_code);
+        if (stated(code))
+            party_code = code;
+    }
+    return "{\"id\":" + json::write(rr::as_text(definition.id)) +
+           ",\"name\":" + json::write(definition.name) +
+           ",\"description\":" + json::write(definition.description) +
+           ",\"report_type\":" + json::write(definition.report_type) +
+           ",\"party_id\":" + json::write(rr::as_text(definition.party_id)) + ",\"party_name\":" +
+           json::write(party_field(
+               decorated.parties, definition.party_id, &report_routes::party_name::name)) +
+           ",\"party_code\":" + json::write(party_code) +
+           ",\"schedule_expression\":" + json::write(definition.schedule_expression) +
+           ",\"scheduled\":" + json::write(definition.scheduler_job_id.has_value()) +
+           ",\"concurrency_policy\":" + json::write(definition.concurrency_policy) +
+           ",\"is_official\":" + json::write(definition.is_official) +
+           ",\"regulatory_book_type\":" + json::write(definition.regulatory_book_type) +
+           ",\"pre_processing\":" + json::write(definition.pre_processing) +
+           ",\"prepared_input_key\":" + json::write(definition.prepared_input_key) +
+           ",\"post_processing\":" + json::write(definition.post_processing) +
+           ",\"skipped_families\":" + json::write(definition.skipped_families) +
+           ",\"version\":" + std::to_string(definition.version) +
+           ",\"modified_by\":" + json::write(definition.modified_by) +
+           ",\"performed_by\":" + json::write(definition.performed_by) +
+           ",\"change_reason_code\":" + json::write(definition.change_reason_code) +
+           ",\"change_commentary\":" + json::write(definition.change_commentary) +
+           ",\"recorded_at\":" + json::write(definition.recorded_at) + "}";
+}
+
+/// One choice a shared name offers, as the page reads it.
+std::string choice_json(const reporting_domain::report_definition& definition,
+                        const composed& decorated) {
+    const auto* run = run_of(decorated.runs, definition.id);
+    return "{\"id\":" + json::write(rr::as_text(definition.id)) +
+           ",\"name\":" + json::write(definition.name) + ",\"partyName\":" +
+           json::write(party_field(
+               decorated.parties, definition.party_id, &report_routes::party_name::name)) +
+           ",\"scheduleExpression\":" + json::write(definition.schedule_expression) +
+           ",\"health\":" + json::write(health_of_row(decorated.runs, run, decorated.health)) +
+           ",\"stateName\":" + json::write(state_of_row(run, decorated.health)) +
+           ",\"hasRun\":" + json::write(run != nullptr) + "}";
+}
+
+/// Every read the rows are composed from, each one that fails recorded against
+/// the cell it would have filled.
+composed compose_of(const http_request& req,
+                    nats_client& session,
+                    const std::vector<reporting_domain::report_definition>& definitions) {
+    composed decorated;
+    const auto fail = [&](std::string_view cell, const std::string& why) {
+        decorated.unread.push_back({std::string(cell), why});
+    };
+    const auto read_or_fail = [&](std::string_view cell, const auto& work) {
+        try {
+            work();
+        } catch (const rr::refusal& r) {
+            fail(cell, r.message);
+        } catch (const std::exception&) {
+            fail(cell, std::string(rr::unanswered));
+        }
+    };
+
+    std::vector<boost::uuids::uuid> ids;
+    for (const auto& definition : definitions)
+        ids.push_back(definition.id);
+    if (ids.empty())
+        return decorated;
+
+    read_or_fail(parties_cell, [&] {
+        const auto reply =
+            forwarding::forward(req, session, iam_messaging::get_my_parties_request{});
+        rr::require_done(reply.result);
+        std::vector<report_routes::party_name> named;
+        for (const auto& party : reply.parties)
+            named.push_back(
+                {boost::uuids::string_generator()(party.party_id), party.name, party.short_code});
+        decorated.parties = std::move(named);
+    });
+
+    read_or_fail(latest_run_cell, [&] {
+        reporting_messaging::get_latest_report_instances_by_definition_request latest;
+        latest.definition_ids = ids;
+        const auto reply = forwarding::forward(req, session, latest);
+        rr::require_done(reply.result);
+        std::vector<report_routes::run_row> found;
+        for (const auto& instance : reply.instances)
+            found.push_back(
+                {instance.id, instance.definition_id, instance.started_at, instance.completed_at});
+        decorated.runs = std::move(found);
+    });
+
+    read_or_fail(next_fire_cell, [&] {
+        reporting_messaging::get_next_fire_request next;
+        for (const auto& id : ids)
+            next.definition_ids.push_back(rr::as_text(id));
+        const auto reply = forwarding::forward(req, session, next);
+        rr::require_done(reply.result);
+        std::vector<report_routes::fire_row> found;
+        for (const auto& schedule : reply.schedules)
+            found.push_back({schedule.definition_id, schedule.next_fire_at});
+        decorated.fires = std::move(found);
+    });
+
+    std::vector<boost::uuids::uuid> run_ids;
+    if (decorated.runs)
+        for (const auto& run : *decorated.runs)
+            run_ids.push_back(run.id);
+    if (run_ids.empty())
+        return decorated;
+
+    read_or_fail(health_cell, [&] {
+        reporting_messaging::get_report_instance_health_request stated;
+        stated.instance_ids = run_ids;
+        const auto reply = forwarding::forward(req, session, stated);
+        rr::require_done(reply.result);
+        for (const auto& entry : reply.health)
+            decorated.health.push_back({entry.report_instance_id, entry.state_name, entry.health});
+    });
+
+    read_or_fail(errors_cell, [&] {
+        reporting_messaging::get_report_error_counts_request counted;
+        counted.report_instance_ids = run_ids;
+        const auto reply = forwarding::forward(req, session, counted);
+        rr::require_done(reply.result);
+        std::vector<report_routes::count_row> found;
+        for (const auto& entry : reply.counts)
+            found.push_back({entry.report_instance_id, entry.errors, entry.warnings});
+        decorated.counts = std::move(found);
+    });
+
+    return decorated;
+}
+
+/// One definition, by the id that names it.
+reporting_domain::report_definition
+definition_by_id(const http_request& req, nats_client& session, const boost::uuids::uuid& id) {
+    reporting_messaging::list_report_definitions_request msg;
+    msg.offset = 0;
+    msg.limit = 1;
+    msg.filter.emplace();
+    msg.filter->id_one_of = std::vector{id};
+    const auto reply = forwarding::forward(req, session, msg);
+    rr::require_done(reply.result);
+    if (reply.definitions.empty())
+        rr::refuse(http_status::not_found, "not-found", std::string(absent));
+    return reply.definitions.front();
+}
+
+/// The definitions the caller's parties hold that carry a name.
+///
+/// The read filters on no name, so the definitions the session can see are read
+/// and matched here. A name is unique only within a party, so several may match.
+std::vector<reporting_domain::report_definition>
+definitions_named(const http_request& req, nats_client& session, const std::string& name) {
+    reporting_messaging::list_report_definitions_request msg;
+    const auto all = forwarding::forward_all(
+        req, session, msg, &reporting_messaging::list_report_definitions_response::definitions);
+    std::vector<reporting_domain::report_definition> named;
+    for (const auto& definition : all)
+        if (definition.name == name)
+            named.push_back(definition);
+    return named;
+}
+
+/// What an address segment names, when it is not an id.
+struct named_address final {
+    std::optional<reporting_domain::report_definition> one;
+    std::vector<reporting_domain::report_definition> many;
+};
+
+/// The definition an address segment names, or the choices when the name is shared.
+named_address
+address_named(const http_request& req, nats_client& session, const std::string& name) {
+    const auto named = definitions_named(req, session, name);
+    named_address answer;
+    if (named.size() == 1)
+        answer.one = named.front();
+    else if (named.size() > 1)
+        answer.many = named;
+    return answer;
+}
+
+/// The detail page: the row, the record under the names it holds, and the reads
+/// that failed.
+std::string detail_json(const composed& decorated,
+                        const reporting_domain::report_definition& definition) {
+    return "{\"report\":" +
+           row_json(definition,
+                    decorated.parties,
+                    decorated.runs,
+                    decorated.health,
+                    decorated.counts,
+                    decorated.fires) +
+           ",\"definition\":" + definition_row_json(definition, decorated) +
+           ",\"unread\":" + unread_json(decorated) + "}";
+}
+
+/// The refusal a shared name states, with the choices beside its words.
+std::string shared_name_body(const std::string& name,
+                             const std::vector<reporting_domain::report_definition>& named,
+                             const composed& decorated) {
+    std::vector<std::string> choices;
+    for (const auto& definition : named)
+        choices.push_back(choice_json(definition, decorated));
+    const auto message = std::to_string(named.size()) +
+                         " reports of the parties you work in are named " + name +
+                         ". Choose the one you want.";
+    return "{\"choices\":" + rr::array_of(choices) +
+           ",\"code\":\"conflict\",\"message\":" + json::write(message) + "}";
+}
+
+/// The answer a shared name states: a conflict whose body names the choices.
+http_response shared_name_answer(const std::string& name,
+                                 const std::vector<reporting_domain::report_definition>& named,
+                                 const composed& decorated) {
+    http_response answer;
+    answer.status = http_status::conflict;
+    answer.body = shared_name_body(name, named, decorated);
+    return answer;
+}
+
 }
 
 }
@@ -326,119 +648,208 @@ void report_routes::register_routes(
                     const auto page = forwarding::forward(req, session, msg);
                     rr::require_done(page.result);
 
-                    std::vector<unread> unread_cells;
-                    const auto fail = [&](std::string_view cell, const std::string& why) {
-                        unread_cells.push_back({std::string(cell), why});
-                    };
-                    std::vector<boost::uuids::uuid> ids;
-                    for (const auto& definition : page.definitions)
-                        ids.push_back(definition.id);
+                    const auto decorated = compose_of(req, session, page.definitions);
+                    return http_response::json("{\"rows\":" +
+                                               rows_json(page.definitions,
+                                                         decorated.parties,
+                                                         decorated.runs,
+                                                         decorated.health,
+                                                         decorated.counts,
+                                                         decorated.fires) +
+                                               ",\"total\":" + std::to_string(page.total) +
+                                               ",\"unread\":" + unread_json(decorated) + "}");
+                });
+            }));
 
-                    std::optional<std::vector<party_name>> parties;
-                    std::optional<std::vector<run_row>> runs;
-                    std::optional<std::vector<fire_row>> fires;
-                    std::vector<health_row> health;
-                    std::optional<std::vector<count_row>> counts;
+    add(router->get("/api/reporting/reports/by-name/{name}")
+            .summary("The id of the one definition that carries a name")
+            .description("The cheap lookup behind an address an older page saved. A name the "
+                         "caller's parties share is refused with the choices, so a shared name is "
+                         "never guessed at.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<reporting_messaging::list_report_definitions_request>([&] {
+                    const auto name = rr::trimmed(req.get_path_param("name"));
+                    if (name.empty() || rr::characters_of(name) > 200)
+                        rr::invalid("A report is named by a name of 1 to 200 characters.");
+                    const auto resolved = address_named(req, session, name);
+                    if (resolved.one)
+                        return http_response::json(
+                            "{\"id\":" + json::write(rr::as_text(resolved.one->id)) + "}");
+                    if (resolved.many.empty())
+                        rr::refuse(http_status::not_found, "not-found", std::string(absent));
+                    const auto decorated = compose_of(req, session, resolved.many);
+                    return shared_name_answer(name, resolved.many, decorated);
+                });
+            }));
 
-                    if (!ids.empty()) {
-                        try {
-                            const auto reply = forwarding::forward(
-                                req, session, iam_messaging::get_my_parties_request{});
-                            rr::require_done(reply.result);
-                            std::vector<party_name> named;
-                            for (const auto& party : reply.parties)
-                                named.push_back({boost::uuids::string_generator()(party.party_id),
-                                                 party.name,
-                                                 party.short_code});
-                            parties = std::move(named);
-                        } catch (const rr::refusal& r) {
-                            fail(parties_cell, r.message);
-                        } catch (const std::exception&) {
-                            fail(parties_cell, std::string(rr::unanswered));
-                        }
+    add(router->get("/api/reporting/reports/{segment}")
+            .summary("One definition's page, by the id or the name the address carries")
+            .description("An id opens that record. Anything else is the name an older address "
+                         "saved: a name one definition carries answers with that record, and a "
+                         "shared name answers with the choices rather than a guess.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<reporting_messaging::list_report_definitions_request>([&] {
+                    const auto segment = req.get_path_param("segment");
+                    if (rr::is_uuid(segment)) {
+                        const auto definition = definition_by_id(
+                            req, session, boost::uuids::string_generator()(segment));
+                        return http_response::json(
+                            detail_json(compose_of(req, session, {definition}), definition));
+                    }
+                    const auto name = rr::trimmed(segment);
+                    if (name.empty() || rr::characters_of(name) > 200)
+                        rr::invalid("A report is named by a name of 1 to 200 characters.");
+                    const auto resolved = address_named(req, session, name);
+                    if (resolved.one) {
+                        const auto decorated = compose_of(req, session, {*resolved.one});
+                        return http_response::json(detail_json(decorated, *resolved.one));
+                    }
+                    if (resolved.many.empty())
+                        rr::refuse(http_status::not_found, "not-found", std::string(absent));
+                    const auto decorated = compose_of(req, session, resolved.many);
+                    return shared_name_answer(name, resolved.many, decorated);
+                });
+            }));
 
-                        try {
-                            reporting_messaging::get_latest_report_instances_by_definition_request
-                                latest;
-                            latest.definition_ids = ids;
-                            const auto reply = forwarding::forward(req, session, latest);
-                            rr::require_done(reply.result);
-                            std::vector<run_row> found;
-                            for (const auto& instance : reply.instances)
-                                found.push_back({instance.id,
-                                                 instance.definition_id,
-                                                 instance.started_at,
-                                                 instance.completed_at});
-                            runs = std::move(found);
-                        } catch (const rr::refusal& r) {
-                            fail(latest_run_cell, r.message);
-                        } catch (const std::exception&) {
-                            fail(latest_run_cell, std::string(rr::unanswered));
-                        }
+    add(router->get("/api/reporting/reports/{id}/configurations")
+            .summary("The configurations one definition binds, in the order of their kinds")
+            .description("Each binding states its kind's own name and the configuration's name, "
+                         "so the page lists them and links to each. An account that may not read "
+                         "the kinds still sees the bindings, under the code.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<reporting_messaging::list_report_configurations_request>([&] {
+                    const auto raw = req.get_path_param("id");
+                    if (!rr::is_uuid(raw))
+                        rr::invalid("A definition is named by its id.");
+                    const auto id = boost::uuids::string_generator()(raw);
 
-                        try {
-                            reporting_messaging::get_next_fire_request next;
-                            for (const auto& id : ids)
-                                next.definition_ids.push_back(rr::as_text(id));
-                            const auto reply = forwarding::forward(req, session, next);
-                            rr::require_done(reply.result);
-                            std::vector<fire_row> found;
-                            for (const auto& schedule : reply.schedules)
-                                found.push_back({schedule.definition_id, schedule.next_fire_at});
-                            fires = std::move(found);
-                        } catch (const rr::refusal& r) {
-                            fail(next_fire_cell, r.message);
-                        } catch (const std::exception&) {
-                            fail(next_fire_cell, std::string(rr::unanswered));
-                        }
+                    reporting_messaging::list_report_configurations_request binding_msg;
+                    binding_msg.filter.emplace();
+                    binding_msg.filter->report_definition_id = id;
+                    const auto bindings = forwarding::forward_all(
+                        req,
+                        session,
+                        binding_msg,
+                        &reporting_messaging::list_report_configurations_response::
+                            report_configurations);
 
-                        std::vector<boost::uuids::uuid> run_ids;
-                        if (runs)
-                            for (const auto& run : *runs)
-                                run_ids.push_back(run.id);
-
-                        if (!run_ids.empty()) {
-                            try {
-                                reporting_messaging::get_report_instance_health_request stated;
-                                stated.instance_ids = run_ids;
-                                const auto reply = forwarding::forward(req, session, stated);
-                                rr::require_done(reply.result);
-                                for (const auto& entry : reply.health)
-                                    health.push_back(
-                                        {entry.report_instance_id, entry.state_name, entry.health});
-                            } catch (const rr::refusal& r) {
-                                fail(health_cell, r.message);
-                            } catch (const std::exception&) {
-                                fail(health_cell, std::string(rr::unanswered));
-                            }
-
-                            try {
-                                reporting_messaging::get_report_error_counts_request counted;
-                                counted.report_instance_ids = run_ids;
-                                const auto reply = forwarding::forward(req, session, counted);
-                                rr::require_done(reply.result);
-                                std::vector<count_row> found;
-                                for (const auto& entry : reply.counts)
-                                    found.push_back(
-                                        {entry.report_instance_id, entry.errors, entry.warnings});
-                                counts = std::move(found);
-                            } catch (const rr::refusal& r) {
-                                fail(errors_cell, r.message);
-                            } catch (const std::exception&) {
-                                fail(errors_cell, std::string(rr::unanswered));
-                            }
-                        }
+                    std::vector<std::string> kind_order;
+                    try {
+                        reporting_messaging::list_configuration_types_request kinds;
+                        const auto reply = forwarding::forward(req, session, kinds);
+                        rr::require_done(reply.result);
+                        for (const auto& kind : reply.types)
+                            kind_order.push_back(kind.code);
+                    } catch (const rr::refusal& r) {
+                        if (r.status != http_status::forbidden)
+                            throw;
                     }
 
-                    std::vector<std::string> unread_json;
-                    for (const auto& entry : unread_cells)
-                        unread_json.push_back("{\"cell\":" + json::write(entry.cell) +
-                                              ",\"message\":" + json::write(entry.message) + "}");
+                    std::vector<boost::uuids::uuid> configuration_ids;
+                    for (const auto& binding : bindings)
+                        configuration_ids.push_back(binding.configuration_id);
+                    std::vector<reporting_domain::configuration> configurations;
+                    if (!configuration_ids.empty()) {
+                        reporting_messaging::list_configurations_request msg;
+                        msg.filter.emplace();
+                        msg.filter->id_one_of = configuration_ids;
+                        configurations = forwarding::forward_all(
+                            req,
+                            session,
+                            msg,
+                            &reporting_messaging::list_configurations_response::configurations);
+                    }
+
+                    const auto order_of = [&](const std::string& code) {
+                        const auto at = std::ranges::find(kind_order, code);
+                        return at == kind_order.end() ?
+                                   kind_order.size() :
+                                   static_cast<std::size_t>(at - kind_order.begin());
+                    };
+                    std::vector<reporting_domain::report_configuration> ordered = bindings;
+                    std::ranges::stable_sort(ordered, [&](const auto& left, const auto& right) {
+                        return order_of(left.configuration_type_code) <
+                               order_of(right.configuration_type_code);
+                    });
+
+                    std::vector<std::string> written;
+                    for (const auto& binding : ordered) {
+                        std::string name;
+                        for (const auto& configuration : configurations)
+                            if (configuration.id == binding.configuration_id) {
+                                name = configuration.name;
+                                break;
+                            }
+                        written.push_back(
+                            "{\"id\":" + json::write(rr::as_text(binding.id)) +
+                            ",\"typeCode\":" + json::write(binding.configuration_type_code) +
+                            ",\"typeName\":" + json::write(binding.configuration_type_code) +
+                            ",\"configurationId\":" +
+                            json::write(rr::as_text(binding.configuration_id)) +
+                            ",\"name\":" + json::write(name) + "}");
+                    }
+                    return http_response::json("{\"bindings\":" + rr::array_of(written) + "}");
+                });
+            }));
+
+    add(router->put("/api/reporting/reports/{id}")
+            .summary("Write one report definition against the version it was read at")
+            .description("The form offers ten fields and the record holds more, so the write is "
+                         "assembled from the definition just read and only the offered fields are "
+                         "replaced. A save cannot blank a field the screen does not show.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<reporting_messaging::put_report_definition_request>([&] {
+                    const auto raw = req.get_path_param("id");
+                    if (!rr::is_uuid(raw))
+                        rr::invalid("A definition is named by its id.");
+                    const auto id = boost::uuids::string_generator()(raw);
+                    const auto body = rr::body_of<edit_body>(
+                        req,
+                        {"version", "change", "intent"},
+                        "A write names the version it was read at, the fields it changes and its "
+                        "reason.");
+                    check_edit(body.change);
+
+                    const auto definition = definition_by_id(req, session, id);
+                    reporting_messaging::put_report_definition_request msg;
+                    auto& write = msg.change.write;
+                    write.id = definition.id;
+                    write.name = definition.name;
+                    write.party_id = definition.party_id;
+                    write.description = body.change.description;
+                    write.report_type = rr::trimmed(body.change.report_type);
+                    write.fsm_state_id = definition.fsm_state_id;
+                    write.schedule_expression = rr::trimmed(body.change.schedule_expression);
+                    write.concurrency_policy = rr::trimmed(body.change.concurrency_policy);
+                    write.scheduler_job_id = definition.scheduler_job_id;
+                    write.run_grant_id = definition.run_grant_id;
+                    write.pre_processing = body.change.pre_processing;
+                    write.prepared_input_key = body.change.prepared_input_key;
+                    write.post_processing = body.change.post_processing;
+                    write.skipped_families = body.change.skipped_families;
+                    write.is_official = body.change.is_official;
+                    write.regulatory_book_type = body.change.regulatory_book_type ?
+                                                     body.change.regulatory_book_type :
+                                                     definition.regulatory_book_type;
+                    /*
+                     * The cut a report selects is not on the form, so the write keeps the one
+                     * the record holds. The BFF omitted it, which cleared it on every save.
+                     */
+                    write.cut_kind_code = definition.cut_kind_code;
+                    write.cut_id = definition.cut_id;
+                    msg.change.precondition.kind =
+                        ores::utility::domain::precondition_kind::must_match_version;
+                    msg.change.precondition.version = static_cast<std::uint32_t>(body.version);
+                    msg.intent =
+                        rr::intent_of(body.intent).value_or(ores::utility::domain::change_intent{});
+
+                    const auto reply = forwarding::forward(req, session, msg);
+                    rr::require_done(reply.result);
+                    const auto written = reply.report_definition ?
+                                             *reply.report_definition :
+                                             definition_by_id(req, session, id);
                     return http_response::json(
-                        "{\"rows\":" +
-                        rows_json(page.definitions, parties, runs, health, counts, fires) +
-                        ",\"total\":" + std::to_string(page.total) +
-                        ",\"unread\":" + rr::array_of(unread_json) + "}");
+                        detail_json(compose_of(req, session, {written}), written));
                 });
             }));
 }

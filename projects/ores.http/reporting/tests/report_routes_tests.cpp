@@ -147,3 +147,52 @@ TEST_CASE("reports_refuse_a_page_they_do_not_read", "[report]") {
     CHECK(reports_status("party_id=not-an-id") == http_status::bad_request);
     CHECK(reports_status("colour=red") == http_status::bad_request);
 }
+
+TEST_CASE("reports_refuse_a_detail_address_that_names_no_record", "[report]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the detail address";
+
+    const auto status = [](const std::string& address, const std::string& pattern) {
+        return answer_at<report_routes>(http_method::get, address, http_request{}, pattern).status;
+    };
+    CHECK(status("/api/reporting/reports/by-name/" + std::string(201, 'a'),
+                 "/api/reporting/reports/by-name/{name}") == http_status::bad_request);
+    CHECK(status("/api/reporting/reports/by-name/a-report",
+                 "/api/reporting/reports/by-name/{name}") == http_status::bad_gateway);
+    CHECK(status("/api/reporting/reports/" + std::string(201, 'a'),
+                 "/api/reporting/reports/{segment}") == http_status::bad_request);
+    CHECK(status("/api/reporting/reports/not-an-id/configurations",
+                 "/api/reporting/reports/{id}/configurations") == http_status::bad_request);
+    CHECK(status("/api/reporting/reports/" + std::string(report_id),
+                 "/api/reporting/reports/{segment}") == http_status::bad_gateway);
+}
+
+TEST_CASE("reports_refuse_a_write_they_do_not_read", "[report]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a definition's write";
+
+    const auto put = [](const std::string& body) {
+        http_request req;
+        req.body = body;
+        return answer_at<report_routes>(http_method::put,
+                                        "/api/reporting/reports/" + std::string(report_id),
+                                        req,
+                                        "/api/reporting/reports/{id}")
+            .status;
+    };
+
+    CHECK(put("") == http_status::bad_request);
+    CHECK(put(R"({"version":1})") == http_status::bad_request);
+    CHECK(put(R"({"version":1,"change":{},"intent":{"reason_code":"system.update"}})") ==
+          http_status::bad_request);
+    CHECK(put(R"({"version":1,"change":{"description":"","report_type":"risk",)"
+              R"("concurrency_policy":"replace","schedule_expression":"0 0 * * *",)"
+              R"("is_official":true,"pre_processing":"","prepared_input_key":"",)"
+              R"("post_processing":"","skipped_families":""},"intent":{}})") ==
+          http_status::bad_request);
+    CHECK(put(R"({"version":1,"change":{"description":"","report_type":"risk",)"
+              R"("concurrency_policy":"replace","schedule_expression":"0 0 * * *",)"
+              R"("is_official":true,"pre_processing":"","prepared_input_key":"",)"
+              R"("post_processing":"","skipped_families":""},)"
+              R"("intent":{"reason_code":"system.update"}})") == http_status::bad_gateway);
+}

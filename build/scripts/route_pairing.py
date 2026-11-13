@@ -206,6 +206,14 @@ PAIRS = {
     ("GET", "/api/books/tree"): ("GET", "/api/books/tree"),
     ("GET", "/api/reporting/choices"): ("GET", "/api/reporting/choices"),
     ("GET", "/api/reporting/reports"): ("GET", "/api/reporting/reports"),
+    ("GET", "/api/reporting/reports/by-name/:name"): (
+        "GET",
+        "/api/reporting/reports/by-name/{name}"),
+    ("GET", "/api/reporting/reports/:segment"): ("GET", "/api/reporting/reports/{segment}"),
+    ("GET", "/api/reporting/reports/:id/configurations"): (
+        "GET",
+        "/api/reporting/reports/{id}/configurations"),
+    ("PUT", "/api/reporting/reports/:id"): ("PUT", "/api/reporting/reports/{id}"),
     ("GET", "/api/marketdata/adapters"): ("GET", "/api/marketdata/adapters"),
     ("GET", "/api/oresmd/schema"): ("GET", "/api/oresmd/schema"),
     ("POST", "/api/oresmd/parse"): ("POST", "/api/oresmd/parse"),

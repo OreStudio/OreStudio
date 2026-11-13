@@ -23,9 +23,11 @@
 #include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_notional_repository.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_repository.hpp"
+#include "ores.trading.core/repository/basket_swap_period_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/credit_basket_constituent_repository.hpp"
+#include "ores.trading.core/repository/equity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/flexi_swap_lower_notional_repository.hpp"
 #include "ores.trading.core/repository/instrument_barrier_level_repository.hpp"
@@ -328,6 +330,25 @@ void populate_instruments_for_trades(const Ctx& ctx,
         repository::equity_position_option_underlying_repository underlying_repo;
         auto underlyings = underlying_repo.read_by_instruments_batch(ctx, eq_pos_ids);
         take(underlyings, batch.equity_position_option_underlyings);
+    }
+    if (!eq_swp_ids.empty()) {
+        repository::equity_basket_constituent_repository constituent_repo;
+        auto constituents = constituent_repo.read_by_instruments_batch(ctx, eq_swp_ids);
+        take(constituents, batch.equity_basket_constituents);
+    }
+    /*
+     * A worst-of basket swap states a level per period, and ORE requires the
+     * list, so a reader that leaves the periods behind writes a trade the
+     * engine refuses. Both families that state one are read here.
+     */
+    {
+        auto basket_ids = eq_swp_ids;
+        basket_ids.insert(basket_ids.end(), commodity_ids.begin(), commodity_ids.end());
+        if (!basket_ids.empty()) {
+            repository::basket_swap_period_repository period_repo;
+            auto periods = period_repo.read_by_instruments_batch(ctx, basket_ids);
+            take(periods, batch.basket_swap_periods);
+        }
     }
 
     // Phase 3: the instruments themselves.

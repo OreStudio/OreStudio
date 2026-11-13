@@ -408,11 +408,13 @@ TEST_CASE("every_commodity_trade_type_the_catalogue_routes_is_planned", "[trade_
         types.insert(slot.trade_type_code);
 
     /*
-     * Twenty-five codes share the one table the catalogue routes them all to.
+     * Twenty-three codes share the one table the catalogue routes them all to.
      * The planner cycles through them, so a population of one book of
-     * twenty-five reaches every one.
+     * twenty-three reaches every one. The pairwise variance swap and the window
+     * barrier option are not among them: ORE cannot carry either, so the
+     * generator leaves both out.
      */
-    REQUIRE(types.size() == 25u);
+    REQUIRE(types.size() == 23u);
 }
 
 TEST_CASE("every_routed_equity_type_appears_in_a_population_of_that_length", "[trade_population]") {
@@ -1130,6 +1132,32 @@ TEST_CASE("a_scripted_population_states_a_script_and_the_names_it_observes", "[t
     CHECK(types.size() == 3u);
     CHECK_FALSE(types.contains("Autocallable_01"));
     CHECK(observed.size() > 1u);
+}
+
+TEST_CASE("a_scripted_product_that_states_two_underlyings_is_given_two", "[trade_population]") {
+    /*
+     * The double digital and the performance option name two underlying types
+     * in their parameters, and the engine reads one underlying for each. A
+     * trade given one name exports with no second underlying, and the engine
+     * refuses it with a null node, so the count decides whether the trade is
+     * priced at all.
+     */
+    const auto scope = scripted_scope();
+    const auto plan = plan_of(scope);
+
+    const auto names_in = [](const std::string& stated) {
+        return static_cast<std::size_t>(std::ranges::count(stated, '"')) / 2;
+    };
+    std::map<std::string, std::size_t> names_by_type;
+    for (const auto& slot : plan.slots) {
+        REQUIRE(slot.instruments.scripted_instruments.size() == 1u);
+        const auto& row = slot.instruments.scripted_instruments.front();
+        names_by_type[row.identity.trade_type_code] = names_in(row.underlyings_json);
+    }
+
+    CHECK(names_by_type["DoubleDigitalOption"] == 2u);
+    CHECK(names_by_type["PerformanceOption_01"] == 2u);
+    CHECK(names_by_type["ScriptedTrade"] == 1u);
 }
 
 TEST_CASE("a_scripted_population_that_names_no_underlying_is_refused", "[trade_population]") {

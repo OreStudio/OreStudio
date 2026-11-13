@@ -33,8 +33,8 @@ namespace ores::reporting::service {
  * reads it. A field the node did not state stays empty here.
  *
  * The rows cover every line the engine wrote, whatever its severity. The service
- * keeps the ones that say something went wrong, which is what it stores against
- * the run, and drops the rest.
+ * keeps them all against the run, because the account of what the engine was
+ * handed is the run's own, and the engine's five levels become the store's four.
  */
 struct engine_log_row {
     /// The severity the node stated: @c error, @c warning, @c notice, @c info
@@ -64,8 +64,14 @@ struct engine_log_row {
     /// The time the engine stated, as the node passed it on.
     std::string event_time;
 
-    /// The file the row came from.
-    std::string source;
+    /// The log file the row came from, as the node named it: @c log.txt, the
+    /// engine's structured log, its own printed stream, or the package the run
+    /// was handed.
+    std::string filename;
+
+    /// Where the engine said it: the source file and line its own log states,
+    /// such as @c OREAnalytics/orea/app/parameters.cpp:144.
+    std::string location;
 };
 
 }

@@ -419,6 +419,8 @@ export function registerGridReportRunRoutes(
                         subject_id: nullableText(entry['subject_id']),
                         cause: nullableText(entry['cause']),
                         time: text(entry['event_time']),
+                        location: nullableText(entry['location']),
+                        filename: nullableText(entry['filename']),
                     }),
                 ),
             };

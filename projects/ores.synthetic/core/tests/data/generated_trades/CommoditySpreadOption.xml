@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="9eaa86b0-25a2-5736-9243-94655f7fc82f">
+  <Trade id="24f52bd9-ca98-5bf4-b995-457c86123722">
     <TradeType>CommoditySpreadOption</TradeType>
     <CommoditySpreadOptionData>
       <LegData>
@@ -12,8 +12,8 @@
         <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-10-02</StartDate>
-            <EndDate>2029-10-02</EndDate>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2027-11-02</EndDate>
             <Tenor>1M</Tenor>
             <Calendar>NullCalendar</Calendar>
             <Convention>Unadjusted</Convention>
@@ -21,10 +21,10 @@
           </Rules>
         </ScheduleData>
         <CommodityFloatingLegData>
-          <Name>NYMEX:NG</Name>
+          <Name>NYMEX:CL</Name>
           <PriceType>FutureSettlement</PriceType>
           <Quantities>
-            <Quantity>75411.16</Quantity>
+            <Quantity>91870.37</Quantity>
           </Quantities>
         </CommodityFloatingLegData>
       </LegData>
@@ -37,8 +37,8 @@
         <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-10-02</StartDate>
-            <EndDate>2029-10-02</EndDate>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2027-11-02</EndDate>
             <Tenor>1M</Tenor>
             <Calendar>NullCalendar</Calendar>
             <Convention>Unadjusted</Convention>
@@ -46,10 +46,10 @@
           </Rules>
         </ScheduleData>
         <CommodityFloatingLegData>
-          <Name>NYMEX:CL</Name>
+          <Name>NYMEX:NG</Name>
           <PriceType>FutureSettlement</PriceType>
           <Quantities>
-            <Quantity>75411.16</Quantity>
+            <Quantity>91870.37</Quantity>
           </Quantities>
         </CommodityFloatingLegData>
       </LegData>
@@ -59,10 +59,10 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
       </OptionData>
-      <SpreadStrike>5.16</SpreadStrike>
+      <SpreadStrike>10.42</SpreadStrike>
     </CommoditySpreadOptionData>
   </Trade>
-  <Trade id="af4f56f5-3bf8-5437-b7f7-bd7a389aa85c">
+  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
     <TradeType>CommoditySpreadOption</TradeType>
     <CommoditySpreadOptionData>
       <LegData>
@@ -74,8 +74,8 @@
         <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-09-02</StartDate>
-            <EndDate>2027-09-02</EndDate>
+            <StartDate>2025-12-02</StartDate>
+            <EndDate>2030-12-02</EndDate>
             <Tenor>1M</Tenor>
             <Calendar>NullCalendar</Calendar>
             <Convention>Unadjusted</Convention>
@@ -83,10 +83,10 @@
           </Rules>
         </ScheduleData>
         <CommodityFloatingLegData>
-          <Name>NYMEX:CL</Name>
+          <Name>NYMEX:NG</Name>
           <PriceType>FutureSettlement</PriceType>
           <Quantities>
-            <Quantity>76967.06</Quantity>
+            <Quantity>73519.47</Quantity>
           </Quantities>
         </CommodityFloatingLegData>
       </LegData>
@@ -99,8 +99,8 @@
         <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-09-02</StartDate>
-            <EndDate>2027-09-02</EndDate>
+            <StartDate>2025-12-02</StartDate>
+            <EndDate>2030-12-02</EndDate>
             <Tenor>1M</Tenor>
             <Calendar>NullCalendar</Calendar>
             <Convention>Unadjusted</Convention>
@@ -108,20 +108,20 @@
           </Rules>
         </ScheduleData>
         <CommodityFloatingLegData>
-          <Name>NYMEX:NG</Name>
+          <Name>NYMEX:CL</Name>
           <PriceType>FutureSettlement</PriceType>
           <Quantities>
-            <Quantity>76967.06</Quantity>
+            <Quantity>73519.47</Quantity>
           </Quantities>
         </CommodityFloatingLegData>
       </LegData>
       <OptionData>
-        <LongShort>Short</LongShort>
+        <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
       </OptionData>
-      <SpreadStrike>2.83</SpreadStrike>
+      <SpreadStrike>3.34</SpreadStrike>
     </CommoditySpreadOptionData>
   </Trade>
 </Portfolio>

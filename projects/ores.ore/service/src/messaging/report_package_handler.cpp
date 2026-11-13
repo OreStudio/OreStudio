@@ -71,7 +71,7 @@ std::string refusal_log(const std::vector<ores::ore::domain::refused_trade>& ref
         event.message_stated = true;
         event.subject = "trade";
         event.subject_id = trade.trade_id;
-        event.source = std::string(ores::ore::net::ore_storage::package_name);
+        event.filename = std::string(ores::ore::net::ore_storage::package_name);
         events.push_back(std::move(event));
     }
     return ores::ore::log::canonical_log_csv(events);

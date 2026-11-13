@@ -85,7 +85,7 @@ TEST_CASE("the demo's failed run arrives as one row for each trade the engine co
     REQUIRE(trade != nullptr);
     CHECK(trade->message == "XML Node is NULL (expected OptionData)");
     CHECK(trade->detail == R"({"exceptionType":"Error parsing Trade XML"})");
-    CHECK(trade->source == "log_structured.json");
+    CHECK(trade->filename == "log_structured.json");
 }
 
 TEST_CASE("the failures survive the canonical rows the node writes, quote and comma intact",
@@ -124,9 +124,13 @@ TEST_CASE("an engine that writes only a text log still states a row for each fai
     CHECK(rows[0].subject == "trade");
     CHECK(rows[0].subject_id == "00cf3e0f-29e1-53f9-9e85-eac72dcff6ca");
     CHECK(rows[0].message == "XML Node is NULL (expected OptionData)");
-    // A line the engine wrote without a group is read as it says, and the
-    // recorder is what decides a row that names no scope is not a failure of a
-    // part of the run.
+    // The place inside the engine travels with the row, so the run states which
+    // part of the engine spoke without keeping the line it was written on.
+    CHECK(rows[0].location == "OREData/ored/utilities/log.cpp:214");
+    CHECK(rows[1].location == "OREData/ored/portfolio/portfolio.cpp:103");
+    // A line the engine wrote without a group is read as it says, and it is
+    // stored as the engine's own rather than dropped, so a reader of the run
+    // sees what the engine said even when it named no part of itself.
     CHECK(rows[1].severity == "warning");
-    CHECK(rows[1].scope.empty());
+    CHECK(rows[1].scope == "Engine");
 }

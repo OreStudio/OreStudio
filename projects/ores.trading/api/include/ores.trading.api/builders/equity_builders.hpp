@@ -405,14 +405,43 @@ private:
     equity_position_terms terms_;
 };
 
+/**
+ * @brief One entry of an equity option position: the underlying it names and
+ * the option terms the document states for that entry.
+ *
+ * The ORE document states the position's Quantity once and gives each entry its
+ * own option: the strike, the direction, and the style, settlement and exercise
+ * date when it states them. An entry that states none of the optional terms is
+ * a holding of the underlying.
+ */
+struct equity_position_option_entry final {
+    required<marketdata::datum::market_reference> underlying;
+    required<utility::decimal::decimal> strike;
+    required<std::string> long_short;
+    std::string option_type;
+    std::string exercise_type;
+    std::string settlement_type;
+    std::optional<std::chrono::year_month_day> exercise_date;
+    std::optional<double> weight;
+};
+
+/// A holding of equity options: the position's own terms and one entry per
+/// underlying it observes.
+struct equity_option_position_terms final {
+    required<std::string> currency;
+    required<double> quantity;
+    required<utility::decimal::decimal> price;
+    required<std::vector<equity_position_option_entry>> entries;
+};
+
 class ORES_TRADING_API_EXPORT equity_option_position_builder final {
 public:
     static constexpr std::string_view trade_type = "EquityOptionPosition";
-    explicit equity_option_position_builder(equity_position_terms terms);
+    explicit equity_option_position_builder(equity_option_position_terms terms);
     [[nodiscard]] equity_result build() const;
 
 private:
-    equity_position_terms terms_;
+    equity_option_position_terms terms_;
 };
 
 }

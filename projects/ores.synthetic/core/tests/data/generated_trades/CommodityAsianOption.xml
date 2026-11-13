@@ -34,13 +34,13 @@
       </ObservationDates>
     </CommodityAsianOptionData>
   </Trade>
-  <Trade id="356d7f28-c93e-5c72-8752-26e0716d501f">
+  <Trade id="f7a5f5f7-7567-5f27-ac28-264e8861c471">
     <TradeType>CommodityAsianOption</TradeType>
     <CommodityAsianOptionData>
       <Currency>USD</Currency>
-      <Quantity>55150.57</Quantity>
+      <Quantity>91209.48</Quantity>
       <StrikeData>
-        <Value>71.3</Value>
+        <Value>136.18</Value>
       </StrikeData>
       <Underlying>
         <Type>Commodity</Type>
@@ -48,18 +48,18 @@
       </Underlying>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Put</OptionType>
+        <OptionType>Call</OptionType>
         <PayoffType>Asian</PayoffType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2029-01-02</ExerciseDate>
+          <ExerciseDate>2026-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <ObservationDates>
         <Rules>
-          <StartDate>2026-01-02</StartDate>
-          <EndDate>2029-01-02</EndDate>
+          <StartDate>2025-09-02</StartDate>
+          <EndDate>2026-09-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>

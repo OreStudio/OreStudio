@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="9e35f78e-0d03-56de-8f90-9b8ad04136e1">
+    <TradeType>EquityOptionPosition</TradeType>
+    <EquityOptionPositionData>
+      <Quantity>822</Quantity>
+      <Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>MSFT.O</Name>
+        </Underlying>
+        <OptionData>
+          <LongShort>Long</LongShort>
+          <OptionType>Call</OptionType>
+          <Style>European</Style>
+          <Settlement>Cash</Settlement>
+          <ExerciseDates>
+            <ExerciseDate>2031-10-02</ExerciseDate>
+          </ExerciseDates>
+        </OptionData>
+        <Strike>4395.55</Strike>
+      </Underlying>
+    </EquityOptionPositionData>
+  </Trade>
+  <Trade id="90294a9c-9eb6-5d85-ac7b-0550e6e0f628">
+    <TradeType>EquityOptionPosition</TradeType>
+    <EquityOptionPositionData>
+      <Quantity>6509</Quantity>
+      <Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>MSFT.O</Name>
+        </Underlying>
+        <OptionData>
+          <LongShort>Long</LongShort>
+          <OptionType>Call</OptionType>
+          <Style>European</Style>
+          <Settlement>Cash</Settlement>
+          <ExerciseDates>
+            <ExerciseDate>2029-12-02</ExerciseDate>
+          </ExerciseDates>
+        </OptionData>
+        <Strike>1342.37</Strike>
+      </Underlying>
+    </EquityOptionPositionData>
+  </Trade>
+</Portfolio>

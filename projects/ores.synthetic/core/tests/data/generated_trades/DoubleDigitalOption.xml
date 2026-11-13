@@ -15,6 +15,10 @@
         <Type>Equity</Type>
         <Name>MSFT.O</Name>
       </Underlying1>
+      <Underlying2>
+        <Type>Equity</Type>
+        <Name>.STOXX50E</Name>
+      </Underlying2>
       <PayCcy>EUR</PayCcy>
     </DoubleDigitalOptionData>
   </Trade>
@@ -33,6 +37,10 @@
         <Type>Equity</Type>
         <Name>.SPX</Name>
       </Underlying1>
+      <Underlying2>
+        <Type>Equity</Type>
+        <Name>MSFT.O</Name>
+      </Underlying2>
       <PayCcy>EUR</PayCcy>
     </DoubleDigitalOptionData>
   </Trade>

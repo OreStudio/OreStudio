@@ -31,6 +31,19 @@ namespace {
 using utility::decimal::decimal;
 using ymd = std::chrono::year_month_day;
 
+/**
+ * @brief The name an underlying states: its index's subject when it names one,
+ * else the URI it carries.
+ *
+ * An underlying is ORE's one-or-the-other: an index or a URI. Every place that
+ * writes the name reads it here rather than deciding for itself.
+ */
+template <typename Underlying>
+std::string underlying_name_of(const Underlying& underlying) {
+    const auto* index = underlying.index();
+    return index != nullptr ? index->subject() : underlying.uri();
+}
+
 /// A schedule kept as the product's own, from @p start to @p end every @p tenor.
 domain::instrument_schedule
 equity_schedule(std::string role, std::string tenor, ymd start, ymd end) {
@@ -450,8 +463,7 @@ equity_result equity_worst_of_basket_swap_builder::build() const {
          * code, so a member is stored by the code its address names until that
          * check reads addresses; the projection writes a code as stated.
          */
-        const auto* index = member.underlying.index();
-        constituent.underlying_name = index != nullptr ? index->subject() : member.underlying.uri();
+        constituent.underlying_name = underlying_name_of(member.underlying);
         // ORE's type for an equity underlying; the store reads the kind case-insensitively.
         constituent.underlying_kind = "Equity";
         constituent.weight = 1.0 / static_cast<double>(basket.size());
@@ -625,11 +637,50 @@ equity_result equity_position_builder::build() const {
     return equity_position_of(trade_type, terms_);
 }
 
-equity_option_position_builder::equity_option_position_builder(equity_position_terms terms)
+equity_option_position_builder::equity_option_position_builder(equity_option_position_terms terms)
     : terms_(std::move(terms)) {}
 
 equity_result equity_option_position_builder::build() const {
-    return equity_position_of(trade_type, terms_);
+    if (terms_.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must not be empty"});
+    if (!(terms_.quantity.get() > 0.0))
+        return std::unexpected(build_error{"quantity", "must be positive"});
+    if (terms_.price.get() <= decimal{})
+        return std::unexpected(build_error{"price", "must be positive"});
+    const auto& entries = terms_.entries.get();
+    if (entries.empty())
+        return std::unexpected(
+            build_error{"entries", "must name at least one underlying for the position to hold"});
+
+    domain::equity_position_instrument row{};
+    row.identity.trade_type_code = std::string(trade_type);
+    row.currency = terms_.currency.get();
+    row.quantity = terms_.quantity.get();
+    row.price = terms_.price.get();
+    domain::equity_instrument_data out;
+    /*
+     * The store refuses a position that names no underlying on its own row, and
+     * the document's first entry is the name that row carries. The projection
+     * writes the entries and never this name, so the two cannot disagree.
+     */
+    row.underlying_name = underlying_name_of(entries.front().underlying.get());
+    out.instrument = std::move(row);
+
+    int number = 0;
+    for (const auto& entry : entries) {
+        domain::equity_position_option_underlying underlying{};
+        underlying.sequence_number = ++number;
+        underlying.underlying_name = underlying_name_of(entry.underlying.get());
+        underlying.strike = entry.strike.get();
+        underlying.long_short = entry.long_short.get();
+        underlying.option_type = entry.option_type;
+        underlying.exercise_type = entry.exercise_type;
+        underlying.settlement_type = entry.settlement_type;
+        underlying.exercise_date = entry.exercise_date;
+        underlying.weight = entry.weight;
+        out.underlyings.push_back(std::move(underlying));
+    }
+    return out;
 }
 
 }

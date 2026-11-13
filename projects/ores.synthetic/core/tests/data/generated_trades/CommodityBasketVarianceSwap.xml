@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="f2c4ae8a-a1b6-5d49-a9c5-03fc6a378431">
+  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
     <TradeType>CommodityBasketVarianceSwap</TradeType>
     <CommodityBasketVarianceSwapData>
       <LongShort>Long</LongShort>
-      <Strike>0.1</Strike>
-      <Notional>85531.53</Notional>
+      <Strike>0.12</Strike>
+      <Notional>14539.72</Notional>
       <Underlyings>
         <Underlying>
           <Type>Commodity</Type>
@@ -20,8 +20,8 @@
       </Underlyings>
       <ValuationSchedule>
         <Rules>
-          <StartDate>2026-01-02</StartDate>
-          <EndDate>2028-01-02</EndDate>
+          <StartDate>2025-09-02</StartDate>
+          <EndDate>2033-09-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>
@@ -29,16 +29,16 @@
         </Rules>
       </ValuationSchedule>
       <SquaredPayoff>true</SquaredPayoff>
-      <SettlementDate>2028-01-04</SettlementDate>
+      <SettlementDate>2033-09-04</SettlementDate>
       <Currency>USD</Currency>
     </CommodityBasketVarianceSwapData>
   </Trade>
-  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
+  <Trade id="bdcb89b0-f353-59ae-b17d-2f3c4966f5b1">
     <TradeType>CommodityBasketVarianceSwap</TradeType>
     <CommodityBasketVarianceSwapData>
-      <LongShort>Long</LongShort>
-      <Strike>0.19</Strike>
-      <Notional>94739.65</Notional>
+      <LongShort>Short</LongShort>
+      <Strike>0.17</Strike>
+      <Notional>25845.74</Notional>
       <Underlyings>
         <Underlying>
           <Type>Commodity</Type>
@@ -53,8 +53,8 @@
       </Underlyings>
       <ValuationSchedule>
         <Rules>
-          <StartDate>2025-12-02</StartDate>
-          <EndDate>2032-12-02</EndDate>
+          <StartDate>2025-10-02</StartDate>
+          <EndDate>2031-10-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>
@@ -62,7 +62,7 @@
         </Rules>
       </ValuationSchedule>
       <SquaredPayoff>true</SquaredPayoff>
-      <SettlementDate>2032-12-04</SettlementDate>
+      <SettlementDate>2031-10-04</SettlementDate>
       <Currency>USD</Currency>
     </CommodityBasketVarianceSwapData>
   </Trade>

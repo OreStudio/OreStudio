@@ -14,18 +14,18 @@
       <DeliveryEnd>72000</DeliveryEnd>
     </IntradayPowerForwardData>
   </Trade>
-  <Trade id="f262704e-0db6-5eb8-834a-a9b463b23010">
+  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
     <TradeType>IntradayPowerForward</TradeType>
     <IntradayPowerForwardData>
       <Position>Short</Position>
-      <Maturity>2028-11-02</Maturity>
+      <Maturity>2035-01-02</Maturity>
       <Name>NYMEX:CL</Name>
       <Currency>USD</Currency>
-      <Strike>107.66</Strike>
-      <Quantity>75504.34</Quantity>
-      <DeliveryDate>2028-11-09</DeliveryDate>
-      <DeliveryStart>64800</DeliveryStart>
-      <DeliveryEnd>68400</DeliveryEnd>
+      <Strike>78.48</Strike>
+      <Quantity>36369.36</Quantity>
+      <DeliveryDate>2035-01-09</DeliveryDate>
+      <DeliveryStart>46800</DeliveryStart>
+      <DeliveryEnd>50400</DeliveryEnd>
     </IntradayPowerForwardData>
   </Trade>
 </Portfolio>

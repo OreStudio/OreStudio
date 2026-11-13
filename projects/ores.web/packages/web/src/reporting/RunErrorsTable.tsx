@@ -46,12 +46,20 @@ export function useRunErrors(runId: string) {
     });
 }
 
-const SEVERITIES = ['all', 'error', 'warning'] as const;
+const SEVERITIES = ['all', 'error', 'warning', 'info'] as const;
 type SeverityChoice = (typeof SEVERITIES)[number];
 
-/** The severity of a problem, coloured as every severity in the application is. */
+/**
+ * How a row's severity is drawn. A failure is red and a warning is amber; a
+ * notice is quiet, because a notice says what the engine was given rather than
+ * that anything went wrong.
+ */
+const TONES = { error: 'down', warning: 'warn', info: 'muted' } as const;
+
+/** The severity of a row, coloured as every severity in the application is. */
 export function SeverityTag({ severity }: { readonly severity: string }): ReactNode {
-    return <Tag tone={severity === 'error' ? 'down' : 'warn'}>{severity}</Tag>;
+    const tone = TONES[severity as keyof typeof TONES] ?? 'neutral';
+    return <Tag tone={tone}>{severity}</Tag>;
 }
 
 /** What an error is about: a link to the trade when it names one, text otherwise. */
@@ -68,11 +76,22 @@ export function ErrorSubject({ error }: { readonly error: ReportRunErrorView }):
 
 const VIEWS = ['overview', 'list'] as const;
 
-const OUTER = { tab: 'errors' } as const;
+/** The chip that means every log, as distinct from the group that came from none. */
+const EVERY_LOG = 'all';
+
+/** How many of the run's errors the overview states before the list takes over. */
+const ERRORS_IN_HEAD = 5;
+
+const OUTER = { tab: 'log' } as const;
 
 /** The address of the list view narrowed to one scope. */
 function scopeAddress(scope: string): string {
     return `?${new URLSearchParams({ ...OUTER, view: 'list', scope }).toString()}`;
+}
+
+/** The address of the list view narrowed to one log. */
+function fileAddress(file: string): string {
+    return `?${new URLSearchParams({ ...OUTER, view: 'list', file }).toString()}`;
 }
 
 /**
@@ -85,7 +104,7 @@ export function RunErrors({ runId }: { readonly runId: string }): ReactNode {
     const field = 'reporting.run.errors';
     const errors = useRunErrors(runId);
     const { tab: view, bar } = useTabs({
-        label: t('reporting.run.tabs.errors'),
+        label: t('reporting.run.tabs.log'),
         tabs: VIEWS,
         param: 'view',
         keep: OUTER,
@@ -113,26 +132,156 @@ export function RunErrors({ runId }: { readonly runId: string }): ReactNode {
     );
 }
 
-/** How many problems fell in each scope, by severity, from the most to the fewest. */
-export function scopeCounts(
-    rows: readonly ReportRunErrorView[],
-): readonly { readonly scope: string; readonly errors: number; readonly warnings: number }[] {
-    const counts = new Map<string, { errors: number; warnings: number }>();
-    for (const row of rows) {
-        const count = counts.get(row.scope) ?? { errors: 0, warnings: 0 };
-        if (row.severity === 'error') {
-            count.errors += 1;
-        } else {
-            count.warnings += 1;
-        }
-        counts.set(row.scope, count);
-    }
-    return [...counts.entries()]
-        .map(([scope, count]) => ({ scope, ...count }))
-        .sort((left, right) => right.errors + right.warnings - (left.errors + left.warnings));
+/** One group's rows, counted apart by severity. */
+export interface Tally {
+    readonly errors: number;
+    readonly warnings: number;
+    readonly infos: number;
 }
 
-/** The problems of a run counted by scope: the shape as a ring, the figures in a table. */
+/** A scope's rows, counted apart by severity. */
+export interface ScopeCount extends Tally {
+    readonly scope: string;
+}
+
+/** A log file's rows, counted apart by severity. */
+export interface FileCount extends Tally {
+    /** The log the rows came from, or empty for a row the platform wrote itself. */
+    readonly file: string;
+}
+
+/** Every group's three figures while they are still being counted. */
+interface MutableTally {
+    errors: number;
+    warnings: number;
+    infos: number;
+}
+
+/** The rows counted by whatever names a group, from the most to the fewest. */
+function tallyBy<Count extends Tally>(
+    rows: readonly ReportRunErrorView[],
+    keyOf: (row: ReportRunErrorView) => string,
+    build: (key: string, tally: MutableTally) => Count,
+): readonly Count[] {
+    const counts = new Map<string, MutableTally>();
+    for (const row of rows) {
+        const key = keyOf(row);
+        const count = counts.get(key) ?? { errors: 0, warnings: 0, infos: 0 };
+        if (row.severity === 'error') {
+            count.errors += 1;
+        } else if (row.severity === 'warning') {
+            count.warnings += 1;
+        } else {
+            count.infos += 1;
+        }
+        counts.set(key, count);
+    }
+    const total = (count: MutableTally): number => count.errors + count.warnings + count.infos;
+    return [...counts.entries()]
+        .map(([key, count]) => build(key, count))
+        .sort((left, right) => total(right) - total(left));
+}
+
+/** How many rows fell in each scope, by severity, from the most to the fewest. */
+export function scopeCounts(rows: readonly ReportRunErrorView[]): readonly ScopeCount[] {
+    return tallyBy(
+        rows,
+        (row) => row.scope,
+        (scope, tally) => ({ scope, ...tally }),
+    );
+}
+
+/** How many rows came from each log, by severity, from the most to the fewest. */
+export function fileCounts(rows: readonly ReportRunErrorView[]): readonly FileCount[] {
+    return tallyBy(
+        rows,
+        (row) => row.filename ?? '',
+        (file, tally) => ({ file, ...tally }),
+    );
+}
+
+/**
+ * One grouping's figures: the group, how many rows of each severity it holds and
+ * the total. The name opens the list narrowed to that group when the caller
+ * states where it leads.
+ */
+function TallyTable({
+    heading,
+    nameHeader,
+    nameOf,
+    counts,
+    addressOf,
+}: {
+    readonly heading: string;
+    readonly nameHeader: string;
+    readonly nameOf: (name: string) => string;
+    readonly counts: readonly (Tally & { readonly name: string })[];
+    readonly addressOf?: (name: string) => string | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    const field = 'reporting.run.errors';
+    return (
+        <section className="card p-6">
+            <h3 className="mb-3 text-sm font-medium">{heading}</h3>
+            <table className="w-full text-left text-sm">
+                <thead>
+                    <tr className="border-b border-line text-xs text-ink-muted">
+                        <th className="px-2 py-2 font-medium">{nameHeader}</th>
+                        <th className="px-2 py-2 text-right font-medium">
+                            {t(`${field}.errorsCount`)}
+                        </th>
+                        <th className="px-2 py-2 text-right font-medium">
+                            {t(`${field}.warningsCount`)}
+                        </th>
+                        <th className="px-2 py-2 text-right font-medium">
+                            {t(`${field}.infosCount`)}
+                        </th>
+                        <th className="px-2 py-2 text-right font-medium">{t(`${field}.total`)}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {counts.map((count) => {
+                        const address = addressOf?.(count.name);
+                        return (
+                            <tr key={count.name} className="border-b border-line-subtle">
+                                <td className="px-2 py-2">
+                                    {address === undefined ? (
+                                        nameOf(count.name)
+                                    ) : (
+                                        <Link
+                                            to={address}
+                                            className="text-accent hover:text-accent-bright"
+                                        >
+                                            {nameOf(count.name)}
+                                        </Link>
+                                    )}
+                                </td>
+                                <td className="px-2 py-2 text-right tabular-nums">
+                                    {count.errors}
+                                </td>
+                                <td className="px-2 py-2 text-right tabular-nums">
+                                    {count.warnings}
+                                </td>
+                                <td className="px-2 py-2 text-right tabular-nums">{count.infos}</td>
+                                <td className="px-2 py-2 text-right tabular-nums">
+                                    {count.errors + count.warnings + count.infos}
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </table>
+        </section>
+    );
+}
+
+/**
+ * The rows of a run in two groupings, because a row states two different things:
+ * the part of the run it is about, which is its scope, and the log it came from,
+ * which is its file. A run leaves several logs and each says something the others
+ * do not, so the two are never one distribution: the engine's whole account and
+ * the platform's own word about the run are counted apart, log by log.
+ */
 export function RunErrorsOverview({
     rows,
 }: {
@@ -141,68 +290,128 @@ export function RunErrorsOverview({
     const { t } = useTranslation();
     const field = 'reporting.run.errors';
     const scopeName = (scope: string): string => scope || t(`${field}.unscoped`);
+    const fileName = (file: string): string => file || t(`${field}.noLog`);
+    const logs = fileCounts(rows).map((count) => ({ name: count.file, ...count }));
+    const scopes = scopeCounts(rows).map((count) => ({ name: count.scope, ...count }));
+    const partsOf = (counts: readonly (Tally & { readonly name: string })[]) =>
+        counts.map((count) => ({
+            name: count.name,
+            value: count.errors + count.warnings + count.infos,
+        }));
     return (
-        <div className="grid gap-4 lg:grid-cols-2">
-            <section className="card p-6">
-                <Donut
-                    title={t(`${field}.byScope`)}
-                    caption={t(`${field}.byScopeCaption`)}
-                    parts={problemsOf(rows, t(`${field}.unscoped`), t(`${field}.otherScopes`))}
-                    format={(value) => String(value)}
+        <section className="space-y-4">
+            <div className="grid gap-4 lg:grid-cols-2">
+                <section className="card p-6">
+                    <Donut
+                        title={t(`${field}.byLog`)}
+                        caption={t(`${field}.byLogCaption`)}
+                        parts={partsOf(logs).map((part) => ({
+                            ...part,
+                            name: fileName(part.name),
+                        }))}
+                        format={(value) => String(value)}
+                    />
+                </section>
+                <section className="card p-6">
+                    <Donut
+                        title={t(`${field}.byScope`)}
+                        caption={t(`${field}.byScopeCaption`)}
+                        parts={problemsOf(rows, t(`${field}.unscoped`), t(`${field}.otherScopes`))}
+                        format={(value) => String(value)}
+                    />
+                </section>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+                <TallyTable
+                    heading={t(`${field}.byLogTable`)}
+                    nameHeader={t(`${field}.logFile`)}
+                    nameOf={fileName}
+                    counts={logs}
+                    addressOf={fileAddress}
                 />
-            </section>
-            <section className="card p-6">
+                <TallyTable
+                    heading={t(`${field}.byScopeTable`)}
+                    nameHeader={t(`${field}.scope`)}
+                    nameOf={scopeName}
+                    counts={scopes}
+                    addressOf={scopeAddress}
+                />
+            </div>
+            <ErrorsHead rows={rows} />
+        </section>
+    );
+}
+
+/**
+ * The head of the run's errors: five of them, in the columns the list draws, so a
+ * reader sees what failed without leaving the overview. It is a way into the list
+ * rather than a second place to read the whole account.
+ */
+function ErrorsHead({ rows }: { readonly rows: readonly ReportRunErrorView[] }): ReactNode {
+    const { t } = useTranslation();
+    const field = 'reporting.run.errors';
+    const errors = rows.filter((row) => row.severity === 'error').slice(-ERRORS_IN_HEAD);
+    return (
+        <section className="card p-6">
+            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
+                <h3 className="text-sm font-medium">{t(`${field}.latestTitle`)}</h3>
+                <Link
+                    to={`?${new URLSearchParams({ ...OUTER, view: 'list' }).toString()}`}
+                    className="text-xs text-accent hover:text-accent-bright"
+                >
+                    {t(`${field}.latestOpenAll`)}
+                </Link>
+            </div>
+            {errors.length === 0 ? (
+                <p className="text-sm text-ink-muted">{t(`${field}.latestNone`)}</p>
+            ) : (
                 <table className="w-full text-left text-sm">
                     <thead>
                         <tr className="border-b border-line text-xs text-ink-muted">
+                            <th className="px-2 py-2 font-medium">{t(`${field}.severity`)}</th>
                             <th className="px-2 py-2 font-medium">{t(`${field}.scope`)}</th>
-                            <th className="px-2 py-2 text-right font-medium">
-                                {t(`${field}.errorsCount`)}
-                            </th>
-                            <th className="px-2 py-2 text-right font-medium">
-                                {t(`${field}.warningsCount`)}
-                            </th>
-                            <th className="px-2 py-2 text-right font-medium">
-                                {t(`${field}.total`)}
-                            </th>
+                            <th className="px-2 py-2 font-medium">{t(`${field}.about`)}</th>
+                            <th className="px-2 py-2 font-medium">{t(`${field}.message`)}</th>
+                            <th className="px-2 py-2 font-medium">{t(`${field}.filename`)}</th>
+                            <th className="px-2 py-2 font-medium">{t(`${field}.location`)}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {scopeCounts(rows).map((count) => (
-                            <tr key={count.scope} className="border-b border-line-subtle">
+                        {errors.map((row) => (
+                            <tr key={row.id} className="border-b border-line-subtle">
                                 <td className="px-2 py-2">
-                                    <Link
-                                        to={scopeAddress(count.scope)}
-                                        aria-label={t(`${field}.openScope`, {
-                                            scope: scopeName(count.scope),
-                                        })}
-                                        className="text-accent hover:text-accent-bright"
-                                    >
-                                        {scopeName(count.scope)}
-                                    </Link>
+                                    <SeverityTag severity={row.severity} />
                                 </td>
-                                <td className="px-2 py-2 text-right tabular-nums">
-                                    {count.errors}
+                                <td className="px-2 py-2 text-ink-muted">{row.scope || '—'}</td>
+                                <td className="px-2 py-2 font-mono text-xs">
+                                    <ErrorSubject error={row} />
                                 </td>
-                                <td className="px-2 py-2 text-right tabular-nums">
-                                    {count.warnings}
+                                <td className="px-2 py-2">
+                                    <span className="whitespace-pre-wrap">{row.message}</span>
                                 </td>
-                                <td className="px-2 py-2 text-right tabular-nums">
-                                    {count.errors + count.warnings}
+                                <td className="px-2 py-2 font-mono text-xs text-ink-muted">
+                                    {row.filename ?? '—'}
+                                </td>
+                                <td className="px-2 py-2 font-mono text-xs text-ink-muted">
+                                    {row.location ?? '—'}
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-            </section>
-        </div>
+            )}
+            <p className="mt-2 text-xs text-ink-faint">{t(`${field}.latestCaption`)}</p>
+        </section>
     );
 }
 
 /**
- * The problems a run recorded, one row each: how severe it is, the part of the
- * run it belongs to, the one thing it names and what the engine said. A scope
- * in the address narrows the list to it.
+ * The rows a run recorded, one row each: how severe it is, the part of the run
+ * it belongs to, the one thing it names, what the engine said and where in the
+ * engine it said it. A scope in the address narrows the list to it.
+ *
+ * A notice is a row like any other, and the filter is how a reader puts the
+ * engine's notices aside when they are looking for a failure.
  */
 export function RunErrorsTable({
     runId,
@@ -213,14 +422,27 @@ export function RunErrorsTable({
 }): ReactNode {
     const { t } = useTranslation();
     const field = 'reporting.run.errors';
-    const [search] = useSearchParams();
+    const [search, setSearch] = useSearchParams();
     const scope = search.get('scope');
+    const file = search.get('file');
     const [severity, setSeverity] = useState<SeverityChoice>('all');
-    const rows = scope === null ? all : all.filter((row) => row.scope === scope);
+    const inScope = scope === null ? all : all.filter((row) => row.scope === scope);
+    const rows = file === null ? inScope : inScope.filter((row) => (row.filename ?? '') === file);
+    const files = [...new Set(inScope.map((row) => row.filename ?? ''))].sort();
+    const chooseFile = (chosen: string): void => {
+        const next = new URLSearchParams(search);
+        if (chosen === EVERY_LOG) {
+            next.delete('file');
+        } else {
+            next.set('file', chosen);
+        }
+        setSearch(next, { replace: true });
+    };
     const counts: Readonly<Record<SeverityChoice, number>> = {
         all: rows.length,
         error: rows.filter((row) => row.severity === 'error').length,
         warning: rows.filter((row) => row.severity === 'warning').length,
+        info: rows.filter((row) => row.severity === 'info').length,
     };
     const shown = severity === 'all' ? rows : rows.filter((row) => row.severity === severity);
 
@@ -246,12 +468,36 @@ export function RunErrorsTable({
                 labelOf={(choice, count) => t(`${field}.filter.${choice}`, { count })}
                 onChoose={setSeverity}
             />
+            {files.length > 1 && (
+                <CountFilter
+                    choices={[EVERY_LOG, ...files]}
+                    chosen={file ?? EVERY_LOG}
+                    countOf={(choice) =>
+                        choice === EVERY_LOG
+                            ? inScope.length
+                            : inScope.filter((row) => (row.filename ?? '') === choice).length
+                    }
+                    labelOf={(choice, count) =>
+                        t(`${field}.chip`, {
+                            name:
+                                choice === EVERY_LOG
+                                    ? t(`${field}.everyLog`)
+                                    : choice === ''
+                                      ? t(`${field}.noLogChip`)
+                                      : choice,
+                            count,
+                        })
+                    }
+                    onChoose={chooseFile}
+                />
+            )}
             <RecordTable<ReportRunErrorView>
                 source={localSource<ReportRunErrorView>({
                     key: `run-errors-${runId}`,
                     rows: shown,
-                    revision: `${scope ?? ''}:${severity}:${shown.length}`,
-                    searchOf: (row) => `${row.scope} ${row.about} ${row.message}`,
+                    revision: `${scope ?? ''}:${file ?? ''}:${severity}:${shown.length}`,
+                    searchOf: (row) =>
+                        `${row.scope} ${row.about} ${row.message} ${row.filename ?? ''} ${row.location ?? ''}`,
                 })}
                 plural={t(`${field}.plural`)}
                 keyOf={(row) => row.id}
@@ -272,6 +518,22 @@ export function RunErrorsTable({
                         id: 'message',
                         header: t(`${field}.message`),
                         cell: (row) => <span className="whitespace-pre-wrap">{row.message}</span>,
+                    },
+                    {
+                        id: 'filename',
+                        header: t(`${field}.filename`),
+                        mono: true,
+                        cell: (row) => (
+                            <span className="text-ink-muted">{row.filename ?? '—'}</span>
+                        ),
+                    },
+                    {
+                        id: 'location',
+                        header: t(`${field}.location`),
+                        mono: true,
+                        cell: (row) => (
+                            <span className="text-ink-muted">{row.location ?? '—'}</span>
+                        ),
                     },
                 ]}
             />

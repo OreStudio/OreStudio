@@ -58,7 +58,7 @@ TEST_CASE("a text log yields one event per line, whatever the severity", "[ore][
     CHECK(events[0].ordinal == 1);
     CHECK(events[0].severity == "notice");
     CHECK(events[0].event_time == "2026-Oct-27 20:13:45.960950");
-    CHECK(events[0].source == "log.txt");
+    CHECK(events[0].filename == "log.txt");
     CHECK(events[1].severity == "error");
     CHECK(events[1].scope == "Curve");
 }
@@ -97,6 +97,31 @@ TEST_CASE("a warning is a warning and an alert is an error", "[ore][log]") {
     CHECK(events[2].severity == "error");
     CHECK(events[3].severity == "debug");
     CHECK(events[4].severity == "info");
+}
+
+TEST_CASE("a line that states no group is the engine's own, whatever its severity", "[ore][log]") {
+    /*
+     * The engine groups its structured lines and groups nothing in its plain
+     * ones, so a warning about a convention and a notice about a parameter both
+     * arrive with no group at all. The run keeps every line it is given, so each
+     * needs a scope: the one that says the engine spoke and named no part of
+     * itself.
+     */
+    const auto events = parse_engine_log_text(
+        "WARNING  [2026-Nov-12 22:03:08.596549]  "
+        "(OREData/ored/configuration/conventions.cpp:2866) : Exception parsing convention "
+        "CAD-CORRA: Convention already exists for id CAD-CORRA.\n"
+        "NOTICE   [2026-Nov-13 15:20:05.206712]    (OREAnalytics/orea/app/parameters.cpp:144) : "
+        "group = markets : pricing = default\n",
+        "log.txt");
+
+    REQUIRE(events.size() == 2);
+    CHECK(events[0].severity == "warning");
+    CHECK(events[0].scope == "Engine");
+    CHECK(events[0].message.starts_with("Exception parsing convention CAD-CORRA"));
+    CHECK(events[1].severity == "notice");
+    CHECK(events[1].scope == "Engine");
+    CHECK(events[1].message == "group = markets : pricing = default");
 }
 
 TEST_CASE("a line the reader cannot structure is kept as what it says", "[ore][log]") {
@@ -179,10 +204,22 @@ TEST_CASE("the canonical log csv states its header and quotes what it must", "[o
     const auto events = parse_engine_log_text(curve_line + "\n", "log.txt");
     const auto text = canonical_log_csv(events);
 
-    CHECK(text.rfind(
-              "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source\n",
-              0) == 0);
+    CHECK(text.rfind("ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,"
+                     "filename,location\n",
+                     0) == 0);
     CHECK(text.find("1,error,Curve,") != std::string::npos);
+}
+
+TEST_CASE("a canonical row states where the engine said it", "[ore][log]") {
+    using ores::ore::log::canonical_log_csv;
+
+    const auto events = parse_engine_log_text(parameters_line + "\n", "log.txt");
+    const auto text = canonical_log_csv(events);
+
+    // The file the row was read from and the place inside the engine that logged
+    // it are two facts, and the row states both. A reader places a notice by the
+    // second without reading the message for a path.
+    CHECK(text.find(",log.txt,OREAnalytics/orea/app/parameters.cpp:144\n") != std::string::npos);
 }
 
 TEST_CASE("a message with a comma is quoted so the row keeps its fields", "[ore][log]") {
@@ -448,4 +485,65 @@ TEST_CASE("the canonical rows state the detail the engine gave", "[ore][log]") {
     const auto text = canonical_log_csv(events);
     CHECK(text.find("exceptionType") != std::string::npos);
     CHECK(text.find("Error building trade") != std::string::npos);
+}
+
+TEST_CASE("a run's rows name the log each line came from", "[ore][log]") {
+    using ores::ore::log::run_log_events;
+
+    const auto events =
+        run_log_events("NOTICE [2026-Oct-27 20:00:00.000000] (a.cpp:1) : from the text log\n",
+                       "{\"category\": \"Error\", \"group\": \"Trade\", \"message\": \"from the "
+                       "structured log\"}\n",
+                       "Loading inputs\n",
+                       false);
+
+    REQUIRE(events.size() == 3);
+    // Every log is kept, because each one says something the others do not: the
+    // structured log names the record, the text log names the place, and the
+    // stream names the reason a run stopped before it could log.
+    CHECK(events[0].filename == "log.txt");
+    CHECK(events[1].filename == "log_structured.json");
+    CHECK(events[2].filename == "engine.log");
+}
+
+TEST_CASE("the last line the engine printed is the error that stopped it", "[ore][log]") {
+    using ores::ore::log::run_log_events;
+
+    const auto events = run_log_events("",
+                                       "",
+                                       "Loading inputs\nan error occurred: Failed to open file "
+                                       "Input/simulation.xml\n",
+                                       true);
+
+    REQUIRE(events.size() == 2);
+    // The stream states no severity, so a line it holds is a notice; the last
+    // one is the reason the engine gave, and it is the error.
+    CHECK(events[0].severity == "notice");
+    CHECK(events[0].message == "Loading inputs");
+    CHECK(events[1].severity == "error");
+    CHECK(events[1].message == "an error occurred: Failed to open file Input/simulation.xml");
+    CHECK(events[1].filename == "engine.log");
+}
+
+TEST_CASE("a run that succeeded keeps its stream as notices", "[ore][log]") {
+    using ores::ore::log::run_log_events;
+
+    const auto events = run_log_events("", "", "Loading inputs\nDone\n", false);
+
+    REQUIRE(events.size() == 2);
+    CHECK(events[0].severity == "notice");
+    CHECK(events[1].severity == "notice");
+}
+
+TEST_CASE("a line the engine formatted on its stream stays the engine's line", "[ore][log]") {
+    using ores::ore::log::run_log_events;
+
+    const auto events = run_log_events(
+        "", "", "NOTICE [2026-Oct-27 20:00:00.000000] (a.cpp:1) : one, two\n", false);
+
+    REQUIRE(events.size() == 1);
+    CHECK(events[0].severity == "notice");
+    CHECK(events[0].message == "one, two");
+    CHECK(events[0].location == "a.cpp:1");
+    CHECK(events[0].filename == "engine.log");
 }

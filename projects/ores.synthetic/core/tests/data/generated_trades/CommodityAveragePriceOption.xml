@@ -25,7 +25,7 @@
       <PricingCalendar>US-NYSE</PricingCalendar>
     </CommodityAveragePriceOptionData>
   </Trade>
-  <Trade id="f0c045e8-52b4-5121-b6ec-056dc60a2644">
+  <Trade id="1af62728-03a0-560c-904c-56e56a5e265e">
     <TradeType>CommodityAveragePriceOption</TradeType>
     <CommodityAveragePriceOptionData>
       <OptionData>
@@ -34,16 +34,16 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2031-10-02</ExerciseDate>
+          <ExerciseDate>2030-12-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <Name>NYMEX:NG</Name>
       <Currency>USD</Currency>
-      <Quantity>40102.33</Quantity>
-      <Strike>116.49</Strike>
+      <Quantity>53638.72</Quantity>
+      <Strike>79.43</Strike>
       <PriceType>FutureSettlement</PriceType>
-      <StartDate>2025-10-02</StartDate>
-      <EndDate>2031-10-02</EndDate>
+      <StartDate>2025-12-02</StartDate>
+      <EndDate>2030-12-02</EndDate>
       <PaymentCalendar>US-NYSE</PaymentCalendar>
       <PaymentLag>5</PaymentLag>
       <PaymentConvention>Following</PaymentConvention>

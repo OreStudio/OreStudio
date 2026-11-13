@@ -1,1 +1,0 @@
-No trade of the portfolio can be written; the first refusal is: required element 'Underlying' is absent from 'equityOptionPositionData' (in Trade '9e35f78e-0d03-56de-8f90-9b8ad04136e1')

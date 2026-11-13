@@ -173,3 +173,52 @@ std::nullopt
 #include <optional>
 #include <boost/uuid/uuid.hpp>
 #+end_src
+
+** Custom repository methods
+
+The trade read path fetches the periods of many worst-of basket swaps at once
+when it assembles the export payload, and no generated read covers that:
+=read_latest(context, ids)= filters on the child's own key and
+=read_latest_by_trade_id= reads one instrument at a time. The batch read
+below is one statement over the instrument set.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: 8F1C3D42-6B5A-4E79-9C08-D1E2F3A4B5C6
+:END:
+
+Reads every current period of the given instruments, ordered by instrument
+and ordinal, in one statement. An empty input reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief The current periods of every given instrument, in one statement.
+     *
+     * An empty input reads nothing, so a caller with no instruments pays
+     * no query.
+     */
+std::vector<domain::basket_swap_period>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::basket_swap_period>
+basket_swap_period_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<basket_swap_period_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                                            "valid_to"_c == max) |
+                       query_builder::order_by("trade_id"_c, "sequence_number"_c);
+    return query_builder::execute_read_query<basket_swap_period_entity,
+                                             domain::basket_swap_period>(
+        ctx,
+        query,
+        [](const auto& entities) { return basket_swap_period_mapper::map(entities); },
+        lg(),
+        "Reading basket swap periods for multiple instruments.");
+}
+#+end_src

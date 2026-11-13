@@ -44,7 +44,8 @@ constexpr std::string_view scope_report = "Report";
 constexpr std::string_view subject_trade = "trade";
 
 /// The scopes the engine emits, which the seed states and the store enforces.
-constexpr std::string_view engine_scopes[] = {"Trade", "Analytics", "Curve", "Configuration"};
+constexpr std::string_view engine_scopes[] = {
+    "Trade", "Analytics", "Curve", "Configuration", "Engine"};
 
 bool is_known_scope(std::string_view scope) {
     if (scope == scope_report)
@@ -133,15 +134,38 @@ domain::report_error_event make_error(const utility::uuid::tenant_id& tenant_id,
 
 namespace {
 
+/// Whether the run already holds a row of the given severity.
+bool run_holds_a(const ores::database::context& ctx,
+                 const std::string& instance_id,
+                 std::string severity) {
+    messaging::report_error_events_filter only;
+    only.severity = std::move(severity);
+    return !repository::report_error_event_repository()
+                .read_latest_by_report_instance_id(ctx, instance_id, 0, 1, {}, only)
+                .empty();
+}
+
 /// Whether the run already holds the errors of its analytics. A warning row the
 /// recorder wrote for an unplaceable scope is not one of them, so it never
 /// stands in for a batch that has not been read yet.
 bool run_holds_errors(const ores::database::context& ctx, const std::string& instance_id) {
-    messaging::report_error_events_filter only_errors;
-    only_errors.severity = std::string("error");
-    return !repository::report_error_event_repository()
-                .read_latest_by_report_instance_id(ctx, instance_id, 0, 1, {}, only_errors)
-                .empty();
+    return run_holds_a(ctx, instance_id, "error");
+}
+
+/// Whether the run already holds a row its log gave it.
+///
+/// The step that reads a run's output runs at least once, so the whole read is
+/// written once. A failed run states an error, and a run that got no further than
+/// its engine's notices states none, so the answer is read from both: an error
+/// row is the account of a failure taken, and an info row is the account of the
+/// engine's own word taken. Reading a log twice would otherwise state every
+/// notice twice, because a notice is not one of the rows the store makes unique.
+///
+/// A warning alone is not evidence of a read. The recorder writes one for a scope
+/// the vocabulary does not hold, and that warning must not stand in for a log
+/// that has not been read.
+bool run_holds_log_rows(const ores::database::context& ctx, const std::string& instance_id) {
+    return run_holds_a(ctx, instance_id, "error") || run_holds_a(ctx, instance_id, "info");
 }
 
 }
@@ -156,9 +180,9 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
         return {};
 
     try {
-        // The step that reads a run's output runs at least once, so its errors
-        // are written once.
-        if (run_holds_errors(ctx_, report_instance_id))
+        // The step that reads a run's output runs at least once, so the whole
+        // read is written once, whatever severity the rows it states carry.
+        if (run_holds_log_rows(ctx_, report_instance_id))
             return {};
 
         const auto instance_id = parse_instance_id(report_instance_id);
@@ -169,11 +193,16 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
         std::vector<std::string> unknown_scopes;
         rows.reserve(errors.size() + unknown_scopes.capacity());
         for (const auto& error : errors) {
-            // The canonical rows hold every line the run's engine wrote. The run
-            // keeps the ones that say something went wrong, which is what the
-            // screen shows; a notice is not a reason.
-            if (error.severity != "error" && error.severity != "warning")
-                continue;
+            /*
+             * Every line the engine wrote is kept, whatever its severity: the
+             * run is the account of what the engine was handed and what it made
+             * of it, and a notice about a parameter belongs to that account. A
+             * notice becomes info, because the screen states four levels and the
+             * engine has five.
+             */
+            const auto severity = error.severity == "error"   ? "error" :
+                                  error.severity == "warning" ? "warning" :
+                                                                "info";
             if (!is_known_scope(error.scope)) {
                 // The scope vocabulary has to grow before these rows can be
                 // stored, but that is no reason to lose the ones it does name.
@@ -187,12 +216,20 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
                 facts.party_id,
                 event_time,
                 error.scope,
-                error.severity,
+                severity,
                 error.message,
                 error.subject.empty() ? std::nullopt : std::optional(error.subject),
                 error.subject_id.empty() ? std::nullopt : std::optional(error.subject_id),
                 error.cause.empty() ? std::nullopt : std::optional(error.cause),
                 error.detail);
+            // The engine's own account of which part of itself spoke, when its
+            // line stated one.
+            if (!error.location.empty())
+                row.location = error.location;
+            // The log the row came from, so a reader tells the engine's own log
+            // from the stream it printed and from the package the run was given.
+            if (!error.filename.empty())
+                row.filename = error.filename;
             // The version says which row of the trade the engine was given, and the
             // date says when that row was current. A trade the manifest does not
             // name keeps both absent, because a guessed version is worse than none.
@@ -254,8 +291,14 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
         repository::report_error_event_repository().write(ctx_, rows);
 
         recorded_engine_errors recorded;
-        for (const auto& row : rows)
-            (row.severity == "error" ? recorded.stored.errors : recorded.stored.warnings) += 1;
+        for (const auto& row : rows) {
+            if (row.severity == "error")
+                ++recorded.stored.errors;
+            else if (row.severity == "warning")
+                ++recorded.stored.warnings;
+            else
+                ++recorded.stored.infos;
+        }
         return recorded;
     } catch (const std::exception& e) {
         // Two callers can both find no rows and both write. The unique indexes

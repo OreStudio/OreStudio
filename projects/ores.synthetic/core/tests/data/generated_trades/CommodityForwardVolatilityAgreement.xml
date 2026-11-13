@@ -17,21 +17,21 @@
       <SettlementDate>2027-11-04</SettlementDate>
     </CommodityForwardVolatilityAgreementData>
   </Trade>
-  <Trade id="f1c63d3f-5920-5b31-a3f0-4676a1c9b751">
+  <Trade id="90294a9c-9eb6-5d85-ac7b-0550e6e0f628">
     <TradeType>CommodityForwardVolatilityAgreement</TradeType>
     <CommodityForwardVolatilityAgreementData>
-      <FvaDate>2026-10-02</FvaDate>
-      <OptionExpiry>2027-10-02</OptionExpiry>
-      <PremiumDate>2026-10-04</PremiumDate>
+      <FvaDate>2027-12-02</FvaDate>
+      <OptionExpiry>2029-12-02</OptionExpiry>
+      <PremiumDate>2027-12-04</PremiumDate>
       <Underlying>
         <Type>Commodity</Type>
         <Name>NYMEX:NG</Name>
       </Underlying>
-      <LongShort>Short</LongShort>
-      <ImpliedVolStrike>0.36</ImpliedVolStrike>
-      <Quantity>96916.26</Quantity>
+      <LongShort>Long</LongShort>
+      <ImpliedVolStrike>0.33</ImpliedVolStrike>
+      <Quantity>2924.2</Quantity>
       <PayCcy>USD</PayCcy>
-      <SettlementDate>2027-10-04</SettlementDate>
+      <SettlementDate>2029-12-04</SettlementDate>
     </CommodityForwardVolatilityAgreementData>
   </Trade>
 </Portfolio>

@@ -40,8 +40,8 @@ import { HealthTag, formatDuration } from './shared.js';
 /** Where a run is cached, shared by every screen that reads it. */
 export const reportRunKey = (runId: string) => ['reporting-run', runId] as const;
 
-/** The tabs of a run: what it is, the figures it produced, its problems and its files. */
-const RUN_TABS = ['details', 'results', 'errors', 'downloads'] as const;
+/** The tabs of a run: what it is, the figures it produced, its log and its files. */
+const RUN_TABS = ['details', 'results', 'log', 'downloads'] as const;
 
 const FIELD = 'reporting.run';
 
@@ -96,7 +96,7 @@ export function ReportRunPage(): ReactNode {
                             pricedAt={run.data.priced_at?.slice(0, 10) ?? ''}
                         />
                     )}
-                    {tab === 'errors' && <RunErrors runId={id} />}
+                    {tab === 'log' && <RunErrors runId={id} />}
                     {tab === 'downloads' && <RunFilesTable runId={run.data.id} />}
                 </>
             )}

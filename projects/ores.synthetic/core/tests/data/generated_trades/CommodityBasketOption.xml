@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="0e6cb4a2-2a7b-571c-bf6b-f956ac1db9bf">
+  <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
     <TradeType>CommodityBasketOption</TradeType>
     <CommodityBasketOptionData>
       <Currency>USD</Currency>
-      <Notional>72681.74</Notional>
-      <Strike>87</Strike>
+      <Notional>37509.12</Notional>
+      <Strike>69.01</Strike>
       <Underlyings>
         <Underlying>
           <Type>Commodity</Type>
@@ -25,17 +25,17 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2034-09-02</ExerciseDate>
+          <ExerciseDate>2028-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
     </CommodityBasketOptionData>
   </Trade>
-  <Trade id="e90a03e7-0ff1-57f5-ae66-716b64d4a5e1">
+  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
     <TradeType>CommodityBasketOption</TradeType>
     <CommodityBasketOptionData>
       <Currency>USD</Currency>
-      <Notional>97047.19</Notional>
-      <Strike>160.58</Strike>
+      <Notional>94739.65</Notional>
+      <Strike>53.72</Strike>
       <Underlyings>
         <Underlying>
           <Type>Commodity</Type>
@@ -55,7 +55,7 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2032-08-02</ExerciseDate>
+          <ExerciseDate>2032-12-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
     </CommodityBasketOptionData>

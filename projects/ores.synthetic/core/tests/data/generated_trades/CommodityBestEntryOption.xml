@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
+  <Trade id="0e6cb4a2-2a7b-571c-bf6b-f956ac1db9bf">
     <TradeType>CommodityBestEntryOption</TradeType>
     <CommodityBestEntryOptionData>
-      <LongShort>Short</LongShort>
+      <LongShort>Long</LongShort>
       <Currency>USD</Currency>
-      <Notional>36369.36</Notional>
+      <Notional>72681.74</Notional>
       <Multiplier>1</Multiplier>
       <Cap>0.5</Cap>
-      <Strike>75.78</Strike>
+      <Strike>87</Strike>
       <TriggerLevel>0.9</TriggerLevel>
       <ResetMinimum>0.8</ResetMinimum>
-      <Premium>82682.1</Premium>
-      <ExpiryDate>2035-01-02</ExpiryDate>
-      <StrikeDate>2026-01-02</StrikeDate>
-      <PremiumDate>2026-01-04</PremiumDate>
-      <SettlementDate>2035-01-04</SettlementDate>
+      <Premium>189699.34</Premium>
+      <ExpiryDate>2034-09-02</ExpiryDate>
+      <StrikeDate>2025-09-02</StrikeDate>
+      <PremiumDate>2025-09-04</PremiumDate>
+      <SettlementDate>2034-09-04</SettlementDate>
       <StrikeObservationDates>
         <Rules>
-          <StartDate>2026-01-02</StartDate>
-          <EndDate>2035-01-02</EndDate>
+          <StartDate>2025-09-02</StartDate>
+          <EndDate>2034-09-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>
@@ -32,26 +32,26 @@
       </Underlying>
     </CommodityBestEntryOptionData>
   </Trade>
-  <Trade id="9df8ee5f-9ce1-546e-ba4b-05270865af03">
+  <Trade id="3cf4c4c1-9289-5ca9-be3b-5fe95c412c93">
     <TradeType>CommodityBestEntryOption</TradeType>
     <CommodityBestEntryOptionData>
       <LongShort>Short</LongShort>
       <Currency>USD</Currency>
-      <Notional>2790.02</Notional>
+      <Notional>88601.98</Notional>
       <Multiplier>1</Multiplier>
       <Cap>0.5</Cap>
-      <Strike>160.67</Strike>
+      <Strike>103.99</Strike>
       <TriggerLevel>0.9</TriggerLevel>
       <ResetMinimum>0.8</ResetMinimum>
-      <Premium>13448.18</Premium>
-      <ExpiryDate>2034-12-02</ExpiryDate>
-      <StrikeDate>2025-12-02</StrikeDate>
-      <PremiumDate>2025-12-04</PremiumDate>
-      <SettlementDate>2034-12-04</SettlementDate>
+      <Premium>276411.6</Premium>
+      <ExpiryDate>2032-10-02</ExpiryDate>
+      <StrikeDate>2025-10-02</StrikeDate>
+      <PremiumDate>2025-10-04</PremiumDate>
+      <SettlementDate>2032-10-04</SettlementDate>
       <StrikeObservationDates>
         <Rules>
-          <StartDate>2025-12-02</StartDate>
-          <EndDate>2034-12-02</EndDate>
+          <StartDate>2025-10-02</StartDate>
+          <EndDate>2032-10-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>

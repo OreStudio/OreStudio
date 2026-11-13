@@ -455,6 +455,20 @@ std::string format_cmdline(const std::string& exe, const std::vector<std::string
 /**
  * @brief Read up to max_lines from a text file, returning them joined by '\n'.
  */
+/// The last line the events state as an error, or empty when none does.
+std::string last_error_of(const std::vector<ores::ore::log::engine_log_event>& events) {
+    std::string stated;
+    for (const auto& event : events)
+        if (event.severity == "error")
+            stated = event.message;
+    return stated;
+}
+
+/// The last line of the events, whatever it states, or empty when there are none.
+std::string last_line_of(const std::vector<ores::ore::log::engine_log_event>& events) {
+    return events.empty() ? std::string{} : events.back().message;
+}
+
 std::string tail_file(const fs::path& path, int max_lines = 50) {
     std::ifstream f(path);
     if (!f)
@@ -485,35 +499,37 @@ std::string read_file_text(const fs::path& path) {
 }
 
 /**
- * @brief Projects the engine's log onto rows and uploads them.
+ * @brief Projects every log the run left onto rows and uploads them.
  *
  * The engine writes what it did into its own log, and this is the one place that
  * knows how to read it: the format belongs to the engine, and the reporting
- * service loads what this writes without knowing any of it. Every line becomes a
- * row, whatever its severity, so a reader can see the whole account.
+ * service loads what this writes without knowing any of it. Every line of every
+ * log becomes a row, whatever its severity, so a reader can see the whole
+ * account and which file each line came from.
  *
  * The engine states its messages twice: as rows of its structured log, which name
- * the record each one is about, and as text lines that embed the same message.
- * The structured log is read when the engine wrote one, because a row that names
- * its trade is what a reader can act on; the text log is the account of last
- * resort, and every engine that writes one writes it.
+ * the record each one is about, and as text lines that embed the same message. A
+ * node keeps both rather than choosing, because each says something the other
+ * does not, and the stream the engine printed holds the reason a run gave when it
+ * stopped before it could log at all.
  */
 void upload_canonical_log(auto& lg,
                           const config::options& cfg,
                           const compute::messaging::work_assignment_event& evt,
-                          const fs::path& output_dir) {
+                          const fs::path& job_dir,
+                          bool engine_failed) {
     if (evt.logs_uri.empty())
         return;
 
-    const auto structured_log = output_dir / "log_structured.json";
+    const auto output_dir = job_dir / "Output";
     const auto text_log = output_dir / "log.txt";
-    const auto events =
-        fs::is_regular_file(structured_log) ?
-            ores::ore::log::parse_engine_log_json(read_file_text(structured_log),
-                                                  "log_structured.json") :
-        fs::is_regular_file(text_log) ?
-            ores::ore::log::parse_engine_log_text(read_file_text(text_log), "log.txt") :
-            std::vector<ores::ore::log::engine_log_event>{};
+    const auto structured_log = output_dir / "log_structured.json";
+    const auto engine_log = job_dir / "engine.log";
+    const auto events = ores::ore::log::run_log_events(
+        fs::is_regular_file(text_log) ? read_file_text(text_log) : std::string{},
+        fs::is_regular_file(structured_log) ? read_file_text(structured_log) : std::string{},
+        fs::is_regular_file(engine_log) ? read_file_text(engine_log) : std::string{},
+        engine_failed);
     if (events.empty())
         return;
 
@@ -521,7 +537,7 @@ void upload_canonical_log(auto& lg,
     const auto compressed = ores::utility::compression::gzip_compress(
         std::span(reinterpret_cast<const char*>(text.data()), text.size()));
 
-    const auto log_file = output_dir.parent_path() / "logs.csv.gz";
+    const auto log_file = job_dir / "logs.csv.gz";
     {
         std::ofstream out(log_file, std::ios::binary);
         out.write(compressed.data(), static_cast<std::streamsize>(compressed.size()));
@@ -644,7 +660,9 @@ void ensure_package(const fs::path& pkg_cache_dir,
 
     fs::create_directories(pkg_cache_dir.parent_path());
     const fs::path lock_path = pkg_cache_dir.parent_path() / (evt.app_version_id + ".lock");
-    { std::ofstream create_lock(lock_path, std::ios::app); }
+    {
+        std::ofstream create_lock(lock_path, std::ios::app);
+    }
     boost::interprocess::file_lock file_lock(lock_path.string().c_str());
     boost::interprocess::scoped_lock<boost::interprocess::file_lock> guard(file_lock);
 
@@ -855,15 +873,29 @@ void process_assignment(ores::nats::service::client& nats,
         const fs::path output_dir = job_dir / "Output";
 
         if (exit_code != 0) {
-            // Include ORE's own log (log.txt) in the error — it has more
-            // detail than stdout/stderr. Fall back to engine.log (our pipe
-            // capture) if log.txt wasn't produced.
             const fs::path ore_log_path = job_dir / "Output" / "log.txt";
             const auto ore_log = fs::exists(ore_log_path) ? tail_file(ore_log_path) : std::string{};
-            const auto engine_output = ore_log.empty() ? tail_file(engine_log_path) : ore_log;
+            const auto engine_output = tail_file(engine_log_path);
+            /*
+             * The message names the reason, not the log. Every line the engine
+             * wrote is parsed into the rows the run already carries, so pasting
+             * the log here would state the same thing twice and bury the reason
+             * among notices.
+             *
+             * The reason is the last line the engine stated as an error in its
+             * own log. A run that stopped before it could log has none there —
+             * it printed its reason and stopped — so the last line it printed on
+             * its stream is the reason in that case.
+             */
+            auto reason = last_error_of(ores::ore::log::parse_engine_log_text(ore_log, "log.txt"));
+            if (reason.empty())
+                reason = last_line_of(
+                    ores::ore::log::parse_engine_log_text(engine_output, "engine.log"));
             error_message = "Engine exited with code " + std::to_string(exit_code) +
-                            (engine_output.empty() ? "" : "\n" + engine_output);
+                            (reason.empty() ? std::string{} : ": " + reason);
             BOOST_LOG_SEV(lg, error) << "Engine exited with code " << exit_code;
+            if (!ore_log.empty())
+                BOOST_LOG_SEV(lg, error) << "Engine log:\n" << ore_log;
             if (!engine_output.empty())
                 BOOST_LOG_SEV(lg, error) << "Engine output:\n" << engine_output;
             // ClientError.
@@ -933,10 +965,10 @@ void process_assignment(ores::nats::service::client& nats,
         }
 
         // The engine's own account of the run, in the same shape whatever the
-        // verdict: every line it wrote, whatever its severity. A failed job's
-        // log is what the run's owner reads to see which trades failed, so it
-        // is uploaded on that path too, and not only when the run succeeded.
-        upload_canonical_log(lg, cfg, evt, output_dir);
+        // verdict: every line of every log it left, whatever its severity, each
+        // row naming its file. A failed job's log is what the run's owner reads
+        // to see why it stopped, so it is uploaded on that path too.
+        upload_canonical_log(lg, cfg, evt, job_dir, exit_code != 0);
     } catch (const std::exception& e) {
         error_message = e.what();
         BOOST_LOG_SEV(lg, error) << "Job failed: " << e.what();

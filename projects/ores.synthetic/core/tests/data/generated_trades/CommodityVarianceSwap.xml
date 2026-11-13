@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
+  <Trade id="9eaa86b0-25a2-5736-9243-94655f7fc82f">
     <TradeType>CommodityVarianceSwap</TradeType>
     <CommodityVarianceSwapData>
-      <StartDate>2025-09-02</StartDate>
-      <EndDate>2033-09-02</EndDate>
-      <Currency>USD</Currency>
-      <Name>NYMEX:CL</Name>
-      <LongShort>Long</LongShort>
-      <Strike>0.12</Strike>
-      <Notional>14539.72</Notional>
-      <Calendar>USD</Calendar>
-    </CommodityVarianceSwapData>
-  </Trade>
-  <Trade id="3a9a63de-bb7d-5267-b0a7-847b21b8d55c">
-    <TradeType>CommodityVarianceSwap</TradeType>
-    <CommodityVarianceSwapData>
-      <StartDate>2025-08-02</StartDate>
-      <EndDate>2034-08-02</EndDate>
+      <StartDate>2025-10-02</StartDate>
+      <EndDate>2029-10-02</EndDate>
       <Currency>USD</Currency>
       <Name>NYMEX:NG</Name>
       <LongShort>Long</LongShort>
-      <Strike>0.19</Strike>
-      <Notional>75022.91</Notional>
+      <Strike>0.11</Strike>
+      <Notional>75411.16</Notional>
+      <Calendar>USD</Calendar>
+    </CommodityVarianceSwapData>
+  </Trade>
+  <Trade id="1599c1b7-6f29-5e1d-b8ce-1e918ddfea2d">
+    <TradeType>CommodityVarianceSwap</TradeType>
+    <CommodityVarianceSwapData>
+      <StartDate>2025-11-02</StartDate>
+      <EndDate>2027-11-02</EndDate>
+      <Currency>USD</Currency>
+      <Name>NYMEX:CL</Name>
+      <LongShort>Long</LongShort>
+      <Strike>0.06</Strike>
+      <Notional>22893.14</Notional>
       <Calendar>USD</Calendar>
     </CommodityVarianceSwapData>
   </Trade>

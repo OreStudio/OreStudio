@@ -210,6 +210,14 @@ public:
                 const std::vector<std::string>& trade_activity_ids,
                 const std::vector<std::string>& sequence_numbers);
 
+    /**
+     * @brief The current periods of every given instrument, in one statement.
+     *
+     * An empty input reads nothing, so a caller with no instruments pays
+     * no query.
+     */
+    std::vector<domain::basket_swap_period>
+    read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
 
 private:
     /**

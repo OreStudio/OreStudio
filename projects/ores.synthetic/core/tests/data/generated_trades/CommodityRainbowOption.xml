@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
+  <Trade id="c5961c6e-0075-50d6-8c89-68c3f727dd6d">
     <TradeType>CommodityRainbowOption</TradeType>
     <CommodityRainbowOptionData>
       <Currency>USD</Currency>
-      <Notional>100679.37</Notional>
-      <Strike>80.6</Strike>
+      <Notional>46504.05</Notional>
+      <Strike>41.44</Strike>
       <Underlyings>
         <Underlying>
           <Type>Commodity</Type>
@@ -20,22 +20,22 @@
       </Underlyings>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Put</OptionType>
-        <PayoffType>MinRainbow</PayoffType>
+        <OptionType>Call</OptionType>
+        <PayoffType>BestOfAssetOrCash</PayoffType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2027-08-02</ExerciseDate>
+          <ExerciseDate>2027-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
     </CommodityRainbowOptionData>
   </Trade>
-  <Trade id="0f1cabb4-b764-579f-8437-c726066494c7">
+  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
     <TradeType>CommodityRainbowOption</TradeType>
     <CommodityRainbowOptionData>
       <Currency>USD</Currency>
-      <Notional>26655.61</Notional>
-      <Strike>145.89</Strike>
+      <Notional>69924.53</Notional>
+      <Strike>151.59</Strike>
       <Underlyings>
         <Underlying>
           <Type>Commodity</Type>
@@ -51,11 +51,11 @@
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Call</OptionType>
-        <PayoffType>WorstOfAssetOrCash</PayoffType>
+        <PayoffType>MinRainbow</PayoffType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2033-01-02</ExerciseDate>
+          <ExerciseDate>2033-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
     </CommodityRainbowOptionData>

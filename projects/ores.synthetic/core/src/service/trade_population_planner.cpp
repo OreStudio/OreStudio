@@ -1180,6 +1180,19 @@ struct commodity_type final {
     commodity_shape shape;
 };
 
+/*
+ * The commodity codes the population books. Two are absent deliberately, each
+ * for a reason the engine states:
+ *
+ * - CommodityPairwiseVarianceSwap: ORE's trade factory has no builder for it,
+ *   so the trade is refused while the portfolio is parsed.
+ * - CommodityWindowBarrierOption: ORE names the trade type in its schema and
+ *   defines no data element for it, so the terms have nowhere to go and the
+ *   parser finds no such node.
+ *
+ * A type ORE cannot carry leaves the generator rather than being booked into a
+ * run that must fail.
+ */
 constexpr commodity_type commodity_types[] = {
     {"CommodityForward", commodity_shape::forward},
     {"IntradayPowerForward", commodity_shape::forward},
@@ -1192,13 +1205,11 @@ constexpr commodity_type commodity_types[] = {
     {"CommodityAveragePriceOption", commodity_shape::average_price_option},
     {"CommodityDigitalAveragePriceOption", commodity_shape::average_price_option},
     {"CommodityOptionStrip", commodity_shape::option_strip},
-    {"CommodityWindowBarrierOption", commodity_shape::barrier_option},
     {"CommodityGenericBarrierOption", commodity_shape::barrier_option},
     {"CommodityAccumulator", commodity_shape::accumulator},
     {"CommodityTaRF", commodity_shape::target_redemption},
     {"CommoditySpreadOption", commodity_shape::spread_option},
     {"CommodityVarianceSwap", commodity_shape::variance_swap},
-    {"CommodityPairwiseVarianceSwap", commodity_shape::variance_swap},
     {"CommodityBasketVarianceSwap", commodity_shape::variance_swap},
     {"CommoditySwap", commodity_shape::swap},
     {"CommodityWorstOfBasketSwap", commodity_shape::swap},
@@ -2335,12 +2346,18 @@ construct_scripted_batch(const domain::trade_generation_scope& scope,
     /*
      * The underlyings cycle the tenant's catalogue, so a population longer than
      * the catalogue states every name it holds and none it does not.
+     *
+     * The two products that state a pair, the double digital and the
+     * performance option, take two names: their parameters name two types, and
+     * the engine reads one underlying for each. A trade given one name exports
+     * with no second underlying and the engine refuses it.
      */
     const auto& first = scope.equity_underlyings[slot % scope.equity_underlyings.size()];
     const auto& second = scope.equity_underlyings[(slot + 1) % scope.equity_underlyings.size()];
-    const auto underlyings = trade_type == "PerformanceOption_01" ?
-                                 std::format(R"(["{}","{}"])", first.code, second.code) :
-                                 std::format(R"(["{}"])", first.code);
+    const auto names_two =
+        trade_type == "DoubleDigitalOption" || trade_type == "PerformanceOption_01";
+    const auto underlyings = names_two ? std::format(R"(["{}","{}"])", first.code, second.code) :
+                                         std::format(R"(["{}"])", first.code);
 
     tdom::scripted_instrument row;
     row.identity.trade_type_code = std::string(trade_type);
@@ -2772,12 +2789,29 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                                          .price = money(level)})
                 .build());
     if (type == "EquityOptionPosition")
-        return built(tb::equity_option_position_builder(
-                         {.underlying = address,
-                          .currency = currency,
-                          .quantity = std::max(1.0, std::round(notional / level)),
-                          .price = money(level)})
-                         .build());
+        /*
+         * The position holds one entry per underlying it observes, and each
+         * entry states its own option: the strike it is written at, the
+         * direction the slot drew, and a European cash settlement that expires
+         * with the trade. A position with no entry has nothing for the engine
+         * to price, so one entry is the fewest it can hold.
+         */
+        return built(
+            tb::equity_option_position_builder(
+                {.currency = currency,
+                 .quantity = std::max(1.0, std::round(notional / level)),
+                 .price = money(level),
+                 .entries =
+                     std::vector<tb::equity_position_option_entry>{
+                         tb::equity_position_option_entry{.underlying = address,
+                                                          .strike = money(level),
+                                                          .long_short = tb::long_short_of(position),
+                                                          .option_type = "Call",
+                                                          .exercise_type = "European",
+                                                          .settlement_type = "Cash",
+                                                          .exercise_date = end,
+                                                          .weight = std::nullopt}}})
+                .build());
     throw trade_population_error("The equity trade type " + type +
                                  " states no builder this planner knows.");
 }

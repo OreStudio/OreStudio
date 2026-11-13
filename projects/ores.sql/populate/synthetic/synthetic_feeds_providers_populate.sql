@@ -19,10 +19,10 @@
  */
 
 /**
- * Provider Feeds: LSEG and Tradeweb
+ * Provider Feeds: LSEG, ICE and Tradeweb
  *
- * Registers two synthetic feeds datasets, one for each provider that has feeds of a kind
- * the platform can simulate today. CME, LSE, ICE and Eurex have none yet: the futures, equity
+ * Registers three synthetic feeds datasets, one for each provider that has feeds of a kind
+ * the platform can simulate today. CME, LSE and Eurex have none yet: the futures, equity
  * and exchange kinds they quote do not exist, and the IR curve config admits term tenors only
  * for the LIBOR and EURIBOR families, so a CME Term SOFR curve cannot be stored. Each is published like every synthetic feeds dataset,
  * by ores_synthetic_publish_feeds_from_dq_fn, but as a system collection: the dataset is a
@@ -35,7 +35,11 @@
  *   - LSEG: spot rates of fourteen cross pairs, which Bloomberg leaves to the
  *     cross-rates matrix. A WM style composite, started at the level the
  *     Bloomberg USD spots imply.
- *   - Tradeweb: dealer composite curves of the six and one month EURIBOR.
+ *   - ICE: LIBOR curves of the tenors the Bloomberg feeds leave out: USD 1M and 6M, GBP,
+ *     CHF and JPY 3M. LIBOR is retired, so the curves are learning material: the feed
+ *     simulates a benchmark that no longer publishes, and claims no live market.
+ *   - Tradeweb: dealer composite curves of the six and one month EURIBOR, and the one month
+ *     GBP and JPY LIBOR and six month CHF LIBOR, kept as learning material.
  *
  * FX spots are a two-component geometric Gaussian mixture, as Bloomberg's: a primary
  * component of weight 0.95 and a per-tick stdev of the pair's annualised vol / 3970.9, at
@@ -54,8 +58,10 @@ begin
         select * from (values
             ('synthetic.feeds.lseg', 'Synthetic Feeds: LSEG',
              'The cross rates a simulated LSEG quotes: fourteen spot pairs between the major non-USD currencies.'),
+            ('synthetic.feeds.ice', 'Synthetic Feeds: ICE Data Services',
+             'The LIBOR-family curves a simulated ICE Data Services publishes, for the tenors the Bloomberg feeds do not cover. LIBOR is retired; the curves are learning material.'),
             ('synthetic.feeds.tradeweb', 'Synthetic Feeds: Tradeweb',
-             'The dealer composite curves a simulated Tradeweb publishes for the EURIBOR tenors the other providers do not.')
+             'The dealer composite curves a simulated Tradeweb publishes for the EURIBOR tenors the other providers do not, and the LIBOR tenors kept as learning material.')
         ) as t(code, title, description)
     loop
         perform ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
@@ -116,15 +122,26 @@ begin
 
     -- dataset, provider, name, currency, index family, index tenor (term families only), annual kappa,
     -- annual sigma, theta (the mean and the start level).
+    -- The LIBOR rows below simulate a retired benchmark. They are kept as learning
+    -- material: a curve built on a ceased IBOR is a case a person should be able to
+    -- exercise, and the description says that no live market is claimed.
     insert into t_provider_ir values
+        ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'USD', 'libor', '1M', 0.50, 0.007, 0.0430),
+        ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'USD', 'libor', '6M', 0.45, 0.008, 0.0450),
+        ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'GBP', 'libor', '3M', 0.25, 0.012, 0.0470),
+        ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'CHF', 'libor', '3M', 0.30, 0.009, 0.0120),
+        ('synthetic.feeds.ice', 'ice', 'ICE Data Services', 'JPY', 'libor', '3M', 0.20, 0.006, 0.0040),
         ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'EUR', 'euribor', '1M', 0.35, 0.009, 0.0300),
-        ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'EUR', 'euribor', '6M', 0.35, 0.010, 0.0320);
+        ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'EUR', 'euribor', '6M', 0.35, 0.010, 0.0320),
+        ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'GBP', 'libor', '1M', 0.25, 0.012, 0.0460),
+        ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'CHF', 'libor', '6M', 0.30, 0.009, 0.0130),
+        ('synthetic.feeds.tradeweb', 'tradeweb', 'Tradeweb', 'JPY', 'libor', '1M', 0.20, 0.006, 0.0035);
 
     for v_dataset in
         select d.id, d.code
         from ores_dq_datasets_tbl d
         where d.tenant_id = v_tenant_id
-          and d.code in ('synthetic.feeds.lseg', 'synthetic.feeds.tradeweb')
+          and d.code in ('synthetic.feeds.lseg', 'synthetic.feeds.ice', 'synthetic.feeds.tradeweb')
           and d.valid_to = ores_utility_infinity_timestamp_fn()
     loop
         if exists (select 1 from ores_dq_fx_spot_generation_configs_artefact_tbl where dataset_id = v_dataset.id)

@@ -743,7 +743,14 @@ begin
                 coalesce(existing.id, gen_random_uuid()),
                 coalesce(existing.version, 0),
                 v_party_id, v_config_id, v_ir_folder_id,
-                r.currency_code, r.index_family, r.tenor, 'self_discounting', r.process_type,
+                                r.currency_code, r.index_family, r.tenor,
+                -- A term IBOR curve projects forward rates and discounts off the overnight
+                -- curve; every other family discounts off itself. The role is what a consumer
+                -- reads to decide whether a curve may discount, so an IBOR feed is never
+                -- taken for a discount curve.
+                case when r.index_family in ('libor', 'euribor') then 'projection'
+                     else 'self_discounting' end,
+                r.process_type,
                 r.ticks_per_hour,
                 coalesce(r.enabled, true),
                 coalesce(r.auto_start, false),

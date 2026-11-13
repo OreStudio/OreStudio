@@ -70,8 +70,8 @@ what the ACME reports need.
 | =synthetic.feeds.bloomberg= | =bloomberg= | a USD spot and an interest rate curve for every currency of an ACME book, and the USD FOMC-dated short end |
 | =synthetic.feeds.uniform_demo= | =demo= | eight major and three emerging pairs at one deliberately exaggerated volatility, so movement is visible on a chart |
 | =synthetic.feeds.lseg= | =lseg= | fourteen cross pairs that Bloomberg leaves to the cross-rates matrix |
-| =synthetic.feeds.ice= | =ice= | the LIBOR curves the Bloomberg feeds leave out |
-| =synthetic.feeds.tradeweb= | =tradeweb= | the EURIBOR and LIBOR dealer composites Bloomberg does not quote |
+| =synthetic.feeds.ice= | =ice= | the LIBOR curves the Bloomberg feeds leave out, kept as learning material |
+| =synthetic.feeds.tradeweb= | =tradeweb= | the EURIBOR dealer composites Bloomberg does not quote |
 
 Two properties of the collections matter to a demonstration. Coverage is closed:
 every currency of an ACME book has a USD spot and a curve, and a cross comes from

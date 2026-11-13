@@ -26,11 +26,11 @@ No request handler does work that grows with the data inside one request: such w
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | The inventory is written and the five unbounded reads are bounded; the branch awaits review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Page the calendar's existing-days read, and page or retire the picture attach, when the step moves out of iam. |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance

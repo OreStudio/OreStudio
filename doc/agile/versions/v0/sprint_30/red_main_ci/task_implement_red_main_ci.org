@@ -8,7 +8,7 @@
 #+filetags: :red_main_ci:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/red-main-ci
-#+pr:
+#+pr: 4664
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4664][#4664]] | [ci] Fix the Windows link and GCC compile errors and a stale fixture |
 
 * Review
 

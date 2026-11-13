@@ -42,7 +42,7 @@ test suites that main runs pass.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D290CE1A-FB73-4B4E-8D25-B751B387F03D][Scaffold story: Hotfix: Main CI is red on Windows, GCC, and tests]] | STARTED | 2026-11-13 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D290CE1A-FB73-4B4E-8D25-B751B387F03D][Scaffold story: Hotfix: Main CI is red on Windows, GCC, and tests]] | DONE | 2026-11-13 | 2026-11-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:BD6B36C3-6CEB-49C1-9AC5-FB2A82A56157][Implement Hotfix: Main CI is red on Windows, GCC, and tests]] | DONE | 2026-11-13 | 2026-11-13 | The three fixes; see the task for evidence. |
 
 * Decisions

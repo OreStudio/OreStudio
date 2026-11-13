@@ -249,7 +249,7 @@ TEST_CASE("a notice the engine wrote becomes an info row that states where it wa
          .scope = "Engine",
          .message = "group = setup : nThreads = 1",
          .event_time = "2026-Oct-27 20:13:45.960950",
-         .source = "log.txt",
+         .filename = "log.txt",
          .location = "OREAnalytics/orea/app/parameters.cpp:144"},
         {.severity = "error",
          .scope = "Curve",
@@ -257,6 +257,7 @@ TEST_CASE("a notice the engine wrote becomes an info row that states where it wa
          .subject = "curve",
          .subject_id = "[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]",
          .cause = "Yield/GBP/GBP1D",
+         .filename = "engine.log",
          .location = "OREData/ored/market/marketdata.cpp:516"}};
 
     const auto recorded = recorder.record_engine_errors(instance_id, errors);
@@ -275,11 +276,15 @@ TEST_CASE("a notice the engine wrote becomes an info row that states where it wa
     CHECK(notice->scope_code == "Engine");
     CHECK(notice->message == "group = setup : nThreads = 1");
     CHECK(notice->location == "OREAnalytics/orea/app/parameters.cpp:144");
+    // The row names the log it came from, so a reader tells the engine's own log
+    // from the stream it printed.
+    CHECK(notice->filename == "log.txt");
     // The error states its own place, so the two rows are placed apart.
     const auto curve =
         std::ranges::find_if(rows, [](const auto& row) { return row.severity == "error"; });
     REQUIRE(curve != rows.end());
     CHECK(curve->location == "OREData/ored/market/marketdata.cpp:516");
+    CHECK(curve->filename == "engine.log");
 }
 
 TEST_CASE("a run whose log stated only notices keeps them once however often it is read",

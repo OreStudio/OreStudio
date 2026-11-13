@@ -64,6 +64,7 @@ struct report_error_event_entity {
     std::optional<std::string> cause;
     std::optional<std::string> detail;
     std::optional<std::string> location;
+    std::optional<std::string> filename;
     db_timestamp event_time;
 
     /**
@@ -86,6 +87,7 @@ struct report_error_event_entity {
                query_builder::bind("cause", &e::cause) |
                query_builder::bind_text("detail", &e::detail) |
                query_builder::bind("location", &e::location) |
+               query_builder::bind("filename", &e::filename) |
                query_builder::bind("event_time", &e::event_time);
     }
 };

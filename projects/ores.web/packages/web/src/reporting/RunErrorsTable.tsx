@@ -284,7 +284,7 @@ export function RunErrorsTable({
                     rows: shown,
                     revision: `${scope ?? ''}:${severity}:${shown.length}`,
                     searchOf: (row) =>
-                        `${row.scope} ${row.about} ${row.message} ${row.location ?? ''}`,
+                        `${row.scope} ${row.about} ${row.message} ${row.filename ?? ''} ${row.location ?? ''}`,
                 })}
                 plural={t(`${field}.plural`)}
                 keyOf={(row) => row.id}
@@ -305,6 +305,14 @@ export function RunErrorsTable({
                         id: 'message',
                         header: t(`${field}.message`),
                         cell: (row) => <span className="whitespace-pre-wrap">{row.message}</span>,
+                    },
+                    {
+                        id: 'filename',
+                        header: t(`${field}.filename`),
+                        mono: true,
+                        cell: (row) => (
+                            <span className="text-ink-muted">{row.filename ?? '—'}</span>
+                        ),
                     },
                     {
                         id: 'location',

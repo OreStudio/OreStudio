@@ -64,8 +64,10 @@ struct engine_log_row {
     /// The time the engine stated, as the node passed it on.
     std::string event_time;
 
-    /// The file the row came from.
-    std::string source;
+    /// The log file the row came from, as the node named it: @c log.txt, the
+    /// engine's structured log, its own printed stream, or the package the run
+    /// was handed.
+    std::string filename;
 
     /// Where the engine said it: the source file and line its own log states,
     /// such as @c OREAnalytics/orea/app/parameters.cpp:144.

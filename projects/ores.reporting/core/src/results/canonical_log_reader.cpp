@@ -30,7 +30,7 @@ namespace {
 constexpr std::size_t log_field_count = 11;
 
 constexpr std::string_view log_expected_header =
-    "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source,location";
+    "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,filename,location";
 
 /**
  * @brief The records of a file, and what the scan refused.
@@ -168,7 +168,7 @@ log_read_outcome read_canonical_log_csv(std::string_view csv) {
         row.cause = fields[6];
         row.detail = fields[7];
         row.event_time = fields[8];
-        row.source = fields[9];
+        row.filename = fields[9];
         row.location = fields[10];
         outcome.rows.push_back(std::move(row));
     }

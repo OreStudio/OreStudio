@@ -226,6 +226,10 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
             // line stated one.
             if (!error.location.empty())
                 row.location = error.location;
+            // The log the row came from, so a reader tells the engine's own log
+            // from the stream it printed and from the package the run was given.
+            if (!error.filename.empty())
+                row.filename = error.filename;
             // The version says which row of the trade the engine was given, and the
             // date says when that row was current. A trade the manifest does not
             // name keeps both absent, because a guessed version is worse than none.

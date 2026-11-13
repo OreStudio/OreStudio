@@ -7740,6 +7740,7 @@ const pt: SourceCatalogue = {
                 about: 'Objeto',
                 message: 'Mensagem',
                 location: 'Localização',
+                filename: 'Ficheiro',
                 views: { overview: 'Visão geral', list: 'Lista' },
                 byScope: 'As linhas da execução por âmbito',
                 byScopeCaption:

@@ -7801,6 +7801,7 @@ const fr: SourceCatalogue = {
                 about: 'Objet',
                 message: 'Message',
                 location: 'Emplacement',
+                filename: 'Fichier',
                 views: { overview: 'Aperçu', list: 'Liste' },
                 byScope: "Les lignes de l'exécution par portée",
                 byScopeCaption:

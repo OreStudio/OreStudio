@@ -91,7 +91,9 @@ export type ReportRunRowView = z.infer<typeof reportRunRowViewSchema>;
  * about, the trade a trade failure is about, empty when it names nothing.
  * `location` is the place inside the engine that logged the line, such as
  * `OREAnalytics/orea/app/parameters.cpp:144`, null when the row reached no engine
- * line.
+ * line. `filename` is the log the line came from — `log.txt`, the engine's own
+ * log; `log_structured.json`; `engine.log`, the stream it printed; or the run's
+ * package — null when the row is the platform's own and came from no log.
  */
 export const reportRunErrorViewSchema = z.object({
     id: z.string(),
@@ -104,6 +106,7 @@ export const reportRunErrorViewSchema = z.object({
     cause: z.string().nullable(),
     time: z.string(),
     location: z.string().nullable(),
+    filename: z.string().nullable(),
 });
 export type ReportRunErrorView = z.infer<typeof reportRunErrorViewSchema>;
 

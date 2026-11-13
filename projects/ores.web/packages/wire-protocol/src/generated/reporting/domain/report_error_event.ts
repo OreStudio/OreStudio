@@ -45,5 +45,6 @@ export interface ReportErrorEvent {
     cause: string | null;
     detail: string;
     location: string;
+    filename: string;
     event_time: string;
 }

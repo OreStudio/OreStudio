@@ -58,7 +58,7 @@ TEST_CASE("a text log yields one event per line, whatever the severity", "[ore][
     CHECK(events[0].ordinal == 1);
     CHECK(events[0].severity == "notice");
     CHECK(events[0].event_time == "2026-Oct-27 20:13:45.960950");
-    CHECK(events[0].source == "log.txt");
+    CHECK(events[0].filename == "log.txt");
     CHECK(events[1].severity == "error");
     CHECK(events[1].scope == "Curve");
 }
@@ -205,7 +205,7 @@ TEST_CASE("the canonical log csv states its header and quotes what it must", "[o
     const auto text = canonical_log_csv(events);
 
     CHECK(text.rfind("ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,"
-                     "source,location\n",
+                     "filename,location\n",
                      0) == 0);
     CHECK(text.find("1,error,Curve,") != std::string::npos);
 }
@@ -485,4 +485,65 @@ TEST_CASE("the canonical rows state the detail the engine gave", "[ore][log]") {
     const auto text = canonical_log_csv(events);
     CHECK(text.find("exceptionType") != std::string::npos);
     CHECK(text.find("Error building trade") != std::string::npos);
+}
+
+TEST_CASE("a run's rows name the log each line came from", "[ore][log]") {
+    using ores::ore::log::run_log_events;
+
+    const auto events =
+        run_log_events("NOTICE [2026-Oct-27 20:00:00.000000] (a.cpp:1) : from the text log\n",
+                       "{\"category\": \"Error\", \"group\": \"Trade\", \"message\": \"from the "
+                       "structured log\"}\n",
+                       "Loading inputs\n",
+                       false);
+
+    REQUIRE(events.size() == 3);
+    // Every log is kept, because each one says something the others do not: the
+    // structured log names the record, the text log names the place, and the
+    // stream names the reason a run stopped before it could log.
+    CHECK(events[0].filename == "log.txt");
+    CHECK(events[1].filename == "log_structured.json");
+    CHECK(events[2].filename == "engine.log");
+}
+
+TEST_CASE("the last line the engine printed is the error that stopped it", "[ore][log]") {
+    using ores::ore::log::run_log_events;
+
+    const auto events = run_log_events("",
+                                       "",
+                                       "Loading inputs\nan error occurred: Failed to open file "
+                                       "Input/simulation.xml\n",
+                                       true);
+
+    REQUIRE(events.size() == 2);
+    // The stream states no severity, so a line it holds is a notice; the last
+    // one is the reason the engine gave, and it is the error.
+    CHECK(events[0].severity == "notice");
+    CHECK(events[0].message == "Loading inputs");
+    CHECK(events[1].severity == "error");
+    CHECK(events[1].message == "an error occurred: Failed to open file Input/simulation.xml");
+    CHECK(events[1].filename == "engine.log");
+}
+
+TEST_CASE("a run that succeeded keeps its stream as notices", "[ore][log]") {
+    using ores::ore::log::run_log_events;
+
+    const auto events = run_log_events("", "", "Loading inputs\nDone\n", false);
+
+    REQUIRE(events.size() == 2);
+    CHECK(events[0].severity == "notice");
+    CHECK(events[1].severity == "notice");
+}
+
+TEST_CASE("a line the engine formatted on its stream stays the engine's line", "[ore][log]") {
+    using ores::ore::log::run_log_events;
+
+    const auto events = run_log_events(
+        "", "", "NOTICE [2026-Oct-27 20:00:00.000000] (a.cpp:1) : one, two\n", false);
+
+    REQUIRE(events.size() == 1);
+    CHECK(events[0].severity == "notice");
+    CHECK(events[0].message == "one, two");
+    CHECK(events[0].location == "a.cpp:1");
+    CHECK(events[0].filename == "engine.log");
 }

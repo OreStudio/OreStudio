@@ -420,6 +420,7 @@ export function registerGridReportRunRoutes(
                         cause: nullableText(entry['cause']),
                         time: text(entry['event_time']),
                         location: nullableText(entry['location']),
+                        filename: nullableText(entry['filename']),
                     }),
                 ),
             };

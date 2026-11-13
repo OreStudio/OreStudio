@@ -46,6 +46,7 @@ const error = (over: Partial<ReportRunErrorView>): ReportRunErrorView => ({
     cause: null,
     time: '2026-10-25 09:51:53.527119Z',
     location: null,
+    filename: null,
     ...over,
 });
 

@@ -85,7 +85,7 @@ TEST_CASE("the demo's failed run arrives as one row for each trade the engine co
     REQUIRE(trade != nullptr);
     CHECK(trade->message == "XML Node is NULL (expected OptionData)");
     CHECK(trade->detail == R"({"exceptionType":"Error parsing Trade XML"})");
-    CHECK(trade->source == "log_structured.json");
+    CHECK(trade->filename == "log_structured.json");
 }
 
 TEST_CASE("the failures survive the canonical rows the node writes, quote and comma intact",

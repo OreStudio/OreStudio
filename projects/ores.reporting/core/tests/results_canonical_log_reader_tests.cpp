@@ -26,7 +26,7 @@ namespace {
 using ores::reporting::results::read_canonical_log_csv;
 
 const std::string log_header =
-    "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source,location\n";
+    "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,filename,location\n";
 
 }
 
@@ -45,7 +45,7 @@ TEST_CASE("a well formed log file is read row by row", "[results][canonical_log_
     CHECK(outcome.rows[0].cause == "HKD-HONIA");
     CHECK(outcome.rows[0].detail.empty());
     CHECK(outcome.rows[0].event_time == "2026-Oct-27 19:42:07");
-    CHECK(outcome.rows[0].source == "log.txt");
+    CHECK(outcome.rows[0].filename == "log.txt");
     // The place inside the engine that logged the line is a field of its own,
     // so a reader places the row without reading the message for a path.
     CHECK(outcome.rows[0].location == "OREData/ored/market/marketdata.cpp:516");
@@ -137,5 +137,5 @@ TEST_CASE("a row keeps the detail and the time the node stated",
     REQUIRE(outcome.rows.size() == 1);
     CHECK(outcome.rows[0].detail == R"({"exceptionType":"Error building trade"})");
     CHECK(outcome.rows[0].event_time == "2026-Oct-27 19:42:07");
-    CHECK(outcome.rows[0].source == "log.txt");
+    CHECK(outcome.rows[0].filename == "log.txt");
 }

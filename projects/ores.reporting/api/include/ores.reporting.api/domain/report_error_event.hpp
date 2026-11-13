@@ -196,6 +196,17 @@ struct report_error_event final {
     std::string location;
 
     /**
+     * @brief The log the row came from, as the node named it: log.txt, the engine's own log;
+     * log_structured.json, the same account with each message's record named; engine.log, the
+     * stream the engine printed and the node captured, which is where a run states why it stopped
+     * before it could log; or the run's package, whose rows say a trade was left out of the run. A
+     * run leaves more than one log and each says something the others do not, so the run keeps them
+     * all and this column is what tells them apart: one fact stated in two files is not two
+     * failures, and a reader who cannot see the file cannot tell the difference.
+     */
+    std::string filename;
+
+    /**
      * @brief When the errors were collected from the run's output. There is no engine instant to
      * copy: the structured log states no time, so this is the moment of collection, written by the
      * recorder.

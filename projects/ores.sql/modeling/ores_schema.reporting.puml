@@ -1361,6 +1361,7 @@ package "reporting" #E0F7FA {
           cause : text
           detail : jsonb
           location : text
+          filename : text
         * event_time : timestamptz
     }
 

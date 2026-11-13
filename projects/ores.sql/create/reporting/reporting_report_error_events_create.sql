@@ -94,6 +94,7 @@ create table if not exists "ores_reporting_report_error_events_tbl" (
     "cause" text null,
     "detail" jsonb null,
     "location" text null,
+    "filename" text null,
     "event_time" timestamp with time zone not null,
     primary key (tenant_id, id),
     check ("id" <> ores_utility_nil_uuid_fn()),

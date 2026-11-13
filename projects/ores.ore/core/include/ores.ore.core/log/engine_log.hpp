@@ -144,7 +144,7 @@ struct engine_log_event {
     /**
      * @brief The file the event came from.
      */
-    std::string source;
+    std::string filename;
 };
 
 /**
@@ -156,7 +156,7 @@ struct engine_log_event {
  * instead, and its group, message and subject from the JSON it carries.
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT std::vector<engine_log_event>
-parse_engine_log_text(std::string_view text, std::string_view source_file);
+parse_engine_log_text(std::string_view text, std::string_view file_name);
 
 /**
  * @brief The events in an engine structured log, one per line.
@@ -166,7 +166,7 @@ parse_engine_log_text(std::string_view text, std::string_view source_file);
  * engine wrote it and a reader should see it.
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT std::vector<engine_log_event>
-parse_engine_log_json(std::string_view text, std::string_view source_file);
+parse_engine_log_json(std::string_view text, std::string_view file_name);
 
 /**
  * @brief The value of a sub-field the engine stated, by the name it gave it.
@@ -205,13 +205,45 @@ parse_engine_log_json(std::string_view text, std::string_view source_file);
  * @brief The events as the newline-delimited CSV the loader reads.
  *
  * The header is
- * =ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source,location=,
- * which is the shape the reporting service stores and the screen draws. @c source
+ * =ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,filename,location=,
+ * which is the shape the reporting service stores and the screen draws. @c filename
  * is the file the event was read from and @c location is the place inside the
  * engine that logged it, so the two say different things and both are kept.
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT std::string
 canonical_log_csv(const std::vector<engine_log_event>& events);
+
+/**
+ * @brief Every row a node can give a run, from every log the run left.
+ *
+ * A run leaves three logs and a reader needs all of them, so none is chosen in
+ * place of another:
+ *
+ * - @c log_structured.json names the record each message is about, and is the
+ *   only one that does;
+ * - @c log.txt states where inside the engine each line was written, and is the
+ *   account every engine that logs at all writes;
+ * - the stdout and stderr the node captured carry what the engine printed when
+ *   it stopped before it could log anything, which is where a fatal failure
+ *   usually states its reason.
+ *
+ * Each row names the file it came from in its @c filename, so a reader can tell
+ * the same message stated twice from two different messages. The stream is read
+ * line by line: a line the engine formatted is read as the engine's own line,
+ * and a line it did not is kept as a notice, because the stream states no
+ * severity. When the engine failed, the last line it printed is stated as the
+ * error, because that is the reason it gave.
+ *
+ * @param text_log The engine's =log.txt=, or empty when it wrote none.
+ * @param structured_log The engine's =log_structured.json=, or empty.
+ * @param engine_log The stdout and stderr the node captured, or empty.
+ * @param engine_failed Whether the engine exited non-zero.
+ */
+[[nodiscard]] ORES_ORE_CORE_EXPORT std::vector<engine_log_event>
+run_log_events(std::string_view text_log,
+               std::string_view structured_log,
+               std::string_view engine_log,
+               bool engine_failed);
 
 }
 

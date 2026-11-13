@@ -27,6 +27,7 @@
 #include "ores.marketdata.core/repository/series_axis_repository.hpp"
 #include "ores.marketdata.core/repository/series_axis_value_repository.hpp"
 #include "ores.marketdata.service/app/instrument_catalogue.hpp"
+#include "ores.marketdata.service/app/rate_ladder_reader.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -44,7 +45,9 @@ constexpr const char* catalogue_read_tags = "[instrument_catalogue][database]";
 namespace {
 
 using ores::marketdata::messaging::list_instruments_request;
+using ores::marketdata::service::app::get_rate_ladder;
 using ores::marketdata::service::app::list_instruments;
+using ores::marketdata::messaging::get_rate_ladder_request;
 
 /**
  * @brief Two providers carrying one AU swaption-style ladder identity, with the
@@ -75,6 +78,15 @@ struct catalogue_fixture {
         return req;
     }
 
+    get_rate_ladder_request ladder_request() const {
+        get_rate_ladder_request req;
+        req.party_id = boost::uuids::to_string(party_id);
+        req.currency = "AUD";
+        req.instrument_type = "ir_swap";
+        req.forward_start = "0D";
+        return req;
+    }
+
     ores::testing::scoped_database_helper h;
     ores::utility::generation::generation_context gctx;
     boost::uuids::random_generator uuid_gen;
@@ -88,6 +100,12 @@ private:
             "oresmd://ir/AUD?type=series&instrument=ir_swap&quote=rate"
             "&fwd_start=0D&tenor=1D";
         return uri;
+    }
+
+    /// The datum spelling of one rung: no `type=series`, and the term coordinate.
+    static std::string datum_uri(const std::string& term) {
+        return "oresmd://ir/AUD?instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=" +
+               term;
     }
 
     void write_party() {
@@ -165,7 +183,7 @@ private:
                 o.party_id = party_id;
                 o.series_id = series_id;
                 o.observation_datetime = now;
-                o.oresmd_uri = ladder_uri() + "&term=" + term;
+                o.oresmd_uri = datum_uri(term);
                 o.value = "0.0432";
                 o.source = "instrument catalogue test";
                 repo.insert(*party, {o});
@@ -257,4 +275,52 @@ TEST_CASE("a_fixing_only_query_answers_an_empty_page_when_no_fixing_is_held",
     // it answers an honest empty page for a kind it holds none of.
     CHECK(resp.success == true);
     CHECK(resp.total == 0);
+}
+
+TEST_CASE("the_ladder_answers_the_rungs_it_can_date_and_names_the_ones_it_cannot",
+          catalogue_read_tags) {
+    catalogue_fixture f;
+
+    const auto resp = get_rate_ladder(*f.party, f.ladder_request());
+
+    REQUIRE(resp.success);
+    REQUIRE(resp.rungs.empty() == false);
+    CHECK(resp.provider_count == 2);
+    // The seeded RATES_SPOT_FORWARD convention resolves 2Y but carries no row
+    // for 1Y, so the answer holds the rung it can date and names the one it
+    // cannot rather than dropping it in silence.
+    CHECK(resp.message.find("1Y") != std::string::npos);
+    for (const auto& rung : resp.rungs) {
+        CHECK(rung.quotes.size() == 2);
+        CHECK(rung.consensus.method == "median");
+        CHECK(rung.consensus.providers_used == 2);
+        // Two quotes: the median is their mean.
+        const auto a = rung.quotes[0].value;
+        const auto b = rung.quotes[1].value;
+        CHECK(rung.consensus.value == (a + b) / 2.0);
+    }
+}
+
+TEST_CASE("the_ladder_orders_its_rungs_by_maturity", catalogue_read_tags) {
+    catalogue_fixture f;
+
+    const auto resp = get_rate_ladder(*f.party, f.ladder_request());
+
+    REQUIRE(resp.success);
+    REQUIRE(resp.rungs.empty() == false);
+    for (std::size_t i = 1; i < resp.rungs.size(); ++i)
+        CHECK(resp.rungs[i - 1].maturity_date < resp.rungs[i].maturity_date);
+    CHECK(resp.rungs.front().maturity_date > std::chrono::year_month_day{
+              std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())});
+}
+
+TEST_CASE("a_ladder_no_provider_quotes_is_refused_in_words", catalogue_read_tags) {
+    catalogue_fixture f;
+
+    auto req = f.ladder_request();
+    req.currency = "ZZZ";
+    const auto resp = get_rate_ladder(*f.party, req);
+
+    CHECK(resp.success == false);
+    CHECK(resp.message.empty() == false);
 }

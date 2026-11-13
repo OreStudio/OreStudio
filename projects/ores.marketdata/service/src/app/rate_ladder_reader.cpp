@@ -77,6 +77,26 @@ struct quote_at_rung final {
 /// The quotes of one rung, keyed by tenor, gathered across providers.
 using rung_quotes = std::map<std::string, std::vector<quote_at_rung>>;
 
+
+/// The rung an observation names.
+///
+/// The codec refuses a `type=series` URI that also carries a coordinate, and a
+/// synthetic feed writes exactly that spelling for the points it publishes. So
+/// a URI the codec refuses still states its rung in the query, and the rung is
+/// what this read needs: take it from the query text rather than drop the
+/// point, and keep the strict parse for a properly composed datum.
+std::string rung_of(const std::string& uri) {
+    if (auto datum = dt::oresmd_uri_codec::read(uri))
+        return field_text(*datum, dt::field::term);
+    static const std::string marker = "term=";
+    const auto at = uri.find(marker);
+    if (at == std::string::npos)
+        return {};
+    const auto from = at + marker.size();
+    const auto to = uri.find('&', from);
+    return uri.substr(from, to == std::string::npos ? std::string::npos : to - from);
+}
+
 double median_of(std::vector<double> values) {
     std::sort(values.begin(), values.end());
     const auto n = values.size();
@@ -108,7 +128,25 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
     rung_quotes quotes;
     std::vector<std::string> provider_codes;
 
+    // The series read answers the tenant, so the party is filtered here: one
+    // series identity exists once per party, and a ladder that mixed parties
+    // would count their providers and average their quotes.
+    std::vector<std::string> allowed;
+    if (const auto party = ctx.party_id())
+        allowed.push_back(boost::uuids::to_string(*party));
+    else
+        for (const auto& party : ctx.visible_party_ids())
+            allowed.push_back(boost::uuids::to_string(party));
+    const auto may_read = [&](const std::string& party) {
+        if (!request.party_id.empty())
+            return party == request.party_id;
+        return allowed.empty() ||
+               std::find(allowed.begin(), allowed.end(), party) != allowed.end();
+    };
+
     for (const auto& series : series_repo.read_latest(ctx)) {
+        if (!may_read(boost::uuids::to_string(series.party_id)))
+            continue;
         auto parsed = dt::oresmd_uri_codec::read(series.oresmd_uri);
         if (!parsed || !parsed->is_series())
             continue;
@@ -131,10 +169,7 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
             provider_codes.push_back(series.provider_code);
 
         for (const auto& observation : observation_repo.read_latest_for_series(ctx, series.id)) {
-            auto datum = dt::oresmd_uri_codec::read(observation.oresmd_uri);
-            if (!datum)
-                continue;
-            const auto term = field_text(*datum, dt::field::term);
+            const auto term = rung_of(observation.oresmd_uri);
             if (term.empty())
                 continue;
             quote_at_rung quote;
@@ -167,15 +202,20 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
         ores::analytics::quant::service::day_count_convention_code::A365F;
 
     std::vector<std::pair<std::chrono::year_month_day, std::string>> dated;
+    std::string undated;
     for (const auto& [tenor, ignored] : quotes) {
         (void)ignored;
         try {
             dated.emplace_back(resolve_tenor_date(refctx, tenor), tenor);
         } catch (const std::exception& e) {
-            // A rung the convention cannot resolve is not a rung this read can
-            // date, so it is left out and the caller sees the rungs it can use.
+            // A rung the convention cannot resolve is named in the answer
+            // rather than dropped in silence: a person reading a ladder has to
+            // know which rung the server could not date, and why.
             BOOST_LOG_SEV(rate_ladder_lg(), warn)
-                << "Skipping rung '" << tenor << "': " << e.what();
+                << "Cannot date rung '" << tenor << "': " << e.what();
+            if (!undated.empty())
+                undated += "; ";
+            undated += tenor + " (" + e.what() + ")";
         }
     }
     std::sort(dated.begin(), dated.end());
@@ -211,6 +251,9 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
     }
 
     resp.provider_count = static_cast<int>(provider_codes.size());
+    if (!undated.empty())
+        resp.message = "Some rungs could not be dated under " +
+                       std::string(ladder_tenor_convention) + ": " + undated;
     resp.success = true;
     return resp;
 }

@@ -203,13 +203,7 @@ export interface IrCurveCoverageRow {
 
 /** The first fact a currency is missing, or empty when its curve is covered. */
 export type IrCurveGap =
-    | ''
-    | 'no_feed'
-    | 'no_source'
-    | 'no_curve_config'
-    | 'no_publish'
-    | 'not_live'
-    | 'stale_publish';
+    '' | 'no_feed' | 'no_source' | 'no_curve_config' | 'no_publish' | 'not_live' | 'stale_publish';
 
 export interface IrCurveCoverageInput {
     readonly feeds: readonly IrCoverageFeed[];
@@ -265,12 +259,20 @@ export function irCurveCoverage(input: IrCurveCoverageInput): IrCurveCoverageRow
         a.localeCompare(b),
     );
     return currencies.map((currency) =>
-        coverageRow(input, currency, configs.get(currency) ?? [], bootstraps.get(currency) ?? [], feeds),
+        coverageRow(
+            input,
+            currency,
+            configs.get(currency) ?? [],
+            bootstraps.get(currency) ?? [],
+            feeds,
+        ),
     );
 }
 
 /** The rows of a list, grouped by the currency each names. */
-function groupByCurrency<T extends { currency_code: string }>(items: readonly T[]): Map<string, T[]> {
+function groupByCurrency<T extends { currency_code: string }>(
+    items: readonly T[],
+): Map<string, T[]> {
     const byCurrency = new Map<string, T[]>();
     for (const item of items) {
         const held = byCurrency.get(item.currency_code);

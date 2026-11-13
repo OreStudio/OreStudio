@@ -196,7 +196,6 @@ describe('the IR curve coverage', () => {
         ]);
     });
 
-
     it('states not_live for a latest set that is no longer in use', () => {
         const rows = coverage({
             publishedBySeries: new Map([

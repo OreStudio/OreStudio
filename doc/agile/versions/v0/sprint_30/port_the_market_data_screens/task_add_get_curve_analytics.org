@@ -8,7 +8,7 @@
 #+filetags: :port_the_market_data_screens:sprint_30:v0:
 #+owner: marco
 #+branch: feature/port-the-market-data-screens
-#+pr:
+#+pr: 4688
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4688][#4688]] | [marketdata] Port the hedgr market data screens and serve their reads |
 
 * Review
 

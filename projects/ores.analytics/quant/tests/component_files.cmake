@@ -40,6 +40,7 @@ set(files
     "fx_forward_calculator_tests.cpp"
     "fx_smile_quotes_tests.cpp"
     "fx_vol_derivation_tests.cpp"
+    "fx_vol_surface_block_tests.cpp"
     "fx_vol_surface_generator_tests.cpp"
     "gaussian_mixture_model_process_tests.cpp"
     "gjr_garch_tests.cpp"

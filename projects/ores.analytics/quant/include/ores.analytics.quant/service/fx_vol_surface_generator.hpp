@@ -98,6 +98,11 @@ public:
     /**
      * @brief Advances the state one step.
      *
+     * The generator correlates the shocks itself through the dynamics' matrix. A caller that has
+     * already correlated them, as the latent market does when it hands each driver its own
+     * standard normal, passes the identity for that matrix: the normals then arrive correlated
+     * and the root leaves them as they came.
+     *
      * @param spot_shock The standard normal spot's own step drew, so the surface moves with
      * spot by the correlation.
      * @param independent One independent standard normal for each factor; see factor_count.

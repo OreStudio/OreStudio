@@ -243,5 +243,6 @@ TEST_CASE("a forward set that ends before an expiry refuses the calibration, nam
     const auto prepared = prepare_calibration(
         recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), calibration_as_of, 0.001);
     REQUIRE_FALSE(prepared);
-    CHECK(prepared.error().find("ends before the 2Y expiry") != std::string::npos);
+    CHECK(prepared.error().find("expiry 2Y") != std::string::npos);
+    CHECK(prepared.error().find("ends at") != std::string::npos);
 }

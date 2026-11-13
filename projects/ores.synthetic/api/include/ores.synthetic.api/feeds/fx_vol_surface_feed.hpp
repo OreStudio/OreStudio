@@ -55,6 +55,22 @@ inline constexpr std::string_view fx_vol_surface_feed_kind = "fx_vol_surface";
 fx_vol_tenor_years(std::string_view tenor);
 
 /**
+ * @brief The market one expiry is quoted against.
+ *
+ * A surface's expiries do not share a market: each one is discounted to its own value date,
+ * so the pair's two discount factors differ from one expiry to the next. The spot does not
+ * travel here because a smile is read at a moneyness -- the strike over the forward -- so a
+ * common scale of the spot cancels through the delta solve and the quoted volatilities are
+ * the same at any spot level. What the quotes do depend on is the ratio of the two
+ * discount factors, which is the forward over the spot.
+ */
+struct fx_vol_expiry_market final {
+    /// The expiry row's tenor, as the feed's expiry rows spell it.
+    std::string expiry_id;
+    ores::analytics::quant::math::fx_market market;
+};
+
+/**
  * @brief Everything a surface feed reads, gathered by the caller.
  *
  * The caller resolves the pair's market and convention because it alone holds the
@@ -68,8 +84,8 @@ struct fx_vol_surface_feed_build_input final {
     std::vector<std::string> contributors;
     /// Their noise profiles, in the same order; empty means every one is the clean contributor.
     std::vector<ores::analytics::quant::service::fx_vol_noise_profile> contributor_profiles;
-    /// The pair's spot and discounts, shared by every expiry.
-    ores::analytics::quant::math::fx_market market;
+    /// The market of each expiry, one entry for each expiry row.
+    std::vector<fx_vol_expiry_market> markets;
     /// The pair's quoting convention, shared by every expiry.
     ores::analytics::quant::math::fx_quote_convention convention;
     /// The deltas, besides ATM, to quote a risk reversal and a butterfly at.

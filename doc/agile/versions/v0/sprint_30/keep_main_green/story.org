@@ -49,6 +49,7 @@ Developers start work from a commit that CI has proven green, and main only move
 | [[id:7E177AB3-D85E-4029-B496-C21F76FEA34B][Stop the line when dev is red]] | BACKLOG | | | Make compass pr merge refuse a non-fix merge while the latest continuous run on dev is red. |
 | [[id:2585BB37-1F7F-4D2A-B3C7-EEA6B1805A54][Show the branch of each build in CDash]] | BACKLOG | | | Submit each CI build to a CDash group named after the branch it built: dev, integration or main. |
 | [[id:AC551901-58D0-4F99-8C4E-AABC7BF70858][Fix the nightly compile errors]] | STARTED | 2026-11-12 | | Fix the gcc, macOS and Windows compile errors that stop the nightly builds, and keep warnings as warnings on those compilers until they are clean. |
+| [[id:F15CA18F-4DC9-48A1-92F7-65E7E987E8C2][Record the XML benchmark after the format pass]] | BACKLOG | | | A nightly format pass changed the measured XML code and no benchmark row followed it, so the local check gate refused every branch cut from main. |
 
 * Decisions
 

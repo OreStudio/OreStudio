@@ -69,16 +69,26 @@ inline constexpr std::string_view provision_tenant_target_kind = "tenant";
 inline constexpr std::string_view provision_party_target_kind = "party";
 
 /**
- * @brief The subject every step of a provisioning run is dispatched to.
+ * @brief The subject ores.iam serves the provisioning steps it owns.
  *
- * One subject serves every step, because the payload says which kind of work
- * the step is: the engine persists only a step's name and subject, so a subject
- * per kind would put the catalogue in the persisted rows as well as in code.
- * The handler on this subject is ores.iam's, which owns the orchestration, so a
- * step kind is code in this component and needs no other component to change.
+ * One subject serves every kind a service owns, because the payload says which
+ * kind of work the step is: the engine persists only a step's name and subject,
+ * so a subject per kind would put the catalogue in the persisted rows as well.
+ * A kind is dispatched to the service that owns the work it does, so the
+ * identity steps land here and the rest land in the service whose data they
+ * write.
  */
 inline constexpr std::string_view provision_tenant_step_subject =
     "iam.v1.ops.provision_tenant_step";
+
+/**
+ * @brief The subject ores.refdata serves the provisioning steps it owns.
+ *
+ * ores.refdata owns the calendars, so the step that materialises them runs
+ * there and reaches the store directly rather than through a request to itself.
+ */
+inline constexpr std::string_view refdata_provision_tenant_step_subject =
+    "refdata.v1.ops.provision_tenant_step";
 
 /// The step kind that completes the tenant, appended to every run after the
 /// kinds the profile declares. A run finishes only by running its steps out, so
@@ -175,6 +185,25 @@ struct step_kind_words {
  * An unknown kind is one the executor refuses, so its identity is the most a
  * screen can honestly say about it.
  */
+/**
+ * @brief The subject the step of @p kind is dispatched to.
+ *
+ * A step runs in the service that owns the work it does, so the service pays
+ * for the code and the data it reaches, and ores.iam does not compile the
+ * catalogue of every other service's work. The table is here because the
+ * definition states a step's subject when it builds the step, and the engine
+ * persists it with the row.
+ *
+ * A kind this build does not know is dispatched to ores.iam, which refuses it
+ * with the words the executor has for an unknown kind, so a definition naming
+ * a kind no service serves fails loudly instead of waiting for nobody.
+ */
+[[nodiscard]] inline std::string_view step_subject_for_kind(std::string_view kind) {
+    if (kind == build_calendars_step_kind)
+        return refdata_provision_tenant_step_subject;
+    return provision_tenant_step_subject;
+}
+
 [[nodiscard]] inline step_kind_words words_for_step_kind(std::string_view kind) {
     if (kind == system_provision_step_kind)
         return {"Publish the system's own data",
@@ -518,7 +547,7 @@ make_step(const provision_tenant_workflow_request& run,
     step.name = unique_step_name(kind, seen);
     step.label = std::string(words.label);
     step.description = std::string(words.description);
-    step.command_subject = std::string(provision_tenant_step_subject);
+    step.command_subject = std::string(step_subject_for_kind(kind));
     step.compensation_subject = "";
     step.timeout = words.timeout;
 

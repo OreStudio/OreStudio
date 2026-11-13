@@ -29,6 +29,7 @@
 #include "ores.refdata.service/config/options.hpp"
 #include "ores.refdata.service/messaging/book_proposal_registrar.hpp"
 #include "ores.refdata.service/messaging/event_registrar.hpp"
+#include "ores.refdata.service/messaging/provisioning_step_registrar.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
@@ -98,6 +99,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         "ores.refdata.service",
         [](auto& n, auto c, auto v) {
             auto subs = ores::refdata::messaging::registrar::register_handlers(n, c, v);
+            // The provisioning run's calendar step names refdata's own work, so
+            // it is served here and its writes reach the store directly. It is
+            // registered before the proposals take the context.
+            auto provisioning =
+                ores::refdata::messaging::provisioning_step_registrar::register_handlers(n, c);
+            for (auto& sub : provisioning)
+                subs.push_back(std::move(sub));
             // The proposal operations raise approval requests, so they are
             // registered here and not with the entity handlers.
             auto proposals = ores::refdata::messaging::book_proposal_registrar::register_handlers(

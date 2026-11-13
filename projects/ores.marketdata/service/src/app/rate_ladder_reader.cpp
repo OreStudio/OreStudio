@@ -18,7 +18,8 @@
  *
  */
 #include "ores.marketdata.service/app/rate_ladder_reader.hpp"
-
+#include "../curve_pillar_reader.hpp"
+#include "../curve_republish_resolver.hpp"
 #include "ores.analytics.quant/service/day_count_calculator.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
@@ -29,10 +30,8 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/instrument_naming.hpp"
 #include "ores.marketdata.service/app/staleness_policy.hpp"
-#include "../curve_pillar_reader.hpp"
-#include "../curve_republish_resolver.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <map>
 #include <string>
@@ -59,7 +58,7 @@ constexpr const char* ladder_day_count_convention = "A365F";
 
 
 std::int64_t ladder_age_seconds_of(std::chrono::system_clock::time_point as_of,
-                            std::chrono::system_clock::time_point now) {
+                                   std::chrono::system_clock::time_point now) {
     if (as_of == std::chrono::system_clock::time_point{})
         return 0;
     const auto age = std::chrono::duration_cast<std::chrono::seconds>(now - as_of).count();
@@ -117,9 +116,8 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
     resp.day_count_convention = ladder_day_count_convention;
 
     const auto now = std::chrono::system_clock::now();
-    const auto as_of = request.as_of == std::chrono::system_clock::time_point{}
-        ? now
-        : request.as_of;
+    const auto as_of =
+        request.as_of == std::chrono::system_clock::time_point{} ? now : request.as_of;
     resp.as_of = as_of;
 
     repository::market_series_repository series_repo;
@@ -140,8 +138,7 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
     const auto may_read = [&](const std::string& party) {
         if (!request.party_id.empty())
             return party == request.party_id;
-        return allowed.empty() ||
-               std::find(allowed.begin(), allowed.end(), party) != allowed.end();
+        return allowed.empty() || std::find(allowed.begin(), allowed.end(), party) != allowed.end();
     };
 
     for (const auto& series : series_repo.read_latest(ctx)) {
@@ -159,8 +156,8 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
             field_text(*parsed, dt::field::fwd_start) != request.forward_start)
             continue;
         if (!request.providers.empty() &&
-            std::find(request.providers.begin(), request.providers.end(),
-                      series.provider_code) == request.providers.end())
+            std::find(request.providers.begin(), request.providers.end(), series.provider_code) ==
+                request.providers.end())
             continue;
 
         const auto series_id = boost::uuids::to_string(series.id);
@@ -183,23 +180,19 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
 
     if (quotes.empty()) {
         resp.success = false;
-        resp.message = "No provider quotes a " + request.currency + " " +
-                       request.instrument_type + " ladder" +
-                       (request.forward_start.empty()
-                            ? std::string()
-                            : " starting " + request.forward_start) +
-                       " at this as-of.";
+        resp.message =
+            "No provider quotes a " + request.currency + " " + request.instrument_type + " ladder" +
+            (request.forward_start.empty() ? std::string() : " starting " + request.forward_start) +
+            " at this as-of.";
         return resp;
     }
 
     // The dates are the server's: the tenor catalog and its convention resolve
     // every rung, and the day count turns the distance into a year fraction.
     const auto horizon = std::chrono::floor<std::chrono::days>(as_of);
-    const auto refctx = build_refdata_context(ctx,
-                                              std::chrono::year_month_day{horizon},
-                                              ladder_tenor_convention);
-    const auto day_count =
-        ores::analytics::quant::service::day_count_convention_code::A365F;
+    const auto refctx =
+        build_refdata_context(ctx, std::chrono::year_month_day{horizon}, ladder_tenor_convention);
+    const auto day_count = ores::analytics::quant::service::day_count_convention_code::A365F;
 
     std::vector<std::pair<std::chrono::year_month_day, std::string>> dated;
     std::string undated;
@@ -222,8 +215,7 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
 
     const auto start = std::chrono::year_month_day{horizon};
     for (const auto& [maturity, tenor] : dated) {
-        if (request.limit > 0 &&
-            static_cast<std::int64_t>(resp.rungs.size()) >= request.limit)
+        if (request.limit > 0 && static_cast<std::int64_t>(resp.rungs.size()) >= request.limit)
             break;
 
         mm::rate_ladder_rung rung;

@@ -58,8 +58,8 @@ using namespace ores::logging;
 class rate_ladder_handler {
 public:
     rate_ladder_handler(ores::nats::service::client& nats,
-                                 ores::database::context ctx,
-                                 std::optional<ores::security::jwt::jwt_authenticator> verifier)
+                        ores::database::context ctx,
+                        std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
@@ -72,8 +72,7 @@ public:
             return;
         auto req = decode<get_rate_ladder_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(rate_ladder_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(rate_ladder_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }

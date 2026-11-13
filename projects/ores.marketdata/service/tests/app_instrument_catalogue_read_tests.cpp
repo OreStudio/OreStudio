@@ -96,16 +96,14 @@ struct catalogue_fixture {
 
 private:
     static const std::string& ladder_uri() {
-        static const std::string uri =
-            "oresmd://ir/AUD?type=series&instrument=ir_swap&quote=rate"
-            "&fwd_start=0D&tenor=1D";
+        static const std::string uri = "oresmd://ir/AUD?type=series&instrument=ir_swap&quote=rate"
+                                       "&fwd_start=0D&tenor=1D";
         return uri;
     }
 
     /// The datum spelling of one rung: no `type=series`, and the term coordinate.
     static std::string datum_uri(const std::string& term) {
-        return "oresmd://ir/AUD?instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=" +
-               term;
+        return "oresmd://ir/AUD?instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=" + term;
     }
 
     void write_party() {
@@ -209,8 +207,7 @@ TEST_CASE("two_providers_quotes_of_one_ladder_are_one_instrument_with_two_source
     CHECK(instrument.name.find("AUD") != std::string::npos);
 }
 
-TEST_CASE("the_catalogue_states_the_axes_in_the_order_the_shape_declares",
-          catalogue_read_tags) {
+TEST_CASE("the_catalogue_states_the_axes_in_the_order_the_shape_declares", catalogue_read_tags) {
     catalogue_fixture f;
 
     const auto resp = list_instruments(*f.party, f.request());
@@ -250,8 +247,7 @@ TEST_CASE("a_party_that_may_not_read_the_asked_party_is_refused", catalogue_read
     CHECK(resp.message.empty() == false);
 }
 
-TEST_CASE("a_query_that_matches_nothing_answers_an_empty_page_not_a_failure",
-          catalogue_read_tags) {
+TEST_CASE("a_query_that_matches_nothing_answers_an_empty_page_not_a_failure", catalogue_read_tags) {
     catalogue_fixture f;
 
     auto req = f.request();
@@ -263,8 +259,7 @@ TEST_CASE("a_query_that_matches_nothing_answers_an_empty_page_not_a_failure",
     CHECK(resp.total == 0);
 }
 
-TEST_CASE("a_fixing_only_query_answers_an_empty_page_when_no_fixing_is_held",
-          catalogue_read_tags) {
+TEST_CASE("a_fixing_only_query_answers_an_empty_page_when_no_fixing_is_held", catalogue_read_tags) {
     catalogue_fixture f;
 
     auto req = f.request();
@@ -310,7 +305,8 @@ TEST_CASE("the_ladder_orders_its_rungs_by_maturity", catalogue_read_tags) {
     REQUIRE(resp.rungs.empty() == false);
     for (std::size_t i = 1; i < resp.rungs.size(); ++i)
         CHECK(resp.rungs[i - 1].maturity_date < resp.rungs[i].maturity_date);
-    CHECK(resp.rungs.front().maturity_date > std::chrono::year_month_day{
+    CHECK(resp.rungs.front().maturity_date >
+          std::chrono::year_month_day{
               std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())});
 }
 

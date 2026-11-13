@@ -61,8 +61,7 @@ TEST_CASE("a_spot_pair_has_no_axes_and_is_spelled_base_over_quote", catalogue_ta
     CHECK(name_of(s.datum, *s.row, "pair", spelling_of(s.datum)) == "AUD/USD");
 }
 
-TEST_CASE("an_ir_swap_is_one_ladder_and_its_name_carries_what_tells_peers_apart",
-          catalogue_tags) {
+TEST_CASE("an_ir_swap_is_one_ladder_and_its_name_carries_what_tells_peers_apart", catalogue_tags) {
     // One series holds the whole ladder across its term axis, so it has one
     // coordinate field and is a ladder, not a curve.
     const auto s = parse("oresmd://ir/AUD?type=series&instrument=ir_swap&quote=rate"

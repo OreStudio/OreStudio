@@ -31,8 +31,7 @@ namespace ores::marketdata::service::app {
 /**
  * @brief The text a datum holds in @p f, or empty when it holds none.
  */
-ORES_MARKETDATA_SERVICE_EXPORT std::string field_text(const datum::market_datum& d,
-                                                      datum::field f);
+ORES_MARKETDATA_SERVICE_EXPORT std::string field_text(const datum::market_datum& d, datum::field f);
 
 /**
  * @brief The kind an instrument type and its shape make.

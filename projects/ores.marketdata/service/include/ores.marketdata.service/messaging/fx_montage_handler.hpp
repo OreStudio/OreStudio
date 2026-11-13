@@ -58,8 +58,8 @@ using namespace ores::logging;
 class fx_montage_handler {
 public:
     fx_montage_handler(ores::nats::service::client& nats,
-                                 ores::database::context ctx,
-                                 std::optional<ores::security::jwt::jwt_authenticator> verifier)
+                       ores::database::context ctx,
+                       std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
@@ -72,8 +72,7 @@ public:
             return;
         auto req = decode<get_fx_montage_request>(msg);
         if (!req) {
-            BOOST_LOG_SEV(fx_montage_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            BOOST_LOG_SEV(fx_montage_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
@@ -81,8 +80,7 @@ public:
         try {
             resp = service::app::get_fx_montage(*req_ctx, *req);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(fx_montage_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(fx_montage_handler_lg(), error) << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
         }

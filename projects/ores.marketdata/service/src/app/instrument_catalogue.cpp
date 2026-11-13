@@ -18,10 +18,6 @@
  *
  */
 #include "ores.marketdata.service/app/instrument_catalogue.hpp"
-
-#include "ores.marketdata.service/app/instrument_naming.hpp"
-#include "ores.marketdata.service/app/staleness_policy.hpp"
-
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
@@ -30,8 +26,10 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/provider_repository.hpp"
 #include "ores.marketdata.core/service/series_shape.hpp"
-#include <algorithm>
+#include "ores.marketdata.service/app/instrument_naming.hpp"
+#include "ores.marketdata.service/app/staleness_policy.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <map>
 #include <string>
@@ -47,8 +45,7 @@ namespace dt = ores::marketdata::datum;
 using namespace ores::logging;
 
 auto& instrument_catalogue_lg() {
-    static auto instance =
-        make_logger("ores.marketdata.service.instrument_catalogue");
+    static auto instance = make_logger("ores.marketdata.service.instrument_catalogue");
     return instance;
 }
 
@@ -63,8 +60,7 @@ std::int64_t age_seconds_of(std::chrono::system_clock::time_point as_of,
 
 bool is_stale(std::optional<std::chrono::system_clock::time_point> as_of,
               std::chrono::system_clock::time_point now) {
-    return staleness_policy::is_stale(as_of.value_or(std::chrono::system_clock::time_point{}),
-                                      now);
+    return staleness_policy::is_stale(as_of.value_or(std::chrono::system_clock::time_point{}), now);
 }
 
 std::string lower(std::string s) {
@@ -135,9 +131,8 @@ int kind_rank(const std::string& kind) {
 
 }
 
-mm::list_instruments_response
-list_instruments(const ores::database::context& ctx,
-                 const mm::list_instruments_request& request) {
+mm::list_instruments_response list_instruments(const ores::database::context& ctx,
+                                               const mm::list_instruments_request& request) {
     mm::list_instruments_response resp;
     const auto now = std::chrono::system_clock::now();
 
@@ -165,8 +160,8 @@ list_instruments(const ores::database::context& ctx,
                 only_party = party;
         if (only_party.empty()) {
             resp.success = false;
-            resp.message = "This session may not read the instruments of party " +
-                           request.party_id + ".";
+            resp.message =
+                "This session may not read the instruments of party " + request.party_id + ".";
             return resp;
         }
     }
@@ -174,8 +169,7 @@ list_instruments(const ores::database::context& ctx,
     const auto may_read = [&](const std::string& party) {
         if (!only_party.empty())
             return party == only_party;
-        return allowed.empty() ||
-               std::find(allowed.begin(), allowed.end(), party) != allowed.end();
+        return allowed.empty() || std::find(allowed.begin(), allowed.end(), party) != allowed.end();
     };
 
     std::vector<instrument_draft> instruments;
@@ -216,14 +210,12 @@ list_instruments(const ores::database::context& ctx,
             draft.kind = kind;
             draft.instrument_type =
                 std::string(dt::oresmd_uri_codec::instrument_spelling(parsed->type()));
-            draft.quote_type =
-                std::string(dt::oresmd_uri_codec::quote_spelling(parsed->quote()));
+            draft.quote_type = std::string(dt::oresmd_uri_codec::quote_spelling(parsed->quote()));
             draft.name = name_of(*parsed, row, kind, draft.instrument_type);
             draft.currency = field_text(*parsed, dt::field::ccy);
             draft.base_currency = field_text(*parsed, dt::field::unit_ccy);
-            draft.quote_currency = draft.base_currency.empty()
-                ? std::string()
-                : field_text(*parsed, dt::field::ccy);
+            draft.quote_currency =
+                draft.base_currency.empty() ? std::string() : field_text(*parsed, dt::field::ccy);
             draft.forward_start = field_text(*parsed, dt::field::fwd_start);
             for (const auto axis : shape.axes) {
                 mm::instrument_axis a;
@@ -269,8 +261,7 @@ list_instruments(const ores::database::context& ctx,
     std::vector<const instrument_draft*> selected;
     for (const auto& i : instruments) {
         if (!request.kinds.empty() &&
-            std::find(request.kinds.begin(), request.kinds.end(), i.kind) ==
-                request.kinds.end())
+            std::find(request.kinds.begin(), request.kinds.end(), i.kind) == request.kinds.end())
             continue;
         if (!request.provider_code.empty() &&
             std::none_of(i.sources.begin(), i.sources.end(), [&](const auto& s) {
@@ -298,10 +289,10 @@ list_instruments(const ores::database::context& ctx,
 
     resp.truncated = offset + static_cast<std::int64_t>(resp.instruments.size()) < resp.total;
 
-    const bool fixing_only = !request.kinds.empty() &&
-                             std::all_of(request.kinds.begin(),
-                                         request.kinds.end(),
-                                         [](const auto& k) { return k == "fixing"; });
+    const bool fixing_only =
+        !request.kinds.empty() && std::all_of(request.kinds.begin(),
+                                              request.kinds.end(),
+                                              [](const auto& k) { return k == "fixing"; });
     if (fixing_only && skipped > 0) {
         resp.success = false;
         resp.message = "Fixing instruments are not catalogued yet: a fixing is an "

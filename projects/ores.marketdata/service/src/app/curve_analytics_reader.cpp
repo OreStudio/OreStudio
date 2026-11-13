@@ -18,7 +18,8 @@
  *
  */
 #include "ores.marketdata.service/app/curve_analytics_reader.hpp"
-
+#include "../curve_pillar_reader.hpp"
+#include "../curve_republish_resolver.hpp"
 #include "ores.analytics.quant/service/day_count_calculator.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -29,11 +30,9 @@
 #include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_pillar_repository.hpp"
-#include "../curve_pillar_reader.hpp"
-#include "../curve_republish_resolver.hpp"
-#include <algorithm>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cmath>
 #include <string>
 #include <vector>
@@ -59,9 +58,8 @@ get_curve_analytics(const ores::database::context& ctx,
     resp.instrument_id = request.instrument_id;
 
     const auto now = std::chrono::system_clock::now();
-    const auto as_of = request.as_of == std::chrono::system_clock::time_point{}
-        ? now
-        : request.as_of;
+    const auto as_of =
+        request.as_of == std::chrono::system_clock::time_point{} ? now : request.as_of;
     resp.as_of = as_of;
 
     try {
@@ -87,13 +85,11 @@ get_curve_analytics(const ores::database::context& ctx,
 
         auto pillars =
             ores::refdata::repository::ir_curve_bootstrap_pillar_repository{}.read_latest(ctx);
-        std::erase_if(pillars, [&](const auto& p) {
-            return p.bootstrap_config_id != config.id;
-        });
+        std::erase_if(pillars, [&](const auto& p) { return p.bootstrap_config_id != config.id; });
         if (pillars.empty())
             throw std::invalid_argument("Curve " + config.name + " has no pillars.");
-        std::ranges::sort(pillars, {}, &ores::refdata::domain::ir_curve_bootstrap_pillar::
-                                          sequence_index);
+        std::ranges::sort(
+            pillars, {}, &ores::refdata::domain::ir_curve_bootstrap_pillar::sequence_index);
 
         const auto horizon = std::chrono::floor<std::chrono::days>(as_of);
         const auto refctx = build_refdata_context(
@@ -103,8 +99,8 @@ get_curve_analytics(const ores::database::context& ctx,
             resolve_bootstrap_pillars(pillars, refctx, raw.rates_by_point_id);
         const auto points = curve_republish_service::compute(ctx, config.id, as_of);
 
-        const auto day_count = ores::refdata::mapping::parse_day_count_convention_code(
-            config.day_count_convention);
+        const auto day_count =
+            ores::refdata::mapping::parse_day_count_convention_code(config.day_count_convention);
         const auto start = std::chrono::year_month_day{horizon};
 
         resp.conventions.index_name = config.name;
@@ -133,8 +129,7 @@ get_curve_analytics(const ores::database::context& ctx,
             const auto rate = raw.rates_by_point_id.find(pillar.end_tenor_code);
             market.rate = rate == raw.rates_by_point_id.end() ? 0.0 : rate->second;
             market.series_id = boost::uuids::to_string(pillar.market_series_id);
-            const auto series =
-                series_repo.read_latest(ctx, market.series_id);
+            const auto series = series_repo.read_latest(ctx, market.series_id);
             if (!series.empty())
                 market.provider_code = series.front().provider_code;
             market.as_of = as_of;
@@ -146,9 +141,10 @@ get_curve_analytics(const ores::database::context& ctx,
             point.year_fraction = tau;
             point.discount_factor = df;
             point.zero_rate = zero;
-            point.implied_forward = previous_zero && previous_tau && tau != *previous_tau
-                ? (*previous_zero * *previous_tau - zero * tau) / (*previous_tau - tau)
-                : zero;
+            point.implied_forward =
+                previous_zero && previous_tau && tau != *previous_tau ?
+                    (*previous_zero * *previous_tau - zero * tau) / (*previous_tau - tau) :
+                    zero;
             point.shift_bps = (zero - resp.market_pillars.back().rate) * 10000.0;
             resp.bootstrapped.push_back(std::move(point));
 

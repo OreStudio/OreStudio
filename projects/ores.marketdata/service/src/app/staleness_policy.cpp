@@ -18,7 +18,6 @@
  *
  */
 #include "ores.marketdata.service/app/staleness_policy.hpp"
-
 #include <atomic>
 #include <charconv>
 #include <cstdlib>

@@ -75,8 +75,7 @@ struct montage_fixture {
 
 private:
     static std::string series_uri(const std::string& base, const std::string& quote) {
-        return "oresmd://fx/" + base + "?type=series&instrument=fx_spot&quote=rate&ccy=" +
-               quote;
+        return "oresmd://fx/" + base + "?type=series&instrument=fx_spot&quote=rate&ccy=" + quote;
     }
 
     static std::string datum_uri(const std::string& base, const std::string& quote) {
@@ -122,8 +121,8 @@ private:
         ores::marketdata::repository::market_series_repository{}.write(h.context(), s);
 
         const auto now = std::chrono::system_clock::now();
-        const auto start = std::chrono::system_clock::time_point{
-            std::chrono::floor<std::chrono::days>(now)};
+        const auto start =
+            std::chrono::system_clock::time_point{std::chrono::floor<std::chrono::days>(now)};
         ores::marketdata::repository::market_observation_repository repo;
         int i = 0;
         for (const auto value : {first, last}) {
@@ -144,8 +143,7 @@ private:
 
 }
 
-TEST_CASE("the_montage_answers_every_cross_of_the_base_including_the_quote_side",
-          montage_tags) {
+TEST_CASE("the_montage_answers_every_cross_of_the_base_including_the_quote_side", montage_tags) {
     montage_fixture f;
 
     const auto resp = get_fx_montage(*f.party, f.request());

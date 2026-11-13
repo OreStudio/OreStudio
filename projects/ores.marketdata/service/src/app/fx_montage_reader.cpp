@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/fx_montage_reader.hpp"
-
+#include "../curve_pillar_reader.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
@@ -28,9 +28,8 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/instrument_naming.hpp"
 #include "ores.marketdata.service/app/staleness_policy.hpp"
-#include "../curve_pillar_reader.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <map>
 #include <string>
@@ -112,13 +111,12 @@ mm::get_fx_montage_response get_fx_montage(const ores::database::context& ctx,
     resp.base_currency = request.base_currency;
 
     const auto now = std::chrono::system_clock::now();
-    const auto as_of = request.as_of == std::chrono::system_clock::time_point{}
-        ? now
-        : request.as_of;
+    const auto as_of =
+        request.as_of == std::chrono::system_clock::time_point{} ? now : request.as_of;
     // A trading day starts when the session says it does. Until the session is
     // served, the window starts at midnight UTC and the response states it.
-    const auto change_since = std::chrono::system_clock::time_point{
-        std::chrono::floor<std::chrono::days>(as_of)};
+    const auto change_since =
+        std::chrono::system_clock::time_point{std::chrono::floor<std::chrono::days>(as_of)};
     resp.as_of = as_of;
     resp.change_since = change_since;
 
@@ -134,8 +132,7 @@ mm::get_fx_montage_response get_fx_montage(const ores::database::context& ctx,
     const auto may_read = [&](const std::string& party) {
         if (!request.party_id.empty())
             return party == request.party_id;
-        return allowed.empty() ||
-               std::find(allowed.begin(), allowed.end(), party) != allowed.end();
+        return allowed.empty() || std::find(allowed.begin(), allowed.end(), party) != allowed.end();
     };
 
     std::map<std::string, pair_draft> pairs;
@@ -152,16 +149,15 @@ mm::get_fx_montage_response get_fx_montage(const ores::database::context& ctx,
         if (base != request.base_currency && quote != request.base_currency)
             continue;
         if (!request.providers.empty() &&
-            std::find(request.providers.begin(), request.providers.end(),
-                      series.provider_code) == request.providers.end())
+            std::find(request.providers.begin(), request.providers.end(), series.provider_code) ==
+                request.providers.end())
             continue;
 
         const auto observations = observation_repo.read_latest_for_series(ctx, series.id);
         if (observations.empty())
             continue;
         const auto& newest = *std::max_element(
-            observations.begin(), observations.end(),
-            [](const auto& a, const auto& b) {
+            observations.begin(), observations.end(), [](const auto& a, const auto& b) {
                 return a.observation_datetime < b.observation_datetime;
             });
 
@@ -171,8 +167,8 @@ mm::get_fx_montage_response get_fx_montage(const ores::database::context& ctx,
             spot.value = observation_value(newest);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(fx_montage_lg(), warn)
-                << "Skipping a quote that is not a number: " << newest.oresmd_uri
-                << ": " << e.what();
+                << "Skipping a quote that is not a number: " << newest.oresmd_uri << ": "
+                << e.what();
             continue;
         }
         spot.as_of = newest.observation_datetime;
@@ -199,8 +195,7 @@ mm::get_fx_montage_response get_fx_montage(const ores::database::context& ctx,
 
     if (pairs.empty()) {
         resp.success = false;
-        resp.message = "No provider quotes a cross of " + request.base_currency +
-                       " at this as-of.";
+        resp.message = "No provider quotes a cross of " + request.base_currency + " at this as-of.";
         return resp;
     }
 

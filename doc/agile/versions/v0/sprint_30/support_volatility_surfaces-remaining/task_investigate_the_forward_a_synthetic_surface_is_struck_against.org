@@ -28,11 +28,11 @@ The answer this task reaches is [[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][The f
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | The investigation is written; it waits on the owner for the choices it lists. |
+| Now          | Nothing. |
 | Waiting on   | The owner's confirmation of Path B and of the four choices under it. |
-| Next         | Take the decisions, then raise the board and the surface's read of it as work of its own. |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -88,3 +88,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The investigation is
+[[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][The forward a synthetic surface is struck against]]. It answers where the
+forward comes from -- the run's own latent curves, shared through a market board,
+with no curve published -- and it weighs four paths against the approach note's
+constraints 1 and 3 and against the three frameworks the surface is judged by.
+Two of the four paths are rejected on the ownership decision alone: a
+system-published curve, and a party's published forward set.
+
+The result is carried into the pages that own each subject rather than left in
+the investigation: the approach note states that the curve is the generator's
+state and the quotes are its observations, gains a section on where the forward
+comes from, and gains a comparison with Kienitz (2024) and van den Berg (2026a,
+2026b); the shared-factors design no longer says "last published" without saying
+by whom; the contributor note states that the vendor holds the curve every surface
+is struck against; and the party-side construction note says "its own" published
+curves and states the bootstrap difference.
+
+The four choices are recorded with the alternatives weighed, a recommendation and
+whether each can be changed later, and the owner accepted them on 2026-11-13. The
+build is [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Strike every surface against the run's own curve]].
+
+No code changed. Six documentation checks pass: =site-page=, =org-links=,
+=heading-numbers=, =backlog-indexes=, =structure-notes= and =pattern-uses=.
+

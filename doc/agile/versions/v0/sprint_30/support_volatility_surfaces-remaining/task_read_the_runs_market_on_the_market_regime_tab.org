@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 8AE97627-EB03-45F4-87F2-5384FF510DE6
+:END:
+#+title: Task: Read the run's market on the Market regime tab
+#+description: The last unmet line of the latent market's acceptance: the market regime read answers with the run's factors, each series' loadings and each driver's value, and the tab draws them in three languages, showing an undriven series as undriven rather than as zero.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The run's latent market can be seen while it runs. A person reads which factors exist, how each series loads on them, and what each driver's value is now, beside the arrival factor the Market regime tab already shows.
+
+This is the last unmet line of [[id:9331995E-79ED-40B3-923D-524975949FB5][Build the latent market of shared Brownian factors]]: the factors and loadings are set from the shell and drive the feeds, but nothing shows them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin with the operation model, then the handler and the tab. |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- The market regime read answers with the run's factors, each series' loadings, and each series' driver value at the time of the read.
+- A series the run does not drive reads as undriven, not as a zero.
+- A run with no block answers with empty lists rather than an error.
+- The Market regime tab draws the factors, the loadings and the driver values, in the three shipped languages.
+- The read is taken on the scheduler's own thread, like the regime's other reads.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

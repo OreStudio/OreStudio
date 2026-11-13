@@ -388,7 +388,7 @@ service starts, ticking on the market's normals and publishing every point each
 contributor observes.
 
 Two acceptance lines are re-homed rather than met, and
-[[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Read the pair's curves and show the run's market]]
+[[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Strike every surface against the run's own curve]]
 owns them: a surface's strikes are solved against a forward from a market with no
 rates and a spot of one, and the factors and loadings are set from the shell but
 are not yet shown on the Market regime tab. The spot level is proven immaterial to

@@ -28,8 +28,9 @@ surface relative to a forward, so they agree with the rule and none of them asks
 the vendor to publish the curve.
 
 The page was written on 2026-11-13 from
-[[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][the investigation]] that reached the rule. The four choices at its end are the
-recommended ones and await the owner's sign-off, which the parent story records.
+[[id:4825DEE0-D3E4-4E38-B46F-0C5EA838F1E0][the investigation]] that reached the rule, and the owner accepted it and its four
+choices the same day. The build is
+[[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Strike every surface against the run's own curve]].
 
 * Detail
 

@@ -2,7 +2,7 @@
 :ID: 9232CDC9-8444-4856-8D3D-CA7CD4EFA5EC
 :END:
 #+title: Generating a bond issue fails with std::bad_alloc
-#+description: Acme provisioning now reaches generate_trades and fails on the first bond issue: 'Writing bond issue POP5ZCJP1NEQ1 failed: std::bad_alloc', with zero trades written and 29 GB free. The smoke run is 'compass smoke ticks --leave-running'. Find what allocates, and whether the generator asks for a size the data cannot justify.
+#+description: The first bond issue of a generated population fails the composite write with std::bad_alloc. It is not the payload and not the service's memory: the same step completes on a retry, and the trading service's cgroup peaked at 276 MiB of an 8 GiB limit. The failure is a single absurd allocation and is value-dependent.
 #+type: capture
 #+level: cross
 #+filetags: 
@@ -13,15 +13,74 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+The first bond issue of a generated trade population fails its composite write
+with =std::bad_alloc=. It is a single absurd allocation, not a large payload and
+not a service out of memory, and it is value-dependent: a retry of the same
+step, which draws new terms, completes.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The failure stops a provisioning run, and the message names no cause beyond
+=std::bad_alloc=. The step-level retry recovers, so it is not urgent, but an
+allocation sized from a drawn value is a real defect: the next draw can hit it
+again, and the message cannot tell anyone why.
+
+** Evidence
+
+- Failing call: =trading.v1.ops.put_bond_issue_composite=, in the trading
+  service's =trade_operations_handler=, at 2026-11-13 14:05:15.767:
+  =ores.dev.merry_newton.trading.v1.ops.put_bond_issue_composite failed:
+  std::bad_alloc=.
+- The request is small: the bond issue builder emits 1 leg, 2 amounts, 1 rate
+  and 1 schedule row, and the writer sends no schedule dates, amortisations,
+  call dates or conversion targets (=ores.trading.api/src/builders/bond_builders.cpp=,
+  =bond_issue_builder::build=).
+- It is not the service running out of memory. The trading service's cgroup
+  (=memory.max= 8 GiB) peaked at 276 MiB *across both runs*, including the
+  6,541 trades the successful retry wrote
+  (=/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/ores.trading.service-merry_newton.service/memory.peak=).
+- The retry of =generate_trades= on the same run completed: 17 of 17 steps,
+  6,541 trades, 37 bond issues, 80 surface publishes
+  (=select count(*) from ores_trading_trades_tbl= and its siblings).
+- =generate_trades= records a *new* config on every run, and the generated
+  terms are seeded by the config id, so the retry drew different bond terms.
+  The failure is therefore data-dependent. The failing draw is the one for
+  config =b1640880-afea-5340-9c14-3c83dce8334d= (bond, =1Y= to =10Y=,
+  =ACME ACMCOR bonds=, book =Group Intercompany Loans=), whose first issue is
+  =POP5ZCJP1NEQ1=.
+- Led to the retry by the story
+  [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]]; the helper classifies
+  =std::bad_alloc= as permanent, so it is the step-level retry that recovered.
+
+** Where to look
+
+- =trade_operations_service::put_bond_issue_composite= and the generated
+  repositories it calls
+  (=projects/ores.trading/core/src/service/trade_operations_service.cpp:669=).
+- =entity_rows= sizes a vector from the driver's row count,
+  =std::vector<Entity> out(static_cast<std::size_t>(r.rows()))=
+  (=projects/ores.database/include/ores.database/query_builder/execute.hpp:147=).
+  A negative count becomes =SIZE_MAX= and fails as =bad_alloc=. It is reached
+  by =answer_if_stored='s =issues.read_latest=.
+- The numeric codec, which sizes work from a value's own text
+  (=projects/ores.database/src/pq/codec.cpp:172=), and every =reserve= or
+  =resize= fed by a drawn term.
+- The draws themselves: =security_face_value=, =coupon_rate=, =tenor_years= and
+  =security_age_months= in
+  =projects/ores.synthetic/core/src/service/trade_population_planner.cpp=.
+
+** How to reproduce
+
+Run the population for config =b1640880-afea-5340-9c14-3c83dce8334d=, whose
+draws are seeded by its id, with the trading service under =gdb -ex 'catch
+throw'= so the =bad_alloc= yields a stack. Re-running =generate_trades= itself
+draws new terms and does not reproduce it.
 
 * References
 
--
+- Capture raised from the live run of
+  [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]], task
+  [[id:97379470-2D88-4540-97DD-1F56C7B45B49][Prove a step survives a slow responder]].
 
 * See also
 

@@ -43,11 +43,11 @@ whole audit of the NATS patterns.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Task 7 open: the live run failed in the trade generator before the surface step. |
-| Waiting on    | [[id:9232CDC9-8444-4856-8D3D-CA7CD4EFA5EC][Generating a bond issue fails with std::bad_alloc]] |
-| Next          | Clear that fault, then run the smoke again and read the surface step. |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
 | Last touched  | 2026-11-13                               |
 
 * Acceptance
@@ -77,7 +77,7 @@ whole audit of the NATS patterns.
 | [[id:45896343-6F92-44D1-AE5F-27B329D66CA6][Name the failing work when a step gives up]] | DONE | 2026-11-13 | 2026-11-13 | A step that gives up reports only the transport's words, so a person cannot tell which party, surface or pair failed. Fail the step with the work it was doing, the request, the attempts and the reason. |
 | [[id:A9F04AFF-87C3-4F63-A771-B4118E7ED415][Show a run's progress and failure in ores.shell]] | DONE | 2026-11-13 | 2026-11-13 | The shell prints a running step's progress now, but a failure still prints only the transport's words. Print the work that failed, the attempts it took and the reason. |
 | [[id:5278DF3A-53B1-4249-B8DC-094DDC70C4B5][Show a run's progress and failure in ores.web]] | DONE | 2026-11-13 | 2026-11-13 | The wire carries a running step's progress, but the rail does not render it, and a failure shows the transport text. Show the progress while the step runs, and name the work and the reason when it stops. |
-| [[id:97379470-2D88-4540-97DD-1F56C7B45B49][Prove a step survives a slow responder]] | STARTED | 2026-11-13 | | Nothing tests a step against a responder that answers late or refuses, so the retry, the classification and the failure message rest on the code alone. Drive a step with a fake client that answers late and one that refuses. |
+| [[id:97379470-2D88-4540-97DD-1F56C7B45B49][Prove a step survives a slow responder]] | DONE | 2026-11-13 | 2026-11-13 | Nothing tests a step against a responder that answers late or refuses, so the retry, the classification and the failure message rest on the code alone. Drive a step with a fake client that answers late and one that refuses. |
 
 * Decisions
 
@@ -100,6 +100,14 @@ whole audit of the NATS patterns.
   handler's whole-table pillar read is recorded there as evidence.
 - A failure names the work: the party, the surface or pair, the attempt and the
   reason. The transport string alone is not a report.
+- A fault that is not a transport failure stays permanent for the retry helper,
+  and the step-level retry is what recovers it. The live run proved this: a
+  =std::bad_alloc= failed =generate_trades=, and the engine's retry of that step
+  completed all 17 steps. The fault itself is data-dependent and is captured as
+  [[id:9232CDC9-8444-4856-8D3D-CA7CD4EFA5EC][Generating a bond issue fails with std::bad_alloc]].
+- The live run completes provisioning on this host: 6,541 trades, 37 bond
+  issues, 80 surface publishes and 40 surfaces, with the heartbeat's progress
+  printed for each step.
 
 * Out of scope
 

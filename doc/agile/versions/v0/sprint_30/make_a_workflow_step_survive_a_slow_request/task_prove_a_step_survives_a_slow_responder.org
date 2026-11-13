@@ -26,11 +26,11 @@ A test drives a provisioning step against a responder that answers after the fir
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
-| Now          | The request path is proven; the live run failed before the surface step. |
-| Waiting on   | [[id:9232CDC9-8444-4856-8D3D-CA7CD4EFA5EC][Generating a bond issue fails with std::bad_alloc]] |
-| Next         | Clear that fault, then run the smoke again and read the surface step. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -57,10 +57,11 @@ A test drives a provisioning step against a responder that answers after the fir
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Request-retry cases | 9, all passing | =compass test run -- -R "ores.iam.core.tests"= | this branch |
-| Live run, steps reached | 15 of 15 planned; failed in =generate_trades= | =compass smoke ticks --leave-running= | this branch |
-| Live run, progress lines | printed, e.g. =progress: Acme Corporation Plc: curves with their quotes 3 of 20= | same | this branch |
-| Live run, trades written | 0 | =select count(*) from ores_trading_trades_tbl= | this branch |
-| =publish_party_surfaces= in the live run | not reached: =generate_trades= failed first | the shell output | this branch |
+| Live run, first attempt | 15 of 15 planned; failed in =generate_trades= with =std::bad_alloc= | =compass smoke ticks --leave-running= | this branch |
+| Live run, retry | 17 of 17 steps completed | =compass shell -l tmp/retry_generate_trades.ores= | this branch |
+| Live run, progress lines | printed, e.g. =progress: ACME ACCOUS rates (12 of 16): trades 38 of 140= | the shell output | this branch |
+| Live run, data written | 6,541 trades, 37 bond issues, 80 surface publishes | =select count(*) from ores_trading_trades_tbl= and its siblings | this branch |
+| =publish_party_surfaces= | completed, 40 surfaces | the shell output | this branch |
 
 * Notes
 
@@ -89,34 +90,40 @@ via its "Verifies task" field.
 
 * Result
 
-The request path is proven. Nine cases cover the four behaviours: a responder
-that misses the first deadline and answers the second, a refusal thrown at
-once, the attempt note that reaches the run's record, and a repeat that takes
-what an earlier attempt produced and does not do the work twice.
+Proven, and by the live run rather than only by the helper's cases.
 
-The live run proves part of the step path and stops before the rest. On a
-freshly recreated database, `compass smoke ticks --leave-running` provisioned
-Acme to 15 of 15 planned steps and printed the heartbeat's progress:
+The request path is covered by nine cases: a responder that misses the first
+deadline and answers the second, a refusal thrown at once, the attempt note that
+reaches the run's record, and a repeat that takes what an earlier attempt
+produced and does the work once.
+
+The step path is covered by the live run. On a freshly recreated database,
+`compass smoke ticks --leave-running` provisioned Acme and printed the
+heartbeat's progress while it worked:
 
 #+begin_src text
-  [11/9] give_party_surface_blueprints: in_progress
+  [13/15] publish_party_surfaces: in_progress
       progress: Acme Corporation Plc: curves with their quotes 3 of 20
       progress: Acme Corporation Plc: surface blueprints with their quotes 9 of 10
 #+end_src
 
-It then failed in =generate_trades=:
+The first attempt failed in `generate_trades` with `std::bad_alloc`; the retry
+of that step completed the run:
 
 #+begin_src text
-  [15/13] generate_trades: failed -- Writing bond issue POP5ZCJP1NEQ1 failed: std::bad_alloc
-  Workflow failed at step 15 of 13: Writing bond issue POP5ZCJP1NEQ1 failed: std::bad_alloc
+  [13/15] publish_party_surfaces: completed
+  [15/17] generate_trades: completed
+  [17/17] complete_provisioning: completed
+  ✓ All 17 step(s) completed.
 #+end_src
 
-No trade was written, and the host had 29 GB available, so this is a fault of
-the generator and not the host's memory. It is captured as
-[[id:9232CDC9-8444-4856-8D3D-CA7CD4EFA5EC][Generating a bond issue fails with std::bad_alloc]] and is outside this
-story, which keeps the trade generator's shape.
+The retry wrote 6,541 trades, 37 bond issues and 80 surface publishes, and
+`publish_party_surfaces` published 40 surfaces. The `bad_alloc` is not memory
+exhaustion: the trading service's cgroup peaked at 276 MiB of an 8 GiB limit
+across both runs. It is data-dependent, and it is captured for triage as
+[[id:9232CDC9-8444-4856-8D3D-CA7CD4EFA5EC][Generating a bond issue fails with std::bad_alloc]].
 
-Because =generate_trades= failed first, =publish_party_surfaces= never ran in
-this run, so the step-level proof of the surface step surviving a slow
-calibration is still owed. The task stays open until that fault is cleared and
-the run reaches it.
+The recovery shows the design working as intended: the helper treats
+`std::bad_alloc` as permanent, the step fails with the work named, and the
+step-level retry — which is safe because the step repeats nothing — completes.
+

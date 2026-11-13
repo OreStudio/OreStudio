@@ -23,6 +23,7 @@
 #include "ir_curve_template_resolver.hpp"
 #include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
+#include "ores.analytics.quant/domain/market_board.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/market_clock.hpp"
@@ -36,6 +37,7 @@
 #include "ores.synthetic.api/feeds/fixing_calibration.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <functional>
 #include <map>
 #include <memory>
@@ -89,7 +91,8 @@ public:
                   ores::analytics::quant::service::tick_scheduler& scheduler,
                   double step_speed,
                   double sensitivity = 1.0,
-                  std::vector<ir_pillar_quote_target> adapter_targets = {});
+                  std::vector<ir_pillar_quote_target> adapter_targets = {},
+                  std::chrono::year_month_day curve_spot_date = {});
 
     void start() override;
     /// One tick, as the scheduler drives it.
@@ -155,6 +158,11 @@ public:
     }
 
 private:
+    /// The curve this feed puts on the run's board, and where it publishes.
+    std::optional<ores::analytics::quant::domain::market_board::member_id> board_member_;
+    std::chrono::year_month_day board_spot_date_;
+    /// Reused every tick so publishing a curve allocates nothing after the first.
+    std::vector<ores::analytics::quant::domain::curve_point> board_points_;
     ores::nats::service::client& nats_;
     std::string source_name_;
     std::string nats_subject_;

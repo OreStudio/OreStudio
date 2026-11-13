@@ -254,4 +254,21 @@ double price_ir_curve_entry(const ores::analytics::quant::domain::i_yield_curve_
                                 "'");
 }
 
+void append_curve_points(std::chrono::year_month_day spot_date,
+                         const std::vector<ir_curve_resolved_entry>& entries,
+                         const ores::analytics::quant::domain::i_yield_curve_process& process,
+                         std::vector<ores::analytics::quant::domain::curve_point>& out) {
+    using ores::analytics::quant::domain::curve_point;
+
+    out.clear();
+    out.reserve(entries.size() + 1);
+    out.push_back(curve_point{.date = spot_date, .discount_factor = 1.0});
+    for (const auto& e : entries) {
+        if (!(out.back().date < e.end_date))
+            continue;
+        out.push_back(curve_point{.date = e.end_date,
+                                  .discount_factor = process.discount_factor(e.ticks_ahead_end)});
+    }
+}
+
 }

@@ -21,6 +21,7 @@
 
 #include "ores.analytics.quant/domain/arrival_law.hpp"
 #include "ores.analytics.quant/domain/arrival_spec.hpp"
+#include "ores.analytics.quant/domain/market_board.hpp"
 #include "ores.analytics.quant/domain/operational_clock.hpp"
 #include "ores.analytics.quant/export.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
@@ -250,6 +251,19 @@ public:
     tick_scheduler(i_run_clock& clock, const domain::market_config& market, std::uint64_t run_seed);
 
     /**
+     * @brief The run's market values: the curves and spots its feeds share.
+     *
+     * Owned here because every feed already holds the scheduler, so a feed that
+     * needs its pair's forward asks the board for a member once, in its own
+     * constructor, and afterwards publishes and reads by index on the loop. A
+     * board is sized for a run's whole market, so nothing below it allocates to
+     * find a member.
+     */
+    [[nodiscard]] domain::market_board& board() noexcept {
+        return board_;
+    }
+
+    /**
      * @brief Schedule a series. Its law is built here, so a bad spec throws in
      * the caller's thread.
      */
@@ -404,6 +418,8 @@ private:
 
     mutable std::mutex mutex_;
     domain::operational_clock market_;
+    /// The values the run's feeds share: a curve per currency, a spot per pair.
+    domain::market_board board_;
     std::map<std::size_t, series> series_;
     std::priority_queue<pending, std::vector<pending>, std::greater<>> heap_;
     std::deque<heat_reading> history_;

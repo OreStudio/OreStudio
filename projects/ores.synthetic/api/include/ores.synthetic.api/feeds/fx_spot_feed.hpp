@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
+#include "ores.analytics.quant/domain/market_board.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/feed_start.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
@@ -91,7 +92,8 @@ public:
                  const ores::analytics::quant::domain::arrival_spec& arrival,
                  ores::analytics::quant::service::tick_scheduler& scheduler,
                  double sensitivity = 1.0,
-                 std::optional<adapter_target> adapter = std::nullopt);
+                 std::optional<adapter_target> adapter = std::nullopt,
+                 std::string pair_code = {});
 
     /**
      * @brief The oresmd quote URI this feed publishes ticks under, e.g.
@@ -127,6 +129,9 @@ public:
     }
 
 private:
+    /// The spot this feed puts on the run's board, and where it publishes.
+    std::optional<ores::analytics::quant::domain::market_board::member_id> board_member_;
+
     const std::string& published_subject() const {
         return adapter_ ? adapter_->subject : nats_subject_;
     }

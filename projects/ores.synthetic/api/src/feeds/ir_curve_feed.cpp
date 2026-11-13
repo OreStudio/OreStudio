@@ -67,7 +67,8 @@ ir_curve_feed::ir_curve_feed(
     ores::analytics::quant::service::tick_scheduler& scheduler,
     double step_speed,
     double sensitivity,
-    std::vector<ir_pillar_quote_target> adapter_targets)
+    std::vector<ir_pillar_quote_target> adapter_targets,
+    std::chrono::year_month_day curve_spot_date)
     : nats_(nats)
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
@@ -95,6 +96,16 @@ ir_curve_feed::ir_curve_feed(
         throw std::invalid_argument("ir_curve_feed: ticks_per_hour must be positive");
     if (entries_.empty())
         throw std::invalid_argument("ir_curve_feed: entries must not be empty");
+
+    // The run's board holds this curve, so a surface on a pair that names this currency
+    // solves its strikes against the same discounts this feed prices its pillars off. The
+    // member is taken once, here, so a tick writes by index.
+    {
+        auto& shared = scheduler_.board();
+        board_member_ = shared.member_of(ores::analytics::quant::domain::market_member_kind::curve,
+                                         currency_code_);
+        board_spot_date_ = curve_spot_date;
+    }
 
     display_subject_ = ores::marketdata::domain::feed_display_subject_for(source_name_);
 
@@ -164,6 +175,13 @@ std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_cont
     else
         process_->next();
     const auto now = context.observed_at;
+
+    // One publish of the whole curve, from the same state the pillars were priced off: the
+    // board's reader interpolates it rather than rebuilding it from the quotes.
+    if (board_member_) {
+        append_curve_points(board_spot_date_, entries_, *process_, board_points_);
+        scheduler_.board().publish_curve(*board_member_, board_spot_date_, board_points_, now);
+    }
 
     for (std::size_t i = 0; i < entries_.size(); ++i) {
         const auto& e = entries_[i];
@@ -441,7 +459,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                                 scheduler,
                                                 step_speed,
                                                 cfg.sensitivity,
-                                                std::move(adapter_targets));
+                                                std::move(adapter_targets),
+                                                refctx.spot);
     feed->record_start_source(std::move(record));
     return feed;
 }

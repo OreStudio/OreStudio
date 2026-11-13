@@ -426,15 +426,17 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     if (!compatibility.valid)
         throw std::invalid_argument("make_fx_spot_feed: " + compatibility.message);
 
-    auto feed = std::make_shared<fx_spot_feed>(nats,
-                                               cfg.oresmd_uri,
-                                               cfg.source_name,
-                                               producer_subject(cfg.source_name),
-                                               std::move(process),
-                                               arrival,
-                                               scheduler,
-                                               cfg.sensitivity,
-                                               std::move(adapter));
+    auto feed =
+        std::make_shared<fx_spot_feed>(nats,
+                                       cfg.oresmd_uri,
+                                       cfg.source_name,
+                                       producer_subject(cfg.source_name),
+                                       std::move(process),
+                                       arrival,
+                                       scheduler,
+                                       cfg.sensitivity,
+                                       std::move(adapter),
+                                       cfg.base_currency_code + "/" + cfg.quote_currency_code);
     feed->record_start_source(std::move(start));
     return feed;
 }
@@ -448,7 +450,8 @@ fx_spot_feed::fx_spot_feed(
     const ores::analytics::quant::domain::arrival_spec& arrival,
     ores::analytics::quant::service::tick_scheduler& scheduler,
     double sensitivity,
-    std::optional<adapter_target> adapter)
+    std::optional<adapter_target> adapter,
+    std::string pair_code)
     : nats_(nats)
     , quote_uri_(std::move(quote_uri))
     , source_name_(std::move(source_name))
@@ -466,6 +469,11 @@ fx_spot_feed::fx_spot_feed(
             "fx_spot_feed: sensitivity must be finite and strictly positive");
     if (!process_)
         throw std::invalid_argument("fx_spot_feed: process must not be null");
+    // The run's board holds this pair's spot, so a surface on the pair can quote against the
+    // same spot this feed moves. The member is taken once, here, so a tick writes by index.
+    if (!pair_code.empty())
+        board_member_ = scheduler_.board().member_of(
+            ores::analytics::quant::domain::market_member_kind::spot, std::move(pair_code));
     // The scheduler builds the law when the feed starts, so a spec it would refuse is refused
     // here, when the feed is built.
     const auto arrival_check = ores::analytics::quant::domain::validate_arrival_process_parameters(
@@ -536,6 +544,9 @@ std::string fx_spot_feed::tick(const ores::analytics::quant::service::tick_conte
             << quote_uri_ << "' count=" << n << " value=" << value;
     }
     const auto now = context.observed_at;
+    if (board_member_)
+        scheduler_.board().publish_spot(*board_member_, price, now);
+
     const auto& codec = ores::nats::default_wire_codec();
     ores::marketdata::messaging::market_tick shown;
     shown.oresmd_uri = quote_uri_;

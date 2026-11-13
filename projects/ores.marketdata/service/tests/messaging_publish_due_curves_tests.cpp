@@ -98,7 +98,9 @@ TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build",
         f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
     const auto resp = publish_due_curves_handler::publish_all(ctx);
 
-    CHECK(resp.success);
+    // One curve cannot build, so the firing did not do everything it was asked
+    // even though the other curve published.
+    CHECK_FALSE(resp.success);
     REQUIRE(resp.curves.size() == 2);
 
     const auto first = std::ranges::find_if(resp.curves, [&](const auto& one) {

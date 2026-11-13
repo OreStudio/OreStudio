@@ -407,6 +407,10 @@ export interface CurveRepublishOutcome {
     message: string;
 }
 
+/**
+ * @brief What one firing did: whether every curve it visited published, and
+ * one outcome per curve with its name, as-of, duration and result.
+ */
 export interface PublishDueCurvesResponse {
     success: boolean;
     message: string;

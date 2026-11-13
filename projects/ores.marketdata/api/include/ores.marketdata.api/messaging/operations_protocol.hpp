@@ -590,6 +590,10 @@ struct curve_republish_outcome {
                            const curve_republish_outcome&) = default;
 };
 
+/**
+ * @brief What one firing did: whether every curve it visited published, and
+ * one outcome per curve with its name, as-of, duration and result.
+ */
 struct publish_due_curves_response {
     bool success = false;
     std::string message;

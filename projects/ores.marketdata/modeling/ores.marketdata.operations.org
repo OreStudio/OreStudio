@@ -1166,6 +1166,16 @@ What the sweep did for one curve, whether it published or not.
 
 ** publish_due_curves_response
 
+What one firing did: whether every curve it visited published, a line for a
+person, and one outcome per curve with its name, as-of, duration and result.
+
+#+begin_src cpp :name comment
+/**
+ * @brief What one firing did: whether every curve it visited published, and
+ * one outcome per curve with its name, as-of, duration and result.
+ */
+#+end_src
+
 *** success
 :PROPERTIES:
 :cpp_type: bool

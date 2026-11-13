@@ -127,7 +127,7 @@ derived =CORRELATION/RATE= quotes are later work, as the design note's
 | 3. The driven step | DONE 2026-11-12, five processes drivable | =5f127589f0=, =b31521e545= |
 | 4. The tick context carries the market | the mixture and its variance wrapper take the normal; the feeds and the service are outstanding, and land with step 6 | =a5b1881944= |
 | 5. Configuration | the model and the depth rule done; the block's correlations are already typed columns of =fx_vol_surface_feed=, so what remains is the read, the tab and the shell verbs | =cf90e7236a= |
-| 6. The FX volatility surface | the level is configured, the emitter steps a surface on the market's normals, and the =fx_vol_surface= kind is registered in the factory; the service's registry entry needs a market the synthetic service cannot yet build, and the service still needs its latent market | =1ea0ec0df1=, =d8c6acb028=, =d31c9ae527=, =27b0c97626=, =9e6497d4f8=, =3bf225e457= |
+| 6. The FX volatility surface | configured, stepping, startable by the service and driven by a market the run owns; the assembly that builds that market from the loaded configuration remains | =1ea0ec0df1=, =d8c6acb028=, =d31c9ae527=, =27b0c97626=, =9e6497d4f8=, =3bf225e457=, =2b25f7d9d5=, =e25104b0c0= |
 
 Step 2 keeps the many case in view: a factor owns a path and a fifty-six byte
 walk, a series owns two doubles, and the loadings are one flat array written in
@@ -220,10 +220,15 @@ factory. What is still owed is the wiring that makes it startable and correlated
   the kind and a row a person can start, and it is a design decision rather than
   typing: the feed either reads a published forward set or the configuration names
   the spot and the curves directly.
-- *The service's market.* One latent market per run, built from the loaded
-  configuration, with a driver source that answers each tick with the normals the
-  series declared. Then the spot feed and the surface feed both read their drivers
-  from the tick context and no feed draws its own.
+- *The service's market.* =run_market= holds it and answers the scheduler, and its
+  tests drive a spot's one normal and a surface's seven through a tick. What is
+  left is the assembly: the service must record a block for each surface it knows
+  from the loaded configuration, build the market before any feed starts, and keep
+  it alive for the scheduler's lifetime. Two things make that more than typing:
+  a block's anchor is the *spot's series id*, so the assembly has to decide which
+  spot feed a surface hangs off -- by currency pair, and a pair with no spot feed
+  has no anchor; and the market cannot grow after it is built, so a feed started
+  after the build is refused rather than driven by nothing.
 
 ** What the surface's configuration now holds
 

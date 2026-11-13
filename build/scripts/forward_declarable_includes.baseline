@@ -1,0 +1,9 @@
+# Headers that include the definition of a type they only name.
+# One per line as <type>:<key>, where <key> is a path under the root or
+# template:<archetype>. Regenerate with --write-baseline.
+ores::database::context:template:cpp_convention_family_units.hpp.mustache
+ores::database::context:template:cpp_domain_type_repository.hpp.mustache
+ores::database::context:template:cpp_nats_registrar.hpp.mustache
+ores::database::context:template:cpp_trade_type_digest.hpp.mustache
+ores::database::context:template:cpp_trade_type_writer.hpp.mustache
+ores::database::pq::session_context:projects/ores.database/include/ores.database/pq/unit_of_work.hpp  # the body needs pq::transaction, which pq/transaction.hpp defines beside session_context, so the include cannot go

@@ -1114,6 +1114,14 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("cpp",),
     ),
     Check(
+        id="forward-declarable-includes",
+        title="No header includes the definition of a type it only names",
+        argv=("python3", "build/scripts/check_forward_declarable_includes.py"),
+        classes=("cpp", "codegen"),
+        fix="Take the type's declaration as forward_declarable_types.list names"
+            " it, or record the line in forward_declarable_includes.baseline.",
+    ),
+    Check(
         id="format",
         title="The changed C++ files are clang-formatted",
         argv=(

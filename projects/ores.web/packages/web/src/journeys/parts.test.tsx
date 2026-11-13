@@ -503,11 +503,27 @@ describe("a run's step", () => {
     });
 
     it('states no progress line for a step that reported none', () => {
-        const html = render(
+        // The same words are proved to render on a step that reported them, so
+        // their absence below is the step's silence and not the fixture's.
+        const reported = render(
+            <RunStep
+                step={{
+                    ...step,
+                    status: 'in_progress',
+                    progress: 'ACME: surfaces',
+                    progress_done: 1,
+                    progress_total: 2,
+                }}
+                words={(sentence) => sentence}
+            />,
+        );
+        const silent = render(
             <RunStep step={{ ...step, status: 'in_progress' }} words={(sentence) => sentence} />,
         );
 
-        expect(html).not.toContain('ACME: surfaces');
+        expect(reported).toContain('ACME: surfaces');
+        expect(silent).not.toContain('ACME: surfaces');
+        expect(silent).not.toContain('1 of 2');
     });
 
     it('names the work a failed step could not finish, in the words it is handed', () => {

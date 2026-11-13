@@ -34,6 +34,7 @@
 #include <string>
 #include <thread>
 #include <type_traits>
+#include <utility>
 
 namespace ores::iam::service {
 
@@ -106,6 +107,22 @@ struct request_retry_policy {
 };
 
 /**
+ * @brief One try at the work: which time round it is, and what is left of the
+ * caller's budget to spend on it.
+ *
+ * The operation reads this rather than assuming it may take its own time. A
+ * callable that would wait, or that asks a service and waits for its reply,
+ * sizes that wait from @c budget_left, so the chain of attempts cannot outlive
+ * the deadline the caller stated.
+ */
+struct retry_attempt {
+    /// The first attempt is 1.
+    int number = 1;
+    /// What is left of the caller's budget when this attempt starts.
+    std::chrono::milliseconds budget_left{0};
+};
+
+/**
  * @brief What one retried request is asked of, what it is, and how long it may
  * take.
  */
@@ -147,25 +164,34 @@ struct retry_call_options {
  * two steps that failed together do not return together. A refusal and a
  * permanent fault are thrown at once, with the server's own reason. The
  * attempts stop at @c policy.max_attempts and at @c deadline, whichever comes
- * first, and never wait past it.
+ * first.
  *
- * The operation is a callable rather than a request so that it can first read
- * whether an earlier attempt already did the work. A repeat that would write a
- * second row, raise a second request or publish a second set is the caller's to
- * prevent, and that is where it is prevented.
+ * The deadline bounds the whole chain, not only the gaps between attempts: the
+ * wait before an attempt is cut to what is left, and the operation is told that
+ * remainder as @c retry_attempt::budget_left, so an attempt that waits for a
+ * reply waits no longer than the deadline allows. The first attempt is made
+ * whatever the deadline says, because the caller asked for that work.
+ *
+ * The operation takes a @c retry_attempt rather than nothing so that it can
+ * first read whether an earlier attempt already did the work, and report the
+ * progress it makes between attempts. A repeat that would write a second row,
+ * raise a second request or publish a second set is the caller's to prevent,
+ * and that is where it is prevented.
  *
  * @throws std::runtime_error when the operation is not answered and will not be
  *         tried again, naming @c what, the attempts it took and the reason.
  */
 template <typename Operation>
 auto call_with_retry(Operation&& operation, const retry_call_options& options)
-    -> std::invoke_result_t<Operation> {
+    -> std::invoke_result_t<Operation, const retry_attempt&> {
     static auto lg = ores::logging::make_logger("ores.iam.service.request_retry");
 
     auto delay = options.policy.first_delay;
     for (int attempt = 1;; ++attempt) {
+        const auto budget_left = std::chrono::duration_cast<std::chrono::milliseconds>(
+            options.deadline - std::chrono::steady_clock::now());
         try {
-            return operation();
+            return operation(retry_attempt{.number = attempt, .budget_left = budget_left});
         } catch (const std::exception& failure) {
             const auto kind = classify_request_failure(failure);
             const auto remaining = options.deadline - std::chrono::steady_clock::now();
@@ -200,6 +226,31 @@ auto call_with_retry(Operation&& operation, const retry_call_options& options)
 }
 
 /**
+ * @brief Does the work, unless an earlier attempt already did it.
+ *
+ * A request that writes and then loses its reply has written all the same, so
+ * a repeat reads what is there before it writes again: @p read_back answers the
+ * result the earlier attempt produced, or nothing when it produced none.
+ *
+ * The first attempt does not read back. Nothing an earlier attempt did is there
+ * to find, and a record an earlier run left is not this run's work: taking it
+ * would report work the step did not do.
+ *
+ * @param read_back Answers what an earlier attempt of this chain left, or
+ *        nothing. Called only on a repeat.
+ * @param work Does the work and answers its result.
+ */
+template <typename ReadBack, typename Work>
+auto do_unless_already_done(const retry_attempt& attempt, ReadBack&& read_back, Work&& work)
+    -> std::invoke_result_t<Work> {
+    if (attempt.number > 1) {
+        if (auto found = read_back())
+            return std::move(*found);
+    }
+    return work();
+}
+
+/**
  * @brief Issues @p req through @p client, and asks again while a transient
  * failure may pass.
  *
@@ -212,7 +263,12 @@ template <typename Client, typename Request>
 typename Request::response_type
 request_with_retry(Client& client, const Request& req, const retry_request_options& options) {
     return call_with_retry(
-        [&client, &req, &options] { return client.request(req, options.attempt_timeout); },
+        [&client, &req, &options](const retry_attempt& attempt) {
+            // One attempt waits no longer than the step's budget still allows,
+            // so the chain of attempts cannot outlive the deadline.
+            const auto patience = std::max(attempt.budget_left, std::chrono::milliseconds{1});
+            return client.request(req, std::min(options.attempt_timeout, patience));
+        },
         {.deadline = options.deadline,
          .what = options.what,
          .policy = options.policy,

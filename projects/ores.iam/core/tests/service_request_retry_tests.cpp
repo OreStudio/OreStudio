@@ -22,6 +22,7 @@
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
 #include <functional>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -30,9 +31,11 @@ namespace {
 
 using ores::iam::service::call_with_retry;
 using ores::iam::service::classify_request_failure;
+using ores::iam::service::do_unless_already_done;
 using ores::iam::service::request_failure_class;
 using ores::iam::service::request_retry_policy;
 using ores::iam::service::request_with_retry;
+using ores::iam::service::retry_attempt;
 using ores::iam::service::retry_request_options;
 using ores::nats::service::nats_connect_error;
 using ores::nats::service::nats_error_kind;
@@ -46,10 +49,12 @@ struct test_request {
 /// A client that answers from a script, one entry per attempt.
 struct scripted_client {
     std::vector<std::function<int()>> script;
+    std::vector<std::chrono::milliseconds> timeouts;
     std::size_t calls = 0;
 
     template <typename Request>
-    typename Request::response_type request(const Request&, std::chrono::milliseconds) {
+    typename Request::response_type request(const Request&, std::chrono::milliseconds timeout) {
+        timeouts.push_back(timeout);
         const auto index = calls++;
         if (index >= script.size())
             throw std::runtime_error("the script ran out");
@@ -80,7 +85,7 @@ options_after(std::chrono::milliseconds budget, request_retry_policy policy, std
 
 }
 
-TEST_CASE("A timeout and a missing responder are transient", "[request_retry]") {
+TEST_CASE("a_timeout_and_a_missing_responder_are_transient", "[request_retry]") {
     CHECK(classify_request_failure(nats_connect_error(nats_error_kind::request_timeout, "late")) ==
           request_failure_class::transient);
     CHECK(classify_request_failure(
@@ -88,7 +93,7 @@ TEST_CASE("A timeout and a missing responder are transient", "[request_retry]") 
           request_failure_class::transient);
 }
 
-TEST_CASE("A refusal and an unnamed fault are not retried", "[request_retry]") {
+TEST_CASE("a_refusal_and_an_unnamed_fault_are_not_retried", "[request_retry]") {
     CHECK(classify_request_failure(ores::iam::service::internal_request_client::service_error(
               "forbidden", "test.v1.ops.answer")) == request_failure_class::refused);
     CHECK(classify_request_failure(nats_connect_error(nats_error_kind::tls_error, "tls")) ==
@@ -97,7 +102,7 @@ TEST_CASE("A refusal and an unnamed fault are not retried", "[request_retry]") {
           request_failure_class::permanent);
 }
 
-TEST_CASE("A request that misses its deadline once and answers is retried", "[request_retry]") {
+TEST_CASE("a_request_that_misses_its_deadline_once_and_answers_is_retried", "[request_retry]") {
     scripted_client client;
     client.script.push_back(
         []() -> int { throw nats_connect_error(nats_error_kind::request_timeout, "late"); });
@@ -116,7 +121,7 @@ TEST_CASE("A request that misses its deadline once and answers is retried", "[re
     CHECK(waits.waits.front() <= std::chrono::milliseconds{500});
 }
 
-TEST_CASE("A refusal is thrown at once, with the server's reason", "[request_retry]") {
+TEST_CASE("a_refusal_is_thrown_at_once_with_the_servers_reason", "[request_retry]") {
     scripted_client client;
     client.script.push_back([]() -> int {
         throw ores::iam::service::internal_request_client::service_error("forbidden", "test");
@@ -140,7 +145,7 @@ TEST_CASE("A refusal is thrown at once, with the server's reason", "[request_ret
     CHECK_THAT(said, Catch::Matchers::ContainsSubstring("forbidden"));
 }
 
-TEST_CASE("The attempts stop at the policy's limit", "[request_retry]") {
+TEST_CASE("the_attempts_stop_at_the_policys_limit", "[request_retry]") {
     scripted_client client;
     for (int i = 0; i < 5; ++i)
         client.script.push_back(
@@ -168,7 +173,7 @@ TEST_CASE("The attempts stop at the policy's limit", "[request_retry]") {
     CHECK_THAT(said, Catch::Matchers::ContainsSubstring("late"));
 }
 
-TEST_CASE("A step's failure names the party, the item and the attempts", "[request_retry]") {
+TEST_CASE("a_steps_failure_names_the_party_the_item_and_the_attempts", "[request_retry]") {
     scripted_client client;
     client.script.push_back([]() -> int {
         throw nats_connect_error(nats_error_kind::request_timeout,
@@ -199,7 +204,7 @@ TEST_CASE("A step's failure names the party, the item and the attempts", "[reque
                Catch::Matchers::ContainsSubstring("marketdata.v1.ops.calibrate_fx_vol_surface"));
 }
 
-TEST_CASE("A request is not retried past the caller's deadline", "[request_retry]") {
+TEST_CASE("a_request_is_not_retried_past_the_callers_deadline", "[request_retry]") {
     scripted_client client;
     client.script.push_back(
         []() -> int { throw nats_connect_error(nats_error_kind::request_timeout, "late"); });
@@ -213,7 +218,23 @@ TEST_CASE("A request is not retried past the caller's deadline", "[request_retry
     CHECK(waits.waits.empty());
 }
 
-TEST_CASE("A repeat takes the result an earlier attempt already produced", "[request_retry]") {
+TEST_CASE("an_attempt_waits_no_longer_than_the_budget_left", "[request_retry]") {
+    scripted_client client;
+    client.script.push_back([] { return 7; });
+
+    wait_recorder waits;
+    auto options = options_after(std::chrono::milliseconds{40}, waits.policy(), "a try");
+    // The request names a patience far longer than the step has left, so the
+    // attempt is cut to the budget or it would outlive the step.
+    options.attempt_timeout = std::chrono::seconds{120};
+
+    CHECK(request_with_retry(client, test_request{}, options) == 7);
+    REQUIRE(client.timeouts.size() == 1);
+    CHECK(client.timeouts.front() <= std::chrono::milliseconds{40});
+    CHECK(client.timeouts.front() >= std::chrono::milliseconds{1});
+}
+
+TEST_CASE("a_repeat_takes_the_result_an_earlier_attempt_already_produced", "[request_retry]") {
     wait_recorder waits;
     int publishes = 0;
     int attempts = 0;
@@ -222,7 +243,7 @@ TEST_CASE("A repeat takes the result an earlier attempt already produced", "[req
     // The first attempt publishes and loses the reply. The second reads what
     // the first published, so the work happens once and the answer is taken.
     const auto answer = call_with_retry(
-        [&]() -> int {
+        [&](const retry_attempt&) -> int {
             ++attempts;
             if (published)
                 return 7;
@@ -240,7 +261,87 @@ TEST_CASE("A repeat takes the result an earlier attempt already produced", "[req
     CHECK(waits.waits.size() == 1);
 }
 
-TEST_CASE("An attempt is reported to the run's own record", "[request_retry]") {
+TEST_CASE("an_attempt_knows_which_time_round_it_is_and_what_is_left", "[request_retry]") {
+    wait_recorder waits;
+    std::vector<int> numbers;
+    std::vector<std::chrono::milliseconds> budgets;
+
+    const auto answer = call_with_retry(
+        [&](const retry_attempt& attempt) -> int {
+            numbers.push_back(attempt.number);
+            budgets.push_back(attempt.budget_left);
+            if (attempt.number == 1)
+                throw nats_connect_error(nats_error_kind::request_timeout, "late");
+            return 7;
+        },
+        {.deadline = std::chrono::steady_clock::now() + std::chrono::seconds{10},
+         .what = "a surface",
+         .policy = waits.policy()});
+
+    CHECK(answer == 7);
+    CHECK(numbers == std::vector<int>{1, 2});
+    REQUIRE(budgets.size() == 2);
+    // The budget is the caller's, counted down: both attempts see time left,
+    // and neither sees more than the caller stated.
+    CHECK(budgets.front() > std::chrono::milliseconds{9000});
+    CHECK(budgets.front() <= std::chrono::seconds{10});
+    CHECK(budgets.back() > std::chrono::milliseconds{0});
+}
+
+TEST_CASE("the_first_attempt_does_not_read_back_and_a_repeat_does", "[request_retry]") {
+    wait_recorder waits;
+    int reads = 0;
+    int works = 0;
+
+    const auto answer = call_with_retry(
+        [&](const retry_attempt& attempt) -> int {
+            return do_unless_already_done(
+                attempt,
+                [&]() -> std::optional<int> {
+                    ++reads;
+                    return std::nullopt;
+                },
+                [&]() -> int {
+                    ++works;
+                    if (attempt.number == 1)
+                        throw nats_connect_error(nats_error_kind::request_timeout, "late");
+                    return 7;
+                });
+        },
+        {.deadline = std::chrono::steady_clock::now() + std::chrono::seconds{30},
+         .what = "a curve publish",
+         .policy = waits.policy()});
+
+    CHECK(answer == 7);
+    // The first attempt did not read: no earlier attempt of this chain had run.
+    CHECK(reads == 1);
+    CHECK(works == 2);
+}
+
+TEST_CASE("a_repeat_whose_read_back_answers_does_not_do_the_work_again", "[request_retry]") {
+    wait_recorder waits;
+    int works = 0;
+
+    const auto answer = call_with_retry(
+        [&](const retry_attempt& attempt) -> int {
+            return do_unless_already_done(
+                attempt,
+                []() -> std::optional<int> { return 7; },
+                [&]() -> int {
+                    ++works;
+                    throw nats_connect_error(nats_error_kind::request_timeout, "late");
+                });
+        },
+        {.deadline = std::chrono::steady_clock::now() + std::chrono::seconds{30},
+         .what = "a curve publish",
+         .policy = waits.policy()});
+
+    CHECK(answer == 7);
+    CHECK(works == 1);
+    CHECK(waits.waits.size() == 1);
+}
+
+TEST_CASE("an_attempt_is_reported_to_the_runs_own_record", "[request_retry]") {
     scripted_client client;
     client.script.push_back(
         []() -> int { throw nats_connect_error(nats_error_kind::request_timeout, "late"); });

@@ -52,11 +52,12 @@ enum class nats_error_kind {
 };
 
 /**
- * @brief Thrown when a NATS connection or initial service check fails.
+ * @brief Thrown when a NATS connection, service check or request fails.
  *
  * Carries a nats_error_kind so callers can distinguish "NATS is down",
- * "TLS is misconfigured", "services are not started", etc. and surface
- * a readable message in the login dialog.
+ * "TLS is misconfigured", "services are not started", "nobody answered in
+ * time", etc. and surface a readable message in the login dialog, or decide
+ * whether asking again could pass.
  */
 class ORES_NATS_EXPORT nats_connect_error : public std::runtime_error {
 public:

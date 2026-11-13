@@ -685,9 +685,9 @@ export function RunStep({
      */
     const progress = step.progress === '' ? '' : words(step.progress);
     const counts =
-        step.progress_done === null || step.progress_done === undefined
+        step.progress_done === null
             ? ''
-            : step.progress_total === null || step.progress_total === undefined
+            : step.progress_total === null
               ? `${step.progress_done}`
               : `${step.progress_done} of ${step.progress_total}`;
     /*

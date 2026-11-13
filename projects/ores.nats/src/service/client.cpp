@@ -814,9 +814,8 @@ message client::request_sync(std::string_view subject,
     if (s != NATS_OK) {
         if (s == NATS_TIMEOUT)
             throw nats_connect_error(nats_error_kind::request_timeout,
-                                     "NATS request timed out: no reply from '" +
-                                         std::string(make_subject(subject)) + "' within " +
-                                         std::to_string(timeout.count()) + " ms");
+                                     "NATS request timed out: no reply from '" + full_subject +
+                                         "' within " + std::to_string(timeout.count()) + " ms");
         if (s == NATS_NO_RESPONDERS)
             throw nats_connect_error(nats_error_kind::services_unavailable,
                                      "NATS request failed: no service is handling subject '" +

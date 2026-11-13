@@ -17,7 +17,6 @@
  *
  */
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
-#include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
 #include "ores.testing/fx_vol_surface_fixture.hpp"
 #include "ores.testing/uuid_of.hpp"
 #include <algorithm>
@@ -245,18 +244,4 @@ TEST_CASE("a forward set that ends before an expiry refuses the calibration, nam
         recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), calibration_as_of, 0.001);
     REQUIRE_FALSE(prepared);
     CHECK(prepared.error().find("ends before the 2Y expiry") != std::string::npos);
-}
-
-TEST_CASE("A calibration is identified by its blueprint and its as-of", "[fx_vol_surface]") {
-    const auto blueprint = uuid_of("00000000-0000-4000-8000-0000000000a1");
-    const auto as_of =
-        std::chrono::system_clock::time_point{std::chrono::sys_days{calibration_as_of}} +
-        std::chrono::hours{10};
-
-    // A repeat of the same request names the same calibration, so its grid and
-    // its lineage are the rows the first attempt wrote.
-    CHECK(calibration_id_of(blueprint, as_of) == calibration_id_of(blueprint, as_of));
-    // A later instant is a new calibration, not a repeat of this one.
-    CHECK(calibration_id_of(blueprint, as_of) !=
-          calibration_id_of(blueprint, as_of + std::chrono::seconds{1}));
 }

@@ -30,9 +30,9 @@ The design is [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Stages 1 to 3 have landed: the board in quant, the date rule deleted in favour of quant's own, and the curve and spot feeds publishing to it. Stage 4, the surface reading it, has not. |
+| Now          | Stages 1 to 4 have landed: the board in quant, the date rule deleted in favour of quant's own, the curve and spot feeds publishing to it, and the surface building its markets from it on every tick. The static gate and the measured round trip remain. |
 | Waiting on   | Nothing.                               |
-| Next         | Stage 4: the surface builds its markets per tick, and the emitter takes them per step. |
+| Next         | Stage 5, the round trip's tolerance, then the static refusal of a pair the run carries no curve feed for. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -187,7 +187,7 @@ Four stages and a measurement. Each ends green, and each leaves the tree working
 | 1 | The board | =market_board= in quant, owned by the scheduler: named members, a dated discount series, a spot scalar, publish and read, no allocation after warm-up | done, b29e3f53bf: 11 cases pin publish, republish, the empty member, the mistaken kind and the buffer's stability |
 | 2 | The date rule | the calibration's private period-to-date helper is deleted in favour of =calendar_arithmetic::add_period= | done, 57fcef317b: the calibration's 251 tests pass unchanged, so the deletion is a move |
 | 3 | The publishers | the IR curve feed and the FX spot feed write the board, which the scheduler owns, so no feed's arguments changed | done, a69dc9cded: the curve's points are built beside the pillar pricer and pinned by four cases, including the buffer's stability |
-| 4 | The read | the surface builds its markets per tick and the emitter takes them per step; the unit market and the build input's markets go | unchanged curve and state emit identical quotes; a two-percent differential moves the quotes by the stated amount; a missing member publishes nothing and names it; the ATM strike equals the board's forward |
+| 4 | The read | the surface builds its markets per tick from the three values it reads, and the emitter takes them per step; the unit market and the build input's markets go | done, fb1695dfb8: a step's market count is checked, a tilted market moves the quotes, and the surface reads two curves that need not share a grid |
 | 5 | The round trip | the calibration of the clean quotes, the tolerance measured and recorded | an integration test states the tolerance; Measurements carries the number, the command and the commit |
 
 Two pull requests: stages 1 to 3 change nothing observable and land the machinery, and stages 4 and 5 change behaviour. If the branch is quick, one PR with five commits in this order is fine; what must not happen is stage 4 landing without stage 3.

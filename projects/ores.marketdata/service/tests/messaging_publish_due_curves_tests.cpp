@@ -38,6 +38,7 @@ using ores::inbox::service::approval_lifecycle;
 using ores::marketdata::service::app::curve_publish_kind_code;
 using ores::marketdata::service::tests::curve_fixture;
 using ores::marketdata::service::tests::seed_person;
+using ores::marketdata::service::tests::zero_approval_kind;
 
 
 }

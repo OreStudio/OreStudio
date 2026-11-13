@@ -104,16 +104,30 @@ fx_vol_contributor_spec emitter_noisy(double noise) {
 
 const std::vector<double> emitter_deltas{0.25, 0.10};
 
+/// The markets a step reads, one per expiry, from the slices a test states.
+std::vector<fx_market> markets_of(const std::vector<fx_vol_slice_market>& slices) {
+    std::vector<fx_market> out;
+    out.reserve(slices.size());
+    for (const auto& slice : slices)
+        out.push_back(slice.market);
+    return out;
+}
+
+/// The markets the last emitter a test built is stepped with, so a call site stays one call.
+std::vector<fx_market> current_markets;
+
 std::expected<fx_vol_surface_emitter, std::string>
 make_emitter(std::vector<fx_vol_contributor_spec> contributors,
              std::vector<fx_vol_slice_market> markets,
              fx_vol_surface_dynamics dynamics,
              std::vector<double> deltas = emitter_deltas) {
     const auto start = emitter_start();
+    current_markets = markets_of(markets);
+    const auto convention = markets.empty() ? emitter_convention : markets.front().convention;
     return fx_vol_surface_emitter::make(start,
                                         std::move(dynamics),
                                         emitter_day,
-                                        std::move(markets),
+                                        convention,
                                         std::move(deltas),
                                         std::move(contributors));
 }
@@ -136,7 +150,7 @@ TEST_CASE("a step publishes every point of every contributor in order",
     CHECK(emitter->contributor_name(1) == "broker");
 
     std::vector<double> drivers(emitter->surface().expiries.size() + 2, 0.0);
-    const auto points = emitter->step(drivers);
+    const auto points = emitter->step(drivers, current_markets);
     REQUIRE(points.size() == 30);
 
     // A contributor's points are contiguous, and within one they run expiry by expiry.
@@ -161,7 +175,7 @@ TEST_CASE("a clean contributor publishes the surface's own quotes", "[fx_vol_sur
 
     // No driver, so the surface steps nowhere: every process reverts to where it started.
     std::vector<double> drivers(start.expiries.size() + 2, 0.0);
-    const auto points = emitter->step(drivers);
+    const auto points = emitter->step(drivers, current_markets);
     const auto quotes = fx_vol_surface_quotes(emitter->surface(), markets, emitter_deltas);
     REQUIRE(quotes);
 
@@ -191,7 +205,7 @@ TEST_CASE("a noisy contributor moves its own quotes and not the clean ones",
                                 emitter_dynamics(start.expiries.size()));
     REQUIRE(emitter);
     std::vector<double> drivers(start.expiries.size() + 2, 0.0);
-    const auto points = emitter->step(drivers);
+    const auto points = emitter->step(drivers, current_markets);
 
     // The clean contributor is the truth, so its 1M ATM is still the surface's own.
     REQUIRE(points[0].value);
@@ -220,7 +234,7 @@ TEST_CASE("a contributor can leave a point out and repeat a point", "[fx_vol_sur
                                 emitter_dynamics(start.expiries.size()));
     REQUIRE(missing);
     std::vector<double> drivers(start.expiries.size() + 2, 0.0);
-    for (const auto& point : missing->step(drivers))
+    for (const auto& point : missing->step(drivers, current_markets))
         CHECK_FALSE(point.value);
 
     auto stale = make_emitter({{.source_name = "sluggish",
@@ -229,14 +243,14 @@ TEST_CASE("a contributor can leave a point out and repeat a point", "[fx_vol_sur
                               emitter_markets(start),
                               emitter_dynamics(start.expiries.size()));
     REQUIRE(stale);
-    const auto first = stale->step(drivers);
+    const auto first = stale->step(drivers, current_markets);
     std::vector<std::optional<double>> seen;
     for (const auto& point : first)
         seen.push_back(point.value);
     // Every point was published once, so the second step can repeat it.
     for (const auto& value : seen)
         REQUIRE(value);
-    const auto second = stale->step(drivers);
+    const auto second = stale->step(drivers, current_markets);
     for (std::size_t i = 0; i < second.size(); ++i) {
         CHECK(second[i].stale);
         CHECK(second[i].value == seen[i]);
@@ -250,7 +264,7 @@ TEST_CASE("the emitter refuses a step that does not hold one normal for each dri
         {emitter_clean()}, emitter_markets(start), emitter_dynamics(start.expiries.size()));
     REQUIRE(emitter);
     const std::vector<double> too_few(start.expiries.size(), 0.0);
-    CHECK_THROWS_AS(emitter->step(too_few), std::invalid_argument);
+    CHECK_THROWS_AS(emitter->step(too_few, current_markets), std::invalid_argument);
 }
 
 TEST_CASE("the emitter refuses what it cannot step", "[fx_vol_surface_emitter]") {
@@ -268,12 +282,19 @@ TEST_CASE("the emitter refuses what it cannot step", "[fx_vol_surface_emitter]")
     // A surface with nobody to quote it is not a feed.
     CHECK_FALSE(make_emitter({}, emitter_markets(start), emitter_dynamics(start.expiries.size()))
                     .has_value());
-    // A market per expiry, and one for each.
-    auto few_markets = emitter_markets(start);
-    few_markets.pop_back();
-    CHECK_FALSE(
-        make_emitter({emitter_clean()}, few_markets, emitter_dynamics(start.expiries.size()))
-            .has_value());
+    // A market per expiry: the count is a step's business now, and a step one market short is
+    // refused rather than reading the expiry beside it.
+    auto full = make_emitter(
+        {emitter_clean()}, emitter_markets(start), emitter_dynamics(start.expiries.size()));
+    REQUIRE(full);
+    std::vector<double> drivers(start.expiries.size() + 2, 0.0);
+    auto few = markets_of(emitter_markets(start));
+    few.pop_back();
+    CHECK_THROWS_AS(full->step(drivers, few), std::invalid_argument);
+    // And the state did not move: the refusal comes before the step it would have taken.
+    const auto before = full->surface().expiries.front().atm_total_variance;
+    CHECK(full->surface().expiries.front().atm_total_variance ==
+          Catch::Approx(before).epsilon(1e-15));
 }
 
 TEST_CASE("a surface's quotes do not depend on the level of its spot", "[fx_vol_surface_emitter]") {
@@ -284,18 +305,17 @@ TEST_CASE("a surface's quotes do not depend on the level of its spot", "[fx_vol_
     const fx_market unit{.spot = 1.0, .domestic_discount = 1.0, .foreign_discount = 1.0};
     const fx_market scaled{.spot = 1.30, .domestic_discount = 1.0, .foreign_discount = 1.0};
 
-    auto one = make_emitter({emitter_clean()},
-                            emitter_markets_with(start, unit),
-                            emitter_dynamics(start.expiries.size()));
-    auto other = make_emitter({emitter_clean()},
-                              emitter_markets_with(start, scaled),
-                              emitter_dynamics(start.expiries.size()));
+    const auto one_slices = emitter_markets_with(start, unit);
+    const auto other_slices = emitter_markets_with(start, scaled);
+    auto one = make_emitter({emitter_clean()}, one_slices, emitter_dynamics(start.expiries.size()));
+    auto other =
+        make_emitter({emitter_clean()}, other_slices, emitter_dynamics(start.expiries.size()));
     REQUIRE(one);
     REQUIRE(other);
 
     std::vector<double> drivers(start.expiries.size() + 2, 0.0);
-    const auto a = one->step(drivers);
-    const auto b = other->step(drivers);
+    const auto a = one->step(drivers, markets_of(one_slices));
+    const auto b = other->step(drivers, markets_of(other_slices));
     REQUIRE(a.size() == b.size());
     for (std::size_t i = 0; i < a.size(); ++i) {
         REQUIRE(a[i].value);
@@ -315,18 +335,17 @@ TEST_CASE("a surface's quotes do not depend on the level of its spot once its di
     const fx_market at_spot{
         .spot = 1.0842, .domestic_discount = 0.9752, .foreign_discount = 0.9851};
 
-    auto one = make_emitter({emitter_clean()},
-                            emitter_markets_with(start, at_one),
-                            emitter_dynamics(start.expiries.size()));
-    auto other = make_emitter({emitter_clean()},
-                              emitter_markets_with(start, at_spot),
-                              emitter_dynamics(start.expiries.size()));
+    const auto one_slices = emitter_markets_with(start, at_one);
+    const auto other_slices = emitter_markets_with(start, at_spot);
+    auto one = make_emitter({emitter_clean()}, one_slices, emitter_dynamics(start.expiries.size()));
+    auto other =
+        make_emitter({emitter_clean()}, other_slices, emitter_dynamics(start.expiries.size()));
     REQUIRE(one);
     REQUIRE(other);
 
     std::vector<double> drivers(start.expiries.size() + 2, 0.0);
-    const auto a = one->step(drivers);
-    const auto b = other->step(drivers);
+    const auto a = one->step(drivers, markets_of(one_slices));
+    const auto b = other->step(drivers, markets_of(other_slices));
     REQUIRE(a.size() == b.size());
     for (std::size_t i = 0; i < a.size(); ++i) {
         REQUIRE(a[i].value);
@@ -344,18 +363,16 @@ TEST_CASE("a surface's quotes do depend on the ratio of its discounts",
     const fx_market unit{.spot = 1.0, .domestic_discount = 1.0, .foreign_discount = 1.0};
     const fx_market tilted{.spot = 1.0, .domestic_discount = 0.97, .foreign_discount = 0.99};
 
-    auto a = make_emitter({emitter_clean()},
-                          emitter_markets_with(start, unit),
-                          emitter_dynamics(start.expiries.size()));
-    auto b = make_emitter({emitter_clean()},
-                          emitter_markets_with(start, tilted),
-                          emitter_dynamics(start.expiries.size()));
+    const auto a_slices = emitter_markets_with(start, unit);
+    const auto b_slices = emitter_markets_with(start, tilted);
+    auto a = make_emitter({emitter_clean()}, a_slices, emitter_dynamics(start.expiries.size()));
+    auto b = make_emitter({emitter_clean()}, b_slices, emitter_dynamics(start.expiries.size()));
     REQUIRE(a);
     REQUIRE(b);
 
     std::vector<double> drivers(start.expiries.size() + 2, 0.0);
-    const auto pa = a->step(drivers);
-    const auto pb = b->step(drivers);
+    const auto pa = a->step(drivers, markets_of(a_slices));
+    const auto pb = b->step(drivers, markets_of(b_slices));
     double worst = 0.0;
     for (std::size_t i = 0; i < pa.size(); ++i) {
         REQUIRE(pa[i].value);

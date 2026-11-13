@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-the-runs-market-board
+#+pr: 4686
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -28,11 +28,11 @@ The design is [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started. The stages below are the plan this task starts from. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Stage 1: the market board.             |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -62,42 +62,157 @@ Settled, because the stages depend on the shapes:
 - *The emitter.* =fx_vol_surface_emitter::step= takes the per-expiry markets; =make= stops taking them. The markets are positional in the emitter's own expiry order and checked by size, so a tick does no string work.
 - *Two gates, deliberately different.* A configured pair whose currencies have no configured curve feed is refused when the start verb builds the feed: that is a configuration error, static, and it names the currency. A board member missing at tick time publishes nothing and says which: that is not an error but an ordering, because a surface may tick before any curve has, and a curve may be stopped.
 
+* Architecture review
+
+Taken when the board was wired into the scheduler, because that placement was a
+change to the shape of the run and not a detail of the board.
+
+** What each class is responsible for today
+
+| Class | Says it is | Actually owns | Depends on |
+|-------+------------+---------------+------------|
+| =tick_scheduler= | "the one loop of a run: it owns the market and decides which series ticks next" | the clock, the heap and arrival laws, the pace and the heat and the regime, the history and the trace, the series groups and names, a driver hook, a published hook and a failure hook | =i_run_clock=, =market_config= |
+| =latent_market= | the run's shared noise | factors, keyed walks, per-series loadings, the driver values a series reads | nothing |
+| =run_market= (service) | "the one latent market a run owns, and where each feed's drivers are" | the latent market, its blocks, the series-to-drivers map, and it installs the driver hook on a scheduler it is handed | =latent_market=, =tick_scheduler= |
+| =market_board= | the values the run's feeds share | a curve per currency and a spot per pair, each with the time it was last published | nothing |
+
+** Three smells, one of them this task's
+
+1. *Cohesion.* The scheduler already owns more than timing: the market's pace, its
+   heat, its regime, and the run's whole observability. Its own doc calls it "the one
+   loop of a run: it owns the market". So the name is the first problem, not the
+   board. Putting the board there adds a second axis -- values published by feeds --
+   to a class that already mixes time, market state and observability. That is how a
+   god object begins.
+2. *Visibility, and this is the load-bearing one.* A feed that reads market values
+   through the scheduler has an invisible dependency: at the call site
+   =scheduler_.board()= nothing says "this feed consumes another feed's output". The
+   dependencies between feeds are exactly what the architecture exists to make
+   explicit -- a surface reads two curves and a spot, an equity option will read an
+   equity spot, the capfloor shift reads an IR curve -- and a dependency reached
+   through an unrelated object hides the graph.
+3. *Lifetime, which is older than this task.* The driver hook is a lambda over
+   =run_market=, so the application must declare =run_market= before the scheduler and
+   rely on a comment saying the scheduler's hook points at it. Ownership that exists to
+   satisfy a callback's capture is a footgun, and it is invisible at the type level.
+
+** The direction that is right, and the one that is not
+
+"A market board owning a scheduler", taken literally, is wrong: the board is a store of
+values, and giving it a loop makes data own time and inverts the dependency. What the
+instinct is right about is that the object owning both should be a *market*, not the
+loop: the loop is one part of a run's market, not its container.
+
+** Target
+
+#+begin_example
+quant::service::run_market          one run's market: composition, no policy of its own
+  tick_scheduler  loop              when: the clock, the heap, the laws, pace, heat, regime, trace
+  latent_market   noise             why prices co-move: factors, loadings, drivers
+  market_board    values            what the feeds share: curves, spots, when each was published
+#+end_example
+
+The rules the shape is worth having for:
+
+- *The loop knows nothing of noise or values.* It calls one driver hook and nothing
+  else. A scheduler that can hand out market data is a scheduler that will.
+- *Noise knows nothing of the loop or of values*, as today.
+- *Values know nothing of either*: the board is a table with ids, not a service.
+- *=run_market= wires them.* It builds its own loop, so it installs the driver hook on
+  the object it owns and no declaration-order rule survives. It also keeps the
+  block-to-series map, which is noise wiring, not service policy.
+- *A feed depends on =run_market= and reaches =loop()= and =values()=.* A feed's
+  dependency on another asset class is then a line in its constructor, and no feed
+  reaches values through the loop.
+
+It belongs in =ores.analytics.quant=, not in the service: the feeds live in
+=ores.synthetic.api=, which must not depend on =ores.synthetic.service=. The aggregate
+has to sit below both, beside the three things it wires. That also retires the
+service's own =run_market=, which duplicates what the aggregate should be.
+
+** How a new asset class joins, which is the test of the shape
+
+- A new feed kind registers in the factory and the registry, as today.
+- A feed that publishes a value another feed reads defines a member kind and a code and
+  writes it to =values()=: no change to the loop, no change to the other feeds.
+- A feed that is a block -- a volatility surface today, an equity or commodity surface
+  later -- calls =add_block(anchor_series, name, ...)=, which is already generic and
+  only named for FX at its call site.
+- A feed that needs an input holds the aggregate and reads =values()= in its
+  constructor, so the dependency is visible where it is created.
+- Nothing in the aggregate is FX-specific: no =fx_vol_surface_*= type appears in it, and
+  a new asset class adds no field to it.
+
+** Performance and data orientation
+
+- *No interface is introduced.* The aggregate is concrete and a feed holds a reference
+  to it, so the tick path gains no indirection and no type erasure. The driver hook
+  stays a =std::function= whose capture is one pointer, set once, which fits its small
+  buffer and allocates nothing.
+- *The board is already shaped for the many case*: capacity fixed when the run is built,
+  a member id resolved once and used by index afterwards, a member's points in its own
+  reused buffer, no lock on the tick path, and the one lock only when a member is added
+  off the loop. A tick allocates nothing for a curve whose size has not changed, which
+  its tests pin by checking the buffer's address across publishes.
+- *A budget, so nobody optimises the wrong thing*: per tick the loop costs one
+  =std::function= call and one =std::string= from the body, against a wire encode and a
+  publish which are orders of magnitude larger. At ten thousand ticks a second the
+  dispatch is well under a millisecond a second. The rule this review proposes is the
+  one that matters: *nothing on the tick path may allocate per lookup*, which is why the
+  board deals in ids.
+
+** Migration, each step green
+
+1. =quant::service::run_market=: move the service's aggregate down into quant and give
+   it the loop and the board. It installs its own driver hook in =build()=. Delete the
+   service's copy and move its tests.
+2. Take the board out of =tick_scheduler=, and the local variable that feed ordering
+   leaned on.
+3. The feeds take =run_market=& instead of =tick_scheduler=&, and the factory's build
+   context carries the aggregate.
+4. The application constructs one aggregate; the declaration-order comment goes.
+5. Stage 4 then reads the values through =market.values()=.
+
+What this review does not change: the loop's =std::string=-returning body and its
+=std::function= driver hook stay, having been measured as noise against a publish. If a
+run ever costs more in dispatch than in work, that is the next thing to look at, and it
+is a change inside the loop, not to this shape.
+
 * Stages
 
 Four stages and a measurement. Each ends green, and each leaves the tree working: no stage breaks a suite it does not fix.
 
 | # | Stage | What lands | How it is proven |
 |---+-------+------------+------------------|
-| 1 | The board | =market_board= in quant: named members, a dated discount series, a spot scalar, publish and read, no allocation after warm-up | unit tests: publish then read; a republish replaces; an unknown member reads empty; a second currency leaves the first alone |
-| 2 | The date rule | the calibration's private period-to-date helper is deleted in favour of =calendar_arithmetic::add_period=; the feed calls it too | the calibration's 251 tests pass unchanged, so the deletion is a move; quant's own tests already pin the month-end clamp, the sticky clamp and the leap day |
-| 3 | The publishers | the IR curve feed and the FX spot feed write the board; the board threaded through the factory, null where a test wants none | a feed tick writes the process's own discounts to =1e-12=; a feed with no board ticks unchanged |
-| 4 | The read | the surface builds its markets per tick and the emitter takes them per step; the unit market and the build input's markets go | unchanged curve and state emit identical quotes; a two-percent differential moves the quotes by the stated amount; a missing member publishes nothing and names it; the ATM strike equals the board's forward |
-| 5 | The round trip | the calibration of the clean quotes, the tolerance measured and recorded | an integration test states the tolerance; Measurements carries the number, the command and the commit |
+| 1 | The board | =market_board= in quant, owned by the scheduler: named members, a dated discount series, a spot scalar, publish and read, no allocation after warm-up | done, b29e3f53bf: 11 cases pin publish, republish, the empty member, the mistaken kind and the buffer's stability |
+| 2 | The date rule | the calibration's private period-to-date helper is deleted in favour of =calendar_arithmetic::add_period= | done, 57fcef317b: the calibration's 251 tests pass unchanged, so the deletion is a move |
+| 3 | The publishers | the IR curve feed and the FX spot feed write the board, which the scheduler owns, so no feed's arguments changed | done, a69dc9cded: the curve's points are built beside the pillar pricer and pinned by four cases, including the buffer's stability |
+| 4 | The read | the surface builds its markets per tick from the three values it reads, and the emitter takes them per step; the unit market and the build input's markets go | done, fb1695dfb8: a step's market count is checked, a tilted market moves the quotes, and the surface reads two curves that need not share a grid |
+| 5 | The round trip | the calibration of the clean quotes against the same market, the margins measured and asserted | done, 000c00b9c8: 1.25e-09 at ATM and 3.81e-09 at the wings, asserted at 1e-7 |
 
 Two pull requests: stages 1 to 3 change nothing observable and land the machinery, and stages 4 and 5 change behaviour. If the branch is quick, one PR with five commits in this order is fine; what must not happen is stage 4 landing without stage 3.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at.
+Every number this task claims, with the command that produced it and the commit it was
+measured at.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Change in a surface's quoted vols when its spot moves from 1.0 to 1.30, the discounts held | below 1e-12 at all 15 points | =ores.synthetic.api.tests=, "a surface's quotes do not depend on the level of its spot once its discounts differ" | 1f43b059c0 |
-| Change in a surface's quoted vols when the discount ratio moves from one to 0.99/0.97 | 7.8e-05, about 0.008 volatility points | the same suite, "a surface's quotes do depend on the ratio of its discounts" | 1f43b059c0 |
+| Change in a surface's quoted vols when its spot moves from 1.0 to 1.30, the discounts held | below 1e-12 at all 15 points | =ores.synthetic.api.tests "[fx_vol_surface_emitter]"= | 47b59a61ee |
+| Change in a surface's quoted vols when the discount ratio moves from one to 0.99/0.97 | 7.8e-05, about 0.008 volatility points | the same | 47b59a61ee |
+| Worst error of a calibration of the run's own quotes, same market, at ATM | 1.25e-09 volatility | =ores.synthetic.api.tests "[fx_vol_surface_round_trip]"= | 000c00b9c8 |
+| The same at the 25 and 10 delta wings | 3.81e-09 volatility | the same | 000c00b9c8 |
+| The same for the ATM strike the calibration solves, relative | 5.3e-12 | the same, asserted at 1e-8 | 000c00b9c8 |
 
 * Notes
 
-Why the date rule is a deletion and not a port: the calendar machinery already exists in quant -- =business_day_calendar_set= holds materialised holidays as one flat sorted array built from refdata rows, =business_day_convention= is QuantLib's set of conventions, and =calendar_arithmetic= offers =add_period=, =adjust= and =advance= over them. The surface work needs none of it: an FX surface's expiry is a tenor added to a date, and the calibration has always done that without a calendar. Deleting the duplicate keeps that true while making both sides share one function. If a later stage decides the value date should be a business day, it is one call to =calendar_arithmetic::advance= with the pair's convention and calendar, in that one function's caller, and no new date code.
-
-Why the spot is a member at all, when the quotes provably do not need it: the strike the emitter solves is scaled by the spot, so a published strike or a delta hedge would need the real one, and the spot's covered-interest-parity drift -- later work -- needs it too. Leaving it at one would be a second deliberate lie in a task whose subject is removing the first.
-
-Why the markets move from =make= to =step=: with a board the market stops being a constant of the feed. Keeping =make='s markets would mean a surface struck once against whatever the board held at start, which is the defect at lower frequency.
-
-The ordering risk is real and is the point of the tick-time gate: the scheduler's own ordering means a surface may tick before any curve has. That tick publishes nothing and says "no market: curve:EUR" rather than stepping an empty market, which is why the gate is on the tick and not only on the start verb.
-
-
 * Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -107,15 +222,55 @@ The ordering risk is real and is the point of the tick-time gate: the scheduler'
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4686][#4686]] | [quant,synthetic] Strike every surface against the run's curve |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dead `fx_vol_expiry_market` left after the build input lost its markets | =fx_vol_surface_feed.hpp= | fixed | deleted, with the comment that documented it |
+| 2 | A comment describing the market now sat above `convention` | same | fixed | names the convention, and says it is one per pair |
+| 3 | An agile commit without an `Environment:` trailer | commit 230436c6bf | accepted | the commit is on the remote; rewriting it would rewrite the PR's history for a trailer |
+| 4 | The new `pair_market_at` overload had no unit tests | =fx_pair_market_tests.cpp= | fixed | six branches: the interleaved grid, both refusals per side, and the empty curve |
+| 5 | `side_discount` repeats the forward-set overload's walk | =fx_pair_market.cpp= | deferred | both now share the rule's wording, but the extract is a refactor of two working paths; captured |
+| 6 | The expiry order was computed twice, by two sorts | feed ctor | fixed | the periods are now taken in the emitter's own order, so two equal-year tenors cannot pair a market with the wrong expiry |
+| 7 | Pair identity built twice as a slash join | both feeds | fixed | `fx_pair_member_code`, used by both |
+| 8 | The publish-to-board dance is copied across three feeds | feeds | deferred | three call sites, two shapes; a helper is worth writing when a fourth appears |
+| 9 | `conventions_` held N copies of one pair convention | emitter | fixed | one `fx_quote_convention`, and the slices are laid out once so a tick copies no string |
+| 10 | `add_block` unpacks the block fields at its call site | =application.cpp= | deferred | a parameter object over two call sites; captured with the layout work |
+| 11 | `running_scheduler` now owns a market | =running_scheduler.hpp= | accepted | the name is now wrong, which is a rename across five test files; it is a test helper, and it is on the capture |
+| 12 | Defaulted `pair_code` and `curve_spot_date` allow a silent feed | feed constructors | deferred | removing the defaults is the right fix and touches every direct construction; captured |
+| 13 | File-scope `current_markets` in the emitter tests | =feeds_fx_vol_surface_emitter_tests.cpp= | accepted | it is a test fixture, and the two tests that compare two markets now pass theirs explicitly, so the global is only used by single-emitter tests |
+| 14 | `market_member_view` and `member` repeat seven fields | =market_board.hpp= | accepted | one is the published snapshot, the other the storage; collapsing them would put the mutable buffer in the reader's hands |
+| 15 | `drive` finds drivers in a map per tick; the board is AoS | =run_market.cpp=, =market_board.cpp= | deferred | no measurement yet, so no change; the capture says what to measure |
+| 16 | No test for the two consecutive ticks, the spot read-back, the gate messages, or the round trip through the board | tests | deferred | =fx_vol_expiry_markets= was extracted to make them cheap; captured as its own work |
+| 17 | A two-way capture and its index row were not asked for | =doc/agile/product_backlog/inbox/= | accepted | the owner asked for that statement explicitly, before the review |
+| 18 | `market_board::find` has no production caller | =market_board.hpp= | accepted | it is the reader's non-creating lookup, which the screen read in the next task needs; it is covered by a test |
 
 * Result
+
+The run's market is one aggregate in =ores.analytics.quant= that owns its loop, its noise
+and its values; the loop is handed a driver hook and knows nothing of the other two. The
+board holds a curve per currency and a spot per pair, id-indexed, sized once, with no lock on
+the tick path and no allocation after a curve's first publish. Curves and spots publish to it,
+the surface reads its pair's three values every tick and strikes each expiry against the
+forward they imply, and the emitter takes those markets as an argument of its step.
+
+Two gates, deliberately different: the start verb refuses a pair the run carries no curve feed
+for, naming the currency, and a tick whose member is not published yet publishes nothing and
+names it.
+
+The round trip is measured rather than asserted: a calibration of the run's own quotes,
+against the same market, recovers them to 1.25e-09 at ATM and 3.81e-09 at the wings, and the
+ATM strike it solves matches to 5.3e-12 relative. The test asserts 1e-7 and 1e-8.
+
+Architecture: the board was put in the scheduler first and taken out again. The review on this
+page records why -- cohesion, the visibility of one generator's dependency on another, and a
+lifetime footgun -- and the aggregate is the answer it recommended. The publishable statement
+is [[id:1F404EE8-215D-4E62-AB09-B2D34BE9C12F][The components of the market data generator]], which now describes the code as it is.
+
+What is not here: a party's bootstrap tolerance. Its margin is the bootstrap's and moves with
+it, so it belongs beside the bootstrap rather than in this arc.
 
 
 * Plan
@@ -164,3 +319,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The review of this work found the round trip weaker than the words above suggest, and that is
+recorded rather than glossed: it passes one market to both the emitter and the calibration, so it
+proves the fit recovers the quotes, not that the feed's period addition and two-curve resolution
+agree with the calibration's. The feed's tick, both gates' messages and the no-drift line are
+unproven for the same reason -- none of them is reachable without a wire, which is why
+=fx_vol_expiry_markets= was extracted. That work is
+[[id:9E6B1C42-6B38-4C2B-9C1E-9A7C1B6F4D21][Test the surface's tick through the values, and the board's own invariants]].
+

@@ -22,6 +22,7 @@
 
 #include "feed_kind_registry.hpp"
 #include "generator_fleet.hpp"
+#include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
@@ -57,7 +58,7 @@ public:
                       const ores::database::context& ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier,
                       const feed_kind_registry& registry,
-                      ores::analytics::quant::service::tick_scheduler& scheduler);
+                      ores::analytics::quant::service::run_market& market);
 };
 
 }

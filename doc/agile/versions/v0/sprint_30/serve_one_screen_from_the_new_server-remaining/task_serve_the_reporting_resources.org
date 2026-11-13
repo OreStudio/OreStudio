@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-reporting-resources
+#+pr: 4685
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The gateway has no part for the reporting area. Add the part with the adapter re
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The part answers the form's codes, the whole definitions family, a report's start and its runs, one run's page and the problems it recorded. Ten routes of the fifty are paired in the inventory. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Serve a run's files and results, then the two schedule writes. |
+| Last touched | 2026-11-13                               |
 
 * Acceptance
 
@@ -44,9 +44,47 @@ The gateway has no part for the reporting area. Add the part with the adapter re
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The part is stood up by the adapter recipe, copied from =ores.http.marketdata=:
+its model, its CMake files, the composite's parts list, the umbrella header,
+the aggregate, the file lists, the diagram, and the server's link and
+registration. It links =ores.reporting.api=, =ores.analytics.api= and
+=ores.refdata.api=.
+
+The area's routes are ported in groups:
+
+| Group | Routes | BFF source |
+|-------+--------+------------|
+| The part and the form's codes | 1 | =reporting.ts= |
+| The report definitions and their runs | 15 | =reporting.ts= |
+| The cuts, the cut kinds and the configurations | 10 | =reporting.ts= |
+| The pricing engines | 10 | =pricing-engines.ts= |
+| The engine settings and the ORE files | 9 | =engine-settings.ts= |
+| The ORE value sets and the moved reference data reads | 5 | =ore-value-sets.ts=, =curve-configuration.ts= |
+
+Fifty routes in all, of which ten are served. The conventions documents and
+the curve configurations are the five routes the task's Acceptance moves here
+from the reference data and pick list tasks.
+
+The composed views belong to their own tasks: the report health tally, the
+publishing queue and the run board among them, which is why the health tally
+is not in the count above.
+
+The four families that remain are designed before they are served, one at a
+time, because each asks a question the code cannot answer on its own:
+
+| Family | Design |
+|--------+--------|
+| A run's files and results | [[id:6C1F0B2E-58A4-41D9-9E52-3B2F7A1D4C88][A run's files and results: where the work belongs]] -- composed across three services and fetched whole over HTTP today |
+| The cuts and the cut kinds | Not written |
+| The schedule writes | Not written |
+| The ORE value sets and the engine settings | Not written |
+
+The five routes this task's Acceptance moves here -- =GET
+/api/conventions/:family/documents/:id=, =PUT .../documents/:id/terms=,
+=GET /api/refdata/curve-configurations= and =GET= and =PUT .../:id= -- stay
+unpaired until the value sets family is designed, because the reader that
+answers them is the one that family owns. They are named here so the inventory
+gap is a decision and not an oversight.
 
 * Measurements
 
@@ -60,9 +98,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The part's test suite | 11 cases, 154 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the run page commit |
+| The reporting area's routes the C++ server answers | 10 of 50 paired | =python3 build/scripts/route_inventory.py --check= | the run page commit |
+| The gateway's routes in the inventory | 1306 routes, 216 of the BFF's 324 paired | =python3 build/scripts/route_inventory.py --check= | the run page commit |
 
 * Notes
+
+- The BFF's definition write omits =cut_kind_code= and =cut_id=, and the service
+  takes a write's members as they come, so saving a report from the edit form
+  cleared the cut it selected. The gateway carries the values from the record it
+  read, and the write is the only place this task departs from the BFF on
+  purpose.
 
 * Test Scenarios
 
@@ -79,12 +125,46 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4685][#4685]] | [http] Stand up the reporting part and serve the definitions |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Four catches swallow every failure with no trail | =report_routes.cpp= | Accepted | Each states the refusal or the fault in the journal, as the BFF logged it. |
+| 2 | =find(...) != npos= where C++23 has =contains= | =report_routes_tests.cpp= | Accepted | The test asks the text whether it holds the part. |
+| 3 | =register_routes= states no @brief | both unit headers | Accepted | Both state what they register. |
+| 4 | A comment narrates the BFF's old bug | =report_routes.cpp= | Accepted | It states the rule now and not its history. |
+| 5 | The tests cover the refusals and two builders, not the rest | both test files | Accepted | The runs' order and the write are stated as builders and each has a test: newest first with a run that has no start last, and the book type left out, null and stated. The configurations answer keeps its test through the row it states. |
+| 6 | One 1200-line unit registers nine routes: Divergent Change | =report_routes.cpp= | Accepted | The runs are their own unit, =run_routes=, with their own tests; the health words they share live in =report_health.hpp=. |
+| 7 | =duration_ms= is stated twice | =report_routes.cpp= | Accepted | One =elapsed_ms= serves the list and the page. |
+| 8 | The health read is stated twice | both units | Accepted | The words are stated once in =report_health.hpp=; the list reads health for a page and the page reads it for one run, which is the one thing that differs. |
+| 9 | The 403-tolerant read is inlined where =choice_routes= has a helper | =report_routes.cpp= | Declined | One reads a page and records the refusal; the other tolerates a refused list of kinds. A shared helper would need a header for the part, which comes with the split in 6. |
+| 10 | Six parallel vectors where the decoration shape already exists | =row_json= | Accepted | A row takes the decoration shape; the public builder states one from its arguments. |
+| 11 | =ores.analytics= is linked but nothing reads it, and the model promises routes that do not exist | =CMakeLists.txt=, model | Accepted | The link is dropped until the pricing engines arrive, and the Summary states what the part answers today and that the rest is designed first. |
+| 12 | =stated()= does not say what it tests | =report_routes.cpp= | Accepted | It is =has_text=. |
+| 13 | A =bool= selects a field of the counts | =report_routes.cpp= | Accepted | The lookup returns the counts of one run and the row states both. |
+| 14 | The literal "Curve" stands in for a scope | =report_routes.cpp= | Accepted | =curve_scope= is stated once. |
+| 15 | =rows_json= and =shared_name_answer= only delegate | =report_routes.cpp= | Declined | =rows_json= is the public seam the tests build an answer through, and =shared_name_answer= now orders the choices before it states them. |
+| 16 | An unused =<functional>= and a copied comment | =report_routes.cpp= | Accepted | The include is gone; the comment is the house's own for a unit's helpers. |
+| 17 | The five moved reference-data routes are neither served nor deferred with a reason | this page | Accepted | The family they belong to is named, with the five routes, as designed before it is served. |
+| 18 | Unknown query parameters are refused where the BFF's schema stripped them | both units | Declined | The house convention, decided when the trading part was reviewed. |
+| 19 | The story still claims 118 unpaired routes | =story.org= | Accepted | It states the measured 108. |
+| 20 | The configurations answer never reads a kind's name | =report_routes.cpp= | Accepted | The kinds are read whole, each binding states its kind's name, and a kind that cannot be read keeps its code. |
+| 21 | A binding whose kind is unknown sorts last where the BFF sorted it first | =report_routes.cpp= | Accepted | It sorts before every kind that has a name, as the BFF's =indexOf= did. |
+| 22 | The choices a shared name offers are not ordered | =report_routes.cpp= | Accepted | They read in the order of their parties' names. |
+| 23 | The run page states an empty name where the BFF stated null | =report_routes.cpp= | Accepted | The definition's and the party's names are absent when unread, as the schema says. |
+| 24 | A write that states a null book type keeps the old one, and a negative version is accepted | =report_routes.cpp= | Accepted | The book type reads three ways as the form states it -- left out, null and a value -- and a negative version is refused. |
+| 25 | Keeping the cut on save departs from the BFF | =report_routes.cpp= | Confirmed | The BFF cleared the selected cut on every save; the departure is recorded and right. |
 
 * Result
+
+This record is written when the task is done. The task is larger than one
+pull request: it names fifty routes plus the five this task moves here from the
+reference data task, and the four families still to serve each need their
+design settled first. Each pull request that lands part of it records what it
+delivered in the row below, and the task stays open until the last family.
+
+| Pull request | Delivered |
+|--------------+-----------|
+| #4685 | The part, stood up by the adapter recipe, and ten routes: the form's codes, the definitions list, one definition by id or by an older name, its configurations, its write, a report's start, its runs, one run's page and the problems it recorded. The design note for a run's files and results. |

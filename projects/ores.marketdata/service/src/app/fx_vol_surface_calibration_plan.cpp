@@ -18,6 +18,7 @@
  */
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
 #include "ores.analytics.quant/math/fx_pair_market.hpp"
+#include "ores.analytics.quant/service/calendar_arithmetic.hpp"
 #include "ores.marketdata.api/datum/value.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -137,18 +138,20 @@ std::expected<expiry_terms, std::string> terms_at(const surface_calibration_reci
     const auto convention = mapping::to_quote_convention(*recipe.convention, period);
     if (!convention)
         return std::unexpected("expiry " + code + ": " + convention.error());
-    const auto market = qm::pair_market_at(forwards.spot,
-                                           forwards.spot_date,
-                                           by_date,
-                                           add_period(forwards.spot_date, period),
-                                           "expiry " + code);
+    const auto market =
+        qm::pair_market_at(forwards.spot,
+                           forwards.spot_date,
+                           by_date,
+                           qs::calendar_arithmetic::add_period(forwards.spot_date, period),
+                           "expiry " + code);
     if (!market)
         return std::unexpected(market.error());
     // An FX option expires a tenor after the trade and delivers a tenor after spot, so its time
     // runs from the as-of and its discounting from the spot date.
-    return expiry_terms{.years = days_between(as_of, add_period(as_of, period)) / 365.0,
-                        .market = *market,
-                        .convention = *convention};
+    return expiry_terms{
+        .years = days_between(as_of, qs::calendar_arithmetic::add_period(as_of, period)) / 365.0,
+        .market = *market,
+        .convention = *convention};
 }
 
 }
@@ -166,27 +169,6 @@ std::vector<std::string> split_blueprint_list(const std::string& text) {
         start = end + 1;
     }
     return out;
-}
-
-std::chrono::year_month_day add_period(std::chrono::year_month_day from, qd::date_period period) {
-    using namespace std::chrono;
-    const auto clamp = [](year_month_day d) {
-        return d.ok() ? d :
-                        year_month_day{year_month_day_last{d.year(), month_day_last{d.month()}}};
-    };
-    switch (period.unit) {
-        case qd::period_unit::day:
-            return year_month_day{sys_days(from) + days{period.multiplier}};
-        case qd::period_unit::week:
-            return year_month_day{sys_days(from) + days{7 * period.multiplier}};
-        case qd::period_unit::month:
-            return clamp(from + months{period.multiplier});
-        case qd::period_unit::year:
-            return clamp(from + years{period.multiplier});
-        case qd::period_unit::none:
-            break;
-    }
-    return from;
 }
 
 std::expected<checked_recipe, std::string> check_recipe(const surface_calibration_recipe& recipe) {

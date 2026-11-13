@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: C19A12E4-3128-4A59-B350-410EA8AB5493
+:END:
+#+title: Task: Add list_instruments
+#+description: Add the instrument catalogue operation: one entry per instrument with its kind, name, facets, axes in draw order, sources and staleness, scoped to the caller's party.
+#+type: task
+#+level: s1
+#+filetags: :port_the_market_data_screens:sprint_30:v0:
+#+owner: marco
+#+branch: feature/port-the-market-data-screens
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give both clients one definition of an instrument: one entry per instrument
+with its kind, name, facets, axes in draw order, sources and staleness,
+scoped to the caller's party.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
+| Now          | The service answers the read, and the kind and naming rules are proven against the deployment's own URIs. The database path is not yet tested, and fixings are refused in words. |
+| Waiting on   | Nothing.                               |
+| Next         | Prove the read against the test database with two providers on one identity, then give fixings their branch. |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- marketdata.v1.ops.list_instruments answers one entry per instrument, never
+  one per node.
+- A curve is one entry, a surface is one entry and a pair is one entry with
+  no axes.
+- No two instruments of one kind share a name within the party.
+- Only the caller's party's instruments are returned; an empty party_id
+  resolves to the session's party.
+- Every axes.values array is in the order a plot can draw without sorting.
+- Every source carries as_of, age_seconds and the server's stale verdict.
+- The answer pages with offset and limit, and states total and truncated.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Notes
+
+Read [[id:3C677D04-06E4-48F0-9F41-F3CA45861EEB][what an instrument is, against the datum schema]] before writing the
+reader. The schema's identity and coordinate roles already state the grouping,
+the axes and their order; the party scopes the rows and the provider is a column
+on the series, not a field of the datum.

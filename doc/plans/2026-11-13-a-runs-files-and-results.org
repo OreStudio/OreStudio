@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 6C1F0B2E-58A4-41D9-9E52-3B2F7A1D4C88
+:END:
+#+title: A run's files and results: where the work belongs
+#+description: The four BFF routes that draw a report run's files and results compose a tree across three services and fetch every object whole over HTTP. This states the problem and the options before any of it is ported.
+#+type: plan
+#+status: DRAFT
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+filetags: :plan:http:reporting:
+
+* Why this note exists
+
+Four routes remain of the reporting area's fifty: =GET
+/api/reporting/runs/:id/files=, =.../files/:file=, =.../files/:file/info= and
+=.../results=. They look like reads and are not: the BFF answers them by
+walking three services and fetching whole objects over HTTP, then unpacking
+gzip and tar in its own process. Porting them as they stand would move that
+cost into the gateway and make it the place that parses archives. This note
+states what the BFF does today, what a port would cost, and the three
+end-states worth choosing between.
+
+* What the BFF does today
+
+** The tree, per run
+
+=filesOfRun= (in =report-run-files.ts=) reads, in this order:
+
+| Step | Read | Calls |
+|------+------+-------|
+| 1 | the run, by id | 1 NATS |
+| 2 | the batch whose external reference is the run id | 1 NATS |
+| 3 | the batch's workunits, up to 100 | 1 NATS |
+| 4 | each workunit's input package | 1 HTTP fetch, whole object |
+| 5 | each workunit's result | 1 NATS |
+| 6 | each result's manifest | 1 HTTP fetch, whole object |
+| 7 | each result's output package | 1 HTTP fetch, whole object |
+
+So a run with fifty workunits costs about 150 round trips and 150 whole-object
+fetches to draw a file list, and the list of entries inside each package comes
+from unpacking the package in the BFF.
+
+** The bytes, per file
+
+=fetchStored= (in =grid-downloads.ts=) does an HTTP GET against the
+deployment's file service, with the caller's token, and buffers the **entire**
+object in memory. The route then, for a file inside a package, unpacks gzip,
+walks the tar, slices the entry out, and sends it with =Content-Type=,
+=Content-Disposition= and =Cache-Control: private, no-store=. For a 40 MB
+output package that is 40 MB read into the gateway and a second copy of the
+unpacked bytes to serve one 2 KB result file.
+
+* Where the cost lands
+
+- **The gateway.** It buffers whole objects, unpacks archives, and walks a
+  three-service tree per request. Its memory is the deployment's memory, shared
+  with every other route, and a report output is the largest object the
+  estate moves.
+- **The services.** The composition is the reporting domain's: which workunits
+  a run has, which result each produced, which files a result holds. Today the
+  gateway re-states that model, and every screen that wants it pays the same
+  walk.
+- **The file service.** It already owns the objects and can stream and range
+  them, but the BFF asks it for whole objects and does the slicing itself.
+
+* Options
+
+** A. Port it as it stands
+
+The gateway reads the three services and fetches whole objects, using the
+existing =ores.http.client= (a GET over TLS behind a replaceable interface). It
+ships a tar reader and a gzip unwrap.
+
+- Pro: faithful, no service changes, one unit of work.
+- Con: the cost above becomes the gateway's permanently; archive parsing is
+  business logic in the HTTP layer; every reader of a run pays the walk.
+
+** B. Compose in the service that owns it, stream at the file service
+
+- The reporting service answers one =files_of_run= read: the tree, each file's
+  identity, size, kind and the key it is stored under. One NATS call per page,
+  no fan-out in the gateway.
+- The file service learns to serve a named entry and an HTTP =Range=, so the
+  gateway streams bytes through with the headers it already sets and never
+  buffers an object or parses an archive.
+- Pro: the model stays with its owner; the gateway keeps only what HTTP owns
+  (headers, status, streaming); memory is bounded by the stream buffer.
+- Con: two service changes, and the reporting service needs the storage keys
+  the compute service already holds.
+
+** C. Unpack at run time, so nothing has to unpack later
+
+The worker writes each entry of an output package as its own object under the
+result's prefix, and the manifest lists them. A package becomes a prefix, and
+every reader lists a prefix and streams one object.
+
+- Pro: no archive parsing anywhere in the read path; range and cache work per
+  file; a person can fetch one file without the package being read.
+- Con: the worker changes, and the store holds more objects; the existing
+  packages stay as they are until a backfill.
+
+* Recommendation
+
+**B now, C when the worker is next opened.** B removes the fan-out and the
+buffering without touching how runs are produced, and it puts each answer in
+the layer that owns it. C is the better end state but it changes production,
+and production is not what this task is about.
+
+Both need a decision this task cannot make alone:
+
+1. Does =ores.reporting= learn the storage keys of a run's results, or does
+   =ores.compute= answer the tree and reporting passes it through? The tree
+   names workunits and results, which are compute's, and files, which are the
+   file service's. Someone has to own the join.
+2. Does the file service answer =?entry=<path>= and =Range=, and who does that
+   work? Without it the gateway keeps the archive reader, whichever option for
+   the tree is chosen.
+3. What does the gateway do while the answer is unavailable? Today it buffers
+   and unpacks; under B it streams and the file service's errors travel as
+   =502= unless a status is named.
+
+* What this means for the task
+
+The other three families can be served without answering these: the cuts, the
+schedule writes and the ORE value sets each compose reads the gateway can make
+in one or two calls without owning a model or parsing a file. This family
+should wait for the decision above, and the task's Result should say so.

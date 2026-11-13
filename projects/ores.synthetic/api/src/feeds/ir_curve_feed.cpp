@@ -64,10 +64,11 @@ ir_curve_feed::ir_curve_feed(
     std::unique_ptr<ores::analytics::quant::domain::i_yield_curve_process> process,
     const ores::analytics::quant::domain::arrival_spec& arrival,
     std::vector<ir_curve_resolved_entry> entries,
-    ores::analytics::quant::service::tick_scheduler& scheduler,
+    ores::analytics::quant::service::run_market& market,
     double step_speed,
     double sensitivity,
-    std::vector<ir_pillar_quote_target> adapter_targets)
+    std::vector<ir_pillar_quote_target> adapter_targets,
+    std::chrono::year_month_day curve_spot_date)
     : nats_(nats)
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
@@ -76,7 +77,7 @@ ir_curve_feed::ir_curve_feed(
     , process_(std::move(process))
     , step_seconds_(step_speed / (arrival.ticks_per_hour / 3600.0))
     , arrival_(arrival)
-    , scheduler_(scheduler)
+    , market_(market)
     , sensitivity_(sensitivity)
     , entries_(std::move(entries)) {
 
@@ -95,6 +96,16 @@ ir_curve_feed::ir_curve_feed(
         throw std::invalid_argument("ir_curve_feed: ticks_per_hour must be positive");
     if (entries_.empty())
         throw std::invalid_argument("ir_curve_feed: entries must not be empty");
+
+    // The run's board holds this curve, so a surface on a pair that names this currency
+    // solves its strikes against the same discounts this feed prices its pillars off. The
+    // member is taken once, here, so a tick writes by index.
+    {
+        auto& shared = market_.values();
+        board_member_ = shared.member_of(ores::analytics::quant::domain::market_member_kind::curve,
+                                         currency_code_);
+        board_spot_date_ = curve_spot_date;
+    }
 
     display_subject_ = ores::marketdata::domain::feed_display_subject_for(source_name_);
 
@@ -141,14 +152,15 @@ ir_curve_feed::ir_curve_feed(
 }
 
 void ir_curve_feed::start() {
-    handle_ = scheduler_.add({.series = ores::analytics::quant::math::series_key(source_name_),
-                              .arrival = arrival_,
-                              .sensitivity = sensitivity_,
-                              .name = source_name_,
-                              .group = "interest_rates"},
-                             [this](const ores::analytics::quant::service::tick_context& context) {
-                                 return tick(context);
-                             });
+    handle_ =
+        market_.loop().add({.series = ores::analytics::quant::math::series_key(source_name_),
+                            .arrival = arrival_,
+                            .sensitivity = sensitivity_,
+                            .name = source_name_,
+                            .group = "interest_rates"},
+                           [this](const ores::analytics::quant::service::tick_context& context) {
+                               return tick(context);
+                           });
 }
 
 std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_context& context) {
@@ -164,6 +176,13 @@ std::string ir_curve_feed::tick(const ores::analytics::quant::service::tick_cont
     else
         process_->next();
     const auto now = context.observed_at;
+
+    // One publish of the whole curve, from the same state the pillars were priced off: the
+    // board's reader interpolates it rather than rebuilding it from the quotes.
+    if (board_member_) {
+        append_curve_points(board_spot_date_, entries_, *process_, board_points_);
+        market_.values().publish_curve(*board_member_, board_spot_date_, board_points_, now);
+    }
 
     for (std::size_t i = 0; i < entries_.size(); ++i) {
         const auto& e = entries_[i];
@@ -238,7 +257,7 @@ const std::string& ir_curve_feed::published_subject() const {
 
 void ir_curve_feed::stop() {
     if (handle_) {
-        scheduler_.remove(*handle_);
+        market_.loop().remove(*handle_);
         handle_.reset();
     }
 }
@@ -354,7 +373,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     const std::vector<ores::synthetic::domain::yield_curve_process_parameter_definition>&
         definitions,
     const ir_curve_refdata_context& refctx,
-    ores::analytics::quant::service::tick_scheduler& scheduler,
+    ores::analytics::quant::service::run_market& market,
     std::vector<ir_pillar_quote_target> adapter_targets,
     std::optional<ir_curve_start> start) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
@@ -377,14 +396,14 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
 
     // Read once, so the step the process is built with and the step the feed counts in agree
     // even when the speed changes while the feed is built.
-    const double step_speed = scheduler.market_speed();
+    const double step_speed = market.loop().market_speed();
     const double step_years = curve_step_years(step_speed, static_cast<double>(cfg.ticks_per_hour));
 
     auto process = ores::synthetic::domain::map_parameters_to_yield_curve_process(
         cfg.process_type,
         definitions,
         run_values,
-        price_stream_for(scheduler.run_seed(), cfg.source_name),
+        price_stream_for(market.loop().run_seed(), cfg.source_name),
         step_years);
 
     // A scheme that only approximates its law states the largest step it can carry. A rate so
@@ -438,10 +457,11 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                                 std::move(process),
                                                 arrival,
                                                 std::move(resolved),
-                                                scheduler,
+                                                market,
                                                 step_speed,
                                                 cfg.sensitivity,
-                                                std::move(adapter_targets));
+                                                std::move(adapter_targets),
+                                                refctx.spot);
     feed->record_start_source(std::move(record));
     return feed;
 }

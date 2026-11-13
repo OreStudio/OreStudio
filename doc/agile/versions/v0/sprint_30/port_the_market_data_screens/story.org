@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: B2DAE5A6-27F7-4C40-9463-BADD460A742C
+:END:
+#+title: Story: Port the market data screens from hedgr
+#+description: Give ORE Studio the market-data screens hedgr prototyped - instrument search, a rates ladder, an FX spot montage, a curve inspector and a published vol surface - with the journeys they answer to and the server reads they need.
+#+type: story
+#+level: s2
+#+filetags: :market_data:prototype:server:contracts:sprint_30:v0:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Hedgr prototyped five market-data screens for its own terminal. ORE Studio has no instrument search, no rate ladder and no FX spot montage, and reads a curve and a surface only as a candidate or a publish record. This story brings the five screens into doc/prototypes/market_data, adds the journeys they answer, and adds the server operations the screens read, so both clients draw the same facts and neither derives an identity, an axis order or a staleness verdict.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The five screens and their journeys are done. The instrument catalogue and the rate ladder answer from the service, with 14 green cases. The remaining four contracts are specified but not implemented. |
+| Waiting on    | Nothing.                               |
+| Next          | Curve analytics, then the staleness threshold in configuration. The surface read needs a test before either. |
+| Last touched  | 2026-11-13                               |
+
+* Acceptance
+
+- Every hedgr market-data screen is either prototyped in ORE Studio or shown to be covered by an existing journey
+- Every new screen has a journey that names its steps, entities and missing reads
+- The server states instrument identity, ladder maturity dates, curve analytics, the FX montage, the surface metadata and the staleness verdict
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:03B553BB-EC34-41B0-A1BA-DDD1F5461B58][Scaffold story: Port the market data screens from hedgr]] | DONE | 2026-11-13 | 2026-11-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E738F1C8-D7EC-45BE-AA45-26763D4FBD65][Diff the hedgr prototypes against ours]] | STARTED | 2026-11-13 | | Initial task for: Port the market data screens from hedgr |
+| [[id:566E6CE1-FE76-4094-BA12-1A28B3C357B7][Confirm the IR and vols machinery]] | DONE | 2026-11-13 | 2026-11-13 | Show that the bootstrap, day count, forward and grid machinery the new screens read already exists, so the server work is presentation and no new quant is needed. |
+| [[id:C19A12E4-3128-4A59-B350-410EA8AB5493][Add list_instruments]] | STARTED | 2026-11-13 | | Add the instrument catalogue operation: one entry per instrument with its kind, name, facets, axes in draw order, sources and staleness, scoped to the caller's party. |
+| [[id:F2923BAC-6D81-4CBB-A7C0-33778675B525][Add get_rate_ladder]] | BACKLOG | | | Add the rate ladder operation: rungs in maturity order with the server's maturity dates, one quote per provider and the consensus. |
+| [[id:B8CE24F5-491D-41A6-B600-63335CF755B1][Add get_curve_analytics]] | BACKLOG | | | Add the curve analytics operation: the curve's conventions, its market pillars and its bootstrapped zero rate, implied forward, discount factor and shift. |
+| [[id:A49E51FC-A10C-4F24-BE3F-C87EDFF0F1E0][Add get_fx_montage]] | BACKLOG | | | Add the FX montage operation: a base currency's crosses, the spot each provider quotes, the consensus, the change and the day's range from a stated instant. |
+| [[id:D6395FF6-B7C8-4F82-B56E-9BA020018045][Extend the published vol surface read]] | BACKLOG | | | State the model, strike convention, delta type, conventions, axes and staleness on the published surface read, and expose the surface's instrument identity so a smile can be sliced. |
+| [[id:EE3F60A3-2823-42FC-9C93-FF558B905B66][State staleness on the server]] | BACKLOG | | | Make the staleness threshold configuration and state age_seconds and stale on every value block, so no client keeps its own threshold. |
+
+* Decisions
+
+** What each hedgr prototype became
+
+Checked against the hedgr prototypes in =/home/marco/Development/Hedgr/hedgr=
+and the market-data prototypes in =doc/prototypes/market_data=, on 2026-11-13.
+
+| hedgr prototype | ORE Studio before | Verdict |
+|-----------------+-------------------+---------|
+| =explorer_search.html= | No screen searches every instrument kind; a curve, a surface and a pair each have their own list | *Missing*: new prototype =find-an-instrument= and journey |
+| =rates_ladder_providers.html= | No rate ladder. =fx-forward-ladder= reads one pair's published forwards; =public-rates= compares public publishers | *Missing*: new prototype =read-a-rate-ladder= and journey |
+| =fx_spot_montage.html= | No spot montage. =fx-forward-ladder= is forwards of one pair | *Missing*: new prototype =read-the-fx-montage= and journey |
+| =aud_aonia_curve_dialog_prototype.html= | =published-curves= shows a point's value and discount factor and =check-a-curves-fit= checks a candidate's residuals; neither states the curve's conventions, zero rate, implied forward or shift | *Missing as a read*: new prototype =inspect-a-curves-analytics= and journey |
+| =vol_surface_smile.html= | =inspect-a-surfaces-slices= reads a *candidate* surface's smiles, mesh and arbitrage; nothing reads a *published* surface | *Missing as a read*: new prototype =read-a-published-surface= and journey |
+
+** Taken wholesale, or improved
+
+- =find-an-instrument=: taken wholesale. The row shape, the kind badges and the
+  Enter destinations survived unchanged; only the chrome became ORE Studio's.
+- =read-a-rate-ladder=: taken with one deletion and one addition. Hedgr's
+  History tab has no read behind it and is not ported; the thin-market list is
+  added, because a gap on a ladder is the thing a person explains.
+- =read-the-fx-montage=: taken minus the Forwards tab, because the forward
+  ladder already has a page and a journey. The changed window is stated as a
+  fact, which hedgr left implicit.
+- =inspect-a-curves-analytics=: taken with three changes forced by how ORE Studio
+  stores a fact. An observation holds one value, so Bid/Ask/Spread become one
+  market rate and its provider; the dialog becomes a page; and =shift= is split
+  into curve-less-market and the move against the prior close, which hedgr
+  conflated under one column.
+- =read-a-published-surface=: taken. =model=, =strike convention= and =delta
+  type= are promoted into the facts row, because a column called =25D put= is
+  not a vol without them.
+
+** What was deliberately not taken
+
+- Hedgr's dialog chrome (collapse, reset, drag, always-on-top) and its per-screen
+  acting-party selector. The product draws the party once in its shell.
+- Hedgr's client-side derivations (URI parsing, label building, curve grouping,
+  tenor ordering, staleness thresholds). Those are the point of the server work
+  that follows, and the journeys record each one as a missing read.
+
+** Investigations
+
+- [[id:070C40B3-7B42-46B8-81A6-E87251703CC9][The IR and vols machinery]] — every number the screens show is already
+  computed; the remaining gaps are policy decisions.
+- [[id:3C677D04-06E4-48F0-9F41-F3CA45861EEB][What an instrument is, against the datum schema]] — the schema is the
+  grouping rule, a ladder is one series across =term=, and the party is what
+  multiplies series rows.
+
+** Where the server work stands
+
+#+ATTR_HTML: :class hug-leading
+| Contract | Contract on the wire | Service answer | Tested |
+|----------+----------------------+----------------+--------|
+| =list_instruments= | yes | yes | 11 cases |
+| =get_rate_ladder= | yes | yes | 3 cases |
+| =get_curve_analytics= | no | no | — |
+| =get_fx_montage= | yes | yes | 4 cases |
+| surface metadata | yes: model, strike convention, delta type and stale join the grid | yes | no test yet |
+| staleness as a server verdict | an hour's constant on every read that states one | no threshold in configuration | — |
+
+** What the remaining work needs
+
+- =get_curve_analytics=: the bootstrap already computes the discount factors and
+  the market rates it read them from; the read needs those exposed from
+  =curve_republish_service=, plus the zero rate, the segment forward and the
+  curve-less-market shift stated once in the protocol.
+- =get_fx_montage= and the surface metadata: both need a *window* over
+  observations, not the latest point. The store reads one datum at a time, so
+  each needs a query over =observation_datetime= rather than
+  =read_latest_for_series=.
+- Staleness: the threshold has to move into configuration before the four reads
+  can state one verdict; today the two shipped reads carry a constant.
+
+* Out of scope
+
+-

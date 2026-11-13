@@ -36,9 +36,10 @@
  *        start_tenor_code <TAB> end_tenor_code <TAB> tenor
  *
  * @c tenor is the curve config's index tenor field, which decides the series the pillar lands in;
- * an empty value and the meeting-dated FOMC value both name an overnight index. The output is the
- * two SQL statements that fill the seed's lookup tables, which the seed joins to the artefact
- * tables at populate time.
+ * an empty value and the meeting-dated FOMC value both name an overnight index. A notation whose
+ * ids name that tenor is given it, and one whose ids do not is given none. The output is the two
+ * SQL statements that fill the seed's lookup tables, which the seed joins to the artefact tables at
+ * populate time.
  *
  * A quote the provider's notation cannot write -- a meeting-dated pillar is spelled with codes no
  * notation writes, and a provider with no notation writes nothing at all -- gets a row with the
@@ -277,8 +278,12 @@ quote_row row_of(const pillar_feed& p,
         return row;
     }
 
-    const vendor::ir_curve_pillar description{
+    vendor::ir_curve_pillar description{
         p.currency_code, p.index_family, p.instrument_code, p.start_tenor_code, p.end_tenor_code};
+    // Only a provider whose id names the tenor of the curve's index is given it: another provider
+    // would write an id that reads back without it.
+    if (notation->names_index_tenor())
+        description.index_tenor = index_tenor;
     const auto written = notation->write(description);
     if (!written) {
         std::cerr << "no id: " << p.provider_code << " " << p.currency_code << " " << p.index_family

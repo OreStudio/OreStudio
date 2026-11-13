@@ -8,12 +8,12 @@
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/make-the-ice-and-tradeweb-feeds-tick
-#+pr:
+#+pr: 4689
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
 #+updated: 2026-11-13
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The ICE and Tradeweb synthetic feeds publish quotes that reach the market data s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -46,6 +46,25 @@ The ICE and Tradeweb synthetic feeds publish quotes that reach the market data s
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+The chain that fails: a feed's quote gets an adapter target only if its provider has a
+notation; without one the feed emits an internal market_tick and the ingest drops it as
+unbound. ICE and Tradeweb have neither a notation nor a feed, a route or a subscription, so
+their quotes reach nothing.
+
+1. Write =ice_notation= and =tradeweb_notation= against the =provider_notation= contract,
+   modelled on the LSEG pillar spelling: currency, index family, instrument and the two
+   tenors, with the provider's own scheme. These are simulated providers, so the header
+   states the spelling is ours and must read back what it writes.
+2. Register both in the one place that lists notations.
+3. Test the contract: a round trip for every instrument each provider quotes, plus the
+   refusals (wrong scheme, malformed, not representable).
+4. Seed the catalogue so each provider has a feed, a route and the system party's
+   subscription, as Bloomberg does; without the feed the tick is still unbound.
+5. Regenerate the vendor instrument seed with =tools/vendor_catalogue= now that the ids can
+   be written, so no ICE or Tradeweb quote is left without an external id.
+6. Prove it at the seam that failed: a quote resolves to an adapter target, the feed binds,
+   and its tick lands in the series the identity names.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -58,9 +77,31 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| IBOR quote series at any tenor but 1D, before | 0 | =select count(*) from ores_marketdata_market_series_identity_tbl where instrument_type='ir_swap' and tenor is distinct from '1D'= | fe592ba578 |
+| IBOR quote series after the notation and the provisioning run | 30 (ICE 15, Tradeweb 15) | =select provider_code, count(*) from ores_marketdata_market_series_tbl where provider_code in ('ice','tradeweb')= | 5776adee92 |
+| Ticks stored for =ice-a= / =tradeweb-a= | 259 / 245 | =select f.name, count(*) from ores_marketdata_ticks_tbl t join ores_marketdata_feeds_tbl f on f.id=t.feed_id group by 1= | 5776adee92 |
+| Ingest of =ice-a= at the last status line | 210 ticks, last 0 s ago | marketdata log, =INGEST STATUS= | 5776adee92 |
+| ICE / Tradeweb vendor instruments with an id | 35 / 35 | =tools/vendor_catalogue --write=, then the seed's own guard | 21a0a4f1da |
+| ICE / Tradeweb vendor instruments without an id | 0 / 0 | same | 21a0a4f1da |
+| Marketdata core suite | 1/1, 633 s | =./compass.sh test run -- -R 'ores\.marketdata\.core'= | 21a0a4f1da |
 
 * Notes
+
+- The live attempt: both adapters announce and the ICE and Tradeweb generators start (the log
+  shows 35 ids demanded, 35 accepted, 5 generators running per provider), and the marketdata
+  service opens ingest loops for =ice-a= and =tradeweb-a=. The 30 IBOR quote series now exist
+  with the identities the design names, for example
+  =oresmd://ir/CHF?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=3M=; before this
+  task there were none.
+- The tick landing was the open item, and the merged provisioning fixes closed it. After
+  rebasing onto main and rerunning the provisioning, the tick store holds =ice-a= 259,
+  =tradeweb-a= 245, =bloomberg-a= 8184, =demo-a= 3746, =lseg-a= 2190 and =derived-fx-vol= 350;
+  the =ice-a= ingest reports 210 ticks with the last 0 s ago.
+- The provisioning run still fails later, at =publish_party_surfaces=, because the surface
+  quotes it carries are dated a day before the spot date. That is a separate fault and does not
+  touch these feeds.
+- That is environment provisioning, not this change: the same timeout affects Bloomberg's feeds.
+  With a provisioned database the live check is one observation query.
 
 - The notation is registered in =projects/ores.marketdata/core/src/vendor/provider_notation.cpp=
   (only =bloomberg=, =lseg= and =demo= today). A provider with no notation gets no adapter
@@ -92,7 +133,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4689][#4689]] | [marketdata] Make the ICE and Tradeweb feeds tick |
 
 * Review
 
@@ -101,3 +142,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped and verified live. ICE and Tradeweb now have a notation, a feed, a route and a
+subscription, and their quotes reach the store.
+
+- =ice_notation= and =tradeweb_notation= write an interest rate pillar under the schemes
+  =ice_ticker= and =tradeweb_ticker=, with the field =BID=. The id carries the curve's index
+  tenor, because one currency may quote two curves of a family that differ only in it.
+- The contract gained =ir_curve_pillar::index_tenor= and
+  =provider_notation::names_index_tenor()=; only a notation that names the tenor is given one,
+  and the others refuse a non-empty one. Without it, ICE USD 1M and 6M collapsed onto the same
+  ids and one mapping pointed at two items.
+- The catalogue seeds =ice-a= and =tradeweb-a= with rate cards, the system party's
+  subscriptions and =ir= routes. The vendor instrument seed is regenerated: 35 ids for each
+  provider, none without.
+- The provider pages now state what the simulator writes and keep it apart from the live
+  providers' own schemes.
+
+Measurements: 30 IBOR quote series where there were none; ticks stored for both feeds; the
+marketdata core suite passes. The live path was proven by the provisioning run after the
+synthetic start fix landed.

@@ -23,6 +23,7 @@
 #include "feed_kind_registry.hpp"
 #include "feed_run_control.hpp"
 #include "generator_fleet.hpp"
+#include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -79,14 +80,14 @@ public:
                                 const ores::database::context& ctx,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier,
                                 const feed_kind_registry& registry,
-                                ores::analytics::quant::service::tick_scheduler& scheduler)
+                                ores::analytics::quant::service::run_market& market)
         : nats_(nats)
         , generators_(generators)
         , auth_nats_(auth_nats)
         , ctx_(ctx)
         , verifier_(verifier)
         , registry_(registry)
-        , scheduler_(scheduler) {}
+        , market_(market) {}
 
     void start(ores::nats::message msg) {
         using namespace ores::marketdata::messaging;
@@ -115,7 +116,7 @@ public:
             const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
 
             const ores::synthetic::feed::feed_build_context bctx{
-                .nats = nats_, .auth_nats = auth_nats_, .scheduler = scheduler_};
+                .nats = nats_, .auth_nats = auth_nats_, .market = market_};
 
             const auto outcome = start_feeds(
                 registry_,
@@ -236,7 +237,7 @@ private:
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     const feed_kind_registry& registry_;
-    ores::analytics::quant::service::tick_scheduler& scheduler_;
+    ores::analytics::quant::service::run_market& market_;
 };
 
 }

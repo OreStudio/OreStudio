@@ -7,13 +7,13 @@
 #+level: cross
 #+filetags: :prototype:index:ui:market_data:
 #+created: 2026-10-08
-#+updated: 2026-10-31
+#+updated: 2026-11-13
 
 * Summary
 
 Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time.
 
-29 prototypes answer to this group. Each one is a static page under
+34 prototypes answer to this group. Each one is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data
 only. The table below opens each one and says what it argues. Where a
 prototype carries a Gemini review, the last column opens it: a review is a
@@ -56,6 +56,11 @@ generated alternative kept beside the agreed design, never instead of it.
 | [[file:public-rates.org][Public rates]] | Real observed market data as one screen: the publishers by asset class, the feed and supplier behind each class, the states told apart, availability across publishers, the distance between them, and the fetch scope. | [[file:public-rates/][prototype]] | [[file:public-rates/review/][Gemini review]] |
 | [[file:connectivity.org][Connectivity]] | The delivery tree of market data: who publishes, who supplies, the sessions of an adapter with their endpoints and credentials, and the feeds that bind a publisher to a session and a service, with the adapters the release provides behind it. | [[file:connectivity/][prototype]] | none |
 | [[file:calibrate-a-generator.org][Calibrate the market]] | One calibration policy for every synthetic feed: the provider order, the window and the fallback, the candidates the policy derives for each pair, the resolved start and the per-feed exceptions, with the coverage of a whole class. Three variants, and no vintage control. | [[file:calibrate-a-generator/][prototype]] | none |
+| [[file:find-an-instrument.org][Find an instrument]] | One input over every instrument the party can see, one row per instrument whatever its kind, the source and the freshness behind it, and where Enter goes for each kind. Ported from hedgr's explorer search. | [[file:find-an-instrument/][prototype]] | none |
+| [[file:read-a-rate-ladder.org][Read a rate ladder]] | One row per maturity, one column per provider, the consensus with its method and sample, the 30Y-2Y spread, the rungs where the market is thin, and the curve the same quotes draw. Ported from hedgr's rates ladder. | [[file:read-a-rate-ladder/][prototype]] | none |
+| [[file:read-the-fx-montage.org][Read the FX montage]] | One base currency, its crosses as rows, one column per provider, and the opened pair's day below; the change and the range are measured from an instant the server states. Ported from hedgr's FX spot montage. | [[file:read-the-fx-montage/][prototype]] | none |
+| [[file:inspect-a-curves-analytics.org][Inspect a curve's analytics]] | A published curve read as what the market sent and what the curve makes of it: market pillars, zero rate, implied forward, discount factor and shift, under the conventions they rest on, with the prior close over the top. Ported from hedgr's AUD-AONIA inspector. | [[file:inspect-a-curves-analytics/][prototype]] | none |
+| [[file:read-a-published-surface.org][Read a published surface]] | A published surface as a picture, as the grid it is drawn from, and as one expiry's smile, with the model, the strike convention and the delta type that make a strike a number. Ported from hedgr's vol surface. | [[file:read-a-published-surface/][prototype]] | none |
 
 * Adding a prototype
 

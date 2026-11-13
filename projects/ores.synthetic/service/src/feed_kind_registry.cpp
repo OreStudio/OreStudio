@@ -328,13 +328,15 @@ feed_kind make_ir_curve_kind() {
             c.enabled = cfg.enabled;
             c.auto_start = cfg.auto_start;
             c.folder_id = cfg.folder_id;
+            const auto index_tenor = feed::ir_curve_index_tenor(cfg);
             for (const auto& e : all_entries)
                 if (e.ir_curve_config_id == cfg.id)
                     c.pillars.push_back(vendor::ir_curve_pillar{cfg.currency_code,
                                                                 cfg.index_family,
                                                                 e.instrument_code,
                                                                 e.start_tenor_code,
-                                                                e.end_tenor_code});
+                                                                e.end_tenor_code,
+                                                                index_tenor});
             c.build_input = [ctx, cfg](const feed::feed_adapter& adapter) -> feed_build_outcome {
                 repo::ir_curve_template_entry_repository entry_repo;
                 std::vector<ores::synthetic::domain::ir_curve_template_entry> entries;
@@ -371,6 +373,11 @@ feed_kind make_ir_curve_kind() {
                 // publishes every pillar under its own vendor id, as the simulator's offer does.
                 std::vector<feed::ir_pillar_quote_target> targets;
                 if (adapter.has_adapter()) {
+                    // Only a provider whose id names the curve's index tenor is given it.
+                    const auto* notation = vendor::notation_of(adapter.provider_code);
+                    const auto index_tenor = notation != nullptr && notation->names_index_tenor() ?
+                                                 feed::ir_curve_index_tenor(cfg) :
+                                                 std::string{};
                     targets.reserve(entries.size());
                     for (const auto& e : entries) {
                         auto target = target_for(adapter,
@@ -378,7 +385,8 @@ feed_kind make_ir_curve_kind() {
                                                                          cfg.index_family,
                                                                          e.instrument_code,
                                                                          e.start_tenor_code,
-                                                                         e.end_tenor_code});
+                                                                         e.end_tenor_code,
+                                                                         index_tenor});
                         if (!target)
                             return {.input = std::nullopt, .skip_reason = target.error()};
                         targets.push_back(
@@ -693,24 +701,35 @@ feed_kind make_fx_vol_surface_kind() {
                             .skip_reason = "Feed config has no Contributor rows: " +
                                            boost::uuids::to_string(cfg.id)};
 
+                /*
+                 * A pair's forward needs both currencies' curves, so a surface whose pair the
+                 * run carries no curve feed for has nothing to be struck against. That is a
+                 * configuration error and it is refused here, naming the currency, rather than
+                 * discovered a tick at a time as a surface that publishes nothing.
+                 */
+                {
+                    std::set<std::string> quoted;
+                    repo::ir_curve_generation_config_repository curve_repo;
+                    for (const auto& curve : curve_repo.read_latest(ctx))
+                        quoted.insert(curve.currency_code);
+                    for (const auto& ccy : {cfg.base_currency_code, cfg.quote_currency_code})
+                        if (!quoted.contains(ccy))
+                            return {.input = std::nullopt,
+                                    .skip_reason = "No curve feed quotes " + ccy +
+                                                   ", so the surface " + cfg.base_currency_code +
+                                                   "/" + cfg.quote_currency_code +
+                                                   " has no forward to be struck against"};
+                }
+
                 fx_vol_surface_feed_build_input in;
                 in.config = cfg;
                 in.expiries = std::move(expiries);
                 in.contributors = std::move(contributors);
                 /*
-                 * Each expiry is quoted against its own market, because each is discounted to
-                 * its own value date. The spot is left at one: a smile is read at a moneyness,
-                 * so a common scale of the spot cancels and only the ratio of the two discount
-                 * factors moves a quoted volatility. That ratio is still one here, so the
-                 * forward is flat and the quotes are the pair's vol surface as if it had no
-                 * rates. Reading the two discount factors from the pair's published curves is
-                 * what this row is waiting on.
+                 * The market is not a fact of the row: the feed reads its pair's spot and its
+                 * two currencies' curves from the run's values on every tick, and solves each
+                 * expiry against the forward they imply.
                  */
-                for (const auto& expiry : in.expiries)
-                    in.markets.push_back({.expiry_id = expiry.tenor,
-                                          .market = {.spot = 1.0,
-                                                     .domestic_discount = 1.0,
-                                                     .foreign_discount = 1.0}});
                 /*
                  * The pair's own convention is a refdata row, and the mapping from it lives in
                  * the market data service. Until the feed is handed that mapping, it quotes

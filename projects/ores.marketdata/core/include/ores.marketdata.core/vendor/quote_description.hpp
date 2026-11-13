@@ -58,6 +58,10 @@ struct fx_spot_quote final {
  * The index family is the code the refdata catalogue holds for the index, such as sofr, in its
  * own lower case. A provider that spells the family in upper case spells it so in its id, and
  * the description still holds the catalogue's spelling.
+ *
+ * The index tenor is the tenor of the index itself, such as 3M for a LIBOR curve, and it is empty
+ * when the provider's id does not name it. A provider that quotes two curves of one currency and
+ * family, which differ only in that tenor, must name it, or its ids would name two quotes.
  */
 struct ir_curve_pillar final {
     std::string currency;
@@ -65,6 +69,7 @@ struct ir_curve_pillar final {
     std::string instrument_code;
     std::string start_tenor;
     std::string end_tenor;
+    std::string index_tenor;
 
     bool operator==(const ir_curve_pillar&) const = default;
 };

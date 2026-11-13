@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 58096E60-79A8-4533-B17A-A736BFBE4C37
+:END:
+#+title: Anchor protocol fields on a member unique to the message
+#+description: Adding fields to a codegen protocol model by heading boundaries puts them on the wrong sibling response; anchor on a member unique to the message instead.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :codegen:marketdata:protocol:llm:memory:feedback:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+Moving protocol fields by heading boundaries in a codegen model is unsafe: sibling responses share field names
+
+*Why:* The FX vol surface model has a publish response and a read response that both carry published_by. Moving a block of fields by the next-heading boundary put three of four fields on the wrong response, twice.
+
+*How to apply:* Anchor a model field insert on a member unique to that message, or on the message heading. After regenerating, grep the generated header for the struct and its new fields together.

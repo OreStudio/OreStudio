@@ -148,6 +148,8 @@ bloomberg_notation::write(const quote_description& description) const {
     if (const auto* pillar = std::get_if<ir_curve_pillar>(&description)) {
         if (const auto ok = detail::check_pillar(*pillar); !ok)
             return std::unexpected(ok.error());
+        if (const auto ok = detail::check_no_index_tenor(*pillar, "Bloomberg"); !ok)
+            return std::unexpected(ok.error());
         return messaging::vendor_id{
             .id_scheme = std::string(scheme),
             .external_id = pillar->currency + " " + detail::upper_case(pillar->index_family) + " " +

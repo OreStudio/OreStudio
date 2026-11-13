@@ -431,6 +431,27 @@ msg::get_published_fx_vol_surface_response fx_vol_surface_publish_service::read_
         out.published_at = found->published_at;
         out.published_by = found->published_by;
         out.superseded_at = found->superseded_at;
+        // The model and the delta convention are what make a strike column a
+        // number a person may price from, so they travel with the grid.
+        out.model = blueprint.smile_model;
+        if (!blueprint.fx_option_convention_id.empty()) {
+            const auto conventions =
+                ores::refdata::repository::fx_option_convention_repository{}.read_latest(
+                    ctx, blueprint.fx_option_convention_id);
+            if (!conventions.empty())
+                out.delta_type = conventions.front().delta_type;
+        }
+        out.strike_convention = out.delta_type.empty() ? "absolute" : "delta";
+        // The verdict is the server's: a publish older than the threshold is
+        // stale, and no client recomputes it.
+        if (out.published_at) {
+            const auto age = std::chrono::duration_cast<std::chrono::seconds>(
+                                 std::chrono::system_clock::now() - *out.published_at)
+                                 .count();
+            out.stale = age > 3600;
+        } else {
+            out.stale = true;
+        }
         out.expiries = std::move(grid->expiries);
         out.strikes = std::move(grid->strikes);
         for (auto& p : grid->points)

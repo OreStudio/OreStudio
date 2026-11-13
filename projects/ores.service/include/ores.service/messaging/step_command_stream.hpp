@@ -31,7 +31,9 @@
 #include <cstddef>
 #include <exception>
 #include <memory>
+#include <mutex>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -257,6 +259,22 @@ serve_step_commands(ores::nats::service::client& nats,
         throw std::invalid_argument("A service must serve at least one step-command subject.");
 
     const std::string stream = step_stream_name(nats, service_name, routes.group());
+    /*
+     * One stream holds one family. A second family on the same stream replaces
+     * the first's consumer filter when it subscribes, so the service would serve
+     * the second and silently stop serving the first: a step of the first family
+     * then waits for a consumer that no longer exists, and fails for standing
+     * still twenty minutes later with nothing in the log to say why.
+     */
+    {
+        static std::mutex declared_mutex;
+        static std::set<std::string> declared;
+        const std::lock_guard<std::mutex> guard(declared_mutex);
+        if (!declared.insert(stream).second)
+            throw std::logic_error(
+                "A service may serve one family of step commands per stream, and '" + stream +
+                "' is already served. Give the second family a group of its own.");
+    }
     auto admin = nats.make_admin();
     admin.ensure_stream(
         stream, nats.covering_subjects(subjects), step_stream_max_age_days, step_stream_retention);

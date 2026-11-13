@@ -130,7 +130,12 @@ private:
         wf.progress("the holiday calendars");
         const auto tenant =
             ores::database::service::tenant_context::with_tenant(ctx_, command.tenant_id);
-        service::calendar_materialisation_service calendars(tenant);
+        // The step acts for the tenant being provisioned and writes as this
+        // service, which is an account of the system tenant. Every insert
+        // trigger checks the name a row is stamped with against the accounts
+        // table, so a step that made one up would be refused at the first row.
+        const auto acting = tenant.with_tenant(tenant.tenant_id(), tenant.service_account());
+        service::calendar_materialisation_service calendars(acting);
         const auto rows =
             calendars.regenerate_in_use(std::chrono::year{last_generated_holiday_year});
 

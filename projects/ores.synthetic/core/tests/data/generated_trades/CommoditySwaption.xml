@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
+  <Trade id="4544e123-acf4-5ebe-84b2-1925ec250eea">
     <TradeType>CommoditySwaption</TradeType>
     <CommoditySwaptionData>
       <OptionData>
@@ -8,7 +8,7 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-05-02</ExerciseDate>
+          <ExerciseDate>2026-06-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <LegData>
@@ -20,8 +20,8 @@
         <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
-            <StartDate>2026-05-02</StartDate>
-            <EndDate>2028-11-02</EndDate>
+            <StartDate>2026-06-02</StartDate>
+            <EndDate>2026-12-02</EndDate>
             <Tenor>1M</Tenor>
             <Calendar>NullCalendar</Calendar>
             <Convention>Unadjusted</Convention>
@@ -30,10 +30,10 @@
         </ScheduleData>
         <CommodityFixedLegData>
           <Quantities>
-            <Quantity>37509.12</Quantity>
+            <Quantity>46397.46</Quantity>
           </Quantities>
           <Prices>
-            <Price>69.01</Price>
+            <Price>80.27</Price>
           </Prices>
         </CommodityFixedLegData>
       </LegData>
@@ -46,8 +46,8 @@
         <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
-            <StartDate>2026-05-02</StartDate>
-            <EndDate>2028-11-02</EndDate>
+            <StartDate>2026-06-02</StartDate>
+            <EndDate>2026-12-02</EndDate>
             <Tenor>1M</Tenor>
             <Calendar>NullCalendar</Calendar>
             <Convention>Unadjusted</Convention>
@@ -55,17 +55,17 @@
           </Rules>
         </ScheduleData>
         <CommodityFloatingLegData>
-          <Name>NYMEX:CL</Name>
+          <Name>NYMEX:NG</Name>
           <PriceType>FutureSettlement</PriceType>
           <Quantities>
-            <Quantity>37509.12</Quantity>
+            <Quantity>46397.46</Quantity>
           </Quantities>
           <IsAveraged>true</IsAveraged>
         </CommodityFloatingLegData>
       </LegData>
     </CommoditySwaptionData>
   </Trade>
-  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
+  <Trade id="990d919c-ae5f-50bd-8f28-05e61f3f9b26">
     <TradeType>CommoditySwaption</TradeType>
     <CommoditySwaptionData>
       <OptionData>
@@ -73,7 +73,7 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-05-02</ExerciseDate>
+          <ExerciseDate>2026-07-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <LegData>
@@ -85,8 +85,8 @@
         <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
-            <StartDate>2026-05-02</StartDate>
-            <EndDate>2033-11-02</EndDate>
+            <StartDate>2026-07-02</StartDate>
+            <EndDate>2027-01-02</EndDate>
             <Tenor>1M</Tenor>
             <Calendar>NullCalendar</Calendar>
             <Convention>Unadjusted</Convention>
@@ -95,10 +95,10 @@
         </ScheduleData>
         <CommodityFixedLegData>
           <Quantities>
-            <Quantity>69924.53</Quantity>
+            <Quantity>69591.6</Quantity>
           </Quantities>
           <Prices>
-            <Price>151.59</Price>
+            <Price>76.63</Price>
           </Prices>
         </CommodityFixedLegData>
       </LegData>
@@ -111,8 +111,8 @@
         <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
-            <StartDate>2026-05-02</StartDate>
-            <EndDate>2033-11-02</EndDate>
+            <StartDate>2026-07-02</StartDate>
+            <EndDate>2027-01-02</EndDate>
             <Tenor>1M</Tenor>
             <Calendar>NullCalendar</Calendar>
             <Convention>Unadjusted</Convention>
@@ -123,7 +123,7 @@
           <Name>NYMEX:CL</Name>
           <PriceType>FutureSettlement</PriceType>
           <Quantities>
-            <Quantity>69924.53</Quantity>
+            <Quantity>69591.6</Quantity>
           </Quantities>
           <IsAveraged>true</IsAveraged>
         </CommodityFloatingLegData>

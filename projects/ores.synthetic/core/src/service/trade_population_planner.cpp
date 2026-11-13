@@ -1181,10 +1181,16 @@ struct commodity_type final {
 };
 
 /*
- * The commodity codes the population books. CommodityPairwiseVarianceSwap is
- * absent deliberately: ORE's trade factory has no builder for it, so a trade of
- * that type is refused while the portfolio is parsed and can never be priced.
- * A type ORE cannot build leaves the generator rather than being booked into a
+ * The commodity codes the population books. Two are absent deliberately, each
+ * for a reason the engine states:
+ *
+ * - CommodityPairwiseVarianceSwap: ORE's trade factory has no builder for it,
+ *   so the trade is refused while the portfolio is parsed.
+ * - CommodityWindowBarrierOption: ORE names the trade type in its schema and
+ *   defines no data element for it, so the terms have nowhere to go and the
+ *   parser finds no such node.
+ *
+ * A type ORE cannot carry leaves the generator rather than being booked into a
  * run that must fail.
  */
 constexpr commodity_type commodity_types[] = {
@@ -1199,7 +1205,6 @@ constexpr commodity_type commodity_types[] = {
     {"CommodityAveragePriceOption", commodity_shape::average_price_option},
     {"CommodityDigitalAveragePriceOption", commodity_shape::average_price_option},
     {"CommodityOptionStrip", commodity_shape::option_strip},
-    {"CommodityWindowBarrierOption", commodity_shape::barrier_option},
     {"CommodityGenericBarrierOption", commodity_shape::barrier_option},
     {"CommodityAccumulator", commodity_shape::accumulator},
     {"CommodityTaRF", commodity_shape::target_redemption},

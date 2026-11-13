@@ -472,9 +472,12 @@ const std::set<std::string>& known_refusals() {
 
 /// The generated trade types written with no product data. Asserted exactly.
 const std::set<std::string>& known_passthroughs() {
-    static const std::set<std::string> known = {
-        "CommodityWindowBarrierOption",
-    };
+    /*
+     * Empty: every type the generator books now writes a product. A type ORE
+     * cannot carry has left the generator, so nothing is booked as a name with
+     * no terms behind it.
+     */
+    static const std::set<std::string> known;
     return known;
 }
 

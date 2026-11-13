@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="24f52bd9-ca98-5bf4-b995-457c86123722">
+  <Trade id="8f2c08ef-f6c9-5ff2-a0f5-37b3df0624a2">
     <TradeType>CommodityTaRF</TradeType>
     <CommodityTaRFData>
       <Currency>USD</Currency>
-      <FixingAmount>7655.86</FixingAmount>
-      <TargetAmount>247647.93</TargetAmount>
-      <Strike>129.39</Strike>
+      <FixingAmount>5153.47</FixingAmount>
+      <TargetAmount>202737.51</TargetAmount>
+      <Strike>157.36</Strike>
       <Underlying>
         <Type>Commodity</Type>
-        <Name>NYMEX:CL</Name>
+        <Name>NYMEX:NG</Name>
       </Underlying>
       <ScheduleData>
         <Rules>
-          <StartDate>2025-11-02</StartDate>
-          <EndDate>2027-11-02</EndDate>
+          <StartDate>2025-12-02</StartDate>
+          <EndDate>2026-12-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>
@@ -27,11 +27,11 @@
       </OptionData>
       <RangeBounds>
         <RangeBound>
-          <RangeTo>129.39</RangeTo>
+          <RangeTo>157.36</RangeTo>
           <Leverage>2</Leverage>
         </RangeBound>
         <RangeBound>
-          <RangeFrom>129.39</RangeFrom>
+          <RangeFrom>157.36</RangeFrom>
           <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
@@ -39,27 +39,27 @@
         <BarrierData>
           <Type>CumulatedProfitCap</Type>
           <Levels>
-            <Level>247647.93</Level>
+            <Level>202737.51</Level>
           </Levels>
         </BarrierData>
       </Barriers>
     </CommodityTaRFData>
   </Trade>
-  <Trade id="1599c1b7-6f29-5e1d-b8ce-1e918ddfea2d">
+  <Trade id="fda2990a-b474-5f79-b074-76f84db8c5e3">
     <TradeType>CommodityTaRF</TradeType>
     <CommodityTaRFData>
       <Currency>USD</Currency>
-      <FixingAmount>1907.76</FixingAmount>
-      <TargetAmount>68083.19</TargetAmount>
-      <Strike>142.75</Strike>
+      <FixingAmount>6916.71</FixingAmount>
+      <TargetAmount>229167.89</TargetAmount>
+      <Strike>132.53</Strike>
       <Underlying>
         <Type>Commodity</Type>
         <Name>NYMEX:CL</Name>
       </Underlying>
       <ScheduleData>
         <Rules>
-          <StartDate>2025-11-02</StartDate>
-          <EndDate>2027-11-02</EndDate>
+          <StartDate>2026-01-02</StartDate>
+          <EndDate>2030-01-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>
@@ -67,16 +67,16 @@
         </Rules>
       </ScheduleData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <PayoffType>TargetExact</PayoffType>
       </OptionData>
       <RangeBounds>
         <RangeBound>
-          <RangeTo>142.75</RangeTo>
+          <RangeTo>132.53</RangeTo>
           <Leverage>2</Leverage>
         </RangeBound>
         <RangeBound>
-          <RangeFrom>142.75</RangeFrom>
+          <RangeFrom>132.53</RangeFrom>
           <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
@@ -84,7 +84,7 @@
         <BarrierData>
           <Type>CumulatedProfitCap</Type>
           <Levels>
-            <Level>68083.19</Level>
+            <Level>229167.89</Level>
           </Levels>
         </BarrierData>
       </Barriers>

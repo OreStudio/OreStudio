@@ -1,11 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="0e6cb4a2-2a7b-571c-bf6b-f956ac1db9bf">
+  <Trade id="c5961c6e-0075-50d6-8c89-68c3f727dd6d">
     <TradeType>CommodityRainbowOption</TradeType>
     <CommodityRainbowOptionData>
       <Currency>USD</Currency>
-      <Notional>72681.74</Notional>
-      <Strike>87</Strike>
+      <Notional>46504.05</Notional>
+      <Strike>41.44</Strike>
+      <Underlyings>
+        <Underlying>
+          <Type>Commodity</Type>
+          <Name>NYMEX:NG</Name>
+          <Weight>0.5</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>Commodity</Type>
+          <Name>NYMEX:CL</Name>
+          <Weight>0.5</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
+        <PayoffType>BestOfAssetOrCash</PayoffType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2027-10-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+    </CommodityRainbowOptionData>
+  </Trade>
+  <Trade id="ebab8cfd-bcc5-5b50-a067-bf757aa6420e">
+    <TradeType>CommodityRainbowOption</TradeType>
+    <CommodityRainbowOptionData>
+      <Currency>USD</Currency>
+      <Notional>69924.53</Notional>
+      <Strike>151.59</Strike>
       <Underlyings>
         <Underlying>
           <Type>Commodity</Type>
@@ -20,42 +50,12 @@
       </Underlyings>
       <OptionData>
         <LongShort>Long</LongShort>
-        <OptionType>Put</OptionType>
-        <PayoffType>BestOfAssetOrCash</PayoffType>
-        <Style>European</Style>
-        <Settlement>Cash</Settlement>
-        <ExerciseDates>
-          <ExerciseDate>2034-09-02</ExerciseDate>
-        </ExerciseDates>
-      </OptionData>
-    </CommodityRainbowOptionData>
-  </Trade>
-  <Trade id="d45876e9-0029-5418-9831-724e7991c27a">
-    <TradeType>CommodityRainbowOption</TradeType>
-    <CommodityRainbowOptionData>
-      <Currency>USD</Currency>
-      <Notional>19876.61</Notional>
-      <Strike>130.61</Strike>
-      <Underlyings>
-        <Underlying>
-          <Type>Commodity</Type>
-          <Name>NYMEX:CL</Name>
-          <Weight>0.5</Weight>
-        </Underlying>
-        <Underlying>
-          <Type>Commodity</Type>
-          <Name>NYMEX:NG</Name>
-          <Weight>0.5</Weight>
-        </Underlying>
-      </Underlyings>
-      <OptionData>
-        <LongShort>Short</LongShort>
-        <OptionType>Put</OptionType>
+        <OptionType>Call</OptionType>
         <PayoffType>MinRainbow</PayoffType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2029-09-02</ExerciseDate>
+          <ExerciseDate>2033-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
     </CommodityRainbowOptionData>

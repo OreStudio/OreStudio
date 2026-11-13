@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="63c35dde-b955-55b1-9998-d8fcc5419534">
+  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
     <TradeType>CommodityBasketVarianceSwap</TradeType>
     <CommodityBasketVarianceSwapData>
-      <LongShort>Short</LongShort>
-      <Strike>0.13</Strike>
-      <Notional>47923.91</Notional>
+      <LongShort>Long</LongShort>
+      <Strike>0.12</Strike>
+      <Notional>14539.72</Notional>
       <Underlyings>
-        <Underlying>
-          <Type>Commodity</Type>
-          <Name>NYMEX:NG</Name>
-          <Weight>0.5</Weight>
-        </Underlying>
         <Underlying>
           <Type>Commodity</Type>
           <Name>NYMEX:CL</Name>
           <Weight>0.5</Weight>
         </Underlying>
+        <Underlying>
+          <Type>Commodity</Type>
+          <Name>NYMEX:NG</Name>
+          <Weight>0.5</Weight>
+        </Underlying>
       </Underlyings>
       <ValuationSchedule>
         <Rules>
-          <StartDate>2025-08-02</StartDate>
-          <EndDate>2030-08-02</EndDate>
+          <StartDate>2025-09-02</StartDate>
+          <EndDate>2033-09-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>
@@ -29,16 +29,16 @@
         </Rules>
       </ValuationSchedule>
       <SquaredPayoff>true</SquaredPayoff>
-      <SettlementDate>2030-08-04</SettlementDate>
+      <SettlementDate>2033-09-04</SettlementDate>
       <Currency>USD</Currency>
     </CommodityBasketVarianceSwapData>
   </Trade>
-  <Trade id="3a9a63de-bb7d-5267-b0a7-847b21b8d55c">
+  <Trade id="bdcb89b0-f353-59ae-b17d-2f3c4966f5b1">
     <TradeType>CommodityBasketVarianceSwap</TradeType>
     <CommodityBasketVarianceSwapData>
       <LongShort>Short</LongShort>
-      <Strike>0.19</Strike>
-      <Notional>75022.91</Notional>
+      <Strike>0.17</Strike>
+      <Notional>25845.74</Notional>
       <Underlyings>
         <Underlying>
           <Type>Commodity</Type>
@@ -53,8 +53,8 @@
       </Underlyings>
       <ValuationSchedule>
         <Rules>
-          <StartDate>2025-08-02</StartDate>
-          <EndDate>2034-08-02</EndDate>
+          <StartDate>2025-10-02</StartDate>
+          <EndDate>2031-10-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>
@@ -62,7 +62,7 @@
         </Rules>
       </ValuationSchedule>
       <SquaredPayoff>true</SquaredPayoff>
-      <SettlementDate>2034-08-04</SettlementDate>
+      <SettlementDate>2031-10-04</SettlementDate>
       <Currency>USD</Currency>
     </CommodityBasketVarianceSwapData>
   </Trade>

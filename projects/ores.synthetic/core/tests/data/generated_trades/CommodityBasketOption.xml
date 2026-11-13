@@ -1,61 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="c5961c6e-0075-50d6-8c89-68c3f727dd6d">
+  <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
     <TradeType>CommodityBasketOption</TradeType>
     <CommodityBasketOptionData>
       <Currency>USD</Currency>
-      <Notional>46504.05</Notional>
-      <Strike>41.44</Strike>
+      <Notional>37509.12</Notional>
+      <Strike>69.01</Strike>
       <Underlyings>
-        <Underlying>
-          <Type>Commodity</Type>
-          <Name>NYMEX:NG</Name>
-          <Weight>0.5</Weight>
-        </Underlying>
         <Underlying>
           <Type>Commodity</Type>
           <Name>NYMEX:CL</Name>
           <Weight>0.5</Weight>
         </Underlying>
-      </Underlyings>
-      <OptionData>
-        <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
-        <PayoffType>Vanilla</PayoffType>
-        <Style>European</Style>
-        <Settlement>Cash</Settlement>
-        <ExerciseDates>
-          <ExerciseDate>2027-10-02</ExerciseDate>
-        </ExerciseDates>
-      </OptionData>
-    </CommodityBasketOptionData>
-  </Trade>
-  <Trade id="3cf4c4c1-9289-5ca9-be3b-5fe95c412c93">
-    <TradeType>CommodityBasketOption</TradeType>
-    <CommodityBasketOptionData>
-      <Currency>USD</Currency>
-      <Notional>88601.98</Notional>
-      <Strike>103.99</Strike>
-      <Underlyings>
         <Underlying>
           <Type>Commodity</Type>
           <Name>NYMEX:NG</Name>
           <Weight>0.5</Weight>
         </Underlying>
-        <Underlying>
-          <Type>Commodity</Type>
-          <Name>NYMEX:CL</Name>
-          <Weight>0.5</Weight>
-        </Underlying>
       </Underlyings>
       <OptionData>
-        <LongShort>Short</LongShort>
+        <LongShort>Long</LongShort>
         <OptionType>Put</OptionType>
         <PayoffType>Vanilla</PayoffType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2032-10-02</ExerciseDate>
+          <ExerciseDate>2028-11-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+    </CommodityBasketOptionData>
+  </Trade>
+  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
+    <TradeType>CommodityBasketOption</TradeType>
+    <CommodityBasketOptionData>
+      <Currency>USD</Currency>
+      <Notional>94739.65</Notional>
+      <Strike>53.72</Strike>
+      <Underlyings>
+        <Underlying>
+          <Type>Commodity</Type>
+          <Name>NYMEX:NG</Name>
+          <Weight>0.5</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>Commodity</Type>
+          <Name>NYMEX:CL</Name>
+          <Weight>0.5</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <PayoffType>Vanilla</PayoffType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2032-12-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
     </CommodityBasketOptionData>

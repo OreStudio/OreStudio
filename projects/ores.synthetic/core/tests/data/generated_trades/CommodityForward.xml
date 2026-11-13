@@ -11,15 +11,15 @@
       <Quantity>96950.42</Quantity>
     </CommodityForwardData>
   </Trade>
-  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
+  <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
     <TradeType>CommodityForward</TradeType>
     <CommodityForwardData>
       <Position>Short</Position>
-      <Maturity>2035-01-02</Maturity>
-      <Name>NYMEX:CL</Name>
+      <Maturity>2027-08-02</Maturity>
+      <Name>NYMEX:NG</Name>
       <Currency>USD</Currency>
-      <Strike>78.48</Strike>
-      <Quantity>36369.36</Quantity>
+      <Strike>84.51</Strike>
+      <Quantity>100679.37</Quantity>
     </CommodityForwardData>
   </Trade>
 </Portfolio>

@@ -34,32 +34,32 @@
       </ObservationDates>
     </CommodityAsianOptionData>
   </Trade>
-  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
+  <Trade id="f7a5f5f7-7567-5f27-ac28-264e8861c471">
     <TradeType>CommodityAsianOption</TradeType>
     <CommodityAsianOptionData>
       <Currency>USD</Currency>
-      <Quantity>4860.5</Quantity>
+      <Quantity>91209.48</Quantity>
       <StrikeData>
-        <Value>136.76</Value>
+        <Value>136.18</Value>
       </StrikeData>
       <Underlying>
         <Type>Commodity</Type>
-        <Name>NYMEX:NG</Name>
+        <Name>NYMEX:CL</Name>
       </Underlying>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Call</OptionType>
         <PayoffType>Asian</PayoffType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2031-08-02</ExerciseDate>
+          <ExerciseDate>2026-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <ObservationDates>
         <Rules>
-          <StartDate>2025-08-02</StartDate>
-          <EndDate>2031-08-02</EndDate>
+          <StartDate>2025-09-02</StartDate>
+          <EndDate>2026-09-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>

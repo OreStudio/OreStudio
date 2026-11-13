@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
+  <Trade id="0e6cb4a2-2a7b-571c-bf6b-f956ac1db9bf">
     <TradeType>CommodityBestEntryOption</TradeType>
     <CommodityBestEntryOptionData>
-      <LongShort>Short</LongShort>
+      <LongShort>Long</LongShort>
       <Currency>USD</Currency>
-      <Notional>100679.37</Notional>
+      <Notional>72681.74</Notional>
       <Multiplier>1</Multiplier>
       <Cap>0.5</Cap>
-      <Strike>80.6</Strike>
+      <Strike>87</Strike>
       <TriggerLevel>0.9</TriggerLevel>
       <ResetMinimum>0.8</ResetMinimum>
-      <Premium>243442.72</Premium>
-      <ExpiryDate>2027-08-02</ExpiryDate>
-      <StrikeDate>2025-08-02</StrikeDate>
-      <PremiumDate>2025-08-04</PremiumDate>
-      <SettlementDate>2027-08-04</SettlementDate>
+      <Premium>189699.34</Premium>
+      <ExpiryDate>2034-09-02</ExpiryDate>
+      <StrikeDate>2025-09-02</StrikeDate>
+      <PremiumDate>2025-09-04</PremiumDate>
+      <SettlementDate>2034-09-04</SettlementDate>
       <StrikeObservationDates>
         <Rules>
-          <StartDate>2025-08-02</StartDate>
-          <EndDate>2027-08-02</EndDate>
+          <StartDate>2025-09-02</StartDate>
+          <EndDate>2034-09-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>
@@ -28,30 +28,30 @@
       </StrikeObservationDates>
       <Underlying>
         <Type>Commodity</Type>
-        <Name>NYMEX:NG</Name>
+        <Name>NYMEX:CL</Name>
       </Underlying>
     </CommodityBestEntryOptionData>
   </Trade>
-  <Trade id="e90a03e7-0ff1-57f5-ae66-716b64d4a5e1">
+  <Trade id="3cf4c4c1-9289-5ca9-be3b-5fe95c412c93">
     <TradeType>CommodityBestEntryOption</TradeType>
     <CommodityBestEntryOptionData>
-      <LongShort>Long</LongShort>
+      <LongShort>Short</LongShort>
       <Currency>USD</Currency>
-      <Notional>97047.19</Notional>
+      <Notional>88601.98</Notional>
       <Multiplier>1</Multiplier>
       <Cap>0.5</Cap>
-      <Strike>160.58</Strike>
+      <Strike>103.99</Strike>
       <TriggerLevel>0.9</TriggerLevel>
       <ResetMinimum>0.8</ResetMinimum>
-      <Premium>467515.13</Premium>
-      <ExpiryDate>2032-08-02</ExpiryDate>
-      <StrikeDate>2025-08-02</StrikeDate>
-      <PremiumDate>2025-08-04</PremiumDate>
-      <SettlementDate>2032-08-04</SettlementDate>
+      <Premium>276411.6</Premium>
+      <ExpiryDate>2032-10-02</ExpiryDate>
+      <StrikeDate>2025-10-02</StrikeDate>
+      <PremiumDate>2025-10-04</PremiumDate>
+      <SettlementDate>2032-10-04</SettlementDate>
       <StrikeObservationDates>
         <Rules>
-          <StartDate>2025-08-02</StartDate>
-          <EndDate>2032-08-02</EndDate>
+          <StartDate>2025-10-02</StartDate>
+          <EndDate>2032-10-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>

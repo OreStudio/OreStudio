@@ -1,11 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Portfolio>
-  <Trade id="8f2c08ef-f6c9-5ff2-a0f5-37b3df0624a2">
+  <Trade id="4819aa7f-b852-5f4f-953a-a26945368558">
     <TradeType>CommodityAccumulator</TradeType>
     <CommodityAccumulatorData>
       <Currency>USD</Currency>
-      <FixingAmount>5153.47</FixingAmount>
-      <Strike>157.36</Strike>
+      <FixingAmount>7545.21</FixingAmount>
+      <Strike>143.75</Strike>
+      <Underlying>
+        <Type>Commodity</Type>
+        <Name>NYMEX:CL</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <PayoffType>Accumulator</PayoffType>
+      </OptionData>
+      <StartDate>2026-01-02</StartDate>
+      <ObservationDates>
+        <Rules>
+          <StartDate>2026-01-02</StartDate>
+          <EndDate>2036-01-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>US-NYSE</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
+        </Rules>
+      </ObservationDates>
+      <RangeBounds>
+        <RangeBound>
+          <RangeTo>143.75</RangeTo>
+          <Leverage>2</Leverage>
+        </RangeBound>
+        <RangeBound>
+          <RangeFrom>143.75</RangeFrom>
+          <Leverage>1</Leverage>
+        </RangeBound>
+      </RangeBounds>
+      <Barriers>
+        <BarrierData>
+          <Type>UpAndOut</Type>
+          <Levels>
+            <Level>172.5</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+    </CommodityAccumulatorData>
+  </Trade>
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
+    <TradeType>CommodityAccumulator</TradeType>
+    <CommodityAccumulatorData>
+      <Currency>USD</Currency>
+      <FixingAmount>1179.8</FixingAmount>
+      <Strike>142.12</Strike>
       <Underlying>
         <Type>Commodity</Type>
         <Name>NYMEX:NG</Name>
@@ -14,11 +59,11 @@
         <LongShort>Short</LongShort>
         <PayoffType>Accumulator</PayoffType>
       </OptionData>
-      <StartDate>2025-12-02</StartDate>
+      <StartDate>2025-08-02</StartDate>
       <ObservationDates>
         <Rules>
-          <StartDate>2025-12-02</StartDate>
-          <EndDate>2026-12-02</EndDate>
+          <StartDate>2025-08-02</StartDate>
+          <EndDate>2026-08-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>
@@ -27,11 +72,11 @@
       </ObservationDates>
       <RangeBounds>
         <RangeBound>
-          <RangeTo>157.36</RangeTo>
+          <RangeTo>142.12</RangeTo>
           <Leverage>2</Leverage>
         </RangeBound>
         <RangeBound>
-          <RangeFrom>157.36</RangeFrom>
+          <RangeFrom>142.12</RangeFrom>
           <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
@@ -39,52 +84,7 @@
         <BarrierData>
           <Type>UpAndOut</Type>
           <Levels>
-            <Level>188.83</Level>
-          </Levels>
-        </BarrierData>
-      </Barriers>
-    </CommodityAccumulatorData>
-  </Trade>
-  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
-    <TradeType>CommodityAccumulator</TradeType>
-    <CommodityAccumulatorData>
-      <Currency>USD</Currency>
-      <FixingAmount>6126.62</FixingAmount>
-      <Strike>82.27</Strike>
-      <Underlying>
-        <Type>Commodity</Type>
-        <Name>NYMEX:NG</Name>
-      </Underlying>
-      <OptionData>
-        <LongShort>Long</LongShort>
-        <PayoffType>Accumulator</PayoffType>
-      </OptionData>
-      <StartDate>2025-12-02</StartDate>
-      <ObservationDates>
-        <Rules>
-          <StartDate>2025-12-02</StartDate>
-          <EndDate>2030-12-02</EndDate>
-          <Tenor>1M</Tenor>
-          <Calendar>US-NYSE</Calendar>
-          <Convention>F</Convention>
-          <Rule>Forward</Rule>
-        </Rules>
-      </ObservationDates>
-      <RangeBounds>
-        <RangeBound>
-          <RangeTo>82.27</RangeTo>
-          <Leverage>2</Leverage>
-        </RangeBound>
-        <RangeBound>
-          <RangeFrom>82.27</RangeFrom>
-          <Leverage>1</Leverage>
-        </RangeBound>
-      </RangeBounds>
-      <Barriers>
-        <BarrierData>
-          <Type>UpAndOut</Type>
-          <Levels>
-            <Level>98.72</Level>
+            <Level>170.54</Level>
           </Levels>
         </BarrierData>
       </Barriers>

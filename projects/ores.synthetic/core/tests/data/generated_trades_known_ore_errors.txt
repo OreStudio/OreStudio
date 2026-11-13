@@ -15,7 +15,6 @@ CallableBond	Error during trade pricing (additional results)	empty Handle cannot
 CommodityAsianOption	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type CommodityAsianOptionArithmeticPrice
 CommoditySpreadOption	Error building trade for context 'analytic/PRICING'	did not find object COMM-NYMEX:CL/COMM-NYMEX:NG in CorrelationCurves
 CommoditySpreadOption	Error building trade for context 'analytic/PRICING'	did not find object COMM-NYMEX:NG/COMM-NYMEX:CL in CorrelationCurves
-CommodityWindowBarrierOption	Error parsing Trade XML	CommodityWindowBarrierOptionData node not found
 ConvertibleBond	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
 CreditDefaultSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 CreditDefaultSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'

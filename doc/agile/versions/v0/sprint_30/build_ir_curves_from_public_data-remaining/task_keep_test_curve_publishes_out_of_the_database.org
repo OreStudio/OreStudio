@@ -8,7 +8,7 @@
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/keep-test-curve-publishes-out-of-the-database
-#+pr:
+#+pr: 4676
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4676][#4676]] | [marketdata] Heal the approval kind a test leaves open |
 
 * Review
 

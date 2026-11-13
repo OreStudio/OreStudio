@@ -30,9 +30,9 @@ The design is [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Stages 1 to 4 have landed: the board in quant, the date rule deleted in favour of quant's own, the curve and spot feeds publishing to it, and the surface building its markets from it on every tick. The static gate and the measured round trip remain. |
+| Now          | Stages 1 to 4 and both gates have landed: the board, the date rule, the publishers, the surface reading the values every tick, the start verb's refusal of a pair the run carries no curve for, and the tick's own message when a member is not published yet. Only stage 5, the measured round trip, remains. |
 | Waiting on   | Nothing.                               |
-| Next         | Stage 5, the round trip's tolerance, then the static refusal of a pair the run carries no curve feed for. |
+| Next         | Stage 5: the tolerance a party's calibration of the clean quotes lands within. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance

@@ -19,6 +19,7 @@
  */
 #include "ores.analytics.quant/service/fx_vol_surface_generator.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_emitter.hpp"
+#include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
@@ -59,13 +60,17 @@ ssvi_parameters emitter_start() {
     return p;
 }
 
-std::vector<fx_vol_slice_market> emitter_markets(const ssvi_parameters& start) {
+std::vector<fx_vol_slice_market> emitter_markets_with(const ssvi_parameters& start,
+                                                      const fx_market& market) {
     std::vector<fx_vol_slice_market> out;
     for (const auto& e : start.expiries)
-        out.push_back({.expiry_id = e.expiry_id,
-                       .market = emitter_eur_usd,
-                       .convention = emitter_convention});
+        out.push_back(
+            {.expiry_id = e.expiry_id, .market = market, .convention = emitter_convention});
     return out;
+}
+
+std::vector<fx_vol_slice_market> emitter_markets(const ssvi_parameters& start) {
+    return emitter_markets_with(start, emitter_eur_usd);
 }
 
 /// The laws of the drivers. The matrix is the identity because the market correlates.
@@ -269,4 +274,66 @@ TEST_CASE("the emitter refuses what it cannot step", "[fx_vol_surface_emitter]")
     CHECK_FALSE(
         make_emitter({emitter_clean()}, few_markets, emitter_dynamics(start.expiries.size()))
             .has_value());
+}
+
+TEST_CASE("a surface's quotes do not depend on the level of its spot", "[fx_vol_surface_emitter]") {
+    // A smile is read at a moneyness -- the strike over the forward -- so while the two
+    // discounts are equal a common scale of the spot cancels. This is what lets a feed quote
+    // against a market it has not resolved the pair for, and it is a claim, not a hope.
+    const auto start = emitter_start();
+    const fx_market unit{.spot = 1.0, .domestic_discount = 1.0, .foreign_discount = 1.0};
+    const fx_market scaled{.spot = 1.30, .domestic_discount = 1.0, .foreign_discount = 1.0};
+
+    auto one = make_emitter({emitter_clean()},
+                            emitter_markets_with(start, unit),
+                            emitter_dynamics(start.expiries.size()));
+    auto other = make_emitter({emitter_clean()},
+                              emitter_markets_with(start, scaled),
+                              emitter_dynamics(start.expiries.size()));
+    REQUIRE(one);
+    REQUIRE(other);
+
+    std::vector<double> drivers(start.expiries.size() + 2, 0.0);
+    const auto a = one->step(drivers);
+    const auto b = other->step(drivers);
+    REQUIRE(a.size() == b.size());
+    for (std::size_t i = 0; i < a.size(); ++i) {
+        REQUIRE(a[i].value);
+        REQUIRE(b[i].value);
+        CHECK(*b[i].value == Catch::Approx(*a[i].value).margin(1e-12));
+    }
+}
+
+TEST_CASE("a surface's quotes do depend on the ratio of its discounts",
+          "[fx_vol_surface_emitter]") {
+    // The forward is the spot times one discount over the other. While they differ the ATM a
+    // delta neutral reader picks is not the forward, so the quoted volatilities move: the unit
+    // spot is exact only while the pair has no rates, and this pins where that stops.
+    const auto start = emitter_start();
+    const fx_market unit{.spot = 1.0, .domestic_discount = 1.0, .foreign_discount = 1.0};
+    const fx_market tilted{.spot = 1.0, .domestic_discount = 0.97, .foreign_discount = 0.99};
+
+    auto a = make_emitter({emitter_clean()},
+                          emitter_markets_with(start, unit),
+                          emitter_dynamics(start.expiries.size()));
+    auto b = make_emitter({emitter_clean()},
+                          emitter_markets_with(start, tilted),
+                          emitter_dynamics(start.expiries.size()));
+    REQUIRE(a);
+    REQUIRE(b);
+
+    std::vector<double> drivers(start.expiries.size() + 2, 0.0);
+    const auto pa = a->step(drivers);
+    const auto pb = b->step(drivers);
+    double worst = 0.0;
+    for (std::size_t i = 0; i < pa.size(); ++i) {
+        REQUIRE(pa[i].value);
+        REQUIRE(pb[i].value);
+        worst = std::max(worst, std::abs(*pb[i].value - *pa[i].value));
+    }
+    // A forward a fifth of a big figure away from the spot moves the quoted volatility by
+    // about eight thousandths of a point: small, because a delta neutral ATM re-centres on the
+    // new forward, and far above the 1e-12 the spot level itself moves it by. This is the
+    // size of what the unit spot costs while the pair has no curves.
+    CHECK(worst > 1e-5);
 }

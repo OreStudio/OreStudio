@@ -80,6 +80,12 @@ struct latent_market {
     std::vector<double> driver;
     std::vector<double> tick_time;
 
+    /// Each series' price-stream id, the draw it has reached, and the squares of
+    /// its loadings, which leave the rest of its variance to its own noise.
+    std::vector<std::uint64_t> series_id;
+    std::vector<std::uint64_t> own_draw;
+    std::vector<double> loading_square;
+
     /// The simulated time the market has been advanced to.
     double now;
     /// The run's seed, so a market is reproducible by seed.
@@ -119,9 +125,12 @@ ORES_ANALYTICS_QUANT_EXPORT std::uint32_t latent_add_factor(latent_market& marke
 /**
  * @brief Adds a series with no loadings yet.
  *
+ * @param series_id The series' price-stream id, from series_key(source name). It
+ *        keys the draw a loaded series' own noise comes from.
  * @return The series' index.
  */
-ORES_ANALYTICS_QUANT_EXPORT std::uint32_t latent_add_series(latent_market& market);
+ORES_ANALYTICS_QUANT_EXPORT std::uint32_t latent_add_series(latent_market& market,
+                                                            std::uint64_t series_id);
 
 /**
  * @brief Sets a series' loadings.
@@ -176,6 +185,23 @@ ORES_ANALYTICS_QUANT_EXPORT double latent_driver_value(const latent_market& mark
 ORES_ANALYTICS_QUANT_EXPORT driver_increment latent_tick(latent_market& market,
                                                          std::uint32_t series,
                                                          double t);
+
+/**
+ * @brief The standard normal a loaded series' step is built on.
+ *
+ * Ticks the series, draws its own noise from its price stream at the next
+ * position, and combines the two:
+ * (shared + sqrt(1 - |b|^2) * own) / sqrt(elapsed). A series with every loading
+ * zero is handed its drawn normal unchanged, because multiplying by one and
+ * dividing by one is not bit for bit the same number. A series with no elapsed
+ * time carries no noise and answers zero, so the caller skips the tick.
+ *
+ * A feed does not call this for a series with no loadings: it calls the process'
+ * own next(), which draws from the same stream, and that is what keeps today's
+ * path bit for bit.
+ */
+ORES_ANALYTICS_QUANT_EXPORT double latent_driver(latent_market& market, std::uint32_t series,
+                                                 double t);
 
 }
 

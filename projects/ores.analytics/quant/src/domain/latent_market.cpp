@@ -46,9 +46,12 @@ std::uint32_t latent_add_factor(latent_market& market, std::uint64_t factor_id) 
     return static_cast<std::uint32_t>(market.factors.size() - 1);
 }
 
-std::uint32_t latent_add_series(latent_market& market) {
+std::uint32_t latent_add_series(latent_market& market, std::uint64_t series_id) {
     market.driver.push_back(0.0);
     market.tick_time.push_back(market.start);
+    market.series_id.push_back(series_id);
+    market.own_draw.push_back(0);
+    market.loading_square.push_back(0.0);
     market.loading_begin.push_back(market.loading_begin.back());
     return static_cast<std::uint32_t>(market.driver.size() - 1);
 }
@@ -84,6 +87,7 @@ void latent_set_loadings(latent_market& market,
 
     market.loadings.insert(market.loadings.end(), loadings.begin(), loadings.end());
     market.loading_begin.back() = static_cast<std::uint32_t>(market.loadings.size());
+    market.loading_square[series] = squares;
 }
 
 void latent_advance(latent_market& market, double t) {
@@ -146,6 +150,22 @@ driver_increment latent_tick(latent_market& market, std::uint32_t series, double
     market.driver[series] = value;
     market.tick_time[series] = market.now;
     return increment;
+}
+double latent_driver(latent_market& market, std::uint32_t series, double t) {
+    const driver_increment increment = latent_tick(market, series, t);
+    if (!(increment.elapsed > 0.0))
+        return 0.0;
+
+    const std::uint64_t index = market.own_draw[series]++;
+    const math::stream_key key{.run_seed = market.run_seed,
+                               .series = market.series_id[series],
+                               .purpose = math::draw_purpose::price};
+    const double own = math::standard_normal_at(key, index);
+
+    const double squares = market.loading_square[series];
+    if (squares == 0.0)
+        return own;
+    return (increment.shared + std::sqrt(1.0 - squares) * own) / std::sqrt(increment.elapsed);
 }
 
 }

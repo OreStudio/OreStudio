@@ -65,6 +65,34 @@ public:
     }
 
     /**
+     * @brief Advance one step on a standard normal drawn by the market.
+     *
+     * The latent market draws a series' own noise from its price stream and
+     * combines it with the shared factors, so a loaded process is handed the
+     * standard normal its step is built from instead of drawing one. A series
+     * with no loadings never reaches here: the feed calls next() as it always
+     * did, which is what keeps today's path bit for bit.
+     *
+     * The default refuses, because a process whose step is not a function of one
+     * normal cannot be driven this way, and a loadings table that names it is a
+     * configuration error rather than something to approximate.
+     */
+    virtual double next_with_normal(double standard_normal) {
+        static_cast<void>(standard_normal);
+        throw std::invalid_argument("this process cannot take an external standard normal");
+    }
+
+    /**
+     * @brief Whether next_with_normal is answered.
+     *
+     * A feed reads this before it accepts loadings for a series: a loaded series
+     * whose process answers false would silently lose its shared component.
+     */
+    virtual bool supports_external_normal() const {
+        return false;
+    }
+
+    /**
      * @brief Whether next(elapsed) accepts an elapsed other than one.
      *
      * The feed refuses a non-periodic arrival mode for a process that answers

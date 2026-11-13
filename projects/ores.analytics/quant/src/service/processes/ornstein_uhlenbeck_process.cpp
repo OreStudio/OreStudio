@@ -53,10 +53,21 @@ double ornstein_uhlenbeck_process::next() {
 }
 
 double ornstein_uhlenbeck_process::next(double elapsed_ticks) {
+    return step(normal_(rng_), elapsed_ticks);
+}
+
+double ornstein_uhlenbeck_process::next_with_normal(double standard_normal) {
+    return step(standard_normal, 1.0);
+}
+
+bool ornstein_uhlenbeck_process::supports_external_normal() const {
+    return true;
+}
+
+double ornstein_uhlenbeck_process::step(double z, double elapsed_ticks) {
     if (elapsed_ticks <= 0.0)
         throw std::invalid_argument(
             "ornstein_uhlenbeck_process: elapsed_ticks must be strictly positive");
-    const double z = normal_(rng_);
     const double step = dt_ * elapsed_ticks;
     if (kappa_ > small_kappa_threshold) {
         const double decay = std::exp(-kappa_ * step);

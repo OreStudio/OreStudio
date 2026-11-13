@@ -16,8 +16,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/domain/latent_market.hpp"
 #include "ores.analytics.quant/math/correlation_loadings.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
+#include "ores.analytics.quant/service/processes/ornstein_uhlenbeck_process.hpp"
 #include <Eigen/Core>
 #include <algorithm>
 #include <catch2/catch_approx.hpp>
@@ -34,6 +37,7 @@ using ores::analytics::quant::domain::factor_weight;
 using ores::analytics::quant::domain::latent_add_factor;
 using ores::analytics::quant::domain::latent_add_series;
 using ores::analytics::quant::domain::latent_advance;
+using ores::analytics::quant::domain::latent_driver;
 using ores::analytics::quant::domain::latent_driver_value;
 using ores::analytics::quant::domain::latent_market;
 using ores::analytics::quant::domain::latent_set_loadings;
@@ -42,7 +46,13 @@ using ores::analytics::quant::domain::make_latent_market;
 using ores::analytics::quant::math::keyed_path_finest_step;
 using ores::analytics::quant::math::keyed_path_value_at;
 using ores::analytics::quant::math::make_keyed_path;
+using ores::analytics::quant::domain::i_stochastic_process;
 using ores::analytics::quant::math::correlation_loadings;
+using ores::analytics::quant::math::draw_purpose;
+using ores::analytics::quant::math::rng_stream;
+using ores::analytics::quant::math::series_key;
+using ores::analytics::quant::math::standard_normal_at;
+using ores::analytics::quant::service::ornstein_uhlenbeck_process;
 
 namespace {
 
@@ -56,11 +66,11 @@ latent_market make_latent_block(std::uint64_t seed, double rho) {
     latent_add_factor(market, 1);
     latent_add_factor(market, 2);
 
-    latent_add_series(market);
+    latent_add_series(market, 101);
     const std::vector<factor_weight> anchor_loadings{{.factor = 0, .weight = 1.0}};
     latent_set_loadings(market, 0, anchor_loadings);
 
-    latent_add_series(market);
+    latent_add_series(market, 102);
     const std::vector<factor_weight> member_loadings{
         {.factor = 0, .weight = rho}, {.factor = 1, .weight = std::sqrt(1.0 - rho * rho)}};
     latent_set_loadings(market, 1, member_loadings);
@@ -240,7 +250,7 @@ TEST_CASE("a series is untouched by another series' ticks", "[latent_market]") {
     std::vector<double> shared;
     {
         latent_market market = make_latent_block(555, rho);
-        const std::uint32_t burst = latent_add_series(market);
+        const std::uint32_t burst = latent_add_series(market, 103);
         const std::vector<factor_weight> burst_loadings{{.factor = 1, .weight = 1.0}};
         latent_set_loadings(market, burst, burst_loadings);
         for (int i = 1; i <= 40; ++i) {
@@ -279,7 +289,7 @@ TEST_CASE("an event costs its own factors, not every factor in the market",
         latent_market market = make_latent_market(4242, latent_hour, latent_depth, 0.0);
         for (std::uint32_t k = 0; k < factor_count; ++k)
             latent_add_factor(market, static_cast<std::uint64_t>(k) + 1);
-        latent_add_series(market);
+        latent_add_series(market, 104);
         const std::vector<factor_weight> loadings{{.factor = 0, .weight = 0.6},
                                                   {.factor = 1, .weight = 0.8}};
         latent_set_loadings(market, 0, loadings);
@@ -320,17 +330,17 @@ TEST_CASE("a driver refuses loadings that are not its own", "[latent_market]") {
     latent_market market = make_latent_block(888, 0.5);
 
     // The squared weights must fit inside one of variance.
-    const std::uint32_t greedy = latent_add_series(market);
+    const std::uint32_t greedy = latent_add_series(market, 105);
     const std::vector<factor_weight> too_much{{.factor = 0, .weight = 0.9},
                                               {.factor = 1, .weight = 0.9}};
     CHECK_THROWS_AS(latent_set_loadings(market, greedy, too_much), std::invalid_argument);
 
-    const std::uint32_t repeated = latent_add_series(market);
+    const std::uint32_t repeated = latent_add_series(market, 106);
     const std::vector<factor_weight> twice{{.factor = 0, .weight = 0.5},
                                            {.factor = 0, .weight = 0.5}};
     CHECK_THROWS_AS(latent_set_loadings(market, repeated, twice), std::invalid_argument);
 
-    const std::uint32_t out_of_range = latent_add_series(market);
+    const std::uint32_t out_of_range = latent_add_series(market, 107);
     const std::vector<factor_weight> missing{{.factor = 9, .weight = 0.5}};
     CHECK_THROWS_AS(latent_set_loadings(market, out_of_range, missing), std::invalid_argument);
 
@@ -349,6 +359,67 @@ TEST_CASE("a tick with no time behind it carries no increment", "[latent_market]
     const auto again = latent_tick(market, 0, 0.1 * latent_hour);
     CHECK(again.elapsed == 0.0);
     CHECK(again.shared == 0.0);
+}
+
+namespace {
+
+/// A process whose step is not a function of one normal, so it cannot be driven.
+class plain_process final : public i_stochastic_process {
+public:
+    double next() override {
+        return 0.0;
+    }
+    double current() const override {
+        return 0.0;
+    }
+};
+
+}
+
+TEST_CASE("a process takes the normal its step is built on", "[latent_market]") {
+    const rng_stream stream(ores::analytics::quant::math::stream_key{
+        .run_seed = 1, .series = series_key("acme.fx.EURUSD"), .purpose = draw_purpose::price});
+    // kappa of zero is the driftless walk, so the step is sigma * sqrt(dt) * z.
+    ornstein_uhlenbeck_process ou(0.0, 0.0, 1.0, 1.0, stream, 1.0);
+    CHECK(ou.supports_external_normal());
+    CHECK(ou.next_with_normal(2.0) == Catch::Approx(3.0));
+    // The price carries forward: 3.0 from the first step, less 0.5 on the second.
+    CHECK(ou.next_with_normal(-0.5) == Catch::Approx(2.5));
+}
+
+TEST_CASE("a process that cannot take a normal refuses it", "[latent_market]") {
+    plain_process plain;
+    CHECK_FALSE(plain.supports_external_normal());
+    CHECK_THROWS_AS(plain.next_with_normal(1.0), std::invalid_argument);
+}
+
+TEST_CASE("a series with no loadings is handed its own normal unscaled", "[latent_market]") {
+    latent_market market = make_latent_market(77, latent_hour, latent_depth, 0.0);
+    latent_add_factor(market, 1);
+    latent_add_series(market, 4321);
+    const double own = latent_driver(market, 0, 0.1 * latent_hour);
+    const double expected =
+        standard_normal_at({.run_seed = 77, .series = 4321, .purpose = draw_purpose::price}, 0);
+    // Multiplying by one and dividing by one is not bit for bit the same number.
+    CHECK(own == expected);
+}
+
+TEST_CASE("a loaded series mixes the shared part with its own noise", "[latent_market]") {
+    latent_market market = make_latent_market(78, latent_hour, latent_depth, 0.0);
+    latent_add_factor(market, 1);
+    latent_add_series(market, 5001);
+    const std::vector<factor_weight> loadings{{.factor = 0, .weight = 0.5}};
+    latent_set_loadings(market, 0, loadings);
+
+    const double t = 0.25 * latent_hour;
+    const double own =
+        standard_normal_at({.run_seed = 78, .series = 5001, .purpose = draw_purpose::price}, 0);
+    const double z = latent_driver(market, 0, t);
+    // The driver the tick recorded is the shared part at t, since its last value
+    // was the run's start.
+    const double shared = latent_driver_value(market, 0);
+    const double expected = (shared + std::sqrt(0.75) * own) / std::sqrt(t);
+    CHECK(z == Catch::Approx(expected).epsilon(1e-15));
 }
 
 TEST_CASE("a burst inside one finest step interpolates between its two nodes", "[latent_market]") {

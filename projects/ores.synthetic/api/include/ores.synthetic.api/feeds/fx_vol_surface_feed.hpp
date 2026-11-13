@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_API_FEEDS_FX_VOL_SURFACE_FEED_HPP
 #define ORES_SYNTHETIC_API_FEEDS_FX_VOL_SURFACE_FEED_HPP
 
+#include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.nats/service/client.hpp"
@@ -126,7 +127,7 @@ public:
                         std::string nats_subject,
                         const fx_vol_surface_feed_build_input& input,
                         std::uint64_t run_seed,
-                        ores::analytics::quant::service::tick_scheduler& scheduler,
+                        ores::analytics::quant::service::run_market& market,
                         double sensitivity,
                         const ores::analytics::quant::domain::arrival_spec& arrival);
 
@@ -168,7 +169,7 @@ private:
     std::vector<std::string> series_uris_;
     fx_vol_surface_emitter emitter_;
     ores::analytics::quant::domain::arrival_spec arrival_;
-    ores::analytics::quant::service::tick_scheduler& scheduler_;
+    ores::analytics::quant::service::run_market& market_;
     double ticks_per_second_ = 1.0;
     double sensitivity_ = 1.0;
     std::optional<std::size_t> handle_;

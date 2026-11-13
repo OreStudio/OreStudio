@@ -23,7 +23,6 @@
 #include "../generator_fleet.hpp"
 #include "../generator_runner.hpp"
 #include "../registrar.hpp"
-#include "../run_market.hpp"
 #include "../simulator_adapter.hpp"
 #include "../simulator_offers.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
@@ -332,10 +331,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // The heat adds half a rate per event and fades at twenty a second, so its
     // loop gain is a fortieth. Zero jump would leave the heat inert, so the
     // default is explicit here.
-    // The run's one latent market. Declared before the scheduler so it outlives it: the
-    // scheduler's driver source points here.
-    run_market run_market_of_the_run;
-
     ores::analytics::quant::service::steady_run_clock run_clock;
     const ores::analytics::quant::domain::market_config market{.wake_rate = 1.0 / 600.0,
                                                                .calm_rate = 1.0 / 300.0,
@@ -345,7 +340,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                                .speed = cfg.market_speed};
     BOOST_LOG_SEV(lg(), info) << "SYNTHETIC RUN SEED: " << cfg.run_seed
                               << ", MARKET SPEED: " << cfg.market_speed;
-    ores::analytics::quant::service::tick_scheduler scheduler(run_clock, market, cfg.run_seed);
+    // The run's one market: its loop decides when every feed ticks, its noise is the
+    // correlation between them, and its values are what they publish for each other. The
+    // aggregate owns all three, so the driver hook it installs points at what it outlives.
+    ores::analytics::quant::service::run_market run_market_of_the_run(
+        run_clock, market, cfg.run_seed);
+    auto& scheduler = run_market_of_the_run.loop();
     scheduler.set_hooks([](std::uint64_t, const std::string&) {},
                         [](const std::exception& ex) {
                             BOOST_LOG_SEV(lg(), error) << "SYNTHETIC TICK FAILED: " << ex.what();
@@ -381,12 +381,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 continue;
             }
             try {
-                run_market_of_the_run.add_surface(anchor->second,
-                                                  row.candidate.source_name,
-                                                  row.candidate.block->segments,
-                                                  row.candidate.block->spot_variance,
-                                                  row.candidate.block->spot_skew,
-                                                  row.candidate.block->neighbour);
+                run_market_of_the_run.add_block(anchor->second,
+                                                row.candidate.source_name,
+                                                row.candidate.block->segments,
+                                                row.candidate.block->spot_variance,
+                                                row.candidate.block->spot_skew,
+                                                row.candidate.block->neighbour);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), warn) << "Synthetic surface '" << row.candidate.source_name
                                           << "' has no block: " << e.what();
@@ -394,11 +394,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         }
         // A second is the finest gap this run can produce until the arrival laws are read
         // here. Every configured rate is far slower, so no tick is interpolated.
-        run_market_of_the_run.build(scheduler, cfg.run_seed, 3600.0, 0.0, 1.0);
+        run_market_of_the_run.build(3600.0, 0.0, 1.0);
         BOOST_LOG_SEV(lg(), info) << "SYNTHETIC MARKET: "
-                                  << run_market_of_the_run.market().factors.size()
+                                  << run_market_of_the_run.noise().factors.size()
                                   << " factor(s) over "
-                                  << run_market_of_the_run.market().series_id.size() << " series";
+                                  << run_market_of_the_run.noise().series_id.size() << " series";
     }
 
     // A destructor join on a thread that ignores its token turns every startup
@@ -415,7 +415,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // serves the system collections of the provider of the source, and it starts a generator for
     // each id that the demand names.
     const ores::synthetic::feed::feed_build_context adapter_build{
-        .nats = nats, .auth_nats = svc_nats, .scheduler = scheduler};
+        .nats = nats, .auth_nats = svc_nats, .market = run_market_of_the_run};
     const auto faults = std::make_shared<ores::synthetic::feed::fault_state>();
     // Every runner of the service claims its feeds here, so one set answers what runs now and
     // one stop reaches a feed whichever run holds it. It outlives the fleet that owns the runners.
@@ -428,10 +428,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         std::move(db_ctx),
         "ores.synthetic.service",
-        [&generators, faults, &svc_nats, &registry, &scheduler](auto& n, auto c, auto v) {
+        [&generators, faults, &svc_nats, &registry, &run_market_of_the_run](
+            auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
             auto market_subs = ores::synthetic::service::registrar::register_handlers(
-                n, svc_nats, generators, faults, c, v, registry, scheduler);
+                n, svc_nats, generators, faults, c, v, registry, run_market_of_the_run);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));

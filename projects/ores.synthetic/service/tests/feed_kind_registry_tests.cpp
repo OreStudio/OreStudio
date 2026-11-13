@@ -399,7 +399,7 @@ TEST_CASE("registry_make_feed_applies_the_gate_and_builds_through_the_factory",
     stub_fixture f;
     const auto registry = f.registry;
     const ores::synthetic::feed::feed_build_context bctx{
-        .nats = f.nats, .auth_nats = f.auth_nats, .scheduler = f.run.scheduler};
+        .nats = f.nats, .auth_nats = f.auth_nats, .market = f.run.market_};
 
     const auto targets = registry->targets(f.ctx);
     REQUIRE(targets.size() == 2);
@@ -498,7 +498,7 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", "[feed_kind_registry]"
     stub_builds = 0;
     {
         feed_config_handler h(
-            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.scheduler);
+            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.market_);
         h.start(request_message(start_feed_request{.config_id = stub_id}, f.token));
     }
     CHECK(stub_builds == 1);
@@ -508,7 +508,7 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", "[feed_kind_registry]"
     // A config id the stub kind does not claim starts nothing.
     {
         feed_config_handler h(
-            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.scheduler);
+            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.market_);
         h.start(request_message(start_feed_request{.config_id = "not-a-config-id"}, f.token));
     }
     CHECK(f.fleet.running_count() == 1);
@@ -516,7 +516,7 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", "[feed_kind_registry]"
     // stop: the verb resolves the config id through the same registry.
     {
         feed_config_handler h(
-            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.scheduler);
+            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.market_);
         h.stop(request_message(stop_feed_request{.config_id = stub_id}, f.token));
     }
     CHECK(f.fleet.running_count() == 0);
@@ -525,7 +525,7 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", "[feed_kind_registry]"
     // subtree the registry supplies, and tallies under the registered kind.
     {
         folder_feed_control_handler h(
-            f.nats, f.fleet, f.auth_nats, f.ctx, f.verifier, *f.registry, f.run.scheduler);
+            f.nats, f.fleet, f.auth_nats, f.ctx, f.verifier, *f.registry, f.run.market_);
         h.start(
             request_message(start_feeds_under_folder_request{.folder_id = stub_folder}, f.token));
     }
@@ -535,7 +535,7 @@ TEST_CASE("every_control_plane_verb_reaches_a_stub_kind", "[feed_kind_registry]"
     // folder stop: the same walk, over rows rather than targets.
     {
         folder_feed_control_handler h(
-            f.nats, f.fleet, f.auth_nats, f.ctx, f.verifier, *f.registry, f.run.scheduler);
+            f.nats, f.fleet, f.auth_nats, f.ctx, f.verifier, *f.registry, f.run.market_);
         h.stop(request_message(stop_feeds_under_folder_request{.folder_id = stub_folder}, f.token));
     }
     CHECK(f.fleet.running_count() == 0);
@@ -580,12 +580,12 @@ TEST_CASE("a_system_feed_starts_and_stops_only_in_the_system_tenant", "[feed_kin
     stub_fixture f;
     const auto start = [&] {
         feed_config_handler h(
-            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.scheduler);
+            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.market_);
         h.start(request_message(start_feed_request{.config_id = stub_id}, f.token));
     };
     const auto stop = [&] {
         feed_config_handler h(
-            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.scheduler);
+            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.market_);
         h.stop(request_message(stop_feed_request{.config_id = stub_id}, f.token));
     };
 
@@ -610,7 +610,7 @@ TEST_CASE("a_system_feed_starts_and_stops_only_in_the_system_tenant", "[feed_kin
     REQUIRE(f.fleet.running_count() == 1);
     {
         feed_config_handler h(
-            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.scheduler);
+            f.nats, f.auth_nats, f.fleet, f.ctx, f.verifier, *f.registry, f.run.market_);
         h.stop(request_message(stop_feed_request{}, f.token));
     }
     CHECK(f.fleet.running_count() == 1);

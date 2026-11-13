@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "../src/run_market.hpp"
 #include "ores.analytics.quant/service/run_clock.hpp"
+#include "ores.analytics.quant/service/run_market.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
 #include <stdexcept>
@@ -28,7 +28,6 @@
 using namespace ores::analytics::quant::domain;
 using namespace ores::analytics::quant::math;
 using namespace ores::analytics::quant::service;
-using namespace ores::synthetic::service;
 
 namespace {
 
@@ -54,57 +53,54 @@ arrival_spec run_market_arrival() {
     return {.mode = "periodic", .ticks_per_hour = 4.0, .branching_ratio = 0.0, .decay = 1.0};
 }
 
-const std::string surface_name = "synthetic.fx_vol.eurusd";
+const std::string run_market_surface = "synthetic.fx_vol.eurusd";
 const std::uint64_t spot = series_key("synthetic.fx.eurusd");
 
 }
 
 TEST_CASE("a run's market maps a spot's one driver and a surface's seven", "[run_market]") {
-    run_market run;
-    run.add_surface(spot, surface_name, 5, 0.3, -0.4, 0.9);
-
     run_market_clock clock;
-    tick_scheduler scheduler(clock, {}, 42);
-    run.build(scheduler, 42, 3600.0, 0.0, 60.0);
+    run_market run(clock, {}, 42);
+    run.add_block(spot, run_market_surface, 5, 0.3, -0.4, 0.9);
+
+    run.build(3600.0, 0.0, 60.0);
 
     CHECK(run.built());
-    CHECK(run.has_surface(surface_name));
-    CHECK_FALSE(run.has_surface("another.surface"));
+    CHECK(run.has_block(run_market_surface));
+    CHECK_FALSE(run.has_block("another.surface"));
     CHECK(run.driver_count_of(spot) == 1);
-    CHECK(run.driver_count_of(series_key(surface_name)) == 7);
+    CHECK(run.driver_count_of(series_key(run_market_surface)) == 7);
     // A series the market does not know is driven by nothing.
     CHECK(run.driver_count_of(series_key("nobody")) == 0);
     // The spot is one series and the surface's drivers are seven more.
-    CHECK(run.market().series_id.size() == 8);
+    CHECK(run.noise().series_id.size() == 8);
 }
 
 TEST_CASE("a market that is built refuses another block", "[run_market]") {
-    run_market run;
-    run.add_surface(spot, surface_name, 5, 0.3, -0.4, 0.9);
-    CHECK_THROWS_AS(run.add_surface(spot, surface_name, 5, 0.3, -0.4, 0.9), std::invalid_argument);
-
     run_market_clock clock;
-    tick_scheduler scheduler(clock, {}, 42);
-    run.build(scheduler, 42, 3600.0, 0.0, 60.0);
-    CHECK_THROWS_AS(run.add_surface(spot, "another.surface", 5, 0.3, -0.4, 0.9),
+    run_market run(clock, {}, 42);
+    run.add_block(spot, run_market_surface, 5, 0.3, -0.4, 0.9);
+    CHECK_THROWS_AS(run.add_block(spot, run_market_surface, 5, 0.3, -0.4, 0.9), std::invalid_argument);
+
+    run.build(3600.0, 0.0, 60.0);
+    CHECK_THROWS_AS(run.add_block(spot, "another.surface", 5, 0.3, -0.4, 0.9),
                     std::invalid_argument);
-    CHECK_THROWS_AS(run.build(scheduler, 42, 3600.0, 0.0, 60.0), std::invalid_argument);
+    CHECK_THROWS_AS(run.build(3600.0, 0.0, 60.0), std::invalid_argument);
 }
 
 TEST_CASE("a surface's drivers reach its tick as the market's normals", "[run_market]") {
-    run_market run;
-    run.add_surface(spot, surface_name, 5, 0.3, -0.4, 0.9);
     run_market_clock clock;
-    tick_scheduler scheduler(clock, {}, 42);
-    run.build(scheduler, 42, 3600.0, 0.0, 60.0);
+    run_market run(clock, {}, 42);
+    run.add_block(spot, run_market_surface, 5, 0.3, -0.4, 0.9);
+    run.build(3600.0, 0.0, 60.0);
 
     std::vector<double> surface_drivers;
     std::vector<double> spot_driver;
     std::vector<double> stranger_driver;
-    const series_spec surface_spec{.series = series_key(surface_name),
+    const series_spec surface_spec{.series = series_key(run_market_surface),
                                    .arrival = run_market_arrival(),
                                    .sensitivity = 1.0,
-                                   .name = surface_name,
+                                   .name = run_market_surface,
                                    .group = "fx",
                                    .driver_count = 7};
     const series_spec spot_spec{.series = spot,
@@ -119,22 +115,22 @@ TEST_CASE("a surface's drivers reach its tick as the market's normals", "[run_ma
                                     .name = "nobody",
                                     .group = "fx",
                                     .driver_count = 1};
-    scheduler.add(surface_spec, [&surface_drivers](const tick_context& c) {
+    run.loop().add(surface_spec, [&surface_drivers](const tick_context& c) {
         surface_drivers.assign(c.drivers.begin(), c.drivers.end());
         return std::string("ok");
     });
-    scheduler.add(spot_spec, [&spot_driver](const tick_context& c) {
+    run.loop().add(spot_spec, [&spot_driver](const tick_context& c) {
         spot_driver.assign(c.drivers.begin(), c.drivers.end());
         return std::string("ok");
     });
-    scheduler.add(stranger_spec, [&stranger_driver](const tick_context& c) {
+    run.loop().add(stranger_spec, [&stranger_driver](const tick_context& c) {
         stranger_driver.assign(c.drivers.begin(), c.drivers.end());
         return std::string("ok");
     });
 
-    REQUIRE(scheduler.step());
-    REQUIRE(scheduler.step());
-    REQUIRE(scheduler.step());
+    REQUIRE(run.loop().step());
+    REQUIRE(run.loop().step());
+    REQUIRE(run.loop().step());
 
     REQUIRE(surface_drivers.size() == 7);
     REQUIRE(spot_driver.size() == 1);
@@ -155,10 +151,9 @@ TEST_CASE("a surface's drivers reach its tick as the market's normals", "[run_ma
 }
 
 TEST_CASE("a run with no surface builds a market with nothing in it", "[run_market]") {
-    run_market run;
     run_market_clock clock;
-    tick_scheduler scheduler(clock, {}, 42);
-    run.build(scheduler, 42, 3600.0, 0.0, 60.0);
-    CHECK(run.market().series_id.empty());
+    run_market run(clock, {}, 42);
+    run.build(3600.0, 0.0, 60.0);
+    CHECK(run.noise().series_id.empty());
     CHECK(run.driver_count_of(spot) == 0);
 }

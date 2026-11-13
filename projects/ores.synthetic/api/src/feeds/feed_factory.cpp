@@ -59,7 +59,7 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_fx_spot(const feed_build
                              in.fixing_items,
                              in.policy,
                              in.variance_calibration,
-                             ctx.scheduler,
+                             ctx.market,
                              in.adapter,
                              ctx.clock.get());
 }
@@ -76,7 +76,7 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_buil
                               in.values,
                               in.definitions,
                               in.refctx,
-                              ctx.scheduler,
+                              ctx.market,
                               in.adapter_targets,
                               std::move(start));
 }
@@ -89,8 +89,8 @@ build_fx_vol_surface(const feed_build_context& ctx, const feed_build_input& inpu
                                                  std::string("synthetic.v1.ops.tick.") +
                                                      in.config.source_name,
                                                  in,
-                                                 ctx.scheduler.run_seed(),
-                                                 ctx.scheduler,
+                                                 ctx.market.loop().run_seed(),
+                                                 ctx.market,
                                                  in.config.sensitivity,
                                                  to_arrival_spec(in.config));
 }

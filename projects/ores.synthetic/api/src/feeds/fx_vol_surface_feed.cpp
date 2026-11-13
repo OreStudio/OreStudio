@@ -43,7 +43,7 @@ using ores::analytics::quant::service::fx_vol_surface_dynamics;
 using ores::analytics::quant::service::ssvi_expiry_fit;
 using ores::analytics::quant::service::ssvi_parameters;
 using ores::analytics::quant::service::tick_context;
-using ores::analytics::quant::service::tick_scheduler;
+using ores::analytics::quant::service::run_market;
 
 namespace {
 
@@ -208,7 +208,7 @@ fx_vol_surface_feed::fx_vol_surface_feed(
     std::string nats_subject,
     const fx_vol_surface_feed_build_input& input,
     std::uint64_t run_seed,
-    tick_scheduler& scheduler,
+    run_market& market,
     double sensitivity,
     const ores::analytics::quant::domain::arrival_spec& arrival)
     : nats_(nats)
@@ -216,7 +216,7 @@ fx_vol_surface_feed::fx_vol_surface_feed(
     , nats_subject_(std::move(nats_subject))
     , emitter_(surface_or_throw(input, run_seed, source_name_))
     , arrival_(arrival)
-    , scheduler_(scheduler)
+    , market_(market)
     , sensitivity_(sensitivity) {
     ticks_per_second_ = static_cast<double>(input.config.ticks_per_hour) / 3600.0;
 
@@ -238,7 +238,7 @@ fx_vol_surface_feed::fx_vol_surface_feed(
 void fx_vol_surface_feed::start() {
     if (handle_)
         return;
-    handle_ = scheduler_.add(
+    handle_ = market_.loop().add(
         {.series = series_key(source_name_),
          .arrival = arrival_,
          .sensitivity = sensitivity_,
@@ -281,7 +281,7 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
 
 void fx_vol_surface_feed::stop() {
     if (handle_) {
-        scheduler_.remove(*handle_);
+        market_.loop().remove(*handle_);
         handle_.reset();
     }
 }

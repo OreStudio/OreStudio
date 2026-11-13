@@ -27,7 +27,6 @@ set(files
     "generator_fleet_tests.cpp"
     "ir_curve_template_resolver_tests.cpp"
     "main.cpp"
-    "run_market_tests.cpp"
     "simulator_adapter_tests.cpp"
     "simulator_faults_tests.cpp"
 )

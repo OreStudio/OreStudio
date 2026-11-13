@@ -484,9 +484,8 @@ TEST_CASE("the runner rejects an id whose generator cannot be built",
 
 TEST_CASE("the runner survives a generator whose start throws", "[simulator_adapter][runner]") {
     generator_runner runner([] {
-        return std::vector{generator_offer{.id = bbg_id("EUR/USD"), .make = [] {
-                                               return std::make_shared<failing_generator>();
-                                           }}};
+        return std::vector{generator_offer{
+            .id = bbg_id("EUR/USD"), .make = [] { return std::make_shared<failing_generator>(); }}};
     });
 
     const auto out = runner.apply({bbg_id("EUR/USD")});
@@ -537,7 +536,7 @@ TEST_CASE("the adapter announces, answers the demand and sends ticks and heartbe
                     std::make_unique<flat_process>(),
                     ores::analytics::quant::domain::arrival_spec{.mode = "periodic",
                                                                  .ticks_per_hour = 36000000.0},
-                    run.scheduler,
+                    run.market_,
                     1.0,
                     ores::synthetic::feed::adapter_target{
                         .id = target,
@@ -719,10 +718,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
             [](const auto&, const auto&) {
                 return std::optional<ores::synthetic::domain::market_data_generation_config>{};
             },
-        .containers =
-            [containers](const auto&) {
-                return containers();
-            }});
+        .containers = [containers](const auto&) { return containers(); }});
 
     svc::feed_kind kind;
     kind.kind = std::string(ores::synthetic::feed::fx_spot_feed_kind);
@@ -754,7 +750,7 @@ TEST_CASE("the offers are the startable system configs of the provider that have
     ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
     ores::analytics::quant::service::running_scheduler run;
     const ores::synthetic::feed::feed_build_context build{
-        .nats = nats, .auth_nats = auth_nats, .scheduler = run.scheduler};
+        .nats = nats, .auth_nats = auth_nats, .market = run.market_};
 
     const auto offers =
         svc::system_generator_offers(registry, ctx, build, "bloomberg-a", "bloomberg");
@@ -860,7 +856,7 @@ TEST_CASE("a curve that serves an adapter publishes a tick under each pillar's o
                     .subject = domain::adapter_ingress_subject(adapter_id, fra_id.external_id)}}};
 
     ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
-    ores::analytics::quant::service::tick_scheduler idle(clock, {}, 42);
+    ores::analytics::quant::service::run_market idle(clock, {}, 42);
     ores::synthetic::feed::ir_curve_feed feed(
         nats,
         "test.usd.sofr",
@@ -905,7 +901,7 @@ TEST_CASE("a curve whose process takes no variable step advances one tick howeve
         nats, domain::adapter_ingress_subject(adapter_id, id.external_id));
 
     ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
-    ores::analytics::quant::service::tick_scheduler idle(clock, {}, 42);
+    ores::analytics::quant::service::run_market idle(clock, {}, 42);
     ores::synthetic::feed::ir_curve_feed feed(
         nats,
         "test.usd.sofr",
@@ -973,7 +969,7 @@ TEST_CASE("a curve is offered once for each of its pillars, all under the curve'
     ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
     ores::analytics::quant::service::running_scheduler run;
     const ores::synthetic::feed::feed_build_context build{
-        .nats = nats, .auth_nats = auth_nats, .scheduler = run.scheduler};
+        .nats = nats, .auth_nats = auth_nats, .market = run.market_};
 
     const auto offers = svc::system_generator_offers(registry, ctx, build, "demo-a", "demo");
 
@@ -1047,7 +1043,7 @@ TEST_CASE("a curve that is not enabled is offered nothing", "[simulator_adapter]
     ores::nats::service::nats_client auth_nats(nats, [](bool) { return std::string(); });
     ores::analytics::quant::service::running_scheduler run;
     const ores::synthetic::feed::feed_build_context build{
-        .nats = nats, .auth_nats = auth_nats, .scheduler = run.scheduler};
+        .nats = nats, .auth_nats = auth_nats, .market = run.market_};
 
     CHECK(svc::system_generator_offers(registry, ctx, build, "demo-a", "demo").empty());
 }
@@ -1061,7 +1057,7 @@ TEST_CASE("a curve publishes only where the ingest listens",
     const auto id = demo_pillar_id("USD", "sofr", "DEPO", "SPOT", "3M");
 
     ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
-    ores::analytics::quant::service::tick_scheduler idle(clock, {}, 42);
+    ores::analytics::quant::service::run_market idle(clock, {}, 42);
     const auto make = [&](std::vector<ores::synthetic::feed::ir_pillar_quote_target> targets) {
         return ores::synthetic::feed::ir_curve_feed(
             nats,

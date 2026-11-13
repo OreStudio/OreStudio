@@ -23,6 +23,7 @@
 #include "ores.analytics.quant/domain/arrival_spec.hpp"
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.analytics.quant/domain/market_board.hpp"
+#include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/feed_start.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
@@ -90,7 +91,7 @@ public:
                  std::string nats_subject,
                  std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process,
                  const ores::analytics::quant::domain::arrival_spec& arrival,
-                 ores::analytics::quant::service::tick_scheduler& scheduler,
+                 ores::analytics::quant::service::run_market& market,
                  double sensitivity = 1.0,
                  std::optional<adapter_target> adapter = std::nullopt,
                  std::string pair_code = {});
@@ -143,7 +144,7 @@ private:
     std::unique_ptr<ores::analytics::quant::domain::i_stochastic_process> process_;
     /// The row's arrival law, which the scheduler draws this series' gaps from.
     ores::analytics::quant::domain::arrival_spec arrival_;
-    ores::analytics::quant::service::tick_scheduler& scheduler_;
+    ores::analytics::quant::service::run_market& market_;
     /// How strongly this feed follows the market.
     double sensitivity_;
     /// The series' registration in the scheduler, while it is registered.
@@ -275,7 +276,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const std::vector<ores::synthetic::domain::fx_spot_fixing_item>& fixing_items,
                   const calibration_policy& policy,
                   const std::optional<ores::synthetic::domain::variance_calibration>& variance,
-                  ores::analytics::quant::service::tick_scheduler& scheduler,
+                  ores::analytics::quant::service::run_market& market,
                   std::optional<adapter_target> adapter = std::nullopt,
                   const ores::marketdata::domain::market_clock* clock = nullptr);
 

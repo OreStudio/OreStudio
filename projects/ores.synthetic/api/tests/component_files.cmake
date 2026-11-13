@@ -44,6 +44,7 @@ set(files
     "feeds_fixing_calibration_tests.cpp"
     "feeds_fx_vol_surface_emitter_tests.cpp"
     "feeds_fx_vol_surface_feed_tests.cpp"
+    "feeds_fx_vol_surface_round_trip_tests.cpp"
     "feeds_ir_curve_board_points_tests.cpp"
     "feeds_publish_subject_tests.cpp"
     "feeds_variance_calibration_tests.cpp"

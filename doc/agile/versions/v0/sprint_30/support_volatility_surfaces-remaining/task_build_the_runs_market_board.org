@@ -30,9 +30,9 @@ The design is [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Stages 1 to 4 and both gates have landed: the board, the date rule, the publishers, the surface reading the values every tick, the start verb's refusal of a pair the run carries no curve for, and the tick's own message when a member is not published yet. Only stage 5, the measured round trip, remains. |
+| Now          | Every stage and both gates have landed, and the round trip is measured: a calibration of the run's own quotes, against the same market, recovers them to 1.25e-09 at ATM and 3.81e-09 at the wings. The bootstrap half of the round trip is a separate task on the calibration. |
 | Waiting on   | Nothing.                               |
-| Next         | Stage 5: the tolerance a party's calibration of the clean quotes lands within. |
+| Next         | The pull request. A party's bootstrap tolerance is not in this task, because its number is the bootstrap's and moves with it. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance

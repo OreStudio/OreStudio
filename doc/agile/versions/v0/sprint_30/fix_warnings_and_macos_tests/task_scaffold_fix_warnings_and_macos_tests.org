@@ -8,7 +8,7 @@
 #+filetags: :fix_warnings_and_macos_tests:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/fix-warnings-and-macos-tests
-#+pr:
+#+pr: 4667
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4667][#4667]] | [database] Export the exceptions and clear three warnings |
 
 * Review
 

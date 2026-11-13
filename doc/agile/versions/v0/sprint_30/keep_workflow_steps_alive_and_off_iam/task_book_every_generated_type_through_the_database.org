@@ -72,7 +72,12 @@ task and name that file in the Command column.
     indices in EUR.
   - =book_trade= of a generated bond crashes with a segmentation fault before
     it answers, so the store's refusal is never reached. The check reports the
-    class and the type it was booking, which is how the crash was named.
+    class and the type it was booking, which is how the crash was named, and a
+    backtrace under =gdb= puts it inside
+    =ores::trading::service::trade_operations_service::book_trade= itself, not
+    in the check and not in the store. Diagnosing it is the next step: the
+    request carries the issue's instrument rows, so a row the service reads
+    without checking is the likely shape.
 
 * Test Scenarios
 

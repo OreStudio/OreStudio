@@ -59,7 +59,7 @@ const std::vector<std::string> booking_asset_classes = {
 
 /// The config and the instant the population is drawn from, so a failure names
 /// the same population every time it is run.
-const boost::uuids::uuid config_id =
+const boost::uuids::uuid booking_config_id =
     boost::uuids::string_generator()("0cd68b09-6ebc-4180-a298-0cc386590f31");
 
 /// A port that lets every booking through, so the case tests the store and not
@@ -140,9 +140,9 @@ struct fixture final {
  * A planner draws its trade type by the slot's position, so a population of the
  * class's own code count states each code exactly once.
  */
-trade_generation_scope scope_of(const fixture& f, const std::string& asset_class_code) {
+trade_generation_scope booking_scope_of(const fixture& f, const std::string& asset_class_code) {
     trade_generation_scope scope;
-    scope.config_id = config_id;
+    scope.config_id = booking_config_id;
     scope.party_id = f.party_id;
     scope.asset_class_code = asset_class_code;
     scope.min_tenor_code = "1Y";
@@ -210,7 +210,7 @@ TEST_CASE("every_generated_trade_type_books_through_the_database",
     trade_operations_service books(f.ctx, open_books{});
 
     for (const auto& asset_class : booking_asset_classes) {
-        const auto scope = scope_of(f, asset_class);
+        const auto scope = booking_scope_of(f, asset_class);
         const auto plan = planner_for(asset_class).plan(scope);
         std::set<std::string> booked_types;
         for (const auto& slot : plan.slots) {

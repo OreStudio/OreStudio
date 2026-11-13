@@ -53,6 +53,7 @@ namespace ores::synthetic::domain {
         utility::codec::field{"party_id", &fx_vol_surface_feed_expiry::party_id},
         utility::codec::field{"feed_id", &fx_vol_surface_feed_expiry::feed_id},
         utility::codec::field{"tenor", &fx_vol_surface_feed_expiry::tenor},
+        utility::codec::field{"atm_vol", &fx_vol_surface_feed_expiry::atm_vol},
         utility::codec::field{"variance_reversion",
                               &fx_vol_surface_feed_expiry::variance_reversion},
         utility::codec::field{"variance_volatility",

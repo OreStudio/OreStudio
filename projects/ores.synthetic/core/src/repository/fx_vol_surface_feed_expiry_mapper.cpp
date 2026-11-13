@@ -50,6 +50,7 @@ fx_vol_surface_feed_expiry_mapper::map(const fx_vol_surface_feed_expiry_entity& 
     r.party_id = v.party_id;
     r.feed_id = v.feed_id;
     r.tenor = v.tenor;
+    r.atm_vol = v.atm_vol;
     r.variance_reversion = v.variance_reversion;
     r.variance_volatility = v.variance_volatility;
     r.modified_by = v.modified_by;
@@ -73,6 +74,7 @@ fx_vol_surface_feed_expiry_mapper::map(const domain::fx_vol_surface_feed_expiry&
     r.party_id = v.party_id;
     r.feed_id = v.feed_id;
     r.tenor = v.tenor;
+    r.atm_vol = v.atm_vol;
     r.variance_reversion = v.variance_reversion;
     r.variance_volatility = v.variance_volatility;
     r.modified_by = v.modified_by;

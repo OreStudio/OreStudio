@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-the-latent-market
+#+pr: 4673
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
@@ -52,11 +52,11 @@ the decision is OD-1 of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The driven step reaches the FX spot's law; no feed reads its driver yet. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 1, the keyed path.                |
+| Next         | The surface feed, which lands with the spot's wiring. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
@@ -118,6 +118,164 @@ Static loadings only. Per-regime loadings, global factors, calibration and
 derived =CORRELATION/RATE= quotes are later work, as the design note's
 "Later work" section lists them.
 
+** Progress
+
+| Step | State | Commit |
+|------+-------+--------|
+| 1. The keyed path | DONE 2026-11-12 | =0b29106307=, benchmark split in =52f21b5412= |
+| 2. The latent market | DONE 2026-11-12 | =1235e7d5d7= |
+| 3. The driven step | DONE 2026-11-12, five processes drivable | =5f127589f0=, =b31521e545= |
+| 4. The tick context carries the market | the mixture and its variance wrapper take the normal; the feeds and the service are outstanding, and land with step 6 | =a5b1881944= |
+| 5. Configuration | the model and the depth rule done; the block's correlations are already typed columns of =fx_vol_surface_feed=, so what remains is the read, the tab and the shell verbs | =cf90e7236a= |
+| 6. The FX volatility surface | DONE 2026-11-13: configured, stepping, startable, and driven by the market the run builds | =1ea0ec0df1=, =d8c6acb028=, =d31c9ae527=, =27b0c97626=, =9e6497d4f8=, =3bf225e457=, =2b25f7d9d5=, =e25104b0c0=, =6d590e5850=, =eb43def310= |
+
+Step 2 keeps the many case in view: a factor owns a path and a fifty-six byte
+walk, a series owns two doubles, and the loadings are one flat array written in
+a single pass while the market is built. Its tests recover the stated
+correlation with the Hayashi-Yoshida estimator under independent irregular
+sampling, and pin that a series is untouched by another series' ticks.
+
+What step 2 leaves to step 3 is the series' own motion: the market returns only
+the shared part of a driver's increment, and the process adds its own draw
+weighted by the square root of one less the squared loadings. A series with no
+loadings is therefore still to be handed its drawn normal unscaled, which is the
+migration test.
+
+** Which processes can be driven
+
+A process is drivable only when its step is a function of one standard normal.
+Eight are: Ornstein-Uhlenbeck, Hull-White, Black-Karasinski, single-factor
+Heath-Jarrow-Morton, Vasicek through its inner process, both Gaussian mixtures,
+and the GJR-GARCH variance wrapper over any of them. Six are not, and refuse by
+the interface's default: the affine and quadratic Gaussian processes and Libor
+market model draw one normal a factor, the two-factor Gaussian draws two,
+Cox-Ingersoll-Ross draws a Poisson and a normal, and Black-Derman-Toy walks a
+lattice node. Widening any of them means widening the driven step to a vector of
+normals, which is a decision for the step that needs it, not a mechanical change.
+
+A mixture is driven conditionally on its component. The component stays the
+process's own draw and the market's normal is the step's direction, so the price's
+correlation with the factor is exactly the loading while the mixture's shape is
+untouched. One normal is therefore one tick, because the component is drawn per
+tick, and a driven step over several ticks is that many driven ticks.
+
+** Steps 4 and 6 are one increment
+
+A spot feed on its own has nothing to correlate with. Driving it changes every
+synthetic FX price for a correlation no screen can show, so its wiring lands with
+the surface that loads on it rather than before it. What lands first is what makes
+the wiring possible: the driven step reaching the mixture and its variance
+wrapper.
+
+** Where the loadings are configured
+
+Nothing in codegen has to be built for a block's loadings. The
+=fx_vol_surface_feed= entity already carries the three numbers its matrix is
+built from, =spot_variance_correlation=, =spot_skew_correlation= and
+=segment_correlation=, with their SQL checks, the domain type, the codec, the
+wire protocol and the shell's =fx_vol_surface_feeds add|set= verbs. A spot
+anchors a block by being the series its surface names, so its own row states no
+loading. The block's factors are derived from the block, not stored.
+
+What does not exist is the read. No code outside =ores.analytics.quant= reads
+those columns, and the FX feeds screen does not show them. The remaining
+configuration work is therefore a read over the run's market and somewhere to
+show it, not a table.
+
+The same holds for the surface's own laws. =fx_vol_surface_feed_expiry= carries
+=variance_reversion= and =variance_volatility= for each segment, and the feed's
+own row carries the skew's and the curvature's, so between the two tables the
+generator has every number it needs. Nothing is missing from the configuration.
+
+** How the surface and the market divide the correlation
+
+The generator applies the three numbers through its own Cholesky root, and the
+latent market applies them through a block's loadings. Two modules cannot both
+own the correlation, so the market does and the generator is given the identity:
+it then keeps the normals it is handed, and a test pins that, so the two sides
+cannot drift apart. =fx_vol_surface_block= builds the block from the three
+numbers and names the drivers in the order the generator reads them, and
+=fx_vol_surface_correlation= is the one place the matrix is built. Both refuse
+three numbers that are not a correlation.
+
+Two surfaces on one spot share its factor and its series, because a run has
+thousands of surfaces on a handful of spots and two copies of one spot would let
+two surfaces on one pair drift apart.
+
+** What the feed does now
+
+The feed is complete enough to start and run. A person states a surface as a feed
+row, one expiry row for each segment and one contributor row for each observer;
+the service reads them, builds the surface from the levels and laws they state,
+and publishes every point each contributor observes under the market data
+notation. An integration test starts one over NATS through the same handler a
+person's request reaches.
+
+Three things it does not do yet, each stated rather than hidden:
+
+- *The pair's curves.* The market the surface is quoted against has no rates and a
+  spot of one. That is exact while the two discounts are equal, because a smile is
+  read at a moneyness and a common scale cancels, so the quoted volatilities are
+  the surface's own. It is not exact once the pair's curves differ, and reading
+  them is the next wiring.
+- *The pair's convention.* A refdata row holds it, and the mapping from that row
+  lives in the market data service. The feed states the convention the derived
+  source quotes until it is handed that mapping.
+- *The finest gap.* A second, until the arrival laws are read at assembly. Every
+  configured rate is far slower, so nothing is interpolated.
+
+A surface started after the run built its market has no block in it, because a
+block's loadings are written in one pass while the market is made. It publishes
+nothing and says what it is missing, rather than stepping on zeros.
+
+** What step 6 still owes
+
+The start level is configured (see below), the emitter steps a surface on the
+market's normals, and the =fx_vol_surface= kind is built and registered in the feed
+factory. What is still owed is the wiring that makes it startable and correlated:
+
+- *The kind in the service's registry.* =feed_kind_registry= needs a
+  =make_fx_vol_surface_kind()=: a =candidates= read of the feed, its expiry rows and
+  its contributor rows, and a =build_input= that turns one into the factory input.
+- *The market the feed quotes against, which the synthetic service cannot build.*
+  The build input carries an =fx_market=: the spot and the two discount factors.
+  Today nothing in =ores.synthetic= resolves one. The market data service does it
+  from a published forward set, in
+  =ores.marketdata.service/src/app/fx_vol_surface_calibration_plan.cpp=, which is a
+  calibration path and not a synthetic one. This is the one thing standing between
+  the kind and a row a person can start, and it is a design decision rather than
+  typing: the feed either reads a published forward set or the configuration names
+  the spot and the curves directly.
+- *The service's market.* =run_market= holds it and answers the scheduler, and its
+  tests drive a spot's one normal and a surface's seven through a tick. What is
+  left is the assembly: the service must record a block for each surface it knows
+  from the loaded configuration, build the market before any feed starts, and keep
+  it alive for the scheduler's lifetime. Two things make that more than typing:
+  a block's anchor is the *spot's series id*, so the assembly has to decide which
+  spot feed a surface hangs off -- by currency pair, and a pair with no spot feed
+  has no anchor; and the market cannot grow after it is built, so a feed started
+  after the build is refused rather than driven by nothing.
+
+** What the surface's configuration now holds
+
+The generator needs a level and a law for every driver, and it has both.
+
+| What | Where | Column |
+|------+-------+--------|
+| The skew the surface starts at and reverts to | the feed's row | =start_skew= |
+| The curvature the surface starts at and reverts to | the feed's row | =start_curvature= |
+| The ATM volatility of each expiry | each expiry row | =atm_vol= |
+| Each segment's forward-variance law | each expiry row | =variance_reversion=, =variance_volatility= |
+| The skew's and curvature's laws | the feed's row | =skew_reversion=, =skew_volatility=, =curvature_reversion=, =curvature_volatility= |
+| The correlation of the shocks | the feed's row | =spot_variance_correlation=, =spot_skew_correlation=, =segment_correlation= |
+
+The ATM total variance is the volatility squared times the expiry. It must rise
+strictly from one expiry to the next for the segment between them to have a
+positive forward variance; no check on one row can decide that, so the maker
+refuses a set that does not and names the expiry it failed at. A tenor is a count
+and a unit, and =fx_vol_tenor_years= is the whole of the mapping until a resolved
+calendar and day count replace it.
+
 ** Open-source work to copy from
 
 Copy the approach, and the code where its licence allows, before writing our
@@ -136,6 +294,33 @@ own. Each entry names what to take.
 Check each licence at the version copied, and name the source in the file that
 carries the copied code.
 
+** What step 1 took
+
+No code is copied. The clones are pinned here for the record, and each one is
+read for the shape of its algorithm:
+
+| Project | Revision read | What stepped into our code |
+|---------+---------------+----------------------------|
+| Random123 | =9545ff6413f258be2f04c1d319d99aaef7521150= | Nothing new: =rng_stream= already carries Philox4x32-10 and its known answers. =draw_at= calls the same block function at a chosen counter, which is what makes a bridge node addressable. |
+| Diffrax =VirtualBrownianTree= | =e950aa2cf1974c02816c1542f20beabf7cca496b= | The level walk: bisect from the cell's endpoints toward the time asked for, one fresh draw a level, to a fixed depth. Diffrax stops at a tolerance where we stop at =depth=. |
+| torchsde =BrownianInterval= | =eb3a00e31cbd56176270066ed2f62c394cf6acb7= | The cache of recently read intervals, and three of its tests: =test_normality_conditional= (the bridge's residual variance), =test_determinism= (repeated reads), and its =cache_size= cases (the read pattern must not change a value). Its =_LRUDict= is a dict and an order list; ours is one span in a walk, because one clock reads every factor at the same time. |
+| QuantLib =BrownianBridge= | =ql/methods/montecarlo/brownianbridge.hpp= in =~/Vault/Development/ORE/Engine= | Its precomputed weights and standard deviations, built once at construction, are why the level table is built once a factor here. Its =test-suite/brownianbridge.cpp= =testVariates= checks the joint law rather than each margin, which is the covariance test. |
+
+The checkouts sit in =~/Vault/Development/{diffrax,torchsde,random123}=.
+
+** What the tests found
+
+The bridge's heap index counted intervals where it had to count nodes, so a
+draw was reused across levels. The midpoint's variance looked right while an
+increment's variance was double, which the covariance and residual tests caught
+at once; =quant/keyed_brownian_path_tests.cpp= now pins the addressing against
+the draw the stream returns at the documented index.
+
+** What step 1 does not do
+
+The walk is per factor and forward only. Per-series driver values, the loadings
+and the block anchor are step 2, and nothing here allocates or holds a series.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -148,7 +333,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| A repeat read, depth 16 and 30 | 10 ns | =publish/bin/ores.analytics.quant.tests "[.benchmark]"=, best of six runs | =52f21b5412= |
+| A market tick, depth 16 | 238 ns | same | =52f21b5412= |
+| A market tick, depth 30 | 415 ns | same | =52f21b5412= |
+| A cold tick, depth 16 | 912 ns | same | =52f21b5412= |
+| A cold tick, depth 30 | 1600 ns | same | =52f21b5412= |
+
+The host carried other environments' builds throughout, at a load average near
+24, so these are best-of-six rather than quiet-machine numbers. A cold tick at
+depth 30 is 30 normal quantiles, about 53 ns each; the depth is the cost, so the
+answer to the open question in
+[[id:25C467BE-07A3-432C-8CB8-6B194E748570][the design note]] is that a tick of
+30 levels costs about 1.6 microseconds, and a second read in the same instant
+costs nothing.
 
 * Notes
 
@@ -167,7 +364,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4673][#4673]] | [quant] Build the latent market of shared Brownian factors |
 
 * Review
 

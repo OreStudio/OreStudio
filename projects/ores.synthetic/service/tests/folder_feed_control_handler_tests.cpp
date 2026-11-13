@@ -422,6 +422,7 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts",
                                                test_party,
                                                {"synthetic::fx_spot_generation_configs:read",
                                                 "synthetic::ir_curve_generation_configs:read",
+                                                "synthetic::fx_vol_surface_feeds:read",
                                                 "synthetic::feeds:run"});
     const auto folder = boost::uuids::to_string(seeds.root_folder_id);
     const std::string fx_kind(ores::synthetic::feed::fx_spot_feed_kind);
@@ -517,6 +518,7 @@ TEST_CASE("folder_cascade_rejects_a_malformed_folder_id",
                                                test_party,
                                                {"synthetic::fx_spot_generation_configs:read",
                                                 "synthetic::ir_curve_generation_configs:read",
+                                                "synthetic::fx_vol_surface_feeds:read",
                                                 "synthetic::feeds:run"});
 
     const auto resp =
@@ -543,6 +545,7 @@ TEST_CASE("selection_starts_the_feeds_a_filter_matches_and_stops_a_pick",
                                                test_party,
                                                {"synthetic::fx_spot_generation_configs:read",
                                                 "synthetic::ir_curve_generation_configs:read",
+                                                "synthetic::fx_vol_surface_feeds:read",
                                                 "synthetic::feeds:run"});
     const auto folder = boost::uuids::to_string(seeds.root_folder_id);
 
@@ -603,6 +606,7 @@ TEST_CASE("selection_refuses_what_a_query_must_not_be_given_and_what_the_caller_
                                                test_party,
                                                {"synthetic::fx_spot_generation_configs:read",
                                                 "synthetic::ir_curve_generation_configs:read",
+                                                "synthetic::fx_vol_surface_feeds:read",
                                                 "synthetic::feeds:run"});
 
     const auto malformed =

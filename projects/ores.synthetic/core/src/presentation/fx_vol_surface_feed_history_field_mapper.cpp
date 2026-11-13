@@ -67,6 +67,8 @@ render_fx_vol_surface_feed_fields(const domain::fx_vol_surface_feed& v) {
         {.name = "Spot Skew Correlation", .value = std::to_string(v.spot_skew_correlation)});
     fields.push_back(
         {.name = "Segment Correlation", .value = std::to_string(v.segment_correlation)});
+    fields.push_back({.name = "Start Skew", .value = std::to_string(v.start_skew)});
+    fields.push_back({.name = "Start Curvature", .value = std::to_string(v.start_curvature)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

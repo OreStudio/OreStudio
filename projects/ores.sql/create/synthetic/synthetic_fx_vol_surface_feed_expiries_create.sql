@@ -37,6 +37,7 @@ create table if not exists "ores_synthetic_fx_vol_surface_feed_expiries_tbl" (
     "party_id" uuid not null,
     "feed_id" uuid not null,
     "tenor" text not null,
+    "atm_vol" double precision not null,
     "variance_reversion" double precision not null,
     "variance_volatility" double precision not null,
     "modified_by" text not null,
@@ -54,6 +55,7 @@ create table if not exists "ores_synthetic_fx_vol_surface_feed_expiries_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("tenor" ~ '^[1-9][0-9]?[DWMY]$'),
+    check ("atm_vol" > 0 and "atm_vol" < 5),
     check ("variance_reversion" >= 0 and "variance_reversion" < 'Infinity'),
     check ("variance_volatility" >= 0 and "variance_volatility" < 'Infinity')
 );

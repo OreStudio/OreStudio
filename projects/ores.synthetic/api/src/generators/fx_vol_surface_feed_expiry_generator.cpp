@@ -55,6 +55,7 @@ generate_synthetic_fx_vol_surface_feed_expiry(utility::generation::generation_co
             static constexpr const char* tenors[] = {"1W", "1M", "2M", "3M", "6M", "9M", "1Y"};
             return std::string(tenors[idx % std::size(tenors)]);
         }();
+    r.atm_vol = 0.07;
     r.variance_reversion = 2.0;
     r.variance_volatility = 0.08;
     r.modified_by = modified_by;

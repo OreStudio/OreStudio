@@ -25,6 +25,7 @@
 #include <cmath>
 #include <cstddef>
 #include <map>
+#include <span>
 #include <stdexcept>
 #include <thread>
 #include <vector>
@@ -527,4 +528,71 @@ TEST_CASE("a reading carries the ticks a second every law asks for", "[tick_sche
     REQUIRE_FALSE(readings.empty());
     // Four a second at a pace of two, with no heat.
     CHECK(readings.back().intensity == Catch::Approx(8.0));
+}
+
+TEST_CASE("the tick context carries the market's driver", "[tick_scheduler]") {
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, no_heat, 42);
+
+    std::vector<double> seen;
+    const series_spec a{.series = 7, .arrival = per_second("periodic", 4.0), .sensitivity = 1.0};
+    scheduler.add(a, [&seen](const tick_context& context) {
+        seen.push_back(context.driver());
+        return std::string("ok");
+    });
+
+    scheduler.set_driver_source([](std::uint64_t, double, std::span<double> out) {
+        std::ranges::fill(out, 1.25);
+        return out.size();
+    });
+    REQUIRE(scheduler.step());
+    CHECK(seen.size() == 1);
+    CHECK(seen[0] == 1.25);
+
+    // Without a source the driver is zero, so a feed that draws its own normal and
+    // a feed that reads the context start from the same number.
+    scheduler.set_driver_source({});
+    REQUIRE(scheduler.step());
+    CHECK(seen.size() == 2);
+    CHECK(seen[1] == 0.0);
+}
+
+TEST_CASE("a series that declares several drivers reads one normal for each", "[tick_scheduler]") {
+    // A surface's forward variances, skew and curvature each load on the spot's factor,
+    // so its feed asks for one normal each rather than one in total.
+    manual_run_clock clock(scheduler_wall_origin);
+    tick_scheduler scheduler(clock, no_heat, 42);
+
+    std::vector<std::vector<double>> seen;
+    const series_spec many{.series = 8,
+                           .arrival = per_second("periodic", 4.0),
+                           .sensitivity = 1.0,
+                           .name = "surface",
+                           .group = "fx",
+                           .driver_count = 3};
+    scheduler.add(many, [&seen](const tick_context& context) {
+        seen.emplace_back(context.drivers.begin(), context.drivers.end());
+        return std::string("ok");
+    });
+    // A price on one factor still reads one, whatever else the run declares.
+    const series_spec one{.series = 9, .arrival = per_second("periodic", 4.0), .sensitivity = 1.0};
+    std::size_t one_size = 0;
+    scheduler.add(one, [&one_size](const tick_context& context) {
+        one_size = context.drivers.size();
+        return std::string("ok");
+    });
+
+    scheduler.set_driver_source([](std::uint64_t series, double, std::span<double> out) {
+        for (std::size_t i = 0; i < out.size(); ++i)
+            out[i] = static_cast<double>(series) + static_cast<double>(i) / 10.0;
+        return out.size();
+    });
+    REQUIRE(scheduler.step());
+    REQUIRE(scheduler.step());
+    REQUIRE(seen.size() == 1);
+    REQUIRE(seen[0].size() == 3);
+    CHECK(seen[0][0] == 8.0);
+    CHECK(seen[0][1] == Catch::Approx(8.1));
+    CHECK(seen[0][2] == Catch::Approx(8.2));
+    CHECK(one_size == 1);
 }

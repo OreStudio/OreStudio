@@ -36,6 +36,7 @@ export interface FxVolSurfaceFeedExpiryWrite {
     id: string;
     feed_id: string;
     tenor: string;
+    atm_vol: number;
     variance_reversion: number;
     variance_volatility: number;
 }

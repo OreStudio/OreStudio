@@ -142,14 +142,15 @@ void fx_vol_surface_feed_expiry_commands::register_commands(cli::Menu& root_menu
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <feed_id> <tenor> <variance_reversion> <variance_volatility> <reason> <commentary>");
+        "add <feed_id> <tenor> <atm_vol> <variance_reversion> <variance_volatility> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <feed_id> <tenor> <variance_reversion> <variance_volatility> <reason> "
+        "set <id> <feed_id> <tenor> <atm_vol> <variance_reversion> <variance_volatility> <reason> "
         "<commentary> [--version <n>]");
 
     menu->Insert(
@@ -157,8 +158,8 @@ void fx_vol_surface_feed_expiry_commands::register_commands(cli::Menu& root_menu
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <feed_id> <tenor> <variance_reversion> <variance_volatility> "
-        "<reason> <commentary>");
+        "put-many --count <n> <id> <feed_id> <tenor> <atm_vol> <variance_reversion> "
+        "<variance_volatility> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -359,8 +360,8 @@ void fx_vol_surface_feed_expiry_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -369,6 +370,8 @@ void fx_vol_surface_feed_expiry_commands::process_add(std::ostream& out,
             req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         fx_vol_surface_feed_expiry_read_token(
             req.change.write.tenor, parsed->positionals[next++], "tenor");
+        fx_vol_surface_feed_expiry_read_token(
+            req.change.write.atm_vol, parsed->positionals[next++], "atm_vol");
         fx_vol_surface_feed_expiry_read_token(
             req.change.write.variance_reversion, parsed->positionals[next++], "variance_reversion");
         fx_vol_surface_feed_expiry_read_token(req.change.write.variance_volatility,
@@ -418,8 +421,8 @@ void fx_vol_surface_feed_expiry_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -429,6 +432,8 @@ void fx_vol_surface_feed_expiry_commands::process_set(std::ostream& out,
             req.change.write.feed_id, parsed->positionals[next++], "feed_id");
         fx_vol_surface_feed_expiry_read_token(
             req.change.write.tenor, parsed->positionals[next++], "tenor");
+        fx_vol_surface_feed_expiry_read_token(
+            req.change.write.atm_vol, parsed->positionals[next++], "atm_vol");
         fx_vol_surface_feed_expiry_read_token(
             req.change.write.variance_reversion, parsed->positionals[next++], "variance_reversion");
         fx_vol_surface_feed_expiry_read_token(req.change.write.variance_volatility,
@@ -490,8 +495,8 @@ void fx_vol_surface_feed_expiry_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 5 + 2) {
-            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 6 + 2) {
+            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -503,6 +508,8 @@ void fx_vol_surface_feed_expiry_commands::process_put_many(std::ostream& out,
                 change.write.feed_id, parsed->positionals[next++], "feed_id");
             fx_vol_surface_feed_expiry_read_token(
                 change.write.tenor, parsed->positionals[next++], "tenor");
+            fx_vol_surface_feed_expiry_read_token(
+                change.write.atm_vol, parsed->positionals[next++], "atm_vol");
             fx_vol_surface_feed_expiry_read_token(
                 change.write.variance_reversion, parsed->positionals[next++], "variance_reversion");
             fx_vol_surface_feed_expiry_read_token(change.write.variance_volatility,

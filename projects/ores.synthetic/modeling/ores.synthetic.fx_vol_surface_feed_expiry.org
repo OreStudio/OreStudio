@@ -93,6 +93,21 @@ The expiry, such as 1W, 3M or 1Y.
 }()
 #+end_src
 
+** atm_vol
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The ATM volatility of this expiry where the surface starts, as a decimal such as 0.075 for seven and a half percent. It is the level the segment's forward variance reverts to.
+
+The ATM total variance is this volatility squared times the expiry, and it must rise strictly from one expiry to the next, so that every forward variance is positive. No check on one row can decide that, because it compares rows: the feed refuses a set of rows whose total variance does not rise, and names the expiry it failed at.
+
+#+begin_src cpp :name generator
+0.07
+#+end_src
+
 ** variance_reversion
 :PROPERTIES:
 :type:     double precision
@@ -131,6 +146,7 @@ The volatility of the segment's forward variance.
 | expression |
 |------------|
 | "tenor" ~ '^[1-9][0-9]?[DWMY]$' |
+| "atm_vol" > 0 and "atm_vol" < 5 |
 | "variance_reversion" >= 0 and "variance_reversion" < 'Infinity' |
 | "variance_volatility" >= 0 and "variance_volatility" < 'Infinity' |
 

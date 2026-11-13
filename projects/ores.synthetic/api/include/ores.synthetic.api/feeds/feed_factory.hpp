@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_API_FEEDS_FEED_FACTORY_HPP
 
 #include "fx_spot_feed.hpp"
+#include "fx_vol_surface_feed.hpp"
 #include "ir_curve_feed.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
@@ -108,6 +109,8 @@ ores::analytics::quant::domain::arrival_spec
 to_arrival_spec(const ores::synthetic::domain::fx_spot_generation_config& config);
 ores::analytics::quant::domain::arrival_spec
 to_arrival_spec(const ores::synthetic::domain::ir_curve_generation_config& config);
+ores::analytics::quant::domain::arrival_spec
+to_arrival_spec(const ores::synthetic::domain::fx_vol_surface_feed& config);
 
 struct fx_spot_feed_build_input final {
     ores::synthetic::domain::fx_spot_generation_config config;
@@ -149,7 +152,9 @@ struct ir_curve_feed_build_input final {
 /**
  * @brief One of the per-kind build inputs, discriminated by the kind string passed to make().
  */
-using feed_build_input = std::variant<fx_spot_feed_build_input, ir_curve_feed_build_input>;
+using feed_build_input =
+    std::variant<fx_spot_feed_build_input, ir_curve_feed_build_input,
+                 fx_vol_surface_feed_build_input>;
 
 /**
  * @brief Maps a feed kind to the producer builder that constructs that kind from its persisted

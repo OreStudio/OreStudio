@@ -74,6 +74,17 @@ struct fx_vol_surface_feed_expiry final {
     std::string tenor;
 
     /**
+     * @brief The ATM volatility of this expiry where the surface starts, as a decimal such as 0.075
+     * for seven and a half percent. It is the level the segment's forward variance reverts to.
+     *
+     * The ATM total variance is this volatility squared times the expiry, and it must rise strictly
+     * from one expiry to the next, so that every forward variance is positive. No check on one row
+     * can decide that, because it compares rows: the feed refuses a set of rows whose total
+     * variance does not rise, and names the expiry it failed at.
+     */
+    double atm_vol{};
+
+    /**
      * @brief How fast the segment's forward variance reverts to its start, per year.
      */
     double variance_reversion{};

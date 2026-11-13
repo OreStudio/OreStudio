@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <span>
 #include <stdexcept>
 #include <utility>
 
@@ -127,6 +128,8 @@ std::size_t tick_scheduler::add(const series_spec& spec, stream_body body) {
     post(
         [this, id, spec, law = std::move(law), stream, body = std::move(body)] {
             market_.enrol(spec.arrival.ticks_per_hour / 3600.0);
+            if (drivers_.size() < spec.driver_count)
+                drivers_.resize(spec.driver_count);
             names_[spec.series] = spec.name;
             const auto known = std::ranges::find(groups_, spec.group);
             const auto group = static_cast<std::size_t>(known - groups_.begin());
@@ -385,10 +388,21 @@ std::optional<fired_tick> tick_scheduler::fire(std::unique_lock<std::mutex>& loc
     const double simulated_elapsed = market_.simulated() - s.last_simulated;
     s.last_tau = market_.tau();
     s.last_simulated = market_.simulated();
+    // The buffer is sized when a series is added, so a tick only fills it.
+    const auto wanted = std::min(s.spec.driver_count, drivers_.size());
+    std::fill_n(drivers_.begin(), wanted, 0.0);
+    // A source that writes fewer normals than the series asked for leaves the rest out, so a
+    // feed can tell a series the market drives from one it does not.
+    const auto count =
+        driver_source_ ?
+            std::min(driver_source_(s.spec.series, *due, std::span<double>(drivers_).first(wanted)),
+                     wanted) :
+            std::size_t{0};
     const tick_context context{.elapsed_seconds = *due - s.last_fired,
                                .observed_at = clock_.wall(time_at(*due)),
                                .simulated_seconds = simulated_elapsed,
-                               .tail_tilt = market_.tail_tilt()};
+                               .tail_tilt = market_.tail_tilt(),
+                               .drivers = std::span<const double>(drivers_).first(count)};
     record(trace_kind::tick, s.spec.series, s.gap, context.elapsed_seconds, compensated);
     ++fired_since_sample_;
     by_second_.tick(*due, s.group);
@@ -473,5 +487,10 @@ void tick_scheduler::set_hooks(published_hook on_published, failure_hook on_fail
     on_published_ = std::move(on_published);
     on_failed_ = std::move(on_failed);
 }
+void tick_scheduler::set_driver_source(driver_source source) {
+    const auto guard = std::lock_guard(mutex_);
+    driver_source_ = std::move(source);
+}
+
 
 }

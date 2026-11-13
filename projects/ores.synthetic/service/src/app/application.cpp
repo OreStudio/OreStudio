@@ -23,8 +23,10 @@
 #include "../generator_fleet.hpp"
 #include "../generator_runner.hpp"
 #include "../registrar.hpp"
+#include "../run_market.hpp"
 #include "../simulator_adapter.hpp"
 #include "../simulator_offers.hpp"
+#include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
@@ -329,6 +331,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // The heat adds half a rate per event and fades at twenty a second, so its
     // loop gain is a fortieth. Zero jump would leave the heat inert, so the
     // default is explicit here.
+    // The run's one latent market. Declared before the scheduler so it outlives it: the
+    // scheduler's driver source points here.
+    run_market run_market_of_the_run;
+
     ores::analytics::quant::service::steady_run_clock run_clock;
     const ores::analytics::quant::domain::market_config market{.wake_rate = 1.0 / 600.0,
                                                                .calm_rate = 1.0 / 300.0,
@@ -343,6 +349,57 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                         [](const std::exception& ex) {
                             BOOST_LOG_SEV(lg(), error) << "SYNTHETIC TICK FAILED: " << ex.what();
                         });
+    /*
+     * The market is built here, before the loop starts, for two reasons. A block's loadings
+     * are written in one pass while the market is made, so it cannot gain one later; and the
+     * loop reads its driver source without a lock, so the source must be in place before the
+     * loop runs.
+     *
+     * A surface hangs off the spot feed of its own pair: the block's anchor is that feed's
+     * series, so the surface's forward variances, skew and curvature load on the very series
+     * the spot publishes. A pair with no spot feed has no anchor, and its surface is left out
+     * with a warning rather than started to move on its own.
+     */
+    {
+        const auto rows = registry.rows(db_ctx);
+        std::map<std::pair<std::string, std::string>, std::uint64_t> spot_series;
+        for (const auto& row : rows)
+            if (row.candidate.fx_pair && !row.candidate.block)
+                spot_series[*row.candidate.fx_pair] =
+                    ores::analytics::quant::math::series_key(row.candidate.source_name);
+
+        for (const auto& row : rows) {
+            if (!row.candidate.block)
+                continue;
+            const auto anchor = spot_series.find(*row.candidate.fx_pair);
+            if (anchor == spot_series.end()) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Synthetic surface '" << row.candidate.source_name << "' has no spot feed "
+                    << "for " << row.candidate.fx_pair->first << "/"
+                    << row.candidate.fx_pair->second << ", so it is not in the run's market";
+                continue;
+            }
+            try {
+                run_market_of_the_run.add_surface(anchor->second,
+                                                  row.candidate.source_name,
+                                                  row.candidate.block->segments,
+                                                  row.candidate.block->spot_variance,
+                                                  row.candidate.block->spot_skew,
+                                                  row.candidate.block->neighbour);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn) << "Synthetic surface '" << row.candidate.source_name
+                                          << "' has no block: " << e.what();
+            }
+        }
+        // A second is the finest gap this run can produce until the arrival laws are read
+        // here. Every configured rate is far slower, so no tick is interpolated.
+        run_market_of_the_run.build(scheduler, cfg.run_seed, 3600.0, 0.0, 1.0);
+        BOOST_LOG_SEV(lg(), info) << "SYNTHETIC MARKET: "
+                                  << run_market_of_the_run.market().factors.size()
+                                  << " factor(s) over "
+                                  << run_market_of_the_run.market().series_id.size() << " series";
+    }
+
     ores::platform::concurrency::jthread scheduler_thread(
         [&scheduler](ores::platform::concurrency::stop_token stop) {
             scheduler.run();

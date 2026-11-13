@@ -157,7 +157,7 @@ TEST_CASE("fx_vol_surface_feed_commands_process_add_requires_a_session", "[comma
     std::ostringstream out;
 
     command_feedback::reset();
-    fx_vol_surface_feed_commands::process_add(out, session, fx_vol_surface_feed_tokens(21));
+    fx_vol_surface_feed_commands::process_add(out, session, fx_vol_surface_feed_tokens(23));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -191,7 +191,7 @@ TEST_CASE("fx_vol_surface_feed_commands_process_set_requires_a_session", "[comma
     std::ostringstream out;
 
     command_feedback::reset();
-    fx_vol_surface_feed_commands::process_set(out, session, fx_vol_surface_feed_tokens(21));
+    fx_vol_surface_feed_commands::process_set(out, session, fx_vol_surface_feed_tokens(23));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -225,7 +225,7 @@ TEST_CASE("fx_vol_surface_feed_commands_process_put_many_requires_a_session", "[
     std::ostringstream out;
 
     command_feedback::reset();
-    fx_vol_surface_feed_commands::process_put_many(out, session, fx_vol_surface_feed_tokens(21));
+    fx_vol_surface_feed_commands::process_put_many(out, session, fx_vol_surface_feed_tokens(23));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

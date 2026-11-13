@@ -103,7 +103,11 @@ black_karasinski_process::black_karasinski_process(const black_karasinski_params
           params.kappa, params.theta, params.sigma, params.initial_rate, std::move(stream), dt) {}
 
 double black_karasinski_process::next() {
-    const double z = normal_(rng_);
+    return next_with_normal(normal_(rng_));
+}
+
+double black_karasinski_process::next_with_normal(double standard_normal) {
+    const double z = standard_normal;
     if (kappa_ > small_kappa_threshold) {
         const double decay = std::exp(-kappa_ * dt_);
         const double var = (1.0 - decay * decay) / (2.0 * kappa_);
@@ -148,6 +152,10 @@ double black_karasinski_process::discount_factor(std::size_t ticks_ahead) const 
     for (const double p : prices)
         price += p;
     return price;
+}
+
+bool black_karasinski_process::supports_external_normal() const {
+    return true;
 }
 
 } // namespace ores::analytics::quant::service

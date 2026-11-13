@@ -42,6 +42,7 @@ render_fx_vol_surface_feed_expiry_fields(const domain::fx_vol_surface_feed_expir
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Feed ID", .value = boost::uuids::to_string(v.feed_id)});
     fields.push_back({.name = "Tenor", .value = v.tenor});
+    fields.push_back({.name = "Atm Vol", .value = std::to_string(v.atm_vol)});
     fields.push_back({.name = "Variance Reversion", .value = std::to_string(v.variance_reversion)});
     fields.push_back(
         {.name = "Variance Volatility", .value = std::to_string(v.variance_volatility)});

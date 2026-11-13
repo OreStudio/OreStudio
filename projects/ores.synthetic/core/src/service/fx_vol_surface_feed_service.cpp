@@ -124,6 +124,8 @@ fx_vol_surface_feed_to_domain(const messaging::fx_vol_surface_feed_write& write)
     v.spot_variance_correlation = write.spot_variance_correlation;
     v.spot_skew_correlation = write.spot_skew_correlation;
     v.segment_correlation = write.segment_correlation;
+    v.start_skew = write.start_skew;
+    v.start_curvature = write.start_curvature;
     return v;
 }
 

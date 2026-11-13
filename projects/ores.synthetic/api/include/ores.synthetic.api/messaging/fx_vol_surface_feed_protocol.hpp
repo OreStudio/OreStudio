@@ -71,6 +71,8 @@ struct fx_vol_surface_feed_write {
     double spot_variance_correlation{};
     double spot_skew_correlation{};
     double segment_correlation{};
+    double start_skew{};
+    double start_curvature{};
 
     friend bool operator==(const fx_vol_surface_feed_write&,
                            const fx_vol_surface_feed_write&) = default;
@@ -431,6 +433,8 @@ inline constexpr std::string_view deleted = "synthetic.v1.events.fx_vol_surface_
                               &fx_vol_surface_feed_write::spot_skew_correlation},
         utility::codec::field{"segment_correlation",
                               &fx_vol_surface_feed_write::segment_correlation},
+        utility::codec::field{"start_skew", &fx_vol_surface_feed_write::start_skew},
+        utility::codec::field{"start_curvature", &fx_vol_surface_feed_write::start_curvature},
     };
 }
 

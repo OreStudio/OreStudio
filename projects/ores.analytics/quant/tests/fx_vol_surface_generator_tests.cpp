@@ -17,13 +17,16 @@
  *
  */
 #include "ores.analytics.quant/math/fx_smile_quotes.hpp"
+#include "ores.analytics.quant/math/fx_vol_surface_correlation.hpp"
 #include "ores.analytics.quant/service/fx_vol_surface_generator.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
 #include <cstddef>
 #include <limits>
+#include <numbers>
 #include <random>
+#include <string>
 #include <vector>
 
 using namespace ores::analytics::quant::math;
@@ -338,4 +341,84 @@ TEST_CASE("a change to one field of a profile does not move a later point's draw
         (void)observe_fx_vol_point(0.07, 0.25, 0.5, 0.07, never_missing, b);
     }
     CHECK(a() == b());
+}
+
+TEST_CASE("the three numbers a feed states give the correlation the generator uses",
+          "[fx_vol_surface_generator]") {
+    // Five segments and the numbers the EUR/USD feed states: spot moves the level by
+    // 0.3 and the skew by -0.4, and neighbouring segments move together at 0.9.
+    const auto built = fx_vol_surface_correlation(5, 0.3, -0.4, 0.9);
+    REQUIRE(built);
+    const Eigen::MatrixXd expected = dynamics_for(5).correlation;
+    REQUIRE(built->rows() == expected.rows());
+    for (Eigen::Index i = 0; i < expected.rows(); ++i)
+        for (Eigen::Index j = 0; j < expected.cols(); ++j)
+            CHECK((*built)(i, j) == Catch::Approx(expected(i, j)).margin(1e-15));
+
+    // The order is spot, the segments in expiry order, the skew, then the curvature.
+    CHECK((*built)(0, 0) == 1.0);
+    CHECK((*built)(0, 1) == 0.3);
+    CHECK((*built)(0, 5) == 0.3);
+    CHECK((*built)(0, 6) == -0.4);
+    CHECK((*built)(0, 7) == 0.0);
+    CHECK((*built)(1, 2) == 0.9);
+    CHECK((*built)(1, 3) == Catch::Approx(0.81));
+    CHECK((*built)(1, 5) == Catch::Approx(std::pow(0.9, 4.0)));
+    CHECK((*built)(6, 7) == 0.0);
+}
+
+TEST_CASE("a correlation outside (-1, 1) is refused, and so is a surface with no segment",
+          "[fx_vol_surface_generator]") {
+    CHECK(fx_vol_surface_correlation(3, 1.0, 0.0, 0.5).has_value() == false);
+    CHECK(fx_vol_surface_correlation(3, 0.0, -1.0, 0.5).has_value() == false);
+    CHECK(fx_vol_surface_correlation(3, 0.0, 0.0, 1.0).has_value() == false);
+    CHECK(fx_vol_surface_correlation(3, 0.0, 0.0, std::nan("")).has_value() == false);
+    CHECK(fx_vol_surface_correlation(0, 0.0, 0.0, 0.5).has_value() == false);
+}
+
+TEST_CASE("three numbers that do not describe a correlation are refused, never projected",
+          "[fx_vol_surface_generator]") {
+    // Spot would have to move with every segment at 0.99 while the segments themselves
+    // move at 0.99, which no set of standard normals can do.
+    const auto refused = fx_vol_surface_correlation(30, 0.99, 0.0, 0.99);
+    REQUIRE_FALSE(refused);
+    CHECK(refused.error().find("not positive definite") != std::string::npos);
+    // The same correlation with fewer segments is a correlation, so the refusal is not
+    // a blanket ban on a large number.
+    CHECK(fx_vol_surface_correlation(2, 0.6, 0.0, 0.6).has_value());
+}
+
+TEST_CASE("a generator given the identity takes its normals already correlated",
+          "[fx_vol_surface_generator]") {
+    // The latent market correlates the shocks, so the generator must not do it again: with
+    // the identity for its matrix the driver walks by exactly the normal it is handed.
+    const auto start = start_surface();
+    const std::size_t segments = start.expiries.size();
+    auto d = dynamics_for(segments);
+    const auto size = static_cast<Eigen::Index>(segments + 3);
+    d.correlation = Eigen::MatrixXd::Identity(size, size);
+    d.skew_reversion = 0.0;
+    d.curvature_reversion = 0.0;
+
+    auto g = fx_vol_surface_generator::make(start, d, one_day);
+    REQUIRE(g);
+    std::vector<double> normals(segments + 2, 0.0);
+    normals[segments] = 1.5;
+    normals[segments + 1] = -0.5;
+    const auto& stepped = g->step(0.0, normals);
+
+    const double skew =
+        std::tanh(std::atanh(start.rho) + d.skew_volatility * std::sqrt(one_day) * 1.5);
+    CHECK(stepped.rho == Catch::Approx(skew).margin(1e-14));
+
+    const double curvature_start = -std::log(std::numbers::sqrt2 / start.eta - 1.0);
+    const double curvature_driver =
+        curvature_start + d.curvature_volatility * std::sqrt(one_day) * -0.5;
+    const double eta = std::numbers::sqrt2 / (1.0 + std::exp(-curvature_driver));
+    CHECK(stepped.eta == Catch::Approx(eta).margin(1e-14));
+
+    // Nothing is left for spot's shock to move, so it no longer reaches the surface.
+    auto other = fx_vol_surface_generator::make(start, d, one_day);
+    REQUIRE(other);
+    CHECK(other->step(9.0, normals).rho == Catch::Approx(stepped.rho).margin(1e-14));
 }

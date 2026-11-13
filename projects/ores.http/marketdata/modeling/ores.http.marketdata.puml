@@ -24,15 +24,31 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace http #F2F2F2 {
         namespace routes #F2F2F2 {
-            namespace trading #F2F2F2 {
-                class trade_read_routes {
-                    +best_identifiers(const vector<ores::trading::domain::trade_identifier>& identifiers) : map<string, string>
-                    +enriched_rows(const vector<ores::trading::domain::trade_summary>& summaries, const vector<ores::trading::domain::trade_identifier>& identifiers, const vector<ores::trading::domain::structure_identifier>& structures, const vector<ores::refdata::domain::book>& books, const vector<ores::refdata::domain::counterparty>& counterparties, const vector<ores::trading::domain::trade>& trades)
-                    +structures_json(const vector<ores::trading::domain::structure_member>& members, const vector<ores::trading::domain::structure_identifier>& identifiers) : string
-                    +links_json(const vector<ores::trading::domain::trade_link>& links, bool other_is_to, const map<string, string>& labels) : string
+            namespace marketdata #F2F2F2 {
+                class adapter_routes {
+                    +adapters_json(const ores::marketdata::messaging::list_adapter_status_response& reply, const vector<ores::marketdata::domain::feed>& feeds, const vector<ores::marketdata::domain::session>& sessions) : string
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
+                class curve_routes {
                     +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
                 }
                 class marketdata_routes {
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
+                class oresmd_routes {
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
+                class public_rate_routes {
+                    +fixings_json(const vector<boost::uuids::uuid>& series, const vector<ores::marketdata::domain::market_fixing>& fixings) : string
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
+                class series_routes {
+                    +observations_json(const vector<ores::marketdata::domain::market_observation>& observations, uint64_t total) : string
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
+                class subscription_routes {
+                    +subscriptions_json(const vector<ores::marketdata::domain::subscription>& subscriptions) : string
+                    +routes_json(const vector<ores::marketdata::domain::route>& routes) : string
                     +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
                 }
             }
@@ -44,8 +60,7 @@ namespace ores #F2F2F2 {
 
 ores.http.api ..> ores.http.marketdata : router, route builder, OpenAPI registry
 ores.nats ..> ores.http.marketdata : transport
-ores.trading.api ..> ores.http.marketdata : protocol
-ores.refdata.api ..> ores.http.marketdata : book and counterparty reads
+ores.marketdata.api ..> ores.http.marketdata : protocol
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.http.marketdata.puml"

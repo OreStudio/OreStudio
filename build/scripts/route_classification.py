@@ -383,6 +383,11 @@ RULES = (
          BFF, NOT_API, NO_AREA,
          "The option lists one form's controls need, keyed by the control's own name and"
          " joined by nothing; each list is a collection a client reads at its own resource."),
+    Rule("an edit form's codes route",
+         ("exact", "GET /api/reporting/choices"),
+         CPP, NOT_API, NO_AREA,
+         "The codes the report edit form offers, kept so the form works when the BFF goes;"
+         " they are the form's option set and not a resource."),
     Rule("an edit form's codes",
          ("exact", "GET /api/reporting/choices"),
          BFF, NOT_API, NO_AREA,
@@ -671,6 +676,31 @@ RULES = (
          BFF, RESOURCE, "trading",
          "The kinds a structure may be, a lookup the server holds."),
 
+    Rule("the report list's route",
+         ("exact", "GET /api/reporting/reports"),
+         CPP, RESOURCE, "reporting",
+         "One page of the report definitions the caller's parties own, each row the"
+         " definition with its latest run, its health word, its problem counts, its next"
+         " fire and the party's own name, so a cell that cannot be read says why."),
+    Rule("a report definition's route",
+         ("regex", r"^((GET /api/reporting/reports/(by-name/\{name\}|\{segment\}|"
+                   r"\{id\}/configurations))|(PUT /api/reporting/reports/\{id\}))$"),
+         CPP, RESOURCE, "reporting",
+         "One report definition at the address and in the shape the BFF answered: the id a name "
+         "resolves to, the page an id or an older name opens with the choices a shared name "
+         "offers, the configurations it binds, and the write that rebuilds the record from the "
+         "fields the form shows."),
+    Rule("a report run's route",
+         ("regex", r"^GET /api/reporting/runs/\{id\}(/errors)?$"),
+         CPP, RESOURCE, "reporting",
+         "One report run at the address and in the shape the BFF answered: what it is, the state "
+         "it reached, the batch that ran it and its output, and the problems it recorded."),
+    Rule("a report's runs route",
+         ("regex", r"^((GET|POST) /api/reporting/reports/\{id\}/(run|runs))$"),
+         CPP, RESOURCE, "reporting",
+         "One report's runs at the addresses and in the shapes the BFF answered: the start that "
+         "answers the run it made, and the runs of a definition newest first with the state each "
+         "reached."),
     Rule("the report definitions",
          ("regex", r"^GET /api/reporting/reports"),
          BFF, RESOURCE, "reporting",

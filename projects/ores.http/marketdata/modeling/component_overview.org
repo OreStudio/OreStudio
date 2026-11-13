@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 486707D5-F459-4C97-95EA-A6C0D7F7043D
+:ID: F3B8D35B-DA83-4F94-AFBD-7E2A77128D6F
 :END:
 #+title: ores.http.marketdata
 #+description: The HTTP gateway's market data adapter part. Holds the route units that project the market data domain onto the REST surface.

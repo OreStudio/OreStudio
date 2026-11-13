@@ -8,7 +8,7 @@
 #+filetags: :move_the_linux_ci_image_to_ubuntu_26_04:sprint_30:v0:
 #+owner: marco
 #+branch: feature/move-the-linux-ci-image-to-ubuntu-26-04
-#+pr: 4669
+#+pr: 4671
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -75,6 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4671][#4671]] | [agile] Close the Ubuntu 26.04 scaffold task |
 | [[https://github.com/OreStudio/OreStudio/pull/4669][#4669]] | [build] Take the CI image's tools from Ubuntu 26.04 |
 
 * Review

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-market-data-resources
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The gateway has no part for the market data area. Add the part with the adapter 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The part is stood up and answers the adapters read. Its other groups are listed in the Plan. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Serve the subscriptions and routes group. |
+| Last touched | 2026-11-13                               |
 
 * Acceptance
 
@@ -43,9 +43,25 @@ The gateway has no part for the market data area. Add the part with the adapter 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The part is stood up by the adapter recipe, copied from =ores.http.trading=:
+its model, its CMake files, the composite's parts list, the umbrella header,
+the aggregate, the file lists, the diagram, and the server's link and
+registration. It links =ores.marketdata.api= and =ores.refdata.api=.
+
+The area's resource routes are ported in groups, each one pull request:
+
+| Group | Routes | BFF source |
+|-------+--------+------------|
+| The part and the adapters | 1 | =adapters.ts= |
+| Subscriptions and routes | 6 | =subscriptions.ts= |
+| The public rates | 5 | =public-rates.ts= |
+| The curves | 12 | =curves.ts= |
+| The series observations | 1 | =series.ts= |
+| The ORE URI codec | 4 | =oresmd.ts= |
+
+The composed views belong to their own tasks: the catalogue, the connectivity
+list, the fixing series, the public rates view and its coverage and file, and
+the market data catalogue's neighbours.
 
 * Measurements
 

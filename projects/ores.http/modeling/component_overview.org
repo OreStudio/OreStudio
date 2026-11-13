@@ -12,7 +12,7 @@
 #+full_name: ores.http
 #+brief: HTTP gateway
 #+component_kind: composite
-#+parts: api assets client core iam nats refdata server synthetic trading
+#+parts: api assets client core iam marketdata nats refdata server synthetic trading
 
 * Summary
 
@@ -36,3 +36,4 @@ serves — and a client, through which the system reads outside HTTP APIs.
 | [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]] | Process entry point that wires the routes and runs the event loop. |
 | [[id:B8376009-B47E-4B2F-ADD8-AD6B79D1A7AC][ores.http.synthetic]] | Generated route units for the synthetic domain. |
 | [[id:486707D5-F459-4C97-95EA-A6C0D7F7043D][ores.http.trading]] | Route units for the trading domain. |
+| [[id:486707D5-F459-4C97-95EA-A6C0D7F7043D][ores.http.marketdata]] | Route units for the market data domain. |

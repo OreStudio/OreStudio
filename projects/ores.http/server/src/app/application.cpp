@@ -42,6 +42,7 @@
 #include "ores.http/routes/iam/session_renewal.hpp"
 #include "ores.http/routes/refdata/refdata_routes.hpp"
 #include "ores.http/routes/synthetic/synthetic_routes.hpp"
+#include "ores.http/routes/marketdata/marketdata_routes.hpp"
 #include "ores.http/routes/trading/trading_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
@@ -205,6 +206,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     ores::http::routes::synthetic::synthetic_routes::register_routes(
         router, registry, service_nats);
+    ores::http::routes::marketdata::marketdata_routes::register_routes(router, registry, service_nats);
     ores::http::routes::trading::trading_routes::register_routes(router, registry, service_nats);
 
     /*

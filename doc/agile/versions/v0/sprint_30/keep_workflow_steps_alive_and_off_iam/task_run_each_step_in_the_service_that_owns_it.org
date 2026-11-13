@@ -83,6 +83,9 @@ task and name that file in the Command column.
 | Core libraries ores.iam no longer links | 1 (=ores.marketdata.core=) | =grep -n "core.lib" projects/ores.iam/core/src/CMakeLists.txt= | =d7e9d200cd= |
 | Core libraries ores.iam still links for other services' work | 2 (=ores.refdata.core=, =ores.synthetic.core=) | the same command | =d7e9d200cd= |
 | =ores.iam.api.tests= | passed, 3.3 s | =compass test run -- -R ores.iam.api.tests= | =d7e9d200cd= |
+| The calendar step, as refdata served it | completed; wrote 473,025 day(s) | =grep build_calendars publish/log/ores.refdata.service.0.log= | =8f39ee4dac=, run =d7e883ce-e3dd-4c61-b801-d82c00a12cdc= |
+| The run | failed at step 13 of 15, on a quant refusal that is
+  captured, not on a step of this change | =compass smoke ticks --fresh= | the same run |
 | =ores.iam.core.tests= | passed, 27.5 s | =compass test run -- -R ores.iam.core.tests= | =d7e9d200cd= |
 
 * Notes
@@ -135,7 +138,30 @@ What this stage does not do, and the plan's later stages cover: the remaining
 =generate_trades=. The parallel steps of a run now reach two services, and they
 reach the rest as the stages land.
 
-Not yet proven end to end: a provisioning run on this branch has not been made,
-so the dispatch is proven by the definition tests and the handler by
-compilation, not by a run in which refdata answers the calendar step. The check
-that closes it is =compass build=, =compass deploy= and =compass smoke ticks=.
+Proven end to end on 2026-11-13. =compass smoke ticks --fresh= provisioned
+Acme from a recreated database, and the calendar step was dispatched to
+=refdata.v1.ops.provision_tenant_step= and served by ores.refdata:
+
+#+begin_src text
+[ores.refdata.messaging.provisioning_step_handler] build_calendars: wrote 473025 day(s)
+for tenant b5506162-acc4-4e9e-9eae-8a35323dc4e1
+#+end_src
+
+The step row records the owner it was dispatched to and the completed state, and
+the run went on to step 13 of 15. It failed there on a refusal from
+=ores.analytics.quant= — "expiry 1W: the row dated 2026-11-16 is before the spot
+date 2026-11-17" — which refused all 40 surfaces. No marketdata or quant code
+changed on this branch, and the refusal is captured as
+[[id:C15F8BD5-6941-43CC-A989-75F4C01E5377][The 1W FX quote is dated before the spot date, so every surface is refused]].
+
+The run also found two defects in this change, both fixed before the proof run:
+
+- ores.refdata already served a step family on the default consumer, so a
+  second family on the same stream replaced its filter: the data-quality
+  publish of the countries stopped being delivered and the first run stalled
+  for twenty minutes. The provisioning family now has a group of its own, and
+  =serve_step_commands= refuses a second family on one stream rather than
+  letting a service silently stop serving one.
+- The calendar step wrote =modified_by = "system"=, which the account trigger
+  refuses now that the tenant has accounts. The step acts as its own service
+  account, which is an account of the system tenant, so the trigger accepts it.

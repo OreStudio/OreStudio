@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: C15F8BD5-6941-43CC-A989-75F4C01E5377
+:END:
+#+title: The 1W FX quote is dated before the spot date, so every surface is refused
+#+description: A provisioning run on 2026-11-13 had every FX volatility surface refused with 'expiry 1W: the row dated 2026-11-16 is before the spot date 2026-11-17'. The pair market refuses a quote dated before spot, and the derived quotes date the 1W expiry a day short of it. A Friday run with a weekend spot gap is enough to reach it, so all 40 surfaces of the four Acme parties were refused.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A provisioning run on 2026-11-13 refused every surface with
+
+#+begin_src text
+expiry 1W: the row dated 2026-11-16 is before the spot date 2026-11-17
+#+end_src
+
+The pair market refuses a quote whose date is before the spot date
+(=fx_pair_market.cpp=), and the derived quotes date the ="1W"= expiry one day
+short of the spot the run computes. All 40 surfaces of the four Acme parties
+were refused, so =publish_party_surfaces= failed the run at step 13 of 15.
+
+Either the derived quote dates roll on a calendar day where they must roll on
+the pair's business days, or the expiry is dated from the wrong leg. Find which
+and make the two agree on the spot date the forward set publishes.
+
+* Why
+
+It fails the whole surface step of every provisioning run made on a Friday, and
+it hides behind a refusal that reads like market data being wrong rather than a
+dating bug. Found on
+[[id:C1048693-F5A5-40F2-9BCA-186D7E6B84B7][Run each step in the service that owns it]], whose own
+change is not implicated: no marketdata or quant code changed on that branch.
+The refusal is in =ores.analytics.quant=, merged as =47b59a61ee=.
+
+* References
+
+- The refusal: =projects/ores.analytics/quant/src/math/fx_pair_market.cpp=.
+- The run: =d7e883ce-e3dd-4c61-b801-d82c00a12cdc= and
+  =61cac7ce-64ff-4a97-a094-a40b0d9ce652= in the workflow records.
+
+* See also
+
+- [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]]

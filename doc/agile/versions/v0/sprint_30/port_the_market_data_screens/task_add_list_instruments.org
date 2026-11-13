@@ -94,3 +94,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Notes
+
+Read [[id:3C677D04-06E4-48F0-9F41-F3CA45861EEB][what an instrument is, against the datum schema]] before writing the
+reader. The schema's identity and coordinate roles already state the grouping,
+the axes and their order; the party scopes the rows and the provider is a column
+on the series, not a field of the datum.

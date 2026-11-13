@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: 3C677D04-06E4-48F0-9F41-F3CA45861EEB
+:END:
+#+title: Investigation: what an instrument is, against the datum schema
+#+description: How the five screens' instrument kinds map onto ORE Studio's datum schema - identity fields, coordinate fields and the subject - and what that means for the instrument catalogue, the ladder and the surface contracts.
+#+type: investigation
+#+level: s1
+#+filetags: :investigation:market_data:schema:server:port_the_market_data_screens:sprint_30:v0:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into how the five screens' instrument kinds map onto ORE Studio's datum schema, identity fields, coordinate fields and the subject, and what that means for the instrument catalogue, the ladder and the surface contracts.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+Hedgr's specification leaves the catalogue's grouping rule as its first open
+decision: derive a grouping rule, or keep a server-side derivation table. The
+page also assumes a provider's ladder is *several series*, one per forward start
+and tenor, which a client must join.
+
+The port needs to know which is true in ORE Studio before anyone writes the
+catalogue, the ladder or the surface read. A wrong grouping rule produces a
+catalogue that invents instruments, which is the failure the screens exist to
+prevent.
+
+* Methodology
+
+Read =projects/ores.marketdata/api/include/ores.marketdata.api/datum/schema.hpp=
+(the per-instrument-type field lists, their roles and each row's subject) and
+=datum/market_datum.hpp= (the datum, its series and its coordinates). Then
+checked the result against the running deployment's own rows:
+
+#+begin_src sql
+select provider_code, count(*) from ores_marketdata_market_series_tbl
+ where valid_to = ores_utility_infinity_timestamp_fn()
+ group by provider_code;
+#+end_src
+
+* Paths taken
+
+** The schema is already the derivation table
+
+=schema.hpp= states, per instrument type, an ordered list of =field_spec { name,
+role, may_be_none }= where the role is =identity= or =coordinate=, plus the
+row's =subject= and =asset_class=. A datum's series is exactly its identity
+fields; a datum's point is its identity fields plus its coordinates
+(=datum::series_of= and =datum::datum_at_point= enforce this).
+
+So the grouping rule, the axes and their order are not decisions to invent: they
+are =schema_of(type).fields= filtered by role. The specification's "DECIDE" is
+answered by the schema, and a second derivation table would be a copy that
+drifts.
+
+** A ladder is one series, not several
+
+The =ir_swap= row is:
+
+: identity:   ccy, index_name (may be none), fwd_start, tenor
+: coordinate: term
+
+Read against the deployment, the series is spelled
+=oresmd://ir/AUD?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D=
+and =term= is the rung. So one series holds the whole ladder across ON, 1W,
+1M … 30Y, and the rungs are coordinates of that one series.
+
+That contradicts the specification's assumption that a provider's ladder is
+several series that a client joins. In ORE Studio the join does not exist: a
+ladder is one series read across its =term= axis. The provider dimension is a
+different thing entirely (below).
+
+** The provider is on the series row, not in the datum
+
+=market_series= carries =provider_code=; the datum does not. So two providers'
+quotes of one ladder are two series rows with the same URI and different
+=provider_code=, and the "one column per provider" of the prototype is a join on
+that column, not a difference in identity fields.
+
+** The party is the dimension that multiplies rows
+
+The deployment holds five current rows for one URI and provider:
+
+#+begin_src sql
+select oresmd_uri, provider_code, count(*) rows, count(distinct party_id) parties
+  from ores_marketdata_market_series_tbl
+ where valid_to = ores_utility_infinity_timestamp_fn()
+   and oresmd_uri like '%instrument=fx_spot%ccy=USD'
+ group by 1, 2;
+-- oresmd://fx/AUD?...&ccy=USD | bloomberg | 4 rows | 4 parties
+-- oresmd://fx/AUD?...&ccy=USD | ore       | 5 rows | 5 parties
+#+end_src
+
+That is the "five AUD-AONIA copies" hedgr reported: five parties, one series
+each. Party scoping is therefore not a nice-to-have filter; without it the
+catalogue shows five of everything.
+
+** What each kind is, in schema terms
+
+#+ATTR_HTML: :class hug-leading
+| Kind | Instrument type | Coordinates | Subject | Note |
+|------+-----------------+-------------+---------+------|
+| pair | =fx_spot= | none | =unit_ccy= (base) | =ccy= is the quote side, so both sides are in the identity |
+| curve | =discount=, =zero= | =term= | =ccy= | =curve_id= names it (AUD-AONIA) |
+| ladder | =ir_swap=, =mm=, =fra=, =basis_swap= | =term= | =ccy= | =fwd_start= and =tenor= are identity, so they distinguish peers |
+| surface | =fx_option= | =expiry=, =strike_label= | =unit_ccy= | pair in the identity, smile in the coordinates |
+| surface (published) | =fx_vol_surface= | =expiry=, =strike= | =unit_ccy= | =surface_id= names it |
+| fixing | not a datum | — | — | =ores_marketdata_market_fixings_tbl=, a separate table |
+
+The declaration order of a type's coordinates is the draw order, which is what
+the screens need for =axes[].values=.
+
+* Conclusions
+
+1. *The grouping rule is the schema.* An instrument is one series identity for
+   one party: the type, the quote type and the identity fields the schema
+   declares. Its axes are the schema's coordinate fields, in declaration order.
+   Its sources are the =market_series= rows carrying that series, one per
+   provider. Nothing needs to be derived, and no derivation table should be
+   written.
+2. *hedgr's ladder assumption does not hold here.* A ladder is one series
+   sliced by =term=, so =get_rate_ladder= does not join series across rungs. It
+   reads the provider's series and states the rungs; the provider columns are
+   several *series rows* of one identity.
+3. *The party is the whole scoping story.* One series URI exists once per party;
+   a read that omits the party multiplies the catalogue.
+4. *A pair needs no axes and a surface needs two*, and both come from the same
+   rule, so the catalogue has one algorithm rather than five.
+5. *Fixings are not datums.* The fifth kind in the specification's list is not
+   in this schema, so the catalogue either reads =market_fixings= separately or
+   drops the kind. That is a real decision, not a detail.
+
+* Recommendations
+
+1. Write the catalogue against =schema_of(type)= rather than a grouping rule of
+   its own. Name it from the subject plus the identity fields that distinguish
+   peers (=IR AUD IR_SWAP 0D 3M=, =AUD-AONIA=), and mint =instrument_id= from the
+   canonical series URI plus the party, so it is stable across restarts and
+   distinct across parties.
+2. State =kind= as a function of the type and its coordinates, in one place in
+   the protocol header, so the catalogue, the ladder and the surface read agree
+   on what a surface is.
+3. Correct the ladder contract in the light of finding 2: its columns are
+   provider *series rows*, and its rungs are the =term= coordinates of one of
+   them. hedgr's spec should be amended where it assumes several series.
+4. Decide the fixing kind before the catalogue ships: either read the fixings
+   table, or remove =fixing= from the kind vocabulary and from the search
+   screen's badge list.
+5. Take the party from the session and never from the request, as the
+   specification already says; the row counts above show why.
+
+* See also
+
+- [[id:CFD4FD54-40C1-44BC-9264-DB50CB568167][Find an instrument]] — the screen the catalogue answers.
+- [[id:F95E55E2-C87F-48D9-925B-177D6D6E17C6][Read a rate ladder]] — the screen that reads one series across =term=.
+- [[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] — the screen whose axes are the schema's coordinates.
+- [[id:070C40B3-7B42-46B8-81A6-E87251703CC9][Investigation: the IR and vols machinery]] — the companion record on the numbers.

@@ -90,6 +90,14 @@ and the market-data prototypes in =doc/prototypes/market_data=, on 2026-11-13.
   tenor ordering, staleness thresholds). Those are the point of the server work
   that follows, and the journeys record each one as a missing read.
 
+** Investigations
+
+- [[id:070C40B3-7B42-46B8-81A6-E87251703CC9][The IR and vols machinery]] — every number the screens show is already
+  computed; the remaining gaps are policy decisions.
+- [[id:3C677D04-06E4-48F0-9F41-F3CA45861EEB][What an instrument is, against the datum schema]] — the schema is the
+  grouping rule, a ladder is one series across =term=, and the party is what
+  multiplies series rows.
+
 * Out of scope
 
 -

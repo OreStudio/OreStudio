@@ -144,8 +144,21 @@ void require_ok(const ores::utility::domain::result& result) {
 }
 
 void require_done(const ores::utility::domain::result& result) {
-    if (result.outcome != ores::utility::domain::outcome::ok)
-        refuse(http_status::conflict, "invalid-request", result.message);
+    using ores::utility::domain::outcome;
+    switch (result.outcome) {
+        case outcome::ok:
+            return;
+        case outcome::conflict:
+            refuse(http_status::conflict, "invalid-request", result.message);
+        case outcome::invalid:
+            invalid(result.message);
+        case outcome::denied:
+            refuse(http_status::forbidden, "forbidden", result.message);
+        case outcome::missing:
+            refuse(http_status::not_found, "not-found", result.message);
+        default:
+            refuse(http_status::bad_gateway, "upstream-unavailable", result.message);
+    }
 }
 
 namespace {
@@ -227,6 +240,26 @@ std::string object_with_members(const std::string& object,
                            yyjson_mut_strncpy(out.get(), name.data(), name.size()),
                            yyjson_val_mut_copy(out.get(), yyjson_doc_get_root(parsed.get())));
     }
+    std::size_t length = 0;
+    char* text = yyjson_mut_write(out.get(), 0, &length);
+    if (text == nullptr)
+        throw std::runtime_error("A row could not be written as JSON.");
+    std::string written(text, length);
+    std::free(text);
+    return written;
+}
+
+std::string object_without_members(std::string_view object,
+                                   std::initializer_list<std::string_view> names) {
+    const std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> doc(
+        yyjson_read(object.data(), object.size(), 0), &yyjson_doc_free);
+    if (!doc || !yyjson_is_obj(yyjson_doc_get_root(doc.get())))
+        return std::string(object);
+    const std::unique_ptr<yyjson_mut_doc, decltype(&yyjson_mut_doc_free)> out(
+        yyjson_doc_mut_copy(doc.get(), nullptr), &yyjson_mut_doc_free);
+    auto* root = yyjson_mut_doc_get_root(out.get());
+    for (const auto name : names)
+        yyjson_mut_obj_remove_keyn(root, name.data(), name.size());
     std::size_t length = 0;
     char* text = yyjson_mut_write(out.get(), 0, &length);
     if (text == nullptr)

@@ -240,6 +240,17 @@ object_with_members(const std::string& object,
                     const std::vector<std::pair<std::string, std::string>>& members);
 
 /**
+ * @brief The written document without each named member.
+ *
+ * An operation's reply carries the protocol's success and message beside the
+ * payload, and a screen reads the payload alone: this states that answer, as the
+ * BFF's forwarding did. A document that is not a JSON object comes back as it
+ * was, because a caller that wrote one meant it.
+ */
+[[nodiscard]] ORES_HTTP_API_EXPORT std::string
+object_without_members(std::string_view object, std::initializer_list<std::string_view> names);
+
+/**
  * @brief Refuse with the status a refused outcome names.
  *
  * A conflict the service states no words for says what it means.
@@ -247,8 +258,9 @@ object_with_members(const std::string& object,
 ORES_HTTP_API_EXPORT void require_ok(const ores::utility::domain::result& result);
 
 /**
- * @brief Refuse a failed outcome as the BFF refused a failed operation: a
- * conflict whose code is invalid-request and whose words are the service's.
+ * @brief Refuse a failed outcome as the BFF refused a failed operation: the
+ * status its outcome names, with a conflict answering invalid-request so a
+ * screen reads the service's own words.
  *
  * A route that keeps the BFF's answer uses this, whatever the outcome names.
  */
@@ -384,6 +396,39 @@ std::optional<T> read_body(std::string_view text) {
     if (!value)
         return std::nullopt;
     return std::move(*value);
+}
+
+/**
+ * @brief A body read as its own shape, refused by the sentence when it states
+ * another or names a member the shape does not.
+ *
+ * Every unit states its own sentence, because the sentence names the screen
+ * the body came from and no shared text can.
+ */
+template <typename T>
+T body_of(const domain::http_request& req,
+          std::initializer_list<std::string_view> members,
+          const std::string& sentence) {
+    refuse_unknown_members(req.body, members, sentence);
+    const auto body = read_body<T>(req.body);
+    if (!body)
+        invalid(sentence);
+    return *body;
+}
+
+/**
+ * @brief A body read as its own shape, with each member the screen leaves out
+ * at its default, refused by the sentence when it states another shape.
+ */
+template <typename T>
+T lenient_body_of(const domain::http_request& req,
+                  std::initializer_list<std::string_view> members,
+                  const std::string& sentence) {
+    refuse_unknown_members(req.body, members, sentence);
+    const auto body = ores::utility::codec::json::read_lenient<T>(req.body);
+    if (!body)
+        invalid(sentence);
+    return *body;
 }
 
 /**

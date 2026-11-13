@@ -39,11 +39,7 @@
 #include <string>
 #include <vector>
 
-// [!mayfail]: the test database this tree runs against is missing the
-// observation_lineages.source_weights column, so every read of the store fails
-// before the case reaches the catalogue. The tag comes off when the database
-// is rebuilt from projects/ores.sql, which already has the column.
-constexpr const char* catalogue_read_tags = "[instrument_catalogue][database][!mayfail]";
+constexpr const char* catalogue_read_tags = "[instrument_catalogue][database]";
 
 namespace {
 

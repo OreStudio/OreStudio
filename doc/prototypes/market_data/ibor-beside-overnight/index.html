@@ -212,11 +212,11 @@
     { tenor: "30Y", aonia: 4.58, libor: 4.90, why: "Term curve below the overnight" }
   ];
 
-  const W = 720, H = 250, left = 46, right = 700, top = 8, bottom = 210;
+  const W = 720, H = 250, left = 46, right = 700, topPad = 8, bottom = 210;
   let yMin = 4.2, yMax = 5.0;
   const ns = "http://www.w3.org/2000/svg";
   const sx = i => left + (i / (PILLARS.length - 1)) * (right - left);
-  const sy = v => bottom - ((v - yMin) / (yMax - yMin)) * (bottom - top);
+  const sy = v => bottom - ((v - yMin) / (yMax - yMin)) * (bottom - topPad);
   const line = key => PILLARS.map((p, i) => `${i ? "L" : "M"}${sx(i).toFixed(1)},${sy(p[key]).toFixed(1)}`).join(" ");
 
   function text(x, y, value, anchor) {
@@ -243,7 +243,7 @@
     gx.replaceChildren(); gy.replaceChildren(); gg.replaceChildren();
     PILLARS.forEach((p, i) => {
       gx.appendChild(text(sx(i), 228, p.tenor, "middle"));
-      gg.appendChild(gridLine(sx(i), sx(i), top, bottom));
+      gg.appendChild(gridLine(sx(i), sx(i), topPad, bottom));
     });
     for (let v = Math.ceil(yMin / 0.2) * 0.2; v <= yMax + 1e-9; v += 0.2) {
       gy.appendChild(text(40, sy(v) + 3, v.toFixed(1), "end"));

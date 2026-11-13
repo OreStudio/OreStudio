@@ -81,9 +81,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The part's test suite | 6 cases, 64 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the list commit |
-| The reporting area's routes the C++ server answers | 2 of 50 paired | =python3 build/scripts/route_inventory.py --check= | the list commit |
-| The gateway's routes in the inventory | 1298 routes, 208 of the BFF's 324 paired | =python3 build/scripts/route_inventory.py --check= | the list commit |
+| The part's test suite | 6 cases, 64 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | 754974363b |
+| The reporting area's routes the C++ server answers | 2 of 50 paired | =python3 build/scripts/route_inventory.py --check= | 754974363b |
+| The gateway's routes in the inventory | 1298 routes, 208 of the BFF's 324 paired | =python3 build/scripts/route_inventory.py --check= | 754974363b |
 
 * Notes
 

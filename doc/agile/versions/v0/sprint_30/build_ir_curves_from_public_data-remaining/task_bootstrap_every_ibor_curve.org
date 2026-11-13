@@ -62,6 +62,27 @@ task and name that file in the Command column.
 
 * Notes
 
+- The overnight chain is the template: two market_series rows (the curve output with
+  =instrument=discount...curve_id=<name>= and the quote ladder with =instrument=ir_swap=), one
+  config, seven pillars, and the republish service that stamps the output series.
+- PROJECTION is supported and unexercised: =curve_republish_service.cpp= reads
+  =curve_family_role= and =discount_curve_config_id=, loads the funding config's output as the
+  discount curve, and passes it to the engine for a projection config. The schema and a trigger
+  require a PROJECTION config to name an active FUNDING config, and the engine rejects a
+  discount curve that does not cover the pillar dates.
+- Blocked on [[id:0A87FC5F-F15E-40D8-8CF6-572D24A203EE][Make the ICE and Tradeweb feeds tick]]: without a notation and a feed
+  route, ICE and Tradeweb quotes are published as internal ticks and dropped, so no quote series
+  exists to bootstrap from. All 417 seeded =ir_swap= series are =tenor=1D=; none is an IBOR tenor.
+- Per curve: one output series (provider =ore=, OBSERVED, curve_id = the config name), three
+  quote series per ladder (=fwd_start=0D/3M/6M, =tenor=<index tenor>=), the config
+  (PROJECTION, discount = the currency's FUNDING config, RATES_SPOT_FORWARD), and seven pillars
+  (SPOT-1M/3M DEPOSIT, 3M-6M and 6M-12M FRA, SPOT-2Y/5Y/10Y SWAP). GBP-SONIA is a valid discount
+  curve for GBP-LIBOR-3M.
+- Ordering: a projection curve needs its discount curve published for the same as-of first;
+  nothing sequences that today, so the sweep must publish FUNDING before PROJECTION or retry.
+- The output identity carries no role: the oresmd instrument is =discount= for every curve, and
+  the projection role lives on the config, so a consumer must read the config, not the series.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

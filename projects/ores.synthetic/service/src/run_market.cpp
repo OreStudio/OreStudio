@@ -97,18 +97,20 @@ void run_market::build(tick_scheduler& scheduler,
 
     built_ = true;
     scheduler.set_driver_source(
-        [this](std::uint64_t series, double at, std::span<double> out) { drive(series, at, out); });
+        [this](std::uint64_t series, double at, std::span<double> out) -> std::size_t {
+            return drive(series, at, out);
+        });
 }
 
-void run_market::drive(std::uint64_t series, double at, std::span<double> out) {
-    std::ranges::fill(out, 0.0);
+std::size_t run_market::drive(std::uint64_t series, double at, std::span<double> out) {
     const auto known = drivers_.find(series);
     if (known == drivers_.end())
-        return;
+        return 0;
     const auto& indices = known->second;
     const auto count = std::min(indices.size(), out.size());
     for (std::size_t i = 0; i < count; ++i)
         out[i] = latent_driver(market_, indices[i], at);
+    return count;
 }
 
 }

@@ -656,6 +656,20 @@ feed_kind make_fx_vol_surface_kind() {
             c.folder_id = cfg.folder_id;
             c.asset_class_code = cfg.asset_class_code;
             c.fx_pair = std::pair{cfg.base_currency_code, cfg.quote_currency_code};
+            // The block the run's market is built from, so it can be made before any feed
+            // starts: the segments are the expiry rows and the numbers are the row's own.
+            {
+                repo::fx_vol_surface_feed_expiry_repository count_repo;
+                std::size_t segments = 0;
+                for (const auto& e : count_repo.read_latest(ctx))
+                    if (e.feed_id == cfg.id)
+                        ++segments;
+                if (segments > 0)
+                    c.block = feed_latent_block{.segments = segments,
+                                                .spot_variance = cfg.spot_variance_correlation,
+                                                .spot_skew = cfg.spot_skew_correlation,
+                                                .neighbour = cfg.segment_correlation};
+            }
             c.build_input = [ctx, cfg](const feed::feed_adapter& adapter) -> feed_build_outcome {
                 static_cast<void>(adapter);
 

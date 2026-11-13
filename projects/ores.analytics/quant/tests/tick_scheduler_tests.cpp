@@ -21,11 +21,11 @@
 #include <atomic>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <span>
 #include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <map>
+#include <span>
 #include <stdexcept>
 #include <thread>
 #include <vector>
@@ -541,8 +541,10 @@ TEST_CASE("the tick context carries the market's driver", "[tick_scheduler]") {
         return std::string("ok");
     });
 
-    scheduler.set_driver_source(
-        [](std::uint64_t, double, std::span<double> out) { std::ranges::fill(out, 1.25); });
+    scheduler.set_driver_source([](std::uint64_t, double, std::span<double> out) {
+        std::ranges::fill(out, 1.25);
+        return out.size();
+    });
     REQUIRE(scheduler.step());
     CHECK(seen.size() == 1);
     CHECK(seen[0] == 1.25);
@@ -555,8 +557,7 @@ TEST_CASE("the tick context carries the market's driver", "[tick_scheduler]") {
     CHECK(seen[1] == 0.0);
 }
 
-TEST_CASE("a series that declares several drivers reads one normal for each",
-          "[tick_scheduler]") {
+TEST_CASE("a series that declares several drivers reads one normal for each", "[tick_scheduler]") {
     // A surface's forward variances, skew and curvature each load on the spot's factor,
     // so its feed asks for one normal each rather than one in total.
     manual_run_clock clock(scheduler_wall_origin);
@@ -584,6 +585,7 @@ TEST_CASE("a series that declares several drivers reads one normal for each",
     scheduler.set_driver_source([](std::uint64_t series, double, std::span<double> out) {
         for (std::size_t i = 0; i < out.size(); ++i)
             out[i] = static_cast<double>(series) + static_cast<double>(i) / 10.0;
+        return out.size();
     });
     REQUIRE(scheduler.step());
     REQUIRE(scheduler.step());

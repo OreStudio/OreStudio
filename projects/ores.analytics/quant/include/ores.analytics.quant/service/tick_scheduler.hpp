@@ -224,10 +224,12 @@ public:
      * instant it ticks at, and how many to write into @p out.
      *
      * The latent market answers it, one normal for each series the feed registered for
-     * this driver. A run without a market leaves it unset, and every driver is zero.
+     * this driver, and returns how many it wrote. A series the market does not drive
+     * writes none, so its tick sees no driver at all rather than a zero that a feed
+     * cannot tell from a normal. A run without a market leaves the source unset.
      */
     using driver_source =
-        std::function<void(std::uint64_t series, double at, std::span<double> out)>;
+        std::function<std::size_t(std::uint64_t series, double at, std::span<double> out)>;
     using published_hook = std::function<void(std::uint64_t, const std::string&)>;
     using failure_hook = std::function<void(const std::exception&)>;
 

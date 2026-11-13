@@ -138,7 +138,9 @@ TEST_CASE("a surface's drivers reach its tick as the market's normals", "[run_ma
 
     REQUIRE(surface_drivers.size() == 7);
     REQUIRE(spot_driver.size() == 1);
-    REQUIRE(stranger_driver.size() == 1);
+    // A series the market does not drive reads no driver at all: a zero would be a draw a
+    // feed could not tell from a real one.
+    CHECK(stranger_driver.empty());
 
     // A driver is a standard normal, so it is finite and not one repeated value.
     bool any_nonzero = false;
@@ -149,8 +151,7 @@ TEST_CASE("a surface's drivers reach its tick as the market's normals", "[run_ma
     }
     CHECK(any_nonzero);
     CHECK(std::isfinite(spot_driver[0]));
-    // A series the market does not know is handed zeros, not noise nobody chose.
-    CHECK(stranger_driver[0] == 0.0);
+    CHECK(stranger_driver.empty());
 }
 
 TEST_CASE("a run with no surface builds a market with nothing in it", "[run_market]") {

@@ -107,8 +107,9 @@ public:
     }
 
 private:
-    /// The normals one feed reads: its own series, in the order its feed declared them.
-    void drive(std::uint64_t series, double at, std::span<double> out);
+    /// The normals one feed reads, and how many it wrote: none for a series the market does
+    /// not drive.
+    std::size_t drive(std::uint64_t series, double at, std::span<double> out);
 
     ores::analytics::quant::domain::latent_config config_;
     ores::analytics::quant::domain::latent_market market_;

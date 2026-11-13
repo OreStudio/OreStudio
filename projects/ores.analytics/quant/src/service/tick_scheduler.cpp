@@ -19,8 +19,8 @@
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include <algorithm>
 #include <cmath>
-#include <span>
 #include <limits>
+#include <span>
 #include <stdexcept>
 #include <utility>
 
@@ -389,10 +389,15 @@ std::optional<fired_tick> tick_scheduler::fire(std::unique_lock<std::mutex>& loc
     s.last_tau = market_.tau();
     s.last_simulated = market_.simulated();
     // The buffer is sized when a series is added, so a tick only fills it.
-    const auto count = std::min(s.spec.driver_count, drivers_.size());
-    std::fill_n(drivers_.begin(), count, 0.0);
-    if (driver_source_)
-        driver_source_(s.spec.series, *due, std::span<double>(drivers_).first(count));
+    const auto wanted = std::min(s.spec.driver_count, drivers_.size());
+    std::fill_n(drivers_.begin(), wanted, 0.0);
+    // A source that writes fewer normals than the series asked for leaves the rest out, so a
+    // feed can tell a series the market drives from one it does not.
+    const auto count =
+        driver_source_ ?
+            std::min(driver_source_(s.spec.series, *due, std::span<double>(drivers_).first(wanted)),
+                     wanted) :
+            std::size_t{0};
     const tick_context context{.elapsed_seconds = *due - s.last_fired,
                                .observed_at = clock_.wall(time_at(*due)),
                                .simulated_seconds = simulated_elapsed,

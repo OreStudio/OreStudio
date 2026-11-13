@@ -517,7 +517,19 @@ std::string fx_spot_feed::tick(const ores::analytics::quant::service::tick_conte
     const auto elapsed_ticks =
         context.simulated_seconds > 0.0 ? context.simulated_seconds * ticks_per_second_ : 1.0;
     process_->set_tail_tilt(context.tail_tilt);
-    const auto value = std::format("{}", process_->next(elapsed_ticks));
+    /*
+     * A series the market drives takes the standard normal the market drew, so its price moves
+     * with the spot factor its surfaces load on. A series it does not drive draws as it always
+     * did, which is why an empty driver list matters: a zero would be a draw the feed could not
+     * tell from a real one. One normal is one nominal tick, so a step over a longer span keeps
+     * the process's own draw rather than pretending the span was one tick.
+     */
+    constexpr double one_tick_tolerance = 1e-9;
+    const bool driven = !context.drivers.empty() && process_->supports_external_normal() &&
+                        std::abs(elapsed_ticks - 1.0) <= one_tick_tolerance;
+    const auto price =
+        driven ? process_->next_with_normal(context.driver()) : process_->next(elapsed_ticks);
+    const auto value = std::format("{}", price);
     if (n == 1 || n % 100 == 0) {
         BOOST_LOG_SEV(lg(), ores::logging::info)
             << "SYNTHETIC PUBLISH: subject='" << published_subject() << "' oresmd_uri='"

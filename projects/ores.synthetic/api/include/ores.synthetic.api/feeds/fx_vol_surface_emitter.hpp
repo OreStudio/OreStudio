@@ -99,8 +99,8 @@ public:
      * @param start The surface to start at, which every process reverts to.
      * @param dynamics The laws of the drivers, with the identity for their matrix.
      * @param dt The year fraction one step represents.
-     * @param conventions The pair's quoting convention at each expiry, in the same order as
-     *        the start surface's expiries. The market itself arrives with each step, because it
+     * @param convention The pair's quoting convention, which is one per pair and does not
+     *        change from expiry to expiry. The market itself arrives with each step, because it
      *        moves when the run's curves do.
      * @param deltas The deltas, besides ATM, to quote a risk reversal and a butterfly at.
      * @param contributors The contributors that observe the surface.
@@ -109,7 +109,7 @@ public:
     make(ores::analytics::quant::service::ssvi_parameters start,
          ores::analytics::quant::service::fx_vol_surface_dynamics dynamics,
          double dt,
-         std::vector<ores::analytics::quant::math::fx_quote_convention> conventions,
+         ores::analytics::quant::math::fx_quote_convention convention,
          std::vector<double> deltas,
          std::vector<fx_vol_contributor_spec> contributors);
 
@@ -152,8 +152,8 @@ private:
         ores::analytics::quant::service::fx_vol_surface_generator generator);
 
     ores::analytics::quant::service::fx_vol_surface_generator generator_;
-    /// The pair's convention at each expiry, in the surface's own expiry order.
-    std::vector<ores::analytics::quant::math::fx_quote_convention> conventions_;
+    /// The pair's convention, which every expiry of the surface is quoted in.
+    ores::analytics::quant::math::fx_quote_convention convention_;
     /// The expiry names, in the surface's own order, so a step need not rebuild them.
     std::vector<std::string> expiry_ids_;
     /// One market per expiry, as the caller hands them in; reused so a tick does not allocate.

@@ -123,14 +123,11 @@ make_emitter(std::vector<fx_vol_contributor_spec> contributors,
              std::vector<double> deltas = emitter_deltas) {
     const auto start = emitter_start();
     current_markets = markets_of(markets);
-    std::vector<fx_quote_convention> conventions;
-    conventions.reserve(markets.size());
-    for (const auto& slice : markets)
-        conventions.push_back(slice.convention);
+    const auto convention = markets.empty() ? emitter_convention : markets.front().convention;
     return fx_vol_surface_emitter::make(start,
                                         std::move(dynamics),
                                         emitter_day,
-                                        std::move(conventions),
+                                        convention,
                                         std::move(deltas),
                                         std::move(contributors));
 }
@@ -285,12 +282,19 @@ TEST_CASE("the emitter refuses what it cannot step", "[fx_vol_surface_emitter]")
     // A surface with nobody to quote it is not a feed.
     CHECK_FALSE(make_emitter({}, emitter_markets(start), emitter_dynamics(start.expiries.size()))
                     .has_value());
-    // A market per expiry, and one for each.
-    auto few_markets = emitter_markets(start);
-    few_markets.pop_back();
-    CHECK_FALSE(
-        make_emitter({emitter_clean()}, few_markets, emitter_dynamics(start.expiries.size()))
-            .has_value());
+    // A market per expiry: the count is a step's business now, and a step one market short is
+    // refused rather than reading the expiry beside it.
+    auto full = make_emitter(
+        {emitter_clean()}, emitter_markets(start), emitter_dynamics(start.expiries.size()));
+    REQUIRE(full);
+    std::vector<double> drivers(start.expiries.size() + 2, 0.0);
+    auto few = markets_of(emitter_markets(start));
+    few.pop_back();
+    CHECK_THROWS_AS(full->step(drivers, few), std::invalid_argument);
+    // And the state did not move: the refusal comes before the step it would have taken.
+    const auto before = full->surface().expiries.front().atm_total_variance;
+    CHECK(full->surface().expiries.front().atm_total_variance ==
+          Catch::Approx(before).epsilon(1e-15));
 }
 
 TEST_CASE("a surface's quotes do not depend on the level of its spot", "[fx_vol_surface_emitter]") {

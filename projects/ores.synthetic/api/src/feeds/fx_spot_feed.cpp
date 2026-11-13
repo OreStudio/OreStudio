@@ -27,6 +27,7 @@
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.synthetic.api/feeds/producer_subject.hpp"
 #include "ores.synthetic.api/feeds/variance_calibration.hpp"

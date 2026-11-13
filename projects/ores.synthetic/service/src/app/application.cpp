@@ -49,12 +49,12 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
-#include <stop_token>
 #include <map>
 #include <memory>
 #include <optional>
 #include <set>
 #include <span>
+#include <stop_token>
 #include <thread>
 #include <utility>
 #include <vector>

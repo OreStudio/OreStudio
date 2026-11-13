@@ -45,18 +45,13 @@ std::string fx_vol_point_label(double delta, bool butterfly) {
         "{}{}", static_cast<int>(std::lround(delta * 100.0)), butterfly ? "BF" : "RR");
 }
 
-std::expected<fx_vol_surface_emitter, std::string> fx_vol_surface_emitter::make(
-    ssvi_parameters start,
-    ores::analytics::quant::service::fx_vol_surface_dynamics dynamics,
-    double dt,
-    std::vector<ores::analytics::quant::math::fx_quote_convention> conventions,
-    std::vector<double> deltas,
-    std::vector<fx_vol_contributor_spec> contributors) {
-    if (conventions.size() != start.expiries.size())
-        return std::unexpected(
-            std::format("The surface has {} expiry(ies) and {} quote convention(s).",
-                        start.expiries.size(),
-                        conventions.size()));
+std::expected<fx_vol_surface_emitter, std::string>
+fx_vol_surface_emitter::make(ssvi_parameters start,
+                             ores::analytics::quant::service::fx_vol_surface_dynamics dynamics,
+                             double dt,
+                             ores::analytics::quant::math::fx_quote_convention convention,
+                             std::vector<double> deltas,
+                             std::vector<fx_vol_contributor_spec> contributors) {
     for (const double delta : deltas)
         if (!(delta > 0.0 && delta <= atm_delta))
             return std::unexpected(std::format("The delta {} is not inside (0, 0.5].", delta));
@@ -79,11 +74,13 @@ std::expected<fx_vol_surface_emitter, std::string> fx_vol_surface_emitter::make(
         return std::unexpected(generator.error());
 
     fx_vol_surface_emitter emitter(std::move(*generator));
-    emitter.conventions_ = std::move(conventions);
+    // The slices are laid out once: the expiry and the convention are fixed, and a step only
+    // writes the market into them, so a tick copies no string.
+    emitter.convention_ = convention;
     emitter.slices_.reserve(start.expiries.size());
-    emitter.expiry_ids_.reserve(start.expiries.size());
     for (const auto& expiry : start.expiries)
-        emitter.expiry_ids_.push_back(expiry.expiry_id);
+        emitter.slices_.push_back(
+            {.expiry_id = expiry.expiry_id, .market = {}, .convention = convention});
     emitter.deltas_ = std::move(deltas);
     emitter.per_contributor_ = start.expiries.size() * (1 + 2 * emitter.deltas_.size());
     emitter.names_.reserve(contributors.size());
@@ -126,16 +123,16 @@ fx_vol_surface_emitter::step(std::span<const double> drivers,
 
     // Nothing is left for spot's own shock to move: the market has already correlated
     // the drivers this step advances on.
-    const auto& surface = generator_.step(0.0, drivers);
-    // The market of each expiry, as the caller hands it in: the feed resolved it from the
-    // run's values this tick, so a curve's move reaches the strikes without a restart.
-    if (markets.size() != conventions_.size())
+    // Checked before the surface advances: a step handed the wrong number of markets must not
+    // move the state it would then have to undo.
+    if (markets.size() != slices_.size())
         throw std::invalid_argument(
-            std::format("A step reads {} market(s), not {}.", conventions_.size(), markets.size()));
-    slices_.clear();
+            std::format("A step reads {} market(s), not {}.", slices_.size(), markets.size()));
+    const auto& surface = generator_.step(0.0, drivers);
+    // The market of each expiry, as the caller hands it in: the feed resolved it from the run's
+    // values this tick, so a curve's move reaches the strikes without a restart.
     for (std::size_t i = 0; i < markets.size(); ++i)
-        slices_.push_back(
-            {.expiry_id = expiry_ids_[i], .market = markets[i], .convention = conventions_[i]});
+        slices_[i].market = markets[i];
     const auto quotes = fx_vol_surface_quotes(surface, slices_, deltas_);
     if (!quotes)
         throw std::invalid_argument(quotes.error());

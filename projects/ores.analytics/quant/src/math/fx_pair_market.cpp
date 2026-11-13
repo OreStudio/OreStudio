@@ -116,6 +116,10 @@ std::expected<double, std::string> side_discount(std::span<const fx_curve_point>
             return std::unexpected(prefix + "the " + std::string(side) +
                                    " curve is not in date order at " +
                                    std::format("{}", point.date));
+        if (days(point.date) < days(spot_date))
+            return std::unexpected(prefix + "the " + std::string(side) + " curve has a point on " +
+                                   std::format("{}", point.date) + ", before the spot date " +
+                                   std::format("{}", spot_date));
         previous = point.date;
     }
     if (days(value_date) < days(spot_date))

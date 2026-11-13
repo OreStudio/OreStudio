@@ -30,6 +30,7 @@
 #include <charconv>
 #include <chrono>
 #include <format>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -161,8 +162,6 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::u
     dynamics.correlation = Eigen::MatrixXd::Identity(size, size);
 
     // The convention is the pair's and does not move; the market arrives with each step.
-    std::vector<ores::analytics::quant::math::fx_quote_convention> conventions(
-        start.expiries.size(), input.convention);
 
     std::vector<fx_vol_contributor_spec> contributors;
     contributors.reserve(input.contributors.size());
@@ -186,9 +185,31 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::u
     return fx_vol_surface_emitter::make(start,
                                         std::move(dynamics),
                                         1.0 / days_in_a_year,
-                                        std::move(conventions),
+                                        input.convention,
                                         input.deltas,
                                         std::move(contributors));
+}
+
+std::string fx_pair_member_code(std::string_view base, std::string_view quote) {
+    return std::string(base) + "/" + std::string(quote);
+}
+
+std::expected<void, std::string>
+fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
+                      std::span<const ores::analytics::quant::domain::date_period> periods,
+                      std::vector<ores::analytics::quant::math::fx_market>& out) {
+    out.clear();
+    out.reserve(periods.size());
+    for (const auto& period : periods) {
+        const auto value_date = ores::analytics::quant::service::calendar_arithmetic::add_period(
+            inputs.spot_date, period);
+        auto resolved = ores::analytics::quant::math::pair_market_at(
+            inputs.spot.spot, inputs.spot_date, inputs.base, inputs.quote, value_date, {});
+        if (!resolved)
+            return std::unexpected(resolved.error());
+        out.push_back(*resolved);
+    }
+    return {};
 }
 
 fx_vol_surface_feed::fx_vol_surface_feed(
@@ -213,7 +234,7 @@ fx_vol_surface_feed::fx_vol_surface_feed(
     const auto& quote = input.config.quote_currency_code;
     base_code_ = base;
     quote_code_ = quote;
-    pair_label_ = base + "/" + quote;
+    pair_label_ = fx_pair_member_code(base, quote);
     // The three values this surface reads, resolved once, off the loop.
     {
         auto& values = market_.values();
@@ -224,25 +245,26 @@ fx_vol_surface_feed::fx_vol_surface_feed(
         spot_id_ =
             values.member_of(ores::analytics::quant::domain::market_member_kind::spot, pair_label_);
     }
-    // The expiry each market is solved at, in the order the emitter quotes them.
+    // The expiry each market is solved at, in the order the emitter quotes them: the emitter
+    // sorted the expiries, so the periods are taken from its order rather than sorted again,
+    // which two equal-year tenors could order differently.
     {
-        std::vector<std::pair<double, ores::analytics::quant::domain::date_period>> ordered;
+        std::map<std::string, ores::analytics::quant::domain::date_period> periods;
         for (const auto& expiry : input.expiries) {
-            const auto years = fx_vol_tenor_years(expiry.tenor);
             const auto period = ores::refdata::mapping::parse_tenor_text(expiry.tenor);
-            if (!years || !period)
+            if (!period)
                 throw std::invalid_argument("fx_vol_surface_feed: the expiry '" + expiry.tenor +
                                             "' does not read as a tenor");
-            ordered.emplace_back(*years, *period);
+            periods[expiry.tenor] = *period;
         }
-        std::ranges::sort(
-            ordered, {}, &std::pair<double, ores::analytics::quant::domain::date_period>::first);
-        expiry_periods_.reserve(ordered.size());
-        markets_.reserve(ordered.size());
-        for (const auto& [years, period] : ordered) {
-            static_cast<void>(years);
-            expiry_periods_.push_back(period);
+        for (const auto& expiry : emitter_.surface().expiries) {
+            const auto found = periods.find(expiry.expiry_id);
+            if (found == periods.end())
+                throw std::invalid_argument("fx_vol_surface_feed: the emitter quotes an expiry '" +
+                                            expiry.expiry_id + "' the row does not carry");
+            expiry_periods_.push_back(found->second);
         }
+        markets_.reserve(expiry_periods_.size());
     }
     // The points repeat for every contributor, so one contributor's block names them all.
     for (std::size_t i = 0; i < emitter_.points_per_contributor(); ++i) {
@@ -290,16 +312,12 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
     if (!level.published)
         return std::format("no market: spot:{}", pair_label_);
 
-    markets_.clear();
-    for (const auto& period : expiry_periods_) {
-        const auto value_date = ores::analytics::quant::service::calendar_arithmetic::add_period(
-            base.spot_date, period);
-        const auto resolved = ores::analytics::quant::math::pair_market_at(
-            level.spot, base.spot_date, base.points, quote.points, value_date, {});
-        if (!resolved)
-            return "no market: " + resolved.error();
-        markets_.push_back(*resolved);
-    }
+    const fx_vol_market_inputs inputs{.spot = fx_market{.spot = level.spot},
+                                      .base = base.points,
+                                      .quote = quote.points,
+                                      .spot_date = base.spot_date};
+    if (const auto built = fx_vol_expiry_markets(inputs, expiry_periods_, markets_); !built)
+        return "no market: " + built.error();
     const auto points = emitter_.step(context.drivers, markets_);
     const auto& codec = ores::nats::default_wire_codec();
     const auto now = context.observed_at;

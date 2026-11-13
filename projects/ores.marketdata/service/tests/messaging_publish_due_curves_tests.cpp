@@ -25,6 +25,7 @@
 #include "ores.marketdata.service/messaging/publish_due_curves_handler.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <algorithm>
+#include <chrono>
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 
@@ -35,6 +36,7 @@ namespace {
 using ores::inbox::service::approval_lifecycle;
 using ores::marketdata::service::app::curve_publish_kind_code;
 using ores::marketdata::service::tests::curve_fixture;
+using ores::marketdata::service::tests::seed_person;
 
 /**
  * @brief The seeded curve publish kind, approving every raise for one test.
@@ -87,11 +89,14 @@ using namespace ores::marketdata::messaging;
 TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build", tags) {
     curve_fixture f;
     zero_approval_curve_kind zeroed(f.h);
+    const auto maker = seed_person(f.h);
     // A second config with no pillars: its bootstrap cannot run, so the sweep
     // must name it and leave the first curve's publish in place.
     f.seed_second_curve();
 
-    const auto resp = publish_due_curves_handler::publish_all(*f.party);
+    const auto ctx = f.h.context().with_party(
+        f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
+    const auto resp = publish_due_curves_handler::publish_all(ctx);
 
     CHECK(resp.success);
     REQUIRE(resp.curves.size() == 2);
@@ -115,14 +120,19 @@ TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build", 
 TEST_CASE("a_second_firing_supersedes_the_publish_the_first_made", tags) {
     curve_fixture f;
     zero_approval_curve_kind zeroed(f.h);
+    const auto maker = seed_person(f.h);
+    const auto ctx = f.h.context().with_party(
+        f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
 
-    const auto first_sweep = publish_due_curves_handler::publish_all(*f.party);
+    const auto at = std::chrono::system_clock::now();
+    const auto first_sweep = publish_due_curves_handler::publish_all(ctx, at);
     REQUIRE(first_sweep.curves.size() == 1);
     REQUIRE(first_sweep.curves.front().published);
     const auto first = f.published();
     REQUIRE(first.has_value());
 
-    const auto second_sweep = publish_due_curves_handler::publish_all(*f.party);
+    const auto second_sweep =
+        publish_due_curves_handler::publish_all(ctx, at + std::chrono::minutes(15));
     REQUIRE(second_sweep.curves.size() == 1);
     REQUIRE(second_sweep.curves.front().published);
 

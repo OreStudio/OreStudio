@@ -113,9 +113,13 @@ public:
      * @brief The sweep itself, without the message: the entry a test drives.
      *
      * Lists the current tenant's IR curve bootstrap configs and publishes each
-     * one at one instant through the person's publish path.
+     * one at @p as_of through the person's publish path. The firing states the
+     * instant; a test states its own, so two firings can be told apart.
      */
-    static publish_due_curves_response publish_all(const ores::database::context& req_ctx) {
+    static publish_due_curves_response
+    publish_all(const ores::database::context& req_ctx,
+                std::chrono::system_clock::time_point as_of =
+                    std::chrono::system_clock::now()) {
         publish_due_curves_response resp;
         constexpr std::string_view reason =
             "The scheduled curve republish keeps the system's published curves on the market of "
@@ -130,9 +134,9 @@ public:
             outcome.bootstrap_config_id = boost::uuids::to_string(config.id);
             outcome.name = config.name;
 
-            // One instant for the read and the publish, so the published set and
-            // the as-of it is recorded at cannot disagree.
-            outcome.as_of = std::chrono::system_clock::now();
+            // One instant for every curve of the firing, so the published sets
+            // and the as-of they are recorded at cannot disagree.
+            outcome.as_of = as_of;
             const auto started = std::chrono::steady_clock::now();
             try {
                 publish_curve_request publish;

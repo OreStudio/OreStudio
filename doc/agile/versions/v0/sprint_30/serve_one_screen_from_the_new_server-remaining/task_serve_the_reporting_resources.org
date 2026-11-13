@@ -158,3 +158,13 @@ via its "Verifies task" field.
 | 25 | Keeping the cut on save departs from the BFF | =report_routes.cpp= | Confirmed | The BFF cleared the selected cut on every save; the departure is recorded and right. |
 
 * Result
+
+This record is written when the task is done. The task is larger than one
+pull request: it names fifty routes plus the five this task moves here from the
+reference data task, and the four families still to serve each need their
+design settled first. Each pull request that lands part of it records what it
+delivered in the row below, and the task stays open until the last family.
+
+| Pull request | Delivered |
+|--------------+-----------|
+| #4685 | The part, stood up by the adapter recipe, and ten routes: the form's codes, the definitions list, one definition by id or by an older name, its configurations, its write, a report's start, its runs, one run's page and the problems it recorded. The design note for a run's files and results. |

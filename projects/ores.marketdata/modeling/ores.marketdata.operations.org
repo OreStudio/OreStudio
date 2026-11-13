@@ -1098,6 +1098,100 @@ Unlike a published market observation, it never touches the database.
 :cpp_type: std::vector<computed_curve_point>
 :END:
 
+** publish_due_curves_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.publish_due_curves
+:response: publish_due_curves_response
+:END:
+
+The sweep a scheduler job fires on its cadence: it bootstraps and publishes
+every IR curve the system tenant holds a bootstrap config for, so the published
+curves follow the quotes instead of staying at the provisioning as-of. The
+request states nothing; the cadence is the job's, and the curves share one
+market.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Request to bootstrap and publish every IR curve the system tenant holds
+ * a bootstrap config for -- the sweep a scheduler job fires on its cadence.
+ *
+ * Each curve goes through the same compute/publish pair a person's publish
+ * takes, so each publish supersedes the previous one. A curve whose compute or
+ * publish fails keeps its previous publish, and the response names it.
+ */
+#+end_src
+
+** curve_republish_outcome
+
+What the sweep did for one curve, whether it published or not.
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the sweep did for one curve: the curve's name, its as-of, how
+ * long it took, and whether it published or why it did not.
+ */
+#+end_src
+
+*** bootstrap_config_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** duration_ms
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+*** published
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** publish_due_curves_response
+
+What one firing did: whether every curve it visited published, a line for a
+person, and one outcome per curve with its name, as-of, duration and result.
+
+#+begin_src cpp :name comment
+/**
+ * @brief What one firing did: whether every curve it visited published, and
+ * one outcome per curve with its name, as-of, duration and result.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** curves
+:PROPERTIES:
+:cpp_type: std::vector<curve_republish_outcome>
+:END:
+
 ** series_slice_instant
 
 One instant of a slice: the object as it stood then, one value per declared

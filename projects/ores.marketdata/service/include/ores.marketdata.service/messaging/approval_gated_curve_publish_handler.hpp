@@ -129,7 +129,6 @@ public:
         reply(nats_, msg, resp);
     }
 
-private:
     /**
      * @brief Raises the request a publish waits on, or applies an approved one.
      *
@@ -141,6 +140,10 @@ private:
      * this operation applies it at once, answering with the instant and the
      * publisher the record holds rather than with a wait. The publisher is the
      * asker, because the asker is the person who applied it.
+     *
+     * Public because the scheduled sweep publishes the system tenant's curves
+     * through this one path, so a person's publish and a schedule's publish can
+     * never drift apart.
      */
     static void answer(const ores::database::context& req_ctx,
                        const publish_curve_request& req,
@@ -173,6 +176,7 @@ private:
         apply(req_ctx, req.approval_request_id, attempted, resp);
     }
 
+private:
     /**
      * @brief Applies the approved request, or says why it may not.
      *

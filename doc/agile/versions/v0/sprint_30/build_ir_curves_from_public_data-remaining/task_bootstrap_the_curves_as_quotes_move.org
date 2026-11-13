@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/bootstrap-the-curves-as-quotes-move
+#+pr: 4672
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
 #+updated: 2026-11-08
-#+environment: prime_origin
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Each published overnight-index curve is bootstrapped and published again on a sc
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-13                              |
 
 * Acceptance
 
@@ -43,6 +43,42 @@ Each published overnight-index curve is bootstrapped and published again on a sc
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+The cadence is one scheduler job for every published system curve. The
+task's "config or policy states" becomes "the job states", because the
+curves share one market and one cadence; a per-curve interval is a later
+change if a curve ever needs a different one.
+
+A publish is the pair provisioning already uses: =compute_curve=, then
+=publish_curve= at the same as-of. The =republish_curve= operation is
+not used: it writes observations but no publish record, so nothing is
+superseded.
+
+1. Add =marketdata.v1.ops.publish_due_curves=: an empty request and a
+   per-curve response. The handler lists the system tenant's IR curve
+   bootstrap configs and, for each one at a single =now=, sends
+   =compute_curve= and then =publish_curve= as a delegated request with
+   the caller's own token. It measures each curve, logs its name, as-of,
+   duration and outcome, and names a failure in the response. A curve
+   whose compute or publish fails keeps its previous publish.
+2. Let the scheduler send an authenticated request. As built, this is a new
+   =nats_request= action rather than a flag on =nats_publish=: that action
+   already shapes a report trigger from its payload, and mixing an empty
+   request into it would make one kind guess another's body. The request is
+   the no-member body, encoded in the process wire format.
+3. Grant =SchedulerService= the curve compute and publish permissions in
+   the IAM role seed, so the scheduler's token passes the handlers.
+4. Seed one job, =ores.marketdata.curve_republish=, every 15 minutes,
+   action =nats_request=, subject =marketdata.v1.ops.publish_due_curves=.
+   The job row states the cadence.
+5. Prove it: tests for the sweep (publishes and supersedes, keeps the
+   previous publish on a failed compute, names the failure), for the
+   scheduler payload, and for the permission refusal; then fire the job
+   on the provisioned environment and read the new publish, its
+   supersession and the log lines.
+
+Out of scope: per-party curves, which the story excludes; a per-curve
+cadence; the market-day roll, which is captured in the backlog.
 
 * Measurements
 
@@ -56,9 +92,31 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Curves a live firing republished | 20 of 20, one as-of, about 250 ms each | =grep 'Curve republish' .../ores.marketdata.service.0.log=; raw lines in =evidence/curve_republish_sweep_2026-11-13.log= | 6bd451cb83 |
+| Publish records after the firing | 40 superseded, 100 live, newest as-of 2026-11-13 14:15:00 | =select count(*) filter (where superseded_at is not null), count(*) filter (where superseded_at is null), max(as_of) ...= | 6bd451cb83 |
+| Suites | scheduler core 29 cases, marketdata service 251 cases, both green | =./compass.sh test run -- -R 'ores\.(scheduler\.core|marketdata\.service)'= | 6bd451cb83 |
 
 * Notes
+
+- The first live firing, at 00:45, reached the scheduler and was refused
+  =bad_request=: the =nats_request= action sent the payload's raw ={}= text,
+  which the callee decodes in the process wire format. The action now sends a
+  codec-encoded request from a no-member body type.
+- The provisioning runs on 2026-11-13 failed with SIGSEGV in the workflow
+  service, then in the shell, both around =get_workflow_steps_response=. The
+  cause was stale binaries: the worktree had been rebuilt only in parts after
+  the branch moved onto the workflow change, so a process built against one
+  shape of =workflow_step_summary= talked to a library built against another.
+  A rebuilt workflow service stopped crashing; a rebuilt shell ended it, and
+  the provisioning runs have been clean since.
+- Proven live, 2026-11-13 14:15. A fresh provision completed on the rebased
+  tree: the =acme_demo= profile no longer orders the surface steps, so nothing
+  waits on the derived volatility series. The scheduler fired the job at
+  14:15:00; the sweep published 20 of 20 system curves, each in about 250 ms,
+  and every one carried the same as-of. The row count shows 40 earlier set
+  records superseded and 100 live, with the newest as-of at the sweep's
+  instant. The raw lines are in
+  =evidence/curve_republish_sweep_2026-11-13.log=.
 
 * Test Scenarios
 
@@ -75,12 +133,60 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4672][#4672]] | [marketdata] Republish the system curves on a schedule |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The sweep reads the caller's tenant, not the system tenant | publish_due_curves_handler.hpp | noted | By design: the read goes through the request context, and the job's caller is the scheduler service account in the system tenant. The Result says so. |
+| 2 | Plan step 2 does not describe the action that shipped | task doc | accepted | The Plan now states the =nats_request= action and why it is not a flag on =nats_publish=. |
+| 3 | No test proves a firing supersedes the previous set | tests | accepted | Added (7ef785046c): two records, one live, the live one later. |
+| 4 | "Keeps the previous publish" is claimed but untested | task doc | accepted | The Result now says the write order keeps it and no test covers it; the gate's refused-publish test covers the write order. |
+| 5 | No test of the permission refusal | handler | declined | The handler uses the standard =has_permission= check, covered by the other handlers' tests. |
+| 6 | The scheduler action's =execute= is untested | nats_request_action_handler.cpp | declined | It needs a live NATS service; the payload and the X-Error path follow the tested =nats_publish= action. |
+| 7 | The test rewrites the seeded approval kind | tests | declined | The gate test uses the same technique and restores the row; the suite expects the seeded value after it. |
+| 8 | =resp.success= is true even when every curve fails | handler | accepted | Success now means every visited curve published. |
+| 9 | "raised. Raised." double wording | handler | accepted | One wording. |
+| 10 | The response has no =@brief= | operations model | accepted | The model carries it and the protocol and TypeScript twin are regenerated. |
+| 11 | Stale comments in the test and the plan | tests, task doc | accepted | Both corrected. |
+| 12 | The two scheduler action handlers duplicate their request path | nats_request_action_handler.cpp | declined | The actions differ in what they send and report; the shared part is the two-line X-Error check. |
+| 13 | The test destructor swallows every exception | tests | declined | It matches the gate test, and the comment states why the restore may not fail a suite that has already asserted. |
 
 * Result
+
+Shipped. A scheduler job fires =marketdata.v1.ops.publish_due_curves= every
+15 minutes through a new =nats_request= action, which sends the request with
+the scheduler's own service account. The sweep lists the system tenant's IR
+curve bootstrap configs and publishes each one at one instant through the same
+approval-gated path a person's publish takes, so each publish supersedes the
+previous one. The log names every curve with its as-of and duration, and a
+curve whose bootstrap fails keeps its previous publish and is named in the
+response.
+
+Acceptance:
+
+- A scheduled job bootstraps and publishes each curve on its cadence, and each
+  publish supersedes the previous one. Met: the 14:15 firing published 20 of
+  20 curves and left 40 earlier set records superseded.
+- The log names each curve, its as-of and its duration, and a failed bootstrap
+  leaves the previous curve published. Met in part: each line carries the
+  name, the as-of and the duration, and the service test names the curve whose
+  bootstrap fails. That the failure leaves the previous publish in place is the
+  gate's write order, not covered by a test.
+
+The cadence is the job row's, not a per-curve column: the curves share one
+market, and a per-curve interval is a later change.
+
+Limitations:
+
+- The sweep acts in the caller's tenant, because the repository reads through
+  the request context. The seeded job's caller is the scheduler service
+  account, which works in the system tenant, so a firing publishes the
+  installation's curves. The system tenant auto-approves the publish; any other
+  tenant raises a request and waits for a decider, and the response says so.
+- The full local gate did not reach green: the =web= check fails on trunk
+  because the BFF workflow-progress fixture lacks the progress members that
+  #4660 added. That failure is covered elsewhere.
+- The live proof ran on the rebased main, whose =acme_demo= profile no longer
+  orders the surface steps. Provisioning completed cleanly there.

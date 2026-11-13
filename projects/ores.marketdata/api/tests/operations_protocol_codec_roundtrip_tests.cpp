@@ -151,6 +151,20 @@ TEST_CASE("ores::marketdata::messaging::compute_curve_response", "[codec][roundt
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::compute_curve_response>();
 }
 
+TEST_CASE("ores::marketdata::messaging::publish_due_curves_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::publish_due_curves_request>();
+}
+
+TEST_CASE("ores::marketdata::messaging::curve_republish_outcome", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::curve_republish_outcome>();
+}
+
+TEST_CASE("ores::marketdata::messaging::publish_due_curves_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::publish_due_curves_response>();
+}
+
 TEST_CASE("ores::marketdata::messaging::series_slice_instant", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::series_slice_instant>();
 }

@@ -65,6 +65,29 @@ struct nats_publish_payload {
 }
 static_assert(utility::codec::names_every_member<nats_publish_payload>());
 
+// Fields read from job_definition.action_payload for a job that sends an
+// authenticated request and reads its answer. The request that travels is the
+// empty one: a job whose subject needs arguments has no way to state them in
+// this payload, so it takes its own action rather than this one.
+struct nats_request_payload {
+    std::string subject;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_request_payload>) {
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"subject", &nats_request_payload::subject}};
+}
+static_assert(utility::codec::names_every_member<nats_request_payload>());
+
+// The request an action of this kind sends: no members, so the callee's own
+// no-member request type reads it back whatever the process's wire format is.
+struct nats_request_body {};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_request_body>) {
+    return ::ores::utility::codec::field_list{};
+}
+static_assert(utility::codec::names_every_member<nats_request_body>());
+
 // The body published to the subject on each firing. It must name every member
 // that reporting's trigger_report_instance_request requires: the receiver reads
 // members by name, and one it requires and does not find fails the whole decode,
@@ -131,6 +154,10 @@ static_assert(utility::codec::names_every_member<reply_body>());
 template <>
 struct ores::utility::codec::wire_traits<ores::scheduler::service::nats_trigger_body>
     : shaped_wire_traits<ores::scheduler::service::nats_trigger_body> {};
+
+template <>
+struct ores::utility::codec::wire_traits<ores::scheduler::service::nats_request_body>
+    : shaped_wire_traits<ores::scheduler::service::nats_request_body> {};
 
 template <>
 struct ores::utility::codec::wire_traits<ores::scheduler::service::reply_body>

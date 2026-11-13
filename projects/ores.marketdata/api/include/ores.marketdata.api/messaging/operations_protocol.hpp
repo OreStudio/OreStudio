@@ -552,6 +552,58 @@ struct compute_curve_response {
 };
 
 /**
+ * @brief Request to bootstrap and publish every IR curve the system tenant holds
+ * a bootstrap config for -- the sweep a scheduler job fires on its cadence.
+ *
+ * Each curve goes through the same compute/publish pair a person's publish
+ * takes, so each publish supersedes the previous one. A curve whose compute or
+ * publish fails keeps its previous publish, and the response names it.
+ */
+struct publish_due_curves_request {
+    using response_type = struct publish_due_curves_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.publish_due_curves";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+
+    friend bool operator==(const publish_due_curves_request&,
+                           const publish_due_curves_request&) = default;
+};
+
+/**
+ * @brief What the sweep did for one curve: the curve's name, its as-of, how
+ * long it took, and whether it published or why it did not.
+ */
+struct curve_republish_outcome {
+    std::string bootstrap_config_id;
+    std::string name;
+    std::chrono::system_clock::time_point as_of;
+    std::int64_t duration_ms = 0;
+    bool published = false;
+    std::string message;
+
+    friend bool operator==(const curve_republish_outcome&,
+                           const curve_republish_outcome&) = default;
+};
+
+/**
+ * @brief What one firing did: whether every curve it visited published, and
+ * one outcome per curve with its name, as-of, duration and result.
+ */
+struct publish_due_curves_response {
+    bool success = false;
+    std::string message;
+    std::vector<curve_republish_outcome> curves;
+
+    friend bool operator==(const publish_due_curves_response&,
+                           const publish_due_curves_response&) = default;
+};
+
+/**
  * @brief One instant of a slice: the object as it stood then.
  */
 struct series_slice_instant {
@@ -1967,6 +2019,54 @@ struct store_market_state_response {
 }
 
 /**
+ * @brief The members of publish_due_curves_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_due_curves_request>) {
+    return ::ores::utility::codec::field_list{};
+}
+
+/**
+ * @brief The members of curve_republish_outcome, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_republish_outcome>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"bootstrap_config_id",
+                                      &curve_republish_outcome::bootstrap_config_id},
+        ::ores::utility::codec::field{"name", &curve_republish_outcome::name},
+        ::ores::utility::codec::field{"as_of", &curve_republish_outcome::as_of},
+        ::ores::utility::codec::field{"duration_ms", &curve_republish_outcome::duration_ms},
+        ::ores::utility::codec::field{"published", &curve_republish_outcome::published},
+        ::ores::utility::codec::field{"message", &curve_republish_outcome::message},
+    };
+}
+
+/**
+ * @brief The members of publish_due_curves_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_due_curves_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &publish_due_curves_response::success},
+        ::ores::utility::codec::field{"message", &publish_due_curves_response::message},
+        ::ores::utility::codec::field{"curves", &publish_due_curves_response::curves},
+    };
+}
+
+/**
  * @brief The members of series_slice_instant, named as the wire names them and in the order
  * the type declares them.
  *
@@ -2876,6 +2976,43 @@ struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::compu
     static ores::marketdata::messaging::compute_curve_response read_json(std::string_view text);
     static std::string write_msgpack(const ores::marketdata::messaging::compute_curve_response& v);
     static ores::marketdata::messaging::compute_curve_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::publish_due_curves_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::publish_due_curves_request& v);
+    static ores::marketdata::messaging::publish_due_curves_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::publish_due_curves_request& v);
+    static ores::marketdata::messaging::publish_due_curves_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::curve_republish_outcome> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::curve_republish_outcome& v);
+    static ores::marketdata::messaging::curve_republish_outcome read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::curve_republish_outcome& v);
+    static ores::marketdata::messaging::curve_republish_outcome
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::publish_due_curves_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::publish_due_curves_response& v);
+    static ores::marketdata::messaging::publish_due_curves_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::publish_due_curves_response& v);
+    static ores::marketdata::messaging::publish_due_curves_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

@@ -170,11 +170,16 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
         std::vector<std::string> unknown_scopes;
         rows.reserve(errors.size() + unknown_scopes.capacity());
         for (const auto& error : errors) {
-            // The canonical rows hold every line the run's engine wrote. The run
-            // keeps the ones that say something went wrong, which is what the
-            // screen shows; a notice is not a reason.
-            if (error.severity != "error" && error.severity != "warning")
-                continue;
+            /*
+             * Every line the engine wrote is kept, whatever its severity: the
+             * run is the account of what the engine was handed and what it made
+             * of it, and a notice about a parameter belongs to that account. A
+             * notice becomes info, because the screen states four levels and the
+             * engine has five.
+             */
+            const auto severity = error.severity == "error"   ? "error" :
+                                  error.severity == "warning" ? "warning" :
+                                                                "info";
             if (!is_known_scope(error.scope)) {
                 // The scope vocabulary has to grow before these rows can be
                 // stored, but that is no reason to lose the ones it does name.
@@ -188,12 +193,16 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
                 facts.party_id,
                 event_time,
                 error.scope,
-                error.severity,
+                severity,
                 error.message,
                 error.subject.empty() ? std::nullopt : std::optional(error.subject),
                 error.subject_id.empty() ? std::nullopt : std::optional(error.subject_id),
                 error.cause.empty() ? std::nullopt : std::optional(error.cause),
                 error.detail);
+            // The engine's own account of which part of itself spoke, when its
+            // line stated one.
+            if (!error.location.empty())
+                row.location = error.location;
             // The version says which row of the trade the engine was given, and the
             // date says when that row was current. A trade the manifest does not
             // name keeps both absent, because a guessed version is worse than none.

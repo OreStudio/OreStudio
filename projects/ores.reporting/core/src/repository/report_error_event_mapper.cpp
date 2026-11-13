@@ -60,6 +60,7 @@ domain::report_error_event report_error_event_mapper::map(const report_error_eve
     r.subject_as_of = v.subject_as_of;
     r.cause = v.cause;
     r.detail = v.detail.value_or("");
+    r.location = v.location.value_or("");
     r.event_time = v.event_time;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -83,6 +84,7 @@ report_error_event_entity report_error_event_mapper::map(const domain::report_er
     r.subject_as_of = v.subject_as_of;
     r.cause = v.cause;
     r.detail = v.detail.empty() ? std::nullopt : std::optional(v.detail);
+    r.location = v.location.empty() ? std::nullopt : std::optional(v.location);
     r.event_time = v.event_time;
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

@@ -66,6 +66,10 @@ struct engine_log_row {
 
     /// The file the row came from.
     std::string source;
+
+    /// Where the engine said it: the source file and line its own log states,
+    /// such as @c OREAnalytics/orea/app/parameters.cpp:144.
+    std::string location;
 };
 
 }

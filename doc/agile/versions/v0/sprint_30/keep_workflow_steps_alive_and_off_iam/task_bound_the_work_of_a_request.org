@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/bound-the-work-of-a-request
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
 #+updated: 2026-11-12
-#+environment: jolly_knuth
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ No request handler does work that grows with the data inside one request: such w
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Not yet started.                       |
+| Now          | Taking the task over from jolly_knuth: inventorying each provisioning request's work per row. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-12                               |
+| Next         | Name each request's bound, then bound or page the ones that grow with the data. |
+| Last touched | 2026-11-13                               |
 
 * Acceptance
 

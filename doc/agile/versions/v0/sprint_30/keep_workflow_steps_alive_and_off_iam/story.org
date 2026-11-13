@@ -8,7 +8,7 @@
 #+filetags: :sprint_30:v0:
 #+created: 2026-11-12
 #+updated: 2026-11-12
-#+environment: jolly_knuth
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -23,10 +23,10 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Bound the work of a request: the provisioning requests that do work per row. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the heartbeat task.              |
-| Last touched  | 2026-11-12                               |
+| Next          | Run each step in the service that owns it. |
+| Last touched  | 2026-11-13                               |
 
 * Acceptance
 
@@ -41,7 +41,7 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:1023FD3C-A6ED-400A-BA75-422788B9FBE6][Report a step's progress as its heartbeat]] | STARTED | 2026-11-12 | | A step states its progress on the heartbeat it already renews, the engine fails a step only when that heartbeat stalls, and the shell shows the progress. |
-| [[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]] | BACKLOG | | | No request handler does work that grows with the data inside one request: such work is paged, or runs as a step with its own heartbeat. |
+| [[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]] | STARTED | 2026-11-13 | | No request handler does work that grows with the data inside one request: such work is paged, or runs as a step with its own heartbeat. |
 | [[id:C1048693-F5A5-40F2-9BCA-186D7E6B84B7][Run each step in the service that owns it]] | BACKLOG | | | Each provisioning step is dispatched to the service that owns its work, so iam runs only identity steps and links no synthetic, marketdata or reporting core library. |
 | [[id:E96AA88B-1355-4957-996E-D0544735F092][Book every generated trade type through the database]] | BACKLOG | | | A check books one trade of every generated type through the real tables, so a refused value fails the check rather than provisioning. |
 | [[id:4B6D5F00-12DD-4B73-8430-EE04316A7278][Let a database recreate wait for connections to drain]] | BACKLOG | | | compass db recreate waits for the stopped services' connections to close, instead of refusing while they drain. |

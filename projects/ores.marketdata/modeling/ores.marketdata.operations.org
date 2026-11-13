@@ -12,7 +12,7 @@
 #+brief: The marketdata component's domain operations.
 #+filetags: :model:operation:marketdata:
 #+created: 2026-09-30
-#+updated: 2026-09-30
+#+updated: 2026-11-13
 
 These are the component's messages that are not entity verbs. Each one acts
 on an aggregate, a live computation or a whole-tenant export rather than on
@@ -755,6 +755,1019 @@ True when the caller can see more series than the list holds.
 *** message
 :PROPERTIES:
 :cpp_type: std::string
+:END:
+
+** instrument_axis
+
+One axis of an instrument's shape: the coordinate field and its values in the
+order a client draws them.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One axis of an instrument's shape, with its values in draw order.
+ *
+ * The field is the oresmd field code the shape stores, such as `tenor` or
+ * `strike_label`, never a display name. The values are in the order the server
+ * states, so a plot draws them without sorting.
+ */
+#+end_src
+
+*** field
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The oresmd field code, such as `tenor`, `expiry` or `strike_label`.
+
+*** values
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The values of this axis, in the order to draw, in the spelling the shape stores.
+
+** instrument_source
+
+One source that carries an instrument, and whether its value is current.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One source behind an instrument, and whether its value is current.
+ *
+ * The provider kind is the provider table's own code, so a client can hide
+ * reference definitions without a second read. The verdict is the server's
+ * against the configured threshold for the instrument kind; a client may draw
+ * it and must not recompute it.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** provider_kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The series this source reads, which the tick and slice reads accept.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The newest observation this source holds for the instrument.
+
+*** age_seconds
+:PROPERTIES:
+:cpp_type: std::int64_t
+:END:
+
+Whole seconds from the source's as-of to the server's now, never negative.
+
+*** stale
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+True when the source is older than its kind's configured threshold.
+
+** market_instrument
+
+One instrument: a group of series that a person reads as one thing.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One instrument: the series a person reads as one thing.
+ *
+ * This is the definition of an instrument. A curve is one entry and never one
+ * entry per pillar; a pair is one entry with no axes; a surface is one entry
+ * whose two axes are its strikes and its expiries. The name is the server's and
+ * is unique within the party and the kind, because it is what a person types
+ * into the search.
+ */
+#+end_src
+
+*** instrument_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+A stable identity, unique within the party, that a client may cache by. It is
+not a URI the client builds.
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+One of `pair`, `curve`, `surface`, `ladder`, `fixing`.
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The display name, unique within the party and the kind.
+
+*** currency
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The single currency of a rate instrument, or empty.
+
+*** base_currency
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+*** quote_currency
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+*** instrument_type
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The schema's spelling, such as `ir_swap`.
+
+*** quote_type
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+The schema's spelling, such as `rate`.
+
+*** forward_start
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+A rate ladder's forward start, or empty.
+
+*** axes
+:PROPERTIES:
+:cpp_type: std::vector<instrument_axis>
+:END:
+
+The shape, in the order to draw. Empty for an instrument with no axes.
+
+*** sources
+:PROPERTIES:
+:cpp_type: std::vector<instrument_source>
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The owning party. Only the caller's party's instruments are ever returned.
+
+*** stale
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+True when every source is stale, or when the instrument has no sources.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The newest source's instant, or the zero time when there is none.
+
+** list_instruments_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.list_instruments
+:response: list_instruments_response
+:END:
+
+Reads the instrument catalogue: one entry per instrument the caller's party can
+see, whatever its kind, so a client searches instruments rather than series.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the instrument catalogue of the caller's party.
+ *
+ * An instrument is a group of series that shares an asset, a subject, an
+ * instrument type, a quote type, a party and a provider, and differs in exactly
+ * one identity field: that field is the instrument's axis, and its values are
+ * the axis values in draw order. A group that differs in no field is a
+ * single-value instrument, such as a pair. A shape the schema declares is one
+ * instrument, not one per node.
+ *
+ * An empty `party_id` means the session's own party. A client never decides
+ * which party's data it sees.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional; empty means the session's own party.
+
+*** query
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional free text, matched against the currency, the pair's two sides, the
+name and the provider.
+
+*** kinds
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+Optional; any of `pair`, `curve`, `surface`, `ladder`, `fixing`. Empty means all.
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional; only instruments with a source by this provider.
+
+*** offset
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+Zero means the server's default page, not everything.
+
+** list_instruments_response
+
+The instruments the caller can see, in a stable order, and the size of the whole
+filtered set.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instruments the caller can see, in a stable order.
+ *
+ * The order is by kind and then by name, so a client draws the list as it
+ * arrives. `total` is the size of the whole filtered set, so a screen pages
+ * without a second read.
+ */
+#+end_src
+
+*** instruments
+:PROPERTIES:
+:cpp_type: std::vector<market_instrument>
+:END:
+
+*** total
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+*** truncated
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** rung_quote
+
+One provider's quote of one rung, with the instant it was taken and the
+server's verdict on it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One provider's quote of one rung.
+ *
+ * A provider that does not quote a rung has no entry, rather than a zero: a
+ * gap is what the desk needs to see.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** value
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+The rate as a decimal, never a percentage.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** age_seconds
+:PROPERTIES:
+:cpp_type: std::int64_t
+:END:
+
+*** stale
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The series the quote was read from, which the tick read accepts.
+
+** ladder_consensus
+
+The value the server derives across the providers that quote a rung.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The value the server derives across the quoting providers.
+ *
+ * The method is a word the server states, so the column can say what it is.
+ * A consensus over one value says so by naming a count of one.
+ */
+#+end_src
+
+*** value
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** method
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** providers_used
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+** rate_ladder_rung
+
+One rung of the ladder: its tenor, the date the server resolved, and the
+quotes the providers gave for it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One rung: a tenor, its maturity and its quotes.
+ *
+ * The maturity date and the year fraction are the server's, because the
+ * calendar, the day count and the tenor convention are server facts. A
+ * client cannot compute either, and must not try.
+ */
+#+end_src
+
+*** tenor
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The rung's tenor in the spelling the shape stores.
+
+*** maturity_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** year_fraction
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** quotes
+:PROPERTIES:
+:cpp_type: std::vector<rung_quote>
+:END:
+
+*** consensus
+:PROPERTIES:
+:cpp_type: ladder_consensus
+:END:
+
+** get_rate_ladder_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_rate_ladder
+:response: get_rate_ladder_response
+:END:
+
+Reads one currency's rate ladder at an as-of: every rung in maturity order,
+one quote per provider, and the consensus the server derives.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads one currency's rate ladder at an as-of.
+ *
+ * A ladder is one series read across its term axis, not several series joined:
+ * the provider dimension is one series row per provider, and each row states
+ * every rung. The maturity dates and their order are the server's.
+ *
+ * Rungs are ordered by maturity date, so a rung quoted with a convention (ON,
+ * TN, SN) sorts before 1W and carries its own date.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional; empty means the session's own party.
+
+*** currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** instrument_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The schema's spelling, such as `ir_swap`.
+
+*** forward_start
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional; empty matches any forward start.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+Empty means now, resolved server-side.
+
+*** providers
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+Optional; empty means every provider that quotes the ladder.
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default: 0
+:END:
+
+Zero means the server's default page, not everything.
+
+** get_rate_ladder_response
+
+The ladder, in maturity order, and the facts its numbers rest on.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The ladder, in maturity order, and the facts its numbers rest on.
+ *
+ * The counts and the as-of travel with the rungs so a person never reads a
+ * rate without the instrument, the forward start and the currency it belongs
+ * to.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** instrument_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** forward_start
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** provider_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** tenor_convention
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The convention the maturity dates were resolved under. A ladder series does not
+carry its own, so the server states the one it used.
+
+*** day_count_convention
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The convention the year fractions were computed under, stated for the same reason.
+
+*** rungs
+:PROPERTIES:
+:cpp_type: std::vector<rate_ladder_rung>
+:END:
+
+** montage_spot
+
+One provider's spot of one pair, with the instant it was taken and the
+server's verdict on it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One provider's spot of one pair.
+ *
+ * A provider that does not quote the pair has no entry, rather than a zero.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** value
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** age_seconds
+:PROPERTIES:
+:cpp_type: std::int64_t
+:END:
+
+*** stale
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** fx_montage_pair
+
+One pair of the base, with every provider's spot and the move the server
+measured.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One pair of the base: the providers' spots and the move.
+ *
+ * A pair whose base is on the quote side is included, because a montage is for
+ * the base and not for the pair's spelling. The change and the range are absent
+ * when the window holds no price at its start, rather than zero.
+ */
+#+end_src
+
+*** pair_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** base_currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** quote_currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** spot_by_provider
+:PROPERTIES:
+:cpp_type: std::vector<montage_spot>
+:END:
+
+*** consensus
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** change_pct
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+*** day_high
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+*** day_low
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+** get_fx_montage_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_fx_montage
+:response: get_fx_montage_response
+:END:
+
+Reads one base currency's crosses at an as-of: the spot each provider quotes,
+the consensus, the change and the day's range, measured from an instant the
+server states.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads one base currency's crosses at an as-of.
+ *
+ * The instant the change and the range are measured from is the server's: a
+ * trading day starts when the session says it does, and a client must not
+ * decide what "today" means.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional; empty means the session's own party.
+
+*** base_currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** providers
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+Optional; empty means every provider that quotes a cross of the base.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+Empty means now, resolved server-side.
+
+** get_fx_montage_response
+
+The base's crosses, ordered by pair name, and the window their move covers.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The base's crosses, ordered by pair name.
+ *
+ * `change_since` is stated once for the whole answer, so every row's change is
+ * measured from the same instant.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** base_currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** change_since
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** pairs
+:PROPERTIES:
+:cpp_type: std::vector<fx_montage_pair>
+:END:
+
+** curve_conventions
+
+The conventions a curve's numbers rest on, stated once for the whole answer.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The conventions the curve was built under.
+ *
+ * `compounding` describes the curve's own convention. The `zero_rate` column is
+ * always continuously compounded, so a client never has to know how to convert
+ * it; the two are stated apart on purpose.
+ */
+#+end_src
+
+*** index_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** day_count
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** compounding
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** interpolation
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** calendar
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** spot_lag_days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** pillar_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+** curve_market_pillar
+
+One pillar as the market quoted it: the rate the bootstrap read, and where it
+read it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One pillar as the market quoted it.
+ *
+ * The rate is the observation the bootstrap read, and the series is where it
+ * read it, so a person can go and look at the quote.
+ */
+#+end_src
+
+*** tenor
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** maturity_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** year_fraction
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** rate
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+** curve_bootstrapped_point
+
+What the curve makes of one pillar: the discount factor it bootstrapped and the
+rates a desk reads off it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the curve makes of one pillar.
+ *
+ * `zero_rate` is continuously compounded. `implied_forward` is the rate the
+ * segment ending at this pillar implies, so the first pillar carries its own
+ * zero rate. `shift_bps` is the bootstrapped zero rate less the market rate at
+ * the pillar: the distance between the curve and the market, not an applied
+ * parallel shift.
+ */
+#+end_src
+
+*** tenor
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** maturity_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** year_fraction
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** discount_factor
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** zero_rate
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** implied_forward
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** shift_bps
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+** get_curve_analytics_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_curve_analytics
+:response: get_curve_analytics_response
+:END:
+
+Reads a curve's conventions, the market pillars it was bootstrapped through,
+and the zero rate, implied forward and discount factor at each pillar.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads a curve's conventions, its market pillars and its bootstrapped points.
+ *
+ * This is not the publish record and not a candidate's check: it reads the
+ * curve a bootstrap configuration produces as of an instant, so a person can
+ * say why the curve differs from the market.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional; empty means the session's own party.
+
+*** instrument_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The bootstrap configuration that produces the curve.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+Empty means now, resolved server-side.
+
+** get_curve_analytics_response
+
+The curve's facts, its market pillars and its bootstrapped points, in pillar
+order.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The curve's facts, its market pillars and its bootstrapped points.
+ *
+ * A market pillar and a bootstrapped point for the same tenor are a pair, and
+ * both state the same maturity date so a reader can check that they are.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** instrument_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** stale
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** conventions
+:PROPERTIES:
+:cpp_type: curve_conventions
+:END:
+
+*** market_pillars
+:PROPERTIES:
+:cpp_type: std::vector<curve_market_pillar>
+:END:
+
+*** bootstrapped
+:PROPERTIES:
+:cpp_type: std::vector<curve_bootstrapped_point>
 :END:
 
 ** crm_rate_item

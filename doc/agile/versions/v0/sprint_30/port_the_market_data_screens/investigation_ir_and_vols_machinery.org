@@ -1,0 +1,189 @@
+:PROPERTIES:
+:ID: 070C40B3-7B42-46B8-81A6-E87251703CC9
+:END:
+#+title: Investigation: the IR and vols machinery the new screens read
+#+description: Whether the curve bootstrap, day count, forward rate and vol surface grid machinery the five ported screens need already exists, so the server work is presentation and no new quant is required.
+#+type: investigation
+#+level: s1
+#+filetags: :investigation:market_data:quant:server:port_the_market_data_screens:sprint_30:v0:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into whether the curve bootstrap, day count, forward rate and vol surface grid machinery the five ported screens need already exists, so the server work is presentation and no new quant is required.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+Five screens are ported from hedgr. Four of them read numbers a desk argues
+about, and the question was whether the server can state those numbers today or
+whether it must first build quant machinery:
+
+- a rate ladder needs a maturity date and a year fraction per rung;
+- a curve inspector needs the zero rate, the implied forward and the discount
+  factor, plus the conventions they rest on;
+- a vol surface needs the grid, its axes, and the model and delta convention
+  behind a strike;
+- a montage and an instrument catalogue need no quant at all.
+
+If any of that machinery were missing, the server work would be a quant project
+wearing a screen. The operator's condition was explicit: confirm the machinery
+exists, so the work is presenting data.
+
+* Methodology
+
+Read the code that already bootstraps curves and calibrates surfaces, and traced
+each screen field to the function that produces it. The sources:
+
+- =projects/ores.analytics/quant/= — =curve_bootstrap_engine=,
+  =day_count_calculator=, =forward_rate_calculator=, =curve_health_checker=.
+- =projects/ores.marketdata/service/src/app/curve_republish_service.cpp= and
+  =curve_republish_resolver.cpp= — the bootstrap as it is actually run.
+- =projects/ores.marketdata/service/src/app/fx_vol_surface_calibration_service.*=
+  and =fx_vol_surface_grid.*= — the surface fit and its slice.
+- =projects/ores.refdata/api/include/ores.refdata.api/domain/= — the config and
+  blueprint records that carry the conventions.
+- =projects/ores.marketdata/api/include/.../messaging/*protocol*.hpp= — which
+  operations already exist.
+
+No code was changed to reach the conclusions; every claim below names a function
+or a field that is already on =origin/main= as at 2026-11-13.
+
+* Paths taken
+
+** The discount factor and the year fraction
+
+=curve_bootstrap_engine::bootstrap(value_date, pillars, day_count, interpolation,
+discount_curve)= returns =bootstrapped_point { point_id, date, discount_factor }=
+for every pillar. The year fraction is =day_count_calculator::year_fraction(start,
+end, convention)=. The interpolation between points is
+=curve_bootstrap_engine::interpolate_discount_factor(points, date, method)=,
+which already implements =LOG_LINEAR_DISCOUNT= and
+=FLAT_FORWARD_THEN_LOG_LINEAR= and refuses =CUBIC_SPLINE= rather than
+pretending.
+
+That is three of the inspector's four bootstrapped columns, already computed, for
+every curve the service builds.
+
+** The implied forward
+
+=forward_rate_calculator::calculate(points, day_count)= returns one
+=forward_rate_point { point_id, start_date, end_date,
+instantaneous_forward_rate }= per consecutive pair, continuously compounded and
+annualised. The prototype shows the segment forward, which is exactly this
+function's output, not a new definition.
+
+** The zero rate
+
+=-ln(DF) / τ=. There is no named helper, because there is nothing to name: it is
+one expression over two numbers the two functions above already return. It is
+not new quant work; it is a formatting decision that the server states once.
+
+** The conventions
+
+=ores.refdata.ir_curve_bootstrap_config= carries =name=, =currency_code=,
+=index_tenor=, =curve_family_role= (FUNDING or PROJECTION),
+=interpolation_method=, =day_count_convention=, =tenor_convention_code=,
+=split_tenor_code= and =output_series_id=. That is the inspector's whole
+conventions strip except the calendar.
+
+The calendar is not a field on the config: the tenor convention resolves the
+spot lag and the dates, and the convention record holds the calendar. The
+inspector must therefore read the calendar through the tenor convention rather
+than assume a config column. This is a naming gap, not missing machinery.
+
+** The maturity dates and the rung order
+
+=ores.refdata.domain::resolve_end_date(tenor, convention, resolution, horizon,
+spot, schedule_dates)= resolves a tenor to a concrete date from persisted
+catalog rows, and =ores.marketdata.service::resolve_tenor_date(ctx, code)= does
+the same for a single code. The ladder's maturities are this function's output;
+the service already calls it on every republish.
+
+=ores.refdata.tenor= also carries the ordering data the ladder needs, so the
+rung order is a read of the catalog, not a client convention.
+
+** The vol surface
+
+=fx_vol_surface_calibration_service::calibrate= reads the blueprint, its pillars
+and sources, the pair's FX option convention and the party's published forward
+set, fits the smile model, and writes the grid as observations of the
+blueprint's output series with the expiry and strike axes. =surface_grid_of=
+then orders the points (expiries by length, strikes by the blueprint's own
+=strike_order=) and cuts a slice by expiry or by strike.
+
+The model is =fx_vol_surface_blueprint.smile_model=; the delta type is
+=ores.refdata.fx_option_convention.delta_type=; the axes are the blueprint's
+=output_expiries= and =output_strikes=. So the surface's metadata exists as
+reference data today. What does not exist is a read that states it.
+
+** The montage and the catalogue
+
+Neither needs quant. A montage is a window over observations of one base's
+pairs; the catalogue groups series by their typed identity. The mechanics are
+query and grouping, not mathematics.
+
+* Conclusions
+
+The operator's condition holds. The quant machinery is present and is the same
+machinery the service already runs:
+
+#+ATTR_HTML: :class hug-leading
+| Screen field | Already produced by | New quant? |
+|--------------+---------------------+------------|
+| Discount factor | =curve_bootstrap_engine::bootstrap= | no |
+| Year fraction | =day_count_calculator::year_fraction= | no |
+| Interpolation between pillars | =curve_bootstrap_engine::interpolate_discount_factor= | no |
+| Implied forward | =forward_rate_calculator::calculate= | no |
+| Zero rate | =-ln(DF)/τ= over the two values above | no |
+| Maturity date | =resolve_end_date= / =resolve_tenor_date= | no |
+| Conventions | =ir_curve_bootstrap_config= and the tenor convention | no |
+| Surface grid, axes and slices | =fx_vol_surface_calibration_service= and =surface_grid_of= | no |
+| Surface model and delta type | =fx_vol_surface_blueprint.smile_model=, =fx_option_convention.delta_type= | no |
+| Change, high and low on a montage | observation queries over a stated window | no |
+
+What is missing is *presentation*: operations that state these values, and the
+policy decisions that must be stated once rather than in each client. The four
+real gaps are decisions, not mathematics:
+
+1. *Compounding.* =compounding= is a curve convention, but =zero_rate= is defined
+   continuously compounded. Both must be stated, or two clients will disagree.
+2. *The last forward.* A forward between consecutive pillars has no value after
+   the last pillar. The prototype shows the segment ending at each pillar, so
+   the first pillar carries its zero rate and the last carries its own segment.
+3. *Shift.* It is the distance between the bootstrapped curve and the market at
+   a pillar, not an applied parallel shift. The name must say so.
+4. *Staleness.* No threshold lives in configuration today; hedgr kept it in a
+   client constant. The threshold and the verdict must move server-side before
+   any of the five screens can state freshness.
+
+Two smaller items:
+
+- The calendar is reached through the tenor convention, not through a config
+  column. The read must resolve it rather than invent a field.
+- The rate ladder's consensus is a policy the server must state, with its
+  method and its sample size, or two clients will compute different answers.
+
+* Recommendations
+
+1. Add the operations as reads over the existing machinery, in the order the
+   screens need them: =list_instruments=, =get_rate_ladder=,
+   =get_curve_analytics=, =get_fx_montage=, then the surface metadata and the
+   staleness verdict.
+2. State the four decisions in the protocol header, beside the structs, so an
+   implementing client reads them where it reads the fields.
+3. Do not add a quant helper for the zero rate: the expression and its
+   compounding rule belong in the protocol's doc comment, and the value belongs
+   in the response.
+4. Move the staleness thresholds into configuration before the other four
+   operations ship, because each of them carries the verdict.
+5. Reuse =surface_grid_of= for the smile rather than adding a new slice
+   operation: it already refuses a slice the surface does not hold.
+
+* See also
+
+- [[id:01ED4CA6-1215-40ED-9144-DE34553870F6][Inspect a curve's analytics]] — the screen that reads this machinery.
+- [[id:F95E55E2-C87F-48D9-925B-177D6D6E17C6][Read a rate ladder]] — the maturity dates and the rung order.
+- [[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] — the grid, the axes and the convention.
+- =projects/ores.analytics/quant/include/ores.analytics.quant/service/= — the
+  machinery itself.

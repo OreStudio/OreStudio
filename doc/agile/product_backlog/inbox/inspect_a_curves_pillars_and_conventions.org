@@ -57,3 +57,21 @@ cannot.
 - The coverage screen this dialog opens from; the prototype's full analysis is in References.
 - =doc/prototypes/market_data/ibor-beside-overnight/index.html=: the comparison view this dialog
   grows into when a currency has a term curve beside its overnight curve.
+
+* Update 2026-11-13: the server contract exists
+
+The read this capture asked for is now on the wire:
+=marketdata.v1.ops.get_curve_analytics= answers the curve's conventions, the
+market pillars it was bootstrapped through, and the zero rate, implied forward,
+discount factor and curve-less-market shift at each pillar, scoped to the
+curve's party.
+
+It was stated from the same prototype, independently, while porting hedgr's
+market-data screens. See the journey
+[[id:01ED4CA6-1215-40ED-9144-DE34553870F6][Inspect a curve's analytics]], the
+prototype =doc/prototypes/market_data/inspect-a-curves-analytics/=, and the
+three cases that prove the read.
+
+What is left here is the *screen*: the coverage row that opens the dialog. That
+is a rendering task against an operation that already exists, so this capture
+can be closed or promoted as a screen-only task.

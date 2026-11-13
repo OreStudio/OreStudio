@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Read a rate ladder prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.lead{color:var(--ink-dim);font-size:.86rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.row.tight{align-items:center}
+.field{display:grid;gap:4px;min-width:150px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.kv{display:flex;gap:18px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.kv b{color:var(--ink);font-weight:600}
+.kv .sep{color:var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+td.blank{text-align:right;color:var(--ink-faint)}
+tr.total td{border-top:1px solid var(--line);border-bottom:none;padding-top:9px}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;padding:7px 12px;color:var(--ink-dim)}
+.tabs button.on{background:var(--panel);border-color:var(--line);color:var(--ink)}
+.tabs button .q{display:block;font-size:.7rem;color:var(--ink-faint)}
+.chart{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:20px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.legend .sw{display:inline-block;width:12px;height:2px;background:var(--accent);vertical-align:3px;margin-right:6px}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The person's "Read a rate ladder" screen
+  (doc/knowledge/journeys/market_data/journey_read-a-rate-ladder.org): one
+  row per maturity, one column per provider, a forward-start selector, and
+  the same quotes drawn as a curve. A rung a provider does not quote is
+  absent, never zero. The maturity dates are the server's, because the
+  calendar and the day count are server facts.
+
+  Variants with ?variant=a|b|c. a is every provider as a column, b is the
+  consensus rung with the distance to the best quote, c is one provider at a
+  time. The variant is the journey's design question: how much of the market
+  one ladder shows before it stops being readable.
+  ?state=full|gap|stale switches the mock answer: every rung quoted, several
+  rungs missing a provider, and every quote older than the threshold.
+  Hedgr's third tab, History, has no read behind it and is not ported.
+-->
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'a';
+const state = params.get('state') || 'full';
+const PARTY = 'ACME Corporation UK plc';
+const AS_OF = '2026-11-13 14:31:07Z';
+
+const PROVIDERS = ['Bloomberg','Demo','Derived','Ore'];
+/* one rung per maturity; a provider that does not quote it is absent */
+const rungs = [
+  {tenor:'ON',  date:'2026-11-14', q:{Bloomberg:4.3120, Demo:4.3090}},
+  {tenor:'1W',  date:'2026-11-20', q:{Bloomberg:4.3150, Demo:4.3120}},
+  {tenor:'1M',  date:'2026-12-14', q:{Bloomberg:4.3300, Demo:4.3280, Derived:4.3290}},
+  {tenor:'3M',  date:'2027-02-15', q:{Bloomberg:4.3610, Demo:4.3590, Derived:4.3600}},
+  {tenor:'6M',  date:'2027-05-14', q:{Bloomberg:4.4020, Demo:4.4010, Derived:4.4015}},
+  {tenor:'1Y',  date:'2027-11-14', q:{Bloomberg:4.4380, Demo:4.4360, Derived:4.4370}},
+  {tenor:'2Y',  date:'2028-11-14', q:{Bloomberg:4.4930, Demo:4.4910}},
+  {tenor:'5Y',  date:'2031-11-14', q:{Bloomberg:4.6120, Demo:4.6100}},
+  {tenor:'10Y', date:'2036-11-14', q:{Bloomberg:4.7850, Demo:4.7820}},
+  {tenor:'20Y', date:'2046-11-14', q:{Bloomberg:4.9180}},
+  {tenor:'30Y', date:'2056-11-14', q:{Bloomberg:4.9600}}
+];
+const AGES = {ON:2, '1W':2, '1M':2, '3M':2, '6M':2, '1Y':2, '2Y':2, '5Y':3, '10Y':3, '20Y':12, '30Y':12};
+
+if (state === 'gap') {
+  [2,3,4,5,6].forEach(i => { delete rungs[i].q.Derived; });
+  delete rungs[9].q.Bloomberg;
+  rungs[9].q.Demo = 4.9160;
+}
+function age(t){ return state === 'stale' ? AGES[t] + 420 : AGES[t]; }
+
+function consensus(rung){
+  const v = Object.values(rung.q).sort((a,b) => a-b);
+  if (!v.length) return null;
+  const m = Math.floor(v.length / 2);
+  return v.length % 2 ? v[m] : (v[m-1] + v[m]) / 2;
+}
+function quoted(rung){ return Object.keys(rung.q).length; }
+function spreadBp(a, b){ return (a - b) * 100; }
+function r4(v){ return v == null ? null : v.toFixed(4); }
+function bp(v){ const s = v >= 0 ? '+' : ''; return s + v.toFixed(1) + ' bp'; }
+
+function header(){
+  return `
+  <div class="top">
+    <h1>AUD swaps</h1>
+    <span class="lead">one row per maturity, one column per provider, and the curve the same quotes draw</span>
+    <a style="margin-left:auto" href="../../../knowledge/journeys/market_data/journey_read-a-rate-ladder.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <div class="kv">
+      <span>Instrument <b>IR_SWAP</b></span><span class="sep">|</span>
+      <span>Forward start <b>0D</b></span><span class="sep">|</span>
+      <span>Day count <b>ACT/365F</b></span><span class="sep">|</span>
+      <span>Quote <b>rate</b></span><span class="sep">|</span>
+      <span>Rungs <b>${rungs.length}</b></span><span class="sep">|</span>
+      <span>Sources <b>${PROVIDERS.length}</b></span><span class="sep">|</span>
+      <span>As of <b class="mono">${AS_OF}</b></span>
+      <span>${state === 'stale'
+        ? '<span class="tag warn">STALE · every quote over the threshold</span>'
+        : '<span class="tag ok">LIVE · 2s</span>'}</span>
+    </div>
+    <div class="row">
+      <div class="field"><label>Forward start</label><select><option>0D</option><option>3M</option><option>1Y</option></select></div>
+      <div class="field"><label>Providers</label><select>${variant === 'c' ? '<option>Bloomberg</option><option>Demo</option><option>Derived</option>' : '<option>all</option>'+PROVIDERS.map(p=>`<option>${p}</option>`).join('')}</select></div>
+      <div class="field"><label>Tenors</label><select><option>ON–30Y</option><option>1Y–10Y</option><option>short dates</option></select></div>
+      <span style="margin-left:auto"></span>
+      <button class="btn">Copy CSV</button>
+      <button class="btn">Refresh</button>
+    </div>
+  </div>`;
+}
+
+function provCell(rung, p){
+  const v = rung.q[p];
+  return v == null ? '<td class="blank" title="this provider does not quote this rung">–</td>' : '<td class="num">'+r4(v)+'</td>';
+}
+
+function ladderTable(){
+  const cols = variant === 'c' ? ['Bloomberg'] : PROVIDERS;
+  const head = variant === 'b'
+    ? '<tr><th>Rung</th><th>Maturity</th><th style="text-align:right">Consensus</th><th style="text-align:right">Providers</th><th style="text-align:right">Best</th><th style="text-align:right">Distance</th><th style="text-align:right">Age</th></tr>'
+    : '<tr><th>Rung</th><th>Maturity</th>' + cols.map(p => '<th style="text-align:right">'+p+'</th>').join('') +
+      (variant === 'a' ? '<th style="text-align:right">Consensus</th>' : '') + '<th style="text-align:right">Age</th></tr>';
+  const body = rungs.map(r => {
+    const c = consensus(r);
+    const vs = Object.values(r.q);
+    const best = vs.length ? Math.max(...vs) : null;
+    const cells = variant === 'b'
+      ? '<td class="num">'+r4(c)+'</td><td class="num">'+quoted(r)+'</td><td class="num">'+r4(best)+'</td>'+
+        '<td class="num">'+(c == null || best == null ? '–' : bp(spreadBp(best, c)))+'</td>'
+      : cols.map(p => provCell(r, p)).join('') + (variant === 'a' ? '<td class="num">'+r4(c)+'</td>' : '');
+    return '<tr><td>'+r.tenor+'</td><td class="muted">'+r.date+'</td>'+cells+'<td class="num muted">'+age(r.tenor)+'s</td></tr>';
+  }).join('');
+  /* the 30Y-2Y spread, one figure per source, which is what a ladder is read for */
+  const two = rungs.find(r => r.tenor === '2Y'), thirty = rungs.find(r => r.tenor === '30Y');
+  const spreadCells = variant === 'b'
+    ? '<td class="num">'+(consensus(thirty) != null && consensus(two) != null ? bp(spreadBp(consensus(thirty), consensus(two))) : '–')+'</td><td class="blank">–</td><td class="blank">–</td><td class="blank">–</td>'
+    : cols.map(p => {
+        const a = two.q[p], b = thirty.q[p];
+        return a == null || b == null ? '<td class="blank">–</td>' : '<td class="num">'+bp(spreadBp(b, a))+'</td>';
+      }).join('') +
+      (variant === 'a' ? '<td class="num">'+bp(spreadBp(consensus(thirty), consensus(two)))+'</td>' : '');
+  const spreadRow = '<tr class="total"><td>Spread</td><td class="faint">30Y − 2Y</td>'+spreadCells+'<td></td></tr>';
+  return `<div class="panel"><h2>Ladder</h2><table><thead>${head}</thead><tbody>${body}${spreadRow}</tbody></table>
+    <div class="legend faint"><span>A dash is a rung this provider does not quote. It is absent, not zero.</span></div></div>`;
+}
+
+function chart(){
+  const vals = rungs.map(r => consensus(r));
+  const W = 1040, H = 220, L = 52, R = 18, T = 18, B = 40;
+  const lo = Math.min(...vals) - 0.05, hi = Math.max(...vals) + 0.05;
+  const x = i => L + i * (W - L - R) / (rungs.length - 1);
+  const y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const pts = vals.map((v, i) => x(i) + ',' + y(v).toFixed(1)).join(' ');
+  const area = `M${x(0)},${H-B} L` + pts.replace(/ /g, ' L') + ` L${x(vals.length-1)},${H-B} Z`;
+  const grid = [0,.25,.5,.75,1].map(t => {
+    const v = lo + (hi-lo)*t, yy = y(v).toFixed(1);
+    return `<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#21262d"/>` +
+           `<text x="${L-8}" y="${+yy+3}" text-anchor="end" fill="#71717a" font-size="10">${v.toFixed(2)}%</text>`;
+  }).join('');
+  const labels = rungs.map((r,i) => `<text x="${x(i)}" y="${H-14}" text-anchor="middle" fill="#71717a" font-size="10">${r.tenor}</text>`).join('');
+  const dots = vals.map((v,i) => `<circle cx="${x(i)}" cy="${y(v).toFixed(1)}" r="2.5" fill="#58a6ff"/>`).join('');
+  return `
+  <div class="panel">
+    <h2>Curve</h2>
+    <div class="legend"><span><span class="sw"></span>Consensus, 0D start</span>
+      <span class="faint">ACT/365F · mid · a provider is one value per rung, and no value is invented</span></div>
+    <div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="AUD swap curve, consensus by rung">
+      ${grid}
+      <path d="${area}" fill="#58a6ff" opacity="0.10"/>
+      <polyline points="${pts}" fill="none" stroke="#58a6ff" stroke-width="2"/>
+      ${dots}${labels}
+    </svg></div>
+  </div>`;
+}
+
+function gaps(){
+  const missing = rungs.filter(r => quoted(r) < PROVIDERS.length);
+  return `
+  <div class="panel">
+    <h2>Where the market is thin</h2>
+    ${missing.length === 0
+      ? '<div class="notice">Every rung is quoted by every provider.</div>'
+      : `<table><thead><tr><th>Rung</th><th>Quoted by</th><th>Absent</th><th>Consensus rests on</th></tr></thead><tbody>${
+          missing.map(r => {
+            const absent = PROVIDERS.filter(p => r.q[p] == null);
+            return `<tr><td>${r.tenor}</td><td class="muted">${Object.keys(r.q).join(', ')}</td>
+              <td class="muted">${absent.join(', ')}</td><td class="num">${quoted(r)} value${quoted(r)===1?'':'s'}</td></tr>`;
+          }).join('')}</tbody></table>
+        <div class="notice">A consensus over one value is that value, and the ladder says so rather than implying agreement.</div>`}
+  </div>`;
+}
+
+document.getElementById('note').textContent =
+  'PROTOTYPE · throwaway · mock data, no server · variant ' + variant + ' · state ' + state;
+document.getElementById('app').innerHTML = header() +
+  '<nav class="tabs"><button class="on">Ladder<span class="q">the market, by rung</span></button>' +
+  '<button>Curve<span class="q">the same quotes drawn</span></button></nav>' +
+  ladderTable() + chart() + gaps();
+document.getElementById('bar').innerHTML =
+  '<span class="label">Variant</span>' +
+  [['a','A · providers as columns'],['b','B · consensus only'],['c','C · one provider']].map(([v,t]) =>
+    `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${t}</button>`).join('') +
+  '<span class="sep">·</span><span class="label">State</span>' +
+  [['full','full'],['gap','thin market'],['stale','stale']].map(([s,t]) =>
+    `<button data-s="${s}" class="${s === state ? 'on' : ''}">${t}</button>`).join('');
+document.getElementById('bar').addEventListener('click', e => {
+  const v = e.target.dataset.v, s = e.target.dataset.s;
+  const next = new URLSearchParams(location.search);
+  if (v) next.set('variant', v); if (s) next.set('state', s);
+  location.search = next.toString();
+});
+</script>
+</body>
+</html>

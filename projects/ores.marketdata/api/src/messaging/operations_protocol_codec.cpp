@@ -401,6 +401,413 @@ wire_traits<ores::marketdata::messaging::list_series_identities_response>::read_
     return object::read_msgpack<ores::marketdata::messaging::list_series_identities_response>(data);
 }
 
+std::string wire_traits<ores::marketdata::messaging::instrument_axis>::write_json(
+    const ores::marketdata::messaging::instrument_axis& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::instrument_axis
+wire_traits<ores::marketdata::messaging::instrument_axis>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::instrument_axis>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::instrument_axis>::write_msgpack(
+    const ores::marketdata::messaging::instrument_axis& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::instrument_axis
+wire_traits<ores::marketdata::messaging::instrument_axis>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::instrument_axis>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::instrument_source>::write_json(
+    const ores::marketdata::messaging::instrument_source& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::instrument_source
+wire_traits<ores::marketdata::messaging::instrument_source>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::instrument_source>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::instrument_source>::write_msgpack(
+    const ores::marketdata::messaging::instrument_source& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::instrument_source
+wire_traits<ores::marketdata::messaging::instrument_source>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::instrument_source>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::market_instrument>::write_json(
+    const ores::marketdata::messaging::market_instrument& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::market_instrument
+wire_traits<ores::marketdata::messaging::market_instrument>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::market_instrument>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::market_instrument>::write_msgpack(
+    const ores::marketdata::messaging::market_instrument& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::market_instrument
+wire_traits<ores::marketdata::messaging::market_instrument>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::market_instrument>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::list_instruments_request>::write_json(
+    const ores::marketdata::messaging::list_instruments_request& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::list_instruments_request
+wire_traits<ores::marketdata::messaging::list_instruments_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::list_instruments_request>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::list_instruments_request>::write_msgpack(
+    const ores::marketdata::messaging::list_instruments_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::list_instruments_request
+wire_traits<ores::marketdata::messaging::list_instruments_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::list_instruments_request>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::list_instruments_response>::write_json(
+    const ores::marketdata::messaging::list_instruments_response& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::list_instruments_response
+wire_traits<ores::marketdata::messaging::list_instruments_response>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::list_instruments_response>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::list_instruments_response>::write_msgpack(
+    const ores::marketdata::messaging::list_instruments_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::list_instruments_response
+wire_traits<ores::marketdata::messaging::list_instruments_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::list_instruments_response>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::rung_quote>::write_json(
+    const ores::marketdata::messaging::rung_quote& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::rung_quote
+wire_traits<ores::marketdata::messaging::rung_quote>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::rung_quote>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::rung_quote>::write_msgpack(
+    const ores::marketdata::messaging::rung_quote& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::rung_quote
+wire_traits<ores::marketdata::messaging::rung_quote>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::rung_quote>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::ladder_consensus>::write_json(
+    const ores::marketdata::messaging::ladder_consensus& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::ladder_consensus
+wire_traits<ores::marketdata::messaging::ladder_consensus>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::ladder_consensus>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::ladder_consensus>::write_msgpack(
+    const ores::marketdata::messaging::ladder_consensus& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::ladder_consensus
+wire_traits<ores::marketdata::messaging::ladder_consensus>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::ladder_consensus>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::rate_ladder_rung>::write_json(
+    const ores::marketdata::messaging::rate_ladder_rung& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::rate_ladder_rung
+wire_traits<ores::marketdata::messaging::rate_ladder_rung>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::rate_ladder_rung>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::rate_ladder_rung>::write_msgpack(
+    const ores::marketdata::messaging::rate_ladder_rung& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::rate_ladder_rung
+wire_traits<ores::marketdata::messaging::rate_ladder_rung>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::rate_ladder_rung>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_rate_ladder_request>::write_json(
+    const ores::marketdata::messaging::get_rate_ladder_request& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::get_rate_ladder_request
+wire_traits<ores::marketdata::messaging::get_rate_ladder_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::get_rate_ladder_request>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_rate_ladder_request>::write_msgpack(
+    const ores::marketdata::messaging::get_rate_ladder_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::get_rate_ladder_request
+wire_traits<ores::marketdata::messaging::get_rate_ladder_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::get_rate_ladder_request>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_rate_ladder_response>::write_json(
+    const ores::marketdata::messaging::get_rate_ladder_response& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::get_rate_ladder_response
+wire_traits<ores::marketdata::messaging::get_rate_ladder_response>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::get_rate_ladder_response>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_rate_ladder_response>::write_msgpack(
+    const ores::marketdata::messaging::get_rate_ladder_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::get_rate_ladder_response
+wire_traits<ores::marketdata::messaging::get_rate_ladder_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::get_rate_ladder_response>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::montage_spot>::write_json(
+    const ores::marketdata::messaging::montage_spot& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::montage_spot
+wire_traits<ores::marketdata::messaging::montage_spot>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::montage_spot>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::montage_spot>::write_msgpack(
+    const ores::marketdata::messaging::montage_spot& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::montage_spot
+wire_traits<ores::marketdata::messaging::montage_spot>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::montage_spot>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::fx_montage_pair>::write_json(
+    const ores::marketdata::messaging::fx_montage_pair& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::fx_montage_pair
+wire_traits<ores::marketdata::messaging::fx_montage_pair>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::fx_montage_pair>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::fx_montage_pair>::write_msgpack(
+    const ores::marketdata::messaging::fx_montage_pair& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::fx_montage_pair
+wire_traits<ores::marketdata::messaging::fx_montage_pair>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::fx_montage_pair>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_fx_montage_request>::write_json(
+    const ores::marketdata::messaging::get_fx_montage_request& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::get_fx_montage_request
+wire_traits<ores::marketdata::messaging::get_fx_montage_request>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::get_fx_montage_request>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_fx_montage_request>::write_msgpack(
+    const ores::marketdata::messaging::get_fx_montage_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::get_fx_montage_request
+wire_traits<ores::marketdata::messaging::get_fx_montage_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::get_fx_montage_request>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_fx_montage_response>::write_json(
+    const ores::marketdata::messaging::get_fx_montage_response& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::get_fx_montage_response
+wire_traits<ores::marketdata::messaging::get_fx_montage_response>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::get_fx_montage_response>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_fx_montage_response>::write_msgpack(
+    const ores::marketdata::messaging::get_fx_montage_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::get_fx_montage_response
+wire_traits<ores::marketdata::messaging::get_fx_montage_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::get_fx_montage_response>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::curve_conventions>::write_json(
+    const ores::marketdata::messaging::curve_conventions& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::curve_conventions
+wire_traits<ores::marketdata::messaging::curve_conventions>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::curve_conventions>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::curve_conventions>::write_msgpack(
+    const ores::marketdata::messaging::curve_conventions& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::curve_conventions
+wire_traits<ores::marketdata::messaging::curve_conventions>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::curve_conventions>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::curve_market_pillar>::write_json(
+    const ores::marketdata::messaging::curve_market_pillar& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::curve_market_pillar
+wire_traits<ores::marketdata::messaging::curve_market_pillar>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::curve_market_pillar>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::curve_market_pillar>::write_msgpack(
+    const ores::marketdata::messaging::curve_market_pillar& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::curve_market_pillar
+wire_traits<ores::marketdata::messaging::curve_market_pillar>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::curve_market_pillar>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::curve_bootstrapped_point>::write_json(
+    const ores::marketdata::messaging::curve_bootstrapped_point& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::curve_bootstrapped_point
+wire_traits<ores::marketdata::messaging::curve_bootstrapped_point>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::curve_bootstrapped_point>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::curve_bootstrapped_point>::write_msgpack(
+    const ores::marketdata::messaging::curve_bootstrapped_point& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::curve_bootstrapped_point
+wire_traits<ores::marketdata::messaging::curve_bootstrapped_point>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::curve_bootstrapped_point>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_curve_analytics_request>::write_json(
+    const ores::marketdata::messaging::get_curve_analytics_request& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::get_curve_analytics_request
+wire_traits<ores::marketdata::messaging::get_curve_analytics_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::get_curve_analytics_request>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_curve_analytics_request>::write_msgpack(
+    const ores::marketdata::messaging::get_curve_analytics_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::get_curve_analytics_request
+wire_traits<ores::marketdata::messaging::get_curve_analytics_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::get_curve_analytics_request>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_curve_analytics_response>::write_json(
+    const ores::marketdata::messaging::get_curve_analytics_response& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::get_curve_analytics_response
+wire_traits<ores::marketdata::messaging::get_curve_analytics_response>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::get_curve_analytics_response>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_curve_analytics_response>::write_msgpack(
+    const ores::marketdata::messaging::get_curve_analytics_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::get_curve_analytics_response
+wire_traits<ores::marketdata::messaging::get_curve_analytics_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::get_curve_analytics_response>(data);
+}
+
 std::string wire_traits<ores::marketdata::messaging::crm_rate_item>::write_json(
     const ores::marketdata::messaging::crm_rate_item& v) {
     return object::write_json(v);

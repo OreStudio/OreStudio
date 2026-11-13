@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 566E6CE1-FE76-4094-BA12-1A28B3C357B7
+:END:
+#+title: Task: Confirm the IR and vols machinery
+#+description: Show that the bootstrap, day count, forward and grid machinery the new screens read already exists, so the server work is presentation and no new quant is needed.
+#+type: task
+#+level: s1
+#+filetags: :port_the_market_data_screens:sprint_30:v0:
+#+owner: marco
+#+branch: feature/port-the-market-data-screens
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Show that the quant machinery the five ported screens read already exists,
+so the server work is presenting data and not a quant project.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- Each screen field is traced to the function or field that already produces
+  it.
+- The four policy decisions the operations must state are written down.
+- The gaps that remain are named as presentation or configuration, not
+  mathematics.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The machinery exists and is the machinery the service already runs:
+=curve_bootstrap_engine= for the discount factors, =day_count_calculator= for the
+year fractions, =forward_rate_calculator= for the implied forwards,
+=resolve_end_date= for the maturity dates, and =surface_grid_of= with the
+calibration service for the vol grid and its slices. The zero rate is
+=-ln(DF)/τ= over two values those functions already return.
+
+What the operations must decide, and state once, is: that =zero_rate= is
+continuously compounded, that =implied_forward= is the rate the segment ending
+at the pillar implies, that =shift= is curve less market, and where the
+staleness threshold lives. None of the four is quant work.
+
+The investigation is =investigation_ir_and_vols_machinery.org= in this story.

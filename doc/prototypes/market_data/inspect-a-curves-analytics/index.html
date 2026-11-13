@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inspect a curve's analytics prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.lead{color:var(--ink-dim);font-size:.86rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.field{display:grid;gap:4px;min-width:150px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.kv{display:flex;gap:16px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.kv b{color:var(--ink);font-weight:600}
+.kv .sep{color:var(--line)}
+.conv{display:flex;gap:14px;flex-wrap:wrap;font:600 .68rem/1 var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-dim)}
+.conv span{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;padding:5px 7px}
+.conv b{color:var(--ink);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn.on{background:var(--accent-dim);border-color:var(--line-strong,#4a5568);color:var(--ink)}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;padding:7px 12px;color:var(--ink-dim)}
+.tabs button.on{background:var(--panel);border-color:var(--line);color:var(--ink)}
+.chart{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:20px;flex-wrap:wrap;font-size:.8rem;color:var(--ink-dim)}
+.legend .sw{display:inline-block;width:12px;height:2px;background:var(--accent);vertical-align:3px;margin-right:6px}
+.legend .swd{display:inline-block;width:12px;height:0;border-top:2px dashed #d29922;vertical-align:3px;margin-right:6px}
+.up{color:var(--ok)}.down{color:var(--bad)}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  The person's "Inspect a curve's analytics" screen
+  (doc/knowledge/journeys/market_data/journey_inspect-a-curves-analytics.org):
+  what the curve is built from and what its mathematics say - the market
+  pillars it was bootstrapped through, and the zero rate, the implied forward
+  and the discount factor at each pillar - with the conventions those numbers
+  rest on and the server's staleness verdict.
+
+  This is not a candidate check (that is check-a-curves-fit) and not a publish
+  record (that is published-curves). It reads a curve that exists.
+
+  Variants with ?variant=a|b|c: a the market pillars, b the bootstrapped
+  curve, c all columns at once. The variant is the journey's design question:
+  whether the inputs and the outputs share one row or are read apart.
+  ?state=stale|live|none and ?compare=1 for the prior close.
+
+  Ported from hedgr's aud_aonia_curve_dialog_prototype.html with three
+  changes, each because ORE Studio states the fact differently: an observation
+  holds one value, so the bid, ask and spread columns become one market rate
+  and the provider that sent it; the screen is a page, not a dialog, so it
+  keeps the product's header and card frame; and "shift" is the distance
+  between the bootstrapped curve and the market at the pillar, while the move
+  against the prior close is its own column.
+-->
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<script>
+const params = new URLSearchParams(location.search);
+const variant = params.get('variant') || 'b';
+const state = params.get('state') || 'stale';
+const compare = params.get('compare') === '1';
+const PARTY = 'ACME Corporation UK plc';
+const PUBLISHED = '2026-11-12T12:02:35Z';
+const AS_OF = '2026-11-13 14:31:07Z';
+const SPOT = '2026-11-13';
+
+/* One row per pillar. `df` is the bootstrapped discount factor, `market` the
+   rate the market quoted and `provider` who sent it. Everything else is
+   derived here the way the server will derive it, so the mock cannot drift
+   from the contract. */
+const pillars = [
+  {tenor:'3M',  date:'2027-02-13', days:92,   df:0.98929, priorDf:0.98934, market:4.2810, provider:'Bloomberg'},
+  {tenor:'6M',  date:'2027-05-13', days:181,  df:0.97903, priorDf:0.97914, market:4.2677, provider:'Bloomberg'},
+  {tenor:'12M', date:'2027-11-13', days:365,  df:0.95825, priorDf:0.95848, market:4.2687, provider:'Bloomberg'},
+  {tenor:'2Y',  date:'2028-11-13', days:731,  df:0.91859, priorDf:0.91910, market:4.2290, provider:'Bloomberg'},
+  {tenor:'5Y',  date:'2031-11-13', days:1826, df:0.81332, priorDf:0.81465, market:4.1483, provider:'Derived'},
+  {tenor:'10Y', date:'2036-11-13', days:3653, df:0.66872, priorDf:0.67120, market:3.9966, provider:'Derived'},
+  {tenor:'30Y', date:'2056-11-13', days:10958,df:0.35857, priorDf:0.36295, market:3.4483, provider:'Bloomberg'}
+];
+const CONVENTIONS = [
+  ['Index','AONIA (RBA)'], ['Day count','ACT/365F'], ['Compounding','Continuous'],
+  ['Interpolation','Log-Linear DF'], ['Calendar','AUSY'], ['Spot lag','T+1'],
+  ['Pillars','7']
+];
+const AGE = state === 'stale' ? 10712 : 3;
+
+const zero = (df, tau) => -Math.log(df) / tau * 100;
+
+const rows = pillars.map((p, i) => {
+  const tau = p.days / 365;
+  const z = zero(p.df, tau);
+  const pz = zero(p.priorDf, tau);
+  const prev = pillars[i-1];
+  const fwd = i === 0 ? z
+    : (-Math.log(p.df / prev.df) / (tau - prev.days/365)) * 100;
+  return {...p, tau, zero:z, priorZero:pz, fwd:fwd,
+          shift:(z - p.market) * 100, change:(z - pz) * 100};
+});
+
+function f4(v){ return v.toFixed(4); }
+function px(v){ return v.toFixed(5); }
+function bp(v){ const s = v >= 0 ? '+' : ''; return `<span class="${v >= 0 ? 'up' : 'down'}">${s}${v.toFixed(1)}</span>`; }
+
+function header(){
+  const stale = state !== 'live';
+  return `
+  <div class="top">
+    <h1>AUD-AONIA</h1>
+    <span class="lead">market pillars, the bootstrapped curve, and the conventions every number rests on</span>
+    <a style="margin-left:auto" href="../../../knowledge/journeys/market_data/journey_inspect-a-curves-analytics.html">the journey &rarr;</a>
+  </div>
+  <div class="panel">
+    <div class="kv">
+      <span>Party <b>${PARTY}</b></span><span class="sep">|</span>
+      <span>Kind <b>curve</b></span><span class="sep">|</span>
+      <span>Published <b class="mono">${PUBLISHED}</b></span><span class="sep">|</span>
+      <span>Spot <b>${SPOT}</b></span><span class="sep">|</span>
+      <span>As of <b class="mono">${AS_OF}</b></span>
+      <span>${state === 'none'
+        ? '<span class="tag">NONE</span>'
+        : stale
+          ? `<span class="tag warn">STALE · ${Math.round(AGE/60)}m · ${PUBLISHED}</span>`
+          : '<span class="tag ok">LIVE · 3s</span>'}</span>
+    </div>
+    <div class="conv">${CONVENTIONS.map(([k,v]) => `<span>${k} <b>${v}</b></span>`).join('')}</div>
+  </div>`;
+}
+
+function marketTable(){
+  return `
+  <div class="panel">
+    <h2>Market pillars</h2>
+    <table><thead><tr>
+      <th>Tenor</th><th>Maturity</th><th style="text-align:right">τ</th>
+      <th style="text-align:right">Market rate (%)</th><th>Provider</th>
+      ${compare ? '<th style="text-align:right">Prior (%)</th><th style="text-align:right">Change</th>' : ''}
+      <th style="text-align:right">Age</th>
+    </tr></thead><tbody>${rows.map(r => `
+      <tr><td>${r.tenor}</td><td class="muted">${r.date}</td><td class="num">${f4(r.tau)}</td>
+        <td class="num">${f4(r.market)}</td><td class="muted">${r.provider}</td>
+        ${compare ? `<td class="num muted">${f4(r.market - r.change/100)}</td><td class="num">${bp(r.change)} bp</td>` : ''}
+        <td class="num muted">${AGE}s</td></tr>`).join('')}</tbody></table>
+    <div class="legend faint"><span>One value per pillar, as the observation stores it: the row says who sent it.</span></div>
+  </div>`;
+}
+
+function bootTable(){
+  return `
+  <div class="panel">
+    <h2>Bootstrapped curve</h2>
+    <table><thead><tr>
+      <th>Tenor</th><th>Maturity</th><th style="text-align:right">τ</th>
+      <th style="text-align:right">Zero rate (%)</th><th style="text-align:right">Implied fwd (%)</th>
+      <th style="text-align:right">Discount factor</th><th style="text-align:right">Shift</th>
+      ${compare ? '<th style="text-align:right">Prior zero (%)</th><th style="text-align:right">Change</th>' : ''}
+      <th style="text-align:right">Age</th>
+    </tr></thead><tbody>${rows.map(r => `
+      <tr><td>${r.tenor}</td><td class="muted">${r.date}</td><td class="num">${f4(r.tau)}</td>
+        <td class="num">${f4(r.zero)}</td><td class="num">${f4(r.fwd)}</td>
+        <td class="num">${px(r.df)}</td><td class="num">${bp(r.shift)} bp</td>
+        ${compare ? `<td class="num muted">${f4(r.priorZero)}</td><td class="num">${bp(r.change)} bp</td>` : ''}
+        <td class="num muted">${AGE}s</td></tr>`).join('')}</tbody></table>
+    <div class="legend faint">
+      <span>Zero is continuously compounded. The curve's own compounding is the convention above.</span>
+      <span>Implied fwd is the rate the segment ending at the pillar implies; the first row carries its zero rate.</span>
+      <span>Shift is the bootstrapped zero less the market rate at the pillar.</span>
+    </div>
+  </div>`;
+}
+
+function allTable(){
+  return `
+  <div class="panel">
+    <h2>All columns</h2>
+    <table><thead><tr>
+      <th>Tenor</th><th>Maturity</th><th style="text-align:right">τ</th>
+      <th style="text-align:right">Market (%)</th><th>Provider</th>
+      <th style="text-align:right">Zero (%)</th><th style="text-align:right">Fwd (%)</th>
+      <th style="text-align:right">Discount factor</th><th style="text-align:right">Shift</th>
+      ${compare ? '<th style="text-align:right">Change</th>' : ''}
+      <th style="text-align:right">Age</th>
+    </tr></thead><tbody>${rows.map(r => `
+      <tr><td>${r.tenor}</td><td class="muted">${r.date}</td><td class="num">${f4(r.tau)}</td>
+        <td class="num">${f4(r.market)}</td><td class="muted">${r.provider}</td>
+        <td class="num">${f4(r.zero)}</td><td class="num">${f4(r.fwd)}</td>
+        <td class="num">${px(r.df)}</td><td class="num">${bp(r.shift)} bp</td>
+        ${compare ? `<td class="num">${bp(r.change)} bp</td>` : ''}
+        <td class="num muted">${AGE}s</td></tr>`).join('')}</tbody></table>
+  </div>`;
+}
+
+/* ---- chart: the curve as the conventions say it is drawn ---------------- */
+let metric = 'zero', xmode = 'maturity';
+
+function sampled(prior){
+  /* log-linear in DF between pillars, which is what LOG_LINEAR_DISCOUNT means;
+     sample in time so the zero curve between pillars is the curve itself */
+  const out = [];
+  const N = 240;
+  const tLast = rows[rows.length-1].tau;
+  const t0 = rows[0].tau;
+  for (let i = 0; i < N; i++) {
+    const t = t0 + (tLast - t0) * i / (N - 1);
+    let j = 0;
+    while (j < rows.length - 2 && rows[j+1].tau < t) j++;
+    const a = rows[j], b = rows[j+1];
+    const w = (t - a.tau) / (b.tau - a.tau);
+    const da = prior ? a.priorDf : a.df, db = prior ? b.priorDf : b.df;
+    const lnDf = Math.log(da) + w * (Math.log(db) - Math.log(da));
+    const df = Math.exp(lnDf);
+    out.push({tau:t, df, zero:-lnDf/t*100, fwd:a.segment});
+  }
+  return out;
+}
+
+function chart(host){
+  const W = 1040, H = 240, L = 56, R = 22, T = 18, B = 42;
+  const series = xmode === 'maturity'
+    ? sampled().map(s => ({x:s.tau, y: metric === 'df' ? s.df : metric === 'zero' ? s.zero : s.fwd}))
+    : rows.map(r => ({x:r.tenor, y: metric === 'df' ? r.df : metric === 'zero' ? r.zero : r.fwd}));
+  const vals = series.map(s => s.y).filter(v => v != null);
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = (hi - lo) * 0.12 || 0.1;
+  const xAt = i => L + i * (W - L - R) / (series.length - 1);
+  const y = v => T + (hi + pad - v) / ((hi + pad) - (lo - pad)) * (H - T - B);
+  const pt = (s, i) => xAt(i) + ',' + y(s.y).toFixed(1);
+  const line = series.map(pt).join(' ');
+  const area = `M${xAt(0)},${H-B} L` + series.map(pt).join(' L') + ` L${xAt(series.length-1)},${H-B} Z`;
+  const ticks = [0,.25,.5,.75,1].map(t => {
+    const v = (lo - pad) + ((hi + pad) - (lo - pad)) * t, yy = y(v).toFixed(1);
+    return `<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#21262d"/>` +
+           `<text x="${L-8}" y="${+yy+3}" text-anchor="end" fill="#71717a" font-size="10">${metric === 'df' ? v.toFixed(4) : v.toFixed(2) + '%'}</text>`;
+  }).join('');
+  let lastX = -1e9;
+  const labels = rows.map((r, i) => {
+    const idx = xmode === 'maturity' ? series.findIndex(s => s.x >= r.tau) : i;
+    const x = idx < 0 ? W - R : xAt(idx);
+    /* a 30-year axis puts ON and 1W on the same pixel; the first label wins
+       and the narrow end is read from the table */
+    if (x - lastX < 34) return '';
+    lastX = x;
+    return `<text x="${x}" y="${H-14}" text-anchor="middle" fill="#71717a" font-size="10">${r.tenor}</text>`;
+  }).join('');
+  const dots = xmode === 'maturity'
+    ? rows.map(r => {
+        const v = metric === 'df' ? r.df : r.zero;
+        const i = series.findIndex(s => s.x >= r.tau);
+        return `<circle cx="${xAt(Math.max(i,0))}" cy="${y(v).toFixed(1)}" r="2.5" fill="#58a6ff"/>`;
+      }).join('')
+    : series.map((s, i) => `<circle cx="${xAt(i)}" cy="${y(s.y).toFixed(1)}" r="2.5" fill="#58a6ff"/>`).join('');
+  const label = {zero:'Zero rate (%)', fwd:'Implied forward (%)', df:'Discount factor'}[metric];
+  /* the prior close on the same axis, so the comparison is one reading not two */
+  let priorLine = '';
+  if (compare) {
+    const picks = prior => xmode === 'maturity'
+      ? sampled(prior).map(s => ({x:s.tau, y: metric === 'df' ? s.df : metric === 'zero' ? s.zero : s.fwd}))
+      : rows.map(r => ({x:r.tenor, y: metric === 'df' ? r.priorDf : metric === 'zero' ? r.priorZero : r.fwd - r.change / 100}));
+    priorLine = picks(true).map((s,i) => xAt(i) + ',' + y(s.y).toFixed(1)).join(' ');
+  }
+  host.innerHTML = `
+    <div class="panel">
+      <h2>Curve</h2>
+      <div class="row">
+        <span class="faint mono" style="font-size:.72rem;letter-spacing:.06em;text-transform:uppercase">Y axis</span>
+        ${[['zero','Zero rate'],['fwd','Implied fwd'],['df','Discount factor']].map(([k,t]) =>
+          `<button class="btn ${metric===k?'on':''}" data-metric="${k}">${t}</button>`).join('')}
+        <span style="margin-left:auto"></span>
+        <span class="faint mono" style="font-size:.72rem;letter-spacing:.06em;text-transform:uppercase">X axis</span>
+        ${[['tenor','Tenor (cat.)'],['maturity','Maturity (τ)']].map(([k,t]) =>
+          `<button class="btn ${xmode===k?'on':''}" data-xmode="${k}">${t}</button>`).join('')}
+      </div>
+      <div class="legend">
+        <span><span class="sw"></span>${label} · ${xmode === 'maturity' ? 'log-linear DF between pillars' : 'straight between pillars'}</span>
+        ${compare ? '<span><span class="swd"></span>Prior close (T-1)</span>' : ''}
+        <span class="faint">ACT/365F · continuous · spot ${SPOT}</span>
+      </div>
+      <div class="chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="AUD-AONIA ${label}">
+        ${ticks}
+        <path d="${area}" fill="#58a6ff" opacity="0.10"/>
+        ${compare ? `<polyline points="${priorLine}" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.85"/>` : ''}
+        <polyline points="${line}" fill="none" stroke="#58a6ff" stroke-width="2"/>
+        ${dots}${labels}
+      </svg></div>
+    </div>`;
+  host.querySelectorAll('[data-metric]').forEach(b => b.onclick = () => { metric = b.dataset.metric; chart(host); });
+  host.querySelectorAll('[data-xmode]').forEach(b => b.onclick = () => { xmode = b.dataset.xmode; chart(host); });
+}
+
+function notServed(){
+  return `
+  <div class="panel">
+    <h2>No published curve</h2>
+    <div class="notice">This party holds no published <b>AUD-AONIA</b> curve, so there are no pillars to read. The
+      screen says so and draws nothing: it does not show a previous publish as if it were current.</div>
+  </div>`;
+}
+
+document.getElementById('note').textContent =
+  'PROTOTYPE · throwaway · mock data, no server · variant ' + variant +
+  ' · state ' + state + (compare ? ' · compared with the prior close' : '');
+const app = document.getElementById('app');
+app.innerHTML = header() +
+  (state === 'none' ? notServed()
+    : variant === 'a' ? marketTable()
+    : variant === 'b' ? bootTable()
+    : allTable());
+if (state !== 'none') {
+  const box = document.createElement('div');
+  app.appendChild(box);
+  chart(box);
+}
+document.getElementById('bar').innerHTML =
+  '<span class="label">Variant</span>' +
+  [['a','A · market pillars'],['b','B · bootstrapped'],['c','C · all columns']].map(([v,t]) =>
+    `<button data-v="${v}" class="${v === variant ? 'on' : ''}">${t}</button>`).join('') +
+  '<span class="sep">·</span><span class="label">State</span>' +
+  [['stale','stale'],['live','live'],['none','nothing published']].map(([s,t]) =>
+    `<button data-s="${s}" class="${s === state ? 'on' : ''}">${t}</button>`).join('') +
+  '<span class="sep">·</span>' +
+  `<button data-compare="${compare ? '0' : '1'}" class="${compare ? 'on' : ''}">Compare T-1</button>`;
+document.getElementById('bar').addEventListener('click', e => {
+  const v = e.target.dataset.v, s = e.target.dataset.s, c = e.target.dataset.compare;
+  const next = new URLSearchParams(location.search);
+  if (v) next.set('variant', v);
+  if (s) next.set('state', s);
+  if (c) next.set('compare', c);
+  location.search = next.toString();
+});
+</script>
+</body>
+</html>

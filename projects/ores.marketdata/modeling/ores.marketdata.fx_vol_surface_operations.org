@@ -576,6 +576,55 @@ refusal is a reply with =success= false and a message that names what failed.
 :cpp_type: std::string
 :END:
 
+*** model
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The smile model the surface was calibrated with, such as ssvi.
+ */
+#+end_src
+
+*** strike_convention
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What a strike column means: `delta` when the strikes are delta codes,
+ * `absolute` when they are levels.
+ */
+#+end_src
+
+*** delta_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The delta convention the strikes were quoted under, such as spot or
+ * forward, and whether they are premium-adjusted. Empty when the strikes are
+ * levels.
+ */
+#+end_src
+
+*** stale
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The server's verdict on the publish's age, not a threshold for a
+ * client to apply.
+ */
+#+end_src
+
 *** publish_request_id
 :PROPERTIES:
 :cpp_type: std::string

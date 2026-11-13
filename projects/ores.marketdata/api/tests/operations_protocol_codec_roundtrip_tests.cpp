@@ -111,6 +111,86 @@ TEST_CASE("ores::marketdata::messaging::list_series_identities_response",
         ores::marketdata::messaging::list_series_identities_response>();
 }
 
+TEST_CASE("ores::marketdata::messaging::instrument_axis", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::instrument_axis>();
+}
+
+TEST_CASE("ores::marketdata::messaging::instrument_source", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::instrument_source>();
+}
+
+TEST_CASE("ores::marketdata::messaging::market_instrument", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::market_instrument>();
+}
+
+TEST_CASE("ores::marketdata::messaging::list_instruments_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::list_instruments_request>();
+}
+
+TEST_CASE("ores::marketdata::messaging::list_instruments_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::list_instruments_response>();
+}
+
+TEST_CASE("ores::marketdata::messaging::rung_quote", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::rung_quote>();
+}
+
+TEST_CASE("ores::marketdata::messaging::ladder_consensus", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::ladder_consensus>();
+}
+
+TEST_CASE("ores::marketdata::messaging::rate_ladder_rung", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::rate_ladder_rung>();
+}
+
+TEST_CASE("ores::marketdata::messaging::get_rate_ladder_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_rate_ladder_request>();
+}
+
+TEST_CASE("ores::marketdata::messaging::get_rate_ladder_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_rate_ladder_response>();
+}
+
+TEST_CASE("ores::marketdata::messaging::montage_spot", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::montage_spot>();
+}
+
+TEST_CASE("ores::marketdata::messaging::fx_montage_pair", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::fx_montage_pair>();
+}
+
+TEST_CASE("ores::marketdata::messaging::get_fx_montage_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_fx_montage_request>();
+}
+
+TEST_CASE("ores::marketdata::messaging::get_fx_montage_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_fx_montage_response>();
+}
+
+TEST_CASE("ores::marketdata::messaging::curve_conventions", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::curve_conventions>();
+}
+
+TEST_CASE("ores::marketdata::messaging::curve_market_pillar", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::curve_market_pillar>();
+}
+
+TEST_CASE("ores::marketdata::messaging::curve_bootstrapped_point", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::curve_bootstrapped_point>();
+}
+
+TEST_CASE("ores::marketdata::messaging::get_curve_analytics_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::get_curve_analytics_request>();
+}
+
+TEST_CASE("ores::marketdata::messaging::get_curve_analytics_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::marketdata::messaging::get_curve_analytics_response>();
+}
+
 TEST_CASE("ores::marketdata::messaging::crm_rate_item", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::crm_rate_item>();
 }

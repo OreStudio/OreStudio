@@ -229,6 +229,91 @@ TEST_CASE("a warning the engine stated no group for is stored as the engine's ow
     CHECK(rows.front().message.starts_with("Exception parsing convention CAD-CORRA"));
 }
 
+TEST_CASE("a notice the engine wrote becomes an info row that states where it was said",
+          "[service][database]") {
+    /*
+     * The engine states one notice for each parameter it was handed, and names
+     * the place in its own source that logged it. Keeping only the errors left a
+     * run unable to say what the engine was given, and the place is what tells a
+     * parameter notice from a market data failure without reading the message
+     * for a path.
+     */
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
+    const auto instance_id = write_instance(ctx, h.db_user(), gen);
+
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    const std::vector<ores::reporting::service::engine_log_row> errors{
+        {.severity = "notice",
+         .scope = "Engine",
+         .message = "group = setup : nThreads = 1",
+         .event_time = "2026-Oct-27 20:13:45.960950",
+         .source = "log.txt",
+         .location = "OREAnalytics/orea/app/parameters.cpp:144"},
+        {.severity = "error",
+         .scope = "Curve",
+         .message = "yield curve building failed for curve(s) Yield/GBP/GBP1D",
+         .subject = "curve",
+         .subject_id = "[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]",
+         .cause = "Yield/GBP/GBP1D",
+         .location = "OREData/ored/market/marketdata.cpp:516"}};
+
+    const auto recorded = recorder.record_engine_errors(instance_id, errors);
+    CHECK(recorded.failure.empty());
+    // The notice is an info row and not a warning: forty of them are not forty
+    // things that went wrong.
+    CHECK(recorded.stored.errors == 1);
+    CHECK(recorded.stored.warnings == 0);
+    CHECK(recorded.stored.infos == 1);
+
+    const auto rows = errors_of(ctx, instance_id);
+    REQUIRE(rows.size() == 2);
+    const auto notice =
+        std::ranges::find_if(rows, [](const auto& row) { return row.severity == "info"; });
+    REQUIRE(notice != rows.end());
+    CHECK(notice->scope_code == "Engine");
+    CHECK(notice->message == "group = setup : nThreads = 1");
+    CHECK(notice->location == "OREAnalytics/orea/app/parameters.cpp:144");
+    // The error states its own place, so the two rows are placed apart.
+    const auto curve =
+        std::ranges::find_if(rows, [](const auto& row) { return row.severity == "error"; });
+    REQUIRE(curve != rows.end());
+    CHECK(curve->location == "OREData/ored/market/marketdata.cpp:516");
+}
+
+TEST_CASE("a run whose log stated only notices keeps them once however often it is read",
+          "[service][database]") {
+    /*
+     * A run whose engine wrote nothing worse than notices is still a run whose
+     * account has been taken. Reading it again would state every notice twice,
+     * because a notice is not one of the rows the store makes unique.
+     */
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
+    const auto instance_id = write_instance(ctx, h.db_user(), gen);
+
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    const std::vector<ores::reporting::service::engine_log_row> notices{
+        {.severity = "notice",
+         .scope = "Engine",
+         .message = "group = setup : nThreads = 1",
+         .location = "OREAnalytics/orea/app/parameters.cpp:144"},
+        {.severity = "notice",
+         .scope = "Engine",
+         .message = "group = setup : calendar = TARGET",
+         .location = "OREAnalytics/orea/app/parameters.cpp:144"}};
+
+    CHECK(recorder.record_engine_errors(instance_id, notices).failure.empty());
+    CHECK(recorder.record_engine_errors(instance_id, notices).failure.empty());
+
+    const auto rows = errors_of(ctx, instance_id);
+    CHECK(rows.size() == 2);
+    CHECK(std::ranges::any_of(
+        rows, [](const auto& row) { return row.message == "group = setup : nThreads = 1"; }));
+}
+
 TEST_CASE("an error about a trade carries the version the run read and the date it read it at",
           "[service][database]") {
     scoped_database_helper h;

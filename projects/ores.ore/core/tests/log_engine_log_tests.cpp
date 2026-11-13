@@ -204,10 +204,22 @@ TEST_CASE("the canonical log csv states its header and quotes what it must", "[o
     const auto events = parse_engine_log_text(curve_line + "\n", "log.txt");
     const auto text = canonical_log_csv(events);
 
-    CHECK(text.rfind(
-              "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source\n",
-              0) == 0);
+    CHECK(text.rfind("ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,"
+                     "source,location\n",
+                     0) == 0);
     CHECK(text.find("1,error,Curve,") != std::string::npos);
+}
+
+TEST_CASE("a canonical row states where the engine said it", "[ore][log]") {
+    using ores::ore::log::canonical_log_csv;
+
+    const auto events = parse_engine_log_text(parameters_line + "\n", "log.txt");
+    const auto text = canonical_log_csv(events);
+
+    // The file the row was read from and the place inside the engine that logged
+    // it are two facts, and the row states both. A reader places a notice by the
+    // second without reading the message for a path.
+    CHECK(text.find(",log.txt,OREAnalytics/orea/app/parameters.cpp:144\n") != std::string::npos);
 }
 
 TEST_CASE("a message with a comma is quoted so the row keeps its fields", "[ore][log]") {

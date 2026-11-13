@@ -145,6 +145,29 @@ bool run_holds_errors(const ores::database::context& ctx, const std::string& ins
                 .empty();
 }
 
+/// Whether the run already holds a row its log gave it.
+///
+/// The step that reads a run's output runs at least once, so the whole read is
+/// written once. A failed run states an error, and a run that got no further than
+/// its engine's notices states none, so the answer is read from both: an error
+/// row is the account of a failure taken, and an info row is the account of the
+/// engine's own word taken. Reading a log twice would otherwise state every
+/// notice twice, because a notice is not one of the rows the store makes unique.
+///
+/// A warning alone is not evidence of a read. The recorder writes one for a scope
+/// the vocabulary does not hold, and that warning must not stand in for a log
+/// that has not been read.
+bool run_holds_log_rows(const ores::database::context& ctx, const std::string& instance_id) {
+    const auto holds = [&](std::string severity) {
+        messaging::report_error_events_filter filter;
+        filter.severity = std::move(severity);
+        return !repository::report_error_event_repository()
+                    .read_latest_by_report_instance_id(ctx, instance_id, 0, 1, {}, filter)
+                    .empty();
+    };
+    return holds("error") || holds("info");
+}
+
 }
 
 report_error_recorder::report_error_recorder(ores::database::context ctx)
@@ -157,9 +180,9 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
         return {};
 
     try {
-        // The step that reads a run's output runs at least once, so its errors
-        // are written once.
-        if (run_holds_errors(ctx_, report_instance_id))
+        // The step that reads a run's output runs at least once, so the whole
+        // read is written once, whatever severity the rows it states carry.
+        if (run_holds_log_rows(ctx_, report_instance_id))
             return {};
 
         const auto instance_id = parse_instance_id(report_instance_id);
@@ -264,8 +287,14 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
         repository::report_error_event_repository().write(ctx_, rows);
 
         recorded_engine_errors recorded;
-        for (const auto& row : rows)
-            (row.severity == "error" ? recorded.stored.errors : recorded.stored.warnings) += 1;
+        for (const auto& row : rows) {
+            if (row.severity == "error")
+                ++recorded.stored.errors;
+            else if (row.severity == "warning")
+                ++recorded.stored.warnings;
+            else
+                ++recorded.stored.infos;
+        }
         return recorded;
     } catch (const std::exception& e) {
         // Two callers can both find no rows and both write. The unique indexes

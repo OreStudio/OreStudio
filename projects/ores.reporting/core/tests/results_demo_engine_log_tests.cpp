@@ -124,6 +124,10 @@ TEST_CASE("an engine that writes only a text log still states a row for each fai
     CHECK(rows[0].subject == "trade");
     CHECK(rows[0].subject_id == "00cf3e0f-29e1-53f9-9e85-eac72dcff6ca");
     CHECK(rows[0].message == "XML Node is NULL (expected OptionData)");
+    // The place inside the engine travels with the row, so the run states which
+    // part of the engine spoke without keeping the line it was written on.
+    CHECK(rows[0].location == "OREData/ored/utilities/log.cpp:214");
+    CHECK(rows[1].location == "OREData/ored/portfolio/portfolio.cpp:103");
     // A line the engine wrote without a group is read as it says, and it is
     // stored as the engine's own rather than dropped, so a reader of the run
     // sees what the engine said even when it named no part of itself.

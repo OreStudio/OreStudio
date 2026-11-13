@@ -205,8 +205,10 @@ parse_engine_log_json(std::string_view text, std::string_view source_file);
  * @brief The events as the newline-delimited CSV the loader reads.
  *
  * The header is
- * =ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source=,
- * which is the shape the reporting service stores and the screen draws.
+ * =ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source,location=,
+ * which is the shape the reporting service stores and the screen draws. @c source
+ * is the file the event was read from and @c location is the place inside the
+ * engine that logged it, so the two say different things and both are kept.
  */
 [[nodiscard]] ORES_ORE_CORE_EXPORT std::string
 canonical_log_csv(const std::vector<engine_log_event>& events);

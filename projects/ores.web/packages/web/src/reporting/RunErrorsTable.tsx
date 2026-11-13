@@ -46,12 +46,20 @@ export function useRunErrors(runId: string) {
     });
 }
 
-const SEVERITIES = ['all', 'error', 'warning'] as const;
+const SEVERITIES = ['all', 'error', 'warning', 'info'] as const;
 type SeverityChoice = (typeof SEVERITIES)[number];
 
-/** The severity of a problem, coloured as every severity in the application is. */
+/**
+ * How a row's severity is drawn. A failure is red and a warning is amber; a
+ * notice is quiet, because a notice says what the engine was given rather than
+ * that anything went wrong.
+ */
+const TONES = { error: 'down', warning: 'warn', info: 'muted' } as const;
+
+/** The severity of a row, coloured as every severity in the application is. */
 export function SeverityTag({ severity }: { readonly severity: string }): ReactNode {
-    return <Tag tone={severity === 'error' ? 'down' : 'warn'}>{severity}</Tag>;
+    const tone = TONES[severity as keyof typeof TONES] ?? 'neutral';
+    return <Tag tone={tone}>{severity}</Tag>;
 }
 
 /** What an error is about: a link to the trade when it names one, text otherwise. */
@@ -113,23 +121,39 @@ export function RunErrors({ runId }: { readonly runId: string }): ReactNode {
     );
 }
 
-/** How many problems fell in each scope, by severity, from the most to the fewest. */
-export function scopeCounts(
-    rows: readonly ReportRunErrorView[],
-): readonly { readonly scope: string; readonly errors: number; readonly warnings: number }[] {
-    const counts = new Map<string, { errors: number; warnings: number }>();
+/** One scope's rows, counted apart by severity. */
+export interface ScopeCount {
+    readonly scope: string;
+    readonly errors: number;
+    readonly warnings: number;
+    readonly infos: number;
+}
+
+/** A scope's three figures while they are still being counted. */
+interface ScopeTally {
+    errors: number;
+    warnings: number;
+    infos: number;
+}
+
+/** How many rows fell in each scope, by severity, from the most to the fewest. */
+export function scopeCounts(rows: readonly ReportRunErrorView[]): readonly ScopeCount[] {
+    const counts = new Map<string, ScopeTally>();
     for (const row of rows) {
-        const count = counts.get(row.scope) ?? { errors: 0, warnings: 0 };
+        const count = counts.get(row.scope) ?? { errors: 0, warnings: 0, infos: 0 };
         if (row.severity === 'error') {
             count.errors += 1;
-        } else {
+        } else if (row.severity === 'warning') {
             count.warnings += 1;
+        } else {
+            count.infos += 1;
         }
         counts.set(row.scope, count);
     }
+    const total = (count: ScopeTally): number => count.errors + count.warnings + count.infos;
     return [...counts.entries()]
         .map(([scope, count]) => ({ scope, ...count }))
-        .sort((left, right) => right.errors + right.warnings - (left.errors + left.warnings));
+        .sort((left, right) => total(right) - total(left));
 }
 
 /** The problems of a run counted by scope: the shape as a ring, the figures in a table. */
@@ -163,6 +187,9 @@ export function RunErrorsOverview({
                                 {t(`${field}.warningsCount`)}
                             </th>
                             <th className="px-2 py-2 text-right font-medium">
+                                {t(`${field}.infosCount`)}
+                            </th>
+                            <th className="px-2 py-2 text-right font-medium">
                                 {t(`${field}.total`)}
                             </th>
                         </tr>
@@ -187,8 +214,9 @@ export function RunErrorsOverview({
                                 <td className="px-2 py-2 text-right tabular-nums">
                                     {count.warnings}
                                 </td>
+                                <td className="px-2 py-2 text-right tabular-nums">{count.infos}</td>
                                 <td className="px-2 py-2 text-right tabular-nums">
-                                    {count.errors + count.warnings}
+                                    {count.errors + count.warnings + count.infos}
                                 </td>
                             </tr>
                         ))}
@@ -200,9 +228,12 @@ export function RunErrorsOverview({
 }
 
 /**
- * The problems a run recorded, one row each: how severe it is, the part of the
- * run it belongs to, the one thing it names and what the engine said. A scope
- * in the address narrows the list to it.
+ * The rows a run recorded, one row each: how severe it is, the part of the run
+ * it belongs to, the one thing it names, what the engine said and where in the
+ * engine it said it. A scope in the address narrows the list to it.
+ *
+ * A notice is a row like any other, and the filter is how a reader puts the
+ * engine's notices aside when they are looking for a failure.
  */
 export function RunErrorsTable({
     runId,
@@ -221,6 +252,7 @@ export function RunErrorsTable({
         all: rows.length,
         error: rows.filter((row) => row.severity === 'error').length,
         warning: rows.filter((row) => row.severity === 'warning').length,
+        info: rows.filter((row) => row.severity === 'info').length,
     };
     const shown = severity === 'all' ? rows : rows.filter((row) => row.severity === severity);
 
@@ -251,7 +283,8 @@ export function RunErrorsTable({
                     key: `run-errors-${runId}`,
                     rows: shown,
                     revision: `${scope ?? ''}:${severity}:${shown.length}`,
-                    searchOf: (row) => `${row.scope} ${row.about} ${row.message}`,
+                    searchOf: (row) =>
+                        `${row.scope} ${row.about} ${row.message} ${row.location ?? ''}`,
                 })}
                 plural={t(`${field}.plural`)}
                 keyOf={(row) => row.id}
@@ -272,6 +305,14 @@ export function RunErrorsTable({
                         id: 'message',
                         header: t(`${field}.message`),
                         cell: (row) => <span className="whitespace-pre-wrap">{row.message}</span>,
+                    },
+                    {
+                        id: 'location',
+                        header: t(`${field}.location`),
+                        mono: true,
+                        cell: (row) => (
+                            <span className="text-ink-muted">{row.location ?? '—'}</span>
+                        ),
                     },
                 ]}
             />

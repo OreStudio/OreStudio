@@ -305,7 +305,9 @@ the run and the scope agree, and its subject is now a scope code so that two
 different scopes cannot collide.
 
 Only errors are made unique. A warning the engine writes twice is a warning
-about two things, and the run keeps both.
+about two things, and the run keeps both. A notice is kept the same way: the
+engine states one for each parameter it was handed, and two notices that read
+alike are two things it was handed.
 
 They exist because the step that reads a run's output can run more than once at
 the same time. The recorder asks the database whether the run already holds its

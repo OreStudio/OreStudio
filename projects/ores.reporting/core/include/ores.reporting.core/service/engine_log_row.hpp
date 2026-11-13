@@ -33,8 +33,8 @@ namespace ores::reporting::service {
  * reads it. A field the node did not state stays empty here.
  *
  * The rows cover every line the engine wrote, whatever its severity. The service
- * keeps the ones that say something went wrong, which is what it stores against
- * the run, and drops the rest.
+ * keeps them all against the run, because the account of what the engine was
+ * handed is the run's own, and the engine's five levels become the store's four.
  */
 struct engine_log_row {
     /// The severity the node stated: @c error, @c warning, @c notice, @c info

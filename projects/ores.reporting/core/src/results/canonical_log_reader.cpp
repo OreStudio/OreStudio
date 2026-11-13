@@ -26,8 +26,11 @@
 namespace ores::reporting::results {
 namespace {
 
+/// The fields a log row states, which is the writer's set and its order.
+constexpr std::size_t log_field_count = 11;
+
 constexpr std::string_view log_expected_header =
-    "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source";
+    "ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source,location";
 
 /**
  * @brief The records of a file, and what the scan refused.
@@ -144,9 +147,10 @@ log_read_outcome read_canonical_log_csv(std::string_view csv) {
         const auto record_number = i + 1;
         if (fields.size() == 1 && fields[0].find_first_not_of(" \t") == std::string::npos)
             continue;
-        if (fields.size() != 10) {
+        if (fields.size() != log_field_count) {
             outcome.refusals.push_back("record " + std::to_string(record_number) + " states " +
-                                       std::to_string(fields.size()) + " fields, not ten.");
+                                       std::to_string(fields.size()) + " fields, not " +
+                                       std::to_string(log_field_count) + ".");
             continue;
         }
         if (fields[1].empty() || fields[3].empty()) {
@@ -165,6 +169,7 @@ log_read_outcome read_canonical_log_csv(std::string_view csv) {
         row.detail = fields[7];
         row.event_time = fields[8];
         row.source = fields[9];
+        row.location = fields[10];
         outcome.rows.push_back(std::move(row));
     }
 

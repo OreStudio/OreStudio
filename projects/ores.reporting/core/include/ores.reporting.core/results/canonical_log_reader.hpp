@@ -47,7 +47,7 @@ struct log_read_outcome {
  *
  * The file is the contract between the grid and this service: the node alone
  * knows how the engine writes its log, and this reads the header
- * @c ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source.
+ * @c ordinal,severity,scope,message,subject,subject_id,cause,detail,event_time,source,location.
  * A file whose header is not that, or a row with the wrong number of fields, is
  * refused rather than half read.
  */

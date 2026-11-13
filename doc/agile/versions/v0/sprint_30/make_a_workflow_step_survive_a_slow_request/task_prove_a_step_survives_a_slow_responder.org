@@ -127,3 +127,15 @@ The recovery shows the design working as intended: the helper treats
 `std::bad_alloc` as permanent, the step fails with the work named, and the
 step-level retry — which is safe because the step repeats nothing — completes.
 
+The review round added four cases to the request path: an attempt waits no
+longer than the budget left to it, an attempt knows which time round it is and
+what is left, the first attempt does not read back, and a repeat whose read
+back answers does not do the work again. They close the two gaps the review
+found: an attempt could wait a full patience past the deadline, and the read
+back ran on the first attempt where nothing of its own was there to find.
+
+What is not covered, and the review says so plainly: the cases drive the retry
+helper and not a whole step, and the failure message is checked by the case
+that names a party, an item and the attempts, not by a step that gives up. A
+step-level harness is the check that would close both.
+

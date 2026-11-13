@@ -123,3 +123,21 @@ those rows cannot run clean. What is proven is the identity (a test of
 recreated database is the check that closes it.
 
 - On a recreated database and a full build, =ores.marketdata.service.tests= passes in full: 250 of 250 (2026-11-13).
+
+The review round corrected the curve read back, which was the one of the three
+that could take work it had not done. It answered any set of its configuration
+at any as-of, so a second provisioning run found the first run's publish,
+reported it as its own and published nothing. It now answers the set whose as-of
+is the one the publish states, at the precision the store keeps, and it reads the
+candidate a raise of its own left behind: a repeat takes what it wrote and still
+raises no second request, and a new run publishes its own instant.
+
+The review round also stopped the read back running on the first attempt.
+=do_unless_already_done= states the rule once for all three publishes: the first
+attempt acts, because nothing an earlier attempt did is there to find, and a
+repeat reads first. Two cases hold it: the first attempt does not read back, and
+a repeat whose read back answers does not do the work again.
+
+The whole-table calendar write is repeated without a read, and the step now says
+why: the request extends each calendar from the watermark the store holds up to
+the year it names, so a second attempt finds those days and writes none again.

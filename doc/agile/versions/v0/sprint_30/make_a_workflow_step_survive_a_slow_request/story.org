@@ -109,6 +109,34 @@ whole audit of the NATS patterns.
   issues, 80 surface publishes and 40 surfaces, with the heartbeat's progress
   printed for each step.
 
+* Review round
+
+The branch was reviewed on two axes, standards and spec, before it was offered
+for merge. Every finding that changed what the code does was fixed on the
+branch, and the gaps that remain are stated below rather than left implied.
+
+- The deadline did not bound an attempt, only the waits between attempts: an
+  attempt could wait its full patience past the step's deadline. Each attempt
+  now states the budget left to it, and a request waits no longer than that.
+- The curve read back ignored the as-of, and read on the first attempt as well.
+  It now answers its own as-of, at the store's precision, and reads the candidate
+  a raise of its own left. The first attempt no longer reads at all.
+- Attempts and per-item progress reached only the step log, which the engine
+  reads when the step settles, and the four giving-up paths dropped that log. An
+  attempt now also reports as the step's progress, and every giving-up path
+  carries the log, so a person watching sees the retry while it happens.
+- The calendar retry states why its repeat writes nothing twice, rather than
+  leaving it to be taken on trust.
+- The marketdata case for a calibration asserted a call against itself, and the
+  web case asserted the absence of a string nothing rendered. Both now say
+  something a stub cannot satisfy.
+
+What the round did not close, and leaves stated rather than implied: the cases
+drive the retry helper and not a whole step, the database-level replay of a lost
+publish reply is still unproven, and the requests outside this workflow still
+take the shared default without the reason beside them, which belongs to
+[[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]].
+
 * Out of scope
 
 - An asynchronous calibrate that accepts the work and answers with an id to

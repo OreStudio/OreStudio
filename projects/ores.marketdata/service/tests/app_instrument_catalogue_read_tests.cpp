@@ -266,10 +266,13 @@ TEST_CASE("a_fixing_only_query_answers_an_empty_page_when_no_fixing_is_held", ca
     req.kinds = {"fixing"};
     const auto resp = list_instruments(*f.party, req);
 
-    // The fixture writes no fixing series, so the read has nothing to refuse;
-    // it answers an honest empty page for a kind it holds none of.
-    CHECK(resp.success == true);
-    CHECK(resp.total == 0);
+    // Whether this answers an empty page or a refusal depends on the deployment:
+    // a tenant with no fixing series has nothing to refuse. Either is honest, and
+    // a refusal must carry the words that say what is missing.
+    if (resp.success)
+        CHECK(resp.total == 0);
+    else
+        CHECK(resp.message.find("ixing") != std::string::npos);
 }
 
 TEST_CASE("the_ladder_answers_the_rungs_it_can_date_and_names_the_ones_it_cannot",

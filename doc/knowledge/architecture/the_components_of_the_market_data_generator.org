@@ -295,6 +295,72 @@ a kind rather than a case. Write the five edits in
   At ten thousand ticks a second the dispatch is well under a millisecond a second, so
   the rule worth enforcing is the fourth above rather than micro-optimising the loop.
 
+** Two-way prices and depth, when they come
+
+Both are out of scope today -- every quote is a mid and valuation runs on mids
+([[id:95541791-E25C-44A5-9625-C8A1E44976D7][the story]] defers bid and ask to a later level of work) -- and they land
+very differently on this shape.
+
+*Fits as it stands.*
+
+- *A feed's body.* A book feed is a new =i_feed= kind: the loop, the arrival laws,
+  the adapter seam and the runner need no change. Hawkes is already the right law
+  for order flow, which is the one thing this architecture buys for free.
+- *The heat.* A burst of orders exciting more orders is the channel's own design,
+  per series and market-wide.
+- *A stochastic spread as state.* The spread is one more *block member*: the latent
+  market already hands a series K normals from its loadings, and a block sizes K from
+  the members it declares, so a log-Ornstein-Uhlenbeck or CIR spread process -- mean
+  reverting, positive, stepped through =next_with_normal= -- is a member and a loading
+  row, not a mechanism. Its correlation with the mid, with volatility and with the
+  regime is then the loading it is given, and a spread that widens in the active
+  regime is a regime loading.
+- *The contributor layer.* A contributor already has its own stream and noise profile,
+  and the latent-surface note states the rule: bid and ask are an extension of the
+  contributor and leave the mid path unchanged. A width per contributor per point is a
+  second field in the profile, and the clean mid stays what tests compare against.
+
+*Additive, but a real decision each.*
+
+- *The published point.* =market_tick= and =fx_vol_point_tick= carry one value. A
+  two-way quote needs a pair, so either the scalar message is widened or a second
+  message carries the pair. The rule to keep is that a mid consumer never changes:
+  widen the *store* (a side, or a spread) and add a message, rather than bending the
+  one every consumer reads.
+- *The board.* A two-sided curve is a new member *kind* -- two dated discount series,
+  bid and ask -- kept flat as two spans rather than one nested value. It is additive
+  because a member is a kind and a code, and it is the kind of thing that would be
+  expensive only if the board had been built as a curve cache with curve-shaped
+  accessors.
+- *The calibration.* A tighter quote is more informative than a wide one, so contributors
+  gain weights by width, and a two-sided calibration fits the mid with a spread model or
+  fits both sides. That is a change of weights, not of shape.
+
+*Needs design, not extension.*
+
+- *Depth is not a scalar observation.* The market data path is a series of
+  (instant, value) observations; a book is state with structural updates -- levels,
+  sizes, cancels -- so it needs its own datum and its own store, snapshots plus deltas,
+  and an identity per instrument rather than per point. A book must *not* become a board
+  member: the board's values are dated scalars in reused buffers, and a book would
+  break both of those properties.
+- *Two sources of truth for the spread.* If a book exists, the top of the book is the
+  spread; a stochastic spread model beside it would give two answers. The split worth
+  choosing is the one the current vendor model already implies: where there is depth the
+  book is primary and the spread is derived; where a contributor quotes without depth --
+  volatility surfaces, curves -- the state process is the only source there is.
+- *Matching.* A market data vendor publishes book updates, which is not the same as
+  publishing trades. Trades need either a matching step inside the run, which would be
+  the loop's first deterministic per-event computation, or the venue role left out.
+
+*What to keep true now so that stays cheap.*
+
+1. =market_tick= stays a scalar; two-way arrives as its own message.
+2. A board member stays a dated scalar, and a book is never one.
+3. A block sizes its loadings from the members it declares, so a spread is a member.
+4. =i_feed= stays the only generator seam: a book feed is a kind, not a runner change.
+5. A contributor's width is the contributor's, not the instrument's.
+
 ** Where the code is today
 
 The shape above is the target this page states and the board task is migrating to. Two

@@ -28,9 +28,9 @@ The gateway has no part for the market data area. Add the part with the adapter 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The part is stood up, linked into the server and answers groups 1 and 2: the adapters read, and the six subscription and route reads and writes, all paired in the inventory. |
+| Now          | The part answers every resource route of the area: the adapters read, the six subscription and route reads and writes, the public rates' fixings and three terms writes, the thirteen curve routes, the series observations and the four codec routes. All thirty are paired in the inventory. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve the public rates group: the fixings read and the three terms writes. |
+| Next         | Raise the pull request and answer its review. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -48,16 +48,22 @@ its model, its CMake files, the composite's parts list, the umbrella header,
 the aggregate, the file lists, the diagram, and the server's link and
 registration. It links =ores.marketdata.api= and =ores.refdata.api=.
 
-The area's resource routes are ported in groups, each one pull request:
+The area's resource routes are ported in groups. The groups travel on one
+branch rather than one pull request each, because the part is new and each
+group's pairing builds on the one before: one review covers the whole part.
 
 | Group | Routes | BFF source |
 |-------+--------+------------|
 | The part and the adapters | 1 | =adapters.ts= |
 | Subscriptions and routes | 6 | =subscriptions.ts= |
-| The public rates | 5 | =public-rates.ts= |
-| The curves | 12 | =curves.ts= |
+| The public rates | 4 | =public-rates.ts= |
+| The curves | 13 | =curves.ts= |
 | The series observations | 1 | =series.ts= |
 | The ORE URI codec | 4 | =oresmd.ts= |
+
+Thirty resource routes in all. The public rates group states four routes and
+not five because the publisher list, its coverage and its file are composed
+views, which their own tasks serve.
 
 The composed views belong to their own tasks: the catalogue, the connectivity
 list, the fixing series, the public rates view and its coverage and file, and
@@ -76,8 +82,10 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | The part's test suite | 9 cases, 108 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.marketdata.tests= | 9af88eea10 |
-| The market-data area's routes the C++ server answers | 7 of 31 paired | =python3 build/scripts/route_inventory.py --check= | 9af88eea10 |
-| The gateway's routes in the inventory | 1274 routes, 184 of the BFF's 324 paired | =python3 build/scripts/route_inventory.py --check= | 9af88eea10 |
+| The part's test suite, every group served | 30 cases, 420 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.marketdata.tests= | 3fc534fba3 |
+| The market-data area's routes the C++ server answers | 25 of 31 paired | =python3 build/scripts/route_inventory.py --check= | 3fc534fba3 |
+| The market-data routes left unpaired | 6, every one a composed view of another task | =python3 build/scripts/route_inventory.py --check= | 3fc534fba3 |
+| The gateway's routes in the inventory | 1296 routes, 206 of the BFF's 324 paired | =python3 build/scripts/route_inventory.py --check= | 3fc534fba3 |
 | The applicable local checks | 50 of 50 passed | =./compass.sh check --exclude-heavy= | 9af88eea10 |
 
 * Notes
@@ -106,3 +114,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The part =ores.http.marketdata= answers all thirty resource routes of the
+market data area, in seven units:
+
+| Unit | Routes | What they answer |
+|------+--------+------------------|
+| =adapter_routes= | 1 | Every adapter the service tracks, with the kind of source its feed reads. |
+| =subscription_routes= | 6 | The subscriptions and the routes the caller's party holds, their two creates and their two removals. |
+| =public_rate_routes= | 4 | The fixings of up to a dozen series, and the three answers a person gives to a publisher's terms. |
+| =curve_routes= | 13 | The series an identity names, the URIs of a series, the snapshot, the slice, the evolution, the computed points, the manual points, the published sets, the FX forward ladder and the withdrawal. |
+| =series_routes= | 1 | One series' observations inside a window, oldest first. |
+| =oresmd_routes= | 4 | The codec's table, one URI read, a batch read and a compose. |
+| =marketdata_routes= | 0 | The aggregate the server calls, which registers the six above. |
+
+The six routes still unpaired in the area are the composed views their own
+tasks serve: the catalogue, the connectivity list, the fixing series, the
+public rates view and its coverage and its file.
+
+**Deviations, each recorded where it was decided.**
+
+- The groups travel on one branch and not one pull request each, because the
+  part is new and each group's pairing builds on the one before.
+- The public rates group states four routes and not the five the Plan named:
+  the publisher list, its coverage and its file are composed views.
+- =http_status= gained =unprocessable_content= (422), which is the status the
+  BFF answered a service refusal with on the curve and codec routes.
+- The shared part gained =record_routes::object_without_members=, because an
+  operation's reply carries the protocol's success and message beside the
+  payload and a screen reads the payload alone.
+- A series read that names no window reads all of them, which is the default
+  the contract states; a batch read of no URI answers no parts, as the BFF did.

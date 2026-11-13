@@ -19,6 +19,7 @@
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include <algorithm>
 #include <cmath>
+#include <span>
 #include <limits>
 #include <stdexcept>
 #include <utility>
@@ -127,6 +128,8 @@ std::size_t tick_scheduler::add(const series_spec& spec, stream_body body) {
     post(
         [this, id, spec, law = std::move(law), stream, body = std::move(body)] {
             market_.enrol(spec.arrival.ticks_per_hour / 3600.0);
+            if (drivers_.size() < spec.driver_count)
+                drivers_.resize(spec.driver_count);
             names_[spec.series] = spec.name;
             const auto known = std::ranges::find(groups_, spec.group);
             const auto group = static_cast<std::size_t>(known - groups_.begin());
@@ -385,12 +388,16 @@ std::optional<fired_tick> tick_scheduler::fire(std::unique_lock<std::mutex>& loc
     const double simulated_elapsed = market_.simulated() - s.last_simulated;
     s.last_tau = market_.tau();
     s.last_simulated = market_.simulated();
-    const double driver = driver_source_ ? driver_source_(s.spec.series, *due) : 0.0;
+    // The buffer is sized when a series is added, so a tick only fills it.
+    const auto count = std::min(s.spec.driver_count, drivers_.size());
+    std::fill_n(drivers_.begin(), count, 0.0);
+    if (driver_source_)
+        driver_source_(s.spec.series, *due, std::span<double>(drivers_).first(count));
     const tick_context context{.elapsed_seconds = *due - s.last_fired,
                                .observed_at = clock_.wall(time_at(*due)),
                                .simulated_seconds = simulated_elapsed,
                                .tail_tilt = market_.tail_tilt(),
-                               .driver = driver};
+                               .drivers = std::span<const double>(drivers_).first(count)};
     record(trace_kind::tick, s.spec.series, s.gap, context.elapsed_seconds, compensated);
     ++fired_since_sample_;
     by_second_.tick(*due, s.group);

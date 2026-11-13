@@ -39,6 +39,7 @@
 #include <map>
 #include <mutex>
 #include <optional>
+#include <span>
 #include <string>
 #include <thread>
 #include <vector>
@@ -57,10 +58,21 @@ struct tick_context final {
     /// How far the market tilts a price's shape toward its tails now; zero leaves it as
     /// configured.
     double tail_tilt = 0.0;
-    /// The standard normal the latent market hands this series' step. Zero when
-    /// the run has no market, so a feed that reads it and a feed that draws its
-    /// own normal see the same number to begin with.
-    double driver = 0.0;
+    /**
+     * @brief The standard normals the latent market hands this series' step, one for
+     * each driver the series declared.
+     *
+     * A price that moves on one factor reads one; a surface whose forward variances, skew
+     * and curvature each load on the spot's factor reads one for each of them. Empty when
+     * the run has no market, so a feed that reads one and a feed that draws its own normal
+     * see the same numbers to begin with.
+     */
+    std::span<const double> drivers;
+
+    /// The first of drivers, or zero when the series is driven by nothing.
+    [[nodiscard]] double driver() const noexcept {
+        return drivers.empty() ? 0.0 : drivers.front();
+    }
 };
 
 /// What a scheduler needs to know about a series to schedule it.
@@ -74,6 +86,8 @@ struct series_spec final {
     std::string name;
     /// The group the history counts the series' ticks under, such as its asset class.
     std::string group;
+    /// How many drivers the series reads each tick; one for a price on a single factor.
+    std::size_t driver_count = 1;
 };
 
 /// One tick the scheduler took.
@@ -205,10 +219,15 @@ struct market_history final {
 class ORES_ANALYTICS_QUANT_EXPORT tick_scheduler final {
 public:
     using stream_body = std::function<std::string(const tick_context&)>;
-    /// Where a series' standard normal comes from, given its stream id and the
-    /// instant it ticks at. The latent market answers it; a run without one
-    /// leaves it unset and every driver is zero.
-    using driver_source = std::function<double(std::uint64_t series, double at)>;
+    /**
+     * @brief Where a series' standard normals come from, given its stream id, the
+     * instant it ticks at, and how many to write into @p out.
+     *
+     * The latent market answers it, one normal for each series the feed registered for
+     * this driver. A run without a market leaves it unset, and every driver is zero.
+     */
+    using driver_source =
+        std::function<void(std::uint64_t series, double at, std::span<double> out)>;
     using published_hook = std::function<void(std::uint64_t, const std::string&)>;
     using failure_hook = std::function<void(const std::exception&)>;
 
@@ -410,6 +429,9 @@ private:
     std::atomic<std::uint64_t> published_{0};
     published_hook on_published_;
     driver_source driver_source_;
+    /// The normals handed to the tick body being run: one buffer however many series want one,
+    /// sized when a series is added so a tick allocates nothing.
+    std::vector<double> drivers_;
     failure_hook on_failed_;
 };
 

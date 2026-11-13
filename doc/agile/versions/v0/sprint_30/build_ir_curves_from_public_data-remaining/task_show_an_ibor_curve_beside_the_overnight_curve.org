@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 52257743-2F40-4DFD-98B2-B08311947335
 :END:
-#+title: Task: Show an IBOR curve beside the overnight curve
-#+description: A person can open a currency's overnight curve and its IBOR curve, see both on one screen, and read which one discounts and which one projects. The first slice of teaching the difference between an overnight average and a term IBOR.
+#+title: Task: Show every IBOR curve beside its overnight curve
+#+description: Every currency with an IBOR feed has its IBOR curve beside its overnight curve: all of them, not one, each marked as a projection curve and readable in zero, forward and discount-factor terms, so a person can compare and learn from the difference.
 #+type: task
 #+level: s1
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The system publishes an IBOR curve for a currency beside its overnight curve, states on the screen that the IBOR curve is a projection curve, and keeps it out of discounting and surface calibration, so a person can compare the two and learn from the comparison.
+Every IBOR feed has a bootstrapped curve beside its overnight curve, marked as a projection curve, kept out of discounting and surface calibration, and readable in the three views the inspector has (zero, forward, discount factor), so a person can compare any currency's two curves and price from either.
 
 * Status
 
@@ -35,10 +35,11 @@ The system publishes an IBOR curve for a currency beside its overnight curve, st
 
 * Acceptance
 
-- A learning bootstrap config publishes an IBOR curve for one currency beside its overnight curve, with the overnight curve as its discount curve.
+- Every IBOR feed of every currency publishes a bootstrapped curve beside its overnight curve, with the currency's overnight curve as its discount curve.
 - The IBOR curve publishes with role projection, and no consumer takes it for a discount curve or a surface input; a test states the rule.
-- The curves screen and the coverage screen show both curves for the currency, with the index family and the role.
+- The curves screen and the coverage screen show every curve of a currency together, with the index family, the role and the three views.
 - One page states the difference the comparison teaches: an overnight average is compounded and discounts, a term IBOR is quoted and projects.
+- The data supports pricing from an IBOR curve: a projection curve is linked to its discount curve, so a pricing screen can read both when one exists.
 
 * Plan
 

@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 8B4E2D71-6A3C-4F18-9B27-5C0D3E9A1F42
+:END:
+#+title: The schedule writes: who owns the permission and the restore
+#+description: Two routes set and clear a report's schedule. The BFF refuses before writing with its own copy of a permission rule, and restores the previous schedule when the operation does not take. This states what that costs and where each part belongs.
+#+type: plan
+#+status: DRAFT
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+filetags: :plan:http:reporting:
+
+* Why this note exists
+
+=POST /api/reporting/reports/schedule= and =.../unschedule= look like two
+calls to one operation each. They are not. The BFF refuses the caller before
+it writes anything, using a copy of a permission rule it keeps in its own
+contracts; and scheduling with an expression writes the definition first, then
+asks the operation to make the job, then puts the old expression back if the
+operation did not take. This note states what that costs and what each part of
+it should own.
+
+* What the BFF does today
+
+** The refusal
+
+=requireDefinitionPermission= reads the caller's own access
+(=readMyAccess=), flattens every role's permission codes, and tests the code
+against =permissionCovers=, which is stated in =@ores/contracts=:
+
+|=grant= | caps =required= |
+|--------+-------------------|
+| the exact code | yes |
+| =<component>::*= | yes, for any code of that component |
+| =*= | yes, unless the component is the installation's |
+
+So the gateway, and not the reporting service, decides whether the caller may
+schedule. The service checks its own permission again on the operation, and the
+BFF's check exists so the person hears the refusal in the permission's words
+before anything is written.
+
+** The write, and the restore
+
+A body that states an expression names one definition, and the route:
+
+1. reads the definition, and refuses it outright when its party is not the one
+   the session acts in;
+2. writes the new expression through =report_definitions.put=, at the version
+   it just read, so a definition somebody else changed is a conflict;
+3. calls =schedule_report_definitions= with the ids;
+4. if the call threw, or it changed nothing, or it refused the definition, puts
+   the previous expression back, best effort.
+
+Step 4 is a compensating write. It cannot be atomic with step 3: the operation
+may have made some jobs and refused others, and the restore only ever reverts
+the definition whose expression the route itself changed.
+
+* Where the cost lands
+
+- **A rule stated twice.** =permissionCovers= exists in the web contracts and
+  nowhere in C++. Porting the routes means stating the rule again in the
+  gateway, which makes three copies once the shell keeps its own (it has one).
+  A rule about permissions that three layers each restate is a rule that will
+  drift.
+- **A round trip per refusal.** The preamble costs one extra read
+  (=get_my_access=) on every scheduled call, whether or not the caller is
+  allowed, and the answer it produces is the same refusal the service would
+  give.
+- **A compensating write in the gateway.** The restore is the service's own
+  invariant wearing the gateway's clothes: "a schedule expression that no job
+  honours must not stand" is a statement about the reporting service's data,
+  and it is the service that knows whether the job was made.
+
+* Options
+
+** A. Port it as it stands
+
+The gateway states =permissionCovers= a third time, reads the access, writes the
+definition, calls the operation and restores on failure.
+
+- Pro: faithful, one unit of work, no service changes.
+- Con: the rule is stated three times; the compensating write lives in the
+  wrong layer; two writes and up to four reads per schedule change.
+
+** B. One operation, and the rule where it already lives
+
+=schedule_report_definitions= learns to take the expression for the one
+definition it names, and to write it inside the operation's own transaction:
+the expression is set and the job made together, or neither is.
+
+- Pro: no compensating write anywhere; the refusal is the service's, in the
+  service's words; one call from the gateway; the rule is not restated.
+- Con: a service change, and the operation's message grows a field. The
+  gateway still pre-checks nothing, so a screen hears the refusal one call
+  later than it does today -- which is the same call it already makes.
+
+** C. A shared permission predicate, and B for the write
+
+=permissionCovers= becomes one predicate in =ores.security=, used by every C++
+surface, with the web contracts mirroring it as they mirror the wire
+timestamp.
+
+- Pro: one home for a rule that three layers need; the gateway can pre-check
+  cheaply because the check is a library call and the access read is one it can
+  cache with the session.
+- Con: a cross-cutting change of its own, and the pre-check is still a second
+  statement of a rule the service applies.
+
+* Recommendation
+
+**B for the write, and C only if another C++ surface needs the predicate.** B
+removes the compensating write and the extra reads, and it puts "expression and
+job together" with the service that owns both. The pre-check is the one part of
+the BFF's behaviour worth losing: it duplicates a decision the service makes,
+and its only benefit is which sentence the person reads.
+
+Two questions this task cannot answer on its own:
+
+1. Does =schedule_report_definitions= take the expression, or does a separate
+   operation pair the two? The first is one call and one transaction; the second
+   keeps the operation's message as it is and states the pairing in the service.
+2. Does the gateway ever pre-check permissions? Today several routes do not and
+   let the service refuse; if this task adds one, it should say why it is
+   different rather than quietly becoming the pattern.
+
+* What this means for the task
+
+The two routes can be served as they stand (A) and the scheduler screens will
+work, at the cost above. They should not be served that way if B is going to
+happen soon, because A's compensating write would then be deleted. The task
+records this family as waiting on the decision, as it does for a run's files.

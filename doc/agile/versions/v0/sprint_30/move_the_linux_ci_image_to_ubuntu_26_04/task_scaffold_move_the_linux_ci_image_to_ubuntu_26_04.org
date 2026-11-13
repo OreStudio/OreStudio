@@ -8,7 +8,7 @@
 #+filetags: :move_the_linux_ci_image_to_ubuntu_26_04:sprint_30:v0:
 #+owner: marco
 #+branch: feature/move-the-linux-ci-image-to-ubuntu-26-04
-#+pr: 4669
+#+pr: 4671
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -27,11 +27,11 @@ image to Ubuntu 26.04.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7A5A1EDD-5C79-4EDF-AA10-B7917C9327AD][Move the Linux CI image to Ubuntu 26.04]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -75,6 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4671][#4671]] | [agile] Close the Ubuntu 26.04 scaffold task |
 | [[https://github.com/OreStudio/OreStudio/pull/4669][#4669]] | [build] Take the CI image's tools from Ubuntu 26.04 |
 
 * Review
@@ -84,3 +85,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its implementing task and the sprint row are written and link to
+each other. The same branch carries them and the image change.

@@ -42,7 +42,7 @@ warnings.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:7664866A-A08E-401A-BB05-A9AF688CC4C4][Scaffold story: Move the Linux CI image to Ubuntu 26.04]] | STARTED | 2026-11-13 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:7664866A-A08E-401A-BB05-A9AF688CC4C4][Scaffold story: Move the Linux CI image to Ubuntu 26.04]] | DONE | 2026-11-13 | 2026-11-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:81814E65-A2AF-4C32-BB89-07E5C3E5DF7C][Implement Move the Linux CI image to Ubuntu 26.04]] | STARTED | 2026-11-13 | | The image rewrite.
 
 * Decisions

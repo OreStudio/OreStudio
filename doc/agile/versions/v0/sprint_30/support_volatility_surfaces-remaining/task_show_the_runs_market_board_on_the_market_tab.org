@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 28B21DE8-6352-4121-95CE-0473144061D1
+:END:
+#+title: Task: Show the run's market board on the Market tab
+#+description: The run shares its latent curves and spots through a market board that nothing shows. A read answers with every member, its values and when it was last published, and a seventh view on the synthetic Market tab draws them beside the arrivals dashboard, in three languages, after a prototype is signed off.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
++#+pr:
++#+blocked_on: DDF8585F-75EE-4190-B20B-8A913DC1F883
++#+blocked_since: 2026-11-13
++#+created: 2026-11-13
++#+updated: 2026-11-13
++#+environment: bright_faraday
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person can see what the run's market holds while it runs. For each currency the board carries, its spot date and its dated discount factors; for each pair, its spot, and when each was last published. That curve is the one every synthetic quote is priced off and every surface is struck against, and no screen shows it -- by design it is not published market data, so the board is the only place it exists.
+
+The board is [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][built in its own task]]; the design it serves is [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]]: there is nothing to read until the board exists and its feeds publish to it. |
+| Next         | The prototype, once the board exists.  |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+Stage 1, the prototype:
+
+- A throwaway page under =doc/prototypes/market_data/= draws the board's members from fixtures: a curve per currency and a spot per pair, with an age beside each, needing no build step, no server and no database.
+- It answers where the view belongs: a seventh view on the existing Market tab beside =arrivals=, or a card inside =arrivals=.
+- It answers what a person actually reads: the whole discount curve, or the few forwards a surface needs, or both.
+- It answers whether a stopped feed reads as stale, and whether the person can tell that from a quiet market at a glance.
+- The owner signs it off before any code is written.
+
+Stage 2, the read:
+
+- A read answers with every member the run's board holds: for a currency, its spot date, its dated discount factors and when it was last published; for a pair, its level and when it was last published. Each member names its kind and its code, so a screen needs no format string.
+- A member the run never published is absent from the answer, not a zero and not an empty curve.
+- A run whose board is empty answers with an empty list rather than an error, as the market regime read does.
+- The read is taken on the scheduler's loop thread, like the regime's, and copies what it answers so no reader walks the board while a feed writes it.
+
+Stage 3, the view:
+
+- The view draws what the prototype settled, in the three shipped languages, with the keys generated rather than hand-written and following the tab's own pattern: a title and a question, =marketdata.market.views.<name>=.
+- Nothing here publishes a curve as market data. The read is a view of the run, not a record of the market.
+
+* Plan
+
+Two subjects: the prototype, which settles what to draw, and the read, which is the
+tab's shape applied to a second subject.
+
+The tab already answers one question per view -- =now= what is it doing, =arrivals=
+how the ticks come, =feeds= each feed, its law and its ticks, =fit= does each feed
+follow its law, =trace= what the loop did. The board's question is *what the run
+holds*, and it belongs beside =arrivals= because the two are the same seam read
+twice: arrivals is the run's noise, the board is the run's values. The prototype
+decides between a seventh view and a card inside =arrivals= rather than assuming
+either, because =arrivals= is already the densest view on the tab.
+
+The read is a codegen operation model of its own rather than more fields on
+=get_market_regime=: the regime answers the arrival factor with its trace and its
+history, the board answers a table of curves read at a different rate, and folding
+them together would make every regime read carry the board.
+
+Two things the prototype must settle before the read is shaped, because they decide
+the message:
+
+- *What a member is to a reader.* A curve is dates and discount factors; a spot is
+  one number with a pair. If the person only reads the forwards a surface is struck
+  against, the read wants those derived per expiry, not a curve per currency, and
+  that is a different answer to write.
+- *Whether age is per member or per entry.* A curve is republished whole on each of
+  its ticks, so one timestamp serves it; a spot is a single value. Both are one
+  number per member, but the prototype shows whether a person needs more.
+
+Out of scope, and named so a later task can take it: the forward each surface expiry
+was struck against. The feed builds those markets per tick and could keep the last
+set for a screen, but that is the surface's view of the board, not the board.
+
+* Stages
+
+| # | Stage | What lands | How it is proven |
+|---|-------+------------+------------------|
+| 1 | The prototype | a throwaway page under =doc/prototypes/market_data/=, from fixtures | the owner's sign-off, recorded here, before any code |
+| 2 | The read | the operation model, the handler and the route | a test for the empty board, a member absent rather than zero, and the age carried through |
+| 3 | The view | the seventh view or the card, i18n keys generated, three languages | the screen tests the tab's other views have, and a harness run |
+
+* Notes
+
+Why a prototype at all, for a table of numbers: the question is not how to draw a
+curve, it is what a person is looking for when they open it. The run has four
+observability views already and they were each settled by a prototype; a fifth place
+to look that nobody asked for is worse than no place. The prototype is where that is
+found out, cheaply, in one file with no build step.
+
+The age is the one thing the prototype must not drop. The board is written on ticks,
+so a member that has not moved is either a quiet market or a stopped feed, and only
+the time it was last published tells them apart. That is the first question a person
+asks of a figure that looks wrong.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4681][#4681]] | [agile] Give the market board a screen task with a prototype first |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -17,10 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-import type { CalibratedFeed } from '../../api/client.js';
+import type { CalibratedFeed, IrCurveCoverageRow } from '../../api/client.js';
 
-/** The asset classes whose feeds calibrate from fixings today. */
-export const CALIBRATED_CLASSES = ['fx'] as const;
+/** The asset classes whose calibration the screen draws today. */
+export const CALIBRATED_CLASSES = ['fx', 'interest_rates'] as const;
+
+/** The class whose calibration is a coverage of published curves, not a list of feeds. */
+export const IR_CALIBRATED_CLASS = 'interest_rates';
+
+/** How one currency's IR curve stands: published, or the first gap that stops it being covered. */
+export interface IrCoverageState {
+    /** Green for a published curve, amber for a gap that needs attention. */
+    readonly tone: 'up' | 'warn';
+    /** The word the state speaks: published, or the gap's code. */
+    readonly word: string;
+}
+
+/** A row is covered when its gap is empty; any stated gap is the word the row shows. */
+export function irCoverageState(row: Pick<IrCurveCoverageRow, 'gap'>): IrCoverageState {
+    return row.gap === '' ? { tone: 'up', word: 'published' } : { tone: 'warn', word: row.gap };
+}
 
 /** How a feed resolved: from a fixing, on its fixed level, or refused by the policy. */
 export type FeedOutcome = 'fixing' | 'fixed' | 'refused';

@@ -659,6 +659,98 @@ describe('synthetic calibration', () => {
         expect(calls.map((c) => c.subject)).toEqual(['synthetic.v1.ops.calibrate_feeds']);
     });
 
+    it('adds the IR coverage rows to the interest rates class', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.calibrate_feeds': {
+                success: true,
+                policy: { from_policy_row: false, window_days: 90 },
+                feeds: [
+                    {
+                        config_id: ID,
+                        source_name: 'synthetic.bloomberg.usdsofr',
+                        start: { from_fixing: true, provider_code: 'bloomberg', note: '' },
+                    },
+                ],
+            },
+            'synthetic.v1.ir_curve_generation_configs.list': {
+                result: ok,
+                ir_curve_generation_configs: [
+                    {
+                        id: ID,
+                        currency_code: 'USD',
+                        source_name: 'synthetic.bloomberg.usdsofr',
+                        price_source: 'fixing',
+                        enabled: true,
+                    },
+                ],
+            },
+            'refdata.v1.ir_curve_bootstrap_configs.list': {
+                result: ok,
+                bootstrap_configs: [
+                    {
+                        id: OTHER,
+                        currency_code: 'USD',
+                        name: 'USD-SOFR',
+                        output_series_id: COLLECTION,
+                    },
+                ],
+            },
+            'marketdata.v1.ops.get_published_curve_sets': {
+                success: true,
+                message: '',
+                sets: [{ as_of: '2026-01-01 00:00:00Z', state_code: 'published' }],
+                published_count: 1,
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/calibration/interest_rates',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(response.json().ir_curves).toEqual([
+            {
+                currency_code: 'USD',
+                config_id: ID,
+                source_name: 'synthetic.bloomberg.usdsofr',
+                provider_code: 'bloomberg',
+                window_days: 90,
+                bootstrap_config_id: OTHER,
+                bootstrap_config_name: 'USD-SOFR',
+                published_as_of: '2026-01-01 00:00:00Z',
+                published_state: 'published',
+                gap: 'stale_publish',
+                gap_reason: 'The latest curve was published more than 30 minutes ago.',
+            },
+        ]);
+        expect(calls.map((c) => c.subject)).toEqual([
+            'synthetic.v1.ops.calibrate_feeds',
+            'synthetic.v1.ir_curve_generation_configs.list',
+            'refdata.v1.ir_curve_bootstrap_configs.list',
+            'marketdata.v1.ops.get_published_curve_sets',
+        ]);
+        expect(calls.at(-1)?.body).toEqual({
+            series_id: COLLECTION,
+            limit: 1,
+            include_candidates: false,
+        });
+    });
+
+    it('leaves the fx answer without IR coverage, and reads no IR config', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.ops.calibrate_feeds': {
+                success: true,
+                policy: { from_policy_row: false, window_days: 90 },
+                feeds: [],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/synthetic/calibration/fx');
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).not.toHaveProperty('ir_curves');
+        expect(calls.map((c) => c.subject)).toEqual(['synthetic.v1.ops.calibrate_feeds']);
+    });
+
     it('resolves only the feed a read names', async () => {
         const defaults = {
             from_policy_row: false,

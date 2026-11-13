@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: FB59FE7A-B0D1-4DF7-AFB1-07F426D0C9D9
+:END:
+#+title: Inspect a curve's pillars and conventions
+#+description: A row of the IR coverage screen should open one curve: its pillars, conventions, published as-of, and the day's movement. Gemini prototyped the dialog; it needs a server contract before it is built.
+#+type: capture
+#+level: cross
+#+filetags: :capture:ir:curves:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A dialog that opens one curve from its coverage row: the conventions it was
+built on (index, day count, interpolation, tenor convention), one row per
+pillar with its start and end tenor, instrument role, the series it reads,
+its discount factor and the rate it implies, and the as-of of the publish it
+came from, with the movement since the previous publish. The dialog is the
+drill-in of the coverage row, not a second place to look.
+
+Gemini produced a prototype at =~/Downloads/aud_aonia_curve_dialog_prototype.html=
+on 2026-11-13. Read it as a design sketch, not as a contract.
+
+* Why
+
+The coverage screen answers "is this currency covered". The next question is
+"what does its curve say", and today that means the curves topic's tables and
+a SQL read. A person wants the pillars and the conventions in one place, next
+to the coverage row they were already reading.
+
+The prototype's strengths are its density, the table-and-chart hover sync, and
+the strip that states the conventions. Its weaknesses are that it is mocked: one
+currency and index (AUD-AONIA), one as-of, seven fixed pillars, a fabricated par
+rate and bid/ask spread, fixed chart axes, and a LIVE/STALE label with no
+source. It also invents a "Continuous" compounding field the store does not
+hold, and a per-row age that is one constant. None of that survives contact
+with the API.
+
+Before it is built, the server contract must state: the config and its version,
+the output series and its latest publish (id, as-of, superseded-by), the pillar
+set with each pillar's input series and role, and the previous publish the
+movement is measured against. The inspector adds no new computation: the zero
+rate and the forward are the pricer's, and the UI reads them or states that it
+cannot.
+
+* References
+
+- The prototype: =~/Downloads/aud_aonia_curve_dialog_prototype.html= (2026-11-13).
+- [[id:7FC9444F-77FA-44E2-A288-A8ED85A48DA7][Show the IR coverage of each currency]]: the screen this dialog opens from.
+- =doc/knowledge/ui/feed_screen_standard.org= and =doc/knowledge/ui/ux_language.org=: the shape and colour rules.
+- =doc/knowledge/architecture/bootstrapping_a_curve_from_quotes_to_a_published_set.org=: what the store holds about a curve.
+
+* See also
+
+- The coverage screen this dialog opens from; the prototype's full analysis is in References.

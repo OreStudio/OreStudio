@@ -112,15 +112,6 @@ inline constexpr std::string_view no_responders_code = "services_unavailable";
 inline constexpr std::string_view request_timeout_code = "request_timeout";
 
 /**
- * @brief What ores.nats states when a request ran its deadline out.
- *
- * The transport raises it as a plain runtime error and gives it no kind of its
- * own, so these words are all that tells it from a fault this service cannot
- * name.
- */
-inline constexpr std::string_view request_timeout_message = "NATS request timed out";
-
-/**
  * @brief The code for a fault of this service or of its transport.
  */
 std::string internal_error_code() {
@@ -142,17 +133,18 @@ call(ores::nats::service::nats_client& nats, const Request& request) {
             return std::unexpected(call_failure{.outcome = outcome::unavailable,
                                                 .code = std::string(no_responders_code),
                                                 .message = e.what()});
-        return std::unexpected(call_failure{
-            .outcome = outcome::failed, .code = internal_error_code(), .message = e.what()});
-    } catch (const std::exception& e) {
-        // Someone is there and is slow, or the transport broke in a way it does
-        // not name. Only the first is a dependency the caller may retry.
-        if (std::string_view(e.what()) == request_timeout_message)
+        // Someone is there and is slow. That is a dependency the caller may
+        // retry, unlike a fault this service cannot name.
+        if (e.kind() == ores::nats::service::nats_error_kind::request_timeout)
             return std::unexpected(call_failure{.outcome = outcome::unavailable,
                                                 .code = std::string(request_timeout_code),
                                                 .message = subject +
                                                            " did not answer within the request "
                                                            "deadline."});
+        return std::unexpected(call_failure{
+            .outcome = outcome::failed, .code = internal_error_code(), .message = e.what()});
+    } catch (const std::exception& e) {
+        // The transport broke in a way it does not name.
         return std::unexpected(
             call_failure{.outcome = outcome::failed,
                          .code = internal_error_code(),

@@ -858,6 +858,24 @@ const calibratedFeedSchema = z.object({
 
 export type CalibratedFeed = z.infer<typeof calibratedFeedSchema>;
 
+/** One currency's IR curve: its source, its config, its latest publish and the gap that stops it. */
+const irCurveCoverageRowSchema = z.object({
+    currency_code: z.string(),
+    config_id: z.string(),
+    source_name: z.string(),
+    price_source: z.string(),
+    provider_code: z.string(),
+    window_days: z.int(),
+    bootstrap_config_id: z.string(),
+    bootstrap_config_name: z.string(),
+    published_as_of: z.string(),
+    published_state: z.string(),
+    gap: z.string(),
+    gap_reason: z.string(),
+});
+
+export type IrCurveCoverageRow = z.infer<typeof irCurveCoverageRowSchema>;
+
 /** A class's calibration: the policy, or the defaults, and every feed's resolution. */
 const calibrationSchema = z.object({
     assetClass: z.string(),
@@ -885,6 +903,8 @@ const calibrationSchema = z.object({
         refused: z.int(),
         overridden: z.int(),
     }),
+    /** The class's IR curves; the BFF states them only for interest_rates. */
+    ir_curves: z.array(irCurveCoverageRowSchema).default([]),
 });
 
 export type Calibration = z.infer<typeof calibrationSchema>;

@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: CFFA13BE-A386-4E72-B06C-60976FA34DF3
+:ID: 8AE97627-EB03-45F4-87F2-5384FF510DE6
 :END:
-#+title: Task: Read the pair's curves and show the run's market
-#+description: The two acceptance items the latent market task re-homes: resolve the spot and discount curves a synthetic surface is quoted against, so its strikes are solved against the forward rather than a unit spot with no rates; and read the run's market -- its factors, each series' loadings and each driver's value now -- onto the Market regime tab, which is the last unmet line of the latent market's acceptance.
+#+title: Task: Read the run's market on the Market regime tab
+#+description: The last unmet line of the latent market's acceptance: the market regime read answers with the run's factors, each series' loadings and each driver's value, and the tab draws them in three languages, showing an undriven series as undriven rather than as zero.
 #+type: task
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The run's latent market can be seen while it runs. A person reads which factors exist, how each series loads on them, and what each driver's value is now, beside the arrival factor the Market regime tab already shows.
+
+This is the last unmet line of [[id:9331995E-79ED-40B3-923D-524975949FB5][Build the latent market of shared Brownian factors]]: the factors and loadings are set from the shell and drive the feeds, but nothing shows them.
 
 * Status
 
@@ -30,12 +32,16 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Begin with the operation model, then the handler and the tab. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
 
--
+- The market regime read answers with the run's factors, each series' loadings, and each series' driver value at the time of the read.
+- A series the run does not drive reads as undriven, not as a zero.
+- A run with no block answers with empty lists rather than an error.
+- The Market regime tab draws the factors, the loadings and the driver values, in the three shipped languages.
+- The read is taken on the scheduler's own thread, like the regime's other reads.
 
 * Plan
 

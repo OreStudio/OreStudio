@@ -304,6 +304,37 @@ TEST_CASE("a surface's quotes do not depend on the level of its spot", "[fx_vol_
     }
 }
 
+TEST_CASE("a surface's quotes do not depend on the level of its spot once its discounts differ",
+          "[fx_vol_surface_emitter]") {
+    // The scale argument does not need the two discounts to be equal: the foreign discount is
+    // outside the delta solve and the forward scales with the spot, so every strike scales with
+    // it and the volatilities read at them do not move. This is what lets a feed quote against
+    // the pair's two discount factors without first knowing its spot.
+    const auto start = emitter_start();
+    const fx_market at_one{.spot = 1.0, .domestic_discount = 0.9752, .foreign_discount = 0.9851};
+    const fx_market at_spot{
+        .spot = 1.0842, .domestic_discount = 0.9752, .foreign_discount = 0.9851};
+
+    auto one = make_emitter({emitter_clean()},
+                            emitter_markets_with(start, at_one),
+                            emitter_dynamics(start.expiries.size()));
+    auto other = make_emitter({emitter_clean()},
+                              emitter_markets_with(start, at_spot),
+                              emitter_dynamics(start.expiries.size()));
+    REQUIRE(one);
+    REQUIRE(other);
+
+    std::vector<double> drivers(start.expiries.size() + 2, 0.0);
+    const auto a = one->step(drivers);
+    const auto b = other->step(drivers);
+    REQUIRE(a.size() == b.size());
+    for (std::size_t i = 0; i < a.size(); ++i) {
+        REQUIRE(a[i].value);
+        REQUIRE(b[i].value);
+        CHECK(*b[i].value == Catch::Approx(*a[i].value).margin(1e-12));
+    }
+}
+
 TEST_CASE("a surface's quotes do depend on the ratio of its discounts",
           "[fx_vol_surface_emitter]") {
     // The forward is the spot times one discount over the other. While they differ the ATM a

@@ -42,7 +42,7 @@ std::size_t days_between(std::chrono::year_month_day a, std::chrono::year_month_
     return static_cast<std::size_t>((std::chrono::sys_days(b) - std::chrono::sys_days(a)).count());
 }
 
-double year_fraction(std::chrono::year_month_day a, std::chrono::year_month_day b) {
+double years_between(std::chrono::year_month_day a, std::chrono::year_month_day b) {
     return static_cast<double>(days_between(a, b)) / 365.0;
 }
 
@@ -92,7 +92,7 @@ build_swap_schedule(const ir_curve_refdata_context& ctx,
 
     if (freq.period_unit == "NONE" || !freq.period_multiplier || *freq.period_multiplier <= 0) {
         // "Once" (or a malformed row): a single bullet payment at maturity.
-        steps.push_back({days_between(ctx.horizon, maturity), year_fraction(ctx.spot, maturity)});
+        steps.push_back({days_between(ctx.horizon, maturity), years_between(ctx.spot, maturity)});
         return steps;
     }
 
@@ -111,10 +111,10 @@ build_swap_schedule(const ir_curve_refdata_context& ctx,
             resolve_end_date(step_tenor, ctx.convention, step_resolution, ctx.horizon, ctx.spot);
         if (date >= maturity) {
             steps.push_back(
-                {days_between(ctx.horizon, maturity), year_fraction(previous, maturity)});
+                {days_between(ctx.horizon, maturity), years_between(previous, maturity)});
             break;
         }
-        steps.push_back({days_between(ctx.horizon, date), year_fraction(previous, date)});
+        steps.push_back({days_between(ctx.horizon, date), years_between(previous, date)});
         previous = date;
         ++multiple;
     }
@@ -157,7 +157,7 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
         re.curve_role = ic_it->second.curve_role;
         re.ticks_ahead_start = days_between(ctx.horizon, start_date);
         re.ticks_ahead_end = days_between(ctx.horizon, end_date);
-        re.year_fraction = year_fraction(start_date, end_date);
+        re.year_fraction = years_between(start_date, end_date);
 
         if (re.curve_role == "SWAP") {
             auto pf_it = ctx.payment_frequencies_by_code.find(fixed_leg_payment_frequency_code);

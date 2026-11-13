@@ -39,49 +39,6 @@ using ores::marketdata::service::app::curve_publish_kind_code;
 using ores::marketdata::service::tests::curve_fixture;
 using ores::marketdata::service::tests::seed_person;
 
-/**
- * @brief The seeded curve publish kind, approving every raise for one test.
- *
- * A kind states through its =auto_approval_code= which raises close without a
- * person. The row is put back as it was read when the test ends, even when the
- * test fails, because the suites that read the kind expect the seeded value.
- */
-class zero_approval_curve_kind {
-public:
-    explicit zero_approval_curve_kind(ores::testing::scoped_database_helper& h)
-        : ctx_(h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user())) {
-        approval_lifecycle lifecycle(ctx_);
-        const auto found = lifecycle.kind(std::string(curve_publish_kind_code));
-        if (!found)
-            throw std::runtime_error("The curve publish kind is not seeded.");
-        was_ = *found;
-        auto zeroed = *found;
-        zeroed.auto_approval_code = "every_request";
-        zeroed.change_reason_code = "system.test";
-        zeroed.change_commentary = "Every raise approved, for the curve sweep test";
-        ores::inbox::repository::approval_kind_repository repo;
-        repo.write(ctx_, zeroed);
-    }
-
-    ~zero_approval_curve_kind() {
-        try {
-            ores::inbox::repository::approval_kind_repository repo;
-            was_.change_reason_code = "system.test";
-            was_.change_commentary = "Restored after the curve sweep test";
-            repo.write(ctx_, was_);
-        } catch (...) {
-            // The seeded count is what the suite came for; a failure here must
-            // not fail a test that has already asserted it.
-        }
-    }
-
-    zero_approval_curve_kind(const zero_approval_curve_kind&) = delete;
-    zero_approval_curve_kind& operator=(const zero_approval_curve_kind&) = delete;
-
-private:
-    ores::database::context ctx_;
-    ores::inbox::domain::approval_kind was_;
-};
 
 }
 
@@ -90,7 +47,7 @@ using namespace ores::marketdata::messaging;
 TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build",
           curve_republish_tags) {
     curve_fixture f;
-    zero_approval_curve_kind zeroed(f.h);
+    zero_approval_kind zeroed(f.h);
     const auto maker = seed_person(f.h);
     // A second config with no pillars: its bootstrap cannot run, so the sweep
     // must name it and leave the first curve's publish in place.
@@ -123,7 +80,7 @@ TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build",
 
 TEST_CASE("each_firing_supersedes_the_publish_the_one_before_it_made", curve_republish_tags) {
     curve_fixture f;
-    zero_approval_curve_kind zeroed(f.h);
+    zero_approval_kind zeroed(f.h);
     const auto maker = seed_person(f.h);
     const auto ctx =
         f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);

@@ -399,6 +399,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/login_info_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/ores.iam.service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/permission_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/request_retry.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/role_grant_applier.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/role_grant_request_role_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.core/service/role_grant_request_service.hpp"

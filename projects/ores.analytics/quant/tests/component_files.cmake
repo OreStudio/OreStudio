@@ -38,6 +38,7 @@ set(files
     "forward_rate_calculator_tests.cpp"
     "fx_delta_tests.cpp"
     "fx_forward_calculator_tests.cpp"
+    "fx_pair_market_tests.cpp"
     "fx_smile_quotes_tests.cpp"
     "fx_vol_derivation_tests.cpp"
     "fx_vol_surface_block_tests.cpp"

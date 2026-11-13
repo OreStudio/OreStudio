@@ -205,6 +205,16 @@ PAIRS = {
     ("GET", "/api/blotter"): ("GET", "/api/blotter"),
     ("GET", "/api/books/tree"): ("GET", "/api/books/tree"),
     ("GET", "/api/marketdata/adapters"): ("GET", "/api/marketdata/adapters"),
+    ("GET", "/api/marketdata/subscriptions"): ("GET", "/api/marketdata/subscriptions"),
+    ("POST", "/api/marketdata/subscriptions"): ("POST", "/api/marketdata/subscriptions"),
+    ("DELETE", "/api/marketdata/subscriptions/:provider"): (
+        "DELETE",
+        "/api/marketdata/subscriptions/{provider}"),
+    ("GET", "/api/marketdata/routes"): ("GET", "/api/marketdata/routes"),
+    ("POST", "/api/marketdata/routes"): ("POST", "/api/marketdata/routes"),
+    ("DELETE", "/api/marketdata/routes/:publisher"): (
+        "DELETE",
+        "/api/marketdata/routes/{publisher}"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

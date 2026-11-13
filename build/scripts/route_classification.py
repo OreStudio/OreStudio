@@ -99,6 +99,13 @@ RULES = (
          CPP, RESOURCE, "market-data",
          "Every adapter the market data service tracks, with what it serves, what it was asked to"
          " serve, and the kind of source its feed reads, joined from the feeds and the sessions."),
+    Rule("the market data subscriptions' route",
+         ("regex", r"^(GET|POST|DELETE) /api/marketdata/(subscriptions|routes)"
+                   r"(/\{(provider|publisher)\})?$"),
+         CPP, RESOURCE, "market-data",
+         "The subscriptions and routes screens at the address and in the shape the BFF answered:"
+         " every subscription and route the caller's party holds, the two creates that name a"
+         " provider or a feed, and the removals that name the version they read."),
     Rule("the blotter",
          ("exact", "GET /api/blotter"),
          CPP, COMPOSED, "trading",

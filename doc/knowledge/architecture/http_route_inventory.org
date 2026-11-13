@@ -72,7 +72,7 @@ an API publishes no area, so it is counted under =(none)=.
 | auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
 | grid | grid-app-versions, grid-downloads, grid-jobs, operations | 14 | composed view 3, resource 11 |
-| market-data | adapters, connectivity, curves, fixing-series, marketdata, public-rates, series, subscriptions | 32 | composed view 6, resource 26 |
+| market-data | adapters, connectivity, curves, fixing-series, marketdata, public-rates, series, subscriptions | 38 | composed view 6, resource 32 |
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 301 | composed view 2, resource 299 |
@@ -150,7 +150,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
 | grid | 14 | 0 | 14 |
-| market-data | 31 | 1 | 30 |
+| market-data | 31 | 7 | 24 |
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 25 | 5 |
@@ -160,7 +160,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 22 | 13 |
-| total | 324 | 178 | 146 |
+| total | 324 | 184 | 140 |
 
 * The pairing
 
@@ -271,12 +271,12 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/marketdata/public-rates/coverage= | none |
 | GET =/api/marketdata/public-rates/fixings= | none |
 | GET =/api/marketdata/public-rates/fixings.csv= | none |
-| GET =/api/marketdata/routes= | none |
-| POST =/api/marketdata/routes= | none |
-| DELETE =/api/marketdata/routes/:publisher= | none |
-| GET =/api/marketdata/subscriptions= | none |
-| POST =/api/marketdata/subscriptions= | none |
-| DELETE =/api/marketdata/subscriptions/:provider= | none |
+| GET =/api/marketdata/routes= | GET /api/marketdata/routes |
+| POST =/api/marketdata/routes= | POST /api/marketdata/routes |
+| DELETE =/api/marketdata/routes/:publisher= | DELETE /api/marketdata/routes/{publisher} |
+| GET =/api/marketdata/subscriptions= | GET /api/marketdata/subscriptions |
+| POST =/api/marketdata/subscriptions= | POST /api/marketdata/subscriptions |
+| DELETE =/api/marketdata/subscriptions/:provider= | DELETE /api/marketdata/subscriptions/{provider} |
 | GET =/api/me/access= | GET /api/me/access |
 | GET =/api/me/contact-information= | GET /api/me/contact-information |
 | PUT =/api/me/contact-information= | PUT /api/me/contact-information |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1268 routes: 324 answered by the BFF and 944 by ores.http.
+1274 routes: 324 answered by the BFF and 950 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -830,11 +830,17 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | market-data | get | =/api/marketdata/public-rates/fixings= | bff | projects/ores.web/packages/bff/src/public-rates.ts:330 | The fixings of up to a dozen series in one read, oldest first, by series. |
 | composed view | market-data | get | =/api/marketdata/public-rates/fixings.csv= | bff | projects/ores.web/packages/bff/src/public-rates.ts:360 | One publisher's fixings as a CSV file over a date range, the catalogue read to find the publisher's series and their fixings read after. |
 | resource | market-data | get | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:165 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | get | =/api/marketdata/routes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:241 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | post | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:257 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | post | =/api/marketdata/routes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:305 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | delete | =/api/marketdata/routes/:publisher= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:280 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | delete | =/api/marketdata/routes/{publisher}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:332 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | get | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:153 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | get | =/api/marketdata/subscriptions= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:229 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | post | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:207 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | post | =/api/marketdata/subscriptions= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:252 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | delete | =/api/marketdata/subscriptions/:provider= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:235 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | delete | =/api/marketdata/subscriptions/{provider}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:280 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | access | get | =/api/me/access= | bff | projects/ores.web/packages/bff/src/server.ts:1213 | The roles the signed-in person holds with who gave each and why, or one page of what those roles let them do, the documented alias for the principal. |
 | resource | access | get | =/api/me/access= | ores.http | projects/ores.http/iam/src/routes/iam/access_read_routes.cpp:213 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | access | get | =/api/me/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1666 | The signed-in person's own contact record, answered with nothing when there is none yet because the first write creates it. |

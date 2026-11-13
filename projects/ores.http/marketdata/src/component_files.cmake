@@ -22,6 +22,7 @@
 set(files
     "routes/marketdata/adapter_routes.cpp"
     "routes/marketdata/marketdata_routes.cpp"
+    "routes/marketdata/subscription_routes.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -29,4 +30,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.marketdata.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/adapter_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/marketdata_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/subscription_routes.hpp"
 )

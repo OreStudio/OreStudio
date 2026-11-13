@@ -1328,6 +1328,195 @@ The convention the year fractions were computed under, stated for the same reaso
 :cpp_type: std::vector<rate_ladder_rung>
 :END:
 
+** montage_spot
+
+One provider's spot of one pair, with the instant it was taken and the
+server's verdict on it.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One provider's spot of one pair.
+ *
+ * A provider that does not quote the pair has no entry, rather than a zero.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** value
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** age_seconds
+:PROPERTIES:
+:cpp_type: std::int64_t
+:END:
+
+*** stale
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** fx_montage_pair
+
+One pair of the base, with every provider's spot and the move the server
+measured.
+
+#+begin_src cpp :name comment
+/**
+ * @brief One pair of the base: the providers' spots and the move.
+ *
+ * A pair whose base is on the quote side is included, because a montage is for
+ * the base and not for the pair's spelling. The change and the range are absent
+ * when the window holds no price at its start, rather than zero.
+ */
+#+end_src
+
+*** pair_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** base_currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** quote_currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** spot_by_provider
+:PROPERTIES:
+:cpp_type: std::vector<montage_spot>
+:END:
+
+*** consensus
+:PROPERTIES:
+:cpp_type: double
+:END:
+
+*** change_pct
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+*** day_high
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+*** day_low
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+** get_fx_montage_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_fx_montage
+:response: get_fx_montage_response
+:END:
+
+Reads one base currency's crosses at an as-of: the spot each provider quotes,
+the consensus, the change and the day's range, measured from an instant the
+server states.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads one base currency's crosses at an as-of.
+ *
+ * The instant the change and the range are measured from is the server's: a
+ * trading day starts when the session says it does, and a client must not
+ * decide what "today" means.
+ */
+#+end_src
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Optional; empty means the session's own party.
+
+*** base_currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** providers
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+Optional; empty means every provider that quotes a cross of the base.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+Empty means now, resolved server-side.
+
+** get_fx_montage_response
+
+The base's crosses, ordered by pair name, and the window their move covers.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The base's crosses, ordered by pair name.
+ *
+ * `change_since` is stated once for the whole answer, so every row's change is
+ * measured from the same instant.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** base_currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** change_since
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** pairs
+:PROPERTIES:
+:cpp_type: std::vector<fx_montage_pair>
+:END:
+
 ** crm_rate_item
 
 One CRM rate: direct or triangulated, indistinguishable to the caller -- see

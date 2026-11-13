@@ -582,6 +582,85 @@ struct get_rate_ladder_response {
                            const get_rate_ladder_response&) = default;
 };
 
+/**
+ * @brief One provider's spot of one pair.
+ *
+ * A provider that does not quote the pair has no entry, rather than a zero.
+ */
+struct montage_spot {
+    std::string provider_code;
+    double value{};
+    std::chrono::system_clock::time_point as_of;
+    std::int64_t age_seconds{};
+    bool stale = false;
+    std::string series_id;
+
+    friend bool operator==(const montage_spot&, const montage_spot&) = default;
+};
+
+/**
+ * @brief One pair of the base: the providers' spots and the move.
+ *
+ * A pair whose base is on the quote side is included, because a montage is for
+ * the base and not for the pair's spelling. The change and the range are absent
+ * when the window holds no price at its start, rather than zero.
+ */
+struct fx_montage_pair {
+    std::string pair_name;
+    std::string base_currency;
+    std::string quote_currency;
+    std::vector<montage_spot> spot_by_provider;
+    double consensus{};
+    std::optional<double> change_pct;
+    std::optional<double> day_high;
+    std::optional<double> day_low;
+
+    friend bool operator==(const fx_montage_pair&, const fx_montage_pair&) = default;
+};
+
+/**
+ * @brief Reads one base currency's crosses at an as-of.
+ *
+ * The instant the change and the range are measured from is the server's: a
+ * trading day starts when the session says it does, and a client must not
+ * decide what "today" means.
+ */
+struct get_fx_montage_request {
+    using response_type = struct get_fx_montage_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_fx_montage";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string party_id;
+    std::string base_currency;
+    std::vector<std::string> providers;
+    std::chrono::system_clock::time_point as_of;
+
+    friend bool operator==(const get_fx_montage_request&, const get_fx_montage_request&) = default;
+};
+
+/**
+ * @brief The base's crosses, ordered by pair name.
+ *
+ * `change_since` is stated once for the whole answer, so every row's change is
+ * measured from the same instant.
+ */
+struct get_fx_montage_response {
+    bool success = false;
+    std::string message;
+    std::string base_currency;
+    std::chrono::system_clock::time_point as_of;
+    std::chrono::system_clock::time_point change_since;
+    std::vector<fx_montage_pair> pairs;
+
+    friend bool operator==(const get_fx_montage_response&,
+                           const get_fx_montage_response&) = default;
+};
+
 struct crm_rate_item {
     std::string crm_name;
     std::string base_currency_code;
@@ -2265,6 +2344,82 @@ struct store_market_state_response {
 }
 
 /**
+ * @brief The members of montage_spot, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<montage_spot>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"provider_code", &montage_spot::provider_code},
+        ::ores::utility::codec::field{"value", &montage_spot::value},
+        ::ores::utility::codec::field{"as_of", &montage_spot::as_of},
+        ::ores::utility::codec::field{"age_seconds", &montage_spot::age_seconds},
+        ::ores::utility::codec::field{"stale", &montage_spot::stale},
+        ::ores::utility::codec::field{"series_id", &montage_spot::series_id},
+    };
+}
+
+/**
+ * @brief The members of fx_montage_pair, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_montage_pair>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"pair_name", &fx_montage_pair::pair_name},
+        ::ores::utility::codec::field{"base_currency", &fx_montage_pair::base_currency},
+        ::ores::utility::codec::field{"quote_currency", &fx_montage_pair::quote_currency},
+        ::ores::utility::codec::field{"spot_by_provider", &fx_montage_pair::spot_by_provider},
+        ::ores::utility::codec::field{"consensus", &fx_montage_pair::consensus},
+        ::ores::utility::codec::field{"change_pct", &fx_montage_pair::change_pct},
+        ::ores::utility::codec::field{"day_high", &fx_montage_pair::day_high},
+        ::ores::utility::codec::field{"day_low", &fx_montage_pair::day_low},
+    };
+}
+
+/**
+ * @brief The members of get_fx_montage_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_montage_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"party_id", &get_fx_montage_request::party_id},
+        ::ores::utility::codec::field{"base_currency", &get_fx_montage_request::base_currency},
+        ::ores::utility::codec::field{"providers", &get_fx_montage_request::providers},
+        ::ores::utility::codec::field{"as_of", &get_fx_montage_request::as_of},
+    };
+}
+
+/**
+ * @brief The members of get_fx_montage_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_montage_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &get_fx_montage_response::success},
+        ::ores::utility::codec::field{"message", &get_fx_montage_response::message},
+        ::ores::utility::codec::field{"base_currency", &get_fx_montage_response::base_currency},
+        ::ores::utility::codec::field{"as_of", &get_fx_montage_response::as_of},
+        ::ores::utility::codec::field{"change_since", &get_fx_montage_response::change_since},
+        ::ores::utility::codec::field{"pairs", &get_fx_montage_response::pairs},
+    };
+}
+
+/**
  * @brief The members of crm_rate_item, named as the wire names them and in the order
  * the type declares them.
  *
@@ -3393,6 +3548,46 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::get_rate_ladder_response& v);
     static ores::marketdata::messaging::get_rate_ladder_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::montage_spot> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::montage_spot& v);
+    static ores::marketdata::messaging::montage_spot read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::montage_spot& v);
+    static ores::marketdata::messaging::montage_spot read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::fx_montage_pair> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::fx_montage_pair& v);
+    static ores::marketdata::messaging::fx_montage_pair read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::fx_montage_pair& v);
+    static ores::marketdata::messaging::fx_montage_pair
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::get_fx_montage_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_fx_montage_request& v);
+    static ores::marketdata::messaging::get_fx_montage_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::get_fx_montage_request& v);
+    static ores::marketdata::messaging::get_fx_montage_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_fx_montage_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::get_fx_montage_response& v);
+    static ores::marketdata::messaging::get_fx_montage_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::get_fx_montage_response& v);
+    static ores::marketdata::messaging::get_fx_montage_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

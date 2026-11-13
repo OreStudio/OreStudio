@@ -62,6 +62,7 @@
 #include "ores.marketdata.service/messaging/provider_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/publish_due_curves_handler.hpp"
 #include "ores.marketdata.service/messaging/instrument_catalogue_handler.hpp"
+#include "ores.marketdata.service/messaging/fx_montage_handler.hpp"
 #include "ores.marketdata.service/messaging/rate_ladder_handler.hpp"
 #include "ores.marketdata.service/messaging/published_curves_handler.hpp"
 #include "ores.marketdata.service/messaging/rate_card_component_event_registrar.hpp"
@@ -426,6 +427,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                   queue,
                                   [&n, c, v](ores::nats::message msg) mutable {
                                       mm::rate_ladder_handler h(n, c, v);
+                                      h.read(std::move(msg));
+                                  }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::get_fx_montage_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::fx_montage_handler h(n, c, v);
                                       h.read(std::move(msg));
                                   }));
             return subs;

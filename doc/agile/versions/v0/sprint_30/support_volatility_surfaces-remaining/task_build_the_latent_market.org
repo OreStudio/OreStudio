@@ -124,7 +124,7 @@ derived =CORRELATION/RATE= quotes are later work, as the design note's
 |------+-------+--------|
 | 1. The keyed path | DONE 2026-11-12 | =0b29106307=, benchmark split in =52f21b5412= |
 | 2. The latent market | DONE 2026-11-12 | =1235e7d5d7= |
-| 3. The driven step | next | |
+| 3. The driven step | DONE 2026-11-12, five processes drivable | =5f127589f0=, =b31521e545= |
 | 4. The tick context carries the market | | |
 | 5. Configuration | | |
 | 6. The FX volatility surface | resumes the generator task | |
@@ -140,6 +140,18 @@ the shared part of a driver's increment, and the process adds its own draw
 weighted by the square root of one less the squared loadings. A series with no
 loadings is therefore still to be handed its drawn normal unscaled, which is the
 migration test.
+
+** Which processes can be driven
+
+A process is drivable only when its step is a function of one standard normal.
+Five are: Ornstein-Uhlenbeck, Hull-White, Black-Karasinski, single-factor
+Heath-Jarrow-Morton, and Vasicek through its inner process. Nine are not, and
+refuse by the interface's default: the affine and quadratic Gaussian processes
+and Libor market model draw one normal a factor, the two-factor Gaussian draws
+two, the Gaussian mixtures draw a component as well, Cox-Ingersoll-Ross draws a
+Poisson and a normal, and Black-Derman-Toy walks a lattice node. Widening any of
+them means widening the driven step to a vector of normals, which is a decision
+for the step that needs it, not a mechanical change.
 
 ** Open-source work to copy from
 

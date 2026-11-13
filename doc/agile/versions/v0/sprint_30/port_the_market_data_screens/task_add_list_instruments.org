@@ -30,9 +30,9 @@ scoped to the caller's party.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | The wire contract is generated, compiles and round-trips. The service answer is not written. |
+| Now          | The service answers the read, and the kind and naming rules are proven against the deployment's own URIs. The database path is not yet tested, and fixings are refused in words. |
 | Waiting on   | Nothing.                               |
-| Next         | Add the catalogue reader and register the handler. |
+| Next         | Prove the read against the test database with two providers on one identity, then give fixings their branch. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance

@@ -1,17 +1,56 @@
 :PROPERTIES:
 :ID: 5855FC22-1133-48A7-876B-C2A0F996A3B4
 :END:
-#+title: The calendar set is reloaded and rebuilt on every tenor resolution
+#+title: Story: Hold every calendar in memory and ask it in process
 #+description: load_calendar reads every materialised day of a calendar (about 9,900 rows, 2024 to 2050) and rebuilds the CSR holiday set on each resolve request; the arithmetic is already data-oriented and allocation-free, so the query is the bottleneck.
-#+type: capture
-#+level: cross
-#+filetags: :performance:refdata:calendars:data_path:
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
 #+created: 2026-11-13
 #+updated: 2026-11-13
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
-* What
+* Goal
+
+Every calendar the system holds is packed into one immutable object when the process starts, and every question about a business day is answered from it in memory. No request reads a calendar from the database, and no caller asks a service what a business day is.
+
+The arithmetic is already in that shape. The load is not: each tenor resolution selects a calendar's whole materialised window and rebuilds the set inside the call.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-13                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-11-13 in the product backlog; promoted preserving the UUID.
+
+** What
 
 The calendars should be loaded into the process once and asked in memory, and today
 they are not: every tenor resolution re-reads the calendar from the database and
@@ -29,7 +68,7 @@ calendar day -- about =9,900= rows, of which about =3,100= are closed. Then
 does the same in =fx_forward_ladder_plan.cpp=. So the cost of a resolution is a
 table scan and a rebuild, not a calculation.
 
-* Why
+** Why
 
 The size says it should be a cache, not a query. Packed, the whole thing is tiny:
 
@@ -37,10 +76,10 @@ The size says it should be a cache, not a query. Packed, the whole thing is tiny
 |------+------|
 | Closed days per calendar, as the set holds them (=year_month_day= each) | about 3,100 dates, about 12 KB |
 | The CSR index and weekend masks per calendar | tens of bytes |
-| Thirty calendars, all packed | about 370 KB |
+| Every calendar the platform holds -- 122 of them, 473,025 materialised rows in all | about 147,000 closed dates, about 0.6 MB packed |
 
-A few hundred kilobytes is not a cache with an eviction policy, it is data that
-belongs in one immutable object for the life of the process. The type is already
+Less than a megabyte is not a cache with an eviction policy, it is data that belongs
+in one immutable object for the life of the process. The type is already
 shaped for it -- =business_day_calendar_set= holds many calendars at once, with
 =calendar_count=, per-calendar CSR offsets and a =calendar_index= on every query,
 and =from_rows= takes every calendar's rows in one flat span. What is missing is a
@@ -49,8 +88,9 @@ loader that builds it once and a reader that keeps it.
 Two ways to build it, and the second is the better one:
 
 - *From the materialised table.* Read every live =calendar_dates= row for the
-  tenant, ordered by (calendar_code, date), about 300,000 rows for thirty
-  calendars, and pack them. One read at start-up, none after.
+  tenant, ordered by (calendar_code, date) -- 473,025 rows today, as
+  [[id:27439333-B0FF-40A0-80AE-D61026E0BEC1][Store only the closed days of a calendar]] measured -- and pack them. One read
+  at start-up, none after.
 - *From the rules.* The materialised table is itself a cache of
   =calendar_rule_engine::instantiate_holidays_batch= over =calendar_rule= and
   =calendar_exception= rows, which are a few dozen rows per calendar. Running that
@@ -93,7 +133,7 @@ Two smaller findings belong with the same work:
   it, and a loader that reads from the database should not be the thing that
   discovers the order.
 
-* References
+** References
 
 - =projects/ores.refdata/core/src/service/tenor_resolution_service.cpp=:
   =load_calendar= and =build_calendar_set=.
@@ -109,7 +149,21 @@ Two smaller findings belong with the same work:
   the window that decides how many rows there are, =k_default_start_offset_years =
   -2= and =k_default_end_horizon_year = 2050=, and the base-calendar chains.
 
-* See also
+Related captures already in the backlog, which this story meets rather than
+duplicates:
+
+- [[id:27439333-B0FF-40A0-80AE-D61026E0BEC1][Store only the closed days of a calendar]] -- the 473,025 rows are a
+  full bitemporal entity per day per calendar per tenant, of which only the closed
+  ones are ever read. Shrinking that table only helps a loader that keeps
+  reading it; holding the calendars in memory stops reading it at all.
+- [[id:C2B69FB1-77F1-4A3F-939D-25BFC5EF3773][Rebuild business days when their inputs change, and read them by date
+  range]] -- the invalidation and the window question this story has to answer
+  once somebody else owns the load.
+- [[id:79E4788A-BC24-47B0-B900-E833D3A98A9F][A freshly recreated database has no materialised calendar dates]] -- a
+  loader that runs at start-up must say what it does when the table is empty,
+  which is the state that capture records.
+
+** See also
 
 - [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]] -- the arc that found this,
   and that deliberately needs no calendar.

@@ -23,4 +23,5 @@ set(files
     "choice_routes_tests.cpp"
     "main.cpp"
     "report_routes_tests.cpp"
+    "run_routes_tests.cpp"
 )

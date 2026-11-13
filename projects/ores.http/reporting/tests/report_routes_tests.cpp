@@ -197,52 +197,40 @@ TEST_CASE("reports_refuse_a_write_they_do_not_read", "[report]") {
               R"("intent":{"reason_code":"system.update"}})") == http_status::bad_gateway);
 }
 
-TEST_CASE("reports_refuse_a_run_address_that_names_no_definition", "[report]") {
+TEST_CASE("reports_state_a_write_from_the_record_and_the_form", "[report]") {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing the run routes' addresses";
+    BOOST_LOG_SEV(lg, info) << "Testing the write the form makes";
 
-    const auto status =
-        [](http_method method, const std::string& address, const std::string& pattern) {
-            return answer_at<report_routes>(method, address, http_request{}, pattern).status;
-        };
-    CHECK(status(http_method::post,
-                 "/api/reporting/reports/not-an-id/run",
-                 "/api/reporting/reports/{id}/run") == http_status::bad_request);
-    CHECK(status(http_method::get,
-                 "/api/reporting/reports/not-an-id/runs",
-                 "/api/reporting/reports/{id}/runs") == http_status::bad_request);
-    CHECK(status(http_method::get,
-                 "/api/reporting/reports/" + std::string(report_id) + "/runs",
-                 "/api/reporting/reports/{id}/runs") == http_status::bad_gateway);
-}
+    auto definition = definition_of("Daily risk");
+    definition.description = "The old description.";
+    definition.cut_kind_code = "official";
+    definition.regulatory_book_type = "Banking";
+    definition.scheduler_job_id = boost::uuids::string_generator()(report_party);
 
-TEST_CASE("reports_refuse_a_run_started_by_a_token_that_names_no_tenant", "[report]") {
-    auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a run start without a tenant";
+    report_routes::edit_change change;
+    change.description = "A new description.";
+    change.report_type = "  risk  ";
+    change.concurrency_policy = "replace";
+    change.schedule_expression = "0 0 * * *";
+    change.is_official = true;
+    change.pre_processing = "";
+    change.prepared_input_key = "";
+    change.post_processing = "";
+    change.skipped_families = "";
 
-    http_request req;
-    req.authenticated_user.emplace();
+    const auto kept = report_routes::write_of(definition, change);
+    CHECK(kept.report_type == "risk");
+    CHECK(kept.name == "Daily risk");
+    CHECK(kept.description == "A new description.");
+    // The form does not show the cut, so the write keeps the record's.
+    CHECK(kept.cut_kind_code == std::optional<std::string>("official"));
+    // A book type the form leaves out keeps the record's.
+    CHECK(kept.regulatory_book_type == std::optional<std::string>("Banking"));
 
-    CHECK(answer_at<report_routes>(http_method::post,
-                                   "/api/reporting/reports/" + std::string(report_id) + "/run",
-                                   req,
-                                   "/api/reporting/reports/{id}/run")
-              .status == http_status::bad_request);
-}
+    change.regulatory_book_type = std::optional<std::string>();
+    CHECK(report_routes::write_of(definition, change).regulatory_book_type == std::nullopt);
 
-TEST_CASE("reports_refuse_a_run_page_for_an_address_that_is_no_id", "[report]") {
-    auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing a run's page and its problems";
-
-    const auto status = [](const std::string& address, const std::string& pattern) {
-        return answer_at<report_routes>(http_method::get, address, http_request{}, pattern).status;
-    };
-    CHECK(status("/api/reporting/runs/not-an-id", "/api/reporting/runs/{id}") ==
-          http_status::bad_request);
-    CHECK(status("/api/reporting/runs/not-an-id/errors", "/api/reporting/runs/{id}/errors") ==
-          http_status::bad_request);
-    CHECK(status("/api/reporting/runs/" + std::string(report_run), "/api/reporting/runs/{id}") ==
-          http_status::bad_gateway);
-    CHECK(status("/api/reporting/runs/" + std::string(report_run) + "/errors",
-                 "/api/reporting/runs/{id}/errors") == http_status::bad_gateway);
+    change.regulatory_book_type = std::optional<std::string>("Trading");
+    CHECK(report_routes::write_of(definition, change).regulatory_book_type ==
+          std::optional<std::string>("Trading"));
 }

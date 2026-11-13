@@ -24,12 +24,15 @@
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace ores::http::routes::reporting {
@@ -94,6 +97,32 @@ public:
               const std::optional<std::vector<count_row>>& counts,
               const std::optional<std::vector<fire_row>>& fires);
 
+    /// The fields the report edit form offers, and the only ones a save may change.
+    struct edit_change {
+        std::string description;
+        std::string report_type;
+        std::string concurrency_policy;
+        std::string schedule_expression;
+        bool is_official{};
+        std::optional<std::optional<std::string>> regulatory_book_type;
+        std::string pre_processing;
+        std::string prepared_input_key;
+        std::string post_processing;
+        std::string skipped_families;
+    };
+
+    /**
+     * @brief The write a form states over the record just read.
+     *
+     * The form offers ten fields and the record holds more, so only the offered
+     * fields are replaced: a save cannot blank a field the screen does not show.
+     * The book type reads three ways -- left out keeps the record's, null clears
+     * it, and a value states it.
+     */
+    static ores::reporting::messaging::report_definition_write
+    write_of(const ores::reporting::domain::report_definition& definition,
+             const edit_change& change);
+
     /**
      * @brief Register this unit's routes on the router and the registry.
      */
@@ -101,6 +130,24 @@ public:
                                 std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                 ores::nats::service::nats_client& session);
 };
+
+/**
+ * @brief The form's own shape, as the wire names it.
+ */
+[[nodiscard]] inline constexpr auto wire_fields(std::type_identity<report_routes::edit_change>) {
+    using ores::utility::codec::field;
+    return ores::utility::codec::field_list{
+        field{"description", &report_routes::edit_change::description},
+        field{"report_type", &report_routes::edit_change::report_type},
+        field{"concurrency_policy", &report_routes::edit_change::concurrency_policy},
+        field{"schedule_expression", &report_routes::edit_change::schedule_expression},
+        field{"is_official", &report_routes::edit_change::is_official},
+        field{"regulatory_book_type", &report_routes::edit_change::regulatory_book_type},
+        field{"pre_processing", &report_routes::edit_change::pre_processing},
+        field{"prepared_input_key", &report_routes::edit_change::prepared_input_key},
+        field{"post_processing", &report_routes::edit_change::post_processing},
+        field{"skipped_families", &report_routes::edit_change::skipped_families}};
+}
 
 }
 

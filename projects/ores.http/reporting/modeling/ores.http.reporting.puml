@@ -31,9 +31,14 @@ namespace ores #F2F2F2 {
                 }
                 class report_routes {
                     +rows_json(const vector<ores::reporting::domain::report_definition>& definitions, const optional<vector<party_name>>& parties, const optional<vector<run_row>>& runs, const vector<health_row>& health, const optional<vector<count_row>>& counts, const optional<vector<fire_row>>& fires)
+                    +write_of(const ores::reporting::domain::report_definition& definition, const edit_change& change) : ores::reporting::messaging::report_definition_write
                     +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
                 }
                 class reporting_routes {
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
+                class run_routes {
+                    +runs_json(vector<run_view> runs) : string
                     +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
                 }
             }
@@ -47,6 +52,8 @@ ores.http.api ..> ores.http.reporting : router, route builder, OpenAPI registry
 ores.nats ..> ores.http.reporting : transport
 ores.reporting.api ..> ores.http.reporting : protocol
 ores.refdata.api ..> ores.http.reporting : book types, tenors and instrument codes
+ores.iam.api ..> ores.http.reporting : the caller's own parties
+ores.compute.api ..> ores.http.reporting : the batch that ran a report
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.http.reporting.puml"

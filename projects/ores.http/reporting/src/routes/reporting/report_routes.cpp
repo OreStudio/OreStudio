@@ -18,13 +18,12 @@
  *
  */
 #include "ores.http/routes/reporting/report_routes.hpp"
-#include "ores.compute.api/messaging/batch_protocol.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.http/routes/reporting/report_health.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/messaging/configuration_protocol.hpp"
 #include "ores.reporting.api/messaging/configuration_type_protocol.hpp"
 #include "ores.reporting.api/messaging/report_configuration_protocol.hpp"
@@ -34,7 +33,6 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
-#include <boost/log/sources/record_ostream.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <algorithm>
 #include <array>
@@ -55,17 +53,8 @@ namespace forwarding = ores::http::forwarding;
 namespace iam_messaging = ores::iam::messaging;
 namespace reporting_domain = ores::reporting::domain;
 namespace reporting_messaging = ores::reporting::messaging;
-namespace compute_messaging = ores::compute::messaging;
 
-namespace {
-
-/// The trail a read leaves when its answer is deliberately absent.
-auto& lg() {
-    static auto instance = ores::logging::make_logger("ores.http.reporting.report_routes");
-    return instance;
-}
-
-}
+namespace {}
 
 using ores::http::domain::http_request;
 using ores::http::domain::http_response;
@@ -116,14 +105,6 @@ struct unread final {
     std::string message;
 };
 
-/// The health word a run's stated word is, or nothing when it is no word.
-std::optional<std::string> health_of(const std::string& stated) {
-    const auto found = std::ranges::find(health_words, stated);
-    if (found == health_words.end())
-        return std::nullopt;
-    return std::string(*found);
-}
-
 /// Whether a text states anything at all.
 bool has_text(const std::string& text) {
     return !text.empty();
@@ -158,7 +139,7 @@ health_of_row(const std::optional<std::vector<report_routes::run_row>>& runs,
         return runs ? std::optional<std::string>("never run") : std::nullopt;
     for (const auto& entry : health)
         if (entry.run_id == run->id)
-            return health_of(entry.health);
+            return report_health::word_of(entry.health);
     return std::nullopt;
 }
 
@@ -261,19 +242,7 @@ std::string row_json(const reporting_domain::report_definition& definition,
 }
 
 
-/// The fields the report edit form offers, and the only ones a save may change.
-struct edit_change {
-    std::string description;
-    std::string report_type;
-    std::string concurrency_policy;
-    std::string schedule_expression;
-    bool is_official{};
-    std::optional<std::optional<std::string>> regulatory_book_type;
-    std::string pre_processing;
-    std::string prepared_input_key;
-    std::string post_processing;
-    std::string skipped_families;
-};
+using edit_change = report_routes::edit_change;
 
 /// A write as the form states it: the version read, the fields and the reason.
 struct edit_body {
@@ -281,21 +250,6 @@ struct edit_body {
     edit_change change;
     rr::stated_intent intent;
 };
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<edit_change>) {
-    using ores::utility::codec::field;
-    return ores::utility::codec::field_list{
-        field{"description", &edit_change::description},
-        field{"report_type", &edit_change::report_type},
-        field{"concurrency_policy", &edit_change::concurrency_policy},
-        field{"schedule_expression", &edit_change::schedule_expression},
-        field{"is_official", &edit_change::is_official},
-        field{"regulatory_book_type", &edit_change::regulatory_book_type},
-        field{"pre_processing", &edit_change::pre_processing},
-        field{"prepared_input_key", &edit_change::prepared_input_key},
-        field{"post_processing", &edit_change::post_processing},
-        field{"skipped_families", &edit_change::skipped_families}};
-}
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<edit_body>) {
     using ores::utility::codec::field;
@@ -541,261 +495,6 @@ std::string detail_json(const composed& decorated,
 }
 
 
-/// The most runs of one report a page asks for.
-constexpr std::uint32_t runs_of_report_limit = 200;
-
-/// One run as the runs list draws it.
-struct run_view final {
-    boost::uuids::uuid id;
-    std::string name;
-    std::string state_name;
-    std::optional<std::string> health;
-    std::optional<std::chrono::system_clock::time_point> started_at;
-    std::optional<std::chrono::system_clock::time_point> completed_at;
-    std::optional<std::chrono::system_clock::time_point> priced_at;
-};
-
-/// The time from a run's start to its completion, or nothing until both are
-/// known and the completion does not precede the start.
-std::optional<std::int64_t>
-elapsed_ms(const std::optional<std::chrono::system_clock::time_point>& started,
-           const std::optional<std::chrono::system_clock::time_point>& completed) {
-    if (!started || !completed)
-        return std::nullopt;
-    const auto elapsed =
-        std::chrono::duration_cast<std::chrono::milliseconds>(*completed - *started);
-    if (elapsed.count() < 0)
-        return std::nullopt;
-    return elapsed.count();
-}
-
-/// One run as the list states it.
-std::string run_json(const run_view& run) {
-    return "{\"id\":" + json::write(rr::as_text(run.id)) + ",\"name\":" + json::write(run.name) +
-           ",\"state_name\":" + json::write(run.state_name) +
-           ",\"health\":" + json::write(run.health) +
-           ",\"started_at\":" + json::write(run.started_at) +
-           ",\"completed_at\":" + json::write(run.completed_at) +
-           ",\"duration_ms\":" + json::write(elapsed_ms(run.started_at, run.completed_at)) +
-           ",\"priced_at\":" + json::write(run.priced_at) + "}";
-}
-
-/// The runs of one definition, newest first, with the state each reached.
-///
-/// The health is read beside the runs, and a read of it that fails leaves every
-/// state out without failing the list: a run whose state cannot be read is still
-/// a run the person made.
-std::vector<run_view> runs_of_definition(const http_request& req,
-                                         nats_client& session,
-                                         const boost::uuids::uuid& definition_id) {
-    reporting_messaging::list_report_instances_request msg;
-    msg.limit = runs_of_report_limit;
-    msg.filter.emplace();
-    msg.filter->definition_id = definition_id;
-    const auto reply = forwarding::forward(req, session, msg);
-    rr::require_done(reply.result);
-
-    std::vector<run_view> runs;
-    for (const auto& instance : reply.instances)
-        runs.push_back({instance.id,
-                        instance.name,
-                        std::string(),
-                        std::nullopt,
-                        instance.started_at,
-                        instance.completed_at,
-                        instance.priced_at});
-    std::ranges::stable_sort(runs, [](const auto& left, const auto& right) {
-        if (!left.started_at || !right.started_at)
-            return left.started_at.has_value() && !right.started_at.has_value();
-        return *left.started_at > *right.started_at;
-    });
-
-    std::vector<boost::uuids::uuid> ids;
-    for (const auto& run : runs)
-        ids.push_back(run.id);
-    if (ids.empty())
-        return runs;
-
-    try {
-        reporting_messaging::get_report_instance_health_request stated;
-        stated.instance_ids = ids;
-        const auto health = forwarding::forward(req, session, stated);
-        if (health.result.outcome == ores::utility::domain::outcome::ok) {
-            for (auto& run : runs)
-                for (const auto& entry : health.health)
-                    if (entry.report_instance_id == run.id) {
-                        run.state_name = entry.state_name;
-                        run.health = health_of(entry.health);
-                    }
-        }
-    } catch (const std::exception&) {
-        // The runs are the person's own, and their state is a decoration of them.
-    }
-    return runs;
-}
-
-
-/// One run's page: what it is, the state it reached, its batch and its output.
-struct run_detail final {
-    reporting_domain::report_instance instance;
-    std::string state_name;
-    std::optional<std::string> health;
-    std::optional<std::string> definition_name;
-    std::optional<std::string> party_name;
-    std::optional<std::string> batch_id;
-};
-
-/// One run, by the id that names it, or nothing when no run carries it.
-std::optional<reporting_domain::report_instance>
-run_by_id(const http_request& req, nats_client& session, const boost::uuids::uuid& id) {
-    reporting_messaging::list_report_instances_request msg;
-    msg.limit = 1;
-    msg.filter.emplace();
-    msg.filter->id_one_of = std::vector{id};
-    const auto reply = forwarding::forward(req, session, msg);
-    rr::require_done(reply.result);
-    if (reply.instances.empty())
-        return std::nullopt;
-    return reply.instances.front();
-}
-
-/// The batch that names the run in its external reference, or nothing when the
-/// session sees none.
-std::optional<std::string>
-batch_of(const http_request& req, nats_client& session, const std::string& id) {
-    try {
-        compute_messaging::list_batches_request msg;
-        msg.limit = 5;
-        msg.filter.emplace();
-        msg.filter->search = id;
-        const auto reply = forwarding::forward(req, session, msg);
-        rr::require_done(reply.result);
-        for (const auto& batch : reply.batches)
-            if (batch.external_ref == id)
-                return rr::as_text(batch.id);
-    } catch (const rr::refusal& r) {
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
-            << "The batch of the run was refused: " << r.message;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
-            << "The batch of the run was not read: " << e.what();
-    }
-    return std::nullopt;
-}
-
-/// The name of the definition a run belongs to, or nothing when it cannot be read.
-std::optional<std::string>
-definition_name_of(const http_request& req, nats_client& session, const boost::uuids::uuid& id) {
-    try {
-        reporting_messaging::list_report_definitions_request msg;
-        msg.limit = 1;
-        msg.filter.emplace();
-        msg.filter->id_one_of = std::vector{id};
-        const auto reply = forwarding::forward(req, session, msg);
-        rr::require_done(reply.result);
-        if (!reply.definitions.empty())
-            return reply.definitions.front().name;
-    } catch (const rr::refusal& r) {
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
-            << "The name of the report's definition was refused: " << r.message;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
-            << "The name of the report's definition was not read: " << e.what();
-    }
-    return std::nullopt;
-}
-
-/// The name of a party the caller's own account works in, or nothing.
-std::optional<std::string>
-party_name_of(const http_request& req, nats_client& session, const boost::uuids::uuid& id) {
-    try {
-        const auto reply =
-            forwarding::forward(req, session, iam_messaging::get_my_parties_request{});
-        rr::require_done(reply.result);
-        for (const auto& party : reply.parties)
-            if (party.party_id == rr::as_text(id))
-                return party.name;
-    } catch (const rr::refusal& r) {
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
-            << "The name of the run's party was refused: " << r.message;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
-            << "The name of the run's party was not read: " << e.what();
-    }
-    return std::nullopt;
-}
-
-/// The state and health word of one run, or nothing when the read refuses.
-std::optional<reporting_messaging::report_instance_health>
-health_of_run(const http_request& req, nats_client& session, const boost::uuids::uuid& id) {
-    try {
-        reporting_messaging::get_report_instance_health_request stated;
-        stated.instance_ids = std::vector{id};
-        const auto reply = forwarding::forward(req, session, stated);
-        rr::require_done(reply.result);
-        for (const auto& entry : reply.health)
-            if (entry.report_instance_id == id)
-                return entry;
-    } catch (const rr::refusal& r) {
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
-            << "The state of the run was refused: " << r.message;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), ores::logging::warn)
-            << "The state of the run was not read: " << e.what();
-    }
-    return std::nullopt;
-}
-
-/// One run's page as the screen reads it.
-std::string run_detail_json(const run_detail& detail) {
-    const auto& run = detail.instance;
-    return "{\"id\":" + json::write(rr::as_text(run.id)) + ",\"name\":" + json::write(run.name) +
-           ",\"description\":" + json::write(run.description) +
-           ",\"definition_id\":" + json::write(rr::as_text(run.definition_id)) +
-           ",\"definition_name\":" + json::write(detail.definition_name) +
-           ",\"party_id\":" + json::write(rr::as_text(run.party_id)) +
-           ",\"party_name\":" + json::write(detail.party_name) +
-           ",\"kind\":" + json::write(run.kind) +
-           ",\"state_name\":" + json::write(detail.state_name) +
-           ",\"health\":" + json::write(detail.health) +
-           ",\"output_message\":" + json::write(run.output_message) +
-           ",\"output_storage_key\":" + json::write(run.output_storage_key) +
-           ",\"started_at\":" + json::write(run.started_at) +
-           ",\"completed_at\":" + json::write(run.completed_at) +
-           ",\"duration_ms\":" + json::write(elapsed_ms(run.started_at, run.completed_at)) +
-           ",\"priced_at\":" + json::write(run.priced_at) +
-           ",\"price_note\":" + json::write(run.price_note) +
-           ",\"batch_id\":" + json::write(detail.batch_id) +
-           ",\"modified_by\":" + json::write(run.modified_by) +
-           ",\"recorded_at\":" + json::write(run.recorded_at) + "}";
-}
-
-/// The scope a curve's own failure states.
-constexpr std::string_view curve_scope = "Curve";
-
-/// The one thing a problem names, as a person reads it: the curve a curve
-/// failure is about, otherwise the record the engine named.
-std::string about_of(const reporting_domain::report_error_event& event) {
-    if (event.scope_code == curve_scope && event.cause && !event.cause->empty())
-        return *event.cause;
-    if (event.subject_id && !event.subject_id->empty())
-        return *event.subject_id;
-    return event.cause.value_or(std::string());
-}
-
-/// One problem a run recorded, as the table draws it.
-std::string run_error_json(const reporting_domain::report_error_event& event) {
-    return "{\"id\":" + json::write(rr::as_text(event.id)) +
-           ",\"severity\":" + json::write(event.severity) +
-           ",\"scope\":" + json::write(event.scope_code) +
-           ",\"about\":" + json::write(about_of(event)) +
-           ",\"message\":" + json::write(event.message) +
-           ",\"subject\":" + json::write(event.subject) +
-           ",\"subject_id\":" + json::write(event.subject_id) +
-           ",\"cause\":" + json::write(event.cause) + ",\"time\":" + json::write(event.event_time) +
-           "}";
-}
-
 /// The refusal a shared name states, with the choices beside its words.
 std::string shared_name_body(const std::string& name,
                              std::vector<reporting_domain::report_definition> named,
@@ -845,6 +544,34 @@ report_routes::rows_json(const std::vector<ores::reporting::domain::report_defin
     for (const auto& definition : definitions)
         rows.push_back(reports::row_json(definition, decorated));
     return rr::array_of(rows);
+}
+
+ores::reporting::messaging::report_definition_write
+report_routes::write_of(const ores::reporting::domain::report_definition& definition,
+                        const edit_change& change) {
+    ores::reporting::messaging::report_definition_write write;
+    write.id = definition.id;
+    write.name = definition.name;
+    write.party_id = definition.party_id;
+    write.description = change.description;
+    write.report_type = rr::trimmed(change.report_type);
+    write.fsm_state_id = definition.fsm_state_id;
+    write.schedule_expression = rr::trimmed(change.schedule_expression);
+    write.concurrency_policy = rr::trimmed(change.concurrency_policy);
+    write.scheduler_job_id = definition.scheduler_job_id;
+    write.run_grant_id = definition.run_grant_id;
+    write.pre_processing = change.pre_processing;
+    write.prepared_input_key = change.prepared_input_key;
+    write.post_processing = change.post_processing;
+    write.skipped_families = change.skipped_families;
+    write.is_official = change.is_official;
+    write.regulatory_book_type = change.regulatory_book_type ? *change.regulatory_book_type :
+                                                               definition.regulatory_book_type;
+    // The cut a report selects is not on the form, so the write keeps the one
+    // the record holds: a write of the form's fields alone would clear it.
+    write.cut_kind_code = definition.cut_kind_code;
+    write.cut_id = definition.cut_id;
+    return write;
 }
 
 void report_routes::register_routes(
@@ -929,103 +656,6 @@ void report_routes::register_routes(
                                                          decorated.fires) +
                                                ",\"total\":" + std::to_string(page.total) +
                                                ",\"unread\":" + unread_json(decorated) + "}");
-                });
-            }));
-
-    add(router->post("/api/reporting/reports/{id}/run")
-            .summary("Start a run of one report definition and answer the run it made")
-            .description("The run is the service's production run of the definition, for the "
-                         "caller's own tenant, and the answer names it so the page can follow it.")
-            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                co_return guarded<reporting_messaging::trigger_report_instance_request>([&] {
-                    const auto raw = req.get_path_param("id");
-                    if (!rr::is_uuid(raw))
-                        rr::invalid("The address names an id that is not a uuid.");
-                    const auto& claims = req.authenticated_user;
-                    if (!claims || !claims->tenant_id || claims->tenant_id->empty())
-                        rr::invalid("The caller's own token names no tenant.");
-                    reporting_messaging::trigger_report_instance_request msg;
-                    msg.report_definition_id = boost::uuids::string_generator()(raw);
-                    msg.tenant_id = boost::uuids::string_generator()(*claims->tenant_id);
-                    const auto reply = forwarding::forward(req, session, msg);
-                    rr::require_done(reply.result);
-                    return http_response::json(
-                        "{\"runId\":" + json::write(reply.report_instance_id) + "}");
-                });
-            }));
-
-    add(router->get("/api/reporting/runs/{id}")
-            .summary("One report run: what it is, the state it reached, its batch and its output")
-            .description("The definition that raised it, the batch that ran it and the state it "
-                         "reached are read beside the run, and each one that cannot be read is "
-                         "left out rather than failing the page.")
-            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                co_return guarded<reporting_messaging::list_report_instances_request>([&] {
-                    const auto raw = req.get_path_param("id");
-                    if (!rr::is_uuid(raw))
-                        rr::invalid("The address names an id that is not a uuid.");
-                    rr::refuse_unknown_params(req, {});
-                    const auto id = boost::uuids::string_generator()(raw);
-                    const auto found = run_by_id(req, session, id);
-                    if (!found)
-                        rr::refuse(
-                            http_status::not_found, "not-found", "No report run has this id.");
-
-                    run_detail detail;
-                    detail.instance = *found;
-                    detail.definition_name =
-                        definition_name_of(req, session, detail.instance.definition_id);
-                    detail.party_name = party_name_of(req, session, detail.instance.party_id);
-                    detail.batch_id = batch_of(req, session, rr::as_text(id));
-                    if (const auto stated = health_of_run(req, session, id)) {
-                        detail.state_name = stated->state_name;
-                        detail.health = health_of(stated->health);
-                    }
-                    return http_response::json(run_detail_json(detail));
-                });
-            }));
-
-    add(router->get("/api/reporting/runs/{id}/errors")
-            .summary("The problems one run recorded, one row each")
-            .description("A row names the one thing a problem is about: the curve a curve failure "
-                         "names, and otherwise the record the engine named.")
-            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                co_return guarded<
-                    reporting_messaging::list_by_report_instance_id_report_error_events_request>(
-                    [&] {
-                        const auto raw = req.get_path_param("id");
-                        if (!rr::is_uuid(raw))
-                            rr::invalid("The address names an id that is not a uuid.");
-                        rr::refuse_unknown_params(req, {});
-                        reporting_messaging::list_by_report_instance_id_report_error_events_request
-                            msg;
-                        msg.report_instance_id = boost::uuids::string_generator()(raw);
-                        msg.limit = 500;
-                        const auto reply = forwarding::forward(req, session, msg);
-                        rr::require_done(reply.result);
-                        std::vector<std::string> written;
-                        for (const auto& event : reply.errors)
-                            written.push_back(run_error_json(event));
-                        return http_response::json("{\"total\":" + std::to_string(reply.total) +
-                                                   ",\"errors\":" + rr::array_of(written) + "}");
-                    });
-            }));
-
-    add(router->get("/api/reporting/reports/{id}/runs")
-            .summary("The runs of one report, newest first, with the state each reached")
-            .description("A run whose state cannot be read is still a run the person made, so "
-                         "the state is left out rather than the page.")
-            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                co_return guarded<reporting_messaging::list_report_instances_request>([&] {
-                    const auto raw = req.get_path_param("id");
-                    if (!rr::is_uuid(raw))
-                        rr::invalid("The address names an id that is not a uuid.");
-                    rr::refuse_unknown_params(req, {});
-                    std::vector<std::string> written;
-                    for (const auto& run :
-                         runs_of_definition(req, session, boost::uuids::string_generator()(raw)))
-                        written.push_back(run_json(run));
-                    return http_response::json("{\"runs\":" + rr::array_of(written) + "}");
                 });
             }));
 
@@ -1191,33 +821,7 @@ void report_routes::register_routes(
 
                     const auto definition = definition_by_id(req, session, id);
                     reporting_messaging::put_report_definition_request msg;
-                    auto& write = msg.change.write;
-                    write.id = definition.id;
-                    write.name = definition.name;
-                    write.party_id = definition.party_id;
-                    write.description = body.change.description;
-                    write.report_type = rr::trimmed(body.change.report_type);
-                    write.fsm_state_id = definition.fsm_state_id;
-                    write.schedule_expression = rr::trimmed(body.change.schedule_expression);
-                    write.concurrency_policy = rr::trimmed(body.change.concurrency_policy);
-                    write.scheduler_job_id = definition.scheduler_job_id;
-                    write.run_grant_id = definition.run_grant_id;
-                    write.pre_processing = body.change.pre_processing;
-                    write.prepared_input_key = body.change.prepared_input_key;
-                    write.post_processing = body.change.post_processing;
-                    write.skipped_families = body.change.skipped_families;
-                    write.is_official = body.change.is_official;
-                    if (body.change.regulatory_book_type)
-                        write.regulatory_book_type = *body.change.regulatory_book_type;
-                    else
-                        write.regulatory_book_type = definition.regulatory_book_type;
-                    /*
-                     * The cut a report selects is not on the form, so the write keeps the one
-                     * the record holds: a write that stated only the form's fields would clear
-                     * it.
-                     */
-                    write.cut_kind_code = definition.cut_kind_code;
-                    write.cut_id = definition.cut_id;
+                    msg.change.write = write_of(definition, body.change);
                     msg.change.precondition.kind =
                         ores::utility::domain::precondition_kind::must_match_version;
                     msg.change.precondition.version = static_cast<std::uint32_t>(body.version);

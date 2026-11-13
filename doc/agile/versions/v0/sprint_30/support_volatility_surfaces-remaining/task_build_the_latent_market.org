@@ -127,7 +127,7 @@ derived =CORRELATION/RATE= quotes are later work, as the design note's
 | 3. The driven step | DONE 2026-11-12, five processes drivable | =5f127589f0=, =b31521e545= |
 | 4. The tick context carries the market | the mixture and its variance wrapper take the normal; the feeds and the service are outstanding, and land with step 6 | =a5b1881944= |
 | 5. Configuration | the model and the depth rule done; the block's correlations are already typed columns of =fx_vol_surface_feed=, so what remains is the read, the tab and the shell verbs | =cf90e7236a= |
-| 6. The FX volatility surface | the quant seam is done: the three numbers build the block, and the generator takes the market's normals; the feed in =ores.synthetic= is next | =1ea0ec0df1=, =d8c6acb028= |
+| 6. The FX volatility surface | the quant seam is done and the emitter steps a surface on the market's normals; the start level, the feed kind and the service's market remain | =1ea0ec0df1=, =d8c6acb028=, =d31c9ae527=, =27b0c97626= |
 
 Step 2 keeps the many case in view: a factor owns a path and a fifty-six byte
 walk, a series owns two doubles, and the loadings are one flat array written in
@@ -204,11 +204,24 @@ two surfaces on one pair drift apart.
 
 ** What step 6 still owes
 
-The feed itself, in =ores.synthetic=: a =fx_vol_surface= kind that reads its row,
-its expiry rows and its contributors, builds the generator, ticks it once for
-each surface it publishes, and publishes the quotes the contributors observe.
-Then the service owns one latent market per run, installs its driver source, and
-both the spot feed and the surface feed read their drivers from the tick context.
+The emitter, in =ores.synthetic=, steps a surface on the market's normals and
+refreshes every point of every contributor. What is still owed is everything
+around it:
+
+- *The start level, which no table holds.* The feed's row carries the three
+  correlations and the skew's and curvature's laws, and each expiry row carries
+  its segment's reversion and volatility. Between them they carry the laws and
+  nothing carries the *level*: the ATM total variance of each expiry, the skew and
+  the curvature the surface starts at. The generator task planned this as a child
+  entity of template points, and until it exists the emitter starts from an
+  =ssvi_parameters= its caller makes, so its tests do and the service cannot.
+- *The feed kind.* A =fx_vol_surface= kind that reads those rows, builds the
+  emitter, ticks it and publishes each contributor's quotes under the market data
+  notation, registered in the feed factory with its permission and grant.
+- *The service's market.* One latent market per run, built from the loaded
+  configuration, with a driver source that answers each tick with the normals the
+  series declared. Then the spot feed and the surface feed both read their drivers
+  from the tick context and no feed draws its own.
 
 ** Open-source work to copy from
 

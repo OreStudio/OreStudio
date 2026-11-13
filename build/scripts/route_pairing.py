@@ -202,6 +202,8 @@ PAIRS = {
     ("PUT", "/api/books/portfolios"): ("PUT", "/api/books/portfolios"),
     ("POST", "/api/book-changes/preview"): ("POST", "/api/book-changes/preview"),
     ("POST", "/api/book-changes"): ("POST", "/api/book-changes"),
+    ("GET", "/api/blotter"): ("GET", "/api/blotter"),
+    ("GET", "/api/books/tree"): ("GET", "/api/books/tree"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

@@ -214,6 +214,16 @@ template <typename Row>
 }
 
 /**
+ * @brief An id as the text the wire carries, or the empty text for an absent one.
+ */
+[[nodiscard]] ORES_HTTP_API_EXPORT std::string as_text(const boost::uuids::uuid& id);
+
+/**
+ * @brief An id as the text the wire carries, or the empty text when it is absent.
+ */
+[[nodiscard]] ORES_HTTP_API_EXPORT std::string as_text(const std::optional<boost::uuids::uuid>& id);
+
+/**
  * @brief Each text written as a JSON object already, in an array.
  *
  * A screen's answer is built from rows written one at a time, so the array

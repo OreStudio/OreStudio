@@ -94,6 +94,17 @@ RULES = (
     # The IAM composed views ores.http answers, ahead of the rules for the screen
     # routes they share a part with; each keeps the BFF's view name, so its
     # obligations are stated once.
+    Rule("the blotter",
+         ("exact", "GET /api/blotter"),
+         CPP, COMPOSED, "trading",
+         "One page of trades with the rail that groups them, answered by ores.trading from the"
+         " summaries, the structures, the members, the books, the portfolios, the"
+         " counterparties and the catalogues, every row read whole before the page is cut."),
+    Rule("the book tree",
+         ("exact", "GET /api/books/tree"),
+         CPP, COMPOSED, "trading",
+         "Every portfolio and every book in one answer, two collection reads woven into the"
+         " tree a person navigates."),
     Rule("the image map",
          ("exact", "GET /api/image-map"),
          CPP, COMPOSED, "assets",

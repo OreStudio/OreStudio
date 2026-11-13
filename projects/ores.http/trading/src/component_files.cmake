@@ -25,6 +25,7 @@ set(files
     "routes/trading/structure_routes.cpp"
     "routes/trading/trade_read_routes.cpp"
     "routes/trading/trading_routes.cpp"
+    "routes/trading/trading_view_routes.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -35,4 +36,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/trading/structure_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/trading/trade_read_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/trading/trading_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/trading/trading_view_routes.hpp"
 )

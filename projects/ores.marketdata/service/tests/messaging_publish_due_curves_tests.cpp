@@ -18,6 +18,7 @@
  *
  */
 #include "curve_publish_fixture.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.inbox.api/domain/approval_kind.hpp"
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
@@ -26,6 +27,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <stdexcept>
 
 constexpr const char* curve_republish_tags = "[curve_republish]";
@@ -117,4 +119,35 @@ TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build",
     REQUIRE(second != resp.curves.end());
     CHECK_FALSE(second->published);
     CHECK_FALSE(second->message.empty());
+}
+
+TEST_CASE("each_firing_supersedes_the_publish_the_one_before_it_made", curve_republish_tags) {
+    curve_fixture f;
+    zero_approval_curve_kind zeroed(f.h);
+    const auto maker = seed_person(f.h);
+    const auto ctx =
+        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
+
+    // Two past instants, so the reader that serves the curve sees both sets.
+    const auto first_at = std::chrono::system_clock::now() - std::chrono::hours(2);
+    REQUIRE(publish_due_curves_handler::publish_all(ctx, first_at).success);
+    REQUIRE(publish_due_curves_handler::publish_all(ctx, first_at + std::chrono::hours(1)).success);
+
+    auto lg = ores::logging::make_logger("test.curve_republish");
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        "select (count(*) = 2)::text, (count(*) filter (where superseded_at is null) = 1)::text, "
+        "(max(as_of) > min(as_of))::text "
+        "from ores_marketdata_curve_publishes_tbl where output_series_id = $1::uuid "
+        "and valid_to = ores_utility_infinity_timestamp_fn()",
+        {boost::uuids::to_string(f.output_series_id)},
+        lg,
+        "reading the curve publishes of two firings");
+
+    REQUIRE(rows.size() == 1);
+    REQUIRE(rows.front().size() == 3);
+    // Two sets were written, exactly one is live, and the live one is the later.
+    CHECK(rows.front()[0].value_or("") == "true");
+    CHECK(rows.front()[1].value_or("") == "true");
+    CHECK(rows.front()[2].value_or("") == "true");
 }

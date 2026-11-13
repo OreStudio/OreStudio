@@ -22,10 +22,12 @@
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/generators/book_generator.hpp"
+#include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.api/generators/portfolio_generator.hpp"
 #include "ores.refdata.core/repository/book_repository.hpp"
+#include "ores.refdata.core/repository/counterparty_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
@@ -35,7 +37,6 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include "test_suite.hpp"
-#include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <set>
@@ -46,6 +47,7 @@ namespace {
 
 using ores::synthetic::domain::trade_generation_scope;
 using ores::synthetic::domain::trade_population_slot;
+using ores::synthetic::service::config_id_for;
 using ores::synthetic::service::planner_for;
 using ores::synthetic::service::trading_trade_population_writer;
 using ores::trading::messaging::book_trade_request;
@@ -57,10 +59,10 @@ using ores::utility::domain::outcome;
 const std::vector<std::string> booking_asset_classes = {
     "bond", "commodity", "credit", "equity", "fx", "inflation", "interest_rates", "scripted"};
 
-/// The config and the instant the population is drawn from, so a failure names
-/// the same population every time it is run.
-const boost::uuids::uuid booking_config_id =
-    boost::uuids::string_generator()("0cd68b09-6ebc-4180-a298-0cc386590f31");
+/// The name of the config one asset class is drawn from.
+std::string booking_config_name(const std::string& asset_class_code) {
+    return "generated_trade_booking:" + asset_class_code;
+}
 
 /// A port that lets every booking through, so the case tests the store and not
 /// the book's own rules.
@@ -86,6 +88,8 @@ struct fixture final {
     boost::uuids::uuid account_id{};
     std::string username;
     boost::uuids::uuid party_id{};
+    /// The trade's counterparty: a refdata row of its own, not a party.
+    boost::uuids::uuid counterparty_id{};
     boost::uuids::uuid book_id{};
     std::string currency_code = "EUR";
 
@@ -111,6 +115,12 @@ struct fixture final {
         repo::party_repository().write(h.context(), party);
         party_id = party.id;
         ctx = h.context().with_party(h.tenant_id(), party.id, {party.id}, maker.username);
+
+        // The store holds a trade's counterparty to the counterparties table,
+        // so the population trades with one that exists there.
+        auto counterparty = gen_rd::generate_synthetic_counterparty(gen);
+        repo::counterparty_repository().write(ctx, counterparty);
+        counterparty_id = counterparty.id;
 
         // The conventions the population draws on name indices in EUR, so the
         // book the trades land in is kept in EUR as well.
@@ -142,7 +152,10 @@ struct fixture final {
  */
 trade_generation_scope booking_scope_of(const fixture& f, const std::string& asset_class_code) {
     trade_generation_scope scope;
-    scope.config_id = booking_config_id;
+    // A config states one asset class, so each class is drawn from its own:
+    // the trades are named by their config, and two classes on one config
+    // would book the same trade id twice.
+    scope.config_id = config_id_for(f.party_id, booking_config_name(asset_class_code));
     scope.party_id = f.party_id;
     scope.asset_class_code = asset_class_code;
     scope.min_tenor_code = "1Y";
@@ -153,8 +166,8 @@ trade_generation_scope booking_scope_of(const fixture& f, const std::string& ass
     scope.seed = 7;
     scope.trades_per_book = static_cast<std::uint32_t>(planner_for(asset_class_code).code_count());
     scope.book_ids = {f.book_id};
-    scope.counterparty_ids = {f.party_id};
-    scope.issuer_ids = {f.party_id};
+    scope.counterparty_ids = {f.counterparty_id};
+    scope.issuer_ids = {f.counterparty_id};
     scope.traders = {ores::synthetic::domain::trade_population_trader{f.account_id, f.username}};
     scope.currency_code = f.currency_code;
     scope.equity_underlyings = {ores::synthetic::domain::equity_underlying_reference{
@@ -183,9 +196,7 @@ trade_generation_scope booking_scope_of(const fixture& f, const std::string& ass
 /// A bond states its issue before its trade, and the issue's own rows belong to
 /// the security rather than to the trade, so they are written here and not in
 /// the booking request.
-void write_issue(const fixture& f,
-                 const trade_population_slot& slot,
-                 trade_operations_service& books) {
+void write_issue(const trade_population_slot& slot, trade_operations_service& books) {
     if (!slot.bond_issue)
         return;
     put_bond_issue_composite_request request;
@@ -207,7 +218,9 @@ TEST_CASE("every_generated_trade_type_books_through_the_database",
           "[generated_trade][integration]") {
     auto lg(make_logger(test_suite));
     fixture f;
-    trade_operations_service books(f.ctx, open_books{});
+    // The service holds a reference to the port, so the port outlives it.
+    open_books open;
+    trade_operations_service books(f.ctx, open);
 
     for (const auto& asset_class : booking_asset_classes) {
         const auto scope = booking_scope_of(f, asset_class);
@@ -216,7 +229,7 @@ TEST_CASE("every_generated_trade_type_books_through_the_database",
         for (const auto& slot : plan.slots) {
             INFO("asset class " << asset_class << ", trade type " << slot.trade_type_code
                                 << ", slot " << slot.slot);
-            write_issue(f, slot, books);
+            write_issue(slot, books);
 
             const book_trade_request request =
                 trading_trade_population_writer::book_request_for(slot, scope);

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
-#+updated: 2026-11-12
+#+updated: 2026-11-13
 #+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,9 +28,9 @@ A check books one trade of every generated type through the real tables, so a re
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | The check is written and already finds a defect: booking a generated bond through the trading service crashes. |
+| Now          | The check passes for all eight asset classes. It found three defects on the way, all fixed. |
 | Waiting on   | Nothing.                               |
-| Next         | Diagnose the crash, then run the check against the store for every class. |
+| Next         | Run the gates and raise the PR.        |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -56,7 +56,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Booking check | 103 assertions pass, eight asset classes | =ores.synthetic.core.tests "every_generated_trade_type_books_through_the_database"= | 0867791bee plus the working tree |
+| =ores.synthetic.core.tests= | 138 cases, 3201 assertions | =ores.synthetic.core.tests= | 0867791bee plus the working tree |
+| =ores.trading.core.tests= | 245 cases, 1560 assertions | =ores.trading.core.tests= | 0867791bee plus the working tree |
 
 * Notes
 
@@ -65,19 +67,27 @@ task and name that file in the Command column.
   and books it through =trade_operations_service=. It asks the planner for a
   population of each class's own code count, so every code the class cycles
   appears exactly once.
-- Two defects so far, found before the check ever passed:
-  - the fixture's first attempt wrote a portfolio whose currency was a random
+- Four defects, in the order they appeared. The check found the last three.
+  - The fixture's first attempt wrote a portfolio whose currency was a random
     code, which the currency validator refuses. The fixture now writes the
     currency it uses, because the conventions the population draws on name
     indices in EUR.
-  - =book_trade= of a generated bond crashes with a segmentation fault before
-    it answers, so the store's refusal is never reached. The check reports the
-    class and the type it was booking, which is how the crash was named, and a
-    backtrace under =gdb= puts it inside
-    =ores::trading::service::trade_operations_service::book_trade= itself, not
-    in the check and not in the store. Diagnosing it is the next step: the
-    request carries the issue's instrument rows, so a row the service reads
-    without checking is the likely shape.
+  - The check built the service from a temporary port:
+    =trade_operations_service books(f.ctx, open_books{})=. The service holds the
+    port it asks, so the temporary died at the end of that statement and the
+    first booking read it. That is the segmentation fault a backtrace put inside
+    =book_trade=: the port is the first thing a booking reads once it has
+    checked the instrument rows. The check now names the port, and the service
+    deletes the rvalue overload, so a port that only the constructing statement
+    owns is a compile error and not a crash.
+  - The store holds a trade's counterparty to =ores_refdata_counterparties_tbl=
+    and not to the parties table. The fixture writes a generated counterparty,
+    and the population states that row as its counterparty and its issuer.
+  - The check drew all eight classes from one config, so the second class booked
+    trade ids the first had already written, and every one answered
+    =already_exists=. A config states one asset class, and the planner names a
+    trade from its config, so each class is now drawn from its own config, built
+    with =config_id_for= the way a provisioner builds one.
 
 * Test Scenarios
 
@@ -103,3 +113,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The check books one trade of every generated type of all eight asset classes
+through the real tables, 103 assertions, one population per class. Each of the
+three defects it found is fixed at its cause: the service no longer accepts a
+port it would outlive, the fixture writes the counterparty the store holds the
+trade to, and each class is drawn from a config of its own.
+
+The crash it found was in the check and not in the store. The service let the
+mistake through, though, which is why the constructor refuses it now.

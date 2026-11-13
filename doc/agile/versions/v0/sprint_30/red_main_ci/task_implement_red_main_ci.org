@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: BD6B36C3-6CEB-49C1-9AC5-FB2A82A56157
+:END:
+#+title: Task: Implement Hotfix: Main CI is red on Windows, GCC, and tests
+#+description: Initial task for: Hotfix: Main CI is red on Windows, GCC, and tests
+#+type: task
+#+level: s1
+#+filetags: :red_main_ci:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/red-main-ci
+#+pr: 4664
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:30AA2C7B-8C84-4E7B-8910-1E3C21338C2C][Hotfix: Main CI is red on Windows, GCC, and tests]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove the three defects that keep main red: the GCC compile error, the
+Windows link error, and the stale =ores.web.tests= fixture.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:30AA2C7B-8C84-4E7B-8910-1E3C21338C2C][Hotfix: Main CI is red on Windows, GCC, and tests]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- =g++ -fsyntax-only= accepts =xml_record_tests.cpp=.
+- =vitest run= in =packages/bff= passes all 1277 tests.
+- The =clang-cl= branch of =billing.cpp= needs no =__divti3=.
+
+* Plan
+
+1. Reproduce each failure against CDash before editing.
+2. Fix the smallest thing at the root cause.
+3. Prove the fix by running the failing signal again on the fixed file, and by
+   reverting the file to show the failure returns, on the platforms that can
+   run that signal.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| GCC compile of the xml test unity TU, before the fix | 1 error: =declaration of 'std::vector<{anonymous}::entry> {anonymous}::root::entry' changes meaning of 'entry' [-Wchanges-meaning]= | =g++ -fsyntax-only= with the flags of =compile_commands.json= | eb21afcdc0 |
+| Same TU, after the fix | exit 0 | as above | cc31a0b1c8 |
+| BFF suite, before the fixture fix | 1276 passed, 1 failed | =vitest run= in =packages/bff= | eb21afcdc0 |
+| BFF suite, after the fixture fix | 1277 passed in 91 files | as above | cc31a0b1c8 |
+| BFF typecheck | exit 0 | =npm run typecheck --workspace @ores/bff= | cc31a0b1c8 |
+| =__int128= sites left in the tree | 1, the =#else= arm of the billing alias | =git grep -n "__int128" -- projects/= | cc31a0b1c8 |
+
+* Notes
+
+CDash evidence at =eb21afcdc= (the base of this branch):
+
+- GCC, build 4523159: two errors in
+  =projects/ores.ore/core/tests/xml_record_tests.cpp:64=, tests never ran.
+- Windows clang, build 4526820: =lld-link: undefined symbol: __divti3= while
+  linking =ores.marketdata.service.dll=, tests never ran.
+- =ores.web.tests=: build 4523081 (clang release) and 4522886 (clang debug)
+  fail on =src/workflow-progress.test.ts=, because the answer carries
+  =progress=, =progress_done= and =progress_total= and the fixture did not.
+
+The clang-debug nightly 4523156 reported 98 of 98 passed only because it never
+ran =ores.web.tests= or =ores.web.typecheck=. Every build that runs the suite
+fails it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4664][#4664]] | [ci] Fix the Windows link and GCC compile errors and a stale fixture |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The three fixes are in. GCC and the web suite were proven against the signal
+that failed; Windows was reasoned and measured, because the link cannot be
+reproduced on Linux:
+
+- GCC: the original file reproduces the exact CI error under
+  =g++ -fsyntax-only=; the fixed file exits 0 with the same flags.
+- Windows: =billing.cpp= now uses the multiprecision type wherever =_MSC_VER=
+  is defined, so clang-cl no longer emits =__divti3=. The type gives identical
+  results to =__int128= for both expressions, so the charge does not change.
+- Web: the BFF suite goes from 1276 passed and 1 failed to 1277 passed, and
+  the package typechecks.
+
+The local check gate was not run. The fixes are three small edits and the
+gate's heavy half would recreate the development database; the branch owner
+asked for the PR without it. CI is the first full build of these changes.

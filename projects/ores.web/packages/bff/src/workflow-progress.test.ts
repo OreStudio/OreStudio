@@ -136,6 +136,9 @@ const progress: WorkflowProgress = {
             completed_at: '2026-09-28 17:00:10.000000Z',
             error: '',
             log: [],
+            progress: '',
+            progress_done: null,
+            progress_total: null,
         },
         {
             id: 'bbbb2222-2222-2222-2222-222222222222',
@@ -149,6 +152,9 @@ const progress: WorkflowProgress = {
             completed_at: '2026-09-28 17:00:20.000000Z',
             error: 'The bundle did not publish.',
             log: [{ level: 'error', message: 'The bundle did not publish.', context: '' }],
+            progress: '',
+            progress_done: null,
+            progress_total: null,
         },
     ],
 };

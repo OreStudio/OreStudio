@@ -19,7 +19,7 @@
  */
 #include "ores.marketdata.service/app/billing.hpp"
 #include <algorithm>
-#if defined(_MSC_VER) && !defined(__clang__)
+#if defined(_MSC_VER)
 #    include <boost/multiprecision/cpp_int.hpp>
 #endif
 #include <map>
@@ -31,7 +31,12 @@ namespace ores::marketdata::service::app {
 
 namespace {
 
-#if defined(_MSC_VER) && !defined(__clang__)
+/*
+ * clang-cl defines _MSC_VER but its Windows runtime holds no __divti3, so the
+ * 128-bit division in per_thousand fails to link. Every MSVC-family target
+ * uses the multiprecision type, which needs no runtime helper.
+ */
+#if defined(_MSC_VER)
 using billing_integer = boost::multiprecision::int128_t;
 #else
 using billing_integer = __int128;

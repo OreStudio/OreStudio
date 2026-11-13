@@ -145,6 +145,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:1D550641-953B-4F17-BFA4-B1DB1EFBE62C][Run a service's steps concurrently]] | DONE | 2026-11-11 | 2026-11-12 | A service runs its workflow steps one at a time, so a long step, such as generate_trades, holds back every step dispatched beside it until the workflow fails them as unclaimed. Serve step commands on a bounded set of workers. |
 | [[id:B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C][Publish one curated convention set and provision to completion]] | DONE | 2026-11-11 | 2026-11-12 | Provisioning stops at generate_trades: the swap builder refuses an index that several swap conventions name. Treat aliases with the same terms as one convention, and draw only indices the lookup answers. |
 | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] | BACKLOG | | | A provisioning step times out only when it stops reporting progress, a request does bounded work, and each step runs in the service that owns its work, so iam stays off the critical path of everything that is not identity. |
+| [[id:30AA2C7B-8C84-4E7B-8910-1E3C21338C2C][Hotfix: Main CI is red on Windows, GCC, and tests]] | STARTED | 2026-11-13 | | The main branch CI is red: the Windows build fails, the GCC build fails, and tests fail consistently. |
 
 * Achievements
 

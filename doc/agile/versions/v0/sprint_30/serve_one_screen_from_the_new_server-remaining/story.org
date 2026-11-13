@@ -105,6 +105,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:F0162D2F-B6AA-4A6F-941D-661501280BED][Carry a browser session's token to the services]] | DONE | 2026-11-11 | 2026-11-11 | A request signed in with the session cookie reaches its route with the session's claims but no token, so every forward delegates an empty token. The server must hand the session's token to the forward step. |
 | [[id:21A6941D-1C63-4E8A-A49D-7A441DDD583D][Write null for an empty optional in JSON]] | DONE | 2026-11-12 | 2026-11-12 | The JSON codec leaves out an empty optional, where the msgpack wire carries nil and the BFF answers null, so ores.web reads a missing member where it expects null. |
 | [[id:8FDEB666-F768-47C0-9D0E-40E91A84EBC7][Read the caller's own token in IAM]] | DONE | 2026-11-12 | 2026-11-12 | IAM's account handlers read the Authorization token, which from the gateway is the HTTP server's own, so a party switch, the self reads and a sign-out act on the server's account rather than the caller's. |
+| [[id:3E187C09-27F5-4D52-A14D-4647552FC023][Serve the IR coverage through ores.http]] | BACKLOG | | | The calibration screen's IR coverage is served by the BFF today: one row per currency with its source, policy window, bootstrap config, latest published set and the first gap. Implement the same read in the C++ HTTP server so the browser can leave the BFF. |
 
 * Decisions
 

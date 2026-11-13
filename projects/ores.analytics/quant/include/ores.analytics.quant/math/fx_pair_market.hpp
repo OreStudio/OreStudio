@@ -43,6 +43,18 @@ struct fx_discount_point final {
 };
 
 /**
+ * @brief One dated discount factor of one side of a pair.
+ *
+ * A single currency's curve is a list of these, which is what a run's values hold for it;
+ * the pair's market is resolved from the two lists at the date that is wanted, so the two
+ * need not share a grid.
+ */
+struct fx_curve_point final {
+    std::chrono::year_month_day date{};
+    double discount_factor = 1.0;
+};
+
+/**
  * @brief A pair's market at one value date, from the discounts its forward set holds.
  *
  * A day the set quotes takes that row's two discounts. A day between two rows takes both
@@ -63,6 +75,25 @@ struct fx_discount_point final {
 pair_market_at(double spot,
                std::chrono::year_month_day spot_date,
                std::span<const fx_discount_point> points,
+               std::chrono::year_month_day value_date,
+               std::string context);
+
+/**
+ * @brief A pair's market at one value date, from the two currencies' own curves.
+ *
+ * The same rule as the forward-set overload, applied to each side separately: a day the
+ * curve quotes takes its factor, a day between two of its points is interpolated
+ * log-linearly in days from the spot date, and the spot date is exactly one. The two
+ * curves therefore need not share a grid.
+ *
+ * @param base The base currency's curve, which is the foreign side.
+ * @param quote The quote currency's curve, which is the domestic side.
+ */
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::expected<fx_market, std::string>
+pair_market_at(double spot,
+               std::chrono::year_month_day spot_date,
+               std::span<const fx_curve_point> base,
+               std::span<const fx_curve_point> quote,
                std::chrono::year_month_day value_date,
                std::string context);
 

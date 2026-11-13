@@ -80,7 +80,8 @@ TEST_CASE("a market that is built refuses another block", "[run_market]") {
     run_market_clock clock;
     run_market run(clock, {}, 42);
     run.add_block(spot, run_market_surface, 5, 0.3, -0.4, 0.9);
-    CHECK_THROWS_AS(run.add_block(spot, run_market_surface, 5, 0.3, -0.4, 0.9), std::invalid_argument);
+    CHECK_THROWS_AS(run.add_block(spot, run_market_surface, 5, 0.3, -0.4, 0.9),
+                    std::invalid_argument);
 
     run.build(3600.0, 0.0, 60.0);
     CHECK_THROWS_AS(run.add_block(spot, "another.surface", 5, 0.3, -0.4, 0.9),

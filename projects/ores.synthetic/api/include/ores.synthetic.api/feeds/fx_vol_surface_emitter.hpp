@@ -99,7 +99,9 @@ public:
      * @param start The surface to start at, which every process reverts to.
      * @param dynamics The laws of the drivers, with the identity for their matrix.
      * @param dt The year fraction one step represents.
-     * @param markets The pair's market and convention at each expiry the surface is quoted in.
+     * @param conventions The pair's quoting convention at each expiry, in the same order as
+     *        the start surface's expiries. The market itself arrives with each step, because it
+     *        moves when the run's curves do.
      * @param deltas The deltas, besides ATM, to quote a risk reversal and a butterfly at.
      * @param contributors The contributors that observe the surface.
      */
@@ -107,7 +109,7 @@ public:
     make(ores::analytics::quant::service::ssvi_parameters start,
          ores::analytics::quant::service::fx_vol_surface_dynamics dynamics,
          double dt,
-         std::vector<ores::analytics::quant::service::fx_vol_slice_market> markets,
+         std::vector<ores::analytics::quant::math::fx_quote_convention> conventions,
          std::vector<double> deltas,
          std::vector<fx_vol_contributor_spec> contributors);
 
@@ -118,7 +120,9 @@ public:
      *        correlated with spot's by the latent market.
      * @throws std::invalid_argument when @p drivers does not hold one normal per driver.
      */
-    std::span<const fx_vol_point_tick> step(std::span<const double> drivers);
+    std::span<const fx_vol_point_tick>
+    step(std::span<const double> drivers,
+         std::span<const ores::analytics::quant::math::fx_market> markets);
 
     /// The points, oldest contributor first; each contributor's are contiguous.
     [[nodiscard]] std::span<const fx_vol_point_tick> points() const noexcept {
@@ -148,7 +152,12 @@ private:
         ores::analytics::quant::service::fx_vol_surface_generator generator);
 
     ores::analytics::quant::service::fx_vol_surface_generator generator_;
-    std::vector<ores::analytics::quant::service::fx_vol_slice_market> markets_;
+    /// The pair's convention at each expiry, in the surface's own expiry order.
+    std::vector<ores::analytics::quant::math::fx_quote_convention> conventions_;
+    /// The expiry names, in the surface's own order, so a step need not rebuild them.
+    std::vector<std::string> expiry_ids_;
+    /// One market per expiry, as the caller hands them in; reused so a tick does not allocate.
+    std::vector<ores::analytics::quant::service::fx_vol_slice_market> slices_;
     std::vector<double> deltas_;
     std::vector<ores::analytics::quant::service::fx_vol_noise_profile> profiles_;
     std::vector<ores::analytics::quant::math::rng_stream> streams_;

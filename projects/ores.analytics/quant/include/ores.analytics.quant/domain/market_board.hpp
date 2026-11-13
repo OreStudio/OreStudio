@@ -20,6 +20,7 @@
 #define ORES_ANALYTICS_QUANT_DOMAIN_MARKET_BOARD_HPP
 
 #include "ores.analytics.quant/export.hpp"
+#include "ores.analytics.quant/math/fx_pair_market.hpp"
 #include <atomic>
 #include <chrono>
 #include <cstddef>
@@ -36,14 +37,12 @@ namespace ores::analytics::quant::domain {
 /**
  * @brief One dated discount factor of a currency's curve.
  *
- * The date is the one the factor belongs to, and the first is the spot date at
- * exactly one, so a reader interpolates from a spot date outwards rather than
- * from an absolute epoch.
+ * The first is the spot date at exactly one, so a reader interpolates from a spot date
+ * outwards rather than from an absolute epoch. It is the quant math type because that is
+ * what resolves a pair's market from two curves, and a reader hands these points to it
+ * without a copy.
  */
-struct curve_point final {
-    std::chrono::year_month_day date{};
-    double discount_factor = 1.0;
-};
+using curve_point = math::fx_curve_point;
 
 /// What a member of the board holds: a currency's curve, or a pair's spot.
 enum class market_member_kind : std::uint8_t { curve, spot };

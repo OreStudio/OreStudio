@@ -698,19 +698,10 @@ feed_kind make_fx_vol_surface_kind() {
                 in.expiries = std::move(expiries);
                 in.contributors = std::move(contributors);
                 /*
-                 * Each expiry is quoted against its own market, because each is discounted to
-                 * its own value date. The spot is left at one: a smile is read at a moneyness,
-                 * so a common scale of the spot cancels and only the ratio of the two discount
-                 * factors moves a quoted volatility. That ratio is still one here, so the
-                 * forward is flat and the quotes are the pair's vol surface as if it had no
-                 * rates. Reading the two discount factors from the pair's published curves is
-                 * what this row is waiting on.
+                 * The market is not a fact of the row: the feed reads its pair's spot and its
+                 * two currencies' curves from the run's values on every tick, and solves each
+                 * expiry against the forward they imply.
                  */
-                for (const auto& expiry : in.expiries)
-                    in.markets.push_back({.expiry_id = expiry.tenor,
-                                          .market = {.spot = 1.0,
-                                                     .domestic_discount = 1.0,
-                                                     .foreign_discount = 1.0}});
                 /*
                  * The pair's own convention is a refdata row, and the mapping from it lives in
                  * the market data service. Until the feed is handed that mapping, it quotes

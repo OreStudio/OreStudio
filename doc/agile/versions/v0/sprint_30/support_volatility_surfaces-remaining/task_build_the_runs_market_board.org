@@ -47,6 +47,8 @@ The design is [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic
 - With the curve unchanged and the SSVI state unchanged, two consecutive ticks emit identical quotes, so the board adds no drift of its own.
 - A party's calibration of the clean quotes lands on the same strikes within a tolerance the test states, and the number is measured once and recorded in Measurements with its command and commit.
 - No curve is published as market data, no marketdata operation is added, and no schema changes.
+- Each member records when it was last published, so
+  [[id:28B21DE8-6352-4121-95CE-0473144061D1][Show the run's market board on the Market tab]] can tell a quiet market from a stopped feed.
 
 * Design
 

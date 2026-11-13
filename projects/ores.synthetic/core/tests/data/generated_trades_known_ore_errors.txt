@@ -13,7 +13,6 @@ BondPosition	Error building trade for context 'analytic/PRICING'	Build failed fo
 CallableBond	Error during trade pricing	empty Handle cannot be dereferenced
 CallableBond	Error during trade pricing (additional results)	empty Handle cannot be dereferenced
 CommodityAsianOption	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type CommodityAsianOptionArithmeticPrice
-CommodityPairwiseVarianceSwap	Error parsing Trade XML	TradeFactory::getBuilder(CommodityPairwiseVarianceSwap): no builder found
 CommoditySpreadOption	Error building trade for context 'analytic/PRICING'	did not find object COMM-NYMEX:CL/COMM-NYMEX:NG in CorrelationCurves
 CommoditySpreadOption	Error building trade for context 'analytic/PRICING'	did not find object COMM-NYMEX:NG/COMM-NYMEX:CL in CorrelationCurves
 CommodityWindowBarrierOption	Error parsing Trade XML	CommodityWindowBarrierOptionData node not found

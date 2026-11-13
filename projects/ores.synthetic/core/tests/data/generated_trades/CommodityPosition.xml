@@ -11,13 +11,13 @@
       </Underlying>
     </CommodityPositionData>
   </Trade>
-  <Trade id="4511c81f-f685-58e9-8f37-1a99af3ff1ff">
+  <Trade id="1af62728-03a0-560c-904c-56e56a5e265e">
     <TradeType>CommodityPosition</TradeType>
     <CommodityPositionData>
-      <Quantity>59393.81</Quantity>
+      <Quantity>53638.72</Quantity>
       <Underlying>
         <Type>Commodity</Type>
-        <Name>NYMEX:CL</Name>
+        <Name>NYMEX:NG</Name>
         <Weight>1</Weight>
       </Underlying>
     </CommodityPositionData>

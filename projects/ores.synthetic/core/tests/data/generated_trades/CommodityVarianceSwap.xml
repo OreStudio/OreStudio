@@ -13,16 +13,16 @@
       <Calendar>USD</Calendar>
     </CommodityVarianceSwapData>
   </Trade>
-  <Trade id="3a9a63de-bb7d-5267-b0a7-847b21b8d55c">
+  <Trade id="af4f56f5-3bf8-5437-b7f7-bd7a389aa85c">
     <TradeType>CommodityVarianceSwap</TradeType>
     <CommodityVarianceSwapData>
-      <StartDate>2025-08-02</StartDate>
-      <EndDate>2034-08-02</EndDate>
+      <StartDate>2025-09-02</StartDate>
+      <EndDate>2027-09-02</EndDate>
       <Currency>USD</Currency>
-      <Name>NYMEX:NG</Name>
+      <Name>NYMEX:CL</Name>
       <LongShort>Long</LongShort>
-      <Strike>0.19</Strike>
-      <Notional>75022.91</Notional>
+      <Strike>0.11</Strike>
+      <Notional>76967.06</Notional>
       <Calendar>USD</Calendar>
     </CommodityVarianceSwapData>
   </Trade>

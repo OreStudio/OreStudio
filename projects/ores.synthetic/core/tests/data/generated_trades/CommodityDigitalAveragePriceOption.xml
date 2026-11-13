@@ -25,25 +25,25 @@
       <PricingCalendar>US-NYSE</PricingCalendar>
     </CommodityDigitalAveragePriceOptionData>
   </Trade>
-  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
+  <Trade id="f0c045e8-52b4-5121-b6ec-056dc60a2644">
     <TradeType>CommodityDigitalAveragePriceOption</TradeType>
     <CommodityDigitalAveragePriceOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-09-02</ExerciseDate>
+          <ExerciseDate>2031-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Name>NYMEX:CL</Name>
+      <Name>NYMEX:NG</Name>
       <Currency>USD</Currency>
-      <DigitalCashPayoff>93707.49</DigitalCashPayoff>
-      <Strike>46.75</Strike>
+      <DigitalCashPayoff>40102.33</DigitalCashPayoff>
+      <Strike>116.49</Strike>
       <PriceType>FutureSettlement</PriceType>
-      <StartDate>2025-09-02</StartDate>
-      <EndDate>2026-09-02</EndDate>
+      <StartDate>2025-10-02</StartDate>
+      <EndDate>2031-10-02</EndDate>
       <PaymentCalendar>US-NYSE</PaymentCalendar>
       <PaymentLag>5</PaymentLag>
       <PaymentConvention>Following</PaymentConvention>

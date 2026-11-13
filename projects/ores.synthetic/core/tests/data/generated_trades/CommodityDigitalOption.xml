@@ -18,22 +18,22 @@
       <Payoff>41086.15</Payoff>
     </CommodityDigitalOptionData>
   </Trade>
-  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
+  <Trade id="f7a5f5f7-7567-5f27-ac28-264e8861c471">
     <TradeType>CommodityDigitalOption</TradeType>
     <CommodityDigitalOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Call</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2031-08-02</ExerciseDate>
+          <ExerciseDate>2026-09-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Name>NYMEX:NG</Name>
+      <Name>NYMEX:CL</Name>
       <Currency>USD</Currency>
-      <Strike>136.76</Strike>
-      <Payoff>4860.5</Payoff>
+      <Strike>136.18</Strike>
+      <Payoff>91209.48</Payoff>
     </CommodityDigitalOptionData>
   </Trade>
 </Portfolio>

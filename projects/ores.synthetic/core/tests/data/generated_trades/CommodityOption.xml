@@ -18,22 +18,22 @@
       <Quantity>92270.32</Quantity>
     </CommodityOptionData>
   </Trade>
-  <Trade id="f7a5f5f7-7567-5f27-ac28-264e8861c471">
+  <Trade id="f1c63d3f-5920-5b31-a3f0-4676a1c9b751">
     <TradeType>CommodityOption</TradeType>
     <CommodityOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2026-09-02</ExerciseDate>
+          <ExerciseDate>2027-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Name>NYMEX:CL</Name>
+      <Name>NYMEX:NG</Name>
       <Currency>USD</Currency>
-      <Strike>136.18</Strike>
-      <Quantity>91209.48</Quantity>
+      <Strike>140.42</Strike>
+      <Quantity>96916.26</Quantity>
     </CommodityOptionData>
   </Trade>
 </Portfolio>

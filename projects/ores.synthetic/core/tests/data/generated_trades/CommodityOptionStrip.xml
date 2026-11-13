@@ -38,7 +38,7 @@
       </Puts>
     </CommodityOptionStripData>
   </Trade>
-  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
+  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
     <TradeType>CommodityOptionStrip</TradeType>
     <CommodityOptionStripData>
       <LegData>
@@ -50,8 +50,8 @@
         <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-08-02</StartDate>
-            <EndDate>2026-08-02</EndDate>
+            <StartDate>2025-09-02</StartDate>
+            <EndDate>2026-09-02</EndDate>
             <Tenor>1M</Tenor>
             <Calendar>NullCalendar</Calendar>
             <Convention>Unadjusted</Convention>
@@ -59,21 +59,21 @@
           </Rules>
         </ScheduleData>
         <CommodityFloatingLegData>
-          <Name>NYMEX:NG</Name>
+          <Name>NYMEX:CL</Name>
           <PriceType>FutureSettlement</PriceType>
           <Quantities>
-            <Quantity>14157.62</Quantity>
+            <Quantity>93707.49</Quantity>
           </Quantities>
         </CommodityFloatingLegData>
       </LegData>
-      <Puts>
+      <Calls>
         <LongShorts>
-          <LongShort>Short</LongShort>
+          <LongShort>Long</LongShort>
         </LongShorts>
         <Strikes>
-          <Strike>142.12</Strike>
+          <Strike>46.75</Strike>
         </Strikes>
-      </Puts>
+      </Calls>
     </CommodityOptionStripData>
   </Trade>
 </Portfolio>

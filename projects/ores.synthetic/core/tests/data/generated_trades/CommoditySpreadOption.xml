@@ -62,7 +62,7 @@
       <SpreadStrike>5.16</SpreadStrike>
     </CommoditySpreadOptionData>
   </Trade>
-  <Trade id="af4f56f5-3bf8-5437-b7f7-bd7a389aa85c">
+  <Trade id="bdcb89b0-f353-59ae-b17d-2f3c4966f5b1">
     <TradeType>CommoditySpreadOption</TradeType>
     <CommoditySpreadOptionData>
       <LegData>
@@ -74,8 +74,8 @@
         <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-09-02</StartDate>
-            <EndDate>2027-09-02</EndDate>
+            <StartDate>2025-10-02</StartDate>
+            <EndDate>2031-10-02</EndDate>
             <Tenor>1M</Tenor>
             <Calendar>NullCalendar</Calendar>
             <Convention>Unadjusted</Convention>
@@ -83,10 +83,10 @@
           </Rules>
         </ScheduleData>
         <CommodityFloatingLegData>
-          <Name>NYMEX:CL</Name>
+          <Name>NYMEX:NG</Name>
           <PriceType>FutureSettlement</PriceType>
           <Quantities>
-            <Quantity>76967.06</Quantity>
+            <Quantity>25845.74</Quantity>
           </Quantities>
         </CommodityFloatingLegData>
       </LegData>
@@ -99,8 +99,8 @@
         <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
-            <StartDate>2025-09-02</StartDate>
-            <EndDate>2027-09-02</EndDate>
+            <StartDate>2025-10-02</StartDate>
+            <EndDate>2031-10-02</EndDate>
             <Tenor>1M</Tenor>
             <Calendar>NullCalendar</Calendar>
             <Convention>Unadjusted</Convention>
@@ -108,10 +108,10 @@
           </Rules>
         </ScheduleData>
         <CommodityFloatingLegData>
-          <Name>NYMEX:NG</Name>
+          <Name>NYMEX:CL</Name>
           <PriceType>FutureSettlement</PriceType>
           <Quantities>
-            <Quantity>76967.06</Quantity>
+            <Quantity>25845.74</Quantity>
           </Quantities>
         </CommodityFloatingLegData>
       </LegData>
@@ -121,7 +121,7 @@
         <Style>European</Style>
         <Settlement>Cash</Settlement>
       </OptionData>
-      <SpreadStrike>2.83</SpreadStrike>
+      <SpreadStrike>5.58</SpreadStrike>
     </CommoditySpreadOptionData>
   </Trade>
 </Portfolio>

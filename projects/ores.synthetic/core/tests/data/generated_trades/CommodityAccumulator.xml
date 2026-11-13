@@ -45,25 +45,25 @@
       </Barriers>
     </CommodityAccumulatorData>
   </Trade>
-  <Trade id="1599c1b7-6f29-5e1d-b8ce-1e918ddfea2d">
+  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
     <TradeType>CommodityAccumulator</TradeType>
     <CommodityAccumulatorData>
       <Currency>USD</Currency>
-      <FixingAmount>1907.76</FixingAmount>
-      <Strike>142.75</Strike>
+      <FixingAmount>6126.62</FixingAmount>
+      <Strike>82.27</Strike>
       <Underlying>
         <Type>Commodity</Type>
-        <Name>NYMEX:CL</Name>
+        <Name>NYMEX:NG</Name>
       </Underlying>
       <OptionData>
         <LongShort>Long</LongShort>
         <PayoffType>Accumulator</PayoffType>
       </OptionData>
-      <StartDate>2025-11-02</StartDate>
+      <StartDate>2025-12-02</StartDate>
       <ObservationDates>
         <Rules>
-          <StartDate>2025-11-02</StartDate>
-          <EndDate>2027-11-02</EndDate>
+          <StartDate>2025-12-02</StartDate>
+          <EndDate>2030-12-02</EndDate>
           <Tenor>1M</Tenor>
           <Calendar>US-NYSE</Calendar>
           <Convention>F</Convention>
@@ -72,11 +72,11 @@
       </ObservationDates>
       <RangeBounds>
         <RangeBound>
-          <RangeTo>142.75</RangeTo>
+          <RangeTo>82.27</RangeTo>
           <Leverage>2</Leverage>
         </RangeBound>
         <RangeBound>
-          <RangeFrom>142.75</RangeFrom>
+          <RangeFrom>82.27</RangeFrom>
           <Leverage>1</Leverage>
         </RangeBound>
       </RangeBounds>
@@ -84,7 +84,7 @@
         <BarrierData>
           <Type>UpAndOut</Type>
           <Levels>
-            <Level>171.3</Level>
+            <Level>98.72</Level>
           </Levels>
         </BarrierData>
       </Barriers>

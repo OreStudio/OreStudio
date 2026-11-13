@@ -1180,6 +1180,13 @@ struct commodity_type final {
     commodity_shape shape;
 };
 
+/*
+ * The commodity codes the population books. CommodityPairwiseVarianceSwap is
+ * absent deliberately: ORE's trade factory has no builder for it, so a trade of
+ * that type is refused while the portfolio is parsed and can never be priced.
+ * A type ORE cannot build leaves the generator rather than being booked into a
+ * run that must fail.
+ */
 constexpr commodity_type commodity_types[] = {
     {"CommodityForward", commodity_shape::forward},
     {"IntradayPowerForward", commodity_shape::forward},
@@ -1198,7 +1205,6 @@ constexpr commodity_type commodity_types[] = {
     {"CommodityTaRF", commodity_shape::target_redemption},
     {"CommoditySpreadOption", commodity_shape::spread_option},
     {"CommodityVarianceSwap", commodity_shape::variance_swap},
-    {"CommodityPairwiseVarianceSwap", commodity_shape::variance_swap},
     {"CommodityBasketVarianceSwap", commodity_shape::variance_swap},
     {"CommoditySwap", commodity_shape::swap},
     {"CommodityWorstOfBasketSwap", commodity_shape::swap},

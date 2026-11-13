@@ -25,25 +25,25 @@
       <PricingCalendar>US-NYSE</PricingCalendar>
     </CommodityAveragePriceOptionData>
   </Trade>
-  <Trade id="f0c045e8-52b4-5121-b6ec-056dc60a2644">
+  <Trade id="4511c81f-f685-58e9-8f37-1a99af3ff1ff">
     <TradeType>CommodityAveragePriceOption</TradeType>
     <CommodityAveragePriceOptionData>
       <OptionData>
         <LongShort>Short</LongShort>
-        <OptionType>Call</OptionType>
+        <OptionType>Put</OptionType>
         <Style>European</Style>
         <Settlement>Cash</Settlement>
         <ExerciseDates>
-          <ExerciseDate>2031-10-02</ExerciseDate>
+          <ExerciseDate>2027-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
-      <Name>NYMEX:NG</Name>
+      <Name>NYMEX:CL</Name>
       <Currency>USD</Currency>
-      <Quantity>40102.33</Quantity>
-      <Strike>116.49</Strike>
+      <Quantity>59393.81</Quantity>
+      <Strike>75.03</Strike>
       <PriceType>FutureSettlement</PriceType>
-      <StartDate>2025-10-02</StartDate>
-      <EndDate>2031-10-02</EndDate>
+      <StartDate>2025-11-02</StartDate>
+      <EndDate>2027-11-02</EndDate>
       <PaymentCalendar>US-NYSE</PaymentCalendar>
       <PaymentLag>5</PaymentLag>
       <PaymentConvention>Following</PaymentConvention>

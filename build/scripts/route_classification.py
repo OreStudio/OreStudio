@@ -690,6 +690,11 @@ RULES = (
          "resolves to, the page an id or an older name opens with the choices a shared name "
          "offers, the configurations it binds, and the write that rebuilds the record from the "
          "fields the form shows."),
+    Rule("a report run's route",
+         ("regex", r"^GET /api/reporting/runs/\{id\}(/errors)?$"),
+         CPP, RESOURCE, "reporting",
+         "One report run at the address and in the shape the BFF answered: what it is, the state "
+         "it reached, the batch that ran it and its output, and the problems it recorded."),
     Rule("a report's runs route",
          ("regex", r"^((GET|POST) /api/reporting/reports/\{id\}/(run|runs))$"),
          CPP, RESOURCE, "reporting",

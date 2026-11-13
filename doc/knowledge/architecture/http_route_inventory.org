@@ -76,7 +76,7 @@ an API publishes no area, so it is counted under =(none)=.
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 301 | composed view 2, resource 299 |
-| reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 51 | composed view 12, resource 39 |
+| reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 53 | composed view 12, resource 41 |
 | simulation | calibration, market-regime, synthetic | 62 | composed view 6, resource 56 |
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
 | trading | blotter, book-changes, booking, books, structures, trades, trading | 48 | composed view 4, resource 44 |
@@ -154,13 +154,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 25 | 5 |
-| reporting | 44 | 7 | 37 |
+| reporting | 44 | 9 | 35 |
 | simulation | 28 | 28 | 0 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 27 | 8 |
-| total | 324 | 214 | 110 |
+| total | 324 | 216 | 108 |
 
 * The pairing
 
@@ -383,8 +383,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/reporting/reports/by-name/:name= | GET /api/reporting/reports/by-name/{name} |
 | POST =/api/reporting/reports/schedule= | none |
 | POST =/api/reporting/reports/unschedule= | none |
-| GET =/api/reporting/runs/:id= | none |
-| GET =/api/reporting/runs/:id/errors= | none |
+| GET =/api/reporting/runs/:id= | GET /api/reporting/runs/{id} |
+| GET =/api/reporting/runs/:id/errors= | GET /api/reporting/runs/{id}/errors |
 | GET =/api/reporting/runs/:id/files= | none |
 | GET =/api/reporting/runs/:id/files/:file= | none |
 | GET =/api/reporting/runs/:id/files/:file/info= | none |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1304 routes: 324 answered by the BFF and 980 by ores.http.
+1306 routes: 324 answered by the BFF and 982 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -1094,27 +1094,29 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | not an API | (none) | get | =/api/reporting/pricing-engines/vocabulary= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:970 | Fifteen lookup collections read at once and keyed by the names the editor's controls use, so a client that wants one of them reads that collection instead. |
 | composed view | reporting | get | =/api/reporting/report-health= | bff | projects/ores.web/packages/bff/src/reporting.ts:1349 | Each report definition with the row the list would draw for it and the reads that failed, so the answer says a run could not be checked rather than that it never ran. |
 | resource | reporting | get | =/api/reporting/reports= | bff | projects/ores.web/packages/bff/src/reporting.ts:1252 | The report definition collection: a page, one definition by id or by the name an older address saved, and the configurations it binds. |
-| resource | reporting | get | =/api/reporting/reports= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:683 | One page of the report definitions the caller's parties own, each row the definition with its latest run, its health word, its problem counts, its next fire and the party's own name, so a cell that cannot be read says why. |
+| resource | reporting | get | =/api/reporting/reports= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:838 | One page of the report definitions the caller's parties own, each row the definition with its latest run, its health word, its problem counts, its next fire and the party's own name, so a cell that cannot be read says why. |
 | resource | reporting | put | =/api/reporting/reports/:id= | bff | projects/ores.web/packages/bff/src/reporting.ts:1413 | One report definition written against the version read. |
 | resource | reporting | get | =/api/reporting/reports/:id/configurations= | bff | projects/ores.web/packages/bff/src/reporting.ts:1313 | The report definition collection: a page, one definition by id or by the name an older address saved, and the configurations it binds. |
 | resource | reporting | post | =/api/reporting/reports/:id/run= | bff | projects/ores.web/packages/bff/src/grid-report-runs.ts:357 | Starts a run of one definition and answers the run it created. |
 | resource | reporting | get | =/api/reporting/reports/:id/runs= | bff | projects/ores.web/packages/bff/src/grid-report-runs.ts:368 | The report definition collection: a page, one definition by id or by the name an older address saved, and the configurations it binds. |
 | resource | reporting | get | =/api/reporting/reports/:segment= | bff | projects/ores.web/packages/bff/src/reporting.ts:1396 | The report definition collection: a page, one definition by id or by the name an older address saved, and the configurations it binds. |
 | resource | reporting | get | =/api/reporting/reports/by-name/:name= | bff | projects/ores.web/packages/bff/src/reporting.ts:1370 | The report definition collection: a page, one definition by id or by the name an older address saved, and the configurations it binds. |
-| resource | reporting | get | =/api/reporting/reports/by-name/{name}= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:796 | One report definition at the address and in the shape the BFF answered: the id a name resolves to, the page an id or an older name opens with the choices a shared name offers, the configurations it binds, and the write that rebuilds the record from the fields the form shows. |
+| resource | reporting | get | =/api/reporting/reports/by-name/{name}= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:1008 | One report definition at the address and in the shape the BFF answered: the id a name resolves to, the page an id or an older name opens with the choices a shared name offers, the configurations it binds, and the write that rebuilds the record from the fields the form shows. |
 | resource | reporting | post | =/api/reporting/reports/schedule= | bff | projects/ores.web/packages/bff/src/reporting.ts:1451 | Sets or clears the schedule of one or more definitions, and answers how many it changed, which it refused and why. |
 | resource | reporting | post | =/api/reporting/reports/unschedule= | bff | projects/ores.web/packages/bff/src/reporting.ts:1466 | Sets or clears the schedule of one or more definitions, and answers how many it changed, which it refused and why. |
-| resource | reporting | put | =/api/reporting/reports/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:927 | One report definition at the address and in the shape the BFF answered: the id a name resolves to, the page an id or an older name opens with the choices a shared name offers, the configurations it binds, and the write that rebuilds the record from the fields the form shows. |
-| resource | reporting | get | =/api/reporting/reports/{id}/configurations= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:846 | One report definition at the address and in the shape the BFF answered: the id a name resolves to, the page an id or an older name opens with the choices a shared name offers, the configurations it binds, and the write that rebuilds the record from the fields the form shows. |
-| resource | reporting | post | =/api/reporting/reports/{id}/run= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:756 | One report's runs at the addresses and in the shapes the BFF answered: the start that answers the run it made, and the runs of a definition newest first with the state each reached. |
-| resource | reporting | get | =/api/reporting/reports/{id}/runs= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:778 | One report's runs at the addresses and in the shapes the BFF answered: the start that answers the run it made, and the runs of a definition newest first with the state each reached. |
-| resource | reporting | get | =/api/reporting/reports/{segment}= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:817 | One report definition at the address and in the shape the BFF answered: the id a name resolves to, the page an id or an older name opens with the choices a shared name offers, the configurations it binds, and the write that rebuilds the record from the fields the form shows. |
+| resource | reporting | put | =/api/reporting/reports/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:1139 | One report definition at the address and in the shape the BFF answered: the id a name resolves to, the page an id or an older name opens with the choices a shared name offers, the configurations it binds, and the write that rebuilds the record from the fields the form shows. |
+| resource | reporting | get | =/api/reporting/reports/{id}/configurations= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:1058 | One report definition at the address and in the shape the BFF answered: the id a name resolves to, the page an id or an older name opens with the choices a shared name offers, the configurations it binds, and the write that rebuilds the record from the fields the form shows. |
+| resource | reporting | post | =/api/reporting/reports/{id}/run= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:911 | One report's runs at the addresses and in the shapes the BFF answered: the start that answers the run it made, and the runs of a definition newest first with the state each reached. |
+| resource | reporting | get | =/api/reporting/reports/{id}/runs= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:990 | One report's runs at the addresses and in the shapes the BFF answered: the start that answers the run it made, and the runs of a definition newest first with the state each reached. |
+| resource | reporting | get | =/api/reporting/reports/{segment}= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:1029 | One report definition at the address and in the shape the BFF answered: the id a name resolves to, the page an id or an older name opens with the choices a shared name offers, the configurations it binds, and the write that rebuilds the record from the fields the form shows. |
 | resource | reporting | get | =/api/reporting/runs/:id= | bff | projects/ores.web/packages/bff/src/grid-report-runs.ts:428 | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
 | resource | reporting | get | =/api/reporting/runs/:id/errors= | bff | projects/ores.web/packages/bff/src/grid-report-runs.ts:382 | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
 | resource | reporting | get | =/api/reporting/runs/:id/files= | bff | projects/ores.web/packages/bff/src/report-run-files.ts:612 | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
 | resource | reporting | get | =/api/reporting/runs/:id/files/:file= | bff | projects/ores.web/packages/bff/src/report-run-files.ts:711 | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
 | resource | reporting | get | =/api/reporting/runs/:id/files/:file/info= | bff | projects/ores.web/packages/bff/src/report-run-files.ts:619 | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
 | resource | reporting | get | =/api/reporting/runs/:id/results= | bff | projects/ores.web/packages/bff/src/grid-report-results.ts:880 | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
+| resource | reporting | get | =/api/reporting/runs/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:933 | One report run at the address and in the shape the BFF answered: what it is, the state it reached, the batch that ran it and its output, and the problems it recorded. |
+| resource | reporting | get | =/api/reporting/runs/{id}/errors= | ores.http | projects/ores.http/reporting/src/routes/reporting/report_routes.cpp:964 | One report run at the address and in the shape the BFF answered: what it is, the state it reached, the batch that ran it and its output, and the problems it recorded. |
 | composed view | workflow | get | =/api/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:628 | The requests this person may decide, gathered from every kind into one queue with each kind's subject, which is the approval inbox the design names. |
 | resource | workflow | get | =/api/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:668 | One request an identifier names, when the person may open it, which a queue read cannot answer because a notice is read after the request stopped waiting. |
 | composed view | workflow | get | =/api/requests/:id/changes= | bff | projects/ores.web/packages/bff/src/inbox.ts:698 | One request's whole story woven from every row any component wrote for it, the request's versions, the answers given on it, the roles it asked for and the notices, or the change lines of its kind beside the live record's values. |

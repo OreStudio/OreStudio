@@ -229,3 +229,20 @@ TEST_CASE("reports_refuse_a_run_started_by_a_token_that_names_no_tenant", "[repo
                                    "/api/reporting/reports/{id}/run")
               .status == http_status::bad_request);
 }
+
+TEST_CASE("reports_refuse_a_run_page_for_an_address_that_is_no_id", "[report]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a run's page and its problems";
+
+    const auto status = [](const std::string& address, const std::string& pattern) {
+        return answer_at<report_routes>(http_method::get, address, http_request{}, pattern).status;
+    };
+    CHECK(status("/api/reporting/runs/not-an-id", "/api/reporting/runs/{id}") ==
+          http_status::bad_request);
+    CHECK(status("/api/reporting/runs/not-an-id/errors", "/api/reporting/runs/{id}/errors") ==
+          http_status::bad_request);
+    CHECK(status("/api/reporting/runs/" + std::string(report_run), "/api/reporting/runs/{id}") ==
+          http_status::bad_gateway);
+    CHECK(status("/api/reporting/runs/" + std::string(report_run) + "/errors",
+                 "/api/reporting/runs/{id}/errors") == http_status::bad_gateway);
+}

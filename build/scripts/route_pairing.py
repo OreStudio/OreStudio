@@ -206,6 +206,8 @@ PAIRS = {
     ("GET", "/api/books/tree"): ("GET", "/api/books/tree"),
     ("GET", "/api/reporting/choices"): ("GET", "/api/reporting/choices"),
     ("GET", "/api/reporting/reports"): ("GET", "/api/reporting/reports"),
+    ("GET", "/api/reporting/runs/:id"): ("GET", "/api/reporting/runs/{id}"),
+    ("GET", "/api/reporting/runs/:id/errors"): ("GET", "/api/reporting/runs/{id}/errors"),
     ("POST", "/api/reporting/reports/:id/run"): ("POST", "/api/reporting/reports/{id}/run"),
     ("GET", "/api/reporting/reports/:id/runs"): ("GET", "/api/reporting/reports/{id}/runs"),
     ("GET", "/api/reporting/reports/by-name/:name"): (

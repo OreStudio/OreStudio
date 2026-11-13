@@ -74,6 +74,7 @@ The units answer under the =reporting= area of the route inventory.
   choose from.
 - =ores.iam.api= -- the parties the caller's own account works in, which a
   screen names by the party's name and never its id.
+- =ores.compute.api= -- the batch that ran a report, which the run's page names.
 - =ores.utility= -- the codecs and the wire support types.
 - =ores.logging= -- the logger factory the part's tests log through.
 
@@ -94,6 +95,7 @@ target_link_libraries(${lib_target_name}
         ores.analytics.api.lib
         ores.refdata.api.lib
         ores.iam.api.lib
+        ores.compute.api.lib
     PRIVATE
         ores.http.nats.lib
         ores.utility.lib)

@@ -54,7 +54,6 @@
 #include <optional>
 #include <set>
 #include <span>
-#include <stop_token>
 #include <thread>
 #include <utility>
 #include <vector>

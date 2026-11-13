@@ -97,3 +97,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The curve analytics read answers a curve's conventions, its market pillars and its bootstrapped points. It reuses the discount factors the bootstrap already returns and derives the zero rate, the segment forward and the curve-less-market shift from them; no new mathematics. Three cases: the pillar pairs, the zero rate recomputed from the discount factor to 1e-10, and an unknown curve refused in words.

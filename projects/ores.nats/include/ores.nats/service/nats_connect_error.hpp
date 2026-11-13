@@ -27,7 +27,7 @@
 namespace ores::nats::service {
 
 /**
- * @brief Categorises the cause of a failed NATS connection attempt.
+ * @brief Categorises the cause of a failed NATS connection or request.
  *
  * Allows callers to present a meaningful error to the user rather than
  * a raw NATS library status string.
@@ -43,6 +43,10 @@ enum class nats_error_kind {
     /// NATS connected successfully but no service is listening on the
     /// bootstrap subject (services not started or wrong namespace).
     services_unavailable,
+    /// A request was sent but no reply arrived before its deadline. Distinct
+    /// from @c connection_timeout, which names a connect that never completed:
+    /// here the connection is up and the responder was too slow.
+    request_timeout,
     /// Any other NATS error not covered by the above categories.
     other
 };

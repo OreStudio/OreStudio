@@ -45,6 +45,7 @@
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
 #include "ores.iam.core/service/internal_request_client.hpp"
+#include "ores.iam.core/service/request_retry.hpp"
 #include "ores.iam.core/service/seed_profile_parameter_check.hpp"
 #include "ores.iam.core/service/seed_profile_parameter_service.hpp"
 #include "ores.iam.core/service/seed_profile_service.hpp"
@@ -791,6 +792,12 @@ private:
      */
     static constexpr auto bulk_request_deadline = std::chrono::seconds{600};
 
+    /// The instant a step must end, read from the budget its kind states.
+    static std::chrono::steady_clock::time_point deadline_of(const std::string& kind) {
+        return std::chrono::steady_clock::now() +
+               ores::iam::workflow::words_for_step_kind(kind).timeout;
+    }
+
     /// Who a provisioning step acts as. The engine sends a step without the
     /// caller's token, so the handler mints one for the run's administrator.
     struct step_actor {
@@ -1110,13 +1117,16 @@ private:
      *
      * @param curves Each curve's bootstrap config id and name.
      * @param label Names the step in the logs.
+     * @param deadline The instant the step must end; a request is not retried
+     *        past it.
      */
     curve_publish_outcome
     publish_curves(internal_request_client& client,
                    const std::vector<std::pair<std::string, std::string>>& curves,
                    std::string_view reason,
                    std::string_view label,
-                   std::vector<ores::workflow::messaging::step_log_entry>& step_log) {
+                   std::vector<ores::workflow::messaging::step_log_entry>& step_log,
+                   std::chrono::steady_clock::time_point deadline) {
         constexpr auto curve_quote_patience = std::chrono::minutes{2};
         constexpr auto curve_retry_interval = std::chrono::seconds{10};
 
@@ -1140,7 +1150,13 @@ private:
                 ores::marketdata::messaging::compute_curve_request preview;
                 preview.bootstrap_config_id = it->first;
                 preview.as_of = as_of;
-                const auto computed = client.request(preview, work_request_deadline);
+                const auto curve_work = std::string(label) + ": " + names.at(it->first);
+                const auto computed = request_with_retry(
+                    client,
+                    preview,
+                    {.deadline = deadline,
+                     .attempt_timeout = work_request_deadline,
+                     .what = curve_work + " curve bootstrap"});
                 if (!computed.success) {
                     it->second = computed.message;
                     ++it;
@@ -1151,7 +1167,12 @@ private:
                 publish.bootstrap_config_id = it->first;
                 publish.as_of = as_of;
                 publish.reason = std::string(reason);
-                const auto published = client.request(publish, work_request_deadline);
+                const auto published = request_with_retry(
+                    client,
+                    publish,
+                    {.deadline = deadline,
+                     .attempt_timeout = work_request_deadline,
+                     .what = curve_work + " curve publish"});
                 if (published.success && published.published_at) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                         << label << ": published " << names.at(it->first) << " at "
@@ -1254,8 +1275,12 @@ private:
         provision_step_result result;
         result.kind = command.kind;
         std::vector<ores::workflow::messaging::step_log_entry> step_log;
-        auto outcome =
-            publish_curves(client, curves, publish_reason, "publish_system_curves", step_log);
+        auto outcome = publish_curves(client,
+                                      curves,
+                                      publish_reason,
+                                      "publish_system_curves",
+                                      step_log,
+                                      deadline_of(command.kind));
         result.curves = std::move(outcome.published);
         result.curves_not_published = std::move(outcome.not_published);
 
@@ -1503,7 +1528,8 @@ private:
                                           curves,
                                           publish_reason,
                                           "publish_party_curves " + party_name,
-                                          step_log);
+                                          step_log,
+                                          deadline_of(command.kind));
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "publish_party_curves: " << party_name << ": published "
                 << outcome.published.size() << ", already published "
@@ -1590,6 +1616,7 @@ private:
 
             std::size_t published = 0;
             std::size_t held = 0;
+            const auto step_deadline = deadline_of(command.kind);
             for (const auto& pair : pairs) {
                 const auto as_of = std::chrono::system_clock::now();
                 const auto line = party_name + ": " + pair;
@@ -1609,7 +1636,12 @@ private:
                 publish.pair_code = pair;
                 publish.as_of = as_of;
                 publish.reason = std::string(publish_reason);
-                const auto answer = party_client.request(publish, work_request_deadline);
+                const auto answer = request_with_retry(
+                    party_client,
+                    publish,
+                    {.deadline = step_deadline,
+                     .attempt_timeout = work_request_deadline,
+                     .what = line + " forward set"});
                 if (answer.success && answer.published_at) {
                     ++published;
                     result.forwards.push_back(
@@ -1702,6 +1734,7 @@ private:
             }
 
             std::size_t published = 0;
+            const auto step_deadline = deadline_of(command.kind);
             for (const auto& blueprint : blueprints) {
                 const auto id = boost::uuids::to_string(blueprint.id);
                 const auto as_of = std::chrono::system_clock::now();
@@ -1721,7 +1754,12 @@ private:
                 ores::marketdata::messaging::calibrate_fx_vol_surface_request calibrate;
                 calibrate.blueprint_id = id;
                 calibrate.as_of = as_of;
-                const auto calibrated = party_client.request(calibrate, work_request_deadline);
+                const auto calibrated = request_with_retry(
+                    party_client,
+                    calibrate,
+                    {.deadline = step_deadline,
+                     .attempt_timeout = work_request_deadline,
+                     .what = line + " surface calibration"});
                 if (!calibrated.success) {
                     result.surfaces_not_published.push_back(line + ": " + calibrated.message);
                     continue;
@@ -1735,7 +1773,12 @@ private:
                 publish.blueprint_id = id;
                 publish.as_of = calibrated.as_of;
                 publish.reason = std::string(publish_reason);
-                const auto answer = party_client.request(publish, work_request_deadline);
+                const auto answer = request_with_retry(
+                    party_client,
+                    publish,
+                    {.deadline = step_deadline,
+                     .attempt_timeout = work_request_deadline,
+                     .what = line + " surface publish"});
                 if (answer.success && answer.published_at) {
                     ++published;
                     result.surfaces.push_back(
@@ -2041,7 +2084,12 @@ private:
         ores::refdata::messaging::regenerate_calendar_dates_request request;
         request.in_use_only = true;
         request.end_year = last_generated_holiday_year;
-        const auto response = client.request(request, bulk_request_deadline);
+        const auto response = request_with_retry(
+            client,
+            request,
+            {.deadline = deadline_of(command.kind),
+             .attempt_timeout = bulk_request_deadline,
+             .what = "the holiday calendars"});
         if (!response.success)
             throw std::runtime_error("The calendars were not built: " + response.message);
 

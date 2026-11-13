@@ -26,11 +26,11 @@ A step that hits a transient transport failure tries again with backoff and jitt
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
@@ -43,23 +43,31 @@ A step that hits a transient transport failure tries again with backoff and jitt
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Make a request timeout carry a kind. =ores.nats= raised it as a bare runtime
+  error, so a caller had to match its words; it becomes
+  =nats_error_kind::request_timeout=, beside =services_unavailable=.
+- Read a failure into three answers: transient (timeout, nobody listening),
+  refused (the server's own refusal), permanent (everything else). Only a
+  transient failure is retried.
+- Own the retry in one helper: the request, the step's deadline, the
+  per-attempt deadline and the work in a person's words. The wait doubles and
+  is jittered, the attempts stop at the policy's limit or the deadline, and a
+  refusal is thrown at once with the server's reason.
+- Replace the report scheduler's string match on "NATS request timed out" with
+  the kind, since its own suite asserts the code that match produced.
+- Use the helper at the five derive sites and the calendar regeneration, and
+  leave every other request as it is.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Request-retry cases | 6, all passing | =compass test run -- -R "ores.iam.core.tests"= | this branch |
+| =ores.iam.core.tests= | 347 cases, 345 passed; the 2 failures are the initial-admin database guard | same | this branch |
+| =ores.reporting.core.tests= | 303 of 303 passed | =compass test run -- -R "ores.reporting.core.tests"= | this branch |
+| =ores.iam.service.tests= | passed | =compass test run -- -R "ores.iam.service.tests"= | this branch |
+| =service_next_fire_tests= on the old classifier | 2 assertions failed: the timeout read as =internal_error= | =compass test run -- -R "ores.reporting.core.tests"= with the reporting change stashed | this branch |
+| Build of the changed components | succeeded, 99 targets, 27 s after the first fix | =compass build ores.nats.lib ores.reporting.core.lib ores.iam.core.tests ores.iam.service.lib= | this branch |
 
 * Notes
 
@@ -87,3 +95,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A request timeout is now a kind on the transport error, not a sentence a caller
+matches. =nats_connect_error= gained =request_timeout=, distinct from
+=connection_timeout= (a connect that never completed) and from
+=services_unavailable= (nobody listening).
+
+[request_retry.hpp](file:../../../../../projects/ores.iam/core/include/ores.iam.core/service/request_retry.hpp)
+holds the three answers and the one retry loop:
+
+- =classify_request_failure= reads a refusal, a timeout or a missing responder,
+  and everything else.
+- =request_with_retry= takes the request, the step's deadline, the per-attempt
+  deadline and the work in words. It doubles the wait with jitter, stops at the
+  policy's limit or at the deadline, and throws at once on a refusal or a
+  permanent fault, naming the work, the attempts and the reason.
+
+The five derive requests and the calendar regeneration now go through it, each
+with the deadline of the step that makes it.
+
+The report scheduler's string match is gone: its own suite,
+=service_next_fire_tests=, asserts that a timed-out request reads as
+=request_timeout=, and it failed with =internal_error= while the change was
+stashed. It passes now.
+
+Six new cases cover the classification and the loop, including the refusal that
+is not retried, the limit, and the deadline that refuses a retry. The two
+=ores.iam.core.tests= failures are the initial-admin database guard, which the
+environment's out-of-sync schema causes and this change does not touch.

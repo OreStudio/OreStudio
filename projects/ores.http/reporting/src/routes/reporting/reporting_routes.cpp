@@ -19,6 +19,7 @@
  */
 #include "ores.http/routes/reporting/reporting_routes.hpp"
 #include "ores.http/routes/reporting/choice_routes.hpp"
+#include "ores.http/routes/reporting/report_routes.hpp"
 
 namespace ores::http::routes::reporting {
 
@@ -27,6 +28,7 @@ void reporting_routes::register_routes(
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     ores::nats::service::nats_client& session) {
     choice_routes::register_routes(router, registry, session);
+    report_routes::register_routes(router, registry, session);
 }
 
 }

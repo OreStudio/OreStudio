@@ -205,6 +205,7 @@ PAIRS = {
     ("GET", "/api/blotter"): ("GET", "/api/blotter"),
     ("GET", "/api/books/tree"): ("GET", "/api/books/tree"),
     ("GET", "/api/reporting/choices"): ("GET", "/api/reporting/choices"),
+    ("GET", "/api/reporting/reports"): ("GET", "/api/reporting/reports"),
     ("GET", "/api/marketdata/adapters"): ("GET", "/api/marketdata/adapters"),
     ("GET", "/api/oresmd/schema"): ("GET", "/api/oresmd/schema"),
     ("POST", "/api/oresmd/parse"): ("POST", "/api/oresmd/parse"),

@@ -676,6 +676,12 @@ RULES = (
          BFF, RESOURCE, "trading",
          "The kinds a structure may be, a lookup the server holds."),
 
+    Rule("the report list's route",
+         ("exact", "GET /api/reporting/reports"),
+         CPP, RESOURCE, "reporting",
+         "One page of the report definitions the caller's parties own, each row the"
+         " definition with its latest run, its health word, its problem counts, its next"
+         " fire and the party's own name, so a cell that cannot be read says why."),
     Rule("the report definitions",
          ("regex", r"^GET /api/reporting/reports"),
          BFF, RESOURCE, "reporting",

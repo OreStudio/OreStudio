@@ -23,9 +23,9 @@
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/domain/fx_vol_surface_feed.hpp"
 #include "ores.synthetic.api/domain/fx_vol_surface_feed_expiry.hpp"
+#include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_emitter.hpp"
 #include <atomic>
 #include <cstddef>
@@ -89,8 +89,7 @@ struct fx_vol_surface_feed_build_input final {
  * do not rise with them, a segment with no expiry, and a contributor who is named twice.
  */
 [[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::expected<fx_vol_surface_emitter, std::string>
-make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input,
-                            std::uint64_t run_seed);
+make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::uint64_t run_seed);
 
 /**
  * @brief A synthetic FX volatility surface, as a feed the run's loop ticks.
@@ -131,7 +130,14 @@ public:
         return fx_vol_surface_feed_kind;
     }
     void start() override;
-    /// One tick, as the scheduler drives it.
+    /**
+     * @brief One tick, as the scheduler drives it.
+     *
+     * A surface whose drivers the run's market does not know -- one started after the market
+     * was built, or a run with no market at all -- publishes nothing and says so. Stepping it
+     * on zeros would move it on noise nobody chose, and throwing would fill the log with one
+     * failure a tick.
+     */
     std::string tick(const ores::analytics::quant::service::tick_context& context);
     void stop() override;
     std::uint64_t publish_count() const override {

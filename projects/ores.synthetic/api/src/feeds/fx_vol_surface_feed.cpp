@@ -66,10 +66,9 @@ double year_fraction(std::string_view count, char unit) {
 }
 
 /// The emitter a row describes, or the exception a feed cannot start without.
-fx_vol_surface_emitter
-surface_or_throw(const fx_vol_surface_feed_build_input& input,
-                 std::uint64_t run_seed,
-                 const std::string& source_name) {
+fx_vol_surface_emitter surface_or_throw(const fx_vol_surface_feed_build_input& input,
+                                        std::uint64_t run_seed,
+                                        const std::string& source_name) {
     auto built = make_fx_vol_surface_emitter(input, run_seed);
     if (!built)
         throw std::invalid_argument("Feed " + source_name + " did not start: " + built.error());
@@ -94,8 +93,7 @@ std::optional<double> fx_vol_tenor_years(std::string_view tenor) {
 }
 
 std::expected<fx_vol_surface_emitter, std::string>
-make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input,
-                            std::uint64_t run_seed) {
+make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input, std::uint64_t run_seed) {
     if (input.expiries.empty())
         return std::unexpected(std::string("A surface has no expiry."));
     if (input.contributors.empty())
@@ -168,20 +166,20 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input,
     std::vector<fx_vol_contributor_spec> contributors;
     contributors.reserve(input.contributors.size());
     for (const auto& name : input.contributors) {
-        const auto known = std::ranges::find(contributors, name,
-                                             &fx_vol_contributor_spec::source_name);
+        const auto known =
+            std::ranges::find(contributors, name, &fx_vol_contributor_spec::source_name);
         if (known != contributors.end())
             return std::unexpected(
                 std::format("The contributor '{}' observes the surface twice.", name));
         contributors.push_back(
             {.source_name = name,
-             .profile = input.contributor_profiles.empty()
-                            ? ores::analytics::quant::service::fx_vol_noise_profile{}
-                            : input.contributor_profiles[contributors.size()],
-             .stream = rng_stream(stream_key{
-                 .run_seed = run_seed,
-                 .series = series_key(std::format("{}/{}", config.source_name, name)),
-                 .purpose = ores::analytics::quant::math::draw_purpose::price})});
+             .profile = input.contributor_profiles.empty() ?
+                            ores::analytics::quant::service::fx_vol_noise_profile{} :
+                            input.contributor_profiles[contributors.size()],
+             .stream = rng_stream(
+                 stream_key{.run_seed = run_seed,
+                            .series = series_key(std::format("{}/{}", config.source_name, name)),
+                            .purpose = ores::analytics::quant::math::draw_purpose::price})});
     }
 
     return fx_vol_surface_emitter::make(start,
@@ -192,15 +190,15 @@ make_fx_vol_surface_emitter(const fx_vol_surface_feed_build_input& input,
                                         std::move(contributors));
 }
 
-fx_vol_surface_feed::fx_vol_surface_feed(ores::nats::service::client& nats,
-                                         std::string source_name,
-                                         std::string nats_subject,
-                                         const fx_vol_surface_feed_build_input& input,
-                                         std::uint64_t run_seed,
-                                         tick_scheduler& scheduler,
-                                         double sensitivity,
-                                         const ores::analytics::quant::domain::arrival_spec&
-                                             arrival)
+fx_vol_surface_feed::fx_vol_surface_feed(
+    ores::nats::service::client& nats,
+    std::string source_name,
+    std::string nats_subject,
+    const fx_vol_surface_feed_build_input& input,
+    std::uint64_t run_seed,
+    tick_scheduler& scheduler,
+    double sensitivity,
+    const ores::analytics::quant::domain::arrival_spec& arrival)
     : nats_(nats)
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
@@ -218,7 +216,10 @@ fx_vol_surface_feed::fx_vol_surface_feed(ores::nats::service::client& nats,
         series_uris_.push_back(
             std::format("oresmd://fx/{}?type=quote&instrument=fx_option&quote=rate_lnvol&"
                         "ccy={}&expiry={}&strike_label={}",
-                        base, quote, point.expiry_id, point.label));
+                        base,
+                        quote,
+                        point.expiry_id,
+                        point.label));
     }
 }
 
@@ -236,8 +237,12 @@ void fx_vol_surface_feed::start() {
 }
 
 std::string fx_vol_surface_feed::tick(const tick_context& context) {
-    // The normals come from the market, one for each forward variance and one for each
-    // driver; with no market they are zeros and the surface steps nowhere.
+    // The normals come from the market, one for each forward variance and one for each driver.
+    // A surface the market does not drive publishes nothing: its block was never in the market
+    // the run built, and stepping it on nothing would move it on noise nobody chose.
+    const auto wanted = static_cast<std::size_t>(emitter_.surface().expiries.size() + 2);
+    if (context.drivers.size() != wanted)
+        return std::format("no market: {} of {} driver(s)", context.drivers.size(), wanted);
     const auto points = emitter_.step(context.drivers);
     const auto& codec = ores::nats::default_wire_codec();
     const auto now = context.observed_at;

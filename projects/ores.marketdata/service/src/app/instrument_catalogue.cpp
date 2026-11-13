@@ -20,6 +20,7 @@
 #include "ores.marketdata.service/app/instrument_catalogue.hpp"
 
 #include "ores.marketdata.service/app/instrument_naming.hpp"
+#include "ores.marketdata.service/app/staleness_policy.hpp"
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
@@ -55,21 +56,15 @@ auto& instrument_catalogue_lg() {
 constexpr std::int64_t default_page = 100;
 
 /// The staleness threshold, until it moves into configuration.
-constexpr std::int64_t default_stale_seconds = 3600;
-
 std::int64_t age_seconds_of(std::chrono::system_clock::time_point as_of,
                             std::chrono::system_clock::time_point now) {
-    if (as_of == std::chrono::system_clock::time_point{})
-        return 0;
-    const auto age = std::chrono::duration_cast<std::chrono::seconds>(now - as_of).count();
-    return age < 0 ? 0 : age;
+    return staleness_policy::age_seconds(as_of, now);
 }
 
 bool is_stale(std::optional<std::chrono::system_clock::time_point> as_of,
               std::chrono::system_clock::time_point now) {
-    if (!as_of)
-        return true;
-    return age_seconds_of(*as_of, now) > default_stale_seconds;
+    return staleness_policy::is_stale(as_of.value_or(std::chrono::system_clock::time_point{}),
+                                      now);
 }
 
 std::string lower(std::string s) {

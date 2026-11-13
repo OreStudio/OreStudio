@@ -28,6 +28,7 @@
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/instrument_naming.hpp"
+#include "ores.marketdata.service/app/staleness_policy.hpp"
 #include "../curve_pillar_reader.hpp"
 #include "../curve_republish_resolver.hpp"
 #include <algorithm>
@@ -56,7 +57,6 @@ auto& rate_ladder_lg() {
 constexpr const char* ladder_tenor_convention = "RATES_SPOT_FORWARD";
 constexpr const char* ladder_day_count_convention = "A365F";
 
-constexpr std::int64_t ladder_default_stale_seconds = 3600;
 
 std::int64_t ladder_age_seconds_of(std::chrono::system_clock::time_point as_of,
                             std::chrono::system_clock::time_point now) {
@@ -238,8 +238,8 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
             wire.provider_code = q.provider_code;
             wire.value = q.value;
             wire.as_of = q.as_of;
-            wire.age_seconds = ladder_age_seconds_of(q.as_of, now);
-            wire.stale = wire.age_seconds > ladder_default_stale_seconds;
+            wire.age_seconds = staleness_policy::age_seconds(q.as_of, now);
+            wire.stale = staleness_policy::is_stale(q.as_of, now);
             wire.series_id = q.series_id;
             values.push_back(q.value);
             rung.quotes.push_back(std::move(wire));

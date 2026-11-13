@@ -27,6 +27,7 @@
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/instrument_naming.hpp"
+#include "ores.marketdata.service/app/staleness_policy.hpp"
 #include "../curve_pillar_reader.hpp"
 #include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
@@ -48,7 +49,6 @@ auto& fx_montage_lg() {
     return instance;
 }
 
-constexpr std::int64_t montage_default_stale_seconds = 3600;
 constexpr std::uint32_t montage_window_points = 2000;
 
 /// The spots one pair's providers gave, and the numbers the window gives.
@@ -62,13 +62,6 @@ struct pair_draft final {
     std::optional<double> day_low;
 };
 
-std::int64_t montage_age_seconds_of(std::chrono::system_clock::time_point as_of,
-                                    std::chrono::system_clock::time_point now) {
-    if (as_of == std::chrono::system_clock::time_point{})
-        return 0;
-    const auto age = std::chrono::duration_cast<std::chrono::seconds>(now - as_of).count();
-    return age < 0 ? 0 : age;
-}
 
 double montage_median_of(std::vector<double> values) {
     std::sort(values.begin(), values.end());
@@ -183,8 +176,8 @@ mm::get_fx_montage_response get_fx_montage(const ores::database::context& ctx,
             continue;
         }
         spot.as_of = newest.observation_datetime;
-        spot.age_seconds = montage_age_seconds_of(spot.as_of, now);
-        spot.stale = spot.age_seconds > montage_default_stale_seconds;
+        spot.age_seconds = staleness_policy::age_seconds(spot.as_of, now);
+        spot.stale = staleness_policy::is_stale(spot.as_of, now);
         spot.series_id = boost::uuids::to_string(series.id);
 
         const auto name = base + "/" + quote;

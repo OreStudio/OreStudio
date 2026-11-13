@@ -157,7 +157,7 @@ utility::uuid::tenant_id resolve_tenant_id(const context& ctx, const std::string
 /**
  * @brief Verifies that a tenant context works by leasing a connection.
  */
-void verify_tenant_context(context& ctx, const utility::uuid::tenant_id& tenant_id) {
+void verify_tenant_context(const context& ctx, const utility::uuid::tenant_id& tenant_id) {
     try {
         (void)ctx.pq_pool().acquire();
     } catch (const std::exception& e) {

@@ -70,14 +70,14 @@ std::optional<boost::uuids::uuid> uuid_of(const std::string& text) {
 
 derived_fx_vol_adapter::derived_fx_vol_adapter(ores::nats::service::client& nats,
                                                ores::nats::service::nats_client& svc_nats,
-                                               ores::database::context db_ctx,
+                                               const ores::database::context& db_ctx,
                                                std::string source_name,
                                                std::string provider_code,
                                                boost::uuids::uuid feed_id,
                                                derived_fx_vol_timing timing)
     : nats_(nats)
     , svc_nats_(svc_nats)
-    , db_ctx_(std::move(db_ctx))
+    , db_ctx_(db_ctx)
     , source_name_(std::move(source_name))
     , provider_code_(std::move(provider_code))
     , feed_id_(feed_id)

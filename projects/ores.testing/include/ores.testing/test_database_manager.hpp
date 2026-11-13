@@ -117,7 +117,7 @@ public:
      * @param ctx The database context to use
      * @param table_names Tables whose orphaned synthetic rows to close
      */
-    static void close_orphaned_synthetic_rows(database::context& ctx,
+    static void close_orphaned_synthetic_rows(const database::context& ctx,
                                               const std::vector<std::string>& table_names);
 
     /**

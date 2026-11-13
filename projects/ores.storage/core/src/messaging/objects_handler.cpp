@@ -44,11 +44,11 @@ constexpr std::uint32_t k_max_list_limit = 1000;
 }
 
 objects_handler::objects_handler(ores::nats::service::client& nats,
-                                 ores::database::context base_ctx,
+                                 const ores::database::context& base_ctx,
                                  filesystem::local_store store,
                                  std::optional<ores::security::jwt::jwt_authenticator> verifier)
     : nats_(nats)
-    , base_ctx_(std::move(base_ctx))
+    , base_ctx_(base_ctx)
     , store_(std::move(store))
     , verifier_(std::move(verifier)) {}
 

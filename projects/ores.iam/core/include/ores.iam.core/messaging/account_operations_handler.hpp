@@ -55,6 +55,7 @@
 #include <format>
 #include <memory>
 #include <stdexcept>
+#include <unordered_set>
 
 namespace ores::iam::messaging {
 

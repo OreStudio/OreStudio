@@ -285,7 +285,7 @@ struct projection {
 };
 
 /// The projection of one series, read from its URI.
-projection project_one(ores::database::context& ctx, const domain::market_series& series) {
+projection project_one(const ores::database::context& ctx, const domain::market_series& series) {
     projection p{};
     auto& row = p.row;
     p.understood = false;

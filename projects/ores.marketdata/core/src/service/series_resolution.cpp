@@ -55,16 +55,18 @@ std::variant<ores::database::context, result> scope_to_party(const ores::databas
 
 }
 
-std::variant<repository::fixing_series, result> resolve_series(const ores::database::context& ctx,
+std::variant<repository::fixing_series, result> resolve_series(const ores::database::context& base,
                                                                const std::string& item,
                                                                const std::string& provider_code,
                                                                const std::string& party_id,
                                                                const std::string& entity,
                                                                const std::string& item_name) {
-    const auto scoped = scope_to_party(ctx, party_id, entity);
+    const auto scoped = scope_to_party(base, party_id, entity);
     if (const auto* refused = std::get_if<result>(&scoped))
         return *refused;
-    ctx = std::get<ores::database::context>(scoped);
+    // The scoped context is the one this read runs as. It is bound once here, so
+    // the parameter the caller owns is never written to.
+    const auto& ctx = std::get<ores::database::context>(scoped);
     // The party policy shows a session with no party no row, so an empty reply would look
     // like an item with no values.
     if (ctx.visible_party_ids().empty())

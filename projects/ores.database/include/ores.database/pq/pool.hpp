@@ -21,6 +21,7 @@
 
 #include "ores.database/export.hpp"
 #include "ores.database/pq/connection.hpp"
+#include "ores.database/pq/options.hpp"
 #include <chrono>
 #include <condition_variable>
 #include <cstddef>
@@ -29,27 +30,6 @@
 #include <vector>
 
 namespace ores::database::pq {
-
-/**
- * @brief The shape of the waits between attempts to open a pool.
- */
-enum class backoff { linear, exponential };
-
-/**
- * @brief How hard a pool tries to open its connections before it gives up.
- *
- * A database that is restarting refuses connections for a while; the attempts
- * absorb that instead of failing the first request after it. Only a failure
- * to connect is retried.
- */
-struct open_policy final {
-    /// Maximum number of attempts.
-    std::size_t attempts = 10;
-    /// Base wait between attempts.
-    std::chrono::seconds wait{1};
-    /// Wait shape between attempts.
-    backoff shape = backoff::exponential;
-};
 
 /**
  * @brief A service's few long-lived connections.

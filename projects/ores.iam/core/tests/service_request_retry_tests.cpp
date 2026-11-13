@@ -239,3 +239,23 @@ TEST_CASE("A repeat takes the result an earlier attempt already produced", "[req
     CHECK(publishes == 1);
     CHECK(waits.waits.size() == 1);
 }
+
+TEST_CASE("An attempt is reported to the run's own record", "[request_retry]") {
+    scripted_client client;
+    client.script.push_back(
+        []() -> int { throw nats_connect_error(nats_error_kind::request_timeout, "late"); });
+    client.script.push_back([] { return 7; });
+
+    wait_recorder waits;
+    std::vector<std::string> notes;
+    auto options = options_after(std::chrono::seconds{30}, waits.policy(), "ACME: EUR/USD surface");
+    options.note = [&notes](const std::string& line) {
+        notes.push_back(line);
+    };
+
+    CHECK(request_with_retry(client, test_request{}, options) == 7);
+    REQUIRE(notes.size() == 1);
+    CHECK_THAT(notes.front(), Catch::Matchers::ContainsSubstring("ACME: EUR/USD surface"));
+    CHECK_THAT(notes.front(), Catch::Matchers::ContainsSubstring("attempt 1 failed"));
+    CHECK_THAT(notes.front(), Catch::Matchers::ContainsSubstring("late"));
+}

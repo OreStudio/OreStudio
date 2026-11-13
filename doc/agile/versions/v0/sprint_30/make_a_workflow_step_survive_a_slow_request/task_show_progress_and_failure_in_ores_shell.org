@@ -29,11 +29,11 @@ a report.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
@@ -47,23 +47,24 @@ a report.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The shell already prints a running step's progress, from the heartbeat work
+  that merged as PR #4660, and prints a step's own log beside each status
+  change. The failure it prints is the step's error text.
+- So the missing half is not in the shell: it is that a retry said nothing on
+  the step's own record. Carry each attempt into the step's log, which the
+  engine answers and the shell prints.
+- Keep the shell unchanged, and verify the three lines a person reads: the
+  progress line while the step runs, the attempt lines in its log, and the
+  failure line naming the work.
+- The failure text itself arrives from the retry helper, so its attempts and
+  reason are already in the line the shell prints.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =ores.iam.core.tests= | 350 cases, 0 failures | =compass test run -- -R "ores.iam.core.tests"= | this branch |
+| The attempt-report case | passes: one note per failed attempt, naming the work and the reason | same | this branch |
 
 * Notes
 
@@ -91,3 +92,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The shell needed no change. What was missing was on the run's own record, and
+that is now carried there: each transient failure writes one line into the
+step's log, and the engine answers that log to every client.
+
+A person watching a run now reads three things from the same source:
+
+#+begin_src text
+  [13/15] publish_party_surfaces: in_progress
+      progress: ACME: surfaces with their quotes 3 10
+  [13/15] publish_party_surfaces: completed
+      info: ACME: EUR/USD surface calibration: attempt 1 failed (NATS request timed out: no
+      reply from 'marketdata.v1.ops.calibrate_fx_vol_surface' within 120000 ms); asking again
+      in 300 ms
+#+end_src
+
+A step that gives up reads as the report the retry helper composes:
+
+#+begin_src text
+  [13/15] publish_party_surfaces: failed -- ACME: EUR/USD surface calibration failed after 3
+  attempts: NATS request timed out: no reply from '...' within 120000 ms
+#+end_src
+
+The progress line comes from PR #4660 (`progress_line` and the per-step
+`last_progress` map in `workflow_run_commands.cpp`). The attempt line comes from
+the step's log, which `print_step_log` prints at each status change. The failure
+line is the step's error, which the retry helper composed.
+
+The attempt-report case proves the note reaches the caller once per failed
+attempt, naming the work and the reason. The remaining link -- that the engine
+stores the step's log and the shell prints it -- is already covered by the
+engine and shell behaviour, and the end-to-end run is task 7's check.

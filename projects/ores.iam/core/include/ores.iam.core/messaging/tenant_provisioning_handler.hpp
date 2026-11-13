@@ -798,6 +798,19 @@ private:
                ores::iam::workflow::words_for_step_kind(kind).timeout;
     }
 
+    /// Records a retry attempt in the step's own log.
+    ///
+    /// The engine answers a step's log to both clients, so an attempt written
+    /// here is what a person watching the run reads, not only the service log.
+    static std::function<void(const std::string&)>
+    note_attempts(std::vector<ores::workflow::messaging::step_log_entry>& step_log) {
+        return [&step_log](const std::string& line) {
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
+                                .message = line,
+                                .context = {}});
+        };
+    }
+
     /// Who a provisioning step acts as. The engine sends a step without the
     /// caller's token, so the handler mints one for the run's administrator.
     struct step_actor {
@@ -1156,7 +1169,8 @@ private:
                                                          preview,
                                                          {.deadline = deadline,
                                                           .attempt_timeout = work_request_deadline,
-                                                          .what = curve_work + " curve bootstrap"});
+                                                          .what = curve_work + " curve bootstrap",
+                                                          .note = note_attempts(step_log)});
                 if (!computed.success) {
                     it->second = computed.message;
                     ++it;
@@ -1180,7 +1194,9 @@ private:
                                     .published_by = found->published_by};
                         return client.request(publish, work_request_deadline);
                     },
-                    {.deadline = deadline, .what = curve_work + " curve publish"});
+                    {.deadline = deadline,
+                     .what = curve_work + " curve publish",
+                     .note = note_attempts(step_log)});
                 if (published.success && published.published_at) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                         << label << ": published " << names.at(it->first) << " at "
@@ -1680,7 +1696,9 @@ private:
                                     .published_by = found.published_by};
                         return party_client.request(publish, work_request_deadline);
                     },
-                    {.deadline = step_deadline, .what = line + " forward set"});
+                    {.deadline = step_deadline,
+                     .what = line + " forward set",
+                     .note = note_attempts(step_log)});
                 if (answer.success && answer.published_at) {
                     ++published;
                     result.forwards.push_back(
@@ -1798,7 +1816,8 @@ private:
                                        calibrate,
                                        {.deadline = step_deadline,
                                         .attempt_timeout = work_request_deadline,
-                                        .what = line + " surface calibration"});
+                                        .what = line + " surface calibration",
+                                        .note = note_attempts(step_log)});
                 if (!calibrated.success) {
                     result.surfaces_not_published.push_back(line + ": " + calibrated.message);
                     continue;
@@ -1829,7 +1848,9 @@ private:
                                     .published_by = found.published_by};
                         return party_client.request(publish, work_request_deadline);
                     },
-                    {.deadline = step_deadline, .what = line + " surface publish"});
+                    {.deadline = step_deadline,
+                     .what = line + " surface publish",
+                     .note = note_attempts(step_log)});
                 if (answer.success && answer.published_at) {
                     ++published;
                     result.surfaces.push_back(
@@ -2135,11 +2156,13 @@ private:
         ores::refdata::messaging::regenerate_calendar_dates_request request;
         request.in_use_only = true;
         request.end_year = last_generated_holiday_year;
+        std::vector<ores::workflow::messaging::step_log_entry> step_log;
         const auto response = request_with_retry(client,
                                                  request,
                                                  {.deadline = deadline_of(command.kind),
                                                   .attempt_timeout = bulk_request_deadline,
-                                                  .what = "the holiday calendars"});
+                                                  .what = "the holiday calendars",
+                                                  .note = note_attempts(step_log)});
         if (!response.success)
             throw std::runtime_error("The calendars were not built: " + response.message);
 
@@ -2147,7 +2170,7 @@ private:
             << "build_calendars: wrote " << response.rows_written << " day(s)";
         provision_step_result result;
         result.kind = command.kind;
-        wf.complete(ores::utility::codec::json::write(result));
+        wf.complete(ores::utility::codec::json::write(result), step_log);
     }
 
     /// Publishes each bundle the step names, one nested run each, and reports

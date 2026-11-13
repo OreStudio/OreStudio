@@ -120,6 +120,9 @@ struct retry_request_options {
     std::string what;
     /// How many attempts, and how they wait.
     request_retry_policy policy{};
+    /// Where an attempt is reported, so a person watching the run sees it.
+    /// Empty when the caller has nowhere to record it.
+    std::function<void(const std::string&)> note{};
 };
 
 /**
@@ -132,6 +135,9 @@ struct retry_call_options {
     std::string what;
     /// How many attempts, and how they wait.
     request_retry_policy policy{};
+    /// Where an attempt is reported, so a person watching the run sees it.
+    /// Empty when the caller has nowhere to record it.
+    std::function<void(const std::string&)> note{};
 };
 
 /**
@@ -179,9 +185,14 @@ auto call_with_retry(Operation&& operation, const retry_call_options& options)
                     delay.count() / 2, delay.count())(generator));
             const auto wait_for = std::min(
                 std::chrono::duration_cast<std::chrono::milliseconds>(remaining), jittered);
-            BOOST_LOG_SEV(lg, ores::logging::warn)
-                << options.what << ": attempt " << attempt << " failed (" << failure.what()
-                << "); asking again in " << wait_for.count() << " ms";
+            const auto line = options.what + ": attempt " + std::to_string(attempt) + " failed (" +
+                              failure.what() + "); asking again in " +
+                              std::to_string(wait_for.count()) + " ms";
+            BOOST_LOG_SEV(lg, ores::logging::warn) << line;
+            // The step's own record carries the attempt, so the person
+            // watching the run reads it without a service log.
+            if (options.note)
+                options.note(line);
             options.policy.wait(wait_for);
             delay = std::min(delay * 2, options.policy.max_delay);
         }
@@ -202,7 +213,10 @@ typename Request::response_type
 request_with_retry(Client& client, const Request& req, const retry_request_options& options) {
     return call_with_retry(
         [&client, &req, &options] { return client.request(req, options.attempt_timeout); },
-        {.deadline = options.deadline, .what = options.what, .policy = options.policy});
+        {.deadline = options.deadline,
+         .what = options.what,
+         .policy = options.policy,
+         .note = options.note});
 }
 
 }

@@ -33,8 +33,8 @@ namespace {
 
 /*
  * clang-cl defines _MSC_VER but its Windows runtime holds no __divti3, so the
- * 128-bit division in the charge below fails to link. Every MSVC-family
- * target uses the multiprecision type, which needs no runtime helper.
+ * 128-bit division in per_thousand fails to link. Every MSVC-family target
+ * uses the multiprecision type, which needs no runtime helper.
  */
 #if defined(_MSC_VER)
 using billing_integer = boost::multiprecision::int128_t;

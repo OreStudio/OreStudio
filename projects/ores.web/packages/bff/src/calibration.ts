@@ -169,7 +169,7 @@ export interface IrCoverageConfig {
     id: string;
     currency_code: string;
     source_name: string;
-    price_source: string;
+    price_source?: string;
 }
 
 /** The fields of a bootstrap config that name the curve it builds. */
@@ -191,16 +191,25 @@ export interface IrCurveCoverageRow {
     currency_code: string;
     config_id: string;
     source_name: string;
-    price_source: string;
     provider_code: string;
     window_days: number;
     bootstrap_config_id: string;
     bootstrap_config_name: string;
     published_as_of: string;
     published_state: string;
-    gap: string;
+    gap: IrCurveGap;
     gap_reason: string;
 }
+
+/** The first fact a currency is missing, or empty when its curve is covered. */
+export type IrCurveGap =
+    | ''
+    | 'no_feed'
+    | 'no_source'
+    | 'no_curve_config'
+    | 'no_publish'
+    | 'not_live'
+    | 'stale_publish';
 
 export interface IrCurveCoverageInput {
     readonly feeds: readonly IrCoverageFeed[];
@@ -231,8 +240,8 @@ const publishedSetSchema = z.looseObject({
     state_code: z.string().default(''),
 });
 
-/** A curve older than this states a gap: the republish job runs every fifteen minutes. */
-const STALE_PUBLISH_MS = 60 * 60 * 1000;
+/** A curve older than two republish firings states a gap: the job runs every fifteen minutes. */
+const STALE_PUBLISH_MS = 30 * 60 * 1000;
 
 const NO_FEED_REASON = 'No synthetic feed holds this currency.';
 const NO_SOURCE_REASON =
@@ -240,7 +249,8 @@ const NO_SOURCE_REASON =
 const REFUSED_REASON = 'The class policy refuses to start the feed without a fixing.';
 const NO_CURVE_CONFIG_REASON = 'No bootstrap config holds this currency.';
 const NO_PUBLISH_REASON = 'The curve has never been published.';
-const STALE_PUBLISH_REASON = 'The latest curve was published more than 60 minutes ago.';
+const STALE_PUBLISH_REASON = 'The latest curve was published more than 30 minutes ago.';
+const NOT_LIVE_REASON = 'The latest set is not the set in use.';
 
 /**
  * One row per supported currency: its synthetic source, its bootstrap config and its latest
@@ -249,54 +259,60 @@ const STALE_PUBLISH_REASON = 'The latest curve was published more than 60 minute
  */
 export function irCurveCoverage(input: IrCurveCoverageInput): IrCurveCoverageRow[] {
     const feeds = new Map(input.feeds.map((feed) => [feed.config_id, feed]));
-    const configs = configsByCurrency(input.generationConfigs);
-    const bootstraps = firstByCurrency(input.bootstrapConfigs);
+    const configs = groupByCurrency(input.generationConfigs);
+    const bootstraps = groupByCurrency(input.bootstrapConfigs);
     const currencies = [...new Set([...configs.keys(), ...bootstraps.keys()])].sort((a, b) =>
         a.localeCompare(b),
     );
     return currencies.map((currency) =>
-        coverageRow(
-            currency,
-            configs.get(currency) ?? [],
-            feeds,
-            bootstraps.get(currency),
-            input.publishedBySeries,
-            input.windowDays,
-            input.now,
-        ),
+        coverageRow(input, currency, configs.get(currency) ?? [], bootstraps.get(currency) ?? [], feeds),
     );
 }
 
+/** The rows of a list, grouped by the currency each names. */
+function groupByCurrency<T extends { currency_code: string }>(items: readonly T[]): Map<string, T[]> {
+    const byCurrency = new Map<string, T[]>();
+    for (const item of items) {
+        const held = byCurrency.get(item.currency_code);
+        if (held === undefined) {
+            byCurrency.set(item.currency_code, [item]);
+        } else {
+            held.push(item);
+        }
+    }
+    return byCurrency;
+}
+
 function coverageRow(
+    input: IrCurveCoverageInput,
     currency: string,
     configs: readonly IrCoverageConfig[],
+    bootstrapConfigs: readonly IrCoverageBootstrapConfig[],
     feeds: ReadonlyMap<string, IrCoverageFeed>,
-    bootstrap: IrCoverageBootstrapConfig | undefined,
-    publishedBySeries: ReadonlyMap<string, IrCoveragePublish | undefined>,
-    windowDays: number,
-    now: Date,
 ): IrCurveCoverageRow {
-    const config = configOf(configs, feeds);
+    const config = publicConfigOf(configs, feeds);
     const feed = config === undefined ? undefined : feeds.get(config.id);
+    const bootstrap = newestPublishedOf(bootstrapConfigs, input.publishedBySeries);
     const published =
-        bootstrap === undefined ? undefined : publishedBySeries.get(bootstrap.output_series_id);
+        bootstrap === undefined
+            ? undefined
+            : input.publishedBySeries.get(bootstrap.output_series_id);
     return {
         currency_code: currency,
         config_id: config?.id ?? '',
         source_name: config?.source_name ?? '',
-        price_source: config?.price_source ?? '',
         provider_code: feed?.start.provider_code ?? '',
-        window_days: windowDays,
+        window_days: input.windowDays,
         bootstrap_config_id: bootstrap?.id ?? '',
         bootstrap_config_name: bootstrap?.name ?? '',
         published_as_of: published?.as_of ?? '',
         published_state: published?.state_code ?? '',
-        ...gapOf(feed, bootstrap, published, now),
+        ...gapOf(feed, bootstrap, published, input.now),
     };
 }
 
 /** The feed config a currency reads through: the first, by source name, that takes a public rate. */
-function configOf(
+function publicConfigOf(
     configs: readonly IrCoverageConfig[],
     feeds: ReadonlyMap<string, IrCoverageFeed>,
 ): IrCoverageConfig | undefined {
@@ -304,29 +320,22 @@ function configOf(
     return ordered.find((config) => feeds.get(config.id)?.start.from_fixing === true) ?? ordered[0];
 }
 
-function configsByCurrency(configs: readonly IrCoverageConfig[]): Map<string, IrCoverageConfig[]> {
-    const byCurrency = new Map<string, IrCoverageConfig[]>();
-    for (const config of configs) {
-        const held = byCurrency.get(config.currency_code);
-        if (held === undefined) {
-            byCurrency.set(config.currency_code, [config]);
-        } else {
-            held.push(config);
-        }
-    }
-    return byCurrency;
-}
-
-function firstByCurrency(
+/** The curve config whose newest publish is the latest, else the first by name. */
+function newestPublishedOf(
     configs: readonly IrCoverageBootstrapConfig[],
-): Map<string, IrCoverageBootstrapConfig> {
-    const byCurrency = new Map<string, IrCoverageBootstrapConfig>();
-    for (const config of configs) {
-        if (!byCurrency.has(config.currency_code)) {
-            byCurrency.set(config.currency_code, config);
+    publishedBySeries: ReadonlyMap<string, IrCoveragePublish | undefined>,
+): IrCoverageBootstrapConfig | undefined {
+    const ordered = [...configs].sort((a, b) => a.name.localeCompare(b.name));
+    let best: IrCoverageBootstrapConfig | undefined;
+    let bestAt = Number.NEGATIVE_INFINITY;
+    for (const config of ordered) {
+        const at = Date.parse(publishedBySeries.get(config.output_series_id)?.as_of ?? '');
+        if (!Number.isNaN(at) && at > bestAt) {
+            best = config;
+            bestAt = at;
         }
     }
-    return byCurrency;
+    return best ?? ordered[0];
 }
 
 /** The first gap, in the order a currency falls short of a published curve. */
@@ -335,7 +344,7 @@ function gapOf(
     bootstrap: IrCoverageBootstrapConfig | undefined,
     published: IrCoveragePublish | undefined,
     now: Date,
-): { gap: string; gap_reason: string } {
+): { gap: IrCurveGap; gap_reason: string } {
     if (feed === undefined) {
         return { gap: 'no_feed', gap_reason: NO_FEED_REASON };
     }
@@ -347,6 +356,12 @@ function gapOf(
     }
     if (published === undefined) {
         return { gap: 'no_publish', gap_reason: NO_PUBLISH_REASON };
+    }
+    if (published.state_code !== '' && published.state_code !== 'published') {
+        return {
+            gap: 'not_live',
+            gap_reason: `${NOT_LIVE_REASON} It is ${published.state_code}.`,
+        };
     }
     const age = now.getTime() - Date.parse(published.as_of);
     if (!(age <= STALE_PUBLISH_MS)) {

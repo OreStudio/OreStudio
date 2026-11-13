@@ -714,7 +714,6 @@ describe('synthetic calibration', () => {
                 currency_code: 'USD',
                 config_id: ID,
                 source_name: 'synthetic.bloomberg.usdsofr',
-                price_source: 'fixing',
                 provider_code: 'bloomberg',
                 window_days: 90,
                 bootstrap_config_id: OTHER,
@@ -722,7 +721,7 @@ describe('synthetic calibration', () => {
                 published_as_of: '2026-01-01 00:00:00Z',
                 published_state: 'published',
                 gap: 'stale_publish',
-                gap_reason: 'The latest curve was published more than 60 minutes ago.',
+                gap_reason: 'The latest curve was published more than 30 minutes ago.',
             },
         ]);
         expect(calls.map((c) => c.subject)).toEqual([

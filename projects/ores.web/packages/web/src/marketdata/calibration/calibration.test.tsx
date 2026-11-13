@@ -125,7 +125,6 @@ const usdCurve: IrCurveCoverageRow = {
     currency_code: 'USD',
     config_id: '44444444-4444-4444-8444-444444444444',
     source_name: 'synthetic.rates.usd.sofr',
-    price_source: 'sofr',
     provider_code: 'fred',
     window_days: 90,
     bootstrap_config_id: '55555555-5555-4555-8555-555555555555',
@@ -140,7 +139,6 @@ const jpyCurve: IrCurveCoverageRow = {
     currency_code: 'JPY',
     config_id: '',
     source_name: '',
-    price_source: '',
     provider_code: '',
     window_days: 90,
     bootstrap_config_id: '66666666-6666-4666-8666-666666666666',
@@ -313,6 +311,7 @@ describe('the interest rates coverage', () => {
             ['no_source', 'No public source'],
             ['no_curve_config', 'No curve config'],
             ['no_publish', 'No publish'],
+            ['not_live', 'Not in use'],
             ['stale_publish', 'Stale publish'],
         ] as const;
         for (const [gap, word] of cases) {

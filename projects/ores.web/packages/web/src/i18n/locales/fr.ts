@@ -5083,6 +5083,8 @@ const fr: SourceCatalogue = {
                     no_source: 'Aucune source publique',
                     no_curve_config: 'Aucune configuration de courbe',
                     no_publish: 'Aucune publication',
+
+                    not_live: 'Pas en usage',
                     stale_publish: 'Publication périmée',
                 },
             },

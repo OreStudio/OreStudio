@@ -5045,6 +5045,8 @@ const pt: SourceCatalogue = {
                     no_source: 'Sem fonte pública',
                     no_curve_config: 'Sem configuração de curva',
                     no_publish: 'Sem publicação',
+
+                    not_live: 'Não em uso',
                     stale_publish: 'Publicação desatualizada',
                 },
             },

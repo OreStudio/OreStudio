@@ -85,7 +85,6 @@ describe('the IR curve coverage', () => {
                 currency_code: 'USD',
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
-                price_source: 'fixing',
                 provider_code: 'bloomberg',
                 window_days: 90,
                 bootstrap_config_id: BOOTSTRAP,
@@ -104,7 +103,6 @@ describe('the IR curve coverage', () => {
                 currency_code: 'USD',
                 config_id: '',
                 source_name: '',
-                price_source: '',
                 provider_code: '',
                 window_days: 90,
                 bootstrap_config_id: BOOTSTRAP,
@@ -126,7 +124,6 @@ describe('the IR curve coverage', () => {
                 currency_code: 'USD',
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
-                price_source: 'fixing',
                 provider_code: '',
                 window_days: 90,
                 bootstrap_config_id: BOOTSTRAP,
@@ -151,7 +148,6 @@ describe('the IR curve coverage', () => {
                 currency_code: 'USD',
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
-                price_source: 'fixing',
                 provider_code: '',
                 window_days: 90,
                 bootstrap_config_id: BOOTSTRAP,
@@ -170,7 +166,6 @@ describe('the IR curve coverage', () => {
                 currency_code: 'USD',
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
-                price_source: 'fixing',
                 provider_code: 'bloomberg',
                 window_days: 90,
                 bootstrap_config_id: '',
@@ -189,7 +184,6 @@ describe('the IR curve coverage', () => {
                 currency_code: 'USD',
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
-                price_source: 'fixing',
                 provider_code: 'bloomberg',
                 window_days: 90,
                 bootstrap_config_id: BOOTSTRAP,
@@ -202,32 +196,44 @@ describe('the IR curve coverage', () => {
         ]);
     });
 
-    it('states stale_publish for a curve older than sixty minutes', () => {
+
+    it('states not_live for a latest set that is no longer in use', () => {
+        const rows = coverage({
+            publishedBySeries: new Map([
+                [SERIES, { as_of: '2026-11-13 11:55:00Z', state_code: 'withdrawn' }],
+            ]),
+        });
+        expect(rows[0]).toMatchObject({
+            gap: 'not_live',
+            gap_reason: 'The latest set is not the set in use. It is withdrawn.',
+        });
+    });
+
+    it('states stale_publish for a curve older than thirty minutes', () => {
         expect(
             coverage({
-                publishedBySeries: new Map([[SERIES, publish('2026-11-13 10:59:00Z')]]),
+                publishedBySeries: new Map([[SERIES, publish('2026-11-13 11:29:00Z')]]),
             }),
         ).toEqual([
             {
                 currency_code: 'USD',
                 config_id: CONFIG,
                 source_name: 'synthetic.bloomberg.usdsofr',
-                price_source: 'fixing',
                 provider_code: 'bloomberg',
                 window_days: 90,
                 bootstrap_config_id: BOOTSTRAP,
                 bootstrap_config_name: 'USD-SOFR',
-                published_as_of: '2026-11-13 10:59:00Z',
+                published_as_of: '2026-11-13 11:29:00Z',
                 published_state: 'published',
                 gap: 'stale_publish',
-                gap_reason: 'The latest curve was published more than 60 minutes ago.',
+                gap_reason: 'The latest curve was published more than 30 minutes ago.',
             },
         ]);
     });
 
-    it('covers a curve published exactly sixty minutes ago', () => {
+    it('covers a curve published exactly thirty minutes ago', () => {
         const rows = coverage({
-            publishedBySeries: new Map([[SERIES, publish('2026-11-13 11:00:00Z')]]),
+            publishedBySeries: new Map([[SERIES, publish('2026-11-13 11:30:00Z')]]),
         });
         expect(rows[0]).toMatchObject({ gap: '', gap_reason: '' });
     });
@@ -237,7 +243,6 @@ describe('the IR curve coverage', () => {
             id: '88888888-8888-4888-8888-888888888888',
             currency_code: 'USD',
             source_name: 'synthetic.demo.usdsofr',
-            price_source: 'fixed',
         };
         const rows = coverage({
             feeds: [

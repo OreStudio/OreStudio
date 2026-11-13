@@ -5009,6 +5009,8 @@ export const en: SourceCatalogue = {
                     no_source: 'No public source',
                     no_curve_config: 'No curve config',
                     no_publish: 'No publish',
+
+                    not_live: 'Not in use',
                     stale_publish: 'Stale publish',
                 },
             },

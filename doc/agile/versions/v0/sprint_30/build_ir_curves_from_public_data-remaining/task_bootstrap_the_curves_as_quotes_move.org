@@ -95,6 +95,18 @@ task and name that file in the Command column.
 
 * Notes
 
+- The first live firing, at 00:45, reached the scheduler and was refused
+  =bad_request=: the =nats_request= action sent the payload's raw ={}= text,
+  which the callee decodes in the process wire format. The action now sends a
+  codec-encoded request from a no-member body type.
+- The provisioning runs on 2026-11-13 failed with SIGSEGV in the workflow
+  service, then in the shell, both around =get_workflow_steps_response=. The
+  cause was stale binaries: the worktree had been rebuilt only in parts after
+  the branch moved onto the workflow change, so a process built against one
+  shape of =workflow_step_summary= talked to a library built against another.
+  A rebuilt workflow service stopped crashing; the shell is rebuilt next, and
+  the provisioning run after that is the proof.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

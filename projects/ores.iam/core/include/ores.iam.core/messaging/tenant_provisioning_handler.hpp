@@ -45,6 +45,7 @@
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
 #include "ores.iam.core/service/internal_request_client.hpp"
+#include "ores.iam.core/service/request_retry.hpp"
 #include "ores.iam.core/service/seed_profile_parameter_check.hpp"
 #include "ores.iam.core/service/seed_profile_parameter_service.hpp"
 #include "ores.iam.core/service/seed_profile_service.hpp"
@@ -764,6 +765,62 @@ public:
     }
 
 private:
+    /**
+     * @brief How long a request waits that derives or writes a set of rows.
+     *
+     * A curve bootstrap, a forward set, a surface calibration and a surface
+     * publish are minutes of work on a loaded host, not one round trip. The
+     * surface step measured 99 s for 40 calibrations and publishes on a quiet
+     * machine, about 2.5 s each, and one of them outlived the shared 30 s
+     * default when the host was loaded: that is how step 13 of a provisioning
+     * run failed with "NATS request timed out".
+     *
+     * 120 s is 48 times that quiet measurement and four times the shared
+     * default. It is also a tenth of the 1200 s a step must stand still before
+     * the engine fails it, so one slow request can never be what exhausts a
+     * step's patience.
+     */
+    static constexpr auto work_request_deadline = std::chrono::seconds{120};
+
+    /**
+     * @brief How long a request waits that regenerates a whole table.
+     *
+     * The calendar dates are 13,515 days per calendar, 35 calendars in use.
+     * The request wrote them in 168.4 s on a quiet host after the batch write
+     * replaced a read per day, and it timed out at 600 s before that. The
+     * deadline keeps the value the step already stated, now named once.
+     */
+    static constexpr auto bulk_request_deadline = std::chrono::seconds{600};
+
+    /**
+     * @brief The instant a step's requests must stop being tried.
+     *
+     * The engine gives a step a budget of standing still, not of wall clock
+     * time, so this is that budget read from the moment of the call. A chain of
+     * attempts, and each attempt's own wait, is cut to what is left of it.
+     */
+    static std::chrono::steady_clock::time_point deadline_of(const std::string& kind) {
+        return std::chrono::steady_clock::now() +
+               ores::iam::workflow::words_for_step_kind(kind).timeout;
+    }
+
+    /// Records a retry attempt where a person watching the run can read it.
+    ///
+    /// The step's log answers the engine when the step settles, and the step's
+    /// report carries to the engine on the next renewal. An attempt is written
+    /// to both, so a slow request that is being asked again shows while it
+    /// happens and not only once the step ends.
+    static std::function<void(const std::string&)>
+    attempts_recorded_in(std::vector<ores::workflow::messaging::step_log_entry>& step_log,
+                         const ores::service::messaging::workflow_step_context& wf) {
+        return [&step_log, &wf](const std::string& line) {
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
+                                .message = line,
+                                .context = {}});
+            wf.progress(line);
+        };
+    }
+
     /// Who a provisioning step acts as. The engine sends a step without the
     /// caller's token, so the handler mints one for the run's administrator.
     struct step_actor {
@@ -1081,15 +1138,23 @@ private:
      * feeds may not have ticked yet. A curve whose request waits for a person is not asked again,
      * since a second ask would raise a second request for one act.
      *
+     * The step reports each curve it starts, and each attempt it makes at one, so a person
+     * watching the run reads what the step is waiting for while it waits.
+     *
+     * @param wf The step's own record, for the reports it makes while it runs.
      * @param curves Each curve's bootstrap config id and name.
      * @param label Names the step in the logs.
+     * @param deadline The instant the step's requests must stop being tried.
      */
     curve_publish_outcome
-    publish_curves(internal_request_client& client,
+    publish_curves(const ores::service::messaging::workflow_step_context& wf,
+                   internal_request_client& client,
+                   const boost::uuids::uuid& party_id,
                    const std::vector<std::pair<std::string, std::string>>& curves,
                    std::string_view reason,
                    std::string_view label,
-                   std::vector<ores::workflow::messaging::step_log_entry>& step_log) {
+                   std::vector<ores::workflow::messaging::step_log_entry>& step_log,
+                   std::chrono::steady_clock::time_point deadline) {
         constexpr auto curve_quote_patience = std::chrono::minutes{2};
         constexpr auto curve_retry_interval = std::chrono::seconds{10};
 
@@ -1109,11 +1174,21 @@ private:
                 // while the step waits are inside the snapshot the next attempt
                 // reads. A preview and its publish state the same instant.
                 const auto as_of = std::chrono::system_clock::now();
+                const auto curve_work = std::string(label) + ": " + names.at(it->first);
+                wf.progress(curve_work,
+                            static_cast<std::int64_t>(curves.size() - pending.size()),
+                            static_cast<std::int64_t>(curves.size()));
 
                 ores::marketdata::messaging::compute_curve_request preview;
                 preview.bootstrap_config_id = it->first;
                 preview.as_of = as_of;
-                const auto computed = client.request(preview);
+                const auto computed =
+                    request_with_retry(client,
+                                       preview,
+                                       {.deadline = deadline,
+                                        .attempt_timeout = work_request_deadline,
+                                        .what = curve_work + " curve bootstrap",
+                                        .note = attempts_recorded_in(step_log, wf)});
                 if (!computed.success) {
                     it->second = computed.message;
                     ++it;
@@ -1124,7 +1199,30 @@ private:
                 publish.bootstrap_config_id = it->first;
                 publish.as_of = as_of;
                 publish.reason = std::string(reason);
-                const auto published = client.request(publish);
+                const auto published = ores::iam::service::call_with_retry(
+                    [&](const ores::iam::service::retry_attempt& attempt)
+                        -> ores::marketdata::messaging::publish_curve_response {
+                        return ores::iam::service::do_unless_already_done(
+                            attempt,
+                            [&]() -> std::optional<
+                                      ores::marketdata::messaging::publish_curve_response> {
+                                const auto found = published_curve_of(
+                                    client, party_id, it->first, as_of, attempt.budget_left);
+                                if (!found)
+                                    return std::nullopt;
+                                return ores::marketdata::messaging::publish_curve_response{
+                                    .success = true,
+                                    .message = "Published by an earlier attempt.",
+                                    .approval_request_id = found->request_id,
+                                    .state_code = found->state_code,
+                                    .published_at = found->published_at,
+                                    .published_by = found->published_by};
+                            },
+                            [&] { return client.request(publish, attempt.budget_left); });
+                    },
+                    {.deadline = deadline,
+                     .what = curve_work + " curve publish",
+                     .note = attempts_recorded_in(step_log, wf)});
                 if (published.success && published.published_at) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                         << label << ": published " << names.at(it->first) << " at "
@@ -1227,8 +1325,14 @@ private:
         provision_step_result result;
         result.kind = command.kind;
         std::vector<ores::workflow::messaging::step_log_entry> step_log;
-        auto outcome =
-            publish_curves(client, curves, publish_reason, "publish_system_curves", step_log);
+        auto outcome = publish_curves(wf,
+                                      client,
+                                      admin->party_id,
+                                      curves,
+                                      publish_reason,
+                                      "publish_system_curves",
+                                      step_log,
+                                      deadline_of(command.kind));
         result.curves = std::move(outcome.published);
         result.curves_not_published = std::move(outcome.not_published);
 
@@ -1391,6 +1495,42 @@ private:
         return out;
     }
 
+    /// The set one curve publish is about, once an earlier attempt wrote it.
+    ///
+    /// A publish states the configuration and the as-of it is for, and the
+    /// server keeps the as-of at microsecond precision, so a set an earlier
+    /// attempt published carries this publish's as-of. A set of the same
+    /// configuration at another as-of is another run's work, which this one
+    /// takes for its own at nobody's benefit.
+    ///
+    /// A request this publish raised and nobody has answered yet is a candidate
+    /// set, and it is read back all the same: the raise already happened, so a
+    /// repeat that could not see it would raise a second request for one set.
+    static std::optional<ores::marketdata::messaging::published_curve_set>
+    published_curve_of(internal_request_client& client,
+                       const boost::uuids::uuid& party_id,
+                       const std::string& config_id,
+                       std::chrono::system_clock::time_point as_of,
+                       std::chrono::milliseconds patience) {
+        ores::marketdata::messaging::list_published_curves_request request;
+        request.party_id = boost::uuids::to_string(party_id);
+        request.include_candidates = true;
+        request.limit = 1000;
+        const auto wanted = std::chrono::floor<std::chrono::microseconds>(as_of);
+        for (const auto& set : client.request(request, patience).sets) {
+            if (set.bootstrap_config_id != config_id)
+                continue;
+            if (std::chrono::floor<std::chrono::microseconds>(set.as_of) != wanted)
+                continue;
+            // A withdrawn or superseded set is not the one this publish is
+            // about: the work it names has since been undone or replaced.
+            if (set.state_code == "withdrawn" || set.state_code == "superseded")
+                continue;
+            return set;
+        }
+        return std::nullopt;
+    }
+
     /**
      * @brief Gives each party the step names its own funding curves.
      *
@@ -1472,11 +1612,14 @@ private:
                 if (!published.contains(id))
                     curves.emplace_back(id, curve.name);
             }
-            auto outcome = publish_curves(party_client,
+            auto outcome = publish_curves(wf,
+                                          party_client,
+                                          party->id,
                                           curves,
                                           publish_reason,
                                           "publish_party_curves " + party_name,
-                                          step_log);
+                                          step_log,
+                                          deadline_of(command.kind));
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "publish_party_curves: " << party_name << ": published "
                 << outcome.published.size() << ", already published "
@@ -1499,7 +1642,7 @@ private:
                                  "writes no row twice and publishes only the missing curves:";
             for (const auto& line : result.curves_not_published)
                 reason += " " + line + ";";
-            wf.fail(reason);
+            wf.fail(reason, step_log);
             return;
         }
         wf.complete(ores::utility::codec::json::write(result), step_log);
@@ -1563,16 +1706,19 @@ private:
 
             std::size_t published = 0;
             std::size_t held = 0;
+            const auto step_deadline = deadline_of(command.kind);
+            std::int64_t done = 0;
             for (const auto& pair : pairs) {
                 const auto as_of = std::chrono::system_clock::now();
                 const auto line = party_name + ": " + pair;
+                wf.progress(line, done++, static_cast<std::int64_t>(pairs.size()));
 
                 // The read answers the newest set at or before the as-of, so a set an
                 // earlier run published is found by a later one.
-                ores::marketdata::messaging::get_published_fx_forward_request read;
-                read.pair_code = pair;
-                read.as_of = as_of;
-                if (party_client.request(read).success) {
+                ores::marketdata::messaging::get_published_fx_forward_request published_before;
+                published_before.pair_code = pair;
+                published_before.as_of = as_of;
+                if (party_client.request(published_before).success) {
                     ++held;
                     result.forwards_already_published.push_back(line);
                     continue;
@@ -1582,7 +1728,32 @@ private:
                 publish.pair_code = pair;
                 publish.as_of = as_of;
                 publish.reason = std::string(publish_reason);
-                const auto answer = party_client.request(publish);
+                const auto answer = ores::iam::service::call_with_retry(
+                    [&](const ores::iam::service::retry_attempt& attempt)
+                        -> ores::marketdata::messaging::publish_fx_forward_response {
+                        return ores::iam::service::do_unless_already_done(
+                            attempt,
+                            [&]() -> std::optional<
+                                      ores::marketdata::messaging::publish_fx_forward_response> {
+                                ores::marketdata::messaging::get_published_fx_forward_request read;
+                                read.pair_code = pair;
+                                read.as_of = as_of;
+                                const auto found = party_client.request(read, attempt.budget_left);
+                                if (!found.success)
+                                    return std::nullopt;
+                                return ores::marketdata::messaging::publish_fx_forward_response{
+                                    .success = true,
+                                    .message = "Published by an earlier attempt.",
+                                    .approval_request_id = found.request_id,
+                                    .state_code = "published",
+                                    .published_at = found.published_at,
+                                    .published_by = found.published_by};
+                            },
+                            [&] { return party_client.request(publish, attempt.budget_left); });
+                    },
+                    {.deadline = step_deadline,
+                     .what = line + " forward set",
+                     .note = attempts_recorded_in(step_log, wf)});
                 if (answer.success && answer.published_at) {
                     ++published;
                     result.forwards.push_back(
@@ -1622,7 +1793,7 @@ private:
                                  "publishes only the missing pairs:";
             for (const auto& line : result.forwards_not_published)
                 reason += " " + line + ";";
-            wf.fail(reason);
+            wf.fail(reason, step_log);
             return;
         }
         wf.complete(ores::utility::codec::json::write(result), step_log);
@@ -1675,18 +1846,21 @@ private:
             }
 
             std::size_t published = 0;
+            const auto step_deadline = deadline_of(command.kind);
+            std::int64_t done = 0;
             for (const auto& blueprint : blueprints) {
                 const auto id = boost::uuids::to_string(blueprint.id);
                 const auto as_of = std::chrono::system_clock::now();
                 const auto line = party_name + ": " + blueprint.name;
+                wf.progress(line, done++, static_cast<std::int64_t>(blueprints.size()));
 
                 // The read answers the newest published surface at or before the as-of, so a
                 // surface an earlier run published is found by a later one, even when a newer
                 // publish has since superseded it: the blueprint has a surface either way.
-                ores::marketdata::messaging::get_published_fx_vol_surface_request read;
-                read.blueprint_id = id;
-                read.as_of = as_of;
-                if (party_client.request(read).success) {
+                ores::marketdata::messaging::get_published_fx_vol_surface_request published_before;
+                published_before.blueprint_id = id;
+                published_before.as_of = as_of;
+                if (party_client.request(published_before).success) {
                     result.surfaces_already_published.push_back(line);
                     continue;
                 }
@@ -1694,7 +1868,13 @@ private:
                 ores::marketdata::messaging::calibrate_fx_vol_surface_request calibrate;
                 calibrate.blueprint_id = id;
                 calibrate.as_of = as_of;
-                const auto calibrated = party_client.request(calibrate);
+                const auto calibrated =
+                    request_with_retry(party_client,
+                                       calibrate,
+                                       {.deadline = step_deadline,
+                                        .attempt_timeout = work_request_deadline,
+                                        .what = line + " surface calibration",
+                                        .note = attempts_recorded_in(step_log, wf)});
                 if (!calibrated.success) {
                     result.surfaces_not_published.push_back(line + ": " + calibrated.message);
                     continue;
@@ -1708,7 +1888,34 @@ private:
                 publish.blueprint_id = id;
                 publish.as_of = calibrated.as_of;
                 publish.reason = std::string(publish_reason);
-                const auto answer = party_client.request(publish);
+                const auto answer = ores::iam::service::call_with_retry(
+                    [&](const ores::iam::service::retry_attempt& attempt)
+                        -> ores::marketdata::messaging::publish_fx_vol_surface_response {
+                        return ores::iam::service::do_unless_already_done(
+                            attempt,
+                            [&]()
+                                -> std::optional<
+                                    ores::marketdata::messaging::publish_fx_vol_surface_response> {
+                                ores::marketdata::messaging::get_published_fx_vol_surface_request
+                                    read;
+                                read.blueprint_id = id;
+                                read.as_of = calibrated.as_of;
+                                const auto found = party_client.request(read, attempt.budget_left);
+                                if (!found.success)
+                                    return std::nullopt;
+                                return ores::marketdata::messaging::publish_fx_vol_surface_response{
+                                    .success = true,
+                                    .message = "Published by an earlier attempt.",
+                                    .approval_request_id = found.publish_request_id,
+                                    .state_code = "published",
+                                    .published_at = found.published_at,
+                                    .published_by = found.published_by};
+                            },
+                            [&] { return party_client.request(publish, attempt.budget_left); });
+                    },
+                    {.deadline = step_deadline,
+                     .what = line + " surface publish",
+                     .note = attempts_recorded_in(step_log, wf)});
                 if (answer.success && answer.published_at) {
                     ++published;
                     result.surfaces.push_back(
@@ -1743,7 +1950,7 @@ private:
                                  "only the missing surfaces:";
             for (const auto& line : result.surfaces_not_published)
                 reason += " " + line + ";";
-            wf.fail(reason);
+            wf.fail(reason, step_log);
             return;
         }
         wf.complete(ores::utility::codec::json::write(result), step_log);
@@ -1974,7 +2181,7 @@ private:
                                  " surface blueprint(s) were not given. A rerun is safe:";
             for (const auto& line : waiting)
                 reason += " " + line + ";";
-            wf.fail(reason);
+            wf.fail(reason, step_log);
             return;
         }
         wf.complete(ores::utility::codec::json::write(result), step_log);
@@ -2004,8 +2211,17 @@ private:
     /// built as weekdays with no holidays.
     static constexpr int last_generated_holiday_year = 2060;
 
-    /// Each calendar builds about 13,000 days, one row at a time, so the
-    /// operation outlives the client's default patience.
+    /**
+     * @brief Extends every calendar in use to the last year this step writes.
+     *
+     * Each calendar builds about 13,000 days, one row at a time, so the
+     * operation outlives the client's default patience.
+     *
+     * The request is repeated without a read of what an earlier attempt wrote,
+     * because its repeat cannot write twice: it extends each calendar from the
+     * watermark the store already holds up to the year it names, so a second
+     * attempt finds those days already there and writes none of them again.
+     */
     void build_calendars_step(const ores::service::messaging::workflow_step_context& wf,
                               const ores::iam::workflow::provision_tenant_step_command& command,
                               const step_actor& actor) {
@@ -2014,7 +2230,14 @@ private:
         ores::refdata::messaging::regenerate_calendar_dates_request request;
         request.in_use_only = true;
         request.end_year = last_generated_holiday_year;
-        const auto response = client.request(request, std::chrono::seconds{600});
+        std::vector<ores::workflow::messaging::step_log_entry> step_log;
+        wf.progress("the holiday calendars");
+        const auto response = request_with_retry(client,
+                                                 request,
+                                                 {.deadline = deadline_of(command.kind),
+                                                  .attempt_timeout = bulk_request_deadline,
+                                                  .what = "the holiday calendars",
+                                                  .note = attempts_recorded_in(step_log, wf)});
         if (!response.success)
             throw std::runtime_error("The calendars were not built: " + response.message);
 
@@ -2022,7 +2245,7 @@ private:
             << "build_calendars: wrote " << response.rows_written << " day(s)";
         provision_step_result result;
         result.kind = command.kind;
-        wf.complete(ores::utility::codec::json::write(result));
+        wf.complete(ores::utility::codec::json::write(result), step_log);
     }
 
     /// Publishes each bundle the step names, one nested run each, and reports

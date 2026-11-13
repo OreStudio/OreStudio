@@ -60,6 +60,14 @@ task and name that file in the Command column.
 
 * Notes
 
+- The calibrate handler reads every pillar and every pillar source the tenant
+  holds to build one blueprint's recipe, and filters in memory:
+  =read_recipe= at
+  [[file:../../../../../../projects/ores.marketdata/service/src/app/fx_vol_surface_calibration_service.cpp][fx_vol_surface_calibration_service.cpp]].
+  Its cost grows with the blueprint catalogue rather than with the one
+  blueprint. Recorded from [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]],
+  whose step 13 hit this handler's latency on a loaded host.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -24,6 +24,7 @@
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/timeouts.hpp"
 #include <chrono>
 #include <cstddef>
 #include <functional>
@@ -107,7 +108,8 @@ public:
      */
     template <typename Request>
     typename Request::response_type
-    request(const Request& req, std::chrono::seconds timeout = std::chrono::seconds{30}) {
+    request(const Request& req,
+            std::chrono::milliseconds timeout = ores::nats::service::default_request_timeout) {
         const auto& codec = ores::nats::default_wire_codec();
         for (int attempt = 0;; ++attempt) {
             const auto bytes = codec.encode(req);

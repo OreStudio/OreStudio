@@ -156,22 +156,32 @@ the loop.
 
 ** The gate on this branch
 
-=compass check= reports four failures on this tree, and none is this branch's code:
+Two full =compass check= runs. Everything this branch can move passed: the twenty-two code
+and documentation checks, among them =format=, =unity-collisions=, =unique-type-names=,
+=exported-types=, =reachability= and =boost-deps=; the site page and the backlog indexes;
+and =build=. What stayed red is not this branch's:
 
 - =portable-stop= names =projects/ores.synthetic/service/src/app/application.cpp=, which
-  this branch does not touch. It is red on =origin/main= too, so it belongs to whoever is
-  landing the stop-type port.
-- =build= failed because a =compass build= of my own was running at the same time; the gate
-  says so in its own log.
-- =ctest= failed on two ingest tests and the adapter announce test. All three have captures
-  in the inbox: =the_feed_ingest_tests_fail_while_the_environments_services_run=,
-  =feed_ingest_small_batch_test_times_out_under_load=, and
-  =adapter_announce_test_races_the_live_supervisor=. Run one at a time against a quiet
-  environment, the suites this branch can move pass: quant 712 cases, synthetic api 1017,
-  marketdata core 407, reporting core 303.
-- =ticks-smoke= timed out on =trade_generation_configs.list= because the gate stops the
-  services before it runs the suites and the smoke then starts them again; the failure is
-  the environment's sequencing, not a feed that would not start.
+  this branch does not touch: an include left behind by the port to
+  =ores::platform::concurrency=. It is red on =origin/main= =6dfbd3a3fb= as well, and it is
+  captured as [[id:BA660F0F-00C6-4C88-BF2D-691E30127C94][The portable-stop check is red on
+  main]].
+- =ctest= fails one suite of 103: =ores.marketdata.official.tests=, two cases in
+  =domain_banxico_tests.cpp= where the fixture answers a =std::optional<std::string>= lookup
+  with a null =const char*=. That is not this branch's file either, and it is captured as
+  [[id:C73E11BE-122E-466B-BCEC-3F0AF7A979F6][The Banxico unset-key tests throw instead of
+  reporting unset]]. The other 102 suites pass, including every suite this branch can move:
+  quant 712 cases, synthetic api 1017, synthetic service 78 of 79 (the one failure is the
+  adapter-announce race the inbox already carries), marketdata core 407, reporting core 303.
+- =ticks-smoke= fails at =publish_party_surfaces=, and the reason is the one another
+  environment filed the same day: =expiry 1W: the row dated 2026-11-16 is before the spot
+  date 2026-11-17=, which is
+  *The 1W FX quote is dated before the spot date, so every surface is refused*, a capture
+  another environment filed on =origin/main= the same day. That capture is not on this
+  branch, which is cut from before it, which is also why the run reaches the failure here:
+  it is not caused by what this branch changes.
+- One run also failed =build= because a =compass build= of mine held the lock at the same
+  time; the gate's own log says so.
 
 * Test Scenarios
 

@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: C73E11BE-122E-466B-BCEC-3F0AF7A979F6
+:END:
+#+title: The Banxico unset-key tests throw instead of reporting unset
+#+description: domain_banxico_tests.cpp answers the environment with a null char pointer where the lookup returns std::optional<std::string>, so the unset-key cases throw and ores.marketdata.official.tests is red wherever the key is absent.
+#+type: capture
+#+level: cross
+#+filetags: :test:marketdata:environment:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two cases in =projects/ores.marketdata.official/tests/domain_banxico_tests.cpp= -- the one
+that builds a fetcher without a token, and the one that checks an unset, empty or malformed
+ref -- fail with
+
+#+begin_src text
+unexpected exception with message: 'basic_string: construction from null is not valid'
+#+end_src
+
+=environment_lookup= is =std::function<std::optional<std::string>(const char*)>=. The
+fixture's stand-in for "this variable is not set" returns a =const char* =null=, which
+converts to =std::optional<std::string>= by constructing a =std::string= from a null
+pointer. So the case throws where it means to report =nullopt=, and it does so on every run
+whose environment has no Banxico key -- which is every developer's and, unless a secret is
+provisioned, every CI run's.
+
+* Why
+
+=compass check= reports =ores.marketdata.official.tests= failed, one suite of a hundred and
+three, on every branch, so the gate names a failure that no branch can fix and that hides
+the suite's real signal. Reproduced on this tree and on the merge base, in a file this
+branch does not touch.
+
+The fix is in the fixture, not in =resolve_secret=: the stand-in should answer
+=std::nullopt=, which is what the type says "not set" is.
+
+* References
+
+- =projects/ores.marketdata.official/tests/domain_banxico_tests.cpp=: the two cases.
+- =projects/ores.marketdata.official/include/ores.marketdata.official/domain/secret.hpp=:
+  the =environment_lookup= the fixture stands in for.
+
+* See also
+
+- [[id:BA660F0F-00C6-4C88-BF2D-691E30127C94][The portable-stop check is red on
+  main]] -- the other half of the same gate run.

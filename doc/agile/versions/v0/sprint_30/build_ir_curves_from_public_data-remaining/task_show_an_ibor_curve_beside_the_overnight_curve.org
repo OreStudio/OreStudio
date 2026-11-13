@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 52257743-2F40-4DFD-98B2-B08311947335
+:END:
+#+title: Task: Show every IBOR curve beside its overnight curve
+#+description: Every currency with an IBOR feed has its IBOR curve beside its overnight curve: all of them, not one, each marked as a projection curve and readable in zero, forward and discount-factor terms, so a person can compare and learn from the difference.
+#+type: task
+#+level: s1
+#+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/show-an-ibor-curve-beside-the-overnight-curve
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every IBOR feed has a bootstrapped curve beside its overnight curve, marked as a projection curve, kept out of discounting and surface calibration, and readable in the three views the inspector has (zero, forward, discount factor), so a person can compare any currency's two curves and price from either.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- Every IBOR feed of every currency publishes a bootstrapped curve beside its overnight curve, with the currency's overnight curve as its discount curve.
+- The IBOR curve publishes with role projection, and no consumer takes it for a discount curve or a surface input; a test states the rule.
+- The curves screen and the coverage screen show every curve of a currency together, with the index family, the role and the three views.
+- One page states the difference the comparison teaches: an overnight average is compounded and discounts, a term IBOR is quoted and projects.
+- The data supports pricing from an IBOR curve: a projection curve is linked to its discount curve, so a pricing screen can read both when one exists.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The IBOR feeds are already seeded and publish as projection curves: ICE's five LIBOR
+  curves (USD 1M/6M, GBP 3M, CHF 3M, JPY 3M) and Tradeweb's three (GBP 1M, CHF 6M,
+  JPY 1M), plus EURIBOR. Evidence: =evidence/ibor_feeds_2026-11-13.log= in
+  [[id:4B5701D6-16C6-445B-BDD4-C60050FED95C][Replace the synthetic feeds of ceased or misnamed indices]].
+- The curve inspector the comparison should reuse is captured in
+  [[id:FB59FE7A-B0D1-4DF7-AFB1-07F426D0C9D9][Inspect a curve's pillars and conventions]].
+- The coverage screen takes one feed config per currency today, so it shows AONIA for AUD
+  and never the IBOR curve; the grouping is part of this task.
+- The bootstrap config seeds live in =refdata_ir_curve_bootstrap_configs_populate.sql= and
+  name a discount curve, so AUD-LIBOR-3M points at AUD-AONIA rather than at itself.
+- The comparison prototype is =doc/prototypes/market_data/ibor-beside-overnight/index.html=: the
+  inspector drawn for two curves at once, with the conventions strip for each and a panel
+  that states the four differences (underlying, fixing, use, why the shape differs). It is
+  static data for the design; the task builds the live version against it.
+- Signed off on 2026-11-13. The inspector keeps all three read-outs of a curve — zero rates,
+  forward rates and discount factors — because each carries part of the comparison: zero for
+  the level, forward for where the term premium sits, and the discount factor for what a
+  curve that discounts actually does. Forward is the view to open first when a term curve is
+  present. The build must carry the switch; it is not a prototype-only convenience.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

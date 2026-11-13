@@ -31,6 +31,7 @@
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
 #include "ores.marketdata.core/service/observation_lineage_service.hpp"
 #include "ores.marketdata.core/service/series_shape_writer.hpp"
+#include "ores.marketdata.service/app/catalogue_page.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
 #include "ores.refdata.core/mapping/quant_codes.hpp"
@@ -39,6 +40,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cstdint>
 #include <format>
 #include <optional>
 #include <stdexcept>
@@ -64,13 +66,16 @@ read_config(ores::database::context ctx, const boost::uuids::uuid& bootstrap_con
     return configs.front();
 }
 
+// The config's own pillars, read through the filter the store applies, so a
+// bootstrap costs what this config holds.
 std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar>
 read_pillars(ores::database::context ctx, const boost::uuids::uuid& bootstrap_config_id) {
     ores::refdata::repository::ir_curve_bootstrap_pillar_repository pillar_repo;
-    std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar> pillars;
-    for (auto& p : pillar_repo.read_latest(ctx))
-        if (p.bootstrap_config_id == bootstrap_config_id)
-            pillars.push_back(std::move(p));
+    ores::refdata::messaging::ir_curve_bootstrap_pillars_filter wanted;
+    wanted.bootstrap_config_id = bootstrap_config_id;
+    auto pillars = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
+        return pillar_repo.read_latest(ctx, offset, limit, {}, wanted);
+    });
     if (pillars.empty())
         throw std::invalid_argument("curve_republish_service: bootstrap config has no pillars: " +
                                     boost::uuids::to_string(bootstrap_config_id));

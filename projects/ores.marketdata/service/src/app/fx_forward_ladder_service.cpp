@@ -24,6 +24,7 @@
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.service/app/catalogue_page.hpp"
 #include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
@@ -34,6 +35,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -126,11 +128,18 @@ funding_curve read_funding_curve(context ctx,
                                  const std::string& party_id,
                                  time_point as_of) {
     refdata_repo::ir_curve_bootstrap_config_repository config_repo;
-    std::vector<ores::refdata::domain::ir_curve_bootstrap_config> configs;
-    for (auto& config : config_repo.read_latest(ctx))
-        if (config.currency_code == currency && config.curve_family_role == "FUNDING" &&
-            (party_id.empty() || boost::uuids::to_string(config.party_id) == party_id))
-            configs.push_back(std::move(config));
+    // The currency's funding curves, read through the filter the store applies.
+    // The party is narrowed after the read, because the store keeps no filter
+    // for it and a currency has one or two funding curves.
+    ores::refdata::messaging::ir_curve_bootstrap_configs_filter funding;
+    funding.currency_code = currency;
+    funding.curve_family_role = "FUNDING";
+    auto configs = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
+        return config_repo.read_latest(ctx, offset, limit, {}, funding);
+    });
+    std::erase_if(configs, [&](const auto& config) {
+        return !party_id.empty() && boost::uuids::to_string(config.party_id) != party_id;
+    });
     if (configs.empty())
         throw refused("No funding curve is configured for " + currency + ".");
     if (configs.size() > 1)

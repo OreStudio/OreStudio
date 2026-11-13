@@ -204,6 +204,45 @@ PAIRS = {
     ("POST", "/api/book-changes"): ("POST", "/api/book-changes"),
     ("GET", "/api/blotter"): ("GET", "/api/blotter"),
     ("GET", "/api/books/tree"): ("GET", "/api/books/tree"),
+    ("GET", "/api/marketdata/adapters"): ("GET", "/api/marketdata/adapters"),
+    ("GET", "/api/oresmd/schema"): ("GET", "/api/oresmd/schema"),
+    ("POST", "/api/oresmd/parse"): ("POST", "/api/oresmd/parse"),
+    ("POST", "/api/oresmd/parse-many"): ("POST", "/api/oresmd/parse-many"),
+    ("POST", "/api/oresmd/compose"): ("POST", "/api/oresmd/compose"),
+    ("GET", "/api/series/:id/observations"): ("GET", "/api/series/{id}/observations"),
+    ("POST", "/api/curves/series"): ("POST", "/api/curves/series"),
+    ("POST", "/api/curves/series-by-id"): ("POST", "/api/curves/series-by-id"),
+    ("POST", "/api/curves/series-list"): ("POST", "/api/curves/series-list"),
+    ("POST", "/api/curves/compute"): ("POST", "/api/curves/compute"),
+    ("POST", "/api/curves/manual-point"): ("POST", "/api/curves/manual-point"),
+    ("POST", "/api/curves/manual-point/clear"): ("POST", "/api/curves/manual-point/clear"),
+    ("POST", "/api/curves/snapshot"): ("POST", "/api/curves/snapshot"),
+    ("POST", "/api/curves/slice"): ("POST", "/api/curves/slice"),
+    ("POST", "/api/curves/evolution"): ("POST", "/api/curves/evolution"),
+    ("POST", "/api/curves/published"): ("POST", "/api/curves/published"),
+    ("POST", "/api/curves/published-sets"): ("POST", "/api/curves/published-sets"),
+    ("POST", "/api/curves/fx-forward-ladder"): ("POST", "/api/curves/fx-forward-ladder"),
+    ("POST", "/api/curves/published/withdraw"): ("POST", "/api/curves/published/withdraw"),
+    ("GET", "/api/marketdata/subscriptions"): ("GET", "/api/marketdata/subscriptions"),
+    ("POST", "/api/marketdata/subscriptions"): ("POST", "/api/marketdata/subscriptions"),
+    ("DELETE", "/api/marketdata/subscriptions/:provider"): (
+        "DELETE",
+        "/api/marketdata/subscriptions/{provider}"),
+    ("GET", "/api/marketdata/public-rates/fixings"): ("GET", "/api/marketdata/public-rates/fixings"),
+    ("POST", "/api/marketdata/public-rates/:code/accept-terms"): (
+        "POST",
+        "/api/marketdata/public-rates/{code}/accept-terms"),
+    ("POST", "/api/marketdata/public-rates/:code/withdraw-terms"): (
+        "POST",
+        "/api/marketdata/public-rates/{code}/withdraw-terms"),
+    ("POST", "/api/marketdata/public-rates/accept-terms"): (
+        "POST",
+        "/api/marketdata/public-rates/accept-terms"),
+    ("GET", "/api/marketdata/routes"): ("GET", "/api/marketdata/routes"),
+    ("POST", "/api/marketdata/routes"): ("POST", "/api/marketdata/routes"),
+    ("DELETE", "/api/marketdata/routes/:publisher"): (
+        "DELETE",
+        "/api/marketdata/routes/{publisher}"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

@@ -4680,6 +4680,8 @@ const fr: SourceCatalogue = {
                 shibor: 'SHIBOR',
                 tiie: 'TIIE',
                 taibor: 'TAIBOR',
+                shir: 'SHIR',
+                hufonia: 'HUFONIA',
             },
             price_source: {
                 fixed: 'Un prix fixe',

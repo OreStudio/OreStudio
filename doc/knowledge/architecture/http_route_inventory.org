@@ -72,7 +72,7 @@ an API publishes no area, so it is counted under =(none)=.
 | auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
 | grid | grid-app-versions, grid-downloads, grid-jobs, operations | 14 | composed view 3, resource 11 |
-| market-data | adapters, connectivity, curves, fixing-series, public-rates, series, subscriptions | 31 | composed view 6, resource 25 |
+| market-data | adapters, connectivity, curves, fixing-series, marketdata, public-rates, series, subscriptions | 56 | composed view 6, resource 50 |
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 301 | composed view 2, resource 299 |
@@ -81,7 +81,7 @@ an API publishes no area, so it is counted under =(none)=.
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
 | trading | blotter, book-changes, booking, books, structures, trades, trading | 48 | composed view 4, resource 44 |
 | workflow | inbox, server, timeline | 18 | composed view 6, resource 12 |
-| (none) | books, classifications, conventions, core, counterparties, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 423 | not an API 405, transport capability 18 |
+| (none) | books, classifications, conventions, core, counterparties, marketdata, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 427 | not an API 405, transport capability 22 |
 
 * The composed views
 
@@ -150,7 +150,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
 | grid | 14 | 0 | 14 |
-| market-data | 31 | 0 | 31 |
+| market-data | 31 | 25 | 6 |
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 25 | 5 |
@@ -159,8 +159,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 0 | 18 |
-| (none) | 35 | 22 | 13 |
-| total | 324 | 177 | 147 |
+| (none) | 35 | 26 | 9 |
+| total | 324 | 206 | 118 |
 
 * The pairing
 
@@ -231,19 +231,19 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/counterparties/children= | GET /api/counterparties/children |
 | PUT =/api/counterparties/composite= | PUT /api/counterparties/composite |
 | GET =/api/counterparties/pick-lists= | GET /api/counterparties/pick-lists |
-| POST =/api/curves/compute= | none |
-| POST =/api/curves/evolution= | none |
-| POST =/api/curves/fx-forward-ladder= | none |
-| POST =/api/curves/manual-point= | none |
-| POST =/api/curves/manual-point/clear= | none |
-| POST =/api/curves/published= | none |
-| POST =/api/curves/published-sets= | none |
-| POST =/api/curves/published/withdraw= | none |
-| POST =/api/curves/series= | none |
-| POST =/api/curves/series-by-id= | none |
-| POST =/api/curves/series-list= | none |
-| POST =/api/curves/slice= | none |
-| POST =/api/curves/snapshot= | none |
+| POST =/api/curves/compute= | POST /api/curves/compute |
+| POST =/api/curves/evolution= | POST /api/curves/evolution |
+| POST =/api/curves/fx-forward-ladder= | POST /api/curves/fx-forward-ladder |
+| POST =/api/curves/manual-point= | POST /api/curves/manual-point |
+| POST =/api/curves/manual-point/clear= | POST /api/curves/manual-point/clear |
+| POST =/api/curves/published= | POST /api/curves/published |
+| POST =/api/curves/published-sets= | POST /api/curves/published-sets |
+| POST =/api/curves/published/withdraw= | POST /api/curves/published/withdraw |
+| POST =/api/curves/series= | POST /api/curves/series |
+| POST =/api/curves/series-by-id= | POST /api/curves/series-by-id |
+| POST =/api/curves/series-list= | POST /api/curves/series-list |
+| POST =/api/curves/slice= | POST /api/curves/slice |
+| POST =/api/curves/snapshot= | POST /api/curves/snapshot |
 | GET =/api/draft-reasons= | GET /api/draft-reasons |
 | GET =/api/events= | GET /api/events |
 | POST =/api/events/watch= | POST /api/events/watch |
@@ -260,23 +260,23 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/lei-entities= | GET /api/lei-entities |
 | GET =/api/login-info= | GET /api/login-info |
 | GET =/api/login-info/:accountId= | GET /api/login-info/{accountId} |
-| GET =/api/marketdata/adapters= | none |
+| GET =/api/marketdata/adapters= | GET /api/marketdata/adapters |
 | GET =/api/marketdata/catalogue= | none |
 | GET =/api/marketdata/connectivity= | none |
 | GET =/api/marketdata/fixing-series= | none |
 | GET =/api/marketdata/public-rates= | none |
-| POST =/api/marketdata/public-rates/:code/accept-terms= | none |
-| POST =/api/marketdata/public-rates/:code/withdraw-terms= | none |
-| POST =/api/marketdata/public-rates/accept-terms= | none |
+| POST =/api/marketdata/public-rates/:code/accept-terms= | POST /api/marketdata/public-rates/{code}/accept-terms |
+| POST =/api/marketdata/public-rates/:code/withdraw-terms= | POST /api/marketdata/public-rates/{code}/withdraw-terms |
+| POST =/api/marketdata/public-rates/accept-terms= | POST /api/marketdata/public-rates/accept-terms |
 | GET =/api/marketdata/public-rates/coverage= | none |
-| GET =/api/marketdata/public-rates/fixings= | none |
+| GET =/api/marketdata/public-rates/fixings= | GET /api/marketdata/public-rates/fixings |
 | GET =/api/marketdata/public-rates/fixings.csv= | none |
-| GET =/api/marketdata/routes= | none |
-| POST =/api/marketdata/routes= | none |
-| DELETE =/api/marketdata/routes/:publisher= | none |
-| GET =/api/marketdata/subscriptions= | none |
-| POST =/api/marketdata/subscriptions= | none |
-| DELETE =/api/marketdata/subscriptions/:provider= | none |
+| GET =/api/marketdata/routes= | GET /api/marketdata/routes |
+| POST =/api/marketdata/routes= | POST /api/marketdata/routes |
+| DELETE =/api/marketdata/routes/:publisher= | DELETE /api/marketdata/routes/{publisher} |
+| GET =/api/marketdata/subscriptions= | GET /api/marketdata/subscriptions |
+| POST =/api/marketdata/subscriptions= | POST /api/marketdata/subscriptions |
+| DELETE =/api/marketdata/subscriptions/:provider= | DELETE /api/marketdata/subscriptions/{provider} |
 | GET =/api/me/access= | GET /api/me/access |
 | GET =/api/me/contact-information= | GET /api/me/contact-information |
 | PUT =/api/me/contact-information= | PUT /api/me/contact-information |
@@ -310,10 +310,10 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/operations/grid/usage= | none |
 | GET =/api/operations/logs= | none |
 | GET =/api/operations/services= | none |
-| POST =/api/oresmd/compose= | none |
-| POST =/api/oresmd/parse= | none |
-| POST =/api/oresmd/parse-many= | none |
-| GET =/api/oresmd/schema= | none |
+| POST =/api/oresmd/compose= | POST /api/oresmd/compose |
+| POST =/api/oresmd/parse= | POST /api/oresmd/parse |
+| POST =/api/oresmd/parse-many= | POST /api/oresmd/parse-many |
+| GET =/api/oresmd/schema= | GET /api/oresmd/schema |
 | GET =/api/overview= | GET /api/overview |
 | GET =/api/parties= | GET /api/parties |
 | GET =/api/password-policy= | GET /api/password-policy |
@@ -405,7 +405,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/roles/:roleId/permissions/changes= | POST /api/roles/{roleId}/permissions/changes |
 | GET =/api/roles/page= | GET /api/roles/page |
 | GET =/api/seed-profiles= | GET /api/seed-profiles |
-| GET =/api/series/:id/observations= | none |
+| GET =/api/series/:id/observations= | GET /api/series/{id}/observations |
 | DELETE =/api/session= | DELETE /api/session |
 | GET =/api/session= | GET /api/session |
 | POST =/api/session= | POST /api/session |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1267 routes: 324 answered by the BFF and 943 by ores.http.
+1296 routes: 324 answered by the BFF and 972 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -774,18 +774,31 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reference-data | get | =/api/counterparties/{id}/visibility= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:330 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | put | =/api/counterparties/{id}/visibility= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:349 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
 | resource | market-data | post | =/api/curves/compute= | bff | projects/ores.web/packages/bff/src/curves.ts:312 | Computes a curve's points from a bootstrap configuration and stores nothing, a derived read of the curve the configuration describes. |
+| resource | market-data | post | =/api/curves/compute= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:482 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/evolution= | bff | projects/ores.web/packages/bff/src/curves.ts:378 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/evolution= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:589 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/fx-forward-ladder= | bff | projects/ores.web/packages/bff/src/curves.ts:410 | One currency pair's forward ladder at one as-of, one service read that stores nothing and names the missing input when it refuses. |
+| resource | market-data | post | =/api/curves/fx-forward-ladder= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:674 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/manual-point= | bff | projects/ores.web/packages/bff/src/curves.ts:353 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/manual-point= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:509 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/manual-point/clear= | bff | projects/ores.web/packages/bff/src/curves.ts:360 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/manual-point/clear= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:537 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/published= | bff | projects/ores.web/packages/bff/src/curves.ts:394 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| resource | market-data | post | =/api/curves/published= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:618 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/published-sets= | bff | projects/ores.web/packages/bff/src/curves.ts:402 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| resource | market-data | post | =/api/curves/published-sets= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:652 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/published/withdraw= | bff | projects/ores.web/packages/bff/src/curves.ts:418 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| resource | market-data | post | =/api/curves/published/withdraw= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:688 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/series= | bff | projects/ores.web/packages/bff/src/curves.ts:258 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/series= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:453 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/series-by-id= | bff | projects/ores.web/packages/bff/src/curves.ts:268 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/series-by-id= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:466 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/series-list= | bff | projects/ores.web/packages/bff/src/curves.ts:346 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/series-list= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:496 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/slice= | bff | projects/ores.web/packages/bff/src/curves.ts:372 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/slice= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:565 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/snapshot= | bff | projects/ores.web/packages/bff/src/curves.ts:366 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/snapshot= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:550 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | trading | get | =/api/draft-reasons= | bff | projects/ores.web/packages/bff/src/booking.ts:366 | The reasons a trade may be captured as a draft with, a tenant-wide code list the booking form offers. |
 | resource | trading | get | =/api/draft-reasons= | ores.http | projects/ores.http/trading/src/routes/trading/booking_routes.cpp:440 | The booking screens at the address and in the shape the BFF answered: what the form offers, the reasons a deal is a draft, the link types a person records, a link between two trades, and the booking write itself. |
 | transport capability | changes | get | =/api/events= | bff | projects/ores.web/packages/bff/src/server.ts:2944 | The change stream a client subscribes to, and the watch set that says which subjects it wants; delivery of events, not a domain object. |
@@ -818,6 +831,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | auth | get | =/api/login-info/:accountId= | bff | projects/ores.web/packages/bff/src/server.ts:1793 | The tenant's login records, one page or one account's record, the reads the audit screen uses to explain a locked account. |
 | resource | auth | get | =/api/login-info/{accountId}= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:170 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | resource | market-data | get | =/api/marketdata/adapters= | bff | projects/ores.web/packages/bff/src/adapters.ts:95 | Every adapter the service tracks, with what it serves, what it was asked to serve and the counts of the last demand it answered. |
+| resource | market-data | get | =/api/marketdata/adapters= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/adapter_routes.cpp:86 | Every adapter the market data service tracks, with what it serves, what it was asked to serve, and the kind of source its feed reads, joined from the feeds and the sessions. |
 | composed view | market-data | get | =/api/marketdata/catalogue= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:179 | The providers and the feeds that serve them in one answer, two collection reads, so a subscription or a route can name a feed by id. |
 | composed view | market-data | get | =/api/marketdata/connectivity= | bff | projects/ores.web/packages/bff/src/connectivity.ts:167 | The publishers, suppliers, adapters, sessions, feeds, scopes and routes the Connectivity screen draws, seven collection reads in one answer. |
 | composed view | market-data | get | =/api/marketdata/fixing-series= | bff | projects/ores.web/packages/bff/src/fixing-series.ts:43 | One item named by its oresmd URI: its series, the feeds and sessions that brought its values, and the fixings written against it. |
@@ -825,15 +839,25 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | market-data | post | =/api/marketdata/public-rates/:code/accept-terms= | bff | projects/ores.web/packages/bff/src/public-rates.ts:494 | Records the acceptance of a publisher's terms as the service holds them, or withdraws it so the adapter no longer fetches the publisher. |
 | resource | market-data | post | =/api/marketdata/public-rates/:code/withdraw-terms= | bff | projects/ores.web/packages/bff/src/public-rates.ts:419 | Records the acceptance of a publisher's terms as the service holds them, or withdraws it so the adapter no longer fetches the publisher. |
 | resource | market-data | post | =/api/marketdata/public-rates/accept-terms= | bff | projects/ores.web/packages/bff/src/public-rates.ts:441 | Accepts the terms of several publishers at the versions read, each as the single accept would, and answers every publisher's outcome. |
+| resource | market-data | post | =/api/marketdata/public-rates/accept-terms= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rate_routes.cpp:261 | The fixings the store holds for up to a dozen series, oldest first, and the three answers a person gives to a publisher's terms: accept one at the version read, withdraw one, and accept many in one request. |
 | composed view | market-data | get | =/api/marketdata/public-rates/coverage= | bff | projects/ores.web/packages/bff/src/public-rates.ts:316 | The first and last date and the count of every series a public publisher fills, computed from the public catalogue and its fixings. |
 | resource | market-data | get | =/api/marketdata/public-rates/fixings= | bff | projects/ores.web/packages/bff/src/public-rates.ts:330 | The fixings of up to a dozen series in one read, oldest first, by series. |
+| resource | market-data | get | =/api/marketdata/public-rates/fixings= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rate_routes.cpp:204 | The fixings the store holds for up to a dozen series, oldest first, and the three answers a person gives to a publisher's terms: accept one at the version read, withdraw one, and accept many in one request. |
 | composed view | market-data | get | =/api/marketdata/public-rates/fixings.csv= | bff | projects/ores.web/packages/bff/src/public-rates.ts:360 | One publisher's fixings as a CSV file over a date range, the catalogue read to find the publisher's series and their fixings read after. |
+| resource | market-data | post | =/api/marketdata/public-rates/{code}/accept-terms= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rate_routes.cpp:225 | The fixings the store holds for up to a dozen series, oldest first, and the three answers a person gives to a publisher's terms: accept one at the version read, withdraw one, and accept many in one request. |
+| resource | market-data | post | =/api/marketdata/public-rates/{code}/withdraw-terms= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/public_rate_routes.cpp:245 | The fixings the store holds for up to a dozen series, oldest first, and the three answers a person gives to a publisher's terms: accept one at the version read, withdraw one, and accept many in one request. |
 | resource | market-data | get | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:165 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | get | =/api/marketdata/routes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:239 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | post | =/api/marketdata/routes= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:257 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | post | =/api/marketdata/routes= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:302 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | delete | =/api/marketdata/routes/:publisher= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:280 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | delete | =/api/marketdata/routes/{publisher}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:327 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | get | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:153 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | get | =/api/marketdata/subscriptions= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:227 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | post | =/api/marketdata/subscriptions= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:207 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | post | =/api/marketdata/subscriptions= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:250 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | market-data | delete | =/api/marketdata/subscriptions/:provider= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:235 | A subscription or a route the session party holds, with the feed that serves it, read as a page and written or removed one at a time. |
+| resource | market-data | delete | =/api/marketdata/subscriptions/{provider}= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/subscription_routes.cpp:278 | The subscriptions and routes screens at the address and in the shape the BFF answered: every subscription and route the caller's party holds, the two creates that name a provider or a feed, and the removals that name the version they read. |
 | resource | access | get | =/api/me/access= | bff | projects/ores.web/packages/bff/src/server.ts:1213 | The roles the signed-in person holds with who gave each and why, or one page of what those roles let them do, the documented alias for the principal. |
 | resource | access | get | =/api/me/access= | ores.http | projects/ores.http/iam/src/routes/iam/access_read_routes.cpp:213 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | access | get | =/api/me/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1666 | The signed-in person's own contact record, answered with nothing when there is none yet because the first write creates it. |
@@ -877,9 +901,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | operations | get | =/api/operations/logs= | bff | projects/ores.web/packages/bff/src/operations.ts:640 | One page of telemetry entries a filter selects, with the count of everything it matches. |
 | resource | operations | get | =/api/operations/services= | bff | projects/ores.web/packages/bff/src/operations.ts:386 | Every expected service instance with the age of its last report, read from the telemetry samples. |
 | transport capability | (none) | post | =/api/oresmd/compose= | bff | projects/ores.web/packages/bff/src/oresmd.ts:136 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| transport capability | (none) | post | =/api/oresmd/compose= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/oresmd_routes.cpp:229 | The codec's own table, the read of a URI into its parts, a batch of them, and the write of parts into a URI, at the addresses and in the shapes the BFF answered, storing nothing. |
 | transport capability | (none) | post | =/api/oresmd/parse= | bff | projects/ores.web/packages/bff/src/oresmd.ts:106 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| transport capability | (none) | post | =/api/oresmd/parse= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/oresmd_routes.cpp:193 | The codec's own table, the read of a URI into its parts, a batch of them, and the write of parts into a URI, at the addresses and in the shapes the BFF answered, storing nothing. |
 | transport capability | (none) | post | =/api/oresmd/parse-many= | bff | projects/ores.web/packages/bff/src/oresmd.ts:121 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| transport capability | (none) | post | =/api/oresmd/parse-many= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/oresmd_routes.cpp:208 | The codec's own table, the read of a URI into its parts, a batch of them, and the write of parts into a URI, at the addresses and in the shapes the BFF answered, storing nothing. |
 | transport capability | (none) | get | =/api/oresmd/schema= | bff | projects/ores.web/packages/bff/src/oresmd.ts:86 | A codec for ORE URIs: the grammar lives in the server, and the route turns a URI into its parts or the parts into a URI, storing nothing. |
+| transport capability | (none) | get | =/api/oresmd/schema= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/oresmd_routes.cpp:173 | The codec's own table, the read of a URI into its parts, a batch of them, and the write of parts into a URI, at the addresses and in the shapes the BFF answered, storing nothing. |
 | composed view | tenancy | get | =/api/overview= | bff | projects/ores.web/packages/bff/src/server.ts:1989 | The system administrator's home: the tenant roster divided into in service, on evaluation and setting up, the first page of the roster and the newest setups, every count a separate list read that asks for its total. |
 | composed view | tenancy | get | =/api/overview= | ores.http | projects/ores.http/iam/src/routes/iam/tenant_roster_routes.cpp:423 | The system administrator's home answered by ores.http at the address and in the shape the BFF answered: the roster counted by status, the tenants that need the administrator, the first page and the newest setups. |
 | resource | tenancy | get | =/api/parties= | bff | projects/ores.web/packages/bff/src/server.ts:2462 | One page of the session's own tenant's parties, scoped by row-level security so the route names no tenant. |
@@ -1106,6 +1134,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | tenancy | get | =/api/seed-profiles= | bff | projects/ores.web/packages/bff/src/server.ts:2519 | The starting points a new tenant may be provisioned from, each with the step kinds it orders and the parameters its form declares. |
 | resource | tenancy | get | =/api/seed-profiles= | ores.http | projects/ores.http/iam/src/routes/iam/provisioning_routes.cpp:202 | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
 | resource | market-data | get | =/api/series/:id/observations= | bff | projects/ores.web/packages/bff/src/series.ts:77 | One series' observations inside a window, oldest first, the count read as the cap on the answer. |
+| resource | market-data | get | =/api/series/{id}/observations= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_routes.cpp:138 | One series' observations inside a window, oldest first, the count read as the cap on the answer, at the address and in the shape the BFF answered. |
 | transport capability | auth | delete | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1025 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
 | resource | auth | delete | =/api/session= | ores.http | projects/ores.http/iam/src/routes/iam/browser_session_routes.cpp:360 | The browser's session at the address and in the shape the BFF answered: sign in, read, sign out, choose the party a login waits on, and move to another party. |
 | transport capability | auth | get | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1017 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
@@ -1457,7 +1486,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | access | post | =/api/v1/iam/ops/update_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:205 | An RPC-shaped write to one account: its fields, or the lock that refuses the next sign-in and leaves the open sessions alone. |
 | resource | auth | post | =/api/v1/iam/ops/update_my_email= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:279 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
 | resource | access | post | =/api/v1/iam/roles_permissions/put= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:204 | Replaces the permissions one role grants with exactly the set sent. |
-| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:164 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
+| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:165 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
 | resource | reference-data | get | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:340 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | post | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:386 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | put | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:399 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |

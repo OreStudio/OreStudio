@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-market-data-resources
+#+pr: 4679
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The gateway has no part for the market data area. Add the part with the adapter 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The part answers every resource route of the area: the adapters read, the six subscription and route reads and writes, the public rates' fixings and three terms writes, the thirteen curve routes, the series observations and the four codec routes. All twenty-nine are paired in the inventory. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Raise the pull request and answer its review. |
+| Last touched | 2026-11-13                               |
 
 * Acceptance
 
@@ -43,9 +43,32 @@ The gateway has no part for the market data area. Add the part with the adapter 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The part is stood up by the adapter recipe, copied from =ores.http.trading=:
+its model, its CMake files, the composite's parts list, the umbrella header,
+the aggregate, the file lists, the diagram, and the server's link and
+registration. It links =ores.marketdata.api= and =ores.refdata.api=.
+
+The area's resource routes are ported in groups. The groups travel on one
+branch rather than one pull request each, because the part is new and each
+group's pairing builds on the one before: one review covers the whole part.
+
+| Group | Routes | BFF source |
+|-------+--------+------------|
+| The part and the adapters | 1 | =adapters.ts= |
+| Subscriptions and routes | 6 | =subscriptions.ts= |
+| The public rates | 4 | =public-rates.ts= |
+| The curves | 13 | =curves.ts= |
+| The series observations | 1 | =series.ts= |
+| The ORE URI codec | 4 | =oresmd.ts= |
+
+Twenty-nine routes in all: twenty-five of the market data area and the four
+codec routes. The public rates group states four routes and not five because
+the publisher list, its coverage and its file are composed views, which their
+own tasks serve.
+
+The composed views belong to their own tasks: the catalogue, the connectivity
+list, the fixing series, the public rates view and its coverage and file, and
+the market data catalogue's neighbours.
 
 * Measurements
 
@@ -59,7 +82,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The part's test suite | 9 cases, 108 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.marketdata.tests= | 9af88eea10 |
+| The part's test suite, every group served | 34 cases, 449 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.marketdata.tests= | 2ddff0958c |
+| The market-data area's routes the C++ server answers | 25 of 31 paired | =python3 build/scripts/route_inventory.py --check= | 2ddff0958c |
+| The market-data routes left unpaired | 6, every one a composed view of another task | =python3 build/scripts/route_inventory.py --check= | 2ddff0958c |
+| The gateway's routes in the inventory | 1296 routes, 206 of the BFF's 324 paired | =python3 build/scripts/route_inventory.py --check= | 2ddff0958c |
+| The applicable local checks, every group served | 50 of 50 passed | =./compass.sh check --exclude-heavy= | 34024f51cf |
+| The document checks, after the story's record | 3 of 3 passed | =./compass.sh check --only org-links --only heading-numbers --only structure-notes= | ea4bc4b082 |
+| The applicable local checks, after the review | 50 of 50 passed | =./compass.sh check --exclude-heavy= | 2ddff0958c |
 
 * Notes
 
@@ -78,12 +108,64 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4679][#4679]] | [http] Stand up the market data part and serve its resources |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =body_of= and =lenient_body_of= are copied into four units, though =record_routes= is the shared home | =curve_routes.cpp=, =oresmd_routes.cpp=, =public_rate_routes.cpp=, =subscription_routes.cpp= | Accepted | Both readers moved into =record_routes=, with the unit's own sentence as their third argument. |
+| 2 | The partial model states =ores.refdata.api= with a rationale copied from trading, and links it though nothing reads it | =modeling/component_overview.org=, =src/CMakeLists.txt= | Accepted | The dependency is dropped and the model states what the part reads. =ores.logging= stays, with the truth: the part's tests log through it. |
+| 3 | The refusal shape is repeated inline at three sites instead of one helper | =oresmd_routes.cpp=, =public_rate_routes.cpp= | Declined | The three sites answer three policies: 422 for a codec refusal, 400 for a terms refusal, and a payload-stripped answer for the curves. A helper taking the status would hide the choice the BFF made per screen. |
+| 4 | =word_of= and =answered= do not say what they do, and =series_of= names two jobs | =curve_routes.cpp=, =public_rate_routes.cpp= | Partially accepted | =answered= is =payload_of= and each =series_of= states its own job (=series_rows_of=, =series_ids_of=). =word_of= keeps the BFF's own noun, which its schema calls a word. |
+| 5 | =identity_field= and =uri_field= are the same shape, each with its own =wire_fields= | =curve_routes.cpp=, =oresmd_routes.cpp= | Accepted | Both bodies read the protocol's own types, =series_identity_field= and =oresmd_uri_field=, so the local copies are gone. |
+| 6 | =subscriptions_json= and =routes_json= only wrap =json::write= | =subscription_routes.cpp= | Declined | They are the unit's stated answer shape and the test proves it without a service; the seam is the point. |
+| 7 | Row JSON is built by hand where =object_with_members= exists | =series_routes.cpp=, =public_rate_routes.cpp= | Declined | =object_with_members= parses a written row to add members to it. These rows start from nothing, so the literal is the shortest correct form. |
+| 8 | =series_routes.cpp= returns =std::optional= without including =<optional>= | =series_routes.cpp= | Accepted | The include is stated. |
+| 9 | =wire_fields= is =inline= where the sibling units write =[[nodiscard]] constexpr= | every body-shape block | Accepted | All three units state them the same way as the rest of the house. |
+| 10 | =/api/curves/series-by-id= accepts more ids than the BFF's 200 | =curve_routes.cpp= | Accepted | Refused past a page, with the test to prove it. |
+| 11 | =/api/curves/slice= accepts an empty or over-long component, which the BFF's =word= refused | =curve_routes.cpp= | Accepted | Both components are read as words, with the test to prove it. |
+| 12 | =/api/curves/published-sets= accepts a =series_id= that is no identifier | =curve_routes.cpp= | Accepted | The id is read as one, with the test to prove it. |
+| 13 | The task claims thirty routes where the inventory counts twenty-nine | this page | Accepted | Every count states twenty-nine: twenty-five in the area and the four codec routes. |
+| 14 | =require_done= answers 409 for every failed outcome, so a denied or missing write reads as a conflict | =record_routes.cpp= | Accepted | It now answers each outcome's status, keeping 409 for a conflict, as the BFF's own refusal did. The change reached the twenty-two call sites of the shared helper, all of them improving. |
+| 15 | =GET /api/marketdata/adapters= states an empty message where the BFF forwarded the service's | =adapter_routes.cpp= | Accepted | The answer carries the service's own success and message, with the test to prove it. |
+| 16 | Unknown body members and query parameters are refused, where the BFF's zod stripped them | every unit | Declined | This is the house convention, decided and recorded when the trading part was reviewed. A screen that sends a member the server does not read learns it, and the BFF's silence hid typos. |
 
 * Result
+
+The part =ores.http.marketdata= answers all twenty-nine resource routes of the
+market data area, in seven units:
+
+| Unit | Routes | What they answer |
+|------+--------+------------------|
+| =adapter_routes= | 1 | Every adapter the service tracks, with the kind of source its feed reads. |
+| =subscription_routes= | 6 | The subscriptions and the routes the caller's party holds, their two creates and their two removals. |
+| =public_rate_routes= | 4 | The fixings of up to a dozen series, and the three answers a person gives to a publisher's terms. |
+| =curve_routes= | 13 | The series an identity names, the URIs of a series, the snapshot, the slice, the evolution, the computed points, the manual points, the published sets, the FX forward ladder and the withdrawal. |
+| =series_routes= | 1 | One series' observations inside a window, oldest first. |
+| =oresmd_routes= | 4 | The codec's table, one URI read, a batch read and a compose. |
+| =marketdata_routes= | 0 | The aggregate the server calls, which registers the six above. |
+
+Twenty-nine routes: twenty-five in the area and the four codec routes.
+
+The six routes still unpaired in the area are the composed views their own
+tasks serve: the catalogue, the connectivity list, the fixing series, the
+public rates view and its coverage and its file.
+
+**Deviations, each recorded where it was decided.**
+
+- The groups travel on one branch and not one pull request each, because the
+  part is new and each group's pairing builds on the one before.
+- The public rates group states four routes and not the five the Plan named:
+  the publisher list, its coverage and its file are composed views.
+- =http_status= gained =unprocessable_content= (422), which is the status the
+  BFF answered a service refusal with on the curve and codec routes.
+- The shared part gained =record_routes::object_without_members=, because an
+  operation's reply carries the protocol's success and message beside the
+  payload and a screen reads the payload alone.
+- A series read that names no window reads all of them, which is the default
+  the contract states; a batch read of no URI answers no parts, as the BFF did.
+- =require_done= answers each outcome its own status where it answered 409 for
+  every failure. A conflict still answers 409, which is the house's own
+  reading of it; a denial is 403, a missing row 404 and a service that cannot
+  answer 502, which is what the BFF's own refusal did.

@@ -24,10 +24,10 @@ it lands, and the browser keeps calling the BFF until the last one does.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | 45 of 57 tasks are done. The gateway answers the access, auth, tenancy, reference-data, simulation and trading areas, the trading composed views, and the IAM, synthetic, image map and tenor catalogue views. 147 of the 324 BFF routes have no C++ equivalent yet. |
+| Now           | 45 of 57 tasks are done. The gateway answers the access, auth, tenancy, reference-data, simulation, trading and market data areas, the trading composed views, and the IAM, synthetic, image map and tenor catalogue views. 118 of the 324 BFF routes have no C++ equivalent yet. |
 | Waiting on    | Nothing.                               |
-| Next          | Stand up the market data part and serve its resources. |
-| Last touched  | 2026-11-12 |
+| Next          | Stand up the reporting part and serve its resources, then the composed views that remain. |
+| Last touched  | 2026-11-13 |
 
 * Acceptance
 
@@ -73,7 +73,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:023530BB-1715-4609-A52C-3C3A4ECFECE2][Serve the reference data operations]] | DONE | 2026-11-11 | 2026-11-11 | The reference data collections are served, but conventions, tenors, counterparty composites and calendar operations are not. |
 | [[id:FDF58030-E0E8-4C5C-A934-33D13FF5C386][Serve the simulation collections and actions]] | DONE | 2026-11-11 | 2026-11-11 | The synthetic part serves one collection of about twenty, and none of the feed, calibration and market regime actions. |
 | [[id:C30970E3-B1FA-434C-8D70-07612CA95797][Stand up the trading part and serve its resources]] | DONE | 2026-11-12 | 2026-11-13 | The gateway has no trading part. |
-| [[id:1814D431-BFF9-420D-BDB4-4DC3FD90BEFE][Stand up the market data part and serve its resources]] | BACKLOG | | | The gateway has no market data part. |
+| [[id:1814D431-BFF9-420D-BDB4-4DC3FD90BEFE][Stand up the market data part and serve its resources]] | STARTED | 2026-11-13 | | The gateway has no market data part. |
 | [[id:504FD469-B1A1-4480-9694-34724AD2F2A5][Stand up the reporting part and serve its resources]] | BACKLOG | | | The gateway has no reporting part. |
 | [[id:DB8C451C-87BE-40B0-A78F-3FC88BEC9D6C][Stand up the compute part and serve the grid resources]] | BACKLOG | | | The gateway has no compute part. |
 | [[id:2577BE37-74B3-4F0E-8CD2-5918EAEE1E39][Stand up the workflow part and serve workflow and operations]] | BACKLOG | | | The gateway has no workflow part. |

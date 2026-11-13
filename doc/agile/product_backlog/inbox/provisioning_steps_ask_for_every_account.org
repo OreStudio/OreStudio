@@ -1,0 +1,41 @@
+:PROPERTIES:
+:ID: DC63BCCB-0967-4A2D-B978-2033DF7C943D
+:END:
+#+title: Provisioning asks for every account in one request, and drops what is past ten thousand
+#+description: The password and picture steps read the tenant's accounts with limit 10,000 and work one by one over what comes back, so the request grows with the account count and silently truncates past the ceiling. Page it, or read a page at a time as the step advances.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two provisioning steps read the tenant's accounts with =limit = 10'000= in one
+request: =set_staff_passwords= and the picture attach behind =attach_staff_photos=.
+Each then works one by one over the answer, resetting a password or attaching a
+picture per account.
+
+Give the read a page the step advances through, and let the step carry how far it
+has got, so a tenant with more than ten thousand accounts is not silently
+truncated and a step is not one request.
+
+* Why
+
+The story [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] rules
+that no request handler does work that grows with the data, and the account read
+is the one request on the provisioning path that still does. Today a tenant past
+the ceiling loses the accounts beyond it without a word.
+
+* References
+
+- The work it does now, at
+  [[file:../../versions/v0/sprint_30/keep_workflow_steps_alive_and_off_iam/investigation_request_bounds.org][The work each provisioning request does, and what bounds it]].
+- The read: =list_accounts_request= in
+  =projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp=.
+
+* See also
+
+- [[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]]

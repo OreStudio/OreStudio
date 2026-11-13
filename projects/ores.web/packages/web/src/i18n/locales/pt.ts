@@ -4646,6 +4646,8 @@ const pt: SourceCatalogue = {
                 shibor: 'SHIBOR',
                 tiie: 'TIIE',
                 taibor: 'TAIBOR',
+                shir: 'SHIR',
+                hufonia: 'HUFONIA',
             },
             price_source: {
                 fixed: 'Um preço fixo',

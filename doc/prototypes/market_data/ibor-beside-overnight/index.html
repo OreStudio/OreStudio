@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IBOR beside overnight — curve inspector prototype</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+ *{box-sizing:border-box}[hidden]{display:none!important}
+ html,body{background:var(--bg);color:var(--ink)}
+ body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 7rem}
+ h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+ p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+ button{font:inherit;color:inherit;cursor:pointer}
+ .mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+ .wrap{max-width:1180px;margin:0 auto;display:grid;gap:14px}
+ .top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+ .top .sub{color:var(--ink-dim);font-family:var(--mono);font-size:.8rem}
+ .tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim);white-space:nowrap}
+ .tag.ok{color:var(--ok);border-color:#1f4d29}.tag.warn{color:var(--warn);border-color:#4a3a17}.tag.acc{color:var(--accent);border-color:#1f3d5c}
+ .proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+ .proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+ .proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+ .proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+ .proto-bar .label{padding:0 8px;color:var(--ink-faint)}.proto-bar .sep{color:var(--line)}
+ .grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
+ @media (max-width:920px){.grid{grid-template-columns:1fr}}
+ .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:10px}
+ .panel>h2{padding:12px 14px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+ .panel>h2 .right{font-family:var(--mono);font-size:.7rem;letter-spacing:0;text-transform:none;color:var(--ink-faint)}
+ .panel .body{padding:0 14px 14px;display:grid;gap:10px}
+ .conventions{display:flex;flex-wrap:wrap;gap:18px;padding:10px 14px;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+ .conv .k{color:var(--ink-faint);font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase}
+ .conv .v{margin-top:2px;font-family:var(--mono);font-size:.78rem}
+ .v.ok{color:var(--ok)}.v.acc{color:var(--accent)}
+ .table{width:100%;border-collapse:collapse;font-size:.86rem}
+ .table th,.table td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line-soft);font-family:var(--mono);white-space:nowrap}
+ .table th{font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+ .table th:first-child,.table td:first-child{text-align:left}
+ .table th.why,.table td.why{text-align:left;font-family:inherit;color:var(--ink-faint);font-size:.78rem;white-space:normal}
+ .table tbody tr:hover td{background:var(--panel-2)}
+ .ok-c{color:var(--ok)}.acc-c{color:var(--accent)}.warn-c{color:var(--warn)}
+ svg{display:block;width:100%;height:auto}
+ .axis{stroke:var(--line);stroke-width:1}
+ .tick{fill:var(--ink-faint);font-family:var(--mono);font-size:9px}
+ .gridline{stroke:var(--line-soft);stroke-width:.7;stroke-dasharray:2 4}
+ .curve-ok{fill:none;stroke:var(--ok);stroke-width:2}
+ .curve-acc{fill:none;stroke:var(--accent);stroke-width:2}
+ .node-ok{fill:var(--ok)}.node-acc{fill:var(--accent)}
+ .legend{display:flex;gap:16px;padding:0 14px;font-family:var(--mono);font-size:.72rem;color:var(--ink-dim)}
+ .legend span{display:inline-flex;align-items:center;gap:6px}
+ .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+ .fact{padding:10px 14px;border-top:1px solid var(--line-soft)}
+ .fact:first-of-type{border-top:0}
+ .fact .k{color:var(--ink-faint);font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+ .fact .v{font-size:.84rem;line-height:1.5;color:var(--ink-dim)}
+ .callout{margin:0 14px 14px;padding:10px 12px;border-left:2px solid var(--warn);background:var(--panel-2);color:var(--ink-dim);font-size:.82rem;line-height:1.5}
+ .notes{display:grid;gap:8px;font-size:.84rem;color:var(--ink-dim)}
+ .notes li{display:grid;grid-template-columns:1.2rem 1fr;gap:6px}
+ .notes .q{color:var(--warn);font-family:var(--mono)}
+ .foot{display:flex;justify-content:space-between;gap:16px;color:var(--ink-faint);font-family:var(--mono);font-size:.7rem}
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Fixed data, no backend, no build step, no session.
+
+  The question: when a currency has a term curve beside its overnight curve, how
+  does the inspector show both without implying they are interchangeable? The
+  overnight curve discounts and is compounded; the term curve projects and is
+  quoted. The gap between them is the lesson.
+-->
+
+<div class="proto-note">Prototype · fixed data · not a live read</div>
+
+<div class="wrap">
+  <div class="top">
+    <h1>Curve inspector — overnight and term, side by side</h1>
+    <span class="sub">AUD · as-of 2026-11-13 14:00 UTC · system tenant</span>
+    <span class="tag ok">AONIA · overnight · discounts</span>
+    <span class="tag acc">LIBOR 3M · term · projects</span>
+    <span class="tag warn">fixed data</span>
+  </div>
+
+  <div class="grid">
+    <div style="display:grid;gap:14px">
+      <section class="panel">
+        <h2><span id="metric-title">Zero rates</span> <span class="right">12 pillars · SPOT-1M to 30Y</span></h2>
+        <div class="conventions">
+          <div class="conv"><div class="k">Overnight index</div><div class="v ok">AONIA</div></div>
+          <div class="conv"><div class="k">Term index</div><div class="v acc">LIBOR 3M</div></div>
+          <div class="conv"><div class="k">Overnight fixes</div><div class="v">backwards · compounded</div></div>
+          <div class="conv"><div class="k">Term fixes</div><div class="v">forwards · quoted</div></div>
+          <div class="conv"><div class="k">Day count</div><div class="v">ACT/365.FIXED</div></div>
+          <div class="conv"><div class="k">Role</div><div class="v">discount · projection</div></div>
+        </div>
+        <div class="body">
+          <svg viewBox="0 0 720 250" role="img" aria-label="AONIA and LIBOR 3M zero curves over twelve pillars">
+            <g id="gridlines"></g>
+            <g id="ticks-x"></g>
+            <g id="ticks-y"></g>
+            <line class="axis" x1="46" y1="210" x2="700" y2="210"></line>
+            <line class="axis" x1="46" y1="8" x2="46" y2="210"></line>
+            <path id="curve-libor" class="curve-acc"></path>
+            <path id="curve-aonia" class="curve-ok"></path>
+            <g id="nodes-libor"></g>
+            <g id="nodes-aonia"></g>
+          </svg>
+        </div>
+        <div class="legend">
+          <span><span class="dot" style="background:var(--ok)"></span>AONIA (discount curve)</span>
+          <span><span class="dot" style="background:var(--accent)"></span>LIBOR 3M (projection curve)</span>
+          <span><span class="dot" style="background:var(--warn)"></span>difference, bps</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Pillars <span class="right">same ladder, two indices</span></h2>
+        <div class="body" style="padding-top:10px">
+          <table class="table">
+            <thead>
+              <tr><th>Tenor</th><th id="h-aonia">AONIA zero</th><th id="h-libor">LIBOR 3M zero</th><th id="h-gap">Difference</th><th class="why">What makes the gap here</th></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Design notes</h2>
+        <div class="body">
+          <ul class="notes">
+            <li><span class="q">?</span><span>Should the screen open on the overnight curve and reveal the term curve on request, or open on both?</span></li>
+            <li><span class="q">?</span><span>Is the term curve always shown with a “projection” tag, or only when both are present?</span></li>
+            <li><span class="q">?</span><span>Where does the teaching text live: a panel in the inspector, or a link to a page that compares the two?</span></li>
+            <li><span class="q">?</span><span>The gap is drawn in bps; should it be a second axis, a bar strip, or a column in the table only?</span></li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <aside style="display:grid;gap:14px">
+      <section class="panel">
+        <h2>What the comparison teaches</h2>
+        <div class="body" style="padding-top:2px">
+          <p class="muted" style="font-size:.84rem">The two curves answer different questions. One says what a secured overnight deposit earns; the other says what the market expects an unsecured three-month rate to be.</p>
+        </div>
+        <div class="fact">
+          <div class="k">Underlying</div>
+          <div class="v"><span class="ok-c">AONIA</span> averages secured overnight transactions. <span class="acc-c">LIBOR 3M</span> was a survey of unsecured interbank term borrowing, so it carries bank credit and liquidity.</div>
+        </div>
+        <div class="fact">
+          <div class="k">How it fixes</div>
+          <div class="v"><span class="ok-c">Overnight</span> fixes backwards: each day's rate is known after the day. <span class="acc-c">Term</span> fixes forwards: the 3M rate is quoted today for a period that starts today.</div>
+        </div>
+        <div class="fact">
+          <div class="k">What it is for</div>
+          <div class="v"><span class="ok-c">Discounting</span>: the overnight curve is the risk-free leg for present-valuing cash flows. <span class="acc-c">Projection</span>: the term curve forecasts the rate a floating leg will pay.</div>
+        </div>
+        <div class="fact">
+          <div class="k">Why the shape differs</div>
+          <div class="v">The gap is not only expectation. A term curve adds a term premium and the credit of the panel that quotes it; a compounded overnight curve does not.</div>
+        </div>
+        <div class="callout">A curve is never “the” rate. Reading two together is the lesson: which one discounts, which one projects, and what the gap is made of.</div>
+      </section>
+
+      <section class="panel">
+        <h2>The data <span class="right">fixed</span></h2>
+        <div class="body" style="padding-top:2px">
+          <p class="muted" style="font-size:.82rem">Twelve pillars, the ladder the system builds on. The AONIA column sits around its configured seed level of 4.30%; the LIBOR column is fixed for the design. Every number is a constant in this page — nothing is read from the server.</p>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <div class="foot">
+    <span>Prototype for “Show an IBOR curve beside the overnight curve” · task 52257743</span>
+    <span>Companion to the captured curve inspector (FB59FE7A)</span>
+  </div>
+</div>
+
+<div class="proto-bar" role="toolbar" aria-label="Prototype views">
+  <span class="label">View</span>
+  <button class="on" data-view="both">Both</button>
+  <button data-view="aonia">Overnight only</button>
+  <button data-view="ibor">Term only</button>
+  <span class="sep">|</span>
+  <span class="label">Metric</span>
+  <button class="on" data-metric="zero">Zero</button>
+  <button data-metric="forward">Forward</button>
+  <button data-metric="df">Discount factor</button>
+</div>
+
+<script>
+  // Hard-coded sample data, hand-written for the design. Twelve pillars: the ladder
+  // an IR curve is built on. The AONIA column sits around the configured level the
+  // system seeds (4.30%); the LIBOR 3M column is set a little above it, the way a
+  // term curve historically sat above the overnight average. Nothing here is read
+  // from the system; the forward and discount-factor views are computed from it.
+  const PILLARS = [
+    { tenor: "1M",  years: 1/12, aonia: 4.28, libor: 4.36, why: "Short end: the term premium is small" },
+    { tenor: "3M",  years: 0.25, aonia: 4.30, libor: 4.42, why: "Credit and liquidity of the panel" },
+    { tenor: "6M",  years: 0.5,  aonia: 4.30, libor: 4.50, why: "Term premium grows with the period" },
+    { tenor: "1Y",  years: 1,    aonia: 4.32, libor: 4.60, why: "Expectations plus premium" },
+    { tenor: "2Y",  years: 2,    aonia: 4.38, libor: 4.72, why: "Mid-curve premium peaks" },
+    { tenor: "3Y",  years: 3,    aonia: 4.43, libor: 4.80, why: "Still premium, easing" },
+    { tenor: "5Y",  years: 5,    aonia: 4.50, libor: 4.88, why: "Long end flattens" },
+    { tenor: "7Y",  years: 7,    aonia: 4.54, libor: 4.92, why: "Converging expectations" },
+    { tenor: "10Y", years: 10,   aonia: 4.57, libor: 4.95, why: "Gap narrows at the long end" },
+    { tenor: "15Y", years: 15,   aonia: 4.59, libor: 4.96, why: "Almost flat" },
+    { tenor: "20Y", years: 20,   aonia: 4.60, libor: 4.94, why: "Slight inversion in the term curve" },
+    { tenor: "30Y", years: 30,   aonia: 4.58, libor: 4.90, why: "Term curve below the overnight" }
+  ];
+
+  // The three read-outs of one curve: the zero rate, the discount factor it makes,
+  // and the forward rate between two pillars. Continuous compounding throughout.
+  PILLARS.forEach(p => {
+    p.dfA = Math.exp(-p.aonia / 100 * p.years);
+    p.dfL = Math.exp(-p.libor / 100 * p.years);
+    p.fwdA = p.aonia;
+    p.fwdL = p.libor;
+  });
+  for (let i = 1; i < PILLARS.length; i++) {
+    const p = PILLARS[i], q = PILLARS[i - 1];
+    p.fwdA = (p.aonia * p.years - q.aonia * q.years) / (p.years - q.years);
+    p.fwdL = (p.libor * p.years - q.libor * q.years) / (p.years - q.years);
+  }
+
+  const METRICS = {
+    zero:    { title: "Zero rates",       a: "AONIA zero",      l: "LIBOR 3M zero",      gap: "Difference",       domain: [4.2, 5.0],  unit: "bps",  dp: 2 },
+    forward: { title: "Forward rates",    a: "AONIA forward",   l: "LIBOR 3M forward",   gap: "Difference",       domain: [4.0, 5.4],  unit: "bps",  dp: 2 },
+    df:      { title: "Discount factors", a: "AONIA DF",        l: "LIBOR 3M DF",        gap: "Difference",       domain: [0.2, 1.0],  unit: "pts",  dp: 4 }
+  };
+
+  const W = 720, H = 250, left = 46, right = 700, topPad = 8, bottom = 210;
+  const ns = "http://www.w3.org/2000/svg";
+  let metric = "zero";
+  let yMin = METRICS.zero.domain[0], yMax = METRICS.zero.domain[1];
+
+  const value = (p, side) => metric === "zero" ? p[side] : metric === "forward" ? p[side === "aonia" ? "fwdA" : "fwdL"] : p[side === "aonia" ? "dfA" : "dfL"];
+  const sx = i => left + (i / (PILLARS.length - 1)) * (right - left);
+  const sy = v => bottom - ((v - yMin) / (yMax - yMin)) * (bottom - topPad);
+  const line = side => PILLARS.map((p, i) => `${i ? "L" : "M"}${sx(i).toFixed(1)},${sy(value(p, side)).toFixed(1)}`).join(" ");
+
+  function text(x, y, v, anchor) {
+    const t = document.createElementNS(ns, "text");
+    t.setAttribute("class", "tick");
+    t.setAttribute("x", x); t.setAttribute("y", y); t.setAttribute("text-anchor", anchor);
+    t.textContent = v;
+    return t;
+  }
+  function gridLine(x1, x2, y1, y2) {
+    const g = document.createElementNS(ns, "line");
+    g.setAttribute("class", "gridline");
+    g.setAttribute("x1", x1); g.setAttribute("x2", x2); g.setAttribute("y1", y1); g.setAttribute("y2", y2);
+    return g;
+  }
+
+  function drawAxes() {
+    const gx = document.getElementById("ticks-x");
+    const gy = document.getElementById("ticks-y");
+    const gg = document.getElementById("gridlines");
+    gx.replaceChildren(); gy.replaceChildren(); gg.replaceChildren();
+    PILLARS.forEach((p, i) => {
+      gx.appendChild(text(sx(i), 228, p.tenor, "middle"));
+      gg.appendChild(gridLine(sx(i), sx(i), topPad, bottom));
+    });
+    const step = (yMax - yMin) / 5;
+    for (let k = 0; k <= 5; k++) {
+      const v = yMin + k * step;
+      gy.appendChild(text(40, sy(v) + 3, v.toFixed(metric === "df" ? 2 : 1), "end"));
+      gg.appendChild(gridLine(left, right, sy(v), sy(v)));
+    }
+  }
+
+  function drawCurves() {
+    document.getElementById("curve-aonia").setAttribute("d", line("aonia"));
+    document.getElementById("curve-libor").setAttribute("d", line("libor"));
+    for (const [id, side, cls] of [["nodes-aonia", "aonia", "node-ok"], ["nodes-libor", "libor", "node-acc"]]) {
+      const g = document.getElementById(id);
+      g.replaceChildren();
+      PILLARS.forEach((p, i) => {
+        const c = document.createElementNS(ns, "circle");
+        c.setAttribute("class", cls);
+        c.setAttribute("cx", sx(i)); c.setAttribute("cy", sy(value(p, side)));
+        c.setAttribute("r", 2.6);
+        g.appendChild(c);
+      });
+    }
+  }
+
+  function drawRows() {
+    const m = METRICS[metric];
+    document.getElementById("metric-title").textContent = m.title;
+    document.getElementById("h-aonia").textContent = m.a;
+    document.getElementById("h-libor").textContent = m.l;
+    document.getElementById("h-gap").textContent = m.gap;
+    const body = document.getElementById("rows");
+    body.replaceChildren();
+    PILLARS.forEach(p => {
+      const a = value(p, "aonia"), l = value(p, "libor");
+      const diff = metric === "df"
+        ? `${(l - a).toFixed(4)} pts`
+        : `${Math.round((l - a) * 100)} bps`;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${p.tenor}</td>` +
+        `<td class="ok-c">${a.toFixed(m.dp)}</td>` +
+        `<td class="acc-c">${l.toFixed(m.dp)}</td>` +
+        `<td class="warn-c">${diff}</td>` +
+        `<td class="why">${p.why}</td>`;
+      body.appendChild(tr);
+    });
+  }
+
+  function applyView(view) {
+    document.getElementById("curve-aonia").style.display = view === "ibor" ? "none" : "";
+    document.getElementById("nodes-aonia").style.display = view === "ibor" ? "none" : "";
+    document.getElementById("curve-libor").style.display = view === "aonia" ? "none" : "";
+    document.getElementById("nodes-libor").style.display = view === "aonia" ? "none" : "";
+  }
+
+  function applyMetric(next) {
+    metric = next;
+    [yMin, yMax] = METRICS[metric].domain;
+    drawAxes(); drawCurves(); drawRows();
+  }
+
+  document.querySelectorAll("[data-view]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-view]").forEach(b => b.classList.remove("on"));
+      btn.classList.add("on");
+      applyView(btn.dataset.view);
+    });
+  });
+  document.querySelectorAll("[data-metric]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-metric]").forEach(b => b.classList.remove("on"));
+      btn.classList.add("on");
+      applyMetric(btn.dataset.metric);
+    });
+  });
+
+  drawAxes(); drawCurves(); drawRows();
+</script>
+</body>
+</html>

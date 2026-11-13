@@ -55,3 +55,5 @@ cannot.
 * See also
 
 - The coverage screen this dialog opens from; the prototype's full analysis is in References.
+- =doc/prototypes/market_data/ibor-beside-overnight/index.html=: the comparison view this dialog
+  grows into when a currency has a term curve beside its overnight curve.

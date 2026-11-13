@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/bound-the-work-of-a-request
+#+pr: 4678
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
 #+updated: 2026-11-12
-#+environment: jolly_knuth
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ No request handler does work that grows with the data inside one request: such w
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Not yet started.                       |
+| Now          | The inventory is written and the five unbounded reads are bounded; the branch awaits review. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-12                               |
+| Next         | Page the calendar's existing-days read, and page or retire the picture attach, when the step moves out of iam. |
+| Last touched | 2026-11-13                               |
 
 * Acceptance
 
@@ -56,7 +56,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Request types a provisioning step sends | 54 | =grep -oE "((ores|[a-z]+)::)+(messaging|api)::[a-z_]+_request" projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp | sed 's/.*:://' | sort -u | wc -l= gives 54 names; less =attach_account_pictures_request=, which the file serves, plus =clear_bootstrap_mode_request=, which it names through a =using namespace=. | =2babccb0f0= |
+| Request types that read a catalogue and narrowed it in memory | 5 | The inventory's "5 request types were unbounded" table, each read at the line it names. | =2babccb0f0= |
+| Request types left with work that grows with the data | 2 | =list_accounts_request= at =tenant_provisioning_handler.hpp:2439= and =:3567=; =regenerate_calendar_dates= at =calendar_materialisation_service.cpp:307-333=. | =2babccb0f0= |
+| Request types bounded by what they name | 47 | The inventory's "47 request types are bounded" table. | =2babccb0f0= |
+| =ores.marketdata.service.tests=, after the change | passed, 31.0 s | =compass test run -- -R ores.marketdata.service.tests= | =adbc51f6b1= |
+| =ores.iam.service.tests=, after the change | passed, 3.7 s | =compass test run -- -R ores.iam.service.tests= | =adbc51f6b1= |
 
 * Notes
 
@@ -67,6 +72,11 @@ task and name that file in the Command column.
   Its cost grows with the blueprint catalogue rather than with the one
   blueprint. Recorded from [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]],
   whose step 13 hit this handler's latency on a loaded host.
+- Fixed on this branch: the recipe now asks the store for that blueprint's
+  pillars and their sources, a page at a time. The four other handlers with the
+  same shape are listed in
+  [[id:BCC7D01B-6BA9-40F0-8402-41C9DC249DE6][The work each provisioning request does, and what bounds it]],
+  which is the inventory this task asks for.
 
 * Test Scenarios
 
@@ -83,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4678][#4678]] | [marketdata] Bound the work of a provisioning request |
 
 * Review
 
@@ -92,3 +102,44 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All 54 request types a provisioning step makes were read handler by handler. The
+five that read a catalogue and narrowed it in memory now ask the store for their
+own rows. The inventory is
+[[id:BCC7D01B-6BA9-40F0-8402-41C9DC249DE6][The work each provisioning request does, and what bounds it]].
+
+What the five were, and what they read now:
+
+- =calibrate_fx_vol_surface= read every FX volatility pillar and every pillar
+  source the tenant holds, to build one blueprint's recipe. It reads that
+  blueprint's pillars through =fx_vol_surface_pillars_filter=, and their sources
+  by pillar id.
+- =compute_curve= and =publish_curve= read every IR curve pillar, to build one
+  config's curve. They read that config's pillars.
+- =publish_fx_forward= read every IR curve config, to find one currency's
+  funding curve. It reads that currency's funding curves.
+- =publish_fx_vol_surface= read every surface publish, to find a second raise of
+  the same calibration. It reads the blueprint's own raises.
+
+Each repository already offered the filtered, paged read: the handlers were
+simply not using it. Each read is paged, so a request cannot be made unbounded
+again by a tenant that adds rows.
+
+Two request types do not meet the first sentence of the acceptance, and both are
+stated rather than implied:
+
+- =regenerate_calendar_dates= writes a day per calendar in use, about 37,000 days
+  each, and the request names no calendars because =in_use_only= is set. It is
+  bounded by the years the service caps, and it runs as =build_calendars_step=
+  with a 600 s deadline, so the acceptance's second clause covers it. Its read of
+  the existing days loads each calendar into memory to subtract them, which is a
+  memory cost and is named in the recommendations.
+- =list_accounts= is the one read on this path that grows with the tenant's data:
+  both the password and the picture step ask for its accounts with
+  =limit = 10'000= and work one by one over the answer, dropping the rest past the
+  ceiling without a word. It is captured as
+  [[id:DC63BCCB-0967-4A2D-B978-2033DF7C943D][Provisioning asks for every account in one request, and drops what is past ten thousand]]
+  for the step that moves to its owning service.
+
+The =put_many_*= handlers are bounded by the rows they are handed, but pay 2N+1
+queries for N rows, which the recommendations name.

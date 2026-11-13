@@ -94,6 +94,46 @@ RULES = (
     # The IAM composed views ores.http answers, ahead of the rules for the screen
     # routes they share a part with; each keeps the BFF's view name, so its
     # obligations are stated once.
+    Rule("the adapters screen's route",
+         ("exact", "GET /api/marketdata/adapters"),
+         CPP, RESOURCE, "market-data",
+         "Every adapter the market data service tracks, with what it serves, what it was asked to"
+         " serve, and the kind of source its feed reads, joined from the feeds and the sessions."),
+    Rule("the public rates' route",
+         ("regex", r"^(GET /api/marketdata/public-rates/fixings"
+                   r"|POST /api/marketdata/public-rates(/\{code\})?/(accept|withdraw)-terms)$"),
+         CPP, RESOURCE, "market-data",
+         "The fixings the store holds for up to a dozen series, oldest first, and the three"
+         " answers a person gives to a publisher's terms: accept one at the version read,"
+         " withdraw one, and accept many in one request."),
+    Rule("the ORE URI codec route",
+         ("regex", r"^(GET|POST) /api/oresmd"),
+         CPP, TRANSPORT, NO_AREA,
+         "The codec's own table, the read of a URI into its parts, a batch of them, and the"
+         " write of parts into a URI, at the addresses and in the shapes the BFF answered,"
+         " storing nothing."),
+    Rule("a series' observations route",
+         ("exact", "GET /api/series/{id}/observations"),
+         CPP, RESOURCE, "market-data",
+         "One series' observations inside a window, oldest first, the count read as the cap on"
+         " the answer, at the address and in the shape the BFF answered."),
+    Rule("the curves' route",
+         ("regex", r"^POST /api/curves/(series|series-by-id|series-list|slice|evolution"
+                   r"|snapshot|manual-point(/clear)?|compute|fx-forward-ladder"
+                   r"|published(/withdraw|-sets)?)$"),
+         CPP, RESOURCE, "market-data",
+         "The curves at the address and in the shape the BFF answered: the series an identity"
+         " names, the series a party sees, the URIs of the series a blueprint names, the object"
+         " snapshotted and sliced and evolved, the points a recipe computes without storing"
+         " them, the manual points a person keys and clears, the published sets a party holds,"
+         " the FX forward ladder of one pair, and the withdrawal that takes a set out of use."),
+    Rule("the market data subscriptions' route",
+         ("regex", r"^(GET|POST|DELETE) /api/marketdata/(subscriptions|routes)"
+                   r"(/\{(provider|publisher)\})?$"),
+         CPP, RESOURCE, "market-data",
+         "The subscriptions and routes screens at the address and in the shape the BFF answered:"
+         " every subscription and route the caller's party holds, the two creates that name a"
+         " provider or a feed, and the removals that name the version they read."),
     Rule("the blotter",
          ("exact", "GET /api/blotter"),
          CPP, COMPOSED, "trading",

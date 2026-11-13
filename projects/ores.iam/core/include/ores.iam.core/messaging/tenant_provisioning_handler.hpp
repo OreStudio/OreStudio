@@ -764,6 +764,33 @@ public:
     }
 
 private:
+    /**
+     * @brief How long a request waits that derives or writes a set of rows.
+     *
+     * A curve bootstrap, a forward set, a surface calibration and a surface
+     * publish are minutes of work on a loaded host, not one round trip. The
+     * surface step measured 99 s for 40 calibrations and publishes on a quiet
+     * machine, about 2.5 s each, and one of them outlived the shared 30 s
+     * default when the host was loaded: that is how step 13 of a provisioning
+     * run failed with "NATS request timed out".
+     *
+     * 120 s is 48 times that quiet measurement and four times the shared
+     * default. It is also a tenth of the 1200 s a step must stand still before
+     * the engine fails it, so one slow request can never be what exhausts a
+     * step's patience.
+     */
+    static constexpr auto work_request_deadline = std::chrono::seconds{120};
+
+    /**
+     * @brief How long a request waits that regenerates a whole table.
+     *
+     * The calendar dates are 13,515 days per calendar, 35 calendars in use.
+     * The request wrote them in 168.4 s on a quiet host after the batch write
+     * replaced a read per day, and it timed out at 600 s before that. The
+     * deadline keeps the value the step already stated, now named once.
+     */
+    static constexpr auto bulk_request_deadline = std::chrono::seconds{600};
+
     /// Who a provisioning step acts as. The engine sends a step without the
     /// caller's token, so the handler mints one for the run's administrator.
     struct step_actor {
@@ -1113,7 +1140,7 @@ private:
                 ores::marketdata::messaging::compute_curve_request preview;
                 preview.bootstrap_config_id = it->first;
                 preview.as_of = as_of;
-                const auto computed = client.request(preview);
+                const auto computed = client.request(preview, work_request_deadline);
                 if (!computed.success) {
                     it->second = computed.message;
                     ++it;
@@ -1124,7 +1151,7 @@ private:
                 publish.bootstrap_config_id = it->first;
                 publish.as_of = as_of;
                 publish.reason = std::string(reason);
-                const auto published = client.request(publish);
+                const auto published = client.request(publish, work_request_deadline);
                 if (published.success && published.published_at) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                         << label << ": published " << names.at(it->first) << " at "
@@ -1582,7 +1609,7 @@ private:
                 publish.pair_code = pair;
                 publish.as_of = as_of;
                 publish.reason = std::string(publish_reason);
-                const auto answer = party_client.request(publish);
+                const auto answer = party_client.request(publish, work_request_deadline);
                 if (answer.success && answer.published_at) {
                     ++published;
                     result.forwards.push_back(
@@ -1694,7 +1721,7 @@ private:
                 ores::marketdata::messaging::calibrate_fx_vol_surface_request calibrate;
                 calibrate.blueprint_id = id;
                 calibrate.as_of = as_of;
-                const auto calibrated = party_client.request(calibrate);
+                const auto calibrated = party_client.request(calibrate, work_request_deadline);
                 if (!calibrated.success) {
                     result.surfaces_not_published.push_back(line + ": " + calibrated.message);
                     continue;
@@ -1708,7 +1735,7 @@ private:
                 publish.blueprint_id = id;
                 publish.as_of = calibrated.as_of;
                 publish.reason = std::string(publish_reason);
-                const auto answer = party_client.request(publish);
+                const auto answer = party_client.request(publish, work_request_deadline);
                 if (answer.success && answer.published_at) {
                     ++published;
                     result.surfaces.push_back(
@@ -2014,7 +2041,7 @@ private:
         ores::refdata::messaging::regenerate_calendar_dates_request request;
         request.in_use_only = true;
         request.end_year = last_generated_holiday_year;
-        const auto response = client.request(request, std::chrono::seconds{600});
+        const auto response = client.request(request, bulk_request_deadline);
         if (!response.success)
             throw std::runtime_error("The calendars were not built: " + response.message);
 

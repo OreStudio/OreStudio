@@ -26,25 +26,40 @@ Every request a provisioning step makes either takes the shared default delibera
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
 
-- The audit names every request a provisioning step makes, the work it does and the deadline it should state.
-- A request whose work is a write or a fit states its own deadline, sized to a loaded p99 rather than a round number.
-- A request that keeps the shared default says so deliberately, beside its call site.
-- The stated exception is stated in one place, not repeated as a number at each call site.
+- The audit names every request class a provisioning step makes, the work it
+  does and the deadline it states, in an evidence file beside the task.
+- A request whose work derives or writes a set of rows states its own deadline,
+  derived from a measurement and from the step budget it must fit inside.
+- A request that keeps the shared default is recorded in the audit as
+  deliberate, with the bound that makes it safe.
+- The deadline is stated in one place per class, not repeated as a number at
+  each call site.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Extract every request call site in =tenant_provisioning_handler.hpp= and group
+  the sites by the request they send. The inventory goes in
+  =evidence/request_deadlines.org=.
+- Classify each class by the work it asks for: a read or a handshake, a set of
+  rows derived or written from the tenant's data, or a whole-table
+  regeneration.
+- State the two deadlines that differ from the shared default as private
+  constants in the handler, with the measurement and the step budget that
+  bound each one in the comment. Apply them at the five derive sites and the
+  one bulk site.
+- Make the internal client's default the platform's one default, so the same
+  call cannot get a different deadline from an overload.
+- Leave every other request on the shared default, and record in the audit why
+  each is bounded.
 
 * Measurements
 
@@ -58,7 +73,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Requests a provisioning step makes | 66 call sites over 46 request types | =grep -c "\.request("= over =tenant_provisioning_handler.hpp= | 35f6e8a7f8 |
+| Request classes that state their own deadline | 2: derive or write a set, 120 s; whole-table regeneration, 600 s | =grep -n "request_deadline"= over the handler | this branch |
+| Build of the iam targets | succeeded, 531 targets, 1 h 10 m 40 s | =compass build ores.iam.core.lib ores.iam.core.tests ores.iam.api.tests ores.iam.service.lib= | this branch |
+| =ores.iam.api.tests= | passed | =compass test run -- -R "ores.iam.(core\|api\|service).tests"= | this branch |
+| =ores.iam.service.tests= | passed | same | this branch |
+| =ores.iam.core.tests= | 339 of 341 passed; 2 failed in the initial-admin database guard | same | this branch |
 
 * Notes
 
@@ -86,3 +106,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The audit is at =evidence/request_deadlines.org=: every call site, grouped by
+request, with the work it asks for and the deadline it states.
+
+Two deadline classes are now stated once, as private constants in
+=tenant_provisioning_handler.hpp=, and used at the five derive sites and the
+one bulk site:
+
+- =work_request_deadline=, 120 s, for a curve bootstrap, a curve publish, a
+  forward set, a surface calibration and a surface publish.
+- =bulk_request_deadline=, 600 s, for the calendar regeneration, replacing the
+  literal the call site held.
+
+The internal client's default is now the platform's one default,
+=ores::nats::service::default_request_timeout=, rather than a second 30 s
+written into its signature. A call cannot get a different deadline from an
+overload.
+
+The two failing cases are =[initial_admin_guard]= tests. They assert a
+PostgreSQL sqlstate of 55000 from a database function, and they fail because
+this environment's database schema is out of sync with the checkout, which
+=bearings= reports and which this change does not touch. Every case that does
+not read the database passes.

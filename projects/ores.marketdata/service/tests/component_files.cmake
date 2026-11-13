@@ -33,6 +33,7 @@ set(files
     "app_feed_series_tests.cpp"
     "app_fixing_ingest_tests.cpp"
     "app_fx_vol_surface_calibration_plan_tests.cpp"
+    "app_fx_montage_tests.cpp"
     "app_fx_vol_surface_grid_tests.cpp"
     "app_fx_vol_surface_publish_check_tests.cpp"
     "app_instrument_catalogue_tests.cpp"

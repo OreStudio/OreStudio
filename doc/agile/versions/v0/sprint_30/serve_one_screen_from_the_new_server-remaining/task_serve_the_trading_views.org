@@ -109,6 +109,17 @@ via its "Verifies task" field.
 | 1 | The id-to-text helper is twice in the part | trade reads, trading views | accepted | one =as_text= in =ores.http.api/net/record_routes.hpp=; both units call it |
 | 2 | The rail, the placement and the ordering are long | trading views | declined | they are the view's own computation, stated once here and tested through the answer |
 | 3 | The party's label is empty where the BFF named it | trading views | accepted | recorded as a decision: the caller's token names the party by id only |
+| 4 | The sort's tie-break reversed with the direction, where the BFF always ascended by id | trading views | accepted | ties ascend by id whatever the direction |
+| 5 | The rail inserted into its label maps inside a sort comparator, and a label the catalogue lacks came out empty | trading views | accepted | the lookups no longer insert, and a missing label falls back to the key |
+| 6 | The portfolio rail drew its nodes in uuid order where the BFF drew them in read order | trading views | accepted | the rail walks the portfolios and books in the order they were read |
+| 7 | A structure reference accepted a row that names no structure | trading views | accepted | a row with the nil id is skipped |
+| 8 | The second =as_text= overload carried no brief | record_routes.hpp | accepted | documented |
+| 9 | The views' readable-code helper is a second =humanised= with different rules | trading views | accepted | renamed =readable=, so two rules are not mistaken for one |
+| 10 | The composition is one long lambda | trading views | declined | the view's computation is one narrative; splitting it would move names without making it testable, which the next row states |
+| 11 | No test proves the composition against the BFF's answer | tests | declined | a route answer needs a connected service; the switch task's ores.web test proves the page. The cache policy, the query checks and the refusal are tested |
+| 12 | Eight reads run in turn where the BFF ran them together | trading views | declined | the forwarding client is synchronous; concurrency would need the session's own loop, which is the server's concern |
+| 13 | The shared =as_text= and the regenerated inventory ride along | several | declined | the helper answers the previous round's duplication finding; the inventory is generated |
+| 14 | The tree's guard named the portfolios subject | trading views | accepted | it names the structures subject the view is about |
 
 * Result
 

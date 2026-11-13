@@ -37,7 +37,7 @@ namespace {
 
 const std::string tree_body = R"({"portfolios":[{"id":"p1"}],"books":[{"id":"b1"}]})";
 
-bool view_holds(const ores::http::domain::http_response& answer, const std::string& header) {
+bool has_header(const ores::http::domain::http_response& answer, const std::string& header) {
     return answer.headers.contains(header);
 }
 
@@ -51,8 +51,8 @@ TEST_CASE("trading_views_keep_the_book_tree_for_a_minute", "[trading_view]") {
     const auto first = trading_view_routes::tree_answer(req, tree_body);
     CHECK(first.status == http_status::ok);
     CHECK(first.body == tree_body);
-    REQUIRE(view_holds(first, "ETag"));
-    REQUIRE(view_holds(first, "Cache-Control"));
+    REQUIRE(has_header(first, "ETag"));
+    REQUIRE(has_header(first, "Cache-Control"));
     CHECK(first.headers.at("Cache-Control") == "private, max-age=60");
     CHECK(first.headers.at("Vary") == "Authorization, Cookie");
 
@@ -62,6 +62,14 @@ TEST_CASE("trading_views_keep_the_book_tree_for_a_minute", "[trading_view]") {
     CHECK(revalidated.status == http_status::not_modified);
     CHECK(revalidated.body.empty());
     CHECK(revalidated.headers.at("ETag") == first.headers.at("ETag"));
+
+    /* A view that changed is a different answer, so it is sent whole. */
+    http_request changed;
+    changed.headers["if-none-match"] = first.headers.at("ETag");
+    const auto rewritten = trading_view_routes::tree_answer(
+        changed, R"({"portfolios":[{"id":"p2"}],"books":[{"id":"b1"}]})");
+    CHECK(rewritten.status == http_status::ok);
+    CHECK(rewritten.headers.at("ETag") != first.headers.at("ETag"));
 }
 
 TEST_CASE("trading_views_keep_the_blotter_for_half_a_minute", "[trading_view]") {
@@ -73,7 +81,7 @@ TEST_CASE("trading_views_keep_the_blotter_for_half_a_minute", "[trading_view]") 
     const auto first = trading_view_routes::blotter_answer(req, blotter_body);
     CHECK(first.status == http_status::ok);
     CHECK(first.headers.at("Cache-Control") == "private, max-age=30");
-    REQUIRE(view_holds(first, "ETag"));
+    REQUIRE(has_header(first, "ETag"));
 
     http_request second;
     second.headers["if-none-match"] = first.headers.at("ETag");

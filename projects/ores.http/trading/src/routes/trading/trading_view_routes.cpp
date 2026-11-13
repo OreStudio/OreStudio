@@ -93,17 +93,14 @@ std::string text_or_empty(const std::optional<std::string>& text) {
     return text.value_or(std::string());
 }
 
-/// A date as the wire writes it, or the empty text when there is none.
-std::string plain_date(const std::optional<std::chrono::year_month_day>& date) {
-    if (!date)
-        return {};
-    auto quoted = json::write(*date);
-    return quoted.size() >= 2 ? quoted.substr(1, quoted.size() - 2) : std::string();
+/// A date as a person reads it, or the empty text when there is none.
+std::string iso_date(const std::optional<std::chrono::year_month_day>& date) {
+    return date ? std::format("{:%Y-%m-%d}", *date) : std::string();
 }
 
 /// A code made readable: the words the camel case and the underscores hide, with
 /// the spaces put back.
-std::string humanised(const std::string& code) {
+std::string readable(const std::string& code) {
     std::string spaced;
     for (std::size_t i = 0; i < code.size(); ++i) {
         const char current = code[i];
@@ -265,7 +262,7 @@ std::map<std::string, std::string> structure_references(
     const auto rows = forwarding::forward_all(
         req, session, msg, &trading_messaging::list_structure_identifiers_response::identifiers);
     for (const auto& row : rows)
-        if (!row.id_value.empty())
+        if (!row.id_value.empty() && !row.structure_id.is_nil())
             references.emplace(rr::as_text(row.structure_id), row.id_value);
     return references;
 }
@@ -528,7 +525,7 @@ void trading_view_routes::register_routes(
                          "one of the books, woven into the tree. The answer carries an ETag and "
                          "stays fresh for 60 seconds.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                co_return guarded<refdata_messaging::list_portfolios_request>([&] {
+                co_return guarded<trading_messaging::list_structures_request>([&] {
                     const auto portfolios = all_portfolios(req, session);
                     const auto books = all_books(req, session);
                     return tree_answer(req,
@@ -561,7 +558,7 @@ void trading_view_routes::register_routes(
                     std::map<std::string, std::string> instrument_name_of;
                     for (const auto& row : types) {
                         const auto name = !row.name.empty() ? row.name : row.description;
-                        instrument_name_of[row.code] = name.empty() ? humanised(row.code) : name;
+                        instrument_name_of[row.code] = name.empty() ? readable(row.code) : name;
                     }
 
                     std::map<std::string, std::string> product_code_of;
@@ -577,7 +574,7 @@ void trading_view_routes::register_routes(
                     }
                     std::map<std::string, std::string> class_name_of;
                     for (const auto& row : asset_classes)
-                        class_name_of[row.code] = row.name.empty() ? humanised(row.code) : row.name;
+                        class_name_of[row.code] = row.name.empty() ? readable(row.code) : row.name;
 
                     /* Which structure holds which trade. */
                     std::map<std::string, std::string> holder_of;
@@ -644,7 +641,7 @@ void trading_view_routes::register_routes(
                         if (found == holder_of.end())
                             continue;
                         const auto owner = found->second;
-                        const auto date = plain_date(row.trade_date);
+                        const auto date = iso_date(row.trade_date);
                         if (!date.empty()) {
                             const auto held = leg_date_of.find(owner);
                             if (held == leg_date_of.end() || date < held->second)
@@ -679,7 +676,8 @@ void trading_view_routes::register_routes(
                     std::map<std::string, std::string> portfolio_of_book;
                     std::map<std::string, std::string> label_of_book;
                     for (const auto& row : books) {
-                        portfolio_of_book[rr::as_text(row.id)] = rr::as_text(row.parent_portfolio_id);
+                        portfolio_of_book[rr::as_text(row.id)] =
+                            rr::as_text(row.parent_portfolio_id);
                         label_of_book[rr::as_text(row.id)] =
                             row.name.empty() ? rr::as_text(row.id) : row.name;
                     }
@@ -747,11 +745,15 @@ void trading_view_routes::register_routes(
                                              });
                             std::vector<rail_node> nodes{party_node};
                             for (const auto& [id, count] : ordered)
-                                nodes.push_back(rail_node{.id = counterparty_node(id),
-                                                          .label = label_of_counterparty[id],
-                                                          .kind = "counterparty",
-                                                          .parent = std::string(),
-                                                          .count = count});
+                                nodes.push_back(
+                                    rail_node{.id = counterparty_node(id),
+                                              .label = label_of_counterparty.find(id) ==
+                                                               label_of_counterparty.end() ?
+                                                           id :
+                                                           label_of_counterparty.at(id),
+                                              .kind = "counterparty",
+                                              .parent = std::string(),
+                                              .count = count});
                             return nodes;
                         }
                         if (asked.view == "instrument") {
@@ -779,7 +781,10 @@ void trading_view_routes::register_routes(
                                                                    .count = total}};
                             for (const auto& [code, count] : ordered)
                                 nodes.push_back(rail_node{.id = instrument_node(code),
-                                                          .label = class_name_of[code],
+                                                          .label = class_name_of.find(code) ==
+                                                                           class_name_of.end() ?
+                                                                       readable(code) :
+                                                                       class_name_of.at(code),
                                                           .kind = "instrument",
                                                           .parent = std::string(),
                                                           .count = count});
@@ -791,22 +796,28 @@ void trading_view_routes::register_routes(
                             if (!portfolio.empty() && portfolio_name_of.contains(portfolio))
                                 books_under[portfolio].push_back(&book);
                         }
+                        /* The rail is drawn in the order the portfolios and books
+                         * were read, as the BFF drew it, so a screen shows the
+                         * catalogue's order and not a uuid sort. */
                         std::set<std::string> shown;
-                        for (const auto& [id, ignored] : books_under) {
-                            (void)ignored;
-                            shown.insert(id);
+                        std::vector<std::string> shown_order;
+                        for (const auto& row : portfolios) {
+                            const auto id = rr::as_text(row.id);
+                            if (!books_under.contains(id) || !shown.insert(id).second)
+                                continue;
+                            shown_order.push_back(id);
                         }
-                        for (const auto& start :
-                             std::vector<std::string>(shown.begin(), shown.end())) {
-                            auto parent = parent_of[start];
+                        for (std::size_t index = 0; index < shown_order.size(); ++index) {
+                            auto parent = parent_of[shown_order[index]];
                             while (!parent.empty() && portfolio_name_of.contains(parent) &&
                                    !shown.contains(parent)) {
                                 shown.insert(parent);
+                                shown_order.push_back(parent);
                                 parent = parent_of[parent];
                             }
                         }
                         std::map<std::string, std::vector<std::string>> children_of;
-                        for (const auto& id : shown) {
+                        for (const auto& id : shown_order) {
                             const auto parent = parent_of[id];
                             const auto key =
                                 !parent.empty() && shown.contains(parent) ? parent : std::string();
@@ -927,7 +938,7 @@ void trading_view_routes::register_routes(
                     const auto field_of = [&](const trading_domain::trade_summary& row) {
                         if (asked.sort == "trade_date") {
                             if (row.row_kind != "structure")
-                                return plain_date(row.trade_date);
+                                return iso_date(row.trade_date);
                             const auto found = leg_date_of.find(rr::as_text(row.id));
                             return found == leg_date_of.end() ? std::string() : found->second;
                         }
@@ -947,11 +958,8 @@ void trading_view_routes::register_routes(
                         rows.begin(), rows.end(), [&](const auto* left, const auto* right) {
                             const auto a = field_of(*left);
                             const auto b = field_of(*right);
-                            if (a == b) {
-                                const auto left_id = rr::as_text(left->id);
-                                const auto right_id = rr::as_text(right->id);
-                                return asked.descending ? right_id < left_id : left_id < right_id;
-                            }
+                            if (a == b)
+                                return rr::as_text(left->id) < rr::as_text(right->id);
                             return asked.descending ? b < a : a < b;
                         });
 
@@ -990,7 +998,7 @@ void trading_view_routes::register_routes(
                         } else {
                             const auto named = instrument_name_of.find(row.instrument_type);
                             instrument_type_name = named == instrument_name_of.end() ?
-                                                       humanised(row.instrument_type) :
+                                                       readable(row.instrument_type) :
                                                        named->second;
                         }
                         const auto code = product_code_of.find(row.instrument_type);
@@ -1028,7 +1036,7 @@ void trading_view_routes::register_routes(
                             const auto held = leg_date_of.find(id);
                             trade_date = held == leg_date_of.end() ? std::string() : held->second;
                         } else {
-                            trade_date = plain_date(row.trade_date);
+                            trade_date = iso_date(row.trade_date);
                         }
                         const auto counterparty_id = rr::as_text(row.counterparty_id);
                         const auto counterparty = label_of_counterparty.find(counterparty_id);

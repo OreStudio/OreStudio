@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-fx_vol_surface_feed_expiries add <feed_id> <tenor> <variance_reversion> <variance_volatility> <reason> <commentary>
+fx_vol_surface_feed_expiries add <feed_id> <tenor> <atm_vol> <variance_reversion> <variance_volatility> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries.put=.
 
 #+name: fx_vol_surface_feed_expiries-add
 #+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-add.ores :exports none
-fx_vol_surface_feed_expiries add 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+fx_vol_surface_feed_expiries add 00000000-0000-0000-0000-000000000000 __none__ 0 0 0 system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-fx_vol_surface_feed_expiries set <id> <feed_id> <tenor> <variance_reversion> <variance_volatility> <reason> <commentary> [--version <n>]
+fx_vol_surface_feed_expiries set <id> <feed_id> <tenor> <atm_vol> <variance_reversion> <variance_volatility> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries.put=.
 
 #+name: fx_vol_surface_feed_expiries-set
 #+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-set.ores :exports none
-fx_vol_surface_feed_expiries set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+fx_vol_surface_feed_expiries set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 0 system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-fx_vol_surface_feed_expiries put-many --count <n> <id> <feed_id> <tenor> <variance_reversion> <variance_volatility> <reason> <commentary>
+fx_vol_surface_feed_expiries put-many --count <n> <id> <feed_id> <tenor> <atm_vol> <variance_reversion> <variance_volatility> <reason> <commentary>
 #+end_example
 
 It is addressed at =synthetic.v1.fx_vol_surface_feed_expiries.put_many=.
 
 #+name: fx_vol_surface_feed_expiries-put-many
 #+begin_src ores-shell :tangle fx_vol_surface_feed_expiries-put-many.ores :exports none
-fx_vol_surface_feed_expiries put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 system.new_record generated_script
+fx_vol_surface_feed_expiries put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ 0 0 0 system.new_record generated_script
 #+end_src
 
 ** =delete=

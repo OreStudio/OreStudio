@@ -70,6 +70,8 @@ generate_synthetic_fx_vol_surface_feed(utility::generation::generation_context& 
     r.spot_variance_correlation = 0.3;
     r.spot_skew_correlation = -0.4;
     r.segment_correlation = 0.9;
+    r.start_skew = -0.1;
+    r.start_curvature = 0.8;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

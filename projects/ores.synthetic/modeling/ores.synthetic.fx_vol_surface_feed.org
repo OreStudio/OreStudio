@@ -342,6 +342,32 @@ The correlation of neighbouring forward variances; segments further apart correl
 0.9
 #+end_src
 
+** start_skew
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The skew the surface starts at, and the level the skew driver reverts to: the rho of the SSVI parameterisation, inside (-1, 1). FX usually quotes a negative skew, with the downside bid harder than the upside.
+
+#+begin_src cpp :name generator
+-0.1
+#+end_src
+
+** start_curvature
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The curvature the surface starts at, and the level the curvature driver reverts to: the eta of the SSVI parameterisation with gamma fixed at one half, inside (0, the square root of two). It sets how far the wings rise above the ATM, and the surface is free of butterfly arbitrage only below that bound.
+
+#+begin_src cpp :name generator
+0.8
+#+end_src
+
 * SQL
 
 ** Flags
@@ -367,6 +393,8 @@ The correlation of neighbouring forward variances; segments further apart correl
 | "spot_variance_correlation" > -1 and "spot_variance_correlation" < 1 |
 | "spot_skew_correlation" > -1 and "spot_skew_correlation" < 1 |
 | "segment_correlation" >= 0 and "segment_correlation" < 1 |
+| "start_skew" > -1 and "start_skew" < 1 |
+| "start_curvature" > 0 and "start_curvature" < 1.4142135623730951 |
 
 * Foreign keys
 

@@ -53,6 +53,7 @@ struct fx_vol_surface_feed_expiry_write {
     boost::uuids::uuid id;
     boost::uuids::uuid feed_id;
     std::string tenor;
+    double atm_vol{};
     double variance_reversion{};
     double variance_volatility{};
 
@@ -402,6 +403,7 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"id", &fx_vol_surface_feed_expiry_write::id},
         utility::codec::field{"feed_id", &fx_vol_surface_feed_expiry_write::feed_id},
         utility::codec::field{"tenor", &fx_vol_surface_feed_expiry_write::tenor},
+        utility::codec::field{"atm_vol", &fx_vol_surface_feed_expiry_write::atm_vol},
         utility::codec::field{"variance_reversion",
                               &fx_vol_surface_feed_expiry_write::variance_reversion},
         utility::codec::field{"variance_volatility",

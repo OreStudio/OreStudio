@@ -143,7 +143,7 @@ void fx_vol_surface_feed_commands::register_commands(cli::Menu& root_menu, nats_
         "<enabled> <auto_start> <folder_id> <asset_class_code> <arrival_mode> <branching_ratio> "
         "<decay> <sensitivity> <skew_reversion> <skew_volatility> <curvature_reversion> "
         "<curvature_volatility> <spot_variance_correlation> <spot_skew_correlation> "
-        "<segment_correlation> <reason> <commentary>");
+        "<segment_correlation> <start_skew> <start_curvature> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -154,7 +154,8 @@ void fx_vol_surface_feed_commands::register_commands(cli::Menu& root_menu, nats_
         "<ticks_per_hour> <enabled> <auto_start> <folder_id> <asset_class_code> <arrival_mode> "
         "<branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility> "
         "<curvature_reversion> <curvature_volatility> <spot_variance_correlation> "
-        "<spot_skew_correlation> <segment_correlation> <reason> <commentary> [--version <n>]");
+        "<spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -165,7 +166,8 @@ void fx_vol_surface_feed_commands::register_commands(cli::Menu& root_menu, nats_
         "<source_name> <ticks_per_hour> <enabled> <auto_start> <folder_id> <asset_class_code> "
         "<arrival_mode> <branching_ratio> <decay> <sensitivity> <skew_reversion> <skew_volatility> "
         "<curvature_reversion> <curvature_volatility> <spot_variance_correlation> "
-        "<spot_skew_correlation> <segment_correlation> <reason> <commentary>");
+        "<spot_skew_correlation> <segment_correlation> <start_skew> <start_curvature> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -366,8 +368,8 @@ void fx_vol_surface_feed_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 20 + 2) {
-            fail(out) << "Expected " << (20 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 22 + 2) {
+            fail(out) << "Expected " << (22 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -418,6 +420,10 @@ void fx_vol_surface_feed_commands::process_add(std::ostream& out,
         fx_vol_surface_feed_read_token(req.change.write.segment_correlation,
                                        parsed->positionals[next++],
                                        "segment_correlation");
+        fx_vol_surface_feed_read_token(
+            req.change.write.start_skew, parsed->positionals[next++], "start_skew");
+        fx_vol_surface_feed_read_token(
+            req.change.write.start_curvature, parsed->positionals[next++], "start_curvature");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -462,8 +468,8 @@ void fx_vol_surface_feed_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 21 + 2) {
-            fail(out) << "Expected " << (21 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 23 + 2) {
+            fail(out) << "Expected " << (23 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -514,6 +520,10 @@ void fx_vol_surface_feed_commands::process_set(std::ostream& out,
         fx_vol_surface_feed_read_token(req.change.write.segment_correlation,
                                        parsed->positionals[next++],
                                        "segment_correlation");
+        fx_vol_surface_feed_read_token(
+            req.change.write.start_skew, parsed->positionals[next++], "start_skew");
+        fx_vol_surface_feed_read_token(
+            req.change.write.start_curvature, parsed->positionals[next++], "start_curvature");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -570,8 +580,8 @@ void fx_vol_surface_feed_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 21 + 2) {
-            fail(out) << "Expected " << (change_count * 21 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 23 + 2) {
+            fail(out) << "Expected " << (change_count * 23 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -624,6 +634,10 @@ void fx_vol_surface_feed_commands::process_put_many(std::ostream& out,
             fx_vol_surface_feed_read_token(change.write.segment_correlation,
                                            parsed->positionals[next++],
                                            "segment_correlation");
+            fx_vol_surface_feed_read_token(
+                change.write.start_skew, parsed->positionals[next++], "start_skew");
+            fx_vol_surface_feed_read_token(
+                change.write.start_curvature, parsed->positionals[next++], "start_curvature");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

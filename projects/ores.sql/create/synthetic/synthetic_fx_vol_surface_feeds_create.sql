@@ -63,6 +63,8 @@ create table if not exists "ores_synthetic_fx_vol_surface_feeds_tbl" (
     "spot_variance_correlation" double precision not null,
     "spot_skew_correlation" double precision not null,
     "segment_correlation" double precision not null,
+    "start_skew" double precision not null,
+    "start_curvature" double precision not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -90,7 +92,9 @@ create table if not exists "ores_synthetic_fx_vol_surface_feeds_tbl" (
     check ("curvature_volatility" >= 0 and "curvature_volatility" < 'Infinity'),
     check ("spot_variance_correlation" > -1 and "spot_variance_correlation" < 1),
     check ("spot_skew_correlation" > -1 and "spot_skew_correlation" < 1),
-    check ("segment_correlation" >= 0 and "segment_correlation" < 1)
+    check ("segment_correlation" >= 0 and "segment_correlation" < 1),
+    check ("start_skew" > -1 and "start_skew" < 1),
+    check ("start_curvature" > 0 and "start_curvature" < 1.4142135623730951)
 );
 
 -- Composite natural key: unique combination for active records

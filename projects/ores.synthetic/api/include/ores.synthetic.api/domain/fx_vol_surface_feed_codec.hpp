@@ -72,6 +72,8 @@ namespace ores::synthetic::domain {
                               &fx_vol_surface_feed::spot_variance_correlation},
         utility::codec::field{"spot_skew_correlation", &fx_vol_surface_feed::spot_skew_correlation},
         utility::codec::field{"segment_correlation", &fx_vol_surface_feed::segment_correlation},
+        utility::codec::field{"start_skew", &fx_vol_surface_feed::start_skew},
+        utility::codec::field{"start_curvature", &fx_vol_surface_feed::start_curvature},
         utility::codec::field{"modified_by", &fx_vol_surface_feed::modified_by},
         utility::codec::field{"performed_by", &fx_vol_surface_feed::performed_by},
         utility::codec::field{"change_reason_code", &fx_vol_surface_feed::change_reason_code},

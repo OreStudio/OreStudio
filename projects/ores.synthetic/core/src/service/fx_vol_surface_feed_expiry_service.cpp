@@ -106,6 +106,7 @@ fx_vol_surface_feed_expiry_to_domain(const messaging::fx_vol_surface_feed_expiry
     v.id = write.id;
     v.feed_id = write.feed_id;
     v.tenor = write.tenor;
+    v.atm_vol = write.atm_vol;
     v.variance_reversion = write.variance_reversion;
     v.variance_volatility = write.variance_volatility;
     return v;

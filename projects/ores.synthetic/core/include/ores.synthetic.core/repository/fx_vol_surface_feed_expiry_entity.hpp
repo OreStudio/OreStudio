@@ -60,6 +60,7 @@ struct fx_vol_surface_feed_expiry_entity {
 
     std::string tenor;
 
+    double atm_vol{};
     double variance_reversion{};
     double variance_volatility{};
     std::string modified_by;
@@ -81,6 +82,7 @@ struct fx_vol_surface_feed_expiry_entity {
                query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("feed_id", &e::feed_id) |
                query_builder::bind("tenor", &e::tenor) |
+               query_builder::bind("atm_vol", &e::atm_vol) |
                query_builder::bind("variance_reversion", &e::variance_reversion) |
                query_builder::bind("variance_volatility", &e::variance_volatility) |
                query_builder::bind("modified_by", &e::modified_by) |

@@ -176,6 +176,21 @@ struct fx_vol_surface_feed final {
     double segment_correlation{};
 
     /**
+     * @brief The skew the surface starts at, and the level the skew driver reverts to: the rho of
+     * the SSVI parameterisation, inside (-1, 1). FX usually quotes a negative skew, with the
+     * downside bid harder than the upside.
+     */
+    double start_skew{};
+
+    /**
+     * @brief The curvature the surface starts at, and the level the curvature driver reverts to:
+     * the eta of the SSVI parameterisation with gamma fixed at one half, inside (0, the square root
+     * of two). It sets how far the wings rise above the ATM, and the surface is free of butterfly
+     * arbitrage only below that bound.
+     */
+    double start_curvature{};
+
+    /**
      * @brief Username of the person who last modified this FX volatility surface feed.
      */
     std::string modified_by;

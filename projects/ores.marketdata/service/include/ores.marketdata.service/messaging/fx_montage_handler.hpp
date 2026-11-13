@@ -58,10 +58,10 @@ using namespace ores::logging;
 class fx_montage_handler {
 public:
     fx_montage_handler(ores::nats::service::client& nats,
-                       ores::database::context ctx,
+                       const ores::database::context& ctx,
                        std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
+        , ctx_(ctx)
         , verifier_(std::move(verifier)) {}
 
     void read(ores::nats::message msg) {

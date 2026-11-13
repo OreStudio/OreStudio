@@ -26,11 +26,11 @@ The gateway has no part for the trading area. Add the part with the adapter reci
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | All four groups are done. The part serves the trading area's 22 resource routes; the 2 that remain are the composed views, which belong to their own task. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the local gate, close the task and raise its pull request. |
+| Next         | Nothing. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
@@ -142,7 +142,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The trading area's routes the C++ server answers | 22 of 24 paired, the 2 gaps being the composed views | =python3 build/scripts/route_inventory.py --check= | 08d2ec5783 |
+| The trading part's test suite | 18 cases, 407 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.trading.tests= | 08d2ec5783 |
+| The routes the part registers | 22 | =python3 build/scripts/route_inventory.py --check= | 08d2ec5783 |
 
 * Notes
 
@@ -167,6 +169,39 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The namespace closers are end-of-line comments, which the repo removed by task | booking, structure and book routes | accepted | the closers are bare braces |
+| 2 | Four copies of =array_of= and two of the member merge, already diverged: one writes malformed JSON when the first object is empty | four route units | accepted | one copy of each in =ores.http.api/net/record_routes.hpp=; the four units call it |
+| 3 | A read the page can do without swallowed every exception | trade reads, structure page | accepted | a refusal is caught; a fault travels, so a service that cannot answer is not read as an empty page |
+| 4 | The book change body is read in the service's member names, where the BFF states the screen's own | book routes, its tests | accepted | a line is read as =entityId=, =baseVersion= and the rest; the tests send the screen's names |
+| 5 | The request, the line number and the provenance were taken from the client | book routes | accepted | the route states them itself, as its Plan already said |
+| 6 | The leg candidates drop the trade date | structure routes | accepted | the row states =trade_date= |
+| 7 | A link type is trimmed, and the declared identifier schemes de-duplicated, where the BFF keeps them as stated | booking routes | accepted | the link type is stored as stated; only the fallback schemes are de-duplicated |
+| 8 | Unknown query parameters and body members are refused | booking, structure and book routes | declined | the gateway's own convention, already used by the generated record routes; it fails closed, and the screens send exactly these members |
+| 9 | =tree_json= takes eight parameters and five parallel maps | structure routes | declined | the maps are the tenant's catalogue and its references, which the tree cannot state without; a wrapper type would only rename them |
+| 10 | =book_routes= and =booking_routes= read alike; the draft reasons, link types and rights sit in units that are not theirs | the part | declined | a booking is a write of a trade and a book is the row a trade is filed in; the lookups belong to the screens that call them |
+| 11 | A structure kind is a raw string, and =Package= is a literal | structure routes | declined | the rule is the BFF's, and a kind type would need the catalogue's own type to say what a kind can be |
+| 12 | The generated umbrella header's guard reads =ORES_TRADING_HPP= | ores.http.trading.hpp | declined | generated from a codegen template; the fix belongs to the template, not this branch |
 
 * Result
+
+The trading part is stood up and serves the trading area's 22 resource routes:
+the three trade reads, the five booking routes, the eight structure screens and
+the six book screens, at the BFF's own addresses and in its shapes. The two
+routes the area still lacks are its composed views, =/api/blotter= and
+=/api/books/tree=, which belong to [[id:350D91AF-A4E0-43B0-849E-8188345DA443][Serve the trading composed views]].
+
+The part links =ores.trading.api=, =ores.refdata.api= and =ores.iam.api=: a
+trade's rows are named by their book and counterparty, and a portfolio's rights
+are joined to the accounts that hold them.
+
+Evidence:
+
+- =git log --oneline eb21afcd..HEAD= — the seven commits of this task.
+- =compass build ores.http.server= — the process links with the part in it.
+- =build/output/linux-clang-release-ninja/publish/bin/ores.http.trading.tests=
+  — 18 cases, 407 assertions, all pass.
+- =compass check --exclude-heavy= — 49 of 50 checks pass. The one failure,
+  =money-decimal-columns=, is another environment's and is not in this branch's
+  diff.
+- =python3 build/scripts/route_inventory.py --check= — the inventory is current;
+  the trading area pairs 22 of its 24 routes.

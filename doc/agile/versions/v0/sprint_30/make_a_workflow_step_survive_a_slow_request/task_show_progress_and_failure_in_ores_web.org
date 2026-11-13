@@ -27,11 +27,11 @@ and a failure names the work that failed and why.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
@@ -44,23 +44,23 @@ and a failure names the work that failed and why.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The wire already carries the progress: PR #4660 put =progress=,
+  =progress_done= and =progress_total= on the step summary and in the schema.
+  The rail does not read them, so render them.
+- Show the line on the rail only when the step reported one. A quiet step
+  shows no line, because the rail never invents progress.
+- Translate the failure through the same catalogue the rail already uses for
+  labels and warnings, so a server sentence a person has translated reads in
+  their language.
+- Cover the three cases: a running step's line and counts, a step that reported
+  nothing, and a failed step's work.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =parts.test.tsx= | 24 cases, all passing (3 new) | =npx vitest run src/journeys/parts.test.tsx= | this branch |
+| The web package | type-checks and builds | =npm run build= in =packages/web= | this branch |
 
 * Notes
 
@@ -88,3 +88,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The rail reads what the wire already carried. A running step shows what it last
+said it was doing, with its counts when it counts:
+
+#+begin_src text
+  ◐ Publish each party's volatility surfaces
+    progress: ACME: surfaces with their quotes   3 of 10
+#+end_src
+
+A step that reported nothing shows no progress line. The rail never invents
+one, because the person reading it is deciding whether the step is still alive.
+
+A failure reads as the work, the attempts and the reason, in the words the
+catalogue gives:
+
+#+begin_src text
+  ✕ Publish each party's volatility surfaces
+    ACME: EUR/USD surface calibration failed after 3 attempts: NATS request timed
+    out: no reply from 'marketdata.v1.ops.calibrate_fx_vol_surface' within 120000 ms
+#+end_src
+
+The failure goes through the same =words= translator the rail already applies to
+a step's label, description and warning, so a sentence with a translation reads
+in the person's language, and a sentence without one reads as the server wrote
+it.
+
+Three cases pin it: a running step's line and counts, a step that reported
+nothing, and a failed step whose work is translated.

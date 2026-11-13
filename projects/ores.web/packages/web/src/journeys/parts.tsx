@@ -678,6 +678,19 @@ export function RunStep({
     const label = step.label !== '' ? words(step.label) : step.name;
     const took = stepDuration(step.started_at ?? step.created_at, step.completed_at);
     /*
+     * What a running step last said it was doing, and how far through it is.
+     * A step that reports nothing shows no line: the rail never invents
+     * progress, because a person reading it is deciding whether the step is
+     * still alive.
+     */
+    const progress = step.progress === '' ? '' : words(step.progress);
+    const counts =
+        step.progress_done === null || step.progress_done === undefined
+            ? ''
+            : step.progress_total === null || step.progress_total === undefined
+              ? `${step.progress_done}`
+              : `${step.progress_done} of ${step.progress_total}`;
+    /*
      * Why a step finished with a warning. The step's own sentence is the last
      * thing it logged, which is how a step says it had nothing to do rather
      * than failing: a person who sees a warning on the rail is owed the reason
@@ -708,11 +721,17 @@ export function RunStep({
                         {words(step.description)}
                     </span>
                 )}
+                {progress !== '' && (
+                    <span className="mt-0.5 block text-xs tabular-nums text-accent-bright">
+                        {progress}
+                        {counts !== '' && <span className="ml-2 text-ink-faint">{counts}</span>}
+                    </span>
+                )}
                 {warning !== '' && (
                     <span className="mt-0.5 block text-xs text-warn">{warning}</span>
                 )}
                 {step.error !== '' && (
-                    <span className="mt-0.5 block text-xs text-down">{step.error}</span>
+                    <span className="mt-0.5 block text-xs text-down">{words(step.error)}</span>
                 )}
             </span>
         </li>

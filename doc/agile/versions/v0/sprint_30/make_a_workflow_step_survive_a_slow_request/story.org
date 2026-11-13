@@ -45,9 +45,9 @@ whole audit of the NATS patterns.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Task 5 done: the shell shows progress, each attempt and the failure. |
+| Now           | Task 6 done: the browser shows the progress and the failure. |
 | Waiting on    | Nothing.                               |
-| Next          | Show a run's progress and failure in ores.web. |
+| Next          | Prove a step survives a slow responder. |
 | Last touched  | 2026-11-13                               |
 
 * Acceptance
@@ -76,7 +76,7 @@ whole audit of the NATS patterns.
 | [[id:459AB808-737A-4CA0-9BF1-955D629880B2][Make each repeated request safe to repeat]] | DONE | 2026-11-13 | 2026-11-13 | A retry is correct only when repeating the request changes nothing. Give each retried request a stable identity, have the step read the result an earlier attempt may have produced, and prove a repeat writes no second candidate or raises a second approval request. |
 | [[id:45896343-6F92-44D1-AE5F-27B329D66CA6][Name the failing work when a step gives up]] | DONE | 2026-11-13 | 2026-11-13 | A step that gives up reports only the transport's words, so a person cannot tell which party, surface or pair failed. Fail the step with the work it was doing, the request, the attempts and the reason. |
 | [[id:A9F04AFF-87C3-4F63-A771-B4118E7ED415][Show a run's progress and failure in ores.shell]] | DONE | 2026-11-13 | 2026-11-13 | The shell prints a running step's progress now, but a failure still prints only the transport's words. Print the work that failed, the attempts it took and the reason. |
-| [[id:5278DF3A-53B1-4249-B8DC-094DDC70C4B5][Show a run's progress and failure in ores.web]] | BACKLOG | | | The wire carries a running step's progress, but the rail does not render it, and a failure shows the transport text. Show the progress while the step runs, and name the work and the reason when it stops. |
+| [[id:5278DF3A-53B1-4249-B8DC-094DDC70C4B5][Show a run's progress and failure in ores.web]] | DONE | 2026-11-13 | 2026-11-13 | The wire carries a running step's progress, but the rail does not render it, and a failure shows the transport text. Show the progress while the step runs, and name the work and the reason when it stops. |
 | [[id:97379470-2D88-4540-97DD-1F56C7B45B49][Prove a step survives a slow responder]] | BACKLOG | | | Nothing tests a step against a responder that answers late or refuses, so the retry, the classification and the failure message rest on the code alone. Drive a step with a fake client that answers late and one that refuses. |
 
 * Decisions

@@ -8,7 +8,7 @@
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/replace-the-synthetic-libor-feeds
-#+pr:
+#+pr: 4682
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4682][#4682]] | [synthetic] Restore the IBOR feeds and scope full IBOR support |
 
 * Review
 

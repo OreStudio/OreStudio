@@ -69,6 +69,16 @@ The composed views belong to their own tasks: the report health tally, the
 publishing queue and the run board among them, which is why the health tally
 is not in the count above.
 
+The four families that remain are designed before they are served, one at a
+time, because each asks a question the code cannot answer on its own:
+
+| Family | Design |
+|--------+--------|
+| A run's files and results | [[id:6C1F0B2E-58A4-41D9-9E52-3B2F7A1D4C88][A run's files and results: where the work belongs]] -- composed across three services and fetched whole over HTTP today |
+| The cuts and the cut kinds | Not written |
+| The schedule writes | Not written |
+| The ORE value sets and the engine settings | Not written |
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it

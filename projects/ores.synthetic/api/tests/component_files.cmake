@@ -42,6 +42,7 @@ set(files
     "feed_selection_protocol_codec_roundtrip_tests.cpp"
     "feeds_derived_fx_vol_tests.cpp"
     "feeds_fixing_calibration_tests.cpp"
+    "feeds_fx_vol_surface_emitter_tests.cpp"
     "feeds_publish_subject_tests.cpp"
     "feeds_variance_calibration_tests.cpp"
     "folder_codec_roundtrip_tests.cpp"

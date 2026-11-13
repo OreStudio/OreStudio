@@ -131,3 +131,52 @@ TEST_CASE("a block whose size disagrees with its series is refused", "[latent_ma
     config.blocks.front().size = 3;
     CHECK_THROWS_AS(make_latent_market(config), std::invalid_argument);
 }
+
+TEST_CASE("two blocks on one anchor share its factor and its series", "[latent_market_config]") {
+    // Thousands of surfaces anchor on a handful of spots, so the spot must be one
+    // factor and one series however many blocks name it. Two independent copies of
+    // it would let two surfaces on one pair drift apart.
+    constexpr std::uint64_t spot = 4711;
+    latent_config config{};
+    config.run_seed = 5;
+    config.cell_width = config_hour;
+    config.start = 0.0;
+    config.fastest_gap = 60.0;
+    config.blocks.push_back(block_spec{.name = "surface.a",
+                                       .anchor = spot,
+                                       .members = {1001},
+                                       .size = 2,
+                                       .correlation = {1.0, 0.3, 0.3, 1.0}});
+    config.blocks.push_back(block_spec{.name = "surface.b",
+                                       .anchor = spot,
+                                       .members = {1002},
+                                       .size = 2,
+                                       .correlation = {1.0, -0.5, -0.5, 1.0}});
+    auto market = make_latent_market(config);
+
+    // One factor for the spot and one own factor for each block, not two spots.
+    CHECK(market.factors.size() == 3);
+    REQUIRE(market.series_id.size() == 3);
+    CHECK(market.series_id[0] == spot);
+    CHECK(market.series_id[1] == 1001);
+    CHECK(market.series_id[2] == 1002);
+
+    const auto loadings_of = [&market](std::uint32_t series) {
+        std::vector<double> out(market.factors.size(), 0.0);
+        for (auto i = market.loading_begin[series]; i < market.loading_begin[series + 1]; ++i)
+            out[market.loadings[i].factor] = market.loadings[i].weight;
+        return out;
+    };
+    const auto dot = [](const std::vector<double>& a, const std::vector<double>& b) {
+        double sum = 0.0;
+        for (std::size_t i = 0; i < a.size(); ++i)
+            sum += a[i] * b[i];
+        return sum;
+    };
+    const auto b_spot = loadings_of(0);
+    CHECK(dot(b_spot, b_spot) == Catch::Approx(1.0).margin(1e-14));
+    // Each member correlates with the spot as its own block stated. The second would
+    // read zero here if it had been given a spot of its own.
+    CHECK(dot(b_spot, loadings_of(1)) == Catch::Approx(0.3).margin(1e-14));
+    CHECK(dot(b_spot, loadings_of(2)) == Catch::Approx(-0.5).margin(1e-14));
+}

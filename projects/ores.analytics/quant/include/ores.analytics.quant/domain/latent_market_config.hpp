@@ -42,6 +42,11 @@ struct factor_spec {
  * it give the anchor row one on its own driver and zero on the block's others.
  * The matrix is stored row-major and as numbers a person stated: it is refused
  * when it is not a correlation, never projected.
+ *
+ * A block whose anchor another block already anchors on shares that anchor's
+ * factor and series. A run has thousands of surfaces on a handful of spots, and
+ * two independent copies of one spot would let two surfaces on one pair drift
+ * apart.
  */
 struct block_spec {
     /// What a screen and a trace call it.

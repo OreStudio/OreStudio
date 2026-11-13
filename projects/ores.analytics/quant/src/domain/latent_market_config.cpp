@@ -20,10 +20,31 @@
 #include "ores.analytics.quant/math/correlation_loadings.hpp"
 #include <Eigen/Core>
 #include <cmath>
+#include <optional>
 #include <stdexcept>
 #include <string>
 
 namespace ores::analytics::quant::domain {
+
+namespace {
+
+/// The index of the factor keyed by @p id, adding it when the market has none.
+std::uint32_t factor_for(latent_market& market, std::uint64_t id) {
+    for (std::uint32_t i = 0; i < market.factors.size(); ++i)
+        if (market.factors[i].key.series == id)
+            return i;
+    return latent_add_factor(market, id);
+}
+
+/// The index of the series keyed by @p id, or nothing when the market has none.
+std::optional<std::uint32_t> series_of(const latent_market& market, std::uint64_t id) {
+    for (std::uint32_t i = 0; i < market.series_id.size(); ++i)
+        if (market.series_id[i] == id)
+            return i;
+    return std::nullopt;
+}
+
+}
 
 unsigned depth_for(double cell_width, double fastest_gap) {
     if (!std::isfinite(cell_width) || cell_width <= 0.0)
@@ -72,7 +93,7 @@ latent_market make_latent_market(const latent_config& config) {
             correlation, "make_latent_market: block '" + block.name + "'");
 
         // The anchor's own driver is the block's first factor.
-        const std::uint32_t anchor_factor = latent_add_factor(market, block.anchor);
+        const std::uint32_t anchor_factor = factor_for(market, block.anchor);
         const std::uint64_t block_key = math::series_key(block.name);
         const std::uint32_t first_own = static_cast<std::uint32_t>(market.factors.size());
         for (std::size_t column = 1; column < count; ++column)
@@ -80,9 +101,11 @@ latent_market make_latent_market(const latent_config& config) {
 
         std::vector<factor_weight> weights;
         weights.reserve(count);
-        const std::uint32_t anchor_series = latent_add_series(market, block.anchor);
-        weights.push_back({.factor = anchor_factor, .weight = loadings(0, 0)});
-        latent_set_loadings(market, anchor_series, weights);
+        if (!series_of(market, block.anchor).has_value()) {
+            const std::uint32_t anchor_series = latent_add_series(market, block.anchor);
+            weights.push_back({.factor = anchor_factor, .weight = loadings(0, 0)});
+            latent_set_loadings(market, anchor_series, weights);
+        }
 
         for (std::size_t row = 1; row < count; ++row) {
             const std::uint32_t series = latent_add_series(market, block.members[row - 1]);

@@ -52,17 +52,6 @@ auto& instrument_catalogue_lg() {
 /// The page a request that states no limit gets.
 constexpr std::int64_t default_page = 100;
 
-/// The staleness threshold, until it moves into configuration.
-std::int64_t age_seconds_of(std::chrono::system_clock::time_point as_of,
-                            std::chrono::system_clock::time_point now) {
-    return staleness_policy::age_seconds(as_of, now);
-}
-
-bool is_stale(std::optional<std::chrono::system_clock::time_point> as_of,
-              std::chrono::system_clock::time_point now) {
-    return staleness_policy::is_stale(as_of.value_or(std::chrono::system_clock::time_point{}), now);
-}
-
 std::string lower(std::string s) {
     std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
         return static_cast<char>(std::tolower(c));
@@ -243,8 +232,8 @@ mm::list_instruments_response list_instruments(const ores::database::context& ct
             source.provider_kind = pk->second;
         source.series_id = series_id;
         source.as_of = newest.value_or(std::chrono::system_clock::time_point{});
-        source.age_seconds = age_seconds_of(source.as_of, now);
-        source.stale = is_stale(newest, now);
+        source.age_seconds = staleness_policy::age_seconds(source.as_of, now);
+        source.stale = staleness_policy::is_stale(source.as_of, now);
         instrument.sources.push_back(std::move(source));
 
         if (!newest || newest > instrument.as_of)

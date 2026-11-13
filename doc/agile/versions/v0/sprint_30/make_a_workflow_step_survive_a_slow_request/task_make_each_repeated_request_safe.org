@@ -121,3 +121,5 @@ environment's schema is out of sync, so the marketdata suites that would write
 those rows cannot run clean. What is proven is the identity (a test of
 =calibration_id_of=) and the shape of the repeat (the unit case); a rerun on a
 recreated database is the check that closes it.
+
+- On a recreated database and a full build, =ores.marketdata.service.tests= passes in full: 250 of 250 (2026-11-13).

@@ -123,3 +123,5 @@ Six new cases cover the classification and the loop, including the refusal that
 is not retried, the limit, and the deadline that refuses a retry. The two
 =ores.iam.core.tests= failures are the initial-admin database guard, which the
 environment's out-of-sync schema causes and this change does not touch.
+
+- On a recreated database and a full build, =ores.iam.core.tests= (348 of 348) and =ores.reporting.core.tests= pass in full (2026-11-13).

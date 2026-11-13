@@ -129,3 +129,5 @@ PostgreSQL sqlstate of 55000 from a database function, and they fail because
 this environment's database schema is out of sync with the checkout, which
 =bearings= reports and which this change does not touch. Every case that does
 not read the database passes.
+
+- On a recreated database and a full build, =ores.iam.core.tests= passes in full: 348 of 348 (2026-11-13).

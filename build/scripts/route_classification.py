@@ -868,6 +868,14 @@ RULES = (
          " grouping may choose, the trades no structure holds yet, the grouping write, the list"
          " as a tree flattened for reading, one structure's page with its tree and legs, the leg"
          " candidates, and the leg writes."),
+    Rule("the book screens' route",
+         ("regex", r"^((GET /api/books/(\{id\}|portfolios/\{id\}/rights)"
+                   r"|(PUT) /api/books/(books|portfolios)"
+                   r"|POST /api/book-changes(/preview)?))$"),
+         CPP, RESOURCE, "trading",
+         "The book screens at the address and in the shape the BFF answered: one book with the"
+         " portfolio it sits in, the rights at a portfolio node with the accounts that hold them,"
+         " the book and portfolio writes, and the book change proposal's preview and raise."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

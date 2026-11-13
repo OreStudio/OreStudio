@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "book_routes_tests.cpp"
     "booking_routes_tests.cpp"
     "main.cpp"
     "structure_routes_tests.cpp"

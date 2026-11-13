@@ -28,9 +28,9 @@ The gateway has no part for the trading area. Add the part with the adapter reci
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Groups 1 to 3 of 4 are done. The part serves the trade reads, the booking routes and the structure screens: 16 of its 24 routes. |
+| Now          | All four groups are done. The part serves the trading area's 22 resource routes; the 2 that remain are the composed views, which belong to their own task. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve the books and book changes (6), which is the last group. |
+| Next         | Run the local gate, close the task and raise its pull request. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
@@ -42,8 +42,9 @@ The gateway has no part for the trading area. Add the part with the adapter reci
 
 * Plan
 
-The inventory lists 22 trading resource routes in four groups. Each group is
-one pull request; the first also stands up the part.
+The inventory lists 22 trading resource routes in four groups. All four land on
+one branch and one pull request: the first group's branch was cut before it was
+merged, so the rest follow it there.
 
 | Group | Routes | BFF source |
 |-------+--------+------------|
@@ -110,6 +111,24 @@ Decisions made in the third group:
 - The structure catalogue is read whole and joined here, as the BFF joined it:
   a type's name is the catalogue's when it has one, and its home market decides
   the asset class.
+
+Decisions made in the fourth group:
+
+- A book or portfolio write forwards the whole row the screen states, not the
+  three members the route checks: the BFF's schema let every column through, so
+  the route reads the body as the protocol's own write shape, leniently, and
+  checks the id, the party and the name.
+- The rights read joins the accounts that hold them, which is IAM's data, so
+  the part links =ores.iam.api=. The route is read only: the server addresses a
+  right by its code alone, so a grant would collide and a removal would reach
+  whichever account's row it found first.
+- A proposal line is read in the client's own member names and mapped to the
+  protocol's line. The request, the line number and the provenance are the
+  server's to state, so a client that names them is read as naming the entity
+  again.
+- A raise that the service refuses as invalid is an answer and not an error:
+  the maker has something to correct, so the reason comes back with no request
+  id.
 
 * Measurements
 

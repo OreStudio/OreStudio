@@ -24,9 +24,9 @@ it lands, and the browser keeps calling the BFF until the last one does.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | 43 of 57 tasks are done. The gateway answers the access, auth, tenancy, reference-data and simulation areas, and the IAM, synthetic, image map and tenor catalogue views. 155 of the 324 BFF routes have no C++ equivalent yet. |
+| Now           | 43 of 57 tasks are done. The gateway answers the access, auth, tenancy, reference-data and simulation areas, and the IAM, synthetic, image map and tenor catalogue views. 149 of the 324 BFF routes have no C++ equivalent yet. |
 | Waiting on    | Nothing.                               |
-| Next          | Finish the trading part: 8 of its 24 routes remain, then its composed views. Then stand up the market data part. |
+| Next          | Close the trading part and raise its pull request. Then its two composed views, then the market data part. |
 | Last touched  | 2026-11-12 |
 
 * Acceptance

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.http/routes/trading/trading_routes.hpp"
+#include "ores.http/routes/trading/book_routes.hpp"
 #include "ores.http/routes/trading/booking_routes.hpp"
 #include "ores.http/routes/trading/structure_routes.hpp"
 #include "ores.http/routes/trading/trade_read_routes.hpp"
@@ -31,6 +32,7 @@ void trading_routes::register_routes(
     trade_read_routes::register_routes(router, registry, session);
     booking_routes::register_routes(router, registry, session);
     structure_routes::register_routes(router, registry, session);
+    book_routes::register_routes(router, registry, session);
 }
 
 }

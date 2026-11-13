@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
-#+updated: 2026-11-08
+#+updated: 2026-11-13
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -113,7 +113,18 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A latest set that is withdrawn or superseded renders green as Published | BFF, screen | accepted | The BFF now states =not_live= with the state in the reason; the screen shows it as a gap (45116ff3). |
+| 2 | The stale threshold is four times the cadence | BFF | accepted | 30 minutes, two missed firings; the reason names it and the tests state the boundary. |
+| 3 | A currency with two curves shows the first config, not its latest publish | BFF | accepted | The config whose publish is newest wins; a shared test covers it. |
+| 4 | Two group-by helpers do the same loop | BFF | accepted | One =groupByCurrency=. |
+| 5 | The row carries fields the screen never reads | BFF, web | accepted | =price_source= is gone. |
+| 6 | Five gap reasons are new sentences, not the system's | BFF | noted | The system records a reason only for =no_source=; the rest are the screen's words and the Result says so. |
+| 7 | The IR tab replaces the feed panels, so IR feeds are unreachable | screen | noted | The fx panels assume a pair; the class has no equivalent panel. The run tab and its actions remain. The Result states it. |
+| 8 | The currency universe omits a currency with neither a feed nor a config | BFF | noted | A currency with neither is not a supported currency of the class; the Result states the universe. |
+| 9 | Only the policy's window is drawn | screen | noted | The acceptance names the policy; the window is what the row states. The order and fallback are on the policy screen. |
+| 10 | Fields are declared three times (BFF type, BFF schema, web schema) | BFF, web | declined | The web schema validates the HTTP answer for its own package; sharing it would couple the browser to the BFF's types. |
+| 11 | One published-set read per config inside one GET | BFF | noted | Bounded by the currencies of one class; a single list read does not exist yet. |
+| 12 | All gaps are amber, where a refused feed is red elsewhere on the screen | screen | declined | A missing source is caution, not failure; the language reserves red for broken. |
 
 * Result
 
@@ -149,5 +160,14 @@ Limitations:
   tenant-scoped list returns.
 - No manual QA scenario was written; the browser and BFF suites cover the
   screen's data and states.
+- The currency universe is the union of the class's synthetic configs and its
+  bootstrap configs, so a currency with neither is not a row. A currency with
+  several configs shows the one whose publish is newest.
+- Four of the five gap reasons are the screen's own words: the system records
+  one only for a feed that keeps a fixed level. The other states have no
+  recorded reason to repeat.
+- The interest rates class replaces the fx feed panels with this table,
+  because those panels assume a currency pair. The class's run actions stay on
+  the run tab.
 - The per-curve inspector the AUD-AONIA prototype sketches is captured in the
   inbox as a later drill-in, not built here.

@@ -5,7 +5,7 @@
 #+description: A row of the IR coverage screen should open one curve: its pillars, conventions, published as-of, and the day's movement. Gemini prototyped the dialog; it needs a server contract before it is built.
 #+type: capture
 #+level: cross
-#+filetags: 
+#+filetags: :capture:ir:curves:
 #+created: 2026-11-13
 #+updated: 2026-11-13
 
@@ -54,4 +54,4 @@ cannot.
 
 * See also
 
--
+- The coverage screen this dialog opens from; the prototype's full analysis is in References.

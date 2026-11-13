@@ -27,11 +27,11 @@ image to Ubuntu 26.04.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7A5A1EDD-5C79-4EDF-AA10-B7917C9327AD][Move the Linux CI image to Ubuntu 26.04]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -84,3 +84,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its implementing task and the sprint row are written and link to
+each other. The same branch carries them and the image change.

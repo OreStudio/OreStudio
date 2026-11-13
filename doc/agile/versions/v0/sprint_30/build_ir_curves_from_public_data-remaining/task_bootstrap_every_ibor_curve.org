@@ -70,12 +70,10 @@ task and name that file in the Command column.
   and their seventy pillars. The IBOR config seed must run *after* the overnight config seed,
   because a projection config resolves its discount curve by name as the file runs; the first
   order put it before and the insert failed with a NULL discount.
-- What the fresh run showed about ordering: the sweep publishes funding and projection configs
-  in one pass, and a projection attempted before its funding curve has a live set fails with
-  =curve_bootstrap_engine: discount_curve was supplied but is empty=. On a database whose
-  funding curves are not yet published, every IBOR curve fails on the first sweep and needs a
-  later one. The sweep should publish FUNDING before PROJECTION, which is the remaining change
-  in this task.
+- The ordering is the remaining change, and it is not a role sort: the sweep takes its order
+  from a build plan derived from the inputs each curve declares, and a curve whose input is not
+  live is deferred rather than failed. The design, its three outcomes and the one planner every
+  builder shares are [[id:12FEEA51-92A0-45C1-A9DA-67C7DB670C2C][Market Data Build Order]].
 - The quotes themselves need the synthetic feeds started: after a fresh recreate the dataset
   must be published and the synthetic service restarted so the adapters announce and the feeds
   run, as the previous task's live run showed.

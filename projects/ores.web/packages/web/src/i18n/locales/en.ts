@@ -7692,6 +7692,11 @@ export const en: SourceCatalogue = {
                 noLog: "No log: the run's own word",
                 noLogChip: 'No log',
                 everyLog: 'Every log',
+                latestTitle: 'Last 5 errors',
+                latestCaption:
+                    'Five of the errors the run logged; the list shows every one of them.',
+                latestNone: 'This run logged no error.',
+                latestOpenAll: 'See every row',
                 byScopeTable: 'By scope',
                 byScope: "The run's rows by scope",
                 byScopeCaption:

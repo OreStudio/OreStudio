@@ -79,6 +79,9 @@ const VIEWS = ['overview', 'list'] as const;
 /** The chip that means every log, as distinct from the group that came from none. */
 const EVERY_LOG = 'all';
 
+/** How many of the run's errors the overview states before the list takes over. */
+const ERRORS_IN_HEAD = 5;
+
 const OUTER = { tab: 'log' } as const;
 
 /** The address of the list view narrowed to one scope. */
@@ -337,6 +340,66 @@ export function RunErrorsOverview({
                     addressOf={scopeAddress}
                 />
             </div>
+            <ErrorsHead rows={rows} />
+        </section>
+    );
+}
+
+/**
+ * The head of the run's errors: five of them, in the columns the list draws, so a
+ * reader sees what failed without leaving the overview. It is a way into the list
+ * rather than a second place to read the whole account.
+ */
+function ErrorsHead({ rows }: { readonly rows: readonly ReportRunErrorView[] }): ReactNode {
+    const { t } = useTranslation();
+    const field = 'reporting.run.errors';
+    const errors = rows.filter((row) => row.severity === 'error').slice(0, ERRORS_IN_HEAD);
+    return (
+        <section className="card p-6">
+            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
+                <h3 className="text-sm font-medium">{t(`${field}.latestTitle`)}</h3>
+                <Link
+                    to={`?${new URLSearchParams({ ...OUTER, view: 'list' }).toString()}`}
+                    className="text-xs text-accent hover:text-accent-bright"
+                >
+                    {t(`${field}.latestOpenAll`)}
+                </Link>
+            </div>
+            {errors.length === 0 ? (
+                <p className="text-sm text-ink-muted">{t(`${field}.latestNone`)}</p>
+            ) : (
+                <table className="w-full text-left text-sm">
+                    <thead>
+                        <tr className="border-b border-line text-xs text-ink-muted">
+                            <th className="px-2 py-2 font-medium">{t(`${field}.scope`)}</th>
+                            <th className="px-2 py-2 font-medium">{t(`${field}.about`)}</th>
+                            <th className="px-2 py-2 font-medium">{t(`${field}.message`)}</th>
+                            <th className="px-2 py-2 font-medium">{t(`${field}.filename`)}</th>
+                            <th className="px-2 py-2 font-medium">{t(`${field}.location`)}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {errors.map((row) => (
+                            <tr key={row.id} className="border-b border-line-subtle">
+                                <td className="px-2 py-2 text-ink-muted">{row.scope || '—'}</td>
+                                <td className="px-2 py-2 font-mono text-xs">
+                                    <ErrorSubject error={row} />
+                                </td>
+                                <td className="px-2 py-2">
+                                    <span className="whitespace-pre-wrap">{row.message}</span>
+                                </td>
+                                <td className="px-2 py-2 font-mono text-xs text-ink-muted">
+                                    {row.filename ?? '—'}
+                                </td>
+                                <td className="px-2 py-2 font-mono text-xs text-ink-muted">
+                                    {row.location ?? '—'}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+            <p className="mt-2 text-xs text-ink-faint">{t(`${field}.latestCaption`)}</p>
         </section>
     );
 }

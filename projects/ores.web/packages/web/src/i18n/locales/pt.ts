@@ -7749,6 +7749,10 @@ const pt: SourceCatalogue = {
                 noLog: 'Sem registo: a palavra da execução',
                 noLogChip: 'Sem registo',
                 everyLog: 'Todos os registos',
+                latestTitle: 'Últimos 5 erros',
+                latestCaption: 'Cinco dos erros registados; a lista mostra todos.',
+                latestNone: 'Esta execução não registou erros.',
+                latestOpenAll: 'Ver todas as linhas',
                 byScopeTable: 'Por âmbito',
                 byScope: 'As linhas da execução por âmbito',
                 byScopeCaption:

@@ -7810,6 +7810,10 @@ const fr: SourceCatalogue = {
                 noLog: "Aucun journal : le mot de l'exécution",
                 noLogChip: 'Aucun journal',
                 everyLog: 'Tous les journaux',
+                latestTitle: 'Les 5 dernières erreurs',
+                latestCaption: 'Cinq des erreurs enregistrées ; la liste les montre toutes.',
+                latestNone: "Cette exécution n'a enregistré aucune erreur.",
+                latestOpenAll: 'Voir toutes les lignes',
                 byScopeTable: 'Par portée',
                 byScope: "Les lignes de l'exécution par portée",
                 byScopeCaption:

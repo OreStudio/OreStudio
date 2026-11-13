@@ -126,6 +126,8 @@ describe('the errors tab of a run', () => {
             'rows by scope',
             'log.txt',
             'engine.log',
+            'Last 5 errors',
+            'See every row',
         ]) {
             expect(html).toContain(label);
         }

@@ -5065,6 +5065,26 @@ const fr: SourceCatalogue = {
             assetClass: "Classe d'actifs",
             classes: {
                 fx: 'Change au comptant',
+                interest_rates: 'Courbes de taux',
+            },
+            ir: {
+                title: 'Couverture des courbes de taux',
+                lead: "Une ligne par devise dont le système tient une courbe : la source lue, la configuration d'amorçage qui construit sa courbe, et la dernière courbe publiée.",
+                currency: 'Devise',
+                source: 'Source',
+                window: 'Fenêtre (jours)',
+                bootstrap: "Configuration d'amorçage",
+                published: 'Dernière publiée',
+                stateHeader: 'État',
+                empty: 'Aucune devise ne tient de courbe de taux.',
+                state: {
+                    published: 'Publiée',
+                    no_feed: 'Aucun flux',
+                    no_source: 'Aucune source publique',
+                    no_curve_config: 'Aucune configuration de courbe',
+                    no_publish: 'Aucune publication',
+                    stale_publish: 'Publication périmée',
+                },
             },
             policyLine: {
                 automatic:

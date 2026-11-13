@@ -21,10 +21,11 @@ import { describe, expect, it } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
-import type { CalibratedFeed, Calibration } from '../../api/client.js';
+import type { CalibratedFeed, Calibration, IrCurveCoverageRow } from '../../api/client.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import {
     CALIBRATION_REASON,
+    IR_CALIBRATED_CLASS,
     advance,
     calibrationEntries,
     moveProvider,
@@ -117,6 +118,39 @@ const gbpusd: CalibratedFeed = {
     explicit_items: true,
 };
 
+/** A published instant, as the store states it. */
+const AS_OF = '2026-11-01 10:00:00.000000Z';
+
+const usdCurve: IrCurveCoverageRow = {
+    currency_code: 'USD',
+    config_id: '44444444-4444-4444-8444-444444444444',
+    source_name: 'synthetic.rates.usd.sofr',
+    price_source: 'sofr',
+    provider_code: 'fred',
+    window_days: 90,
+    bootstrap_config_id: '55555555-5555-4555-8555-555555555555',
+    bootstrap_config_name: 'USD SOFR curve',
+    published_as_of: AS_OF,
+    published_state: 'published',
+    gap: '',
+    gap_reason: '',
+};
+
+const jpyCurve: IrCurveCoverageRow = {
+    currency_code: 'JPY',
+    config_id: '',
+    source_name: '',
+    price_source: '',
+    provider_code: '',
+    window_days: 90,
+    bootstrap_config_id: '66666666-6666-4666-8666-666666666666',
+    bootstrap_config_name: 'JPY TONAR curve',
+    published_as_of: '',
+    published_state: '',
+    gap: 'no_feed',
+    gap_reason: 'No synthetic feed holds this currency.',
+};
+
 function calibration(over: Partial<Calibration> = {}): Calibration {
     return {
         assetClass: 'fx',
@@ -138,15 +172,26 @@ function calibration(over: Partial<Calibration> = {}): Calibration {
         policyWritable: true,
         feeds: [eurusd, audusd, gbpusd],
         coverage: { total: 3, fromFixing: 2, keptFixed: 1, refused: 0, overridden: 1 },
+        ir_curves: [],
         ...over,
     };
 }
 
+/** The interest rates class: its coverage rows, and no fx feeds behind them. */
+function irCalibration(rows: readonly IrCurveCoverageRow[] = [usdCurve, jpyCurve]): Calibration {
+    return calibration({
+        assetClass: IR_CALIBRATED_CLASS,
+        feeds: [],
+        coverage: { total: 0, fromFixing: 0, keptFixed: 0, refused: 0, overridden: 0 },
+        ir_curves: [...rows],
+    });
+}
+
 function render(path: string, data: Calibration): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['calibration', 'fx'], data);
+    client.setQueryData(['calibration', data.assetClass], data);
     for (const feed of data.feeds) {
-        client.setQueryData(['calibration', 'fx', feed.config_id], {
+        client.setQueryData(['calibration', data.assetClass, feed.config_id], {
             ...data,
             feeds: [feed],
         });
@@ -231,6 +276,65 @@ describe('the calibration list', () => {
         const run = render('/market-data/calibration/fx?tab=run', calibration());
         expect(run).toContain('No calibration has run on this screen yet.');
         expect(run).not.toContain('EUR/USD');
+    });
+});
+
+describe('the interest rates coverage', () => {
+    it('offers the class beside fx and draws one row per currency', () => {
+        const html = render('/market-data/calibration/interest_rates', irCalibration());
+        expect(html).toContain('<option value="interest_rates" selected="">IR curves</option>');
+        expect(html).toContain('<option value="fx">FX spot</option>');
+        expect(html).toContain('data-ir-coverage');
+        expect(html.match(/data-ir-currency=/g)).toHaveLength(2);
+        expect(html).toContain('data-ir-currency="USD"');
+        expect(html).toContain('data-ir-currency="JPY"');
+    });
+
+    it('states a covered currency with its source, its config, its window and its as-of', () => {
+        const html = render('/market-data/calibration/interest_rates', irCalibration());
+        expect(html).toContain('Published');
+        expect(html).toContain('synthetic.rates.usd.sofr');
+        expect(html).toContain('fred');
+        expect(html).toContain('USD SOFR curve');
+        expect(html).toContain('title="2026-11-01 10:00:00.000000Z"');
+        expect(html).toContain('<th class="py-2 text-right">Window (days)</th>');
+        expect(html).toContain('>90<');
+    });
+
+    it('states a gap with its word and the recorded reason', () => {
+        const html = render('/market-data/calibration/interest_rates', irCalibration());
+        expect(html).toContain('>No feed</span>');
+        expect(html).toContain('No synthetic feed holds this currency.');
+    });
+
+    it('names every gap in the screen’s own language', () => {
+        const cases = [
+            ['no_feed', 'No feed'],
+            ['no_source', 'No public source'],
+            ['no_curve_config', 'No curve config'],
+            ['no_publish', 'No publish'],
+            ['stale_publish', 'Stale publish'],
+        ] as const;
+        for (const [gap, word] of cases) {
+            const html = render(
+                '/market-data/calibration/interest_rates',
+                irCalibration([{ ...jpyCurve, gap, gap_reason: `recorded for ${gap}` }]),
+            );
+            expect(html).toContain(`>${word}</span>`);
+            expect(html).toContain(`recorded for ${gap}`);
+        }
+    });
+
+    it('leaves the fx panels in place and never reads the IR curves', () => {
+        const html = render(
+            '/market-data/calibration/fx',
+            calibration({ ir_curves: [{ ...jpyCurve, currency_code: 'ZAR' }] }),
+        );
+        expect(html).toContain('EUR/USD');
+        expect(html).toContain('From a fixing');
+        expect(html).not.toContain('data-ir-coverage');
+        expect(html).not.toContain('ZAR');
+        expect(html).not.toContain('No synthetic feed holds this currency.');
     });
 });
 

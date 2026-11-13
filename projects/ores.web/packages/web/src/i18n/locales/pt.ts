@@ -5027,6 +5027,26 @@ const pt: SourceCatalogue = {
             assetClass: 'Classe de ativos',
             classes: {
                 fx: 'Câmbio à vista',
+                interest_rates: 'Curvas de taxa',
+            },
+            ir: {
+                title: 'Cobertura das curvas de taxa',
+                lead: 'Uma linha por moeda para a qual o sistema tem uma curva: a fonte que lê, a configuração de arranque que constrói a curva, e a última curva publicada.',
+                currency: 'Moeda',
+                source: 'Fonte',
+                window: 'Janela (dias)',
+                bootstrap: 'Configuração de arranque',
+                published: 'Última publicada',
+                stateHeader: 'Estado',
+                empty: 'Nenhuma moeda tem uma curva de taxa.',
+                state: {
+                    published: 'Publicada',
+                    no_feed: 'Sem feed',
+                    no_source: 'Sem fonte pública',
+                    no_curve_config: 'Sem configuração de curva',
+                    no_publish: 'Sem publicação',
+                    stale_publish: 'Publicação desatualizada',
+                },
             },
             policyLine: {
                 automatic: 'Automática: janela de {window} dias, {inverse}, {order}, {fallback}.',

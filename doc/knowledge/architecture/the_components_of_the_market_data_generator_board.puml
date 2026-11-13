@@ -1,0 +1,53 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51
+' Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+'
+@startuml
+object "board : market_board" as board
+object "curve:USD" as usd
+object "curve:EUR" as eur
+object "spot:EUR/USD" as spot
+
+board *-- usd : member 0
+board *-- eur : member 1
+board *-- spot : member 2
+
+usd : kind = curve
+usd : spot_date = 2026-11-16
+usd : published_at = 10:31:04
+usd : points[3] = {{2026-11-16, 1.0}, {2027-02-16, 0.9882}, {2027-11-16, 0.9694}}
+
+eur : kind = curve
+eur : spot_date = 2026-11-16
+eur : published_at = 10:31:07
+eur : points[3] = {{2026-11-16, 1.0}, {2027-02-16, 0.9931}, {2027-11-16, 0.9821}}
+
+spot : kind = spot
+spot : published_at = 10:31:09
+spot : spot = 1.0842
+
+object "surface : fx_vol_surface_feed" as surface
+surface : holds three member ids, resolved when it was built
+surface ..> eur : reads by id
+surface ..> usd : reads by id
+surface ..> spot : reads by id
+note right of surface
+  Each tick it builds one market per expiry:
+  spot, P_quote from curve:EUR, P_base from curve:USD,
+  resolved at the expiry's own date.
+end note
+@enduml

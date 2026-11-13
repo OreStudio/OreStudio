@@ -1,0 +1,334 @@
+:PROPERTIES:
+:ID: 1F404EE8-215D-4E62-AB09-B2D34BE9C12F
+:END:
+#+title: The components of the market data generator
+#+description: The implementation foundations of synthetic market data generation: the types that make up a run's market, how they fit together, how a feed is built and started, what one tick does, and the rules the shape holds. The domain foundations live in the pages it cites.
+#+type: knowledge
+#+level: cross
+#+filetags: :market_data:synthetic:architecture:implementation:uml:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+* Summary
+
+This page is the implementation counterpart to the domain pages it cites: where
+[[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] decides *what* is generated and by
+which method, this page says *which types do it*, how a run is put together, and how
+one tick moves every part in step. A run's market is one =run_market= that owns three
+collaborators: a loop that decides when, a latent market that decides why prices move
+together, and a board that holds the values feeds share. Feeds are built by a factory
+from the config plane, tick on the loop, and publish both to NATS and to the board.
+
+Read it before changing a generator, the scheduler or the board, and read
+[[id:B7A03C80-6566-4E97-9D45-14A69726C381][Adding an asset class]] when the change is a new asset class rather than a change
+of shape.
+
+* Detail
+
+** The pieces
+
+| Piece | Type | Owns |
+|-------+------+------|
+| The run's market | =run_market= | the loop, the noise and the values, and the block-to-series map between them |
+| The loop | =tick_scheduler= | operational time, the series heap, the arrival laws, the pace, the heat, the regime, the history and the trace |
+| The noise | =latent_market= | named factors, their keyed paths, per-series loadings, and the driver a series reads |
+| The values | =market_board= | a curve per currency and a spot per pair, each with the time it was last published |
+| A generator | =i_feed= | one config row's quotes: its process, its tick body and the subjects it publishes on |
+| The factory and the registry | =feed_factory=, =feed_kind_registry= | the kind seam: one string selects the build input and the builder |
+| The engines | =fx_vol_surface_generator=, =fx_vol_surface_emitter=, the process library | the mathematics a generator holds: SSVI state, mixture and GARCH variance, short rates |
+
+The pieces are the domain pages': the loop and its arrivals are
+[[id:F135B9AF-902F-46C5-847C-0820D8C92D28][One scheduler draws every feed's gaps]], the noise is
+[[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]], the
+processes are [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]], and the values are
+[[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]]. This page does not restate
+their reasoning; it states the shape that carries it.
+
+** How they fit
+
+#+caption: Components and the seam between the control plane, the generators and the run's market.
+[[proj:doc/knowledge/architecture/the_components_of_the_market_data_generator_components.png]]
+
+Source: [[./the_components_of_the_market_data_generator_components.puml][=the_components_of_the_market_data_generator_components.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/the_components_of_the_market_data_generator_components.puml=.
+
+The dependency rule the diagram is drawn to: *the loop never depends on the noise or
+on the values*. A generator reaches values through =run_market::values()=, so its use of
+another generator's output is visible where the generator is built, and the loop stays
+one thing: time.
+
+** The types and their contracts
+
+#+caption: The types of a run's market, the generators that use them, and the interfaces a generator implements.
+[[proj:doc/knowledge/architecture/the_components_of_the_market_data_generator_classes.png]]
+
+Source: [[./the_components_of_the_market_data_generator_classes.puml][=the_components_of_the_market_data_generator_classes.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/the_components_of_the_market_data_generator_classes.puml=.
+
+- *=run_market=* is composition and nothing else: it builds its own loop, installs the
+  latent market's driver hook on it, and hands out the three collaborators. It carries
+  no price, no timing policy and no state of its own beyond the map from a feed's series
+  to the factors that drive it, which is noise wiring.
+- *=tick_scheduler=* fires a series' body when the series' mark is reached and gives it
+  a =tick_context=. It knows nothing of prices.
+- *=latent_market=* answers one question: which standard normals does this series read
+  for the interval it is stepping? It writes them into a buffer the caller owns.
+- *=market_board=* is a table. Publishing replaces a member's values and its timestamp;
+  reading takes a view of that storage; a member is created once, by the feed that owns
+  it, and referred to afterwards by a small integer.
+- *=i_feed=* is the generator seam: =start=, =tick=, =stop=, plus the identity a
+  control plane needs. Everything an asset class adds is behind it.
+
+** Starting a feed
+
+#+caption: Starting one feed: the config plane resolves the row, the factory builds it, and the loop takes its body.
+[[proj:doc/knowledge/architecture/the_components_of_the_market_data_generator_start.png]]
+
+Source: [[./the_components_of_the_market_data_generator_start.puml][=the_components_of_the_market_data_generator_start.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/the_components_of_the_market_data_generator_start.puml=.
+
+Two things in that sequence are load-bearing. The board member is resolved in the
+feed's own constructor, off the loop, once; nothing on the tick path looks a member up
+by name. And the body the loop takes captures the feed, so the feed outlives the
+scheduling of it -- =remove= waits until the loop is no longer in the body, which is what
+lets a feed be destroyed after its =stop=.
+
+** The dynamics
+
+*** Time
+
+One operational time, $\tau$, belongs to the run. Every series is scaled by one
+bracket: a series with sensitivity $s$ whose law draws a gap $g$ ticks when $\tau$ has
+moved by $g/s$. The mark is fixed when the gap is drawn, so a change in the market --
+a pin, a heat jump, a speed change -- moves $\tau$ faster and moves no mark
+([[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]] states what that coupling means for the
+prices).
+
+A body reads the clock it is given rather than assuming a tick is a fixed step:
+=context.elapsed_seconds=, =context.simulated_seconds= (the market's speed times the
+market time it covered), and =context.tail_tilt=. A spot feed multiplies the simulated
+seconds by its own ticks a second to get the step it must take; a curve feed steps one
+fixed simulated step, because a calendar day per tick is its unit; a surface feed steps
+one nominal tick. That is why a run with a thousand feeds and mixed arrival laws still
+has one coherent time: the clock is shared, the steps are each feed's own.
+
+*** Arrivals, the heat and Hawkes
+
+#+caption: The regime chain, the shared heat and a series' own self-excitation.
+[[proj:doc/knowledge/architecture/the_components_of_the_market_data_generator_regime.png]]
+
+Source: [[./the_components_of_the_market_data_generator_regime.puml][=the_components_of_the_market_data_generator_regime.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/the_components_of_the_market_data_generator_regime.puml=.
+
+Each series carries one arrival law, and the laws are the four in
+[[id:F135B9AF-902F-46C5-847C-0820D8C92D28][One scheduler draws every feed's gaps]]:
+
+- *Fixed*, an interval, for a curve that should tick on a cadence.
+- *Poisson*, memoryless, whose rate is the configured one.
+- *Regime-switching*, two states whose intensities differ by the regime's multiplier --
+  the market is calm or active, and every series of that kind moves with it.
+- *Hawkes*, self-exciting: a tick raises the series' own intensity, which decays. The
+  branching ratio says how many ticks one tick begets on average and the decay says how
+  fast that fades, both in the series' own operational time.
+
+Above them sits the *heat*: every event of every series adds to a shared intensity that
+fades, so a burst anywhere lifts the low end of the market. Its long-run mean is the
+event rate times jump over decay, its loop gain is jump over decay, and a series takes
+the share of it its own rate is of the total. It is a known property of this channel
+that with the heat on, the average tick rate sits above the configured one; that is
+stated by the arrival page and is not a defect of the implementation.
+
+The three are deliberately layered, and the layering is what keeps them composable: the
+*regime* is exogenous and seeded, so it is reproducible from the run's seed; the *heat*
+is endogenous, so it is reproducible only up to the events that fed it, which is what
+contagion means; and a *Hawkes* series adds its own excitation on top in its own time.
+A person pins the regime from the Market tab when a demonstration must be steady, and a
+pin is a state rather than a rate, so it reaches every series at once.
+
+*** Noise, and where each random number comes from
+
+=ores.analytics.quant.math::rng_stream= is counter-based (Philox4x32-10), so a draw is
+addressed by a key and an index rather than read in order, and a stream is named by
+={run seed, series, purpose}=. The purposes are what keep the run reproducible while
+still letting a burst move one feed and not another:
+
+| Purpose | Stream | Draws |
+|---------+--------+-------|
+| =market= | one for the run, and one per latent factor | the regime chain's switches, and each factor's keyed path |
+| =arrival= | one per series | that series' gaps, whatever its law |
+| =price= | one per series | that series' own noise, and the draws its process makes |
+
+The heat is not drawn: it is computed from the events that fed it, which is why a run
+replays only up to the events it saw. The latent market turns a series' *price*
+randomness into a shared quantity: each factor
+is a Brownian path keyed on a fixed grid of cells in simulated time with a dyadic
+bridge inside a cell, so a factor's value at any instant is a function of the seed and
+the time and of who asked nobody. A series' driver is
+$W_i(t) = \sum_k b_{ik} F_k(t) + d_i E_i(t)$, so two series correlate by
+$\mathbf{b}_i \cdot \mathbf{b}_j$, exactly and whatever their tick times. A block of
+series that must correlate beyond the common factors -- a pair's spot and its surface --
+shares a *local* factor, and that is what makes a surface lean with its own spot.
+
+The driven step is the seam that makes this cost nothing when it is unused: a process
+whose =next_with_normal(z)= is called still runs its own law -- the mixture still picks
+its component, GARCH still sets the day's variance, the tail tilt still shapes it -- and
+only the Gaussian it scales is shared. A series the market does not drive reads an empty
+driver span, never a zero, so a feed cannot mistake "not driven" for "drawn zero".
+
+*** Prices, per asset class
+
+- *FX spot.* A Gaussian mixture over the day's components, whose draw is standardised
+  and scaled by a GJR-GARCH variance that persists between ticks
+  ([[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]]).
+- *IR curves.* One short-rate model per currency, chosen from the five in
+  [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][the yield curve process type catalogue]], whose =discount_factor(ticks)= prices
+  every pillar it publishes and is the curve it puts on the board
+  ([[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]]).
+- *Volatility surfaces.* An SSVI surface whose state is a Cox-Ingersoll-Ross forward
+  variance per expiry segment, a hyperbolic tangent of an Ornstein-Uhlenbeck skew and a
+  logistic of a second OU for curvature, every process reverting to where it started, so
+  each emitted surface is inside the bounds that keep it free of static arbitrage
+  ([[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]).
+
+The measures are deliberately split, as the approach note sets out: the states are
+real-world, the surfaces are a risk-neutral parameterisation, and the guarantee is
+static arbitrage per emitted surface, not dynamic arbitrage between one day's surface and
+the next.
+
+*** Values: the board
+
+#+caption: A run's board after a few ticks, and the three members one surface reads.
+[[proj:doc/knowledge/architecture/the_components_of_the_market_data_generator_board.png]]
+
+Source: [[./the_components_of_the_market_data_generator_board.puml][=the_components_of_the_market_data_generator_board.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/the_components_of_the_market_data_generator_board.puml=.
+
+The board holds what a vendor would not publish: its own curves and spots, which its own
+feeds must agree on. A curve member is a spot date at one and a discount factor per
+pillar date, so a reader interpolates from a spot date outwards; a spot member is one
+number. Each member carries the time it was published, which is what tells a quiet market
+from a stopped feed.
+
+*** One tick
+
+#+caption: One firing of a series: the loop asks for its drivers, hands them to the body, and the body publishes.
+[[proj:doc/knowledge/architecture/the_components_of_the_market_data_generator_tick.png]]
+
+Source: [[./the_components_of_the_market_data_generator_tick.puml][=the_components_of_the_market_data_generator_tick.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/the_components_of_the_market_data_generator_tick.puml=.
+
+The loop releases its lock around the body, so a body never takes a lock the loop holds;
+that is what allows a feed to publish and to ask the board in the middle of a tick. A
+burst of ticks costs one driver call each, and a body that steps a longer span keeps the
+process's own draw rather than pretending the span was one tick.
+
+*** The surface's tick, which is the one that reads the board
+
+#+caption: A surface's tick: it reads three board members, resolves one market per expiry, and emits.
+[[proj:doc/knowledge/architecture/the_components_of_the_market_data_generator_surface.png]]
+
+Source: [[./the_components_of_the_market_data_generator_surface.puml][=the_components_of_the_market_data_generator_surface.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/the_components_of_the_market_data_generator_surface.puml=.
+
+This is the whole reason the board exists. The surface is a pure generator of noise -- its
+own SSVI state -- and it needs the *forward* to turn a delta into a strike, and the
+forward is the ratio of two curves and a spot that other feeds own. It resolves the
+market every tick, so a curve's move reaches the surface's quotes without a restart, and
+the quant block =math::pair_market_at= is the one rule both it and the party-side
+calibration use ([[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][the design page]] states why
+that matters).
+
+*** What a person can change, and what it moves
+
+| Control | Reaches | Effect |
+|---------+---------+--------|
+| The regime pin | every series | a forced calm or active state, applied at once and in the trace |
+| The market's pace | every series | a speed change is applied from the loop's now and reaches every simulated second from then |
+| A feed's sensitivity | that series | scales its intensity and its step, without moving any other series' marks |
+| A feed's arrival law | that series | its gap distribution, which the loop builds when the feed is added |
+| The loadings | the driven series | the correlation between two series, set from the shell, read by the latent market |
+
+** Where a new asset class lands
+
+A generator is code plus config, and the shape is designed so that a new asset class adds
+a kind rather than a case. Write the five edits in
+[[id:B7A03C80-6566-4E97-9D45-14A69726C381][Adding an asset class]], and then:
+
+- a generator that others read from -- a spot, a curve, a strip -- publishes a member to
+  =values()= under a kind and a code, and reads nothing new;
+- a generator that reads others -- a surface, an option, a cross-currency instrument --
+  holds =run_market= and reads =values()= in its constructor, so its dependency is a line
+  where it is built;
+- a volatility surface calls =add_block(anchor, name, ...)=, which is already generic and
+  only named for FX where it is called;
+- nothing is added to =run_market= and nothing is added to the loop.
+
+** The rules the shape holds
+
+1. *The loop owns no values.* It calls one driver hook and nothing else; a scheduler that
+   can hand out market data is a scheduler that will.
+2. *Noise owns no prices, and values own neither.* Three collaborators that do not know
+   each other is what keeps each of them testable alone.
+3. *A feed writes only its own member*, and its member id is resolved once, off the loop.
+4. *Nothing on the tick path allocates per lookup.* The board deals in ids, and a
+   member's values live in a buffer the publisher reuses.
+5. *No generator writes a market data table.* Generators publish; the ingest stores, and
+   nothing downstream can tell a simulated source from a real one
+   ([[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]]).
+6. *One normal is one nominal tick.* A step over a longer span keeps the process's own
+   draw, which is what keeps a burst from inventing extra randomness.
+
+** Performance and memory
+
+- The board is sized when the run is built, so a member never moves and an id is stable
+  for the run's life. Publishing assigns into the member's own buffer; a tick allocates
+  nothing once a curve's size holds, which the tests pin by checking the buffer's address
+  across a hundred republishes.
+- Creating a member is the only locked operation, and it happens off the loop. Publishing
+  and reading take no lock, because a member's values belong to the thread that ticks
+  them.
+- A curve of thirty years is about 30 points, so a currency's member is a few hundred
+  bytes of points and every calendar the platform holds would fit in under a megabyte.
+  The board is not a cache and needs no eviction policy.
+- Per tick the loop pays one =std::function= call for the drivers and one =std::string=
+  from the body, against a wire encode and a publish that are orders of magnitude larger.
+  At ten thousand ticks a second the dispatch is well under a millisecond a second, so
+  the rule worth enforcing is the fourth above rather than micro-optimising the loop.
+
+** Where the code is today
+
+The shape above is the target this page states and the board task is migrating to. Two
+deltas remain while that work is open, both recorded on
+[[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]]:
+
+- the board is currently a member of =tick_scheduler= rather than of =run_market=, which
+  is the cohesion and visibility problem the task's architecture review sets out;
+- =run_market= still lives in =ores.synthetic.service= and is handed a scheduler, so it
+  cannot be the object a generator in =ores.synthetic.api= depends on.
+
+* See also
+
+- [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]] -- the method per asset class, the
+  cross-asset constraints and the measure split this page implements.
+- [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]] -- why the board exists and
+  what a surface does with it.
+- [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]] -- the
+  noise, and the correlation it buys.
+- [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]] -- the
+  vendor and contributor split on top of this shape.
+- [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][One scheduler draws every feed's gaps]] -- the arrivals this loop implements.
+- [[id:7A6E2C55-3F1B-4E8D-9C7A-2B5E8D4F1A63][Market Arrival Regime]] and
+  [[id:9D778F72-8FF6-4F01-AF4B-696DC7BA855A][The market's volatility channel]] -- the regime and its reach into prices.
+- [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] and
+  [[id:E1C64302-FA31-4C25-8E92-38265013F644][The generator library]] -- the process contracts a generator implements.
+- [[id:D6FDEFC6-ECF9-4C9A-A566-9BB61FCDBAC1][The yield curve process type catalogue]] -- the five engines whose curves the board
+  carries.
+- [[id:FB57F761-0FC3-4283-AD32-CCF2FE68AD2E][The IR curve producer]] and
+  [[id:46FF8EF4-3874-4C9A-9222-69DA691E793F][The FX spot producer]] -- the two generators this page draws.
+- [[id:D67C930B-261F-480B-B5EF-020C6D617333][The generator factory and the kind seam]] and
+  [[id:B7A03C80-6566-4E97-9D45-14A69726C381][Adding an asset class]] -- the seam the control plane builds through, and the
+  edits a new class makes.
+- [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]] -- why no generator writes a table.
+- [[id:94471941-E1D7-4796-9BB0-44C96667FE57][Preview and simulate]] -- the dry-run operations that exercise a process without a
+  run.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] -- the structure note that orders this cluster.

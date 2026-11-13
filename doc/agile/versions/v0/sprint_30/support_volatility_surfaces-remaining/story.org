@@ -24,9 +24,9 @@ The system builds and serves volatility surfaces as market data. A surface is ca
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The latent market landed in #4673 and #4675, and the forward a surface is struck against is decided. [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Strike every surface against the run's own curve]] carries the implementation in four stages and a measurement. |
+| Now           | The latent market landed in #4673 and #4675, and the forward a surface is struck against is decided. [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Resolve a pair's market once, shared by the calibration and the surface]] delivered the one market resolution; [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]] builds the board that feeds it. |
 | Waiting on    | Nothing.                               |
-| Next          | Stage 1 of [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Strike every surface against the run's own curve]]: the market board. |
+| Next          | Stage 1 of [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]]: the market board. |
 | Last touched  | 2026-11-13 |
 
 * Acceptance
@@ -77,9 +77,10 @@ The system builds and serves volatility surfaces as market data. A surface is ca
 | [[id:0DAFFD2F-0052-4A10-B6CD-92F14420A591][Investigate how the synthetic market is generated jointly]] | DONE | 2026-11-12 | 2026-11-12 | Decide how the synthetic feeds share one correlated market (open decision OD-1), across asset classes and use cases, on the scheduler's clock and with the regime and Hawkes arrivals. |
 | [[id:9331995E-79ED-40B3-923D-524975949FB5][Build the latent market of shared Brownian factors]] | DONE | 2026-11-12 | 2026-11-13 | A latent market of shared Brownian factors in simulated time, block factors first, so the FX volatility surface correlates with its spot exactly. |
 | [[id:5917E17E-8DD9-4593-869A-274A29830479][Prototype the 3D surface view]] | DONE | 2026-11-12 | 2026-11-12 | A throwaway rotatable solid view of a candidate surface over an FX SSVI market in strike space, to judge whether turning the surface earns its place on the slices screen. |
-| [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Strike every surface against the run's own curve]] | STARTED | 2026-11-13 | | Quote each surface against its pair's real forward, resolved from the published forward set once and shared with the calibration, and read the run's latent market onto the Market regime tab. |
+| [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Resolve a pair's market once, shared by the calibration and the surface]] | DONE | 2026-11-13 | 2026-11-13 | One resolution of a pair's market at a value date, in quant, adopted by the calibration and by the surface feed; one market per expiry in the feed; and the proof that a surface's quotes are invariant to the level of its spot. |
 | [[id:99138429-7EC3-4D68-B1FD-90E49A0BC4E0][Investigate the forward a synthetic surface is struck against]] | DONE | 2026-11-13 | 2026-11-13 | Decide where the forward a synthetic FX vol surface solves its strikes against comes from, given the system tenant is the vendor and publishes raw quotes only: the run's own latent curve, a party's published set, or a published system curve. Analysis against Kienitz and van den Berg. |
 | [[id:8AE97627-EB03-45F4-87F2-5384FF510DE6][Read the run's market on the Market regime tab]] | BACKLOG | | | The last unmet line of the latent market's acceptance: the market regime read answers with the run's factors, each series' loadings and each driver's value, and the tab draws them in three languages, showing an undriven series as undriven rather than as zero. |
+| [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]] | BACKLOG | | | The run shares its latent curve through a market board; the curve and spot feeds publish to it, the surface feed builds one market per expiry from it every tick, and the emitter re-solves its strikes. Four stages and a measured round trip. |
 
 * Decisions
 

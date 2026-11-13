@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: DDF8585F-75EE-4190-B20B-8A913DC1F883
+:END:
+#+title: Task: Build the run's market board and strike every surface against it
+#+description: The run shares its latent curve through a market board; the curve and spot feeds publish to it, the surface feed builds one market per expiry from it every tick, and the emitter re-solves its strikes. Four stages and a measured round trip.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every synthetic volatility surface is struck against the forward of the run's own latent curves. A surface's quotes are then the pair's surface at the moneyness its own rate quotes imply, a curve tick moves the surface's quotes without a restart, and a party's calibration reads them at the strikes its bootstrap recovers.
+
+The design is [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic surface is struck against]]; the shared market resolution and the per-expiry markets landed under [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Resolve a pair's market once, shared by the calibration and the surface]]. The vendor publishes raw quotes and never a curve.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Not yet started. The stages below are the plan this task starts from. |
+| Waiting on   | Nothing.                               |
+| Next         | Stage 1: the market board.             |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- A curve feed publishes its dated discount factors to the run's board on every tick, and a board entry's factor at a pillar date equals that process's own =discount_factor= at the pillar's horizon to =1e-12=.
+- A spot feed publishes its level to the board on every tick, and the level read back is the process's own current value.
+- A surface feed builds one market per expiry from the board on every tick and re-solves its strikes, so a curve tick reaches the surface's quotes with no restart and no reconfiguration.
+- A surface whose pair the run does not carry publishes nothing, and names the member it could not read. It never quotes against a flat forward.
+- A pair whose currencies have no configured curve feed is refused when the start verb builds it, with the missing currency named.
+- An expiry's value date is the spot date plus its period, computed by =calendar_arithmetic::add_period= on both the feed's side and the calibration's, with no calendar consulted.
+- A two-percent discount differential moves a surface's quoted volatilities by the amount the strike solve implies, and the test states that amount rather than a direction.
+- With the curve unchanged and the SSVI state unchanged, two consecutive ticks emit identical quotes, so the board adds no drift of its own.
+- A party's calibration of the clean quotes lands on the same strikes within a tolerance the test states, and the number is measured once and recorded in Measurements with its command and commit.
+- No curve is published as market data, no marketdata operation is added, and no schema changes.
+
+* Design
+
+Settled, because the stages depend on the shapes:
+
+- *The board.* =market_board=, in =ores.analytics.quant= beside =latent_market=: one instance per run, owned by the application next to =run_market=, written and read only on the scheduler's loop thread. It holds named members of two shapes -- a currency's dated discount series and a pair's spot -- keyed by a kind and a code, in flat storage that a republish reuses, so a tick allocates nothing.
+- *The publishers.* The IR curve feed writes =curve:<CCY>= from its resolved entries' end dates and =discount_factor(ticks_ahead_end)=, with the spot date at one; the FX spot feed writes =spot:<PAIR>= with its current level. Both take an optional board, and a feed built without one publishes nothing, which is what every existing test wants.
+- *The read.* The surface feed holds a =const market_board*=, parses its expiry tenors into periods once (the parser and the period addition the calibration already uses), and each tick builds one =fx_market= per expiry through =math::pair_market_at=.
+- *The date rule.* Nothing is written: =ores.analytics.quant= already has =calendar_arithmetic::add_period(date, period)=, QuantLib's =Date::advance= semantics with a month-end clamp and no calendar consulted, with its own tests. The calibration's private =add_period= is deleted and calls it, and the feed calls the same function. The value date is the spot date plus the expiry's period -- what the calibration discounts to, not the expiry date -- so the two sides discount to one date by one rule.
+- *No business-day adjustment.* The value date is unadjusted and may be a weekend. That is the calibration's present behaviour, and matching it is the point; whether ORE's own expiry should be the yardstick is a separate question, already noted for the IR tenor resolution as a Phase-1 simplification, and it is not in this task.
+- *The emitter.* =fx_vol_surface_emitter::step= takes the per-expiry markets; =make= stops taking them. The markets are positional in the emitter's own expiry order and checked by size, so a tick does no string work.
+- *Two gates, deliberately different.* A configured pair whose currencies have no configured curve feed is refused when the start verb builds the feed: that is a configuration error, static, and it names the currency. A board member missing at tick time publishes nothing and says which: that is not an error but an ordering, because a surface may tick before any curve has, and a curve may be stopped.
+
+* Stages
+
+Four stages and a measurement. Each ends green, and each leaves the tree working: no stage breaks a suite it does not fix.
+
+| # | Stage | What lands | How it is proven |
+|---+-------+------------+------------------|
+| 1 | The board | =market_board= in quant: named members, a dated discount series, a spot scalar, publish and read, no allocation after warm-up | unit tests: publish then read; a republish replaces; an unknown member reads empty; a second currency leaves the first alone |
+| 2 | The date rule | the calibration's private period-to-date helper is deleted in favour of =calendar_arithmetic::add_period=; the feed calls it too | the calibration's 251 tests pass unchanged, so the deletion is a move; quant's own tests already pin the month-end clamp, the sticky clamp and the leap day |
+| 3 | The publishers | the IR curve feed and the FX spot feed write the board; the board threaded through the factory, null where a test wants none | a feed tick writes the process's own discounts to =1e-12=; a feed with no board ticks unchanged |
+| 4 | The read | the surface builds its markets per tick and the emitter takes them per step; the unit market and the build input's markets go | unchanged curve and state emit identical quotes; a two-percent differential moves the quotes by the stated amount; a missing member publishes nothing and names it; the ATM strike equals the board's forward |
+| 5 | The round trip | the calibration of the clean quotes, the tolerance measured and recorded | an integration test states the tolerance; Measurements carries the number, the command and the commit |
+
+Two pull requests: stages 1 to 3 change nothing observable and land the machinery, and stages 4 and 5 change behaviour. If the branch is quick, one PR with five commits in this order is fine; what must not happen is stage 4 landing without stage 3.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Change in a surface's quoted vols when its spot moves from 1.0 to 1.30, the discounts held | below 1e-12 at all 15 points | =ores.synthetic.api.tests=, "a surface's quotes do not depend on the level of its spot once its discounts differ" | 1f43b059c0 |
+| Change in a surface's quoted vols when the discount ratio moves from one to 0.99/0.97 | 7.8e-05, about 0.008 volatility points | the same suite, "a surface's quotes do depend on the ratio of its discounts" | 1f43b059c0 |
+
+* Notes
+
+Why the date rule is a deletion and not a port: the calendar machinery already exists in quant -- =business_day_calendar_set= holds materialised holidays as one flat sorted array built from refdata rows, =business_day_convention= is QuantLib's set of conventions, and =calendar_arithmetic= offers =add_period=, =adjust= and =advance= over them. The surface work needs none of it: an FX surface's expiry is a tenor added to a date, and the calibration has always done that without a calendar. Deleting the duplicate keeps that true while making both sides share one function. If a later stage decides the value date should be a business day, it is one call to =calendar_arithmetic::advance= with the pair's convention and calendar, in that one function's caller, and no new date code.
+
+Why the spot is a member at all, when the quotes provably do not need it: the strike the emitter solves is scaled by the spot, so a published strike or a delta hedge would need the real one, and the spot's covered-interest-parity drift -- later work -- needs it too. Leaving it at one would be a second deliberate lie in a task whose subject is removing the first.
+
+Why the markets move from =make= to =step=: with a board the market stops being a constant of the feed. Keeping =make='s markets would mean a surface struck once against whatever the board held at start, which is the defect at lower frequency.
+
+The ordering risk is real and is the point of the tick-time gate: the scheduler's own ordering means a surface may tick before any curve has. That tick publishes nothing and says "no market: curve:EUR" rather than stepping an empty market, which is why the gate is on the tick and not only on the start verb.
+
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -108,7 +108,7 @@ curves and states the bootstrap difference.
 
 The four choices are recorded with the alternatives weighed, a recommendation and
 whether each can be changed later, and the owner accepted them on 2026-11-13. The
-build is [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Strike every surface against the run's own curve]].
+build is [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]].
 
 No code changed. Six documentation checks pass: =site-page=, =org-links=,
 =heading-numbers=, =backlog-indexes=, =structure-notes= and =pattern-uses=.

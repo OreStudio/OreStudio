@@ -303,11 +303,11 @@ their subjects were corrected where they were ambiguous:
 The owner accepted the path and its four choices on 2026-11-13. No code changed
 as a result of this investigation: the branch's code change is the shared market
 resolution, which stands on its own, and the build is
-[[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Strike every surface against the run's own curve]].
+[[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]].
 
 * See also
 
-- [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Strike every surface against the run's own curve]] -- the task whose first
+- [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]] -- the task whose first
   half this answers, and whose text still assumes Path D.
 - [[id:67D0F734-5703-43DF-BF16-F5513C85A01F][Build the synthetic FX volatility surface generator]] -- the feed this
   changes.

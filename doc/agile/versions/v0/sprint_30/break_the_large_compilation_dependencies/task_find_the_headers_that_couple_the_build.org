@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
-#+updated: 2026-11-11
+#+updated: 2026-11-13
 #+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ The story knows one header that couples the build, the database context. It does
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Analysis written.                      |
+| Now          | Closed. The two tasks under the story apply the decisions. |
 | Waiting on   | Nothing.                               |
-| Next         | Apply the order of work.               |
-| Last touched | 2026-11-12                               |
+| Next         | None.                                  |
+| Last touched | 2026-11-13                             |
 
 * Acceptance
 

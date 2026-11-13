@@ -46,7 +46,7 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]] | STARTED | 2026-11-12 | | Analyse the include graph to find the headers most of the build depends on, and decide for each which types to forward-declare, which to move, and which to split. |
+| [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]] | DONE | 2026-11-13 | | Analyse the include graph to find the headers most of the build depends on, and decide for each which types to forward-declare, which to move, and which to split. |
 | [[id:908E710A-C9A3-433E-AC93-92B67FB76B6C][Pass the database context by reference behind a forward declaration]] | BACKLOG | | | Pass the database context as a const reference, forward-declare it in every header that only passes it along, and keep libpq and the pool out of context.hpp. |
 | [[id:DEA440DD-F4B6-4D37-9083-5F3BB33F1018][Forward-declare what the analysis finds]] | BACKLOG | | | Apply the decisions of the header analysis to every other heavy header it names, one header family per PR, each with its measured effect. |
 

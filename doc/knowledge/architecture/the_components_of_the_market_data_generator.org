@@ -363,14 +363,14 @@ very differently on this shape.
 
 ** Where the code is today
 
-The shape above is the target this page states and the board task is migrating to. Two
-deltas remain while that work is open, both recorded on
-[[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]]:
+The shape above is the code: =run_market= lives in =ores.analytics.quant=, owns its
+loop, its noise and its values, and installs the driver hook on the loop it owns. The
+board is not the loop's, and no feed reaches values through it.
 
-- the board is currently a member of =tick_scheduler= rather than of =run_market=, which
-  is the cohesion and visibility problem the task's architecture review sets out;
-- =run_market= still lives in =ores.synthetic.service= and is handed a scheduler, so it
-  cannot be the object a generator in =ores.synthetic.api= depends on.
+What remains of the board task is the half the shape was built for: a surface still
+takes its markets when it is built rather than building them from =values()= on every
+tick, so a curve's move does not yet reach the surface's quotes
+([[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]], stage 4).
 
 * See also
 

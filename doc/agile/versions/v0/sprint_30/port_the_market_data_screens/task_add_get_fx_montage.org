@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Answer one base currency's crosses at an as-of: the spot each provider
+quotes, the consensus, the change, the day's high and low, and the instant
+the change is measured from.
 
 * Status
 
@@ -35,7 +37,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The response states base_currency, as_of and change_since.
+- A pair whose base is on the quote side is included.
+- A provider that does not quote a pair is absent from that pair.
+- change_pct is measured from change_since and is absent when there is no
+  price at it.
+- day_high and day_low cover the same window and are absent when there is no
+  window.
+- Pairs are ordered by pair name.
 
 * Plan
 

@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Answer a curve's analytics: the conventions, the market pillars and the
+bootstrapped zero rate, implied forward, discount factor and shift per
+pillar.
 
 * Status
 
@@ -35,7 +37,19 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The response states index, day count, compounding, interpolation,
+  calendar, spot lag and pillar count.
+- Every market pillar carries tenor, maturity, year fraction, rate, provider
+  and series.
+- Every bootstrapped row pairs with a market pillar at the same tenor and
+  maturity.
+- zero_rate is continuously compounded and recomputing it from DF and tau
+  reproduces it to 1e-10.
+- implied_forward is the rate the segment ending at the pillar implies, and
+  the first row carries its zero rate.
+- shift_bps is the bootstrapped zero less the market rate at the pillar, and
+  the doc comment says so.
+- DF is monotonically decreasing in t for a positive-rate curve.
 
 * Plan
 

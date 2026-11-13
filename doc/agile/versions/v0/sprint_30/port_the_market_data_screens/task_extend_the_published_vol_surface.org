@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+State the surface's model, strike convention, delta type, conventions, axes
+and staleness on the published surface read, and expose the surface's
+instrument identity so a smile can be sliced.
 
 * Status
 
@@ -35,7 +37,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The response carries model, strike_convention, delta_type, conventions,
+  axes, published_at and stale.
+- axes[0].values and axes[1].values have the same lengths as the grid's rows
+  and columns.
+- A slice for one expiry returns the same numbers as that row of the grid.
+- A surface with nothing published answers success = false with a message
+  that says so, not an empty grid.
 
 * Plan
 

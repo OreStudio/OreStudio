@@ -13,29 +13,40 @@
 #+blocked_since:
 #+created: 2026-11-13
 #+updated: 2026-11-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Give both clients one definition of an instrument: one entry per instrument
+with its kind, name, facets, axes in draw order, sources and staleness,
+scoped to the caller's party.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | Not yet started.                       |
+| Now          | The wire contract is generated, compiles and round-trips. The service answer is not written. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Add the catalogue reader and register the handler. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
 
--
+- marketdata.v1.ops.list_instruments answers one entry per instrument, never
+  one per node.
+- A curve is one entry, a surface is one entry and a pair is one entry with
+  no axes.
+- No two instruments of one kind share a name within the party.
+- Only the caller's party's instruments are returned; an empty party_id
+  resolves to the session's party.
+- Every axes.values array is in the order a plot can draw without sorting.
+- Every source carries as_of, age_seconds and the server's stale verdict.
+- The answer pages with offset and limit, and states total and truncated.
 
 * Plan
 

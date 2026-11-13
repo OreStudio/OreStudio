@@ -20,22 +20,27 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Show that the quant machinery the five ported screens read already exists,
+so the server work is presenting data and not a quant project.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
 
--
+- Each screen field is traced to the function or field that already produces
+  it.
+- The four policy decisions the operations must state are written down.
+- The gaps that remain are named as presentation or configuration, not
+  mathematics.
 
 * Plan
 
@@ -83,3 +88,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The machinery exists and is the machinery the service already runs:
+=curve_bootstrap_engine= for the discount factors, =day_count_calculator= for the
+year fractions, =forward_rate_calculator= for the implied forwards,
+=resolve_end_date= for the maturity dates, and =surface_grid_of= with the
+calibration service for the vol grid and its slices. The zero rate is
+=-ln(DF)/τ= over two values those functions already return.
+
+What the operations must decide, and state once, is: that =zero_rate= is
+continuously compounded, that =implied_forward= is the rate the segment ending
+at the pillar implies, that =shift= is curve less market, and where the
+staleness threshold lives. None of the four is quant work.
+
+The investigation is =investigation_ir_and_vols_machinery.org= in this story.

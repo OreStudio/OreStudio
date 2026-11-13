@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Answer one currency's ladder at an as-of: every rung in maturity order with
+the server's maturity date and year fraction, one quote per provider and the
+consensus.
 
 * Status
 
@@ -35,7 +37,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- A rung's maturity_date is resolved through the tenor catalog and is after
+  the as-of.
+- Rungs are ordered by maturity, with ON, TN and SN before 1W and carrying
+  their own dates.
+- A provider that does not quote a rung is absent from that rung, never
+  zero.
+- The consensus states its method and how many quotes it rested on.
+- Every quote names a series_id that get_series_ticks can read, and
+  age_seconds equals as_of minus the quote's as_of.
 
 * Plan
 

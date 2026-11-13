@@ -28,11 +28,11 @@ The design is [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][The forward a synthetic
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Every stage and both gates have landed, and the round trip is measured: a calibration of the run's own quotes, against the same market, recovers them to 1.25e-09 at ATM and 3.81e-09 at the wings. The bootstrap half of the round trip is a separate task on the calibration. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The pull request. A party's bootstrap tolerance is not in this task, because its number is the bootstrap's and moves with it. |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -188,7 +188,7 @@ Four stages and a measurement. Each ends green, and each leaves the tree working
 | 2 | The date rule | the calibration's private period-to-date helper is deleted in favour of =calendar_arithmetic::add_period= | done, 57fcef317b: the calibration's 251 tests pass unchanged, so the deletion is a move |
 | 3 | The publishers | the IR curve feed and the FX spot feed write the board, which the scheduler owns, so no feed's arguments changed | done, a69dc9cded: the curve's points are built beside the pillar pricer and pinned by four cases, including the buffer's stability |
 | 4 | The read | the surface builds its markets per tick from the three values it reads, and the emitter takes them per step; the unit market and the build input's markets go | done, fb1695dfb8: a step's market count is checked, a tilted market moves the quotes, and the surface reads two curves that need not share a grid |
-| 5 | The round trip | the calibration of the clean quotes, the tolerance measured and recorded | an integration test states the tolerance; Measurements carries the number, the command and the commit |
+| 5 | The round trip | the calibration of the clean quotes against the same market, the margins measured and asserted | done, 000c00b9c8: 1.25e-09 at ATM and 3.81e-09 at the wings, asserted at 1e-7 |
 
 Two pull requests: stages 1 to 3 change nothing observable and land the machinery, and stages 4 and 5 change behaviour. If the branch is quick, one PR with five commits in this order is fine; what must not happen is stage 4 landing without stage 3.
 
@@ -232,6 +232,29 @@ The ordering risk is real and is the point of the tick-time gate: the scheduler'
 |   |                 |      |          |       |
 
 * Result
+
+The run's market is one aggregate in =ores.analytics.quant= that owns its loop, its noise
+and its values; the loop is handed a driver hook and knows nothing of the other two. The
+board holds a curve per currency and a spot per pair, id-indexed, sized once, with no lock on
+the tick path and no allocation after a curve's first publish. Curves and spots publish to it,
+the surface reads its pair's three values every tick and strikes each expiry against the
+forward they imply, and the emitter takes those markets as an argument of its step.
+
+Two gates, deliberately different: the start verb refuses a pair the run carries no curve feed
+for, naming the currency, and a tick whose member is not published yet publishes nothing and
+names it.
+
+The round trip is measured rather than asserted: a calibration of the run's own quotes,
+against the same market, recovers them to 1.25e-09 at ATM and 3.81e-09 at the wings, and the
+ATM strike it solves matches to 5.3e-12 relative. The test asserts 1e-7 and 1e-8.
+
+Architecture: the board was put in the scheduler first and taken out again. The review on this
+page records why -- cohesion, the visibility of one generator's dependency on another, and a
+lifetime footgun -- and the aggregate is the answer it recommended. The publishable statement
+is [[id:1F404EE8-215D-4E62-AB09-B2D34BE9C12F][The components of the market data generator]], which now describes the code as it is.
+
+What is not here: a party's bootstrap tolerance. Its margin is the bootstrap's and moves with
+it, so it belongs beside the bootstrap rather than in this arc.
 
 
 * Plan

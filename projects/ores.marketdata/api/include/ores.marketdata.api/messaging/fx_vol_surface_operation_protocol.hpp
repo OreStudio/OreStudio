@@ -283,6 +283,26 @@ struct get_published_fx_vol_surface_response {
     bool success = false;
     std::string message;
     std::string blueprint_name;
+    /**
+     * @brief The smile model the surface was calibrated with, such as ssvi.
+     */
+    std::string model;
+    /**
+     * @brief What a strike column means: `delta` when the strikes are delta codes,
+     * `absolute` when they are levels.
+     */
+    std::string strike_convention;
+    /**
+     * @brief The delta convention the strikes were quoted under, such as spot or
+     * forward, and whether they are premium-adjusted. Empty when the strikes are
+     * levels.
+     */
+    std::string delta_type;
+    /**
+     * @brief The server's verdict on the publish's age, not a threshold for a
+     * client to apply.
+     */
+    bool stale = false;
     std::string publish_request_id;
     std::chrono::system_clock::time_point as_of;
     std::optional<std::chrono::system_clock::time_point> published_at;
@@ -581,6 +601,12 @@ wire_fields(std::type_identity<get_published_fx_vol_surface_response>) {
         ::ores::utility::codec::field{"message", &get_published_fx_vol_surface_response::message},
         ::ores::utility::codec::field{"blueprint_name",
                                       &get_published_fx_vol_surface_response::blueprint_name},
+        ::ores::utility::codec::field{"model", &get_published_fx_vol_surface_response::model},
+        ::ores::utility::codec::field{"strike_convention",
+                                      &get_published_fx_vol_surface_response::strike_convention},
+        ::ores::utility::codec::field{"delta_type",
+                                      &get_published_fx_vol_surface_response::delta_type},
+        ::ores::utility::codec::field{"stale", &get_published_fx_vol_surface_response::stale},
         ::ores::utility::codec::field{"publish_request_id",
                                       &get_published_fx_vol_surface_response::publish_request_id},
         ::ores::utility::codec::field{"as_of", &get_published_fx_vol_surface_response::as_of},

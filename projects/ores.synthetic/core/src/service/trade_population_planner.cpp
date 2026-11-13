@@ -2356,9 +2356,8 @@ construct_scripted_batch(const domain::trade_generation_scope& scope,
     const auto& second = scope.equity_underlyings[(slot + 1) % scope.equity_underlyings.size()];
     const auto names_two =
         trade_type == "DoubleDigitalOption" || trade_type == "PerformanceOption_01";
-    const auto underlyings = names_two ?
-                                 std::format(R"(["{}","{}"])", first.code, second.code) :
-                                 std::format(R"(["{}"])", first.code);
+    const auto underlyings = names_two ? std::format(R"(["{}","{}"])", first.code, second.code) :
+                                         std::format(R"(["{}"])", first.code);
 
     tdom::scripted_instrument row;
     row.identity.trade_type_code = std::string(trade_type);
@@ -2797,21 +2796,22 @@ build_equity_trade(const domain::trade_generation_scope& scope,
          * with the trade. A position with no entry has nothing for the engine
          * to price, so one entry is the fewest it can hold.
          */
-        return built(tb::equity_option_position_builder(
-                         {.currency = currency,
-                          .quantity = std::max(1.0, std::round(notional / level)),
-                          .price = money(level),
-                          .entries = std::vector<tb::equity_position_option_entry>{
-                              tb::equity_position_option_entry{
-                                  .underlying = address,
-                                  .strike = money(level),
-                                  .long_short = tb::long_short_of(position),
-                                  .option_type = "Call",
-                                  .exercise_type = "European",
-                                  .settlement_type = "Cash",
-                                  .exercise_date = end,
-                                  .weight = std::nullopt}}})
-                         .build());
+        return built(
+            tb::equity_option_position_builder(
+                {.currency = currency,
+                 .quantity = std::max(1.0, std::round(notional / level)),
+                 .price = money(level),
+                 .entries =
+                     std::vector<tb::equity_position_option_entry>{
+                         tb::equity_position_option_entry{.underlying = address,
+                                                          .strike = money(level),
+                                                          .long_short = tb::long_short_of(position),
+                                                          .option_type = "Call",
+                                                          .exercise_type = "European",
+                                                          .settlement_type = "Cash",
+                                                          .exercise_date = end,
+                                                          .weight = std::nullopt}}})
+                .build());
     throw trade_population_error("The equity trade type " + type +
                                  " states no builder this planner knows.");
 }

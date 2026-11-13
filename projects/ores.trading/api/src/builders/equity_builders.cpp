@@ -625,8 +625,7 @@ equity_result equity_position_builder::build() const {
     return equity_position_of(trade_type, terms_);
 }
 
-equity_option_position_builder::equity_option_position_builder(
-    equity_option_position_terms terms)
+equity_option_position_builder::equity_option_position_builder(equity_option_position_terms terms)
     : terms_(std::move(terms)) {}
 
 equity_result equity_option_position_builder::build() const {

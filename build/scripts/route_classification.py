@@ -847,6 +847,35 @@ RULES = (
          "The market-wide arrival factor at the address and in the shape the BFF answered: the"
          " regime in force, the switch that forces it, the settings that move it, and the tick"
          " counts of the last stretch of the run."),
+    Rule("the trade screens' read",
+         ("regex", r"^GET /api/trades(/\{id\}(/versions/\{version\})?)?$"),
+         CPP, RESOURCE, "trading",
+         "The trade screens' reads at the address and in the shape the BFF answered: a page of"
+         " the trade list enriched with what a person reads, one trade's page, and one trade"
+         " at one version."),
+    Rule("the booking screens' route",
+         ("regex", r"^((GET|POST) /api/trades(/new|/\{id\}/links)?"
+                   r"|GET /api/(draft-reasons|trade-link-types))$"),
+         CPP, RESOURCE, "trading",
+         "The booking screens at the address and in the shape the BFF answered: what the"
+         " form offers, the reasons a deal is a draft, the link types a person records, a"
+         " link between two trades, and the booking write itself."),
+    Rule("the structure screens' route",
+         ("regex", r"^((GET|POST|DELETE) /api/structures(/\{key\}(/legs(/\{tradeId\})?|/leg-candidates)?)?"
+                   r"|GET /api/(structure-kinds|ungrouped-trades))$"),
+         CPP, RESOURCE, "trading",
+         "The structure screens at the address and in the shape the BFF answered: the kinds a"
+         " grouping may choose, the trades no structure holds yet, the grouping write, the list"
+         " as a tree flattened for reading, one structure's page with its tree and legs, the leg"
+         " candidates, and the leg writes."),
+    Rule("the book screens' route",
+         ("regex", r"^((GET /api/books/(\{id\}|portfolios/\{id\}/rights)"
+                   r"|(PUT) /api/books/(books|portfolios)"
+                   r"|POST /api/book-changes(/preview)?))$"),
+         CPP, RESOURCE, "trading",
+         "The book screens at the address and in the shape the BFF answered: one book with the"
+         " portfolio it sits in, the rights at a portfolio node with the accounts that hold them,"
+         " the book and portfolio writes, and the book change proposal's preview and raise."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

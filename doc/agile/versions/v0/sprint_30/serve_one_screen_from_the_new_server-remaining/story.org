@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_30:v0:
 #+created: 2026-11-08
-#+updated: 2026-11-09
+#+updated: 2026-11-12
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -24,10 +24,10 @@ it lands, and the browser keeps calling the BFF until the last one does.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The port is split into 27 tasks. No port task has started. |
+| Now           | 44 of 57 tasks are done. The gateway answers the access, auth, tenancy, reference-data, simulation and trading areas, and the IAM, synthetic, image map and tenor catalogue views. 149 of the 324 BFF routes have no C++ equivalent yet. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the task that pairs each BFF route with its C++ equivalent. |
-| Last touched  | 2026-11-09 |
+| Next          | Serve the trading composed views, then stand up the market data part. |
+| Last touched  | 2026-11-12 |
 
 * Acceptance
 
@@ -39,7 +39,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
       the search and the filter's own members.
 - [ ] The C++ server answers every route ores.web calls, including the routes the
       inventory classifies as not an API.
-- [ ] The coverage is counted from the route inventory, not claimed.
+- [x] The coverage is counted from the route inventory, not claimed.
 - [ ] ores.web passes its test after the switch, and a rollback to the BFF is one
       switch.
 - [ ] The local gate is green on every pull request.
@@ -72,7 +72,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:1BFF30C8-F1D4-4917-99B1-F6F6F3069D02][Serve the bootstrap and setup routes]] | DONE | 2026-11-11 | 2026-11-11 | Five tenancy routes remain at the BFF's addresses: the bootstrap state, the first administrator, the end of first-run setup, a tenant's own setup run, and the registration policy. |
 | [[id:023530BB-1715-4609-A52C-3C3A4ECFECE2][Serve the reference data operations]] | DONE | 2026-11-11 | 2026-11-11 | The reference data collections are served, but conventions, tenors, counterparty composites and calendar operations are not. |
 | [[id:FDF58030-E0E8-4C5C-A934-33D13FF5C386][Serve the simulation collections and actions]] | DONE | 2026-11-11 | 2026-11-11 | The synthetic part serves one collection of about twenty, and none of the feed, calibration and market regime actions. |
-| [[id:C30970E3-B1FA-434C-8D70-07612CA95797][Stand up the trading part and serve its resources]] | BACKLOG | | | The gateway has no trading part. |
+| [[id:C30970E3-B1FA-434C-8D70-07612CA95797][Stand up the trading part and serve its resources]] | DONE | 2026-11-12 | 2026-11-13 | The gateway has no trading part. |
 | [[id:1814D431-BFF9-420D-BDB4-4DC3FD90BEFE][Stand up the market data part and serve its resources]] | BACKLOG | | | The gateway has no market data part. |
 | [[id:504FD469-B1A1-4480-9694-34724AD2F2A5][Stand up the reporting part and serve its resources]] | BACKLOG | | | The gateway has no reporting part. |
 | [[id:DB8C451C-87BE-40B0-A78F-3FC88BEC9D6C][Stand up the compute part and serve the grid resources]] | BACKLOG | | | The gateway has no compute part. |
@@ -114,6 +114,19 @@ it lands, and the browser keeps calling the BFF until the last one does.
 - Decided on 2026-11-09: the C++ server answers every route ores.web needs to function, including the routes the inventory classifies as not an API.
 - Decided on 2026-11-09: when the work is done, move the one switch and test ores.web. If ores.web breaks, keep using the BFF until the fault is fixed. The design's section 12.4 states this rule.
 - Found on 2026-11-11: a pair in =route_pairing.py= records the C++ route that does the same thing, not one ores.web can call unchanged. Of 54 pairs, 39 differ in method, path or shape, such as =GET /api/accounts/:accountId/access= against =POST /api/v1/iam/ops/get_account_roles=. The switch is one switch, so each area task serves the BFF's own path and shape for every route ores.web calls, paired or not, as the pick list, site and change stream routes do.
+
+- Decided on 2026-11-12: the trading part reads IAM's accounts for the portfolio
+  rights read and links =ores.iam.api= for it. The precedent is =ores.http.core=,
+  which already speaks IAM's protocols from a part that is not IAM's.
+- Decided on 2026-11-12: a structure page's party name is left empty, because the
+  caller's token names the party by id only. The page already draws the id when
+  the name is empty, so nothing is lost but the name.
+- Decided on 2026-11-12: a part's route units build into one translation unit, so
+  each unit keeps its helpers in a namespace of its own. A helper named =array_of=
+  in two units is a redefinition, not two functions.
+- Decided on 2026-11-12: the book and portfolio writes forward every column the
+  screen states and check only the row's id, party and name, because the BFF's
+  schema let every column through and the screens send the whole row.
 
 * Out of scope
 

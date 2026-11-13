@@ -214,6 +214,22 @@ template <typename Row>
 }
 
 /**
+ * @brief Each text written as a JSON object already, in an array.
+ *
+ * A screen's answer is built from rows written one at a time, so the array
+ * around them is stated here rather than by each route.
+ */
+[[nodiscard]] ORES_HTTP_API_EXPORT std::string array_of(const std::vector<std::string>& objects);
+
+/**
+ * @brief The written document with each named member set, replacing a member of
+ * the same name.
+ */
+[[nodiscard]] ORES_HTTP_API_EXPORT std::string
+object_with_members(const std::string& object,
+                    const std::vector<std::pair<std::string, std::string>>& members);
+
+/**
  * @brief Refuse with the status a refused outcome names.
  *
  * A conflict the service states no words for says what it means.

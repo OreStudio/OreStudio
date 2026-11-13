@@ -176,6 +176,32 @@ PAIRS = {
     ("GET", "/api/synthetic/calibration/:assetClass"): ("GET", "/api/synthetic/calibration/{assetClass}"),
     ("GET", "/api/tenors/catalogue"): ("GET", "/api/tenors/catalogue"),
     ("GET", "/api/image-map"): ("GET", "/api/image-map"),
+
+    # trading
+    ("GET", "/api/trades"): ("GET", "/api/trades"),
+    ("GET", "/api/trades/:id"): ("GET", "/api/trades/{id}"),
+    ("GET", "/api/trades/:id/versions/:version"): ("GET", "/api/trades/{id}/versions/{version}"),
+    ("GET", "/api/trades/new"): ("GET", "/api/trades/new"),
+    ("POST", "/api/trades"): ("POST", "/api/trades"),
+    ("POST", "/api/trades/:id/links"): ("POST", "/api/trades/{id}/links"),
+    ("GET", "/api/trade-link-types"): ("GET", "/api/trade-link-types"),
+    ("GET", "/api/draft-reasons"): ("GET", "/api/draft-reasons"),
+    ("GET", "/api/structure-kinds"): ("GET", "/api/structure-kinds"),
+    ("GET", "/api/ungrouped-trades"): ("GET", "/api/ungrouped-trades"),
+    ("GET", "/api/structures"): ("GET", "/api/structures"),
+    ("POST", "/api/structures"): ("POST", "/api/structures"),
+    ("GET", "/api/structures/:key"): ("GET", "/api/structures/{key}"),
+    ("POST", "/api/structures/:key/legs"): ("POST", "/api/structures/{key}/legs"),
+    ("DELETE", "/api/structures/:key/legs/:tradeId"):
+        ("DELETE", "/api/structures/{key}/legs/{tradeId}"),
+    ("GET", "/api/structures/:key/leg-candidates"):
+        ("GET", "/api/structures/{key}/leg-candidates"),
+    ("GET", "/api/books/:id"): ("GET", "/api/books/{id}"),
+    ("GET", "/api/books/portfolios/:id/rights"): ("GET", "/api/books/portfolios/{id}/rights"),
+    ("PUT", "/api/books/books"): ("PUT", "/api/books/books"),
+    ("PUT", "/api/books/portfolios"): ("PUT", "/api/books/portfolios"),
+    ("POST", "/api/book-changes/preview"): ("POST", "/api/book-changes/preview"),
+    ("POST", "/api/book-changes"): ("POST", "/api/book-changes"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

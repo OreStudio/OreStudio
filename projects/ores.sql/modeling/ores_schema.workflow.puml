@@ -120,6 +120,10 @@ package "workflow" #FFF8E1 {
         * claimed_at : timestamptz
         * lease_expires_at : timestamptz
         * attempts : integer
+          progress : text
+          progress_done : bigint
+          progress_total : bigint
+        * progressed_at : timestamptz
     }
 
     note right of ores_workflow_step_claims_tbl

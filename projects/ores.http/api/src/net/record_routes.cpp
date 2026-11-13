@@ -202,4 +202,38 @@ std::string with_write_defaults(std::string_view body,
     return out;
 }
 
+std::string array_of(const std::vector<std::string>& objects) {
+    std::string out = "[";
+    for (std::size_t i = 0; i < objects.size(); ++i)
+        out += (i == 0 ? "" : ",") + objects[i];
+    return out + "]";
+}
+
+std::string object_with_members(const std::string& object,
+                                const std::vector<std::pair<std::string, std::string>>& members) {
+    const std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> doc(
+        yyjson_read(object.data(), object.size(), 0), &yyjson_doc_free);
+    if (!doc || !yyjson_is_obj(yyjson_doc_get_root(doc.get())))
+        throw std::logic_error("A row is not written as an object.");
+    const std::unique_ptr<yyjson_mut_doc, decltype(&yyjson_mut_doc_free)> out(
+        yyjson_doc_mut_copy(doc.get(), nullptr), &yyjson_mut_doc_free);
+    auto* root = yyjson_mut_doc_get_root(out.get());
+    for (const auto& [name, value] : members) {
+        const std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> parsed(
+            yyjson_read(value.data(), value.size(), 0), &yyjson_doc_free);
+        if (!parsed)
+            throw std::logic_error("A member added to a row is not JSON.");
+        yyjson_mut_obj_put(root,
+                           yyjson_mut_strncpy(out.get(), name.data(), name.size()),
+                           yyjson_val_mut_copy(out.get(), yyjson_doc_get_root(parsed.get())));
+    }
+    std::size_t length = 0;
+    char* text = yyjson_mut_write(out.get(), 0, &length);
+    if (text == nullptr)
+        throw std::runtime_error("A row could not be written as JSON.");
+    std::string written(text, length);
+    std::free(text);
+    return written;
+}
+
 }

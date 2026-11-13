@@ -23,7 +23,7 @@ from codegen.org_loader import entity_http_route_plan, entity_web_records_plan  
 
 CODEGEN_BASE = REPO_ROOT / "projects" / "ores.codegen"
 FORWARDING = (Path(__file__).resolve().parents[3]
-              / "projects/ores.http/nats/include/ores.http.nats/forwarding.hpp")
+              / "projects/ores.http/nats/src/forwarding.cpp")
 
 TEMPLATES = CODEGEN_BASE / "library" / "templates"
 ASSETS_MODELING = REPO_ROOT / "projects" / "ores.assets" / "modeling"

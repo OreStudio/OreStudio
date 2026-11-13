@@ -8,7 +8,7 @@
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/show-the-ir-coverage
-#+pr:
+#+pr: 4677
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4677][#4677]] | [web] Show the IR coverage of each currency |
 
 * Review
 

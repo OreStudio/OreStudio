@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: BCC7D01B-6BA9-40F0-8402-41C9DC249DE6
+:END:
+#+title: Investigation: The work each provisioning request does, and what bounds it
+#+description: One row per request a provisioning step makes, with what its handler does per row, the shape of that cost, and whether a bound exists.
+#+type: investigation
+#+level: s1
+#+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into the work each provisioning request does, and what bounds it.
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+A provisioning step waits for each of its requests with one deadline. Work that
+grows with the data inside a request makes that deadline a lie in both
+directions: short enough to be safe, it fails on a loaded host; long enough to
+always pass, it cannot tell a slow service from a stuck one.
+
+The run that started this story failed step 13 of 15 with
+=NATS request timed out= while it was calibrating surfaces, and the surface
+deadline was then raised to 120 s. Raising a deadline is only honest if the work
+behind it is bounded. This investigation asks, of every request a provisioning
+step makes: what does its handler do per row, and what bounds that work?
+
+The task is [[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]].
+
+* Methodology
+
+The starting list is the request types of
+[[id:7C1E4A52-9B3D-4F67-8E21-5A6C9D0B3F14][Requests a provisioning step makes, and the deadline each states]],
+which grouped them by deadline class. For the current list the handler was
+grepped for every =*_request= it sends, which gives 46 types.
+
+For each type, the service handler was found by grepping its NATS subject in the
+component that serves it, the service behind the handler was read, and four
+things were recorded:
+
+- what the handler does, in one sentence;
+- the shape of its cost: =O(1)=, =O(page)= (bounded by a limit or by the ids the
+  request names), =O(catalogue)= (a whole table read and narrowed in memory, or
+  one query per row of the tenant's data), or =O(table)= (an unbounded read of a
+  shared table);
+- the line that decides it;
+- whether the repository already offers a filtered or paged read the handler
+  could use instead.
+
+Handlers in =ores.marketdata=, =ores.refdata=, =ores.iam=, =ores.inbox=,
+=ores.variability=, =ores.reporting=, =ores.assets= and =ores.synthetic= were read.
+
+* Paths taken
+
+The deadline inventory said every read request was "bounded by the tenant's own
+provisioning data: a catalogue of tens of rows". That claim held for the list
+requests, which pass their filter down to SQL. It did not hold for five handlers
+that read a whole catalogue and narrowed it in memory, which is the shape this
+task exists to find. Each was rewritten to ask the store for its own rows, in
+pages, and the write path was left alone.
+
+* Conclusions
+
+** 39 request types are bounded by what the request itself names
+
+| Request | What the handler does | Shape |
+|---------+-----------------------+-------|
+| =list_parties_request=, =list_books_request=, =list_by_party_id_party_identifiers_request=, =list_by_party_id_party_counterparties_request=, =list_ir_curve_bootstrap_configs_request=, =list_ir_curve_bootstrap_pillars_request=, =list_fx_vol_surface_blueprints_request=, =list_fx_vol_surface_pillars_request=, =list_fx_vol_surface_pillar_sources_request=, =list_currency_pair_conventions_request=, =list_published_curves_request=, =list_market_series_request=, =list_report_definitions_request=, =list_trade_generation_configs_request=, =list_trade_generation_books_request=, =list_trade_generation_counterparties_request=, =list_trade_generation_trade_types_request= | One page plus a count, with the filter passed down to SQL. =limit= defaults to 100. | =O(page)= |
+| =put_party_request=, =put_party_identifier_request=, =set_my_default_party_request=, =put_trade_generation_config_request=, =set_approvals_mode_request=, =ensure_image_request= | One row read for its version, one write, one read back. | =O(1)= |
+| =reset_password_request= | One hash and one write for each account id the request names. | =O(page)= by ids |
+| =get_published_fx_forward_request= | The set of the pair it names, then its points and its spots. | =O(page)= by pair |
+| =get_published_fx_vol_surface_request= | The published surface of the blueprint it names, then its grid. | =O(page)= by surface |
+| =put_many_account_parties_request= | One write and one read for each link the request names. | =O(page)= by links |
+| =put_many_ir_curve_bootstrap_configs_request=, =put_many_ir_curve_bootstrap_pillars_request=, =put_many_fx_vol_surface_blueprints_request=, =put_many_fx_vol_surface_pillars_request=, =put_many_fx_vol_surface_pillar_sources_request=, =put_many_market_series_request=, =put_many_trade_generation_books_request=, =put_many_trade_generation_counterparties_request=, =put_many_trade_generation_trade_types_request= | One read per row before the write, one batched write, one read back per row: 2N+1 queries for N rows. Bounded by =changes=, which no handler caps. | =O(page)=, with N+1 |
+| =schedule_report_definitions_request= | One schedule per definition id the request names: an id read, an FSM read, a grant, a scheduler call and a save each. The provisioning step fills =ids= from the party's catalogue, paging it 100 at a time. | =O(page)= by ids |
+| =complete_system_onboarding_request=, =complete_party_onboarding_request= | The tenant's settings are read twice, once to refresh the cache and once per save. Tens of rows, fixed by the platform and not by the tenant's business data. | =O(catalogue)= of settings |
+
+** 5 request types were unbounded and now cost what they name
+
+| Request | What was read | What it reads now |
+|---------+---------------+-------------------|
+| =calibrate_fx_vol_surface_request= | Every FX volatility pillar and pillar source the tenant holds, narrowed in memory to one blueprint. | That blueprint's pillars, through =fx_vol_surface_pillars_filter=, and their sources by pillar id, a page at a time. |
+| =compute_curve_request=, =publish_curve_request= | Every IR curve pillar the tenant holds, narrowed in memory to one config. | That config's pillars, through =ir_curve_bootstrap_pillars_filter=. |
+| =publish_fx_forward_request= | Every IR curve config the tenant holds, narrowed in memory to one currency's funding curve. | That currency's funding curves, through =ir_curve_bootstrap_configs_filter=. The party is narrowed in memory, because the store keeps no filter for it, on a set of one or two rows. |
+| =publish_fx_vol_surface_request= | Every surface publish the tenant holds, to find a second raise of the same calibration. | This blueprint's raises, through =fx_vol_surface_publishes_filter=. |
+
+** 2 request types still grow with the data
+
+| Request | Shape | Why it is left |
+|---------+-------+----------------|
+| =regenerate_calendar_dates_request= | One row per day, up to about 37,000 per calendar per call, times the calendars when the call names all of them. | It runs as a step with a 600 s deadline, which the story allows, and it writes in one batch. Its read of the existing days is unpaged, so that is the piece to fix. |
+| =attach_account_pictures_request= | One attach, and two image requests, for each account of the tenant that names a picture, read 10,000 at a time. | The provisioning caller is a step, but the request itself is unbounded and silently drops accounts past the ceiling. It belongs with the step that moves to the owning service. |
+
+* Recommendations
+
+- Page the existing-days read in =calendar_materialisation_service= and keep the
+  per-day loop out of the request: the batched write is already there.
+- Give =attach_account_pictures_request= a page, or retire it in favour of the
+  step, when the step moves out of iam.
+- Use the batch =read_latest(ctx, ids)= the repositories already offer in the
+  =put_many_*= handlers, so a hundred-row write stops costing two hundred reads.
+- Keep the rule in review: a handler that reads a catalogue and narrows it in
+  memory is the shape to refuse. The five fixed here all had the filter
+  available in the repository, unused.
+
+* See also
+
+- [[id:7C1E4A52-9B3D-4F67-8E21-5A6C9D0B3F14][Requests a provisioning step makes, and the deadline each states]]
+- [[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]]

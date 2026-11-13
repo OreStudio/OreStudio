@@ -24,10 +24,10 @@ The system builds and serves volatility surfaces as market data. A surface is ca
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started. Split from [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]], which closed in sprint 29 with its done tasks. |
+| Now           | The latent market of shared Brownian factors landed in #4673 and #4675. The two acceptance lines it left unmet are now [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Read the pair's curves and show the run's market]]. |
 | Waiting on    | Nothing.                               |
-| Next          | Build the SSVI calibration engine. |
-| Last touched  | 2026-11-08 |
+| Next          | Read the pair's curves and show the run's market. |
+| Last touched  | 2026-11-13 |
 
 * Acceptance
 
@@ -77,6 +77,7 @@ The system builds and serves volatility surfaces as market data. A surface is ca
 | [[id:0DAFFD2F-0052-4A10-B6CD-92F14420A591][Investigate how the synthetic market is generated jointly]] | DONE | 2026-11-12 | 2026-11-12 | Decide how the synthetic feeds share one correlated market (open decision OD-1), across asset classes and use cases, on the scheduler's clock and with the regime and Hawkes arrivals. |
 | [[id:9331995E-79ED-40B3-923D-524975949FB5][Build the latent market of shared Brownian factors]] | DONE | 2026-11-12 | 2026-11-13 | A latent market of shared Brownian factors in simulated time, block factors first, so the FX volatility surface correlates with its spot exactly. |
 | [[id:5917E17E-8DD9-4593-869A-274A29830479][Prototype the 3D surface view]] | DONE | 2026-11-12 | 2026-11-12 | A throwaway rotatable solid view of a candidate surface over an FX SSVI market in strike space, to judge whether turning the surface earns its place on the slices screen. |
+| [[id:CFFA13BE-A386-4E72-B06C-60976FA34DF3][Read the pair's curves and show the run's market]] | STARTED | 2026-11-13 | | Quote each surface against its pair's real forward, resolved from the published forward set once and shared with the calibration, and read the run's latent market onto the Market regime tab. |
 
 * Decisions
 

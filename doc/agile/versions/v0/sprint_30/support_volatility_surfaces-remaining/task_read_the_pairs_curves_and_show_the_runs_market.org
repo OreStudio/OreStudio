@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/read-the-pairs-curves-and-show-the-runs-market
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,28 +20,53 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A synthetic FX volatility surface is quoted against the market its pair has. Its spot and its two discount factors come from the pair's published forward set, resolved at each of the surface's expiries, so a strike is solved against the same forward the FX forward ladder reports.
+
+Today the surface's market is a unit spot with both discounts at one, so the forward carries no rate differential. A strike solved from a flat forward is the wrong strike, and the calibration reads the quotes back at a different one.
+
+The run's latent market also becomes readable: its factors, each series' loadings, and each driver's value now, on the Market regime tab beside the arrival factor the screen already shows. This is the last unmet line of the latent market's acceptance.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Part 1 started: the pair's market at the feed. Part 2 not started. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Land part 1, then read the run's market into the market regime operation. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
 
--
+Part 1, the pair's curves:
+
+- The surface feed takes its spot and its two discount factors from the pair's published forward set at the feed's as-of, through one resolution shared with the calibration, and no second path to them exists.
+- An expiry the forward set does not quote is read by the rule the calibration already uses: log-linear in discount factor between the rows around the value date, from one at the spot date.
+- A pair with no published forward set is refused when the feed starts, with a message that names the pair and the missing set, rather than running against unit discounts.
+- The quotes a surface emits round-trip through the calibration to the surface's own grid: the calibration and the feed resolve the same market for the same expiry.
+- A test states the tolerance, measured at every quoted point of the EUR/USD test surface.
+- The surface's quotes stay invariant to the level of its spot. A smile is read at a moneyness, so a common scale of the spot cancels; the existing test pins this and must keep passing.
+
+Part 2, the run's market:
+
+- The market regime read answers with the run's factors, each series' loadings and each series' driver value at the time of the read.
+- A series the run does not drive reads as undriven, and not as a zero.
+- The Market regime tab draws them, in the three shipped languages, and shows an undriven series as such.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*Part 1.* The read exists and works; the feed does not use it. =fx_vol_surface_calibration_plan.cpp= resolves a pair's market per expiry in =discounts_at= and =terms_at=: an exact tenor match when the forward set has the row, otherwise a log-linear interpolation of both discount factors in days between the rows that bracket the value date, from one at the spot date; then base discount as the foreign side and quote discount as the domestic side.
+
+The move is to lift that resolution into a building block and give it two callers:
+
+- *The block, in =ores.analytics.quant=, beside =fx_market=.* A neutral input the two callers can each build: a spot, and a span of dated points carrying the two discount factors. A function returns the market at one expiry, or why it cannot. It sits in quant because =fx_market= does, and it takes no messaging type, so the calibration and the feed both reach it without quant learning either one's shapes.
+- *The calibration adopts it.* =discounts_at= and the market construction in =terms_at= go, and its existing tests prove the same numbers come out.
+- *The feed adopts it.* =fx_vol_surface_feed_build_input= stops carrying one market and carries the markets of its expiries, resolved when the feed is built. =feed_kind_registry= asks marketdata for the pair's published forward set at the feed's as-of, over the path the feeds already use, and refuses to start when the pair has none.
+
+The one thing to confirm while doing it: which side of the pair is domestic. The calibration reads base as foreign and quote as domestic, and the feed must not decide differently, so the mapping goes in the shared block and both callers take it from there.
+
+*Part 2.* The market regime operation model gains the latent market's read: a factor row per factor, a loading row per series, and each series' driver value. The handler fills it from the run's market, which the scheduler's thread owns, so the read goes through the same seam the regime's other reads use. The screen draws it on the tab, and the read refuses nothing: a run with no block answers with empty lists rather than an error.
 
 * Measurements
 
@@ -55,9 +80,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Change in a surface's quoted vols when its spot moves from 1.0 to 1.30, both discounts at one | below 1e-12 at all 15 points | =ores.analytics.quant.tests= and =synthetic.api.tests=, "a surface's quotes do not depend on the level of its spot" | d24b5c42f0 |
+| Change in a surface's quoted vols when the discount ratio moves from one to 0.99/0.97 at a unit spot | 7.8e-05, about 0.008 volatility points | the same, "a surface's quotes do depend on the ratio of its discounts" | d24b5c42f0 |
+| Reads of a pair's published forward set that resolve a market at an expiry | 1, in =fx_vol_surface_calibration_plan.cpp= | =rg "discounts_at" projects/ores.marketdata= | d24b5c42f0 |
 
 * Notes
+
+The spot's level costs nothing, and the discounts' ratio costs what this task removes. A smile is read at a moneyness, so a common scale of the spot cancels through the delta solve; the invariance is a proven claim and the test that pins it must keep passing. The ratio does not cancel: with a differential the delta neutral ATM is not the forward, so the quoted vols move by the amount in the table above. The unit market is exact only while the pair has no rates.
+
+The calibration already resolves the pair's market, so leaving the feed on a unit market is not only imprecise, it is inconsistent: the feed solves a strike with one forward and the calibration reads that quote back with another. The round-trip acceptance line is what closes the gap, because it fails today for any pair whose two curves differ.
 
 * Test Scenarios
 

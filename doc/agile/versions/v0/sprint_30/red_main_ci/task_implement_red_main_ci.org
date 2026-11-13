@@ -30,7 +30,7 @@ Windows link error, and the stale =ores.web.tests= fixture.
 | State        | DONE                              |
 | Parent story | [[id:30AA2C7B-8C84-4E7B-8910-1E3C21338C2C][Hotfix: Main CI is red on Windows, GCC, and tests]] |
 | Now          | Nothing. |
-| Waiting on   | The PR review, then the next nightly.  |
+| Waiting on   | Nothing.                               |
 | Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
@@ -45,7 +45,8 @@ Windows link error, and the stale =ores.web.tests= fixture.
 1. Reproduce each failure against CDash before editing.
 2. Fix the smallest thing at the root cause.
 3. Prove the fix by running the failing signal again on the fixed file, and by
-   reverting the file to show the failure returns.
+   reverting the file to show the failure returns, on the platforms that can
+   run that signal.
 
 * Measurements
 
@@ -59,12 +60,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| GCC compile of the xml test unity TU, before the fix | 1 error, =declaration of ... root::entry changes meaning of 'entry'= | =g++ -fsyntax-only= with the flags of =compile_commands.json= | eb21afcdc0 |
-| Same TU, after the fix | exit 0 | as above | eb21afcdc0 |
+| GCC compile of the xml test unity TU, before the fix | 1 error: =declaration of 'std::vector<{anonymous}::entry> {anonymous}::root::entry' changes meaning of 'entry' [-Wchanges-meaning]= | =g++ -fsyntax-only= with the flags of =compile_commands.json= | eb21afcdc0 |
+| Same TU, after the fix | exit 0 | as above | cc31a0b1c8 |
 | BFF suite, before the fixture fix | 1276 passed, 1 failed | =vitest run= in =packages/bff= | eb21afcdc0 |
-| BFF suite, after the fixture fix | 1277 passed in 91 files | as above | eb21afcdc0 |
-| BFF typecheck | exit 0 | =npm run typecheck --workspace @ores/bff= | eb21afcdc0 |
-| Multiprecision against =__int128= for =per_thousand= and =split_weighted= | all inputs equal | =tmp/ci/billing_equiv.cpp= | eb21afcdc0 |
+| BFF suite, after the fixture fix | 1277 passed in 91 files | as above | cc31a0b1c8 |
+| BFF typecheck | exit 0 | =npm run typecheck --workspace @ores/bff= | cc31a0b1c8 |
+| =__int128= sites left in the tree | 1, the =#else= arm of the billing alias | =git grep -n "__int128" -- projects/= | cc31a0b1c8 |
 
 * Notes
 
@@ -107,16 +108,18 @@ via its "Verifies task" field.
 
 * Result
 
-The three fixes are in and each was proven against the signal that failed:
+The three fixes are in. GCC and the web suite were proven against the signal
+that failed; Windows was reasoned and measured, because the link cannot be
+reproduced on Linux:
 
 - GCC: the original file reproduces the exact CI error under
   =g++ -fsyntax-only=; the fixed file exits 0 with the same flags.
-- Windows: the multiprecision type that =billing.cpp= now uses on clang-cl
-  gives identical results to =__int128= for both expressions, so the link fix
-  does not change the charge.
+- Windows: =billing.cpp= now uses the multiprecision type wherever =_MSC_VER=
+  is defined, so clang-cl no longer emits =__divti3=. The type gives identical
+  results to =__int128= for both expressions, so the charge does not change.
 - Web: the BFF suite goes from 1276 passed and 1 failed to 1277 passed, and
   the package typechecks.
 
-The local check gate was not run: the fixes are three small edits and the
-gate's heavy half would recreate the development database. CI is the first
-full build of these changes.
+The local check gate was not run. The fixes are three small edits and the
+gate's heavy half would recreate the development database; the branch owner
+asked for the PR without it. CI is the first full build of these changes.

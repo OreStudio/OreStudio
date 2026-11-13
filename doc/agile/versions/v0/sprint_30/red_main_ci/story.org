@@ -5,7 +5,7 @@
 #+description: The main branch CI is red: the Windows build fails, the GCC build fails, and tests fail consistently.
 #+type: story
 #+level: s2
-#+filetags: :hotfix:ci:hotfix:build:sprint_30:v0:
+#+filetags: :hotfix:ci:build:sprint_30:v0:
 #+created: 2026-11-13
 #+updated: 2026-11-13
 #+environment: swift_curie
@@ -24,9 +24,9 @@ test suites that main runs pass.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Three root causes fixed on =hotfix/red-main-ci=; each fix reproduced against the failing signal first. PR raised. |
-| Waiting on    | Review, then the next nightly run.     |
-| Next          | Merge, then confirm the three fixes on real runners. |
+| Now           | Three root causes fixed on =hotfix/red-main-ci=. GCC and the web suite were reproduced from the failing signal; the Windows link rests on the arithmetic being equivalent. |
+| Waiting on    | The PR review.                         |
+| Next          | Merge, then confirm the three fixes on the next nightly. |
 | Last touched  | 2026-11-13                               |
 
 * Acceptance

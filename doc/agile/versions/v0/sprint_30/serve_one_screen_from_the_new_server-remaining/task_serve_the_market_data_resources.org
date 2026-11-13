@@ -28,9 +28,9 @@ The gateway has no part for the market data area. Add the part with the adapter 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The part is stood up, linked into the server and answers group 1: the adapters read, paired in the inventory. Groups 2 to 6 are listed in the Plan and none has started. |
+| Now          | The part is stood up, linked into the server and answers groups 1 and 2: the adapters read, and the six subscription and route reads and writes, all paired in the inventory. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve the subscriptions and routes group (6 routes). |
+| Next         | Serve the public rates group: the fixings read and the three terms writes. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -75,8 +75,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The part's test suite | 2 cases, 10 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.marketdata.tests= | 82e03ecd4e |
-| The market-data area's routes the C++ server answers | 1 of 31 paired | =python3 build/scripts/route_inventory.py --check= | 82e03ecd4e |
+| The part's test suite | 9 cases, 108 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.marketdata.tests= | 9af88eea10 |
+| The market-data area's routes the C++ server answers | 7 of 31 paired | =python3 build/scripts/route_inventory.py --check= | 9af88eea10 |
+| The gateway's routes in the inventory | 1274 routes, 184 of the BFF's 324 paired | =python3 build/scripts/route_inventory.py --check= | 9af88eea10 |
+| The applicable local checks | 50 of 50 passed | =./compass.sh check --exclude-heavy= | 9af88eea10 |
 
 * Notes
 

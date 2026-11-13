@@ -8,7 +8,7 @@
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/make-the-ice-and-tradeweb-feeds-tick
-#+pr:
+#+pr: 4689
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -133,7 +133,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4689][#4689]] | [marketdata] Make the ICE and Tradeweb feeds tick |
 
 * Review
 

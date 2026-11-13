@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :fix_warnings_and_macos_tests:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: hotfix/fix-warnings-and-macos-tests
+#+pr: 4667
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
 #+updated: 2026-11-13
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0233265-8B56-4FEB-BD0C-422D765CA5FC][Hotfix: Fix the warnings and the macOS database tests]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ remove three compiler warnings from the tree.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F0233265-8B56-4FEB-BD0C-422D765CA5FC][Hotfix: Fix the warnings and the macOS database tests]] |
-| Now          | Code written and each changed translation unit compiles clean with -Werror. |
+| Now          | Nothing. |
 | Waiting on   | A macOS nightly, to confirm the two tests. |
-| Next         | PR.                                    |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4667][#4667]] | [database] Export the exceptions and clear three warnings |
 
 * Review
 

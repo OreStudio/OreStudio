@@ -24,8 +24,8 @@ from the tree so warnings-as-errors can be switched back on.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The macOS cause is fixed and three warnings are cleared, each verified on the affected translation unit. |
-| Waiting on    | A nightly of each platform, to confirm the macOS tests and to list what warnings remain. |
+| Now           | The macOS cause is fixed and three warnings are cleared, each verified on the affected translation unit. PR raised. |
+| Waiting on    | The merge, then a nightly of each platform. |
 | Next          | Clear the warnings that only GCC 13 and MSVC report, then re-enable warnings-as-errors. |
 | Last touched  | 2026-11-13                               |
 
@@ -41,8 +41,8 @@ from the tree so warnings-as-errors can be switched back on.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C026B049-733A-4A60-8DE4-BE665124D30D][Scaffold story: Hotfix: Fix the warnings and the macOS database tests]] | STARTED | 2026-11-13 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:5998DE9E-545F-4483-8392-B006B88DF19F][Implement Hotfix: Fix the warnings and the macOS database tests]] | STARTED | 2026-11-13 | | The exception export and the three warning fixes. |
+| [[id:C026B049-733A-4A60-8DE4-BE665124D30D][Scaffold story: Hotfix: Fix the warnings and the macOS database tests]] | DONE | 2026-11-13 | 2026-11-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5998DE9E-545F-4483-8392-B006B88DF19F][Implement Hotfix: Fix the warnings and the macOS database tests]] | DONE | 2026-11-13 | 2026-11-13 | The exception export and the three warning fixes. |
 
 * Decisions
 

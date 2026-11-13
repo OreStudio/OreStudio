@@ -27,11 +27,11 @@ test failures and the compiler warnings.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F0233265-8B56-4FEB-BD0C-422D765CA5FC][Hotfix: Fix the warnings and the macOS database tests]] |
-| Now          | The documents are written.             |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close with the same PR as the fix.     |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -89,3 +89,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its implementing task and the sprint row are written and link to
+each other. The same branch carries them and the fixes.

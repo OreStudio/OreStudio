@@ -22,6 +22,7 @@
 set(files
     "routes/marketdata/adapter_routes.cpp"
     "routes/marketdata/marketdata_routes.cpp"
+    "routes/marketdata/public_rate_routes.cpp"
     "routes/marketdata/subscription_routes.cpp"
 )
 
@@ -30,5 +31,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.marketdata.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/adapter_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/marketdata_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/public_rate_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/marketdata/subscription_routes.hpp"
 )

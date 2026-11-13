@@ -22,5 +22,6 @@
 set(files
     "adapter_routes_tests.cpp"
     "main.cpp"
+    "public_rate_routes_tests.cpp"
     "subscription_routes_tests.cpp"
 )

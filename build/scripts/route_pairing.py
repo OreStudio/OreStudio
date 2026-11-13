@@ -210,6 +210,16 @@ PAIRS = {
     ("DELETE", "/api/marketdata/subscriptions/:provider"): (
         "DELETE",
         "/api/marketdata/subscriptions/{provider}"),
+    ("GET", "/api/marketdata/public-rates/fixings"): ("GET", "/api/marketdata/public-rates/fixings"),
+    ("POST", "/api/marketdata/public-rates/:code/accept-terms"): (
+        "POST",
+        "/api/marketdata/public-rates/{code}/accept-terms"),
+    ("POST", "/api/marketdata/public-rates/:code/withdraw-terms"): (
+        "POST",
+        "/api/marketdata/public-rates/{code}/withdraw-terms"),
+    ("POST", "/api/marketdata/public-rates/accept-terms"): (
+        "POST",
+        "/api/marketdata/public-rates/accept-terms"),
     ("GET", "/api/marketdata/routes"): ("GET", "/api/marketdata/routes"),
     ("POST", "/api/marketdata/routes"): ("POST", "/api/marketdata/routes"),
     ("DELETE", "/api/marketdata/routes/:publisher"): (

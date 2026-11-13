@@ -99,6 +99,13 @@ RULES = (
          CPP, RESOURCE, "market-data",
          "Every adapter the market data service tracks, with what it serves, what it was asked to"
          " serve, and the kind of source its feed reads, joined from the feeds and the sessions."),
+    Rule("the public rates' route",
+         ("regex", r"^(GET /api/marketdata/public-rates/fixings"
+                   r"|POST /api/marketdata/public-rates(/\{code\})?/(accept|withdraw)-terms)$"),
+         CPP, RESOURCE, "market-data",
+         "The fixings the store holds for up to a dozen series, oldest first, and the three"
+         " answers a person gives to a publisher's terms: accept one at the version read,"
+         " withdraw one, and accept many in one request."),
     Rule("the market data subscriptions' route",
          ("regex", r"^(GET|POST|DELETE) /api/marketdata/(subscriptions|routes)"
                    r"(/\{(provider|publisher)\})?$"),

@@ -32,6 +32,7 @@
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <exception>
 #include <string>
@@ -108,8 +109,9 @@ public:
             }
             run(*wf, *command);
         } catch (const std::exception& e) {
-            // The work could not be done and nothing says it never will be, so
-            // the step fails and the engine's retry may run it again.
+            // The work could not be done, and nothing here says it never will
+            // be. The step fails, which stops the run or starts its
+            // compensation; a person or a resume decides whether to try again.
             BOOST_LOG_SEV(lg(), ores::logging::error)
                 << "Step " << wf->step_id << " failed: " << e.what();
             wf->fail(e.what());
@@ -136,8 +138,14 @@ private:
         // table, so a step that made one up would be refused at the first row.
         const auto acting = tenant.with_tenant(tenant.tenant_id(), tenant.service_account());
         service::calendar_materialisation_service calendars(acting);
-        const auto rows =
-            calendars.regenerate_in_use(std::chrono::year{last_generated_holiday_year});
+        std::size_t rows = 0;
+        try {
+            rows = calendars.regenerate_in_use(std::chrono::year{last_generated_holiday_year});
+        } catch (const std::exception& e) {
+            // The step names the work it could not do, as every failing step
+            // does, and keeps what the store said about it.
+            throw std::runtime_error("The calendars were not built: " + std::string(e.what()));
+        }
 
         BOOST_LOG_SEV(lg(), ores::logging::info)
             << "build_calendars: wrote " << rows << " day(s) for tenant " << command.tenant_id;

@@ -74,9 +74,9 @@ inline constexpr std::string_view provision_party_target_kind = "party";
  * One subject serves every kind a service owns, because the payload says which
  * kind of work the step is: the engine persists only a step's name and subject,
  * so a subject per kind would put the catalogue in the persisted rows as well.
- * A kind is dispatched to the service that owns the work it does, so the
- * identity steps land here and the rest land in the service whose data they
- * write.
+ * A kind is dispatched to the service that owns the work it does, so the kinds
+ * ores.iam executes land here and a kind another service owns is dispatched
+ * there instead, as provision_step_owners states.
  */
 inline constexpr std::string_view provision_tenant_step_subject =
     "iam.v1.ops.provision_tenant_step";
@@ -180,30 +180,51 @@ struct step_kind_words {
 };
 
 /**
+ * @brief Which service serves the step of one kind.
+ *
+ * A step runs in the service that owns the work it does: that service holds the
+ * code, reaches the data and pays for both, and ores.iam carries only the kinds
+ * whose work is identity.
+ */
+struct step_owner {
+    std::string_view kind;
+    std::string_view subject;
+};
+
+/**
+ * @brief The kinds that run outside ores.iam, and the service that runs each.
+ *
+ * A kind that is not in this table runs in ores.iam, which serves the run and
+ * the identity work every step of it needs. The table is written here because
+ * the definition states a step's subject when it builds the step, and the
+ * engine persists that subject with the row. A kind the table names is
+ * dispatched to a service that serves it; a kind no service serves is refused
+ * where a person can read the refusal.
+ */
+inline constexpr step_owner provision_step_owners[] = {
+    {build_calendars_step_kind, refdata_provision_tenant_step_subject},
+};
+
+/**
+ * @brief The subject the step of @p kind is dispatched to.
+ *
+ * A kind no entry names is dispatched to ores.iam, which refuses what it has no
+ * executor for, so a definition naming a kind no service serves fails loudly
+ * instead of waiting for nobody.
+ */
+[[nodiscard]] inline std::string_view step_subject_for_kind(std::string_view kind) {
+    for (const auto& owner : provision_step_owners)
+        if (kind == owner.kind)
+            return owner.subject;
+    return provision_tenant_step_subject;
+}
+
+/**
  * @brief The words for a kind, or the kind itself when this build has none.
  *
  * An unknown kind is one the executor refuses, so its identity is the most a
  * screen can honestly say about it.
  */
-/**
- * @brief The subject the step of @p kind is dispatched to.
- *
- * A step runs in the service that owns the work it does, so the service pays
- * for the code and the data it reaches, and ores.iam does not compile the
- * catalogue of every other service's work. The table is here because the
- * definition states a step's subject when it builds the step, and the engine
- * persists it with the row.
- *
- * A kind this build does not know is dispatched to ores.iam, which refuses it
- * with the words the executor has for an unknown kind, so a definition naming
- * a kind no service serves fails loudly instead of waiting for nobody.
- */
-[[nodiscard]] inline std::string_view step_subject_for_kind(std::string_view kind) {
-    if (kind == build_calendars_step_kind)
-        return refdata_provision_tenant_step_subject;
-    return provision_tenant_step_subject;
-}
-
 [[nodiscard]] inline step_kind_words words_for_step_kind(std::string_view kind) {
     if (kind == system_provision_step_kind)
         return {"Publish the system's own data",
@@ -326,10 +347,12 @@ struct step_kind_words {
                        [kind](std::string_view known) { return known == kind; });
 }
 
-/// The declarable kinds this build executes. The catalogue above states the
-/// notation; this list states which of its kinds have an executor here, so a
-/// profile that orders the rest is refused before its run starts rather than
-/// half-provisioned. Growing it is a code change beside the executor.
+/// The declarable kinds this build executes somewhere, in ores.iam or in the
+/// service that owns the work. The catalogue above states the notation; this
+/// list states which of its kinds a profile may order, so a profile that orders
+/// the rest is refused before its run starts rather than half-provisioned.
+/// Growing it is a code change beside the executor and, for a kind another
+/// service owns, a row in provision_step_owners.
 inline constexpr std::string_view provision_executed_step_kinds[] = {
     system_provision_step_kind,
     publish_system_curves_step_kind,

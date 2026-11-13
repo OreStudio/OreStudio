@@ -71,7 +71,6 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
-#include "ores.refdata.api/messaging/calendar_materialisation_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_blueprint_protocol.hpp"

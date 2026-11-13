@@ -8,7 +8,7 @@
 #+filetags: :build:compilation:headers:database:sprint_30:v0:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment: bright_faraday
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -25,12 +25,12 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | The header analysis is written.        |
 | Waiting on    | Nothing.                               |
-| Next          | Start the header analysis.             |
-| Last touched  | 2026-11-11                               |
+| Next          | Start the codec headers.               |
+| Last touched  | 2026-11-12                               |
 
 * Acceptance
 
@@ -46,11 +46,41 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]] | BACKLOG | | | Analyse the include graph to find the headers most of the build depends on, and decide for each which types to forward-declare, which to move, and which to split. |
+| [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]] | DONE | 2026-11-13 | | Analyse the include graph to find the headers most of the build depends on, and decide for each which types to forward-declare, which to move, and which to split. |
 | [[id:908E710A-C9A3-433E-AC93-92B67FB76B6C][Pass the database context by reference behind a forward declaration]] | BACKLOG | | | Pass the database context as a const reference, forward-declare it in every header that only passes it along, and keep libpq and the pool out of context.hpp. |
 | [[id:DEA440DD-F4B6-4D37-9083-5F3BB33F1018][Forward-declare what the analysis finds]] | BACKLOG | | | Apply the decisions of the header analysis to every other heavy header it names, one header family per PR, each with its measured effect. |
 
 * Decisions
+
+- The include graph, the cost of each header and the decision for each type are
+  in [[id:AF6C4DA7-903E-4848-8807-73EA4E49E9CA][Investigation: The headers that couple the build]]. Its two
+  instruments live beside it in =evidence/=, and both rerun on any commit.
+- The cost is carried by three shapes: the codec chain rooted in =text_form.hpp=
+  and =decimal.hpp=, the clock habit of =<chrono>= that =datetime.hpp= and
+  =boost/uuid/uuid.hpp= carry into most objects, and the logging chain opened by
+  =make_logger.hpp=. The work goes in that order, not in order of the database
+  context.
+- Rebuild radius and parse cost are separate measures, and this story is about
+  the first. Forward declarations reach only the types held by pointer or
+  reference.
+- The copies are real and come from codegen: 21874 by-value =context=
+  parameters, 11141 of them emitted by the =repository= and =service=
+  archetypes. Changing them to =const&= is worth doing for run time and for the
+  one synchronous reference capture in =feed_kind_registry.cpp:492=, but it does
+  not shorten rebuilds.
+- =context.hpp='s radius is structural: cutting the include from all 1738
+  repository headers saves one object, and cutting every header in the tree
+  still leaves 179 of 365 objects reading it. The only lever on the radius is
+  splitting the type, which needs its own task.
+- The rebuild saving is inside =context.hpp=, not in its users. Four files
+  include =pq/pool.hpp= and 365 objects rebuild when it changes, because
+  =context.hpp= is the door. Cutting that edge takes 147 objects off
+  =pq/pool.hpp= and =pq/transaction.hpp= each. =pq/connection.hpp= moves only
+  with =pq/pool.hpp= and =pq/statement.hpp=, because each of those reaches it.
+- =libpq-fe.h= costs 0.04 s to parse and still sits under 375 objects. It is a
+  blast-radius problem, not a parse-time problem.
+- The rest of the header cost is parse time, in three shapes: the codec chain,
+  =<chrono>=, and Boost.Log. It is real and it is a different task's leverage.
 
 * Out of scope
 

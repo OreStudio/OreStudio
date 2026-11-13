@@ -371,6 +371,7 @@ function ErrorsHead({ rows }: { readonly rows: readonly ReportRunErrorView[] }):
                 <table className="w-full text-left text-sm">
                     <thead>
                         <tr className="border-b border-line text-xs text-ink-muted">
+                            <th className="px-2 py-2 font-medium">{t(`${field}.severity`)}</th>
                             <th className="px-2 py-2 font-medium">{t(`${field}.scope`)}</th>
                             <th className="px-2 py-2 font-medium">{t(`${field}.about`)}</th>
                             <th className="px-2 py-2 font-medium">{t(`${field}.message`)}</th>
@@ -381,6 +382,9 @@ function ErrorsHead({ rows }: { readonly rows: readonly ReportRunErrorView[] }):
                     <tbody>
                         {errors.map((row) => (
                             <tr key={row.id} className="border-b border-line-subtle">
+                                <td className="px-2 py-2">
+                                    <SeverityTag severity={row.severity} />
+                                </td>
                                 <td className="px-2 py-2 text-ink-muted">{row.scope || '—'}</td>
                                 <td className="px-2 py-2 font-mono text-xs">
                                     <ErrorSubject error={row} />

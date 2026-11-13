@@ -47,6 +47,15 @@ RUN : "${LLVM_MAJOR:?}" "${GCC_MAJOR:?}" "${CMAKE_VERSION:?}" \
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8
 
+# The Ubuntu archive of 24.04 carries GCC 14, and the build runs the newest
+# release. The Ubuntu toolchain PPA carries the newer compiler for the LTS, so
+# the base image stays where it is and only GCC comes from elsewhere.
+RUN apt-get update -q -o Acquire::Retries=3 \
+ && apt-get install -y -q -o Acquire::Retries=3 --no-install-recommends \
+        ca-certificates software-properties-common \
+ && add-apt-repository -y ppa:ubuntu-toolchain-r/test \
+ && rm -rf /var/lib/apt/lists/*
+
 # The baseline of compass env install-packages, plus the tools that the GitHub
 # runner image has and the build uses: a C compiler for the vcpkg ports, git,
 # archive tools, Python for the scripts, sudo for the scripts that call it,
@@ -61,6 +70,12 @@ RUN apt-get update -q -o Acquire::Retries=3 \
         libtool linux-libc-dev lsb-release nasm openssl pkg-config python3 \
         procps python3-pip python3-venv sudo tar tzdata unzip valgrind xz-utils zip zstd \
  && rm -rf /var/lib/apt/lists/*
+
+# The gcc preset names g++ and takes it from PATH, so the versioned pair the
+# file states becomes the default through the first directory on PATH. This is
+# the same way install_llvm.sh puts clang first.
+RUN ln -sf "/usr/bin/gcc-${GCC_MAJOR}" /usr/local/bin/gcc \
+ && ln -sf "/usr/bin/g++-${GCC_MAJOR}" /usr/local/bin/g++
 
 # The cache steps of the build jobs call the GitHub API with gh.
 RUN curl -fsSL -o /usr/share/keyrings/githubcli-archive-keyring.gpg \

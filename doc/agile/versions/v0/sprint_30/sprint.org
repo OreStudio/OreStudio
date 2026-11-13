@@ -147,6 +147,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] | BACKLOG | | | A provisioning step times out only when it stops reporting progress, a request does bounded work, and each step runs in the service that owns its work, so iam stays off the critical path of everything that is not identity. |
 | [[id:30AA2C7B-8C84-4E7B-8910-1E3C21338C2C][Hotfix: Main CI is red on Windows, GCC, and tests]] | STARTED | 2026-11-13 | | The main branch CI is red: the Windows build fails, the GCC build fails, and tests fail consistently. |
 | [[id:F0233265-8B56-4FEB-BD0C-422D765CA5FC][Hotfix: Fix the warnings and the macOS database tests]] | STARTED | 2026-11-13 | | The macOS database tests fail on exception type matching, and the compiler warnings block re-enabling warnings-as-errors. |
+| [[id:89470119-4A17-45F1-ABB4-0F92596703F9][Run the Linux CI on GCC 16]] | STARTED | 2026-11-13 | | The Linux CI image builds with the GCC of Ubuntu 24.04; move it to GCC 16, the compiler the worktrees run. |
 
 * Achievements
 

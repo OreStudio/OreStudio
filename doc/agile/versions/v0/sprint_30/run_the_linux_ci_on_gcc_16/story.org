@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 89470119-4A17-45F1-ABB4-0F92596703F9
+:END:
+#+title: Story: Run the Linux CI on GCC 16
+#+description: The Linux CI image builds with the GCC of Ubuntu 24.04; move it to GCC 16, the compiler the worktrees run.
+#+type: story
+#+level: s2
+#+filetags: :build:ci:gcc:sprint_30:v0:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Build the Linux CI with GCC 16, the compiler the worktrees run, so a warning
+the CI reports is a warning a developer can reproduce.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | versions.env states GCC 16 and the Dockerfile installs it. The image rebuilds when this lands on main. |
+| Waiting on    | The CI Image workflow, which publishes the new tag. |
+| Next          | Confirm the gcc nightly compiles with 16, then revisit warnings-as-errors. |
+| Last touched  | 2026-11-13                               |
+
+* Acceptance
+
+- =build/docker/ci/versions.env= states =GCC_MAJOR=16.
+- The published image tag names =gcc16=.
+- The =linux-gcc= nightly and continuous builds compile with GCC 16.
+- Clang links the libstdc++ of GCC 16.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:90E10903-FAAD-4415-ADC3-FAE15F850A11][Scaffold story: Run the Linux CI on GCC 16]] | DONE | 2026-11-13 | 2026-11-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EDE1956D-D22D-4BC9-A013-37C1436DCF14][Implement Run the Linux CI on GCC 16]] | DONE | 2026-11-13 | 2026-11-13 | The version bump and the image change. |
+
+* Decisions
+
+- The compiler comes from the Ubuntu toolchain PPA rather than from a newer
+  base image. =g++-16= exists only in Ubuntu 26.04 and later, so bumping
+  =UBUNTU_VERSION= would also move the PostgreSQL and LLVM repositories to a
+  codename those projects may not serve yet. The PPA carries =g++-16= for the
+  current LTS, so the base image stays.
+- =gcc= and =g++= point at the versioned pair through =/usr/local/bin=, which
+  comes first on PATH. The gcc preset names =g++= rather than a versioned
+  binary, and this is the same technique =install_llvm.sh= already uses to put
+  clang first.
+
+* Out of scope
+
+- The compiler versions of the macOS and Windows builds.
+- Re-enabling =ORES_WARNINGS_AS_ERRORS=, which needs the warnings cleared on
+  every platform.

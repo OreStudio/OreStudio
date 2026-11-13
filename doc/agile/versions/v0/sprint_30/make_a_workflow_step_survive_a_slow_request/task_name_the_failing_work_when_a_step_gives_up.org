@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-12
 #+updated: 2026-11-12
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A step that gives up reports the party and the item it was working on, the reque
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BA56F4F5-AA1F-468E-AA7B-B322F20B6382][Make a workflow step survive a slow request]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-12                               |
 
 * Acceptance
@@ -42,23 +42,24 @@ A step that gives up reports the party and the item it was working on, the reque
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The retry helper already composes the report as
+  ="<work> failed after N attempts: <reason>"=. This task states what each step
+  passes as the work, so the report names the party and the item, and proves
+  the composition.
+- The reason is the transport's own words: a timeout names the subject and the
+  deadline it waited, and a refusal names the subject and the code the server
+  returned. Neither is replaced.
+- A test asserts the composed message for a timeout, with the party, the item,
+  the attempts and the subject, and for a refusal, with the server's reason.
+- The aggregate failure path, where a step fails with a list of the items it
+  could not finish, already names the party and the item on each line.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Request-retry cases | 8, all passing | =grep -c "<TestCase "= over =test-results-ores.iam.core.tests.xml= | this branch |
+| =ores.iam.core.tests= | 349 cases, 0 failures | =compass test run -- -R "ores.iam.core.tests"= | this branch |
 
 * Notes
 
@@ -86,3 +87,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+A step that gives up now reads as a report, not as a transport string. The
+retry helper composes it, and each step states the work in a person's words:
+
+| Step | What the report names |
+|------+-----------------------|
+| Surface calibration | =ACME: EUR/USD surface calibration failed after 3 attempts: ...= |
+| Surface publish | =ACME: EUR/USD surface publish failed after 2 attempts: ...= |
+| Forward set | =ACME: EUR/USD forward set failed after 3 attempts: ...= |
+| Curve bootstrap or publish | =publish_party_curves ACME: EUR-1D curve bootstrap failed after 3 attempts: ...= |
+| Holiday calendars | =the holiday calendars failed after 2 attempts: ...= |
+
+The reason is the transport's own words and is not rewritten:
+
+- A timeout reads =NATS request timed out: no reply from '<subject>' within
+  <n> ms=, so the request is named.
+- A refusal reads =Request to <subject> rejected by server: <code>=, so the
+  server's reason is named.
+
+The aggregate path, where a step lists the items it could not finish, already
+names the party and the item on each line.
+
+Two cases pin the composition: "A step's failure names the party, the item and
+the attempts" asserts the party, the item, the attempt count and the subject;
+"A refusal is thrown at once, with the server's reason" asserts the server's
+code and the single attempt.

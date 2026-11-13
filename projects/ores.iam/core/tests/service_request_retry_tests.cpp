@@ -164,6 +164,39 @@ TEST_CASE("The attempts stop at the policy's limit", "[request_retry]") {
     // The wait grows, and the second is never shorter than the first.
     CHECK(waits.waits[1] >= waits.waits[0]);
     CHECK_THAT(said, Catch::Matchers::ContainsSubstring("failed after 3 attempts"));
+    // The report keeps the reason it gave up on.
+    CHECK_THAT(said, Catch::Matchers::ContainsSubstring("late"));
+}
+
+TEST_CASE("A step's failure names the party, the item and the attempts", "[request_retry]") {
+    scripted_client client;
+    client.script.push_back([]() -> int {
+        throw nats_connect_error(nats_error_kind::request_timeout,
+                                 "NATS request timed out: no reply from "
+                                 "'marketdata.v1.ops.calibrate_fx_vol_surface' within 120000 ms");
+    });
+
+    wait_recorder waits;
+    auto policy = waits.policy();
+    policy.max_attempts = 1;
+
+    std::string said;
+    try {
+        static_cast<void>(request_with_retry(
+            client,
+            test_request{},
+            options_after(std::chrono::seconds{30}, policy, "ACME: EUR/USD surface calibration")));
+        FAIL("the request was not abandoned");
+    } catch (const std::runtime_error& e) {
+        said = e.what();
+    }
+
+    // A person reading the run knows which party, which item, how many
+    // attempts, and what the transport said.
+    CHECK_THAT(said, Catch::Matchers::ContainsSubstring("ACME: EUR/USD surface calibration"));
+    CHECK_THAT(said, Catch::Matchers::ContainsSubstring("failed after 1 attempt"));
+    CHECK_THAT(said,
+               Catch::Matchers::ContainsSubstring("marketdata.v1.ops.calibrate_fx_vol_surface"));
 }
 
 TEST_CASE("A request is not retried past the caller's deadline", "[request_retry]") {

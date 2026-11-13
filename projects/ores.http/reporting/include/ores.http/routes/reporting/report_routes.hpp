@@ -94,6 +94,9 @@ public:
               const std::optional<std::vector<count_row>>& counts,
               const std::optional<std::vector<fire_row>>& fires);
 
+    /**
+     * @brief Register this unit's routes on the router and the registry.
+     */
     static void register_routes(std::shared_ptr<ores::http::net::router> router,
                                 std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                 ores::nats::service::nats_client& session);

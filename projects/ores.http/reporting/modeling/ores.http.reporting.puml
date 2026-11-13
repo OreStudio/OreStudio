@@ -25,6 +25,14 @@ namespace ores #F2F2F2 {
     namespace http #F2F2F2 {
         namespace routes #F2F2F2 {
             namespace reporting #F2F2F2 {
+                class choice_routes {
+                    +choices_json(const vector<string>& report_types, const vector<string>& concurrency_policies, const vector<string>& regulatory_book_types) : string
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
+                class report_routes {
+                    +rows_json(const vector<ores::reporting::domain::report_definition>& definitions, const optional<vector<party_name>>& parties, const optional<vector<run_row>>& runs, const vector<health_row>& health, const optional<vector<count_row>>& counts, const optional<vector<fire_row>>& fires)
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
                 class reporting_routes {
                     +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
                 }
@@ -38,7 +46,6 @@ namespace ores #F2F2F2 {
 ores.http.api ..> ores.http.reporting : router, route builder, OpenAPI registry
 ores.nats ..> ores.http.reporting : transport
 ores.reporting.api ..> ores.http.reporting : protocol
-ores.analytics.api ..> ores.http.reporting : pricing models and engines
 ores.refdata.api ..> ores.http.reporting : book types, tenors and instrument codes
 
 ' Local Variables:

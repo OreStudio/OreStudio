@@ -42,7 +42,7 @@ const auto report_party = "00000000-0000-0000-0000-0000000000b1";
 const auto report_run = "00000000-0000-0000-0000-0000000000c1";
 
 bool report_holds(const std::string& text, const std::string& part) {
-    return text.find(part) != std::string::npos;
+    return text.contains(part);
 }
 
 reporting_domain::report_definition definition_of(const char* name) {

@@ -21,12 +21,16 @@
 
 * Summary
 
-=ores.http.reporting= is the adapter part that projects the reporting and
-analytics domains onto the HTTP server's REST surface. It holds the units the
-reporting screens call at the addresses the BFF answered: the report
-definitions and the runs they raise, the cuts a person takes, the pricing
-engines and their settings, the ORE parameter value sets a setting reads from,
-and the files and results a run leaves behind.
+=ores.http.reporting= is the adapter part that projects the reporting domain
+onto the HTTP server's REST surface. It holds the units the reporting screens
+call at the addresses the BFF answered: the codes a report's edit form offers,
+the report definitions and the runs they raise, one run's page and the problems
+it recorded.
+
+The area's remaining families -- the cuts, the schedule writes, the ORE value
+sets with the engine settings and the pricing engines, and a run's files and
+results -- are designed one at a time before they are served, and the task that
+owns them records each design.
 
 The units speak the canonical protocol over NATS and hold no service,
 repository or database context: the reporting, analytics and reference data
@@ -68,8 +72,6 @@ The units answer under the =reporting= area of the route inventory.
 - =ores.nats= -- NATS transport for service calls.
 - =ores.reporting.api= -- the canonical protocol messages of the reporting
   service.
-- =ores.analytics.api= -- the pricing model and engine messages the pricing
-  engine screens read.
 - =ores.refdata.api= -- the book types, tenors and instrument codes the forms
   choose from.
 - =ores.iam.api= -- the parties the caller's own account works in, which a
@@ -92,7 +94,6 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.logging.lib
         ores.reporting.api.lib
-        ores.analytics.api.lib
         ores.refdata.api.lib
         ores.iam.api.lib
         ores.compute.api.lib

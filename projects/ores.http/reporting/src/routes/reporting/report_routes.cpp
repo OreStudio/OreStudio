@@ -24,6 +24,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/messaging/configuration_protocol.hpp"
 #include "ores.reporting.api/messaging/configuration_type_protocol.hpp"
 #include "ores.reporting.api/messaging/report_configuration_protocol.hpp"
@@ -33,11 +34,11 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
+#include <boost/log/sources/record_ostream.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <algorithm>
 #include <array>
 #include <cstddef>
-#include <functional>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -55,6 +56,16 @@ namespace iam_messaging = ores::iam::messaging;
 namespace reporting_domain = ores::reporting::domain;
 namespace reporting_messaging = ores::reporting::messaging;
 namespace compute_messaging = ores::compute::messaging;
+
+namespace {
+
+/// The trail a read leaves when its answer is deliberately absent.
+auto& lg() {
+    static auto instance = ores::logging::make_logger("ores.http.reporting.report_routes");
+    return instance;
+}
+
+}
 
 using ores::http::domain::http_request;
 using ores::http::domain::http_response;
@@ -114,7 +125,7 @@ std::optional<std::string> health_of(const std::string& stated) {
 }
 
 /// Whether a text states anything at all.
-bool stated(const std::string& text) {
+bool has_text(const std::string& text) {
     return !text.empty();
 }
 
@@ -162,20 +173,17 @@ std::string state_of_row(const report_routes::run_row* run,
     return std::string();
 }
 
-/// The problem count of one run: nothing when the counts could not be read at
-/// all, and zero when the run recorded no problem.
-std::optional<std::int64_t>
-count_of_row(const std::optional<std::vector<report_routes::count_row>>& counts,
-             const report_routes::run_row* run,
-             bool errors) {
-    if (!counts)
-        return std::nullopt;
-    if (run == nullptr)
+/// The problem counts of one run: nothing when the counts could not be read at
+/// all or the run has none, and a row of zeros when the run recorded no problem.
+std::optional<report_routes::count_row>
+counted_of_row(const std::optional<std::vector<report_routes::count_row>>& counts,
+               const report_routes::run_row* run) {
+    if (!counts || run == nullptr)
         return std::nullopt;
     for (const auto& entry : *counts)
         if (entry.run_id == run->id)
-            return errors ? entry.errors : entry.warnings;
-    return 0;
+            return entry;
+    return report_routes::count_row{run->id, 0, 0};
 }
 
 /// The latest run of one definition, or nothing when it never ran.
@@ -201,29 +209,39 @@ next_fire_of(const std::optional<std::vector<report_routes::fire_row>>& fires,
     return std::nullopt;
 }
 
+/// Everything the screens read beside a definition, and the reads that failed.
+struct composed final {
+    std::optional<std::vector<report_routes::party_name>> parties;
+    std::optional<std::vector<report_routes::run_row>> runs;
+    std::vector<report_routes::health_row> health;
+    std::optional<std::vector<report_routes::count_row>> counts;
+    std::optional<std::vector<report_routes::fire_row>> fires;
+    std::vector<unread> unread;
+};
+
 /// One row, as the list draws it.
 std::string row_json(const reporting_domain::report_definition& definition,
-                     const std::optional<std::vector<report_routes::party_name>>& parties,
-                     const std::optional<std::vector<report_routes::run_row>>& runs,
-                     const std::vector<report_routes::health_row>& health,
-                     const std::optional<std::vector<report_routes::count_row>>& counts,
-                     const std::optional<std::vector<report_routes::fire_row>>& fires) {
-    const auto* run = run_of(runs, definition.id);
+                     const composed& decorated) {
+    const auto* run = run_of(decorated.runs, definition.id);
     std::optional<std::string> party_code;
-    if (party_found(parties, definition.party_id)) {
-        const auto code =
-            party_field(parties, definition.party_id, &report_routes::party_name::short_code);
-        if (stated(code))
+    if (party_found(decorated.parties, definition.party_id)) {
+        const auto code = party_field(
+            decorated.parties, definition.party_id, &report_routes::party_name::short_code);
+        if (has_text(code))
             party_code = code;
     }
 
+    const auto counted = counted_of_row(decorated.counts, run);
     std::string latest_run = "null";
     if (run != nullptr) {
-        latest_run = "{\"id\":" + json::write(rr::as_text(run->id)) +
-                     ",\"startedAt\":" + json::write(run->started_at) +
-                     ",\"completedAt\":" + json::write(run->completed_at) +
-                     ",\"errors\":" + json::write(count_of_row(counts, run, true)) +
-                     ",\"warnings\":" + json::write(count_of_row(counts, run, false)) + "}";
+        latest_run =
+            "{\"id\":" + json::write(rr::as_text(run->id)) +
+            ",\"startedAt\":" + json::write(run->started_at) +
+            ",\"completedAt\":" + json::write(run->completed_at) + ",\"errors\":" +
+            json::write(counted ? std::optional<std::int64_t>(counted->errors) : std::nullopt) +
+            ",\"warnings\":" +
+            json::write(counted ? std::optional<std::int64_t>(counted->warnings) : std::nullopt) +
+            "}";
     }
 
     return "{\"id\":" + json::write(rr::as_text(definition.id)) +
@@ -231,15 +249,15 @@ std::string row_json(const reporting_domain::report_definition& definition,
            ",\"reportType\":" + json::write(definition.report_type) +
            ",\"cutKind\":" + json::write(definition.cut_kind_code) +
            ",\"partyId\":" + json::write(rr::as_text(definition.party_id)) + ",\"partyName\":" +
-           json::write(
-               party_field(parties, definition.party_id, &report_routes::party_name::name)) +
+           json::write(party_field(
+               decorated.parties, definition.party_id, &report_routes::party_name::name)) +
            ",\"partyCode\":" + json::write(party_code) +
            ",\"scheduleExpression\":" + json::write(definition.schedule_expression) +
            ",\"scheduled\":" + json::write(definition.scheduler_job_id.has_value()) +
-           ",\"health\":" + json::write(health_of_row(runs, run, health)) +
-           ",\"stateName\":" + json::write(state_of_row(run, health)) +
+           ",\"health\":" + json::write(health_of_row(decorated.runs, run, decorated.health)) +
+           ",\"stateName\":" + json::write(state_of_row(run, decorated.health)) +
            ",\"latestRun\":" + latest_run +
-           ",\"nextFireAt\":" + json::write(next_fire_of(fires, definition.id)) + "}";
+           ",\"nextFireAt\":" + json::write(next_fire_of(decorated.fires, definition.id)) + "}";
 }
 
 
@@ -250,7 +268,7 @@ struct edit_change {
     std::string concurrency_policy;
     std::string schedule_expression;
     bool is_official{};
-    std::optional<std::string> regulatory_book_type;
+    std::optional<std::optional<std::string>> regulatory_book_type;
     std::string pre_processing;
     std::string prepared_input_key;
     std::string post_processing;
@@ -307,22 +325,13 @@ void check_edit(const edit_change& change) {
     const bool ok = within(change.description, 2000) && code_of(change.report_type, 100) &&
                     code_of(change.concurrency_policy, 100) &&
                     code_of(change.schedule_expression, 200) &&
-                    (!change.regulatory_book_type || code_of(*change.regulatory_book_type, 100)) &&
+                    (!change.regulatory_book_type || !*change.regulatory_book_type ||
+                     code_of(**change.regulatory_book_type, 100)) &&
                     within(change.pre_processing, 2000) && within(change.prepared_input_key, 500) &&
                     within(change.post_processing, 2000) && within(change.skipped_families, 2000);
     if (!ok)
         rr::invalid(std::string(malformed_write));
 }
-
-/// Everything the screens read beside a definition, and the reads that failed.
-struct composed final {
-    std::optional<std::vector<report_routes::party_name>> parties;
-    std::optional<std::vector<report_routes::run_row>> runs;
-    std::vector<report_routes::health_row> health;
-    std::optional<std::vector<report_routes::count_row>> counts;
-    std::optional<std::vector<report_routes::fire_row>> fires;
-    std::vector<unread> unread;
-};
 
 /// The unread list as the answer states it.
 std::string unread_json(const composed& decorated) {
@@ -341,7 +350,7 @@ std::string definition_row_json(const reporting_domain::report_definition& defin
     if (party_found(decorated.parties, definition.party_id)) {
         const auto code = party_field(
             decorated.parties, definition.party_id, &report_routes::party_name::short_code);
-        if (stated(code))
+        if (has_text(code))
             party_code = code;
     }
     return "{\"id\":" + json::write(rr::as_text(definition.id)) +
@@ -526,13 +535,7 @@ address_named(const http_request& req, nats_client& session, const std::string& 
 /// that failed.
 std::string detail_json(const composed& decorated,
                         const reporting_domain::report_definition& definition) {
-    return "{\"report\":" +
-           row_json(definition,
-                    decorated.parties,
-                    decorated.runs,
-                    decorated.health,
-                    decorated.counts,
-                    decorated.fires) +
+    return "{\"report\":" + row_json(definition, decorated) +
            ",\"definition\":" + definition_row_json(definition, decorated) +
            ",\"unread\":" + unread_json(decorated) + "}";
 }
@@ -554,11 +557,13 @@ struct run_view final {
 
 /// The time from a run's start to its completion, or nothing until both are
 /// known and the completion does not precede the start.
-std::optional<std::int64_t> duration_ms(const run_view& run) {
-    if (!run.started_at || !run.completed_at)
+std::optional<std::int64_t>
+elapsed_ms(const std::optional<std::chrono::system_clock::time_point>& started,
+           const std::optional<std::chrono::system_clock::time_point>& completed) {
+    if (!started || !completed)
         return std::nullopt;
     const auto elapsed =
-        std::chrono::duration_cast<std::chrono::milliseconds>(*run.completed_at - *run.started_at);
+        std::chrono::duration_cast<std::chrono::milliseconds>(*completed - *started);
     if (elapsed.count() < 0)
         return std::nullopt;
     return elapsed.count();
@@ -571,7 +576,7 @@ std::string run_json(const run_view& run) {
            ",\"health\":" + json::write(run.health) +
            ",\"started_at\":" + json::write(run.started_at) +
            ",\"completed_at\":" + json::write(run.completed_at) +
-           ",\"duration_ms\":" + json::write(duration_ms(run)) +
+           ",\"duration_ms\":" + json::write(elapsed_ms(run.started_at, run.completed_at)) +
            ",\"priced_at\":" + json::write(run.priced_at) + "}";
 }
 
@@ -635,8 +640,8 @@ struct run_detail final {
     reporting_domain::report_instance instance;
     std::string state_name;
     std::optional<std::string> health;
-    std::string definition_name;
-    std::string party_name;
+    std::optional<std::string> definition_name;
+    std::optional<std::string> party_name;
     std::optional<std::string> batch_id;
 };
 
@@ -668,14 +673,18 @@ batch_of(const http_request& req, nats_client& session, const std::string& id) {
         for (const auto& batch : reply.batches)
             if (batch.external_ref == id)
                 return rr::as_text(batch.id);
-    } catch (const rr::refusal&) {
-    } catch (const std::exception&) {
+    } catch (const rr::refusal& r) {
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "The batch of the run was refused: " << r.message;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "The batch of the run was not read: " << e.what();
     }
     return std::nullopt;
 }
 
 /// The name of the definition a run belongs to, or nothing when it cannot be read.
-std::string
+std::optional<std::string>
 definition_name_of(const http_request& req, nats_client& session, const boost::uuids::uuid& id) {
     try {
         reporting_messaging::list_report_definitions_request msg;
@@ -686,14 +695,18 @@ definition_name_of(const http_request& req, nats_client& session, const boost::u
         rr::require_done(reply.result);
         if (!reply.definitions.empty())
             return reply.definitions.front().name;
-    } catch (const rr::refusal&) {
-    } catch (const std::exception&) {
+    } catch (const rr::refusal& r) {
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "The name of the report's definition was refused: " << r.message;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "The name of the report's definition was not read: " << e.what();
     }
-    return std::string();
+    return std::nullopt;
 }
 
 /// The name of a party the caller's own account works in, or nothing.
-std::string
+std::optional<std::string>
 party_name_of(const http_request& req, nats_client& session, const boost::uuids::uuid& id) {
     try {
         const auto reply =
@@ -702,10 +715,14 @@ party_name_of(const http_request& req, nats_client& session, const boost::uuids:
         for (const auto& party : reply.parties)
             if (party.party_id == rr::as_text(id))
                 return party.name;
-    } catch (const rr::refusal&) {
-    } catch (const std::exception&) {
+    } catch (const rr::refusal& r) {
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "The name of the run's party was refused: " << r.message;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "The name of the run's party was not read: " << e.what();
     }
-    return std::string();
+    return std::nullopt;
 }
 
 /// The state and health word of one run, or nothing when the read refuses.
@@ -719,8 +736,12 @@ health_of_run(const http_request& req, nats_client& session, const boost::uuids:
         for (const auto& entry : reply.health)
             if (entry.report_instance_id == id)
                 return entry;
-    } catch (const rr::refusal&) {
-    } catch (const std::exception&) {
+    } catch (const rr::refusal& r) {
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "The state of the run was refused: " << r.message;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "The state of the run was not read: " << e.what();
     }
     return std::nullopt;
 }
@@ -728,16 +749,6 @@ health_of_run(const http_request& req, nats_client& session, const boost::uuids:
 /// One run's page as the screen reads it.
 std::string run_detail_json(const run_detail& detail) {
     const auto& run = detail.instance;
-    const auto duration = [&]() -> std::optional<std::int64_t> {
-        if (!run.started_at || !run.completed_at)
-            return std::nullopt;
-        const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-            *run.completed_at - *run.started_at);
-        if (elapsed.count() < 0)
-            return std::nullopt;
-        return elapsed.count();
-    }();
-
     return "{\"id\":" + json::write(rr::as_text(run.id)) + ",\"name\":" + json::write(run.name) +
            ",\"description\":" + json::write(run.description) +
            ",\"definition_id\":" + json::write(rr::as_text(run.definition_id)) +
@@ -751,7 +762,7 @@ std::string run_detail_json(const run_detail& detail) {
            ",\"output_storage_key\":" + json::write(run.output_storage_key) +
            ",\"started_at\":" + json::write(run.started_at) +
            ",\"completed_at\":" + json::write(run.completed_at) +
-           ",\"duration_ms\":" + json::write(duration) +
+           ",\"duration_ms\":" + json::write(elapsed_ms(run.started_at, run.completed_at)) +
            ",\"priced_at\":" + json::write(run.priced_at) +
            ",\"price_note\":" + json::write(run.price_note) +
            ",\"batch_id\":" + json::write(detail.batch_id) +
@@ -759,10 +770,13 @@ std::string run_detail_json(const run_detail& detail) {
            ",\"recorded_at\":" + json::write(run.recorded_at) + "}";
 }
 
+/// The scope a curve's own failure states.
+constexpr std::string_view curve_scope = "Curve";
+
 /// The one thing a problem names, as a person reads it: the curve a curve
 /// failure is about, otherwise the record the engine named.
 std::string about_of(const reporting_domain::report_error_event& event) {
-    if (event.scope_code == "Curve" && event.cause && !event.cause->empty())
+    if (event.scope_code == curve_scope && event.cause && !event.cause->empty())
         return *event.cause;
     if (event.subject_id && !event.subject_id->empty())
         return *event.subject_id;
@@ -784,8 +798,12 @@ std::string run_error_json(const reporting_domain::report_error_event& event) {
 
 /// The refusal a shared name states, with the choices beside its words.
 std::string shared_name_body(const std::string& name,
-                             const std::vector<reporting_domain::report_definition>& named,
+                             std::vector<reporting_domain::report_definition> named,
                              const composed& decorated) {
+    std::ranges::stable_sort(named, [&](const auto& left, const auto& right) {
+        return party_field(decorated.parties, left.party_id, &report_routes::party_name::name) <
+               party_field(decorated.parties, right.party_id, &report_routes::party_name::name);
+    });
     std::vector<std::string> choices;
     for (const auto& definition : named)
         choices.push_back(choice_json(definition, decorated));
@@ -817,9 +835,15 @@ report_routes::rows_json(const std::vector<ores::reporting::domain::report_defin
                          const std::vector<health_row>& health,
                          const std::optional<std::vector<count_row>>& counts,
                          const std::optional<std::vector<fire_row>>& fires) {
+    reports::composed decorated;
+    decorated.parties = parties;
+    decorated.runs = runs;
+    decorated.health = health;
+    decorated.counts = counts;
+    decorated.fires = fires;
     std::vector<std::string> rows;
     for (const auto& definition : definitions)
-        rows.push_back(reports::row_json(definition, parties, runs, health, counts, fires));
+        rows.push_back(reports::row_json(definition, decorated));
     return rr::array_of(rows);
 }
 
@@ -1077,13 +1101,13 @@ void report_routes::register_routes(
                         &reporting_messaging::list_report_configurations_response::
                             report_configurations);
 
-                    std::vector<std::string> kind_order;
+                    std::vector<reporting_domain::configuration_type> kinds;
                     try {
-                        reporting_messaging::list_configuration_types_request kinds;
-                        const auto reply = forwarding::forward(req, session, kinds);
-                        rr::require_done(reply.result);
-                        for (const auto& kind : reply.types)
-                            kind_order.push_back(kind.code);
+                        kinds = forwarding::forward_all(
+                            req,
+                            session,
+                            reporting_messaging::list_configuration_types_request{},
+                            &reporting_messaging::list_configuration_types_response::types);
                     } catch (const rr::refusal& r) {
                         if (r.status != http_status::forbidden)
                             throw;
@@ -1104,11 +1128,22 @@ void report_routes::register_routes(
                             &reporting_messaging::list_configurations_response::configurations);
                     }
 
-                    const auto order_of = [&](const std::string& code) {
-                        const auto at = std::ranges::find(kind_order, code);
-                        return at == kind_order.end() ?
-                                   kind_order.size() :
-                                   static_cast<std::size_t>(at - kind_order.begin());
+                    /*
+                     * A kind the caller may read states its own name. The kinds are a
+                     * closed set read whole, and a binding whose kind was refused keeps
+                     * the code and sorts before every kind that has one, as the BFF did.
+                     */
+                    const auto kind_at = [&](const std::string& code) {
+                        return std::ranges::find_if(
+                            kinds, [&](const auto& kind) { return kind.code == code; });
+                    };
+                    const auto order_of = [&](const std::string& code) -> int {
+                        const auto at = kind_at(code);
+                        return at == kinds.end() ? -1 : static_cast<int>(at - kinds.begin());
+                    };
+                    const auto type_name_of = [&](const std::string& code) {
+                        const auto at = kind_at(code);
+                        return at == kinds.end() ? code : at->name;
                     };
                     std::vector<reporting_domain::report_configuration> ordered = bindings;
                     std::ranges::stable_sort(ordered, [&](const auto& left, const auto& right) {
@@ -1125,9 +1160,9 @@ void report_routes::register_routes(
                                 break;
                             }
                         written.push_back(
-                            "{\"id\":" + json::write(rr::as_text(binding.id)) +
-                            ",\"typeCode\":" + json::write(binding.configuration_type_code) +
-                            ",\"typeName\":" + json::write(binding.configuration_type_code) +
+                            "{\"id\":" + json::write(rr::as_text(binding.id)) + ",\"typeCode\":" +
+                            json::write(binding.configuration_type_code) + ",\"typeName\":" +
+                            json::write(type_name_of(binding.configuration_type_code)) +
                             ",\"configurationId\":" +
                             json::write(rr::as_text(binding.configuration_id)) +
                             ",\"name\":" + json::write(name) + "}");
@@ -1172,12 +1207,14 @@ void report_routes::register_routes(
                     write.post_processing = body.change.post_processing;
                     write.skipped_families = body.change.skipped_families;
                     write.is_official = body.change.is_official;
-                    write.regulatory_book_type = body.change.regulatory_book_type ?
-                                                     body.change.regulatory_book_type :
-                                                     definition.regulatory_book_type;
+                    if (body.change.regulatory_book_type)
+                        write.regulatory_book_type = *body.change.regulatory_book_type;
+                    else
+                        write.regulatory_book_type = definition.regulatory_book_type;
                     /*
                      * The cut a report selects is not on the form, so the write keeps the one
-                     * the record holds. The BFF omitted it, which cleared it on every save.
+                     * the record holds: a write that stated only the form's fields would clear
+                     * it.
                      */
                     write.cut_kind_code = definition.cut_kind_code;
                     write.cut_id = definition.cut_id;

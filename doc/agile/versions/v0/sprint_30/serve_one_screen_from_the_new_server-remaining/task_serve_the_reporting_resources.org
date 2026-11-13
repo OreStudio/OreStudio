@@ -79,6 +79,13 @@ time, because each asks a question the code cannot answer on its own:
 | The schedule writes | Not written |
 | The ORE value sets and the engine settings | Not written |
 
+The five routes this task's Acceptance moves here -- =GET
+/api/conventions/:family/documents/:id=, =PUT .../documents/:id/terms=,
+=GET /api/refdata/curve-configurations= and =GET= and =PUT .../:id= -- stay
+unpaired until the value sets family is designed, because the reader that
+answers them is the one that family owns. They are named here so the inventory
+gap is a decision and not an oversight.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -124,6 +131,30 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Four catches swallow every failure with no trail | =report_routes.cpp= | Accepted | Each states the refusal or the fault in the journal, as the BFF logged it. |
+| 2 | =find(...) != npos= where C++23 has =contains= | =report_routes_tests.cpp= | Accepted | The test asks the text whether it holds the part. |
+| 3 | =register_routes= states no @brief | both unit headers | Accepted | Both state what they register. |
+| 4 | A comment narrates the BFF's old bug | =report_routes.cpp= | Accepted | It states the rule now and not its history. |
+| 5 | The tests cover the refusals and two builders, not the rest | =report_routes_tests.cpp= | Partially accepted | The configurations answer, the runs' order and the write are reachable only through a service; the seam they share is the composition, which is tested. The gap is recorded rather than hidden. |
+| 6 | One 1200-line unit registers nine routes: Divergent Change | =report_routes.cpp= | Accepted, deferred | The runs split into their own unit when the next family lands and a third unit makes the shape plain. Splitting now means a shared header for the decoration shape that two units both read. |
+| 7 | =duration_ms= is stated twice | =report_routes.cpp= | Accepted | One =elapsed_ms= serves the list and the page. |
+| 8 | The health read is stated twice | =report_routes.cpp= | Partially accepted | The list reads health for a page and the page reads it for one run; they share the word whitelist and the run lookup, and differ in whether a refusal is recorded. |
+| 9 | The 403-tolerant read is inlined where =choice_routes= has a helper | =report_routes.cpp= | Declined | One reads a page and records the refusal; the other tolerates a refused list of kinds. A shared helper would need a header for the part, which comes with the split in 6. |
+| 10 | Six parallel vectors where the decoration shape already exists | =row_json= | Accepted | A row takes the decoration shape; the public builder states one from its arguments. |
+| 11 | =ores.analytics= is linked but nothing reads it, and the model promises routes that do not exist | =CMakeLists.txt=, model | Accepted | The link is dropped until the pricing engines arrive, and the Summary states what the part answers today and that the rest is designed first. |
+| 12 | =stated()= does not say what it tests | =report_routes.cpp= | Accepted | It is =has_text=. |
+| 13 | A =bool= selects a field of the counts | =report_routes.cpp= | Accepted | The lookup returns the counts of one run and the row states both. |
+| 14 | The literal "Curve" stands in for a scope | =report_routes.cpp= | Accepted | =curve_scope= is stated once. |
+| 15 | =rows_json= and =shared_name_answer= only delegate | =report_routes.cpp= | Declined | =rows_json= is the public seam the tests build an answer through, and =shared_name_answer= now orders the choices before it states them. |
+| 16 | An unused =<functional>= and a copied comment | =report_routes.cpp= | Accepted | The include is gone; the comment is the house's own for a unit's helpers. |
+| 17 | The five moved reference-data routes are neither served nor deferred with a reason | this page | Accepted | The family they belong to is named, with the five routes, as designed before it is served. |
+| 18 | Unknown query parameters are refused where the BFF's schema stripped them | both units | Declined | The house convention, decided when the trading part was reviewed. |
+| 19 | The story still claims 118 unpaired routes | =story.org= | Accepted | It states the measured 108. |
+| 20 | The configurations answer never reads a kind's name | =report_routes.cpp= | Accepted | The kinds are read whole, each binding states its kind's name, and a kind that cannot be read keeps its code. |
+| 21 | A binding whose kind is unknown sorts last where the BFF sorted it first | =report_routes.cpp= | Accepted | It sorts before every kind that has a name, as the BFF's =indexOf= did. |
+| 22 | The choices a shared name offers are not ordered | =report_routes.cpp= | Accepted | They read in the order of their parties' names. |
+| 23 | The run page states an empty name where the BFF stated null | =report_routes.cpp= | Accepted | The definition's and the party's names are absent when unread, as the schema says. |
+| 24 | A write that states a null book type keeps the old one, and a negative version is accepted | =report_routes.cpp= | Accepted | The book type reads three ways as the form states it -- left out, null and a value -- and a negative version is refused. |
+| 25 | Keeping the cut on save departs from the BFF | =report_routes.cpp= | Confirmed | The BFF cleared the selected cut on every save; the departure is recorded and right. |
 
 * Result

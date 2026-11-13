@@ -43,6 +43,9 @@ public:
                                     const std::vector<std::string>& concurrency_policies,
                                     const std::vector<std::string>& regulatory_book_types);
 
+    /**
+     * @brief Register this unit's routes on the router and the registry.
+     */
     static void register_routes(std::shared_ptr<ores::http::net::router> router,
                                 std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                 ores::nats::service::nats_client& session);

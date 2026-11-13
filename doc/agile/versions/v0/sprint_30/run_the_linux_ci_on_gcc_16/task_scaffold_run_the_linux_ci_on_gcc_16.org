@@ -8,7 +8,7 @@
 #+filetags: :run_the_linux_ci_on_gcc_16:sprint_30:v0:
 #+owner: marco
 #+branch: feature/run-the-linux-ci-on-gcc-16
-#+pr:
+#+pr: 4668
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4668][#4668]] | [build] Run the Linux CI on GCC 16 |
 
 * Review
 

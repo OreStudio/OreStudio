@@ -23,13 +23,14 @@
 #include "ores.marketdata.official/export.hpp"
 #include <expected>
 #include <functional>
+#include <optional>
 #include <string>
 #include <string_view>
 
 namespace ores::marketdata::official::domain {
 
-/// Reads one variable of the process environment, or gives null when it is not set.
-using environment_lookup = std::function<const char*(const char*)>;
+/// Reads one variable of the process environment, or gives nothing when it is not set.
+using environment_lookup = std::function<std::optional<std::string>(const char*)>;
 
 /**
  * @brief The secret that @p ref names, such as the API key of a publisher.

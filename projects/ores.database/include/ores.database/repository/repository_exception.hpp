@@ -20,6 +20,7 @@
 #ifndef ORES_DATABASE_REPOSITORY_REPOSITORY_EXCEPTION_HPP
 #define ORES_DATABASE_REPOSITORY_REPOSITORY_EXCEPTION_HPP
 
+#include "ores.database/export.hpp"
 #include <boost/exception/info.hpp>
 #include <string>
 #include <utility>
@@ -34,7 +35,15 @@ namespace ores::database::repository {
  * refusal from another without reading the server's words. It is empty for a
  * failure the server did not report.
  */
-class repository_exception : public virtual std::exception, public virtual boost::exception {
+/*
+ * Exported so a caller in another shared library catches the type it was
+ * thrown as. The library is built with hidden visibility, and libc++ matches
+ * a catch against the pointer to the typeinfo, not its name: an unexported
+ * type gives the library and its caller two typeinfos that never compare
+ * equal, so the catch misses and the exception escapes to the caller.
+ */
+class ORES_DATABASE_EXPORT repository_exception : public virtual std::exception,
+                                                  public virtual boost::exception {
 public:
     explicit repository_exception(std::string_view message = "", std::string sqlstate = "")
         : message_(message)

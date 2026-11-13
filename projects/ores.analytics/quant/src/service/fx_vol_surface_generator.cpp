@@ -247,16 +247,16 @@ fx_vol_surface_quotes(const ssvi_parameters& surface,
 }
 
 std::optional<std::string> fx_vol_noise_profile_error(const fx_vol_noise_profile& p) {
-    for (const auto [name, value] : {std::pair{"missing", p.missing_probability},
-                                     std::pair{"stale", p.stale_probability},
-                                     std::pair{"outlier", p.outlier_probability}})
+    for (const auto& [name, value] : {std::pair{"missing", p.missing_probability},
+                                      std::pair{"stale", p.stale_probability},
+                                      std::pair{"outlier", p.outlier_probability}})
         if (!(value >= 0.0 && value <= 1.0))
             return std::format("The {} probability {} is not inside [0, 1].", name, value);
-    for (const auto [name, value] : {std::pair{"noise", p.noise},
-                                     std::pair{"wing widening", p.wing_widening},
-                                     std::pair{"expiry widening", p.expiry_widening},
-                                     std::pair{"quote step", p.quote_step},
-                                     std::pair{"outlier size", p.outlier_size}})
+    for (const auto& [name, value] : {std::pair{"noise", p.noise},
+                                      std::pair{"wing widening", p.wing_widening},
+                                      std::pair{"expiry widening", p.expiry_widening},
+                                      std::pair{"quote step", p.quote_step},
+                                      std::pair{"outlier size", p.outlier_size}})
         if (!non_negative(value))
             return std::format("The {} {} is negative or not a number.", name, value);
     if (!std::isfinite(p.bias))

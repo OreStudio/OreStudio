@@ -1,0 +1,68 @@
+:PROPERTIES:
+:ID: F0233265-8B56-4FEB-BD0C-422D765CA5FC
+:END:
+#+title: Story: Hotfix: Fix the warnings and the macOS database tests
+#+description: The macOS database tests fail on exception type matching, and the compiler warnings block re-enabling warnings-as-errors.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:build:ci:sprint_30:v0:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make the macOS nightly pass its database tests, and clear compiler warnings
+from the tree so warnings-as-errors can be switched back on.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The macOS cause is fixed and three warnings are cleared, each verified on the affected translation unit. PR raised. |
+| Waiting on    | The merge, then a nightly of each platform. |
+| Next          | Clear the warnings that only GCC 13 and MSVC report, then re-enable warnings-as-errors. |
+| Last touched  | 2026-11-13                               |
+
+* Acceptance
+
+- The macOS =ores.database.tests= pass.
+- =-Wrange-loop-construct= no longer fires in =fx_vol_surface_generator.cpp=.
+- =std::getenv= is not called from =ores.marketdata.official=.
+- =-Wdangling-reference= no longer fires in =convention_screen_routes_tests.cpp=.
+- Warnings-as-errors stays off until the remaining warnings are cleared.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C026B049-733A-4A60-8DE4-BE665124D30D][Scaffold story: Hotfix: Fix the warnings and the macOS database tests]] | DONE | 2026-11-13 | 2026-11-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:5998DE9E-545F-4483-8392-B006B88DF19F][Implement Hotfix: Fix the warnings and the macOS database tests]] | DONE | 2026-11-13 | 2026-11-13 | The exception export and the three warning fixes. |
+
+* Decisions
+
+- The macOS failure is a missing export, not a test bug. =ores.database= builds
+  with hidden visibility, and libc++ compares a catch against the typeinfo
+  pointer rather than its name, so a type thrown in the library and caught in
+  the test never matches. Exporting the type is the fix, and it matches what
+  =ores.logging= already does with =logging_exception=.
+- =getenv= is replaced by the environment provider =ores.platform= already
+  owns. Its header states the same MSVC deprecation and solves it with
+  =_dupenv_s=, so routing through it removes the warning without a suppression.
+- Warnings-as-errors stays off. Turning it on is the last step, after the
+  remaining warnings are gone.
+
+* Out of scope
+
+- =-Wsubobject-linkage= and =-Wmaybe-uninitialized= as GCC 13 reports them.
+  They do not reproduce under the GCC 16 this worktree has, and they appear to
+  describe coroutine frames, which are local to a translation unit.
+- The MSVC =C4244= narrowing that =std::optional<int>= reports. It needs an
+  MSVC build to locate, and the failing build predates this branch.
+- Re-enabling =ORES_WARNINGS_AS_ERRORS=. It is already off on main, set by
+  =2d0b992507=.

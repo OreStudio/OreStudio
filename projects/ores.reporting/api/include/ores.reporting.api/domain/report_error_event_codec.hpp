@@ -61,6 +61,7 @@ namespace ores::reporting::domain {
         utility::codec::field{"cause", &report_error_event::cause},
         utility::codec::field{"detail", &report_error_event::detail},
         utility::codec::field{"location", &report_error_event::location},
+        utility::codec::field{"filename", &report_error_event::filename},
         utility::codec::field{"event_time", &report_error_event::event_time},
     };
 }

@@ -7747,6 +7747,7 @@ const pt: SourceCatalogue = {
                 byLogTable: 'Por registo',
                 logFile: 'Registo',
                 noLog: 'Sem registo: a palavra da execução',
+                noLogChip: 'Sem registo',
                 everyLog: 'Todos os registos',
                 byScopeTable: 'Por âmbito',
                 byScope: 'As linhas da execução por âmbito',

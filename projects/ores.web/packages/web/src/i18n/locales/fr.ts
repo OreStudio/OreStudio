@@ -7808,6 +7808,7 @@ const fr: SourceCatalogue = {
                 byLogTable: 'Par journal',
                 logFile: 'Journal',
                 noLog: "Aucun journal : le mot de l'exécution",
+                noLogChip: 'Aucun journal',
                 everyLog: 'Tous les journaux',
                 byScopeTable: 'Par portée',
                 byScope: "Les lignes de l'exécution par portée",

@@ -76,6 +76,9 @@ export function ErrorSubject({ error }: { readonly error: ReportRunErrorView }):
 
 const VIEWS = ['overview', 'list'] as const;
 
+/** The chip that means every log, as distinct from the group that came from none. */
+const EVERY_LOG = 'all';
+
 const OUTER = { tab: 'log' } as const;
 
 /** The address of the list view narrowed to one scope. */
@@ -319,7 +322,7 @@ export function RunErrorsOverview({
                         warnings: count.warnings,
                         infos: count.infos,
                     }))}
-                    addressOf={(file) => (file === '' ? undefined : fileAddress(file))}
+                    addressOf={fileAddress}
                 />
                 <TallyTable
                     heading={t(`${field}.byScopeTable`)}
@@ -364,7 +367,7 @@ export function RunErrorsTable({
     const files = [...new Set(inScope.map((row) => row.filename ?? ''))].sort();
     const chooseFile = (chosen: string): void => {
         const next = new URLSearchParams(search);
-        if (chosen === '') {
+        if (chosen === EVERY_LOG) {
             next.delete('file');
         } else {
             next.set('file', chosen);
@@ -403,15 +406,15 @@ export function RunErrorsTable({
             />
             {files.length > 1 && (
                 <CountFilter
-                    choices={['', ...files]}
-                    chosen={file ?? ''}
+                    choices={[EVERY_LOG, ...files]}
+                    chosen={file ?? EVERY_LOG}
                     countOf={(choice) =>
-                        choice === ''
+                        choice === EVERY_LOG
                             ? inScope.length
                             : inScope.filter((row) => (row.filename ?? '') === choice).length
                     }
                     labelOf={(choice, count) =>
-                        `${choice === '' ? t(`${field}.everyLog`) : choice} (${count})`
+                        `${choice === EVERY_LOG ? t(`${field}.everyLog`) : choice === '' ? t(`${field}.noLogChip`) : choice} (${count})`
                     }
                     onChoose={chooseFile}
                 />

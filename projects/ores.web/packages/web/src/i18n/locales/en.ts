@@ -7690,6 +7690,7 @@ export const en: SourceCatalogue = {
                 byLogTable: 'By log',
                 logFile: 'Log',
                 noLog: "No log: the run's own word",
+                noLogChip: 'No log',
                 everyLog: 'Every log',
                 byScopeTable: 'By scope',
                 byScope: "The run's rows by scope",

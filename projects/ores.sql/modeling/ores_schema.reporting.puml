@@ -1360,6 +1360,7 @@ package "reporting" #E0F7FA {
           subject_as_of : timestamptz
           cause : text
           detail : jsonb
+          location : text
         * event_time : timestamptz
     }
 

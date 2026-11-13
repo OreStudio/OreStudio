@@ -60,6 +60,7 @@ namespace ores::reporting::domain {
         utility::codec::field{"subject_as_of", &report_error_event::subject_as_of},
         utility::codec::field{"cause", &report_error_event::cause},
         utility::codec::field{"detail", &report_error_event::detail},
+        utility::codec::field{"location", &report_error_event::location},
         utility::codec::field{"event_time", &report_error_event::event_time},
     };
 }

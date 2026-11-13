@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-13
 #+updated: 2026-11-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6A8F01EC-54BE-4730-B7EC-8CF6438A6725][Start the synthetic service on a fresh database]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6A8F01EC-54BE-4730-B7EC-8CF6438A6725][Start the synthetic service on a fresh database]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -83,3 +83,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The scheduler is now stopped from a guard declared after its thread, so no C++20 stop type is named in the service, and the guard stops the scheduler before the thread is joined on every exit path.
+
+Gates: portable-stop, format and build all pass. The fleet was not restarted for this variant; the start-up evidence belongs to the previous fix.

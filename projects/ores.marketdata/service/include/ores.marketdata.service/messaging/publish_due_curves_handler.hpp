@@ -118,8 +118,7 @@ public:
      */
     static publish_due_curves_response
     publish_all(const ores::database::context& req_ctx,
-                std::chrono::system_clock::time_point as_of =
-                    std::chrono::system_clock::now()) {
+                std::chrono::system_clock::time_point as_of = std::chrono::system_clock::now()) {
         publish_due_curves_response resp;
         constexpr std::string_view reason =
             "The scheduled curve republish keeps the system's published curves on the market of "
@@ -162,8 +161,8 @@ public:
             BOOST_LOG_SEV(publish_due_curves_handler_lg(), info)
                 << "Curve republish: name='" << outcome.name << "' as_of='"
                 << ores::platform::time::datetime::to_iso8601_utc(outcome.as_of)
-                << "' duration=" << outcome.duration_ms << "ms published="
-                << (outcome.published ? "yes" : "no")
+                << "' duration=" << outcome.duration_ms
+                << "ms published=" << (outcome.published ? "yes" : "no")
                 << (outcome.message.empty() ? "" : " reason='" + outcome.message + "'");
             resp.curves.push_back(std::move(outcome));
         }

@@ -25,11 +25,11 @@
 #include "ores.marketdata.service/messaging/publish_due_curves_handler.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <algorithm>
-#include <chrono>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <stdexcept>
 
-constexpr const char* tags = "[curve_republish]";
+constexpr const char* curve_republish_tags = "[curve_republish]";
 
 namespace {
 
@@ -86,7 +86,8 @@ private:
 
 using namespace ores::marketdata::messaging;
 
-TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build", tags) {
+TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build",
+          curve_republish_tags) {
     curve_fixture f;
     zero_approval_curve_kind zeroed(f.h);
     const auto maker = seed_person(f.h);
@@ -94,8 +95,8 @@ TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build", 
     // must name it and leave the first curve's publish in place.
     f.seed_second_curve();
 
-    const auto ctx = f.h.context().with_party(
-        f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
+    const auto ctx =
+        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
     const auto resp = publish_due_curves_handler::publish_all(ctx);
 
     CHECK(resp.success);
@@ -117,12 +118,12 @@ TEST_CASE("the_sweep_publishes_each_curve_and_names_the_one_that_cannot_build", 
     CHECK_FALSE(second->message.empty());
 }
 
-TEST_CASE("a_second_firing_supersedes_the_publish_the_first_made", tags) {
+TEST_CASE("a_second_firing_supersedes_the_publish_the_first_made", curve_republish_tags) {
     curve_fixture f;
     zero_approval_curve_kind zeroed(f.h);
     const auto maker = seed_person(f.h);
-    const auto ctx = f.h.context().with_party(
-        f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
+    const auto ctx =
+        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
 
     const auto at = std::chrono::system_clock::now();
     const auto first_sweep = publish_due_curves_handler::publish_all(ctx, at);

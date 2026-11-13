@@ -38,8 +38,7 @@ auto& nats_request_action_handler_lg() {
 
 }
 
-nats_request_action_handler::nats_request_action_handler(
-    ores::nats::service::nats_client& svc_nats)
+nats_request_action_handler::nats_request_action_handler(ores::nats::service::nats_client& svc_nats)
     : svc_nats_(svc_nats) {}
 
 boost::asio::awaitable<std::expected<void, std::string>>

@@ -54,8 +54,8 @@ namespace ores::reporting::service {
 
 using namespace ores::logging;
 
-ore_parameter_value_domain_service::ore_parameter_value_domain_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+ore_parameter_value_domain_service::ore_parameter_value_domain_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

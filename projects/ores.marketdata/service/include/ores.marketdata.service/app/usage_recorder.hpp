@@ -61,7 +61,7 @@ private:
 public:
     static constexpr std::chrono::seconds flush_interval{30};
 
-    usage_recorder(ores::database::context ctx, std::shared_ptr<delivery_meter> meter);
+    usage_recorder(const ores::database::context& ctx, std::shared_ptr<delivery_meter> meter);
     ~usage_recorder();
 
     usage_recorder(const usage_recorder&) = delete;

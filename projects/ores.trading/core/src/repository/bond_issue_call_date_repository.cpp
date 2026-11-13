@@ -87,7 +87,8 @@ bond_issue_call_date_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-bond_issue_call_date_repository::replace_claim(context ctx, const domain::bond_issue_call_date& v) {
+bond_issue_call_date_repository::replace_claim(const context& ctx,
+                                               const domain::bond_issue_call_date& v) {
     const auto current =
         read_latest(ctx, boost::uuids::to_string(v.issue_id), std::to_string(v.sequence_number));
     if (current.empty())
@@ -97,7 +98,7 @@ bond_issue_call_date_repository::replace_claim(context ctx, const domain::bond_i
 }
 
 domain::bond_issue_call_date
-bond_issue_call_date_repository::apply_claim(context ctx,
+bond_issue_call_date_repository::apply_claim(const context& ctx,
                                              const domain::bond_issue_call_date& v,
                                              const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -125,11 +126,12 @@ bond_issue_call_date_repository::apply_claim(context ctx,
     return t;
 }
 
-void bond_issue_call_date_repository::write(context ctx, const domain::bond_issue_call_date& v) {
+void bond_issue_call_date_repository::write(const context& ctx,
+                                            const domain::bond_issue_call_date& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void bond_issue_call_date_repository::write(context ctx,
+void bond_issue_call_date_repository::write(const context& ctx,
                                             const std::vector<domain::bond_issue_call_date>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -138,7 +140,7 @@ void bond_issue_call_date_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void bond_issue_call_date_repository::write(context ctx,
+void bond_issue_call_date_repository::write(const context& ctx,
                                             const domain::bond_issue_call_date& v,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond issue call date. " << "issue_id: " << v.issue_id
@@ -151,7 +153,7 @@ void bond_issue_call_date_repository::write(context ctx,
 }
 
 void bond_issue_call_date_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::bond_issue_call_date>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond issue call dates. Count: " << v.size();
@@ -166,7 +168,7 @@ void bond_issue_call_date_repository::write(
 }
 
 std::vector<domain::bond_issue_call_date>
-bond_issue_call_date_repository::read_latest(context ctx) {
+bond_issue_call_date_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_call_date_entity>> |
@@ -183,7 +185,7 @@ bond_issue_call_date_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::bond_issue_call_date> bond_issue_call_date_repository::read_latest(
-    context ctx, const std::string& issue_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& issue_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond issue call date. "
                                << "issue_id: " << issue_id
                                << " sequence_number: " << sequence_number;
@@ -205,7 +207,7 @@ std::vector<domain::bond_issue_call_date> bond_issue_call_date_repository::read_
 
 
 std::vector<domain::bond_issue_call_date> bond_issue_call_date_repository::read_all(
-    context ctx, const std::string& issue_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& issue_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all bond issue call date versions. "
                                << "issue_id: " << issue_id
                                << " sequence_number: " << sequence_number;
@@ -225,7 +227,7 @@ std::vector<domain::bond_issue_call_date> bond_issue_call_date_repository::read_
 }
 
 std::optional<domain::bond_issue_call_date>
-bond_issue_call_date_repository::read_at_version(context ctx,
+bond_issue_call_date_repository::read_at_version(const context& ctx,
                                                  const std::string& issue_id,
                                                  const std::string& sequence_number,
                                                  std::uint32_t version) {
@@ -254,7 +256,7 @@ bond_issue_call_date_repository::read_at_version(context ctx,
 }
 
 bond_issue_call_date_repository::remove_status
-bond_issue_call_date_repository::remove(context ctx,
+bond_issue_call_date_repository::remove(const context& ctx,
                                         const std::string& issue_id,
                                         const std::string& sequence_number,
                                         std::optional<std::uint32_t> version) {
@@ -288,14 +290,14 @@ bond_issue_call_date_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void bond_issue_call_date_repository::remove(context ctx,
+void bond_issue_call_date_repository::remove(const context& ctx,
                                              const std::string& issue_id,
                                              const std::string& sequence_number) {
     static_cast<void>(remove(ctx, issue_id, sequence_number, std::nullopt));
 }
 
 std::vector<domain::bond_issue_call_date>
-bond_issue_call_date_repository::read_latest(context ctx,
+bond_issue_call_date_repository::read_latest(const context& ctx,
                                              std::uint32_t offset,
                                              std::uint32_t limit,
                                              const ores::utility::domain::order& order,
@@ -319,7 +321,7 @@ bond_issue_call_date_repository::read_latest(context ctx,
 }
 
 std::uint32_t bond_issue_call_date_repository::get_total_call_date_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond issue call date count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -335,7 +337,7 @@ std::uint32_t bond_issue_call_date_repository::get_total_call_date_count(
 }
 
 std::vector<domain::bond_issue_call_date>
-bond_issue_call_date_repository::read_latest(context ctx,
+bond_issue_call_date_repository::read_latest(const context& ctx,
                                              const std::vector<std::string>& issue_ids,
                                              const std::vector<std::string>& sequence_numbers) {
     if (issue_ids.empty() || sequence_numbers.empty())
@@ -372,7 +374,7 @@ bond_issue_call_date_repository::read_latest(context ctx,
     return filtered;
 }
 
-void bond_issue_call_date_repository::remove(context ctx,
+void bond_issue_call_date_repository::remove(const context& ctx,
                                              const std::vector<std::string>& issue_ids,
                                              const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product

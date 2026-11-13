@@ -58,8 +58,9 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-equity_digital_option_instrument_service::equity_digital_option_instrument_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+equity_digital_option_instrument_service::equity_digital_option_instrument_service(
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

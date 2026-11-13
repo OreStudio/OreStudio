@@ -85,7 +85,7 @@ query_builder::order business_process_list_order(const ores::utility::domain::or
 }
 
 ores::utility::domain::precondition
-business_process_repository::replace_claim(context ctx, const domain::business_process& v) {
+business_process_repository::replace_claim(const context& ctx, const domain::business_process& v) {
     const auto current = read_latest(ctx, v.code, v.coding_scheme_code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -94,7 +94,7 @@ business_process_repository::replace_claim(context ctx, const domain::business_p
 }
 
 domain::business_process
-business_process_repository::apply_claim(context ctx,
+business_process_repository::apply_claim(const context& ctx,
                                          const domain::business_process& v,
                                          const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -121,11 +121,11 @@ business_process_repository::apply_claim(context ctx,
     return t;
 }
 
-void business_process_repository::write(context ctx, const domain::business_process& v) {
+void business_process_repository::write(const context& ctx, const domain::business_process& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void business_process_repository::write(context ctx,
+void business_process_repository::write(const context& ctx,
                                         const std::vector<domain::business_process>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -134,7 +134,7 @@ void business_process_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void business_process_repository::write(context ctx,
+void business_process_repository::write(const context& ctx,
                                         const domain::business_process& v,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing business process. " << "code: " << v.code
@@ -145,7 +145,7 @@ void business_process_repository::write(context ctx,
 }
 
 void business_process_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::business_process>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing business processes. Count: " << v.size();
@@ -157,7 +157,7 @@ void business_process_repository::write(
         ctx, business_process_mapper::map(batch), lg(), "Writing business processes to database.");
 }
 
-std::vector<domain::business_process> business_process_repository::read_latest(context ctx) {
+std::vector<domain::business_process> business_process_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<business_process_entity>> |
@@ -173,7 +173,7 @@ std::vector<domain::business_process> business_process_repository::read_latest(c
 }
 
 std::vector<domain::business_process> business_process_repository::read_latest(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business process. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
@@ -193,7 +193,7 @@ std::vector<domain::business_process> business_process_repository::read_latest(
 
 
 std::vector<domain::business_process> business_process_repository::read_all(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all business process versions. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -211,7 +211,7 @@ std::vector<domain::business_process> business_process_repository::read_all(
 }
 
 std::optional<domain::business_process>
-business_process_repository::read_at_version(context ctx,
+business_process_repository::read_at_version(const context& ctx,
                                              const std::string& code,
                                              const std::string& coding_scheme_code,
                                              std::uint32_t version) {
@@ -239,7 +239,7 @@ business_process_repository::read_at_version(context ctx,
 }
 
 business_process_repository::remove_status
-business_process_repository::remove(context ctx,
+business_process_repository::remove(const context& ctx,
                                     const std::string& code,
                                     const std::string& coding_scheme_code,
                                     std::optional<std::uint32_t> version) {
@@ -273,14 +273,14 @@ business_process_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void business_process_repository::remove(context ctx,
+void business_process_repository::remove(const context& ctx,
                                          const std::string& code,
                                          const std::string& coding_scheme_code) {
     static_cast<void>(remove(ctx, code, coding_scheme_code, std::nullopt));
 }
 
 std::vector<domain::business_process>
-business_process_repository::read_latest(context ctx,
+business_process_repository::read_latest(const context& ctx,
                                          std::uint32_t offset,
                                          std::uint32_t limit,
                                          const ores::utility::domain::order& order,
@@ -304,7 +304,7 @@ business_process_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-business_process_repository::get_total_process_count(context ctx,
+business_process_repository::get_total_process_count(const context& ctx,
                                                      const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active business process count";
 
@@ -321,7 +321,7 @@ business_process_repository::get_total_process_count(context ctx,
 }
 
 std::vector<domain::business_process>
-business_process_repository::read_latest(context ctx,
+business_process_repository::read_latest(const context& ctx,
                                          const std::vector<std::string>& codes,
                                          const std::vector<std::string>& coding_scheme_codes) {
     if (codes.empty() || coding_scheme_codes.empty())
@@ -357,7 +357,7 @@ business_process_repository::read_latest(context ctx,
     return filtered;
 }
 
-void business_process_repository::remove(context ctx,
+void business_process_repository::remove(const context& ctx,
                                          const std::vector<std::string>& codes,
                                          const std::vector<std::string>& coding_scheme_codes) {
     // Compound key: a per-column .in() DELETE would be a cross-product

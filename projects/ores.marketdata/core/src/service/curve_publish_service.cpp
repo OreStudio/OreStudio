@@ -58,8 +58,8 @@ namespace ores::marketdata::service {
 
 using namespace ores::logging;
 
-curve_publish_service::curve_publish_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+curve_publish_service::curve_publish_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_SERIES_SHAPE_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_SERIES_SHAPE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.core/export.hpp"
@@ -117,7 +117,7 @@ ORES_MARKETDATA_CORE_EXPORT std::vector<std::string> in_term_order(std::vector<s
  * @param series_id The series, as the text of its key.
  * @throws std::runtime_error if a shape row names a field the schema does not.
  */
-ORES_MARKETDATA_CORE_EXPORT series_shape read_series_shape(ores::database::context ctx,
+ORES_MARKETDATA_CORE_EXPORT series_shape read_series_shape(const ores::database::context& ctx,
                                                            const std::string& series_id);
 
 }

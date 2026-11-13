@@ -20,7 +20,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_TRADE_COMPONENT_QUERIES_HPP
 #define ORES_TRADING_CORE_REPOSITORY_TRADE_COMPONENT_QUERIES_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.trading.api/domain/trade_additional_field.hpp"
 #include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.trading.api/domain/trade_party_role.hpp"
@@ -47,13 +47,13 @@ using context = ores::database::context;
 /**@{*/
 
 ORES_TRADING_CORE_EXPORT std::vector<domain::trade_additional_field>
-read_additional_fields_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_additional_fields_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 ORES_TRADING_CORE_EXPORT std::vector<domain::trade_identifier>
-read_identifiers_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_identifiers_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 ORES_TRADING_CORE_EXPORT std::vector<domain::trade_portfolio>
-read_portfolios_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_portfolios_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief The digest of every economic component a trade holds.
@@ -66,11 +66,11 @@ read_portfolios_by_trade_ids(context ctx, const std::vector<std::string>& trade_
  * The instrument is read by @c instrument_table_for, so a family the
  * catalogue routes nowhere contributes nothing rather than being guessed at.
  */
-ORES_TRADING_CORE_EXPORT std::vector<std::string>
-read_instrument_digests(context ctx, const std::string& trade_id, const std::string& trade_type);
+ORES_TRADING_CORE_EXPORT std::vector<std::string> read_instrument_digests(
+    const context& ctx, const std::string& trade_id, const std::string& trade_type);
 
 ORES_TRADING_CORE_EXPORT std::vector<domain::trade_party_role>
-read_party_roles_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_party_roles_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**@}*/
 

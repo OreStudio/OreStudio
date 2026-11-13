@@ -100,7 +100,7 @@ lei_entity_filter_condition(const std::optional<messaging::lei_entities_filter>&
 }
 
 ores::utility::domain::precondition
-lei_entity_repository::replace_claim(context ctx, const domain::lei_entity& v) {
+lei_entity_repository::replace_claim(const context& ctx, const domain::lei_entity& v) {
     const auto current = read_latest(ctx, v.lei);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,8 +110,10 @@ lei_entity_repository::replace_claim(context ctx, const domain::lei_entity& v) {
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::lei_entity lei_entity_repository::apply_claim(
-    context ctx, const domain::lei_entity& v, const ores::utility::domain::precondition& claim) {
+domain::lei_entity
+lei_entity_repository::apply_claim(const context& ctx,
+                                   const domain::lei_entity& v,
+                                   const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
@@ -123,11 +125,11 @@ domain::lei_entity lei_entity_repository::apply_claim(
     return t;
 }
 
-void lei_entity_repository::write(context ctx, const domain::lei_entity& v) {
+void lei_entity_repository::write(const context& ctx, const domain::lei_entity& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void lei_entity_repository::write(context ctx, const std::vector<domain::lei_entity>& v) {
+void lei_entity_repository::write(const context& ctx, const std::vector<domain::lei_entity>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -135,7 +137,7 @@ void lei_entity_repository::write(context ctx, const std::vector<domain::lei_ent
     write(ctx, v, claims);
 }
 
-void lei_entity_repository::write(context ctx,
+void lei_entity_repository::write(const context& ctx,
                                   const domain::lei_entity& v,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing LEI entity. " << "lei: " << v.lei;
@@ -146,7 +148,7 @@ void lei_entity_repository::write(context ctx,
                                     "Writing LEI entity to database.");
 }
 
-void lei_entity_repository::write(context ctx,
+void lei_entity_repository::write(const context& ctx,
                                   const std::vector<domain::lei_entity>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing LEI entities. Count: " << v.size();
@@ -160,7 +162,7 @@ void lei_entity_repository::write(context ctx,
                                     "Writing LEI entities to database.");
 }
 
-std::vector<domain::lei_entity> lei_entity_repository::read_latest(context ctx) {
+std::vector<domain::lei_entity> lei_entity_repository::read_latest(const context& ctx) {
     const auto query =
         query_builder::read<std::vector<lei_entity_entity>> | query_builder::order_by("lei"_c);
 
@@ -172,7 +174,7 @@ std::vector<domain::lei_entity> lei_entity_repository::read_latest(context ctx) 
         "Reading latest LEI entities");
 }
 
-std::vector<domain::lei_entity> lei_entity_repository::read_latest(context ctx,
+std::vector<domain::lei_entity> lei_entity_repository::read_latest(const context& ctx,
                                                                    const std::string& lei) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI entity. " << "lei: " << lei;
     const auto query =
@@ -187,7 +189,7 @@ std::vector<domain::lei_entity> lei_entity_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::lei_entity> lei_entity_repository::read_all(context ctx,
+std::vector<domain::lei_entity> lei_entity_repository::read_all(const context& ctx,
                                                                 const std::string& lei) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all LEI entity versions. " << "lei: " << lei;
     const auto query = query_builder::read<std::vector<lei_entity_entity>> |
@@ -203,7 +205,7 @@ std::vector<domain::lei_entity> lei_entity_repository::read_all(context ctx,
 
 
 lei_entity_repository::remove_status lei_entity_repository::remove(
-    context ctx, const std::string& lei, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& lei, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing LEI entity. " << "lei: " << lei;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -220,12 +222,12 @@ lei_entity_repository::remove_status lei_entity_repository::remove(
     return remove_status::removed;
 }
 
-void lei_entity_repository::remove(context ctx, const std::string& lei) {
+void lei_entity_repository::remove(const context& ctx, const std::string& lei) {
     static_cast<void>(remove(ctx, lei, std::nullopt));
 }
 
 std::vector<domain::lei_entity>
-lei_entity_repository::read_latest(context ctx,
+lei_entity_repository::read_latest(const context& ctx,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order,
@@ -246,7 +248,7 @@ lei_entity_repository::read_latest(context ctx,
 }
 
 std::uint32_t lei_entity_repository::get_total_entity_count(
-    context ctx, const std::optional<messaging::lei_entities_filter>& filter) {
+    const context& ctx, const std::optional<messaging::lei_entities_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active LEI entity count";
 
     const auto query = query_builder::read<std::vector<lei_entity_entity>>;
@@ -256,7 +258,7 @@ std::uint32_t lei_entity_repository::get_total_entity_count(
 }
 
 std::vector<domain::lei_entity>
-lei_entity_repository::read_latest(context ctx, const std::vector<std::string>& leis) {
+lei_entity_repository::read_latest(const context& ctx, const std::vector<std::string>& leis) {
     if (leis.empty())
         return {};
     const auto query = query_builder::read<std::vector<lei_entity_entity>> |
@@ -270,7 +272,7 @@ lei_entity_repository::read_latest(context ctx, const std::vector<std::string>& 
     return result;
 }
 
-void lei_entity_repository::remove(context ctx, const std::vector<std::string>& leis) {
+void lei_entity_repository::remove(const context& ctx, const std::vector<std::string>& leis) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

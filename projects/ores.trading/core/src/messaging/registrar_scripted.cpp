@@ -24,7 +24,7 @@ namespace ores::trading::messaging::detail {
 
 std::vector<ores::nats::service::subscription>
 register_scripted_handlers(ores::nats::service::client& nats,
-                           ores::database::context ctx,
+                           const ores::database::context& ctx,
                            std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     return register_scripted_instrument_handlers(nats, ctx, verifier);
 }

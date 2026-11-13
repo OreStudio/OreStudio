@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::image& v);
-    void write(context ctx, const std::vector<domain::image>& v);
+    void write(const context& ctx, const domain::image& v);
+    void write(const context& ctx, const std::vector<domain::image>& v);
     /**@}*/
 
     /**
@@ -84,14 +84,15 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void
-    write(context ctx, const domain::image& v, const ores::utility::domain::precondition& claim);
+    void write(const context& ctx,
+               const domain::image& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
      * @brief Writes a set of asset images, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::image>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -99,15 +100,15 @@ public:
      * @brief Reads latest asset images, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::image> read_latest(context ctx);
-    std::vector<domain::image> read_latest(context ctx, const std::string& id);
-    std::vector<domain::image> read_latest(context ctx, const std::vector<std::string>& ids);
+    std::vector<domain::image> read_latest(const context& ctx);
+    std::vector<domain::image> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::image> read_latest(const context& ctx, const std::vector<std::string>& ids);
     /**@}*/
 
     /**
      * @brief Reads latest asset images filtered by code.
      */
-    std::vector<domain::image> read_latest_by_code(context ctx, const std::string& code);
+    std::vector<domain::image> read_latest_by_code(const context& ctx, const std::string& code);
 
     /**
      * @brief Reads the newest asset images filtered by code, current or not.
@@ -117,13 +118,13 @@ public:
      * removing the row. A latest read cannot resolve a closed row, so this one
      * ignores the window and takes the newest match.
      */
-    std::vector<domain::image> read_any_by_code(context ctx, const std::string& code);
+    std::vector<domain::image> read_any_by_code(const context& ctx, const std::string& code);
 
 
     /**
      * @brief Reads all asset images, possibly filtered by primary key.
      */
-    std::vector<domain::image> read_all(context ctx, const std::string& id);
+    std::vector<domain::image> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single asset image as it stood at a specific
@@ -135,7 +136,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::image>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Whether a list of asset images can be ordered by a field.
@@ -154,7 +155,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::image>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -167,14 +168,14 @@ public:
      * @return Total number of active asset images
      */
     std::uint32_t
-    get_total_image_count(context ctx,
+    get_total_image_count(const context& ctx,
                           const std::optional<messaging::images_filter>& filter = std::nullopt,
                           const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a asset image by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -196,12 +197,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes asset images by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -209,14 +211,14 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::image& v);
+    ores::utility::domain::precondition replace_claim(const context& ctx, const domain::image& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::image apply_claim(context ctx,
+    domain::image apply_claim(const context& ctx,
                               const domain::image& v,
                               const ores::utility::domain::precondition& claim);
 };

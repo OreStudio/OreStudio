@@ -49,7 +49,7 @@ void work_totals::add(const domain::grid_sample& sample) {
     outcomes_no_reply += sample.outcomes_no_reply;
 }
 
-void work_total_repository::write(context ctx, const work_totals& totals) {
+void work_total_repository::write(const context& ctx, const work_totals& totals) {
     static const std::string sql = R"(
         INSERT INTO ores_compute_work_totals_tbl (
             id, sampled_at, tenants_counted,
@@ -81,7 +81,7 @@ void work_total_repository::write(context ctx, const work_totals& totals) {
         "writing the work totals of the grid");
 }
 
-std::optional<work_totals> work_total_repository::read_newest(context ctx) {
+std::optional<work_totals> work_total_repository::read_newest(const context& ctx) {
     static const std::string sql = R"(
         SELECT (extract(epoch FROM sampled_at) * 1000000)::bigint, tenants_counted,
             results_inactive, results_unsent, results_in_progress, results_done,

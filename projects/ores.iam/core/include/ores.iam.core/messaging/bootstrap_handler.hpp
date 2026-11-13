@@ -64,13 +64,13 @@ using namespace ores::logging;
 class bootstrap_handler {
 public:
     bootstrap_handler(ores::nats::service::client& nats,
-                      ores::database::context ctx,
+                      const ores::database::context& ctx,
                       ores::security::jwt::jwt_authenticator signer,
                       std::shared_ptr<service::cache::party_cache> party_cache)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , signer_(std::move(signer))
-        , party_cache_(std::move(party_cache)) {}
+        , ctx_(ctx)
+        , signer_(signer)
+        , party_cache_(party_cache) {}
 
     void status(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(bootstrap_handler_lg(), msg);

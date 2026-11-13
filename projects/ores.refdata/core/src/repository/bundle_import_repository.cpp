@@ -101,7 +101,7 @@ bundle_import_filter_condition(const std::optional<messaging::bundle_imports_fil
 }
 
 ores::utility::domain::precondition
-bundle_import_repository::replace_claim(context ctx, const domain::bundle_import& v) {
+bundle_import_repository::replace_claim(const context& ctx, const domain::bundle_import& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -109,8 +109,10 @@ bundle_import_repository::replace_claim(context ctx, const domain::bundle_import
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::bundle_import bundle_import_repository::apply_claim(
-    context ctx, const domain::bundle_import& v, const ores::utility::domain::precondition& claim) {
+domain::bundle_import
+bundle_import_repository::apply_claim(const context& ctx,
+                                      const domain::bundle_import& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -135,11 +137,12 @@ domain::bundle_import bundle_import_repository::apply_claim(
     return t;
 }
 
-void bundle_import_repository::write(context ctx, const domain::bundle_import& v) {
+void bundle_import_repository::write(const context& ctx, const domain::bundle_import& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void bundle_import_repository::write(context ctx, const std::vector<domain::bundle_import>& v) {
+void bundle_import_repository::write(const context& ctx,
+                                     const std::vector<domain::bundle_import>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -147,7 +150,7 @@ void bundle_import_repository::write(context ctx, const std::vector<domain::bund
     write(ctx, v, claims);
 }
 
-void bundle_import_repository::write(context ctx,
+void bundle_import_repository::write(const context& ctx,
                                      const domain::bundle_import& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bundle import. " << "id: " << v.id;
@@ -157,7 +160,7 @@ void bundle_import_repository::write(context ctx,
 }
 
 void bundle_import_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::bundle_import>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bundle imports. Count: " << v.size();
@@ -169,7 +172,7 @@ void bundle_import_repository::write(
         ctx, bundle_import_mapper::map(batch), lg(), "Writing bundle imports to database.");
 }
 
-std::vector<domain::bundle_import> bundle_import_repository::read_latest(context ctx) {
+std::vector<domain::bundle_import> bundle_import_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bundle_import_entity>> |
@@ -184,7 +187,7 @@ std::vector<domain::bundle_import> bundle_import_repository::read_latest(context
         "Reading latest bundle imports");
 }
 
-std::vector<domain::bundle_import> bundle_import_repository::read_latest(context ctx,
+std::vector<domain::bundle_import> bundle_import_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bundle import. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -202,7 +205,7 @@ std::vector<domain::bundle_import> bundle_import_repository::read_latest(context
 }
 
 
-std::vector<domain::bundle_import> bundle_import_repository::read_all(context ctx,
+std::vector<domain::bundle_import> bundle_import_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all bundle import versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -219,7 +222,7 @@ std::vector<domain::bundle_import> bundle_import_repository::read_all(context ct
 }
 
 std::optional<domain::bundle_import> bundle_import_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading bundle import at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -242,7 +245,7 @@ std::optional<domain::bundle_import> bundle_import_repository::read_at_version(
 }
 
 bundle_import_repository::remove_status bundle_import_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing bundle import. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -270,12 +273,12 @@ bundle_import_repository::remove_status bundle_import_repository::remove(
     return remove_status::removed;
 }
 
-void bundle_import_repository::remove(context ctx, const std::string& id) {
+void bundle_import_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::bundle_import>
-bundle_import_repository::read_latest(context ctx,
+bundle_import_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -300,7 +303,7 @@ bundle_import_repository::read_latest(context ctx,
 }
 
 std::uint32_t bundle_import_repository::get_total_bundle_import_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::bundle_imports_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bundle import count";
@@ -319,7 +322,7 @@ std::uint32_t bundle_import_repository::get_total_bundle_import_count(
 }
 
 std::vector<domain::bundle_import>
-bundle_import_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+bundle_import_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -336,7 +339,7 @@ bundle_import_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void bundle_import_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void bundle_import_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

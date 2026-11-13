@@ -45,7 +45,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit dataset_dependency_repository(context ctx);
+    explicit dataset_dependency_repository(const context& ctx);
 
     /**
      * @brief Reads all active dataset dependencies.

@@ -132,7 +132,7 @@ report_instance_filter_condition(const std::optional<messaging::report_instances
 }
 
 ores::utility::domain::precondition
-report_instance_repository::replace_claim(context ctx, const domain::report_instance& v) {
+report_instance_repository::replace_claim(const context& ctx, const domain::report_instance& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -141,7 +141,7 @@ report_instance_repository::replace_claim(context ctx, const domain::report_inst
 }
 
 domain::report_instance
-report_instance_repository::apply_claim(context ctx,
+report_instance_repository::apply_claim(const context& ctx,
                                         const domain::report_instance& v,
                                         const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -168,11 +168,12 @@ report_instance_repository::apply_claim(context ctx,
     return t;
 }
 
-void report_instance_repository::write(context ctx, const domain::report_instance& v) {
+void report_instance_repository::write(const context& ctx, const domain::report_instance& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void report_instance_repository::write(context ctx, const std::vector<domain::report_instance>& v) {
+void report_instance_repository::write(const context& ctx,
+                                       const std::vector<domain::report_instance>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -180,7 +181,7 @@ void report_instance_repository::write(context ctx, const std::vector<domain::re
     write(ctx, v, claims);
 }
 
-void report_instance_repository::write(context ctx,
+void report_instance_repository::write(const context& ctx,
                                        const domain::report_instance& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report instance. " << "id: " << v.id;
@@ -190,7 +191,7 @@ void report_instance_repository::write(context ctx,
 }
 
 void report_instance_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::report_instance>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report instances. Count: " << v.size();
@@ -202,7 +203,7 @@ void report_instance_repository::write(
         ctx, report_instance_mapper::map(batch), lg(), "Writing report instances to database.");
 }
 
-std::vector<domain::report_instance> report_instance_repository::read_latest(context ctx) {
+std::vector<domain::report_instance> report_instance_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_instance_entity>> |
@@ -218,7 +219,7 @@ std::vector<domain::report_instance> report_instance_repository::read_latest(con
 }
 
 std::vector<domain::report_instance>
-report_instance_repository::read_latest(context ctx, const std::string& id) {
+report_instance_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report instance. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -235,7 +236,7 @@ report_instance_repository::read_latest(context ctx, const std::string& id) {
 }
 
 std::vector<domain::report_instance>
-report_instance_repository::read_latest_by_name(context ctx, const std::string& name) {
+report_instance_repository::read_latest_by_name(const context& ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report instance by name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -258,7 +259,7 @@ report_instance_repository::read_latest_by_name(context ctx, const std::string& 
 }
 
 std::vector<domain::report_instance>
-report_instance_repository::read_any_by_name(context ctx, const std::string& name) {
+report_instance_repository::read_any_by_name(const context& ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any report instance by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_instance_entity>> |
@@ -284,7 +285,7 @@ report_instance_repository::read_any_by_name(context ctx, const std::string& nam
 }
 
 
-std::vector<domain::report_instance> report_instance_repository::read_all(context ctx,
+std::vector<domain::report_instance> report_instance_repository::read_all(const context& ctx,
                                                                           const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all report instance versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -301,7 +302,7 @@ std::vector<domain::report_instance> report_instance_repository::read_all(contex
 }
 
 std::optional<domain::report_instance> report_instance_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading report instance at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -325,7 +326,7 @@ std::optional<domain::report_instance> report_instance_repository::read_at_versi
 
 
 report_instance_repository::remove_status report_instance_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing report instance. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -354,12 +355,12 @@ report_instance_repository::remove_status report_instance_repository::remove(
     return remove_status::removed;
 }
 
-void report_instance_repository::remove(context ctx, const std::string& id) {
+void report_instance_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::report_instance> report_instance_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -385,7 +386,7 @@ std::vector<domain::report_instance> report_instance_repository::read_latest(
 }
 
 std::uint32_t report_instance_repository::get_total_instance_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::report_instances_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report instance count";
@@ -404,7 +405,7 @@ std::uint32_t report_instance_repository::get_total_instance_count(
 }
 
 std::vector<domain::report_instance>
-report_instance_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+report_instance_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -422,7 +423,7 @@ report_instance_repository::read_latest(context ctx, const std::vector<std::stri
     return result;
 }
 
-void report_instance_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void report_instance_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -441,7 +442,7 @@ void report_instance_repository::remove(context ctx, const std::vector<std::stri
 
 
 std::vector<domain::report_instance> report_instance_repository::read_latest_by_definition_ids(
-    context ctx, const std::vector<boost::uuids::uuid>& definition_ids) {
+    const context& ctx, const std::vector<boost::uuids::uuid>& definition_ids) {
     if (definition_ids.empty())
         return {};
 
@@ -482,7 +483,7 @@ std::vector<domain::report_instance> report_instance_repository::read_latest_by_
 
 std::vector<report_instance_health_facts>
 report_instance_repository::read_health_facts_by_instance_ids(
-    context ctx, const std::vector<boost::uuids::uuid>& instance_ids) {
+    const context& ctx, const std::vector<boost::uuids::uuid>& instance_ids) {
     if (instance_ids.empty())
         return {};
 

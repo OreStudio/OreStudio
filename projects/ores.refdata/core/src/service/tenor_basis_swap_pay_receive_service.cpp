@@ -59,8 +59,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-tenor_basis_swap_pay_receive_service::tenor_basis_swap_pay_receive_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+tenor_basis_swap_pay_receive_service::tenor_basis_swap_pay_receive_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

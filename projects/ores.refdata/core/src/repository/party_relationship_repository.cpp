@@ -86,7 +86,8 @@ party_relationship_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-party_relationship_repository::replace_claim(context ctx, const domain::party_relationship& v) {
+party_relationship_repository::replace_claim(const context& ctx,
+                                             const domain::party_relationship& v) {
     const auto current = read_latest(ctx, v.code, v.coding_scheme_code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -95,7 +96,7 @@ party_relationship_repository::replace_claim(context ctx, const domain::party_re
 }
 
 domain::party_relationship
-party_relationship_repository::apply_claim(context ctx,
+party_relationship_repository::apply_claim(const context& ctx,
                                            const domain::party_relationship& v,
                                            const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -122,11 +123,11 @@ party_relationship_repository::apply_claim(context ctx,
     return t;
 }
 
-void party_relationship_repository::write(context ctx, const domain::party_relationship& v) {
+void party_relationship_repository::write(const context& ctx, const domain::party_relationship& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void party_relationship_repository::write(context ctx,
+void party_relationship_repository::write(const context& ctx,
                                           const std::vector<domain::party_relationship>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -135,7 +136,7 @@ void party_relationship_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void party_relationship_repository::write(context ctx,
+void party_relationship_repository::write(const context& ctx,
                                           const domain::party_relationship& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party relationship. " << "code: " << v.code
@@ -146,7 +147,7 @@ void party_relationship_repository::write(context ctx,
 }
 
 void party_relationship_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::party_relationship>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party relationships. Count: " << v.size();
@@ -160,7 +161,8 @@ void party_relationship_repository::write(
                                        "Writing party relationships to database.");
 }
 
-std::vector<domain::party_relationship> party_relationship_repository::read_latest(context ctx) {
+std::vector<domain::party_relationship>
+party_relationship_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_relationship_entity>> |
@@ -176,7 +178,7 @@ std::vector<domain::party_relationship> party_relationship_repository::read_late
 }
 
 std::vector<domain::party_relationship> party_relationship_repository::read_latest(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party relationship. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
@@ -196,7 +198,7 @@ std::vector<domain::party_relationship> party_relationship_repository::read_late
 
 
 std::vector<domain::party_relationship> party_relationship_repository::read_all(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all party relationship versions. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -214,7 +216,7 @@ std::vector<domain::party_relationship> party_relationship_repository::read_all(
 }
 
 std::optional<domain::party_relationship>
-party_relationship_repository::read_at_version(context ctx,
+party_relationship_repository::read_at_version(const context& ctx,
                                                const std::string& code,
                                                const std::string& coding_scheme_code,
                                                std::uint32_t version) {
@@ -242,7 +244,7 @@ party_relationship_repository::read_at_version(context ctx,
 }
 
 party_relationship_repository::remove_status
-party_relationship_repository::remove(context ctx,
+party_relationship_repository::remove(const context& ctx,
                                       const std::string& code,
                                       const std::string& coding_scheme_code,
                                       std::optional<std::uint32_t> version) {
@@ -276,14 +278,14 @@ party_relationship_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void party_relationship_repository::remove(context ctx,
+void party_relationship_repository::remove(const context& ctx,
                                            const std::string& code,
                                            const std::string& coding_scheme_code) {
     static_cast<void>(remove(ctx, code, coding_scheme_code, std::nullopt));
 }
 
 std::vector<domain::party_relationship>
-party_relationship_repository::read_latest(context ctx,
+party_relationship_repository::read_latest(const context& ctx,
                                            std::uint32_t offset,
                                            std::uint32_t limit,
                                            const ores::utility::domain::order& order,
@@ -307,7 +309,7 @@ party_relationship_repository::read_latest(context ctx,
 }
 
 std::uint32_t party_relationship_repository::get_total_relationship_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party relationship count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -323,7 +325,7 @@ std::uint32_t party_relationship_repository::get_total_relationship_count(
 }
 
 std::vector<domain::party_relationship>
-party_relationship_repository::read_latest(context ctx,
+party_relationship_repository::read_latest(const context& ctx,
                                            const std::vector<std::string>& codes,
                                            const std::vector<std::string>& coding_scheme_codes) {
     if (codes.empty() || coding_scheme_codes.empty())
@@ -359,7 +361,7 @@ party_relationship_repository::read_latest(context ctx,
     return filtered;
 }
 
-void party_relationship_repository::remove(context ctx,
+void party_relationship_repository::remove(const context& ctx,
                                            const std::vector<std::string>& codes,
                                            const std::vector<std::string>& coding_scheme_codes) {
     // Compound key: a per-column .in() DELETE would be a cross-product

@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-deposit_convention_service::deposit_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+deposit_convention_service::deposit_convention_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

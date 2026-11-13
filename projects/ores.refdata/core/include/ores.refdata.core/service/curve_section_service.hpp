@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit curve_section_service(context ctx);
+    explicit curve_section_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

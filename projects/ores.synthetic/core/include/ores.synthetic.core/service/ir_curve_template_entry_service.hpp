@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit ir_curve_template_entry_service(context ctx);
+    explicit ir_curve_template_entry_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

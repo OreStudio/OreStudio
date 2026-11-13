@@ -123,7 +123,7 @@ tenor_schedule_filter_condition(const std::optional<messaging::tenor_schedules_f
 }
 
 ores::utility::domain::precondition
-tenor_schedule_repository::replace_claim(context ctx, const domain::tenor_schedule& v) {
+tenor_schedule_repository::replace_claim(const context& ctx, const domain::tenor_schedule& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -132,7 +132,7 @@ tenor_schedule_repository::replace_claim(context ctx, const domain::tenor_schedu
 }
 
 domain::tenor_schedule
-tenor_schedule_repository::apply_claim(context ctx,
+tenor_schedule_repository::apply_claim(const context& ctx,
                                        const domain::tenor_schedule& v,
                                        const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -159,11 +159,12 @@ tenor_schedule_repository::apply_claim(context ctx,
     return t;
 }
 
-void tenor_schedule_repository::write(context ctx, const domain::tenor_schedule& v) {
+void tenor_schedule_repository::write(const context& ctx, const domain::tenor_schedule& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void tenor_schedule_repository::write(context ctx, const std::vector<domain::tenor_schedule>& v) {
+void tenor_schedule_repository::write(const context& ctx,
+                                      const std::vector<domain::tenor_schedule>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -171,7 +172,7 @@ void tenor_schedule_repository::write(context ctx, const std::vector<domain::ten
     write(ctx, v, claims);
 }
 
-void tenor_schedule_repository::write(context ctx,
+void tenor_schedule_repository::write(const context& ctx,
                                       const domain::tenor_schedule& v,
                                       const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor schedule. " << "code: " << v.code;
@@ -181,7 +182,7 @@ void tenor_schedule_repository::write(context ctx,
 }
 
 void tenor_schedule_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::tenor_schedule>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor schedules. Count: " << v.size();
@@ -193,7 +194,7 @@ void tenor_schedule_repository::write(
         ctx, tenor_schedule_mapper::map(batch), lg(), "Writing tenor schedules to database.");
 }
 
-std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest(context ctx) {
+std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_schedule_entity>> |
@@ -209,7 +210,7 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest(conte
 }
 
 std::vector<domain::tenor_schedule>
-tenor_schedule_repository::read_latest(context ctx, const std::string& code) {
+tenor_schedule_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor schedule. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -226,7 +227,7 @@ tenor_schedule_repository::read_latest(context ctx, const std::string& code) {
 }
 
 
-std::vector<domain::tenor_schedule> tenor_schedule_repository::read_all(context ctx,
+std::vector<domain::tenor_schedule> tenor_schedule_repository::read_all(const context& ctx,
                                                                         const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all tenor schedule versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -243,7 +244,7 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_all(context 
 }
 
 std::optional<domain::tenor_schedule> tenor_schedule_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading tenor schedule at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -266,7 +267,7 @@ std::optional<domain::tenor_schedule> tenor_schedule_repository::read_at_version
 }
 
 std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest_by_calendar_code(
-    context ctx,
+    const context& ctx,
     const std::string& calendar_code,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -293,7 +294,7 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest_by_ca
 }
 
 std::uint32_t tenor_schedule_repository::get_total_schedule_count_by_calendar_code(
-    context ctx,
+    const context& ctx,
     const std::string& calendar_code,
     const std::optional<messaging::tenor_schedules_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor schedules count. calendar_code: "
@@ -316,7 +317,7 @@ std::uint32_t tenor_schedule_repository::get_total_schedule_count_by_calendar_co
 
 
 std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest_by_diary_entry_type(
-    context ctx,
+    const context& ctx,
     const std::string& diary_entry_type,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -343,7 +344,7 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest_by_di
 }
 
 std::uint32_t tenor_schedule_repository::get_total_schedule_count_by_diary_entry_type(
-    context ctx,
+    const context& ctx,
     const std::string& diary_entry_type,
     const std::optional<messaging::tenor_schedules_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -366,7 +367,7 @@ std::uint32_t tenor_schedule_repository::get_total_schedule_count_by_diary_entry
 
 
 tenor_schedule_repository::remove_status tenor_schedule_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenor schedule. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -394,12 +395,12 @@ tenor_schedule_repository::remove_status tenor_schedule_repository::remove(
     return remove_status::removed;
 }
 
-void tenor_schedule_repository::remove(context ctx, const std::string& code) {
+void tenor_schedule_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -424,7 +425,7 @@ std::vector<domain::tenor_schedule> tenor_schedule_repository::read_latest(
 }
 
 std::uint32_t tenor_schedule_repository::get_total_schedule_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::tenor_schedules_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor schedule count";
@@ -443,7 +444,7 @@ std::uint32_t tenor_schedule_repository::get_total_schedule_count(
 }
 
 std::vector<domain::tenor_schedule>
-tenor_schedule_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+tenor_schedule_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -460,7 +461,7 @@ tenor_schedule_repository::read_latest(context ctx, const std::vector<std::strin
     return result;
 }
 
-void tenor_schedule_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void tenor_schedule_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

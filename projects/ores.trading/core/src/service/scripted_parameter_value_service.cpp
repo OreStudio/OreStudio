@@ -57,8 +57,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-scripted_parameter_value_service::scripted_parameter_value_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+scripted_parameter_value_service::scripted_parameter_value_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

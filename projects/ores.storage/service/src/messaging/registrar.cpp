@@ -29,7 +29,7 @@ using namespace ores::storage::messaging;
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              ores::storage::filesystem::local_store store) {
     std::vector<ores::nats::service::subscription> subs;

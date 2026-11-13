@@ -112,7 +112,7 @@ std::optional<query_builder::condition> ir_curve_template_entry_filter_condition
 }
 
 ores::utility::domain::precondition
-ir_curve_template_entry_repository::replace_claim(context ctx,
+ir_curve_template_entry_repository::replace_claim(const context& ctx,
                                                   const domain::ir_curve_template_entry& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -122,7 +122,7 @@ ir_curve_template_entry_repository::replace_claim(context ctx,
 }
 
 domain::ir_curve_template_entry
-ir_curve_template_entry_repository::apply_claim(context ctx,
+ir_curve_template_entry_repository::apply_claim(const context& ctx,
                                                 const domain::ir_curve_template_entry& v,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -149,13 +149,13 @@ ir_curve_template_entry_repository::apply_claim(context ctx,
     return t;
 }
 
-void ir_curve_template_entry_repository::write(context ctx,
+void ir_curve_template_entry_repository::write(const context& ctx,
                                                const domain::ir_curve_template_entry& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void ir_curve_template_entry_repository::write(
-    context ctx, const std::vector<domain::ir_curve_template_entry>& v) {
+    const context& ctx, const std::vector<domain::ir_curve_template_entry>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -163,7 +163,7 @@ void ir_curve_template_entry_repository::write(
     write(ctx, v, claims);
 }
 
-void ir_curve_template_entry_repository::write(context ctx,
+void ir_curve_template_entry_repository::write(const context& ctx,
                                                const domain::ir_curve_template_entry& v,
                                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing IR curve template entry. " << "id: " << v.id;
@@ -175,7 +175,7 @@ void ir_curve_template_entry_repository::write(context ctx,
 }
 
 void ir_curve_template_entry_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::ir_curve_template_entry>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing IR curve template entries. Count: " << v.size();
@@ -190,7 +190,7 @@ void ir_curve_template_entry_repository::write(
 }
 
 std::vector<domain::ir_curve_template_entry>
-ir_curve_template_entry_repository::read_latest(context ctx) {
+ir_curve_template_entry_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -209,7 +209,7 @@ ir_curve_template_entry_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::ir_curve_template_entry>
-ir_curve_template_entry_repository::read_latest(context ctx, const std::string& id) {
+ir_curve_template_entry_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest IR curve template entry. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -229,7 +229,7 @@ ir_curve_template_entry_repository::read_latest(context ctx, const std::string& 
 
 
 std::vector<domain::ir_curve_template_entry>
-ir_curve_template_entry_repository::read_all(context ctx, const std::string& id) {
+ir_curve_template_entry_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all IR curve template entry versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -248,7 +248,7 @@ ir_curve_template_entry_repository::read_all(context ctx, const std::string& id)
 }
 
 std::optional<domain::ir_curve_template_entry> ir_curve_template_entry_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading IR curve template entry at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -273,7 +273,7 @@ std::optional<domain::ir_curve_template_entry> ir_curve_template_entry_repositor
 
 
 ir_curve_template_entry_repository::remove_status ir_curve_template_entry_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing IR curve template entry. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -302,12 +302,12 @@ ir_curve_template_entry_repository::remove_status ir_curve_template_entry_reposi
     return remove_status::removed;
 }
 
-void ir_curve_template_entry_repository::remove(context ctx, const std::string& id) {
+void ir_curve_template_entry_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::ir_curve_template_entry> ir_curve_template_entry_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -334,7 +334,7 @@ std::vector<domain::ir_curve_template_entry> ir_curve_template_entry_repository:
 }
 
 std::uint32_t ir_curve_template_entry_repository::get_total_ir_curve_template_entry_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::ir_curve_template_entries_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active IR curve template entry count";
@@ -354,7 +354,8 @@ std::uint32_t ir_curve_template_entry_repository::get_total_ir_curve_template_en
 }
 
 std::vector<domain::ir_curve_template_entry>
-ir_curve_template_entry_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+ir_curve_template_entry_repository::read_latest(const context& ctx,
+                                                const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -373,7 +374,8 @@ ir_curve_template_entry_repository::read_latest(context ctx, const std::vector<s
     return result;
 }
 
-void ir_curve_template_entry_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void ir_curve_template_entry_repository::remove(const context& ctx,
+                                                const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

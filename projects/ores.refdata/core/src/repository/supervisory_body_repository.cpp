@@ -85,7 +85,7 @@ query_builder::order supervisory_body_list_order(const ores::utility::domain::or
 }
 
 ores::utility::domain::precondition
-supervisory_body_repository::replace_claim(context ctx, const domain::supervisory_body& v) {
+supervisory_body_repository::replace_claim(const context& ctx, const domain::supervisory_body& v) {
     const auto current = read_latest(ctx, v.code, v.coding_scheme_code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -94,7 +94,7 @@ supervisory_body_repository::replace_claim(context ctx, const domain::supervisor
 }
 
 domain::supervisory_body
-supervisory_body_repository::apply_claim(context ctx,
+supervisory_body_repository::apply_claim(const context& ctx,
                                          const domain::supervisory_body& v,
                                          const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -121,11 +121,11 @@ supervisory_body_repository::apply_claim(context ctx,
     return t;
 }
 
-void supervisory_body_repository::write(context ctx, const domain::supervisory_body& v) {
+void supervisory_body_repository::write(const context& ctx, const domain::supervisory_body& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void supervisory_body_repository::write(context ctx,
+void supervisory_body_repository::write(const context& ctx,
                                         const std::vector<domain::supervisory_body>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -134,7 +134,7 @@ void supervisory_body_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void supervisory_body_repository::write(context ctx,
+void supervisory_body_repository::write(const context& ctx,
                                         const domain::supervisory_body& v,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing supervisory body. " << "code: " << v.code
@@ -145,7 +145,7 @@ void supervisory_body_repository::write(context ctx,
 }
 
 void supervisory_body_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::supervisory_body>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing supervisory bodies. Count: " << v.size();
@@ -157,7 +157,7 @@ void supervisory_body_repository::write(
         ctx, supervisory_body_mapper::map(batch), lg(), "Writing supervisory bodies to database.");
 }
 
-std::vector<domain::supervisory_body> supervisory_body_repository::read_latest(context ctx) {
+std::vector<domain::supervisory_body> supervisory_body_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<supervisory_body_entity>> |
@@ -173,7 +173,7 @@ std::vector<domain::supervisory_body> supervisory_body_repository::read_latest(c
 }
 
 std::vector<domain::supervisory_body> supervisory_body_repository::read_latest(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest supervisory body. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
@@ -193,7 +193,7 @@ std::vector<domain::supervisory_body> supervisory_body_repository::read_latest(
 
 
 std::vector<domain::supervisory_body> supervisory_body_repository::read_all(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all supervisory body versions. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -211,7 +211,7 @@ std::vector<domain::supervisory_body> supervisory_body_repository::read_all(
 }
 
 std::optional<domain::supervisory_body>
-supervisory_body_repository::read_at_version(context ctx,
+supervisory_body_repository::read_at_version(const context& ctx,
                                              const std::string& code,
                                              const std::string& coding_scheme_code,
                                              std::uint32_t version) {
@@ -239,7 +239,7 @@ supervisory_body_repository::read_at_version(context ctx,
 }
 
 supervisory_body_repository::remove_status
-supervisory_body_repository::remove(context ctx,
+supervisory_body_repository::remove(const context& ctx,
                                     const std::string& code,
                                     const std::string& coding_scheme_code,
                                     std::optional<std::uint32_t> version) {
@@ -273,14 +273,14 @@ supervisory_body_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void supervisory_body_repository::remove(context ctx,
+void supervisory_body_repository::remove(const context& ctx,
                                          const std::string& code,
                                          const std::string& coding_scheme_code) {
     static_cast<void>(remove(ctx, code, coding_scheme_code, std::nullopt));
 }
 
 std::vector<domain::supervisory_body>
-supervisory_body_repository::read_latest(context ctx,
+supervisory_body_repository::read_latest(const context& ctx,
                                          std::uint32_t offset,
                                          std::uint32_t limit,
                                          const ores::utility::domain::order& order,
@@ -304,7 +304,7 @@ supervisory_body_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-supervisory_body_repository::get_total_body_count(context ctx,
+supervisory_body_repository::get_total_body_count(const context& ctx,
                                                   const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active supervisory body count";
 
@@ -321,7 +321,7 @@ supervisory_body_repository::get_total_body_count(context ctx,
 }
 
 std::vector<domain::supervisory_body>
-supervisory_body_repository::read_latest(context ctx,
+supervisory_body_repository::read_latest(const context& ctx,
                                          const std::vector<std::string>& codes,
                                          const std::vector<std::string>& coding_scheme_codes) {
     if (codes.empty() || coding_scheme_codes.empty())
@@ -357,7 +357,7 @@ supervisory_body_repository::read_latest(context ctx,
     return filtered;
 }
 
-void supervisory_body_repository::remove(context ctx,
+void supervisory_body_repository::remove(const context& ctx,
                                          const std::vector<std::string>& codes,
                                          const std::vector<std::string>& coding_scheme_codes) {
     // Compound key: a per-column .in() DELETE would be a cross-product

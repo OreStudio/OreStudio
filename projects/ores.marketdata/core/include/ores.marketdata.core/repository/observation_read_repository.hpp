@@ -19,7 +19,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_OBSERVATION_READ_REPOSITORY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_OBSERVATION_READ_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -62,7 +62,7 @@ public:
      * @brief The observations of a series from the start of @p from to the end of @p to,
      * in UTC, oldest first and by coordinate within a time, at most @p limit of them.
      */
-    std::vector<stored_observation> between(context ctx,
+    std::vector<stored_observation> between(const context& ctx,
                                             const boost::uuids::uuid& series_id,
                                             std::chrono::year_month_day from,
                                             std::chrono::year_month_day to,

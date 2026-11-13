@@ -65,12 +65,12 @@ using namespace ores::logging;
 class report_scheduling_handler {
 public:
     report_scheduling_handler(ores::nats::service::client& nats,
-                              ores::database::context ctx,
+                              const ores::database::context& ctx,
                               std::optional<ores::security::jwt::jwt_authenticator> verifier,
                               ores::nats::service::nats_client& svc_nats)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
+        , ctx_(ctx)
+        , verifier_(verifier)
         , svc_nats_(svc_nats) {}
 
     void schedule(ores::nats::message msg) {

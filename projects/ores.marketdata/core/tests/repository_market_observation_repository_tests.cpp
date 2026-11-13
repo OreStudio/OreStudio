@@ -195,7 +195,7 @@ make_lineage(ores::utility::generation::generation_context& ctx,
 // assertion reads the design's own vocabulary.
 std::string
 reported_source_kind(ores::marketdata::repository::observation_lineage_repository& lineage_repo,
-                     market_observation_repository::context ctx,
+                     const market_observation_repository::context& ctx,
                      const boost::uuids::uuid& series_id,
                      const ores::marketdata::domain::market_observation& obs) {
     const auto lineage = lineage_repo.read_latest_by_observation(

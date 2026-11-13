@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::run_result& v);
-    void write(context ctx, const std::vector<domain::run_result>& v);
+    void write(const context& ctx, const domain::run_result& v);
+    void write(const context& ctx, const std::vector<domain::run_result>& v);
     /**@}*/
 
     /**
@@ -89,7 +89,7 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::run_result& v,
                const ores::utility::domain::precondition& claim);
 
@@ -97,7 +97,7 @@ public:
      * @brief Writes a set of run results, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::run_result>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -105,9 +105,10 @@ public:
      * @brief Reads latest run results, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::run_result> read_latest(context ctx);
-    std::vector<domain::run_result> read_latest(context ctx, const std::string& id);
-    std::vector<domain::run_result> read_latest(context ctx, const std::vector<std::string>& ids);
+    std::vector<domain::run_result> read_latest(const context& ctx);
+    std::vector<domain::run_result> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::run_result> read_latest(const context& ctx,
+                                                const std::vector<std::string>& ids);
     /**@}*/
 
 
@@ -117,7 +118,7 @@ public:
      * A current-state table holds one row per key, so this is the single
      * current row, not a version history.
      */
-    std::vector<domain::run_result> read_all(context ctx, const std::string& id);
+    std::vector<domain::run_result> read_all(const context& ctx, const std::string& id);
 
 
     /**
@@ -137,7 +138,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::run_result>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -149,7 +150,8 @@ public:
      * @return Total number of active run results
      */
     std::uint32_t get_total_result_count(
-        context ctx, const std::optional<messaging::run_results_filter>& filter = std::nullopt);
+        const context& ctx,
+        const std::optional<messaging::run_results_filter>& filter = std::nullopt);
 
     /**
      * @brief Deletes a run result permanently.
@@ -157,7 +159,7 @@ public:
      * A current-state table has no history, so the row is removed, not
      * soft-closed.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -179,12 +181,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes run results permanently.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -192,14 +195,15 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::run_result& v);
+    ores::utility::domain::precondition replace_claim(const context& ctx,
+                                                      const domain::run_result& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::run_result apply_claim(context ctx,
+    domain::run_result apply_claim(const context& ctx,
                                    const domain::run_result& v,
                                    const ores::utility::domain::precondition& claim);
 };

@@ -84,7 +84,7 @@ query_builder::order auth_event_list_order(const ores::utility::domain::order& o
 }
 
 ores::utility::domain::precondition
-auth_event_repository::replace_claim(context ctx, const domain::auth_event& v) {
+auth_event_repository::replace_claim(const context& ctx, const domain::auth_event& v) {
     const auto current =
         read_latest(ctx, v.id, ores::platform::time::datetime::to_db_string(v.event_time));
     if (current.empty())
@@ -95,8 +95,10 @@ auth_event_repository::replace_claim(context ctx, const domain::auth_event& v) {
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::auth_event auth_event_repository::apply_claim(
-    context ctx, const domain::auth_event& v, const ores::utility::domain::precondition& claim) {
+domain::auth_event
+auth_event_repository::apply_claim(const context& ctx,
+                                   const domain::auth_event& v,
+                                   const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
@@ -109,11 +111,11 @@ domain::auth_event auth_event_repository::apply_claim(
     return t;
 }
 
-void auth_event_repository::write(context ctx, const domain::auth_event& v) {
+void auth_event_repository::write(const context& ctx, const domain::auth_event& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void auth_event_repository::write(context ctx, const std::vector<domain::auth_event>& v) {
+void auth_event_repository::write(const context& ctx, const std::vector<domain::auth_event>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -121,7 +123,7 @@ void auth_event_repository::write(context ctx, const std::vector<domain::auth_ev
     write(ctx, v, claims);
 }
 
-void auth_event_repository::write(context ctx,
+void auth_event_repository::write(const context& ctx,
                                   const domain::auth_event& v,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing event. " << "id: " << v.id
@@ -133,7 +135,7 @@ void auth_event_repository::write(context ctx,
                                     "Writing event to database.");
 }
 
-void auth_event_repository::write(context ctx,
+void auth_event_repository::write(const context& ctx,
                                   const std::vector<domain::auth_event>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing auth events. Count: " << v.size();
@@ -147,7 +149,7 @@ void auth_event_repository::write(context ctx,
                                     "Writing auth events to database.");
 }
 
-std::vector<domain::auth_event> auth_event_repository::read_latest(context ctx) {
+std::vector<domain::auth_event> auth_event_repository::read_latest(const context& ctx) {
     const auto query = query_builder::read<std::vector<auth_event_entity>> |
                        query_builder::order_by("id"_c, "event_time"_c);
 
@@ -159,7 +161,7 @@ std::vector<domain::auth_event> auth_event_repository::read_latest(context ctx) 
         "Reading latest auth events");
 }
 
-std::vector<domain::auth_event> auth_event_repository::read_latest(context ctx,
+std::vector<domain::auth_event> auth_event_repository::read_latest(const context& ctx,
                                                                    const std::string& id,
                                                                    const std::string& event_time) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest event. " << "id: " << id
@@ -176,8 +178,9 @@ std::vector<domain::auth_event> auth_event_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::auth_event>
-auth_event_repository::read_all(context ctx, const std::string& id, const std::string& event_time) {
+std::vector<domain::auth_event> auth_event_repository::read_all(const context& ctx,
+                                                                const std::string& id,
+                                                                const std::string& event_time) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all event versions. " << "id: " << id
                                << " event_time: " << event_time;
     const auto query = query_builder::read<std::vector<auth_event_entity>> |
@@ -194,7 +197,7 @@ auth_event_repository::read_all(context ctx, const std::string& id, const std::s
 
 
 auth_event_repository::remove_status
-auth_event_repository::remove(context ctx,
+auth_event_repository::remove(const context& ctx,
                               const std::string& id,
                               const std::string& event_time,
                               std::optional<std::uint32_t> version) {
@@ -214,14 +217,14 @@ auth_event_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void auth_event_repository::remove(context ctx,
+void auth_event_repository::remove(const context& ctx,
                                    const std::string& id,
                                    const std::string& event_time) {
     static_cast<void>(remove(ctx, id, event_time, std::nullopt));
 }
 
 std::vector<domain::auth_event>
-auth_event_repository::read_latest(context ctx,
+auth_event_repository::read_latest(const context& ctx,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order) {
@@ -240,7 +243,7 @@ auth_event_repository::read_latest(context ctx,
         "Reading latest auth events with pagination.");
 }
 
-std::uint32_t auth_event_repository::get_total__count(context ctx) {
+std::uint32_t auth_event_repository::get_total__count(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active event count";
 
     const auto query = query_builder::read<std::vector<auth_event_entity>>;
@@ -249,8 +252,10 @@ std::uint32_t auth_event_repository::get_total__count(context ctx) {
         ctx, query, std::nullopt, lg(), "Counting auth events");
 }
 
-std::vector<domain::auth_event> auth_event_repository::read_latest(
-    context ctx, const std::vector<std::string>& ids, const std::vector<std::string>& event_times) {
+std::vector<domain::auth_event>
+auth_event_repository::read_latest(const context& ctx,
+                                   const std::vector<std::string>& ids,
+                                   const std::vector<std::string>& event_times) {
     if (ids.empty() || event_times.empty())
         return {};
     const auto query = query_builder::read<std::vector<auth_event_entity>> |
@@ -280,7 +285,7 @@ std::vector<domain::auth_event> auth_event_repository::read_latest(
     return filtered;
 }
 
-void auth_event_repository::remove(context ctx,
+void auth_event_repository::remove(const context& ctx,
                                    const std::vector<std::string>& ids,
                                    const std::vector<std::string>& event_times) {
     // Compound key: a per-column .in() DELETE would be a cross-product

@@ -44,11 +44,10 @@ static constexpr std::string_view cut_resolution_rule_queue_group = "ores.report
 
 std::vector<ores::nats::service::subscription> register_cut_resolution_rule_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h =
-        std::make_shared<cut_resolution_rule_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<cut_resolution_rule_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_cut_resolution_rules_request::nats_subject,
         cut_resolution_rule_queue_group,

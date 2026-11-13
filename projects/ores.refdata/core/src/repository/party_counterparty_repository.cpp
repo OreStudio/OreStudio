@@ -54,8 +54,8 @@ std::string party_counterparty_repository::sql() {
     return query_builder::insert_statement_sql<party_counterparty_entity>(lg());
 }
 
-party_counterparty_repository::party_counterparty_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+party_counterparty_repository::party_counterparty_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 party_counterparty_repository::replace_claim(const domain::party_counterparty& v) {

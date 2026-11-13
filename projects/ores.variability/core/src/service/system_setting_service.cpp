@@ -58,8 +58,8 @@ namespace ores::variability::service {
 
 using namespace ores::logging;
 
-system_setting_service::system_setting_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+system_setting_service::system_setting_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

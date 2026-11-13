@@ -58,8 +58,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-trade_authorisation_request_service::trade_authorisation_request_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+trade_authorisation_request_service::trade_authorisation_request_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

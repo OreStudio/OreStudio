@@ -50,8 +50,8 @@ namespace ores::inbox::service {
 
 using namespace ores::logging;
 
-delivery_outcome_type_service::delivery_outcome_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+delivery_outcome_type_service::delivery_outcome_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

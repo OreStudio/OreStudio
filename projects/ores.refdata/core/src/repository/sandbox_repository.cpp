@@ -109,7 +109,7 @@ sandbox_filter_condition(const std::optional<messaging::sandboxes_filter>& filte
 
 }
 
-ores::utility::domain::precondition sandbox_repository::replace_claim(context ctx,
+ores::utility::domain::precondition sandbox_repository::replace_claim(const context& ctx,
                                                                       const domain::sandbox& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -118,7 +118,7 @@ ores::utility::domain::precondition sandbox_repository::replace_claim(context ct
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::sandbox sandbox_repository::apply_claim(context ctx,
+domain::sandbox sandbox_repository::apply_claim(const context& ctx,
                                                 const domain::sandbox& v,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -145,11 +145,11 @@ domain::sandbox sandbox_repository::apply_claim(context ctx,
     return t;
 }
 
-void sandbox_repository::write(context ctx, const domain::sandbox& v) {
+void sandbox_repository::write(const context& ctx, const domain::sandbox& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void sandbox_repository::write(context ctx, const std::vector<domain::sandbox>& v) {
+void sandbox_repository::write(const context& ctx, const std::vector<domain::sandbox>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -157,7 +157,7 @@ void sandbox_repository::write(context ctx, const std::vector<domain::sandbox>& 
     write(ctx, v, claims);
 }
 
-void sandbox_repository::write(context ctx,
+void sandbox_repository::write(const context& ctx,
                                const domain::sandbox& v,
                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sandbox. " << "id: " << v.id;
@@ -166,7 +166,7 @@ void sandbox_repository::write(context ctx,
         ctx, sandbox_mapper::map(t), lg(), "Writing sandbox to database.");
 }
 
-void sandbox_repository::write(context ctx,
+void sandbox_repository::write(const context& ctx,
                                const std::vector<domain::sandbox>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sandboxes. Count: " << v.size();
@@ -178,7 +178,7 @@ void sandbox_repository::write(context ctx,
         ctx, sandbox_mapper::map(batch), lg(), "Writing sandboxes to database.");
 }
 
-std::vector<domain::sandbox> sandbox_repository::read_latest(context ctx) {
+std::vector<domain::sandbox> sandbox_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sandbox_entity>> |
@@ -193,7 +193,8 @@ std::vector<domain::sandbox> sandbox_repository::read_latest(context ctx) {
         "Reading latest sandboxes");
 }
 
-std::vector<domain::sandbox> sandbox_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::sandbox> sandbox_repository::read_latest(const context& ctx,
+                                                             const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sandbox. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -209,7 +210,7 @@ std::vector<domain::sandbox> sandbox_repository::read_latest(context ctx, const 
         "Reading latest sandbox by id.");
 }
 
-std::vector<domain::sandbox> sandbox_repository::read_latest_by_name(context ctx,
+std::vector<domain::sandbox> sandbox_repository::read_latest_by_name(const context& ctx,
                                                                      const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sandbox by name: " << name;
     static constexpr auto max = db_timestamp::max();
@@ -226,7 +227,7 @@ std::vector<domain::sandbox> sandbox_repository::read_latest_by_name(context ctx
         "Reading latest sandbox by name.");
 }
 
-std::vector<domain::sandbox> sandbox_repository::read_any_by_name(context ctx,
+std::vector<domain::sandbox> sandbox_repository::read_any_by_name(const context& ctx,
                                                                   const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any sandbox by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
@@ -243,7 +244,8 @@ std::vector<domain::sandbox> sandbox_repository::read_any_by_name(context ctx,
 }
 
 
-std::vector<domain::sandbox> sandbox_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::sandbox> sandbox_repository::read_all(const context& ctx,
+                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all sandbox versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sandbox_entity>> |
@@ -258,8 +260,9 @@ std::vector<domain::sandbox> sandbox_repository::read_all(context ctx, const std
         "Reading all sandbox versions by id.");
 }
 
-std::optional<domain::sandbox>
-sandbox_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::sandbox> sandbox_repository::read_at_version(const context& ctx,
+                                                                   const std::string& id,
+                                                                   std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading sandbox at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -281,7 +284,7 @@ sandbox_repository::read_at_version(context ctx, const std::string& id, std::uin
 }
 
 std::vector<domain::sandbox> sandbox_repository::read_latest_by_anchor_portfolio_id(
-    context ctx,
+    const context& ctx,
     const std::string& anchor_portfolio_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -309,7 +312,7 @@ std::vector<domain::sandbox> sandbox_repository::read_latest_by_anchor_portfolio
 }
 
 std::uint32_t sandbox_repository::get_total_sandbox_count_by_anchor_portfolio_id(
-    context ctx,
+    const context& ctx,
     const std::string& anchor_portfolio_id,
     const std::optional<messaging::sandboxes_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sandboxes count. anchor_portfolio_id: "
@@ -331,7 +334,7 @@ std::uint32_t sandbox_repository::get_total_sandbox_count_by_anchor_portfolio_id
 }
 
 
-sandbox_repository::remove_status sandbox_repository::remove(context ctx,
+sandbox_repository::remove_status sandbox_repository::remove(const context& ctx,
                                                              const std::string& id,
                                                              std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing sandbox. " << "id: " << id;
@@ -361,12 +364,12 @@ sandbox_repository::remove_status sandbox_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void sandbox_repository::remove(context ctx, const std::string& id) {
+void sandbox_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::sandbox>
-sandbox_repository::read_latest(context ctx,
+sandbox_repository::read_latest(const context& ctx,
                                 std::uint32_t offset,
                                 std::uint32_t limit,
                                 const ores::utility::domain::order& order,
@@ -390,7 +393,7 @@ sandbox_repository::read_latest(context ctx,
 }
 
 std::uint32_t sandbox_repository::get_total_sandbox_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::sandboxes_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sandbox count";
@@ -407,7 +410,7 @@ std::uint32_t sandbox_repository::get_total_sandbox_count(
         "Counting sandboxes");
 }
 
-std::vector<domain::sandbox> sandbox_repository::read_latest(context ctx,
+std::vector<domain::sandbox> sandbox_repository::read_latest(const context& ctx,
                                                              const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -425,7 +428,7 @@ std::vector<domain::sandbox> sandbox_repository::read_latest(context ctx,
     return result;
 }
 
-void sandbox_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void sandbox_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

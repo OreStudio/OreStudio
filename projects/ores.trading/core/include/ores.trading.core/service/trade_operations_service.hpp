@@ -57,7 +57,7 @@ public:
      * would apply those rules to some callers and not others, and the caller
      * that forgot would be the one nobody notices.
      */
-    trade_operations_service(context ctx, const book_rules_port& books);
+    trade_operations_service(const context& ctx, const book_rules_port& books);
 
     /**
      * @brief Books a trade: its anchor, its booking and its first state, in
@@ -122,7 +122,7 @@ private:
      *
      * @return The request raised, when the trade started waiting on Operations.
      */
-    std::optional<raised_authorisation> execute_within(context ctx,
+    std::optional<raised_authorisation> execute_within(const context& ctx,
                                                        const authorisation_policy& authorisation,
                                                        const boost::uuids::uuid& trade_id,
                                                        const std::string& change_reason_code,

@@ -58,8 +58,8 @@ namespace ores::analytics::service {
 
 using namespace ores::logging;
 
-pricing_model_product_parameter_service::pricing_model_product_parameter_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+pricing_model_product_parameter_service::pricing_model_product_parameter_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -57,7 +57,7 @@ public:
      *
      * @param ctx Database context for persistence operations.
      */
-    explicit service_session_service(context ctx);
+    explicit service_session_service(const context& ctx);
 
     /**
      * @brief Starts a session for a service account.

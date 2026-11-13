@@ -84,7 +84,7 @@ identity_of(const domain::market_series& series) {
 
 /// The declared axes of each series, in order, from one read.
 std::map<std::string, std::vector<std::string>>
-axes_of(ores::database::context ctx, const std::vector<domain::market_series>& series) {
+axes_of(const ores::database::context& ctx, const std::vector<domain::market_series>& series) {
     std::vector<std::string> ids;
     ids.reserve(series.size());
     for (const auto& s : series)
@@ -107,7 +107,7 @@ axes_of(ores::database::context ctx, const std::vector<domain::market_series>& s
 }
 
 messaging::list_series_identities_response
-series_identity_lister::list(ores::database::context ctx,
+series_identity_lister::list(const ores::database::context& ctx,
                              const messaging::list_series_identities_request& request) {
     messaging::list_series_identities_response response;
 

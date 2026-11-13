@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-csa_eligible_currency_service::csa_eligible_currency_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+csa_eligible_currency_service::csa_eligible_currency_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

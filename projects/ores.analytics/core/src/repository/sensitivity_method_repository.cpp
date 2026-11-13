@@ -101,7 +101,8 @@ std::optional<query_builder::condition> sensitivity_method_filter_condition(
 }
 
 ores::utility::domain::precondition
-sensitivity_method_repository::replace_claim(context ctx, const domain::sensitivity_method& v) {
+sensitivity_method_repository::replace_claim(const context& ctx,
+                                             const domain::sensitivity_method& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +111,7 @@ sensitivity_method_repository::replace_claim(context ctx, const domain::sensitiv
 }
 
 domain::sensitivity_method
-sensitivity_method_repository::apply_claim(context ctx,
+sensitivity_method_repository::apply_claim(const context& ctx,
                                            const domain::sensitivity_method& v,
                                            const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,11 +138,11 @@ sensitivity_method_repository::apply_claim(context ctx,
     return t;
 }
 
-void sensitivity_method_repository::write(context ctx, const domain::sensitivity_method& v) {
+void sensitivity_method_repository::write(const context& ctx, const domain::sensitivity_method& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void sensitivity_method_repository::write(context ctx,
+void sensitivity_method_repository::write(const context& ctx,
                                           const std::vector<domain::sensitivity_method>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -150,7 +151,7 @@ void sensitivity_method_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void sensitivity_method_repository::write(context ctx,
+void sensitivity_method_repository::write(const context& ctx,
                                           const domain::sensitivity_method& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sensitivity method. " << "code: " << v.code;
@@ -160,7 +161,7 @@ void sensitivity_method_repository::write(context ctx,
 }
 
 void sensitivity_method_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::sensitivity_method>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sensitivity methods. Count: " << v.size();
@@ -174,7 +175,8 @@ void sensitivity_method_repository::write(
                                        "Writing sensitivity methods to database.");
 }
 
-std::vector<domain::sensitivity_method> sensitivity_method_repository::read_latest(context ctx) {
+std::vector<domain::sensitivity_method>
+sensitivity_method_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sensitivity_method_entity>> |
@@ -190,7 +192,7 @@ std::vector<domain::sensitivity_method> sensitivity_method_repository::read_late
 }
 
 std::vector<domain::sensitivity_method>
-sensitivity_method_repository::read_latest(context ctx, const std::string& code) {
+sensitivity_method_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sensitivity method. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -208,7 +210,7 @@ sensitivity_method_repository::read_latest(context ctx, const std::string& code)
 
 
 std::vector<domain::sensitivity_method>
-sensitivity_method_repository::read_all(context ctx, const std::string& code) {
+sensitivity_method_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all sensitivity method versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<sensitivity_method_entity>> |
@@ -224,7 +226,7 @@ sensitivity_method_repository::read_all(context ctx, const std::string& code) {
 }
 
 std::optional<domain::sensitivity_method> sensitivity_method_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading sensitivity method at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -247,7 +249,7 @@ std::optional<domain::sensitivity_method> sensitivity_method_repository::read_at
 }
 
 sensitivity_method_repository::remove_status sensitivity_method_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing sensitivity method. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -276,12 +278,12 @@ sensitivity_method_repository::remove_status sensitivity_method_repository::remo
     return remove_status::removed;
 }
 
-void sensitivity_method_repository::remove(context ctx, const std::string& code) {
+void sensitivity_method_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::sensitivity_method> sensitivity_method_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -307,7 +309,7 @@ std::vector<domain::sensitivity_method> sensitivity_method_repository::read_late
 }
 
 std::uint32_t sensitivity_method_repository::get_total_method_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::sensitivity_methods_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sensitivity method count";
@@ -326,7 +328,8 @@ std::uint32_t sensitivity_method_repository::get_total_method_count(
 }
 
 std::vector<domain::sensitivity_method>
-sensitivity_method_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+sensitivity_method_repository::read_latest(const context& ctx,
+                                           const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -344,7 +347,8 @@ sensitivity_method_repository::read_latest(context ctx, const std::vector<std::s
     return result;
 }
 
-void sensitivity_method_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void sensitivity_method_repository::remove(const context& ctx,
+                                           const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

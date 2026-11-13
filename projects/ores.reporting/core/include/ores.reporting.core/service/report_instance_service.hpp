@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit report_instance_service(context ctx);
+    explicit report_instance_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

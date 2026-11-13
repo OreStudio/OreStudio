@@ -111,7 +111,8 @@ std::optional<query_builder::condition> approval_decision_filter_condition(
 }
 
 ores::utility::domain::precondition
-approval_decision_repository::replace_claim(context ctx, const domain::approval_decision& v) {
+approval_decision_repository::replace_claim(const context& ctx,
+                                            const domain::approval_decision& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -120,7 +121,7 @@ approval_decision_repository::replace_claim(context ctx, const domain::approval_
 }
 
 domain::approval_decision
-approval_decision_repository::apply_claim(context ctx,
+approval_decision_repository::apply_claim(const context& ctx,
                                           const domain::approval_decision& v,
                                           const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -147,11 +148,11 @@ approval_decision_repository::apply_claim(context ctx,
     return t;
 }
 
-void approval_decision_repository::write(context ctx, const domain::approval_decision& v) {
+void approval_decision_repository::write(const context& ctx, const domain::approval_decision& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void approval_decision_repository::write(context ctx,
+void approval_decision_repository::write(const context& ctx,
                                          const std::vector<domain::approval_decision>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -160,7 +161,7 @@ void approval_decision_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void approval_decision_repository::write(context ctx,
+void approval_decision_repository::write(const context& ctx,
                                          const domain::approval_decision& v,
                                          const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval decision. " << "id: " << v.id;
@@ -170,7 +171,7 @@ void approval_decision_repository::write(context ctx,
 }
 
 void approval_decision_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::approval_decision>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval decisions. Count: " << v.size();
@@ -182,7 +183,8 @@ void approval_decision_repository::write(
         ctx, approval_decision_mapper::map(batch), lg(), "Writing approval decisions to database.");
 }
 
-std::vector<domain::approval_decision> approval_decision_repository::read_latest(context ctx) {
+std::vector<domain::approval_decision>
+approval_decision_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_decision_entity>> |
@@ -198,7 +200,7 @@ std::vector<domain::approval_decision> approval_decision_repository::read_latest
 }
 
 std::vector<domain::approval_decision>
-approval_decision_repository::read_latest(context ctx, const std::string& id) {
+approval_decision_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval decision. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +218,7 @@ approval_decision_repository::read_latest(context ctx, const std::string& id) {
 
 
 std::vector<domain::approval_decision>
-approval_decision_repository::read_all(context ctx, const std::string& id) {
+approval_decision_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all approval decision versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_decision_entity>> |
@@ -232,7 +234,7 @@ approval_decision_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::approval_decision> approval_decision_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading approval decision at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -255,7 +257,7 @@ std::optional<domain::approval_decision> approval_decision_repository::read_at_v
 }
 
 std::vector<domain::approval_decision> approval_decision_repository::read_latest_by_request_id(
-    context ctx,
+    const context& ctx,
     const std::string& request_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -282,7 +284,7 @@ std::vector<domain::approval_decision> approval_decision_repository::read_latest
 }
 
 std::uint32_t approval_decision_repository::get_total_decision_count_by_request_id(
-    context ctx,
+    const context& ctx,
     const std::string& request_id,
     const std::optional<messaging::approval_decisions_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval decisions count. request_id: "
@@ -304,7 +306,7 @@ std::uint32_t approval_decision_repository::get_total_decision_count_by_request_
 
 
 approval_decision_repository::remove_status approval_decision_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing approval decision. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -333,12 +335,12 @@ approval_decision_repository::remove_status approval_decision_repository::remove
     return remove_status::removed;
 }
 
-void approval_decision_repository::remove(context ctx, const std::string& id) {
+void approval_decision_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::approval_decision> approval_decision_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -364,7 +366,7 @@ std::vector<domain::approval_decision> approval_decision_repository::read_latest
 }
 
 std::uint32_t approval_decision_repository::get_total_decision_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::approval_decisions_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval decision count";
@@ -383,7 +385,7 @@ std::uint32_t approval_decision_repository::get_total_decision_count(
 }
 
 std::vector<domain::approval_decision>
-approval_decision_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+approval_decision_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -401,7 +403,7 @@ approval_decision_repository::read_latest(context ctx, const std::vector<std::st
     return result;
 }
 
-void approval_decision_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void approval_decision_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

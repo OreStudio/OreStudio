@@ -550,8 +550,8 @@ void populate_instruments_for_trades(const Ctx& ctx,
 
 }
 
-trade_export_service::trade_export_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+trade_export_service::trade_export_service(const context& ctx)
+    : ctx_(ctx) {}
 
 std::vector<trade_export_item>
 trade_export_service::export_node(const std::string& node_id,

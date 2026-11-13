@@ -64,7 +64,7 @@ using namespace ores::logging;
  * the very values the store wrote, so a test that feeds them back exercises the
  * query the way a reader of a historical version does.
  */
-std::vector<trade_entity> read_trade_versions(context ctx, const std::string& trade_id) {
+std::vector<trade_entity> read_trade_versions(const context& ctx, const std::string& trade_id) {
     using namespace ores::database::repository;
     namespace query_builder = ores::database::query_builder;
     using namespace ores::database::query_builder::literals;
@@ -84,7 +84,7 @@ std::vector<trade_entity> read_trade_versions(context ctx, const std::string& tr
 }
 
 /* The leg rows themselves, so a leg counted as "current" is a row that exists. */
-std::vector<bond_leg_entity> read_leg_versions(context ctx, const std::string& trade_id) {
+std::vector<bond_leg_entity> read_leg_versions(const context& ctx, const std::string& trade_id) {
     using namespace ores::database::repository;
     namespace query_builder = ores::database::query_builder;
     using namespace ores::database::query_builder::literals;
@@ -105,7 +105,7 @@ std::vector<bond_leg_entity> read_leg_versions(context ctx, const std::string& t
  *
  * @return The issue id the instrument must name.
  */
-boost::uuids::uuid write_issue(context ctx, database_helper& h) {
+boost::uuids::uuid write_issue(const context& ctx, database_helper& h) {
     bond_issue v;
     v.issue_id = boost::uuids::random_generator()();
     v.tenant_id = h.tenant_id();
@@ -127,7 +127,7 @@ boost::uuids::uuid write_issue(context ctx, database_helper& h) {
  * Writes the bond's header row. The instrument is keyed by the trade it belongs
  * to, so its own insert is the first write against that trade's composite.
  */
-void write_instrument(context ctx,
+void write_instrument(const context& ctx,
                       database_helper& h,
                       const boost::uuids::uuid& trade_id,
                       const boost::uuids::uuid& activity_id,
@@ -148,7 +148,7 @@ void write_instrument(context ctx,
 }
 
 /* Writes one leg. A leg write is the rewrite the composite has to notice. */
-void write_leg(context ctx,
+void write_leg(const context& ctx,
                database_helper& h,
                const boost::uuids::uuid& trade_id,
                const boost::uuids::uuid& activity_id,

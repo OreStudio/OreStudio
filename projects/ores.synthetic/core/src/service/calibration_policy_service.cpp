@@ -58,8 +58,8 @@ namespace ores::synthetic::service {
 
 using namespace ores::logging;
 
-calibration_policy_service::calibration_policy_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+calibration_policy_service::calibration_policy_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit credit_limit_service(context ctx);
+    explicit credit_limit_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

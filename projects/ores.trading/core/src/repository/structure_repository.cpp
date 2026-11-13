@@ -101,7 +101,7 @@ structure_filter_condition(const std::optional<messaging::structures_filter>& fi
 }
 
 ores::utility::domain::precondition
-structure_repository::replace_claim(context ctx, const domain::structure& v) {
+structure_repository::replace_claim(const context& ctx, const domain::structure& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -109,8 +109,10 @@ structure_repository::replace_claim(context ctx, const domain::structure& v) {
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::structure structure_repository::apply_claim(
-    context ctx, const domain::structure& v, const ores::utility::domain::precondition& claim) {
+domain::structure
+structure_repository::apply_claim(const context& ctx,
+                                  const domain::structure& v,
+                                  const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -135,11 +137,11 @@ domain::structure structure_repository::apply_claim(
     return t;
 }
 
-void structure_repository::write(context ctx, const domain::structure& v) {
+void structure_repository::write(const context& ctx, const domain::structure& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void structure_repository::write(context ctx, const std::vector<domain::structure>& v) {
+void structure_repository::write(const context& ctx, const std::vector<domain::structure>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -147,7 +149,7 @@ void structure_repository::write(context ctx, const std::vector<domain::structur
     write(ctx, v, claims);
 }
 
-void structure_repository::write(context ctx,
+void structure_repository::write(const context& ctx,
                                  const domain::structure& v,
                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing structure. " << "id: " << v.id;
@@ -156,7 +158,7 @@ void structure_repository::write(context ctx,
         ctx, structure_mapper::map(t), lg(), "Writing structure to database.");
 }
 
-void structure_repository::write(context ctx,
+void structure_repository::write(const context& ctx,
                                  const std::vector<domain::structure>& v,
                                  const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing structures. Count: " << v.size();
@@ -168,7 +170,7 @@ void structure_repository::write(context ctx,
         ctx, structure_mapper::map(batch), lg(), "Writing structures to database.");
 }
 
-std::vector<domain::structure> structure_repository::read_latest(context ctx) {
+std::vector<domain::structure> structure_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<structure_entity>> |
@@ -183,7 +185,7 @@ std::vector<domain::structure> structure_repository::read_latest(context ctx) {
         "Reading latest structures");
 }
 
-std::vector<domain::structure> structure_repository::read_latest(context ctx,
+std::vector<domain::structure> structure_repository::read_latest(const context& ctx,
                                                                  const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest structure. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -201,7 +203,8 @@ std::vector<domain::structure> structure_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::structure> structure_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::structure> structure_repository::read_all(const context& ctx,
+                                                              const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all structure versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<structure_entity>> |
@@ -216,8 +219,9 @@ std::vector<domain::structure> structure_repository::read_all(context ctx, const
         "Reading all structure versions by id.");
 }
 
-std::optional<domain::structure>
-structure_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::structure> structure_repository::read_at_version(const context& ctx,
+                                                                       const std::string& id,
+                                                                       std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading structure at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -240,7 +244,7 @@ structure_repository::read_at_version(context ctx, const std::string& id, std::u
 
 
 structure_repository::remove_status structure_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing structure. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -268,12 +272,12 @@ structure_repository::remove_status structure_repository::remove(
     return remove_status::removed;
 }
 
-void structure_repository::remove(context ctx, const std::string& id) {
+void structure_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::structure>
-structure_repository::read_latest(context ctx,
+structure_repository::read_latest(const context& ctx,
                                   std::uint32_t offset,
                                   std::uint32_t limit,
                                   const ores::utility::domain::order& order,
@@ -297,7 +301,7 @@ structure_repository::read_latest(context ctx,
 }
 
 std::uint32_t structure_repository::get_total_structure_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::structures_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active structure count";
@@ -315,7 +319,7 @@ std::uint32_t structure_repository::get_total_structure_count(
 }
 
 std::vector<domain::structure>
-structure_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+structure_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -332,7 +336,7 @@ structure_repository::read_latest(context ctx, const std::vector<std::string>& i
     return result;
 }
 
-void structure_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void structure_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

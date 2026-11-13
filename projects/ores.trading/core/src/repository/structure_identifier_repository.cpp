@@ -107,7 +107,8 @@ std::optional<query_builder::condition> structure_identifier_filter_condition(
 }
 
 ores::utility::domain::precondition
-structure_identifier_repository::replace_claim(context ctx, const domain::structure_identifier& v) {
+structure_identifier_repository::replace_claim(const context& ctx,
+                                               const domain::structure_identifier& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.structure_id), v.id_type);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -116,7 +117,7 @@ structure_identifier_repository::replace_claim(context ctx, const domain::struct
 }
 
 domain::structure_identifier
-structure_identifier_repository::apply_claim(context ctx,
+structure_identifier_repository::apply_claim(const context& ctx,
                                              const domain::structure_identifier& v,
                                              const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -144,11 +145,12 @@ structure_identifier_repository::apply_claim(context ctx,
     return t;
 }
 
-void structure_identifier_repository::write(context ctx, const domain::structure_identifier& v) {
+void structure_identifier_repository::write(const context& ctx,
+                                            const domain::structure_identifier& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void structure_identifier_repository::write(context ctx,
+void structure_identifier_repository::write(const context& ctx,
                                             const std::vector<domain::structure_identifier>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -157,7 +159,7 @@ void structure_identifier_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void structure_identifier_repository::write(context ctx,
+void structure_identifier_repository::write(const context& ctx,
                                             const domain::structure_identifier& v,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing structure identifier. "
@@ -170,7 +172,7 @@ void structure_identifier_repository::write(context ctx,
 }
 
 void structure_identifier_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::structure_identifier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing structure identifiers. Count: " << v.size();
@@ -185,7 +187,7 @@ void structure_identifier_repository::write(
 }
 
 std::vector<domain::structure_identifier>
-structure_identifier_repository::read_latest(context ctx) {
+structure_identifier_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<structure_identifier_entity>> |
@@ -202,7 +204,7 @@ structure_identifier_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::structure_identifier> structure_identifier_repository::read_latest(
-    context ctx, const std::string& structure_id, const std::string& id_type) {
+    const context& ctx, const std::string& structure_id, const std::string& id_type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest structure identifier. "
                                << "structure_id: " << structure_id << " id_type: " << id_type;
     static constexpr auto max = db_timestamp::max();
@@ -223,7 +225,7 @@ std::vector<domain::structure_identifier> structure_identifier_repository::read_
 
 
 std::vector<domain::structure_identifier> structure_identifier_repository::read_all(
-    context ctx, const std::string& structure_id, const std::string& id_type) {
+    const context& ctx, const std::string& structure_id, const std::string& id_type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all structure identifier versions. "
                                << "structure_id: " << structure_id << " id_type: " << id_type;
     const auto tid = ctx.tenant_id().to_string();
@@ -243,7 +245,7 @@ std::vector<domain::structure_identifier> structure_identifier_repository::read_
 }
 
 std::optional<domain::structure_identifier>
-structure_identifier_repository::read_at_version(context ctx,
+structure_identifier_repository::read_at_version(const context& ctx,
                                                  const std::string& structure_id,
                                                  const std::string& id_type,
                                                  std::uint32_t version) {
@@ -272,7 +274,7 @@ structure_identifier_repository::read_at_version(context ctx,
 
 std::vector<domain::structure_identifier>
 structure_identifier_repository::read_latest_by_structure_id(
-    context ctx,
+    const context& ctx,
     const std::string& structure_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -300,7 +302,7 @@ structure_identifier_repository::read_latest_by_structure_id(
 }
 
 std::uint32_t structure_identifier_repository::get_total_identifier_count_by_structure_id(
-    context ctx,
+    const context& ctx,
     const std::string& structure_id,
     const std::optional<messaging::structure_identifiers_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -323,7 +325,7 @@ std::uint32_t structure_identifier_repository::get_total_identifier_count_by_str
 
 
 structure_identifier_repository::remove_status
-structure_identifier_repository::remove(context ctx,
+structure_identifier_repository::remove(const context& ctx,
                                         const std::string& structure_id,
                                         const std::string& id_type,
                                         std::optional<std::uint32_t> version) {
@@ -358,14 +360,14 @@ structure_identifier_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void structure_identifier_repository::remove(context ctx,
+void structure_identifier_repository::remove(const context& ctx,
                                              const std::string& structure_id,
                                              const std::string& id_type) {
     static_cast<void>(remove(ctx, structure_id, id_type, std::nullopt));
 }
 
 std::vector<domain::structure_identifier> structure_identifier_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -391,7 +393,7 @@ std::vector<domain::structure_identifier> structure_identifier_repository::read_
 }
 
 std::uint32_t structure_identifier_repository::get_total_identifier_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::structure_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active structure identifier count";
@@ -410,7 +412,7 @@ std::uint32_t structure_identifier_repository::get_total_identifier_count(
 }
 
 std::vector<domain::structure_identifier>
-structure_identifier_repository::read_latest(context ctx,
+structure_identifier_repository::read_latest(const context& ctx,
                                              const std::vector<std::string>& structure_ids,
                                              const std::vector<std::string>& id_types) {
     if (structure_ids.empty() || id_types.empty())
@@ -447,7 +449,7 @@ structure_identifier_repository::read_latest(context ctx,
     return filtered;
 }
 
-void structure_identifier_repository::remove(context ctx,
+void structure_identifier_repository::remove(const context& ctx,
                                              const std::vector<std::string>& structure_ids,
                                              const std::vector<std::string>& id_types) {
     // Compound key: a per-column .in() DELETE would be a cross-product

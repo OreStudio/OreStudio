@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-floating_index_type_service::floating_index_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+floating_index_type_service::floating_index_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

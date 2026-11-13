@@ -84,13 +84,13 @@ std::string tarball_storage_key(const std::string& instance_id) {
 } // namespace
 
 report_package_handler::report_package_handler(ores::nats::service::client& nats,
-                                               ores::database::context ctx,
+                                               const ores::database::context& ctx,
                                                std::string http_base_url,
                                                ores::nats::service::nats_client service_nats)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , http_base_url_(std::move(http_base_url))
-    , service_nats_(std::move(service_nats))
+    , ctx_(ctx)
+    , http_base_url_(http_base_url)
+    , service_nats_(service_nats)
     , run_tokens_(ores::iam::client::make_run_token_minter(service_nats_)) {}
 
 void report_package_handler::prepare_package(ores::nats::delivery delivery) {

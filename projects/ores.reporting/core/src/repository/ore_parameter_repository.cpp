@@ -111,7 +111,7 @@ ore_parameter_filter_condition(const std::optional<messaging::ore_parameters_fil
 }
 
 ores::utility::domain::precondition
-ore_parameter_repository::replace_claim(context ctx, const domain::ore_parameter& v) {
+ore_parameter_repository::replace_claim(const context& ctx, const domain::ore_parameter& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -119,8 +119,10 @@ ore_parameter_repository::replace_claim(context ctx, const domain::ore_parameter
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::ore_parameter ore_parameter_repository::apply_claim(
-    context ctx, const domain::ore_parameter& v, const ores::utility::domain::precondition& claim) {
+domain::ore_parameter
+ore_parameter_repository::apply_claim(const context& ctx,
+                                      const domain::ore_parameter& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -145,11 +147,12 @@ domain::ore_parameter ore_parameter_repository::apply_claim(
     return t;
 }
 
-void ore_parameter_repository::write(context ctx, const domain::ore_parameter& v) {
+void ore_parameter_repository::write(const context& ctx, const domain::ore_parameter& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void ore_parameter_repository::write(context ctx, const std::vector<domain::ore_parameter>& v) {
+void ore_parameter_repository::write(const context& ctx,
+                                     const std::vector<domain::ore_parameter>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -157,7 +160,7 @@ void ore_parameter_repository::write(context ctx, const std::vector<domain::ore_
     write(ctx, v, claims);
 }
 
-void ore_parameter_repository::write(context ctx,
+void ore_parameter_repository::write(const context& ctx,
                                      const domain::ore_parameter& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing ore parameter. " << "id: " << v.id;
@@ -167,7 +170,7 @@ void ore_parameter_repository::write(context ctx,
 }
 
 void ore_parameter_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::ore_parameter>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing ore parameters. Count: " << v.size();
@@ -179,7 +182,7 @@ void ore_parameter_repository::write(
         ctx, ore_parameter_mapper::map(batch), lg(), "Writing ore parameters to database.");
 }
 
-std::vector<domain::ore_parameter> ore_parameter_repository::read_latest(context ctx) {
+std::vector<domain::ore_parameter> ore_parameter_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ore_parameter_entity>> |
@@ -194,7 +197,7 @@ std::vector<domain::ore_parameter> ore_parameter_repository::read_latest(context
         "Reading latest ore parameters");
 }
 
-std::vector<domain::ore_parameter> ore_parameter_repository::read_latest(context ctx,
+std::vector<domain::ore_parameter> ore_parameter_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest ore parameter. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -212,7 +215,7 @@ std::vector<domain::ore_parameter> ore_parameter_repository::read_latest(context
 }
 
 std::vector<domain::ore_parameter>
-ore_parameter_repository::read_latest_by_name(context ctx, const std::string& name) {
+ore_parameter_repository::read_latest_by_name(const context& ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest ore parameter by name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -229,7 +232,7 @@ ore_parameter_repository::read_latest_by_name(context ctx, const std::string& na
 }
 
 std::vector<domain::ore_parameter>
-ore_parameter_repository::read_any_by_name(context ctx, const std::string& name) {
+ore_parameter_repository::read_any_by_name(const context& ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any ore parameter by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ore_parameter_entity>> |
@@ -245,7 +248,7 @@ ore_parameter_repository::read_any_by_name(context ctx, const std::string& name)
 }
 
 
-std::vector<domain::ore_parameter> ore_parameter_repository::read_all(context ctx,
+std::vector<domain::ore_parameter> ore_parameter_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all ore parameter versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -262,7 +265,7 @@ std::vector<domain::ore_parameter> ore_parameter_repository::read_all(context ct
 }
 
 std::optional<domain::ore_parameter> ore_parameter_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading ore parameter at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -286,7 +289,7 @@ std::optional<domain::ore_parameter> ore_parameter_repository::read_at_version(
 
 std::vector<domain::ore_parameter>
 ore_parameter_repository::read_latest_by_ore_parameter_value_domain_code(
-    context ctx,
+    const context& ctx,
     const std::string& ore_parameter_value_domain_code,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -316,7 +319,7 @@ ore_parameter_repository::read_latest_by_ore_parameter_value_domain_code(
 
 std::uint32_t
 ore_parameter_repository::get_total_parameter_count_by_ore_parameter_value_domain_code(
-    context ctx,
+    const context& ctx,
     const std::string& ore_parameter_value_domain_code,
     const std::optional<messaging::ore_parameters_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -341,7 +344,7 @@ ore_parameter_repository::get_total_parameter_count_by_ore_parameter_value_domai
 
 
 ore_parameter_repository::remove_status ore_parameter_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing ore parameter. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -369,12 +372,12 @@ ore_parameter_repository::remove_status ore_parameter_repository::remove(
     return remove_status::removed;
 }
 
-void ore_parameter_repository::remove(context ctx, const std::string& id) {
+void ore_parameter_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::ore_parameter>
-ore_parameter_repository::read_latest(context ctx,
+ore_parameter_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -399,7 +402,7 @@ ore_parameter_repository::read_latest(context ctx,
 }
 
 std::uint32_t ore_parameter_repository::get_total_parameter_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::ore_parameters_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active ore parameter count";
@@ -418,7 +421,7 @@ std::uint32_t ore_parameter_repository::get_total_parameter_count(
 }
 
 std::vector<domain::ore_parameter>
-ore_parameter_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+ore_parameter_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -435,7 +438,7 @@ ore_parameter_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void ore_parameter_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void ore_parameter_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

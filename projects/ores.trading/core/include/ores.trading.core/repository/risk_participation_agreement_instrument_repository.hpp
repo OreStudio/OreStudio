@@ -71,8 +71,9 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::risk_participation_agreement_instrument& v);
-    void write(context ctx, const std::vector<domain::risk_participation_agreement_instrument>& v);
+    void write(const context& ctx, const domain::risk_participation_agreement_instrument& v);
+    void write(const context& ctx,
+               const std::vector<domain::risk_participation_agreement_instrument>& v);
     /**@}*/
 
     /**
@@ -85,7 +86,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::risk_participation_agreement_instrument& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +94,7 @@ public:
      * @brief Writes a set of risk participation agreement instruments, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::risk_participation_agreement_instrument>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -102,11 +103,11 @@ public:
      * key.
      */
     /**@{*/
-    std::vector<domain::risk_participation_agreement_instrument> read_latest(context ctx);
+    std::vector<domain::risk_participation_agreement_instrument> read_latest(const context& ctx);
     std::vector<domain::risk_participation_agreement_instrument>
-    read_latest(context ctx, const std::string& trade_id);
+    read_latest(const context& ctx, const std::string& trade_id);
     std::vector<domain::risk_participation_agreement_instrument>
-    read_latest(context ctx, const std::vector<std::string>& trade_ids);
+    read_latest(const context& ctx, const std::vector<std::string>& trade_ids);
     /**@}*/
 
 
@@ -114,7 +115,7 @@ public:
      * @brief Reads all risk participation agreement instruments, possibly filtered by primary key.
      */
     std::vector<domain::risk_participation_agreement_instrument>
-    read_all(context ctx, const std::string& trade_id);
+    read_all(const context& ctx, const std::string& trade_id);
 
     /**
      * @brief Reads a single risk participation agreement instrument as it stood at a specific
@@ -126,7 +127,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::risk_participation_agreement_instrument>
-    read_at_version(context ctx, const std::string& trade_id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& trade_id, std::uint32_t version);
 
 
     /**
@@ -146,7 +147,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::risk_participation_agreement_instrument> read_latest(
-        context ctx,
+        const context& ctx,
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
@@ -160,7 +161,7 @@ public:
      * @return Total number of active risk participation agreement instruments
      */
     std::uint32_t get_total_risk_participation_agreement_instrument_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::risk_participation_agreement_instruments_filter>& filter =
             std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
@@ -168,7 +169,7 @@ public:
     /**
      * @brief Deletes a risk participation agreement instrument by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& trade_id);
+    void remove(const context& ctx, const std::string& trade_id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -191,12 +192,12 @@ public:
      * no version asked for.
      */
     remove_status
-    remove(context ctx, const std::string& trade_id, std::optional<std::uint32_t> version);
+    remove(const context& ctx, const std::string& trade_id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes risk participation agreement instruments by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& trade_ids);
+    void remove(const context& ctx, const std::vector<std::string>& trade_ids);
 
 
 private:
@@ -205,7 +206,7 @@ private:
      * that no row exists yet.
      */
     ores::utility::domain::precondition
-    replace_claim(context ctx, const domain::risk_participation_agreement_instrument& v);
+    replace_claim(const context& ctx, const domain::risk_participation_agreement_instrument& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
@@ -213,7 +214,7 @@ private:
      * A claim the store cannot check is refused here rather than ignored.
      */
     domain::risk_participation_agreement_instrument
-    apply_claim(context ctx,
+    apply_claim(const context& ctx,
                 const domain::risk_participation_agreement_instrument& v,
                 const ores::utility::domain::precondition& claim);
 };

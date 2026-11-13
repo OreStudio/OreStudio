@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-purpose_type_service::purpose_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+purpose_type_service::purpose_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

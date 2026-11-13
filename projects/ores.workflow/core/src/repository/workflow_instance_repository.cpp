@@ -102,7 +102,8 @@ std::optional<query_builder::condition> workflow_instance_filter_condition(
 }
 
 ores::utility::domain::precondition
-workflow_instance_repository::replace_claim(context ctx, const domain::workflow_instance& v) {
+workflow_instance_repository::replace_claim(const context& ctx,
+                                            const domain::workflow_instance& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,7 +112,7 @@ workflow_instance_repository::replace_claim(context ctx, const domain::workflow_
 }
 
 domain::workflow_instance
-workflow_instance_repository::apply_claim(context ctx,
+workflow_instance_repository::apply_claim(const context& ctx,
                                           const domain::workflow_instance& v,
                                           const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,11 +139,11 @@ workflow_instance_repository::apply_claim(context ctx,
     return t;
 }
 
-void workflow_instance_repository::write(context ctx, const domain::workflow_instance& v) {
+void workflow_instance_repository::write(const context& ctx, const domain::workflow_instance& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void workflow_instance_repository::write(context ctx,
+void workflow_instance_repository::write(const context& ctx,
                                          const std::vector<domain::workflow_instance>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -151,7 +152,7 @@ void workflow_instance_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void workflow_instance_repository::write(context ctx,
+void workflow_instance_repository::write(const context& ctx,
                                          const domain::workflow_instance& v,
                                          const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workflow instance. " << "id: " << v.id;
@@ -161,7 +162,7 @@ void workflow_instance_repository::write(context ctx,
 }
 
 void workflow_instance_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::workflow_instance>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workflow instances. Count: " << v.size();
@@ -173,7 +174,8 @@ void workflow_instance_repository::write(
         ctx, workflow_instance_mapper::map(batch), lg(), "Writing workflow instances to database.");
 }
 
-std::vector<domain::workflow_instance> workflow_instance_repository::read_latest(context ctx) {
+std::vector<domain::workflow_instance>
+workflow_instance_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<workflow_instance_entity>> |
                        query_builder::where("valid_to"_c == max) | query_builder::order_by("id"_c);
@@ -187,7 +189,7 @@ std::vector<domain::workflow_instance> workflow_instance_repository::read_latest
 }
 
 std::vector<domain::workflow_instance>
-workflow_instance_repository::read_latest(context ctx, const std::string& id) {
+workflow_instance_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow instance. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<workflow_instance_entity>> |
@@ -203,7 +205,7 @@ workflow_instance_repository::read_latest(context ctx, const std::string& id) {
 
 
 std::vector<domain::workflow_instance>
-workflow_instance_repository::read_all(context ctx, const std::string& id) {
+workflow_instance_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all workflow instance versions. " << "id: " << id;
     const auto query = query_builder::read<std::vector<workflow_instance_entity>> |
                        query_builder::where("id"_c == id) |
@@ -218,7 +220,7 @@ workflow_instance_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::workflow_instance> workflow_instance_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading workflow instance at version. " << "id: " << id
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<workflow_instance_entity>> |
@@ -239,7 +241,7 @@ std::optional<domain::workflow_instance> workflow_instance_repository::read_at_v
 }
 
 workflow_instance_repository::remove_status workflow_instance_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing workflow instance. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -268,12 +270,12 @@ workflow_instance_repository::remove_status workflow_instance_repository::remove
     return remove_status::removed;
 }
 
-void workflow_instance_repository::remove(context ctx, const std::string& id) {
+void workflow_instance_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::workflow_instance> workflow_instance_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -297,7 +299,7 @@ std::vector<domain::workflow_instance> workflow_instance_repository::read_latest
 }
 
 std::uint32_t workflow_instance_repository::get_total_instance_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::workflow_instances_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workflow instance count";
@@ -314,7 +316,7 @@ std::uint32_t workflow_instance_repository::get_total_instance_count(
 }
 
 std::vector<domain::workflow_instance>
-workflow_instance_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+workflow_instance_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -330,7 +332,7 @@ workflow_instance_repository::read_latest(context ctx, const std::vector<std::st
     return result;
 }
 
-void workflow_instance_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void workflow_instance_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

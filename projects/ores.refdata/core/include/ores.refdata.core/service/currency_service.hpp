@@ -65,7 +65,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit currency_service(context ctx);
+    explicit currency_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

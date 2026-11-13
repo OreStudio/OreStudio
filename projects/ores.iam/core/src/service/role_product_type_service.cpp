@@ -48,8 +48,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-role_product_type_service::role_product_type_service(context ctx)
-    : ctx_(std::move(ctx))
+role_product_type_service::role_product_type_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

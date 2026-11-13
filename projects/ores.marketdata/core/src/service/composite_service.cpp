@@ -58,8 +58,8 @@ namespace ores::marketdata::service {
 
 using namespace ores::logging;
 
-composite_service::composite_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+composite_service::composite_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

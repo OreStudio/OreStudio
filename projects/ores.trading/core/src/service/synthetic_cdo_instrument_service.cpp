@@ -58,8 +58,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-synthetic_cdo_instrument_service::synthetic_cdo_instrument_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+synthetic_cdo_instrument_service::synthetic_cdo_instrument_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -101,7 +101,7 @@ permission_filter_condition(const std::optional<messaging::permissions_filter>& 
 }
 
 ores::utility::domain::precondition
-permission_repository::replace_claim(context ctx, const domain::permission& v) {
+permission_repository::replace_claim(const context& ctx, const domain::permission& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,8 +111,10 @@ permission_repository::replace_claim(context ctx, const domain::permission& v) {
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::permission permission_repository::apply_claim(
-    context ctx, const domain::permission& v, const ores::utility::domain::precondition& claim) {
+domain::permission
+permission_repository::apply_claim(const context& ctx,
+                                   const domain::permission& v,
+                                   const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
@@ -125,11 +127,11 @@ domain::permission permission_repository::apply_claim(
     return t;
 }
 
-void permission_repository::write(context ctx, const domain::permission& v) {
+void permission_repository::write(const context& ctx, const domain::permission& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void permission_repository::write(context ctx, const std::vector<domain::permission>& v) {
+void permission_repository::write(const context& ctx, const std::vector<domain::permission>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -137,7 +139,7 @@ void permission_repository::write(context ctx, const std::vector<domain::permiss
     write(ctx, v, claims);
 }
 
-void permission_repository::write(context ctx,
+void permission_repository::write(const context& ctx,
                                   const domain::permission& v,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing permission. " << "id: " << v.id;
@@ -146,7 +148,7 @@ void permission_repository::write(context ctx,
         ctx, permission_mapper::map(t), lg(), "Writing permission to database.");
 }
 
-void permission_repository::write(context ctx,
+void permission_repository::write(const context& ctx,
                                   const std::vector<domain::permission>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing permissions. Count: " << v.size();
@@ -158,7 +160,7 @@ void permission_repository::write(context ctx,
         ctx, permission_mapper::map(batch), lg(), "Writing permissions to database.");
 }
 
-std::vector<domain::permission> permission_repository::read_latest(context ctx) {
+std::vector<domain::permission> permission_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<permission_entity>> |
@@ -173,7 +175,7 @@ std::vector<domain::permission> permission_repository::read_latest(context ctx) 
         "Reading latest permissions");
 }
 
-std::vector<domain::permission> permission_repository::read_latest(context ctx,
+std::vector<domain::permission> permission_repository::read_latest(const context& ctx,
                                                                    const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest permission. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -191,7 +193,7 @@ std::vector<domain::permission> permission_repository::read_latest(context ctx,
 }
 
 std::vector<domain::permission>
-permission_repository::read_latest_by_code(context ctx, const std::string& code) {
+permission_repository::read_latest_by_code(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest permission by code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -207,7 +209,7 @@ permission_repository::read_latest_by_code(context ctx, const std::string& code)
         "Reading latest permission by code.");
 }
 
-std::vector<domain::permission> permission_repository::read_any_by_code(context ctx,
+std::vector<domain::permission> permission_repository::read_any_by_code(const context& ctx,
                                                                         const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any permission by code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -224,7 +226,7 @@ std::vector<domain::permission> permission_repository::read_any_by_code(context 
 }
 
 
-std::vector<domain::permission> permission_repository::read_all(context ctx,
+std::vector<domain::permission> permission_repository::read_all(const context& ctx,
                                                                 const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all permission versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -242,7 +244,7 @@ std::vector<domain::permission> permission_repository::read_all(context ctx,
 
 
 permission_repository::remove_status permission_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing permission. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -261,12 +263,12 @@ permission_repository::remove_status permission_repository::remove(
     return remove_status::removed;
 }
 
-void permission_repository::remove(context ctx, const std::string& id) {
+void permission_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::permission>
-permission_repository::read_latest(context ctx,
+permission_repository::read_latest(const context& ctx,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order,
@@ -291,7 +293,7 @@ permission_repository::read_latest(context ctx,
 }
 
 std::uint32_t permission_repository::get_total_permission_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::permissions_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active permission count";
@@ -310,7 +312,7 @@ std::uint32_t permission_repository::get_total_permission_count(
 }
 
 std::vector<domain::permission>
-permission_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+permission_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -327,7 +329,7 @@ permission_repository::read_latest(context ctx, const std::vector<std::string>& 
     return result;
 }
 
-void permission_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void permission_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

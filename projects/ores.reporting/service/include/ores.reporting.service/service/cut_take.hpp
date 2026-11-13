@@ -62,7 +62,7 @@ public:
      * @param ctx The caller's context: the take acts as the person it carries.
      * @param reader Answers what the store holds for each part of the body.
      */
-    cut_take_service(context ctx, cut_body_reader& reader);
+    cut_take_service(const context& ctx, cut_body_reader& reader);
 
     /**
      * @brief Assembles the body and, unless the call previews, takes it.

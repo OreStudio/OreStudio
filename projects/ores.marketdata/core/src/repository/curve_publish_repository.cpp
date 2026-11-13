@@ -130,7 +130,7 @@ curve_publish_filter_condition(const std::optional<messaging::curve_publishes_fi
 }
 
 ores::utility::domain::precondition
-curve_publish_repository::replace_claim(context ctx, const domain::curve_publish& v) {
+curve_publish_repository::replace_claim(const context& ctx, const domain::curve_publish& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -138,8 +138,10 @@ curve_publish_repository::replace_claim(context ctx, const domain::curve_publish
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::curve_publish curve_publish_repository::apply_claim(
-    context ctx, const domain::curve_publish& v, const ores::utility::domain::precondition& claim) {
+domain::curve_publish
+curve_publish_repository::apply_claim(const context& ctx,
+                                      const domain::curve_publish& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -164,11 +166,12 @@ domain::curve_publish curve_publish_repository::apply_claim(
     return t;
 }
 
-void curve_publish_repository::write(context ctx, const domain::curve_publish& v) {
+void curve_publish_repository::write(const context& ctx, const domain::curve_publish& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void curve_publish_repository::write(context ctx, const std::vector<domain::curve_publish>& v) {
+void curve_publish_repository::write(const context& ctx,
+                                     const std::vector<domain::curve_publish>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -176,7 +179,7 @@ void curve_publish_repository::write(context ctx, const std::vector<domain::curv
     write(ctx, v, claims);
 }
 
-void curve_publish_repository::write(context ctx,
+void curve_publish_repository::write(const context& ctx,
                                      const domain::curve_publish& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve publish. " << "id: " << v.id;
@@ -186,7 +189,7 @@ void curve_publish_repository::write(context ctx,
 }
 
 void curve_publish_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::curve_publish>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve publishes. Count: " << v.size();
@@ -198,7 +201,7 @@ void curve_publish_repository::write(
         ctx, curve_publish_mapper::map(batch), lg(), "Writing curve publishes to database.");
 }
 
-std::vector<domain::curve_publish> curve_publish_repository::read_latest(context ctx) {
+std::vector<domain::curve_publish> curve_publish_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_publish_entity>> |
@@ -213,7 +216,7 @@ std::vector<domain::curve_publish> curve_publish_repository::read_latest(context
         "Reading latest curve publishes");
 }
 
-std::vector<domain::curve_publish> curve_publish_repository::read_latest(context ctx,
+std::vector<domain::curve_publish> curve_publish_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest curve publish. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -231,7 +234,7 @@ std::vector<domain::curve_publish> curve_publish_repository::read_latest(context
 }
 
 
-std::vector<domain::curve_publish> curve_publish_repository::read_all(context ctx,
+std::vector<domain::curve_publish> curve_publish_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all curve publish versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -248,7 +251,7 @@ std::vector<domain::curve_publish> curve_publish_repository::read_all(context ct
 }
 
 std::optional<domain::curve_publish> curve_publish_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading curve publish at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -271,7 +274,7 @@ std::optional<domain::curve_publish> curve_publish_repository::read_at_version(
 }
 
 std::vector<domain::curve_publish> curve_publish_repository::read_latest_by_request_id(
-    context ctx,
+    const context& ctx,
     const std::string& request_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -297,7 +300,7 @@ std::vector<domain::curve_publish> curve_publish_repository::read_latest_by_requ
 }
 
 std::uint32_t curve_publish_repository::get_total_curve_publish_count_by_request_id(
-    context ctx,
+    const context& ctx,
     const std::string& request_id,
     const std::optional<messaging::curve_publishes_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active curve publishes count. request_id: "
@@ -319,7 +322,7 @@ std::uint32_t curve_publish_repository::get_total_curve_publish_count_by_request
 
 
 curve_publish_repository::remove_status curve_publish_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing curve publish. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -347,12 +350,12 @@ curve_publish_repository::remove_status curve_publish_repository::remove(
     return remove_status::removed;
 }
 
-void curve_publish_repository::remove(context ctx, const std::string& id) {
+void curve_publish_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::curve_publish> curve_publish_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -377,7 +380,7 @@ std::vector<domain::curve_publish> curve_publish_repository::read_latest(
 }
 
 std::uint32_t curve_publish_repository::get_total_curve_publish_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::curve_publishes_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active curve publish count";
@@ -396,7 +399,7 @@ std::uint32_t curve_publish_repository::get_total_curve_publish_count(
 }
 
 std::vector<domain::curve_publish>
-curve_publish_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+curve_publish_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -413,7 +416,7 @@ curve_publish_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void curve_publish_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void curve_publish_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -432,7 +435,8 @@ void curve_publish_repository::remove(context ctx, const std::vector<std::string
 
 
 std::optional<domain::curve_publish>
-curve_publish_repository::read_latest_by_request(context ctx, const std::string& request_id) {
+curve_publish_repository::read_latest_by_request(const context& ctx,
+                                                 const std::string& request_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the publish record of request: " << request_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -452,7 +456,7 @@ curve_publish_repository::read_latest_by_request(context ctx, const std::string&
 }
 
 std::optional<domain::curve_publish>
-curve_publish_repository::read_latest_published_for_series(context ctx,
+curve_publish_repository::read_latest_published_for_series(const context& ctx,
                                                            const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the published set of series: " << series_id;
     static constexpr auto max = db_timestamp::max();
@@ -485,7 +489,7 @@ curve_publish_repository::read_latest_published_for_series(context ctx,
 }
 
 std::vector<domain::curve_publish>
-curve_publish_repository::read_applied_for_series(context ctx,
+curve_publish_repository::read_applied_for_series(const context& ctx,
                                                   const boost::uuids::uuid& series_id) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -504,7 +508,8 @@ curve_publish_repository::read_applied_for_series(context ctx,
 }
 
 std::vector<domain::curve_publish>
-curve_publish_repository::read_live_for_series(context ctx, const boost::uuids::uuid& series_id) {
+curve_publish_repository::read_live_for_series(const context& ctx,
+                                               const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the live sets of series: " << series_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();

@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-cds_volatility_term_service::cds_volatility_term_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+cds_volatility_term_service::cds_volatility_term_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

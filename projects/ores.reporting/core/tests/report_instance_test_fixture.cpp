@@ -36,7 +36,7 @@ namespace ores::reporting::tests {
 
 using ores::reporting::generators::generate_synthetic_report_trigger_event;
 
-domain::report_trigger_event write_trigger_for(ores::database::context ctx,
+domain::report_trigger_event write_trigger_for(const ores::database::context& ctx,
                                                ores::utility::generation::generation_context& gen,
                                                const domain::report_instance& instance) {
     auto trigger = generate_synthetic_report_trigger_event(gen);

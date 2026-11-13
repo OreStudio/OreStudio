@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit fx_spot_fixing_item_service(context ctx);
+    explicit fx_spot_fixing_item_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

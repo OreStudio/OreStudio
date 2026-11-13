@@ -100,7 +100,7 @@ report_type_filter_condition(const std::optional<messaging::report_types_filter>
 }
 
 ores::utility::domain::precondition
-report_type_repository::replace_claim(context ctx, const domain::report_type& v) {
+report_type_repository::replace_claim(const context& ctx, const domain::report_type& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -108,8 +108,10 @@ report_type_repository::replace_claim(context ctx, const domain::report_type& v)
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::report_type report_type_repository::apply_claim(
-    context ctx, const domain::report_type& v, const ores::utility::domain::precondition& claim) {
+domain::report_type
+report_type_repository::apply_claim(const context& ctx,
+                                    const domain::report_type& v,
+                                    const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -134,11 +136,11 @@ domain::report_type report_type_repository::apply_claim(
     return t;
 }
 
-void report_type_repository::write(context ctx, const domain::report_type& v) {
+void report_type_repository::write(const context& ctx, const domain::report_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void report_type_repository::write(context ctx, const std::vector<domain::report_type>& v) {
+void report_type_repository::write(const context& ctx, const std::vector<domain::report_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -146,7 +148,7 @@ void report_type_repository::write(context ctx, const std::vector<domain::report
     write(ctx, v, claims);
 }
 
-void report_type_repository::write(context ctx,
+void report_type_repository::write(const context& ctx,
                                    const domain::report_type& v,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report type. " << "code: " << v.code;
@@ -155,7 +157,7 @@ void report_type_repository::write(context ctx,
         ctx, report_type_mapper::map(t), lg(), "Writing report type to database.");
 }
 
-void report_type_repository::write(context ctx,
+void report_type_repository::write(const context& ctx,
                                    const std::vector<domain::report_type>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report types. Count: " << v.size();
@@ -167,7 +169,7 @@ void report_type_repository::write(context ctx,
         ctx, report_type_mapper::map(batch), lg(), "Writing report types to database.");
 }
 
-std::vector<domain::report_type> report_type_repository::read_latest(context ctx) {
+std::vector<domain::report_type> report_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_type_entity>> |
@@ -182,7 +184,7 @@ std::vector<domain::report_type> report_type_repository::read_latest(context ctx
         "Reading latest report types");
 }
 
-std::vector<domain::report_type> report_type_repository::read_latest(context ctx,
+std::vector<domain::report_type> report_type_repository::read_latest(const context& ctx,
                                                                      const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -200,7 +202,7 @@ std::vector<domain::report_type> report_type_repository::read_latest(context ctx
 }
 
 
-std::vector<domain::report_type> report_type_repository::read_all(context ctx,
+std::vector<domain::report_type> report_type_repository::read_all(const context& ctx,
                                                                   const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all report type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +218,7 @@ std::vector<domain::report_type> report_type_repository::read_all(context ctx,
         "Reading all report type versions by code.");
 }
 
-std::optional<domain::report_type> report_type_repository::read_at_version(context ctx,
+std::optional<domain::report_type> report_type_repository::read_at_version(const context& ctx,
                                                                            const std::string& code,
                                                                            std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading report type at version. " << "code: " << code
@@ -241,7 +243,7 @@ std::optional<domain::report_type> report_type_repository::read_at_version(conte
 }
 
 report_type_repository::remove_status report_type_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing report type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -269,12 +271,12 @@ report_type_repository::remove_status report_type_repository::remove(
     return remove_status::removed;
 }
 
-void report_type_repository::remove(context ctx, const std::string& code) {
+void report_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::report_type>
-report_type_repository::read_latest(context ctx,
+report_type_repository::read_latest(const context& ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
@@ -299,7 +301,7 @@ report_type_repository::read_latest(context ctx,
 }
 
 std::uint32_t report_type_repository::get_total_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::report_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report type count";
@@ -318,7 +320,7 @@ std::uint32_t report_type_repository::get_total_type_count(
 }
 
 std::vector<domain::report_type>
-report_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+report_type_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -335,7 +337,7 @@ report_type_repository::read_latest(context ctx, const std::vector<std::string>&
     return result;
 }
 
-void report_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void report_type_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

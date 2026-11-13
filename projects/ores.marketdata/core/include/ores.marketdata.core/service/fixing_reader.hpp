@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_FIXING_READER_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_FIXING_READER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 
@@ -43,11 +43,11 @@ public:
      */
     static constexpr int max_days = 3'660;
 
-    static messaging::get_fixing_response latest(ores::database::context ctx,
+    static messaging::get_fixing_response latest(const ores::database::context& ctx,
                                                  const messaging::get_fixing_request& request);
 
     static messaging::get_fixing_window_response
-    window(ores::database::context ctx, const messaging::get_fixing_window_request& request);
+    window(const ores::database::context& ctx, const messaging::get_fixing_window_request& request);
 };
 
 }

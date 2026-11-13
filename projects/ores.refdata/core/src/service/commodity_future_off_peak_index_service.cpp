@@ -59,8 +59,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-commodity_future_off_peak_index_service::commodity_future_off_peak_index_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+commodity_future_off_peak_index_service::commodity_future_off_peak_index_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

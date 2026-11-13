@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit ois_convention_service(context ctx);
+    explicit ois_convention_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

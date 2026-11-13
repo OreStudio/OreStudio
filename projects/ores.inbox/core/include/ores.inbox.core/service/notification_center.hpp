@@ -63,7 +63,7 @@ private:
     }
 
 public:
-    explicit notification_center(ores::database::context ctx);
+    explicit notification_center(const ores::database::context& ctx);
 
     /**
      * @brief The account the context's actor signs in as, if any.

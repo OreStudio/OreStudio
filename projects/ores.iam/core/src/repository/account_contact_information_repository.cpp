@@ -113,7 +113,7 @@ std::optional<query_builder::condition> account_contact_information_filter_condi
 }
 
 ores::utility::domain::precondition account_contact_information_repository::replace_claim(
-    context ctx, const domain::account_contact_information& v) {
+    const context& ctx, const domain::account_contact_information& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -122,7 +122,7 @@ ores::utility::domain::precondition account_contact_information_repository::repl
 }
 
 domain::account_contact_information account_contact_information_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::account_contact_information& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -149,13 +149,13 @@ domain::account_contact_information account_contact_information_repository::appl
     return t;
 }
 
-void account_contact_information_repository::write(context ctx,
+void account_contact_information_repository::write(const context& ctx,
                                                    const domain::account_contact_information& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void account_contact_information_repository::write(
-    context ctx, const std::vector<domain::account_contact_information>& v) {
+    const context& ctx, const std::vector<domain::account_contact_information>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -164,7 +164,7 @@ void account_contact_information_repository::write(
 }
 
 void account_contact_information_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::account_contact_information& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account contact information. " << "id: " << v.id;
@@ -176,7 +176,7 @@ void account_contact_information_repository::write(
 }
 
 void account_contact_information_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::account_contact_information>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account contact informations. Count: " << v.size();
@@ -191,7 +191,7 @@ void account_contact_information_repository::write(
 }
 
 std::vector<domain::account_contact_information>
-account_contact_information_repository::read_latest(context ctx) {
+account_contact_information_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_contact_information_entity>> |
@@ -208,7 +208,7 @@ account_contact_information_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::account_contact_information>
-account_contact_information_repository::read_latest(context ctx, const std::string& id) {
+account_contact_information_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account contact information. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -226,7 +226,7 @@ account_contact_information_repository::read_latest(context ctx, const std::stri
 }
 
 std::vector<domain::account_contact_information>
-account_contact_information_repository::read_latest_by_email(context ctx,
+account_contact_information_repository::read_latest_by_email(const context& ctx,
                                                              const std::string& email) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account contact information by email: " << email;
     static constexpr auto max = db_timestamp::max();
@@ -245,7 +245,8 @@ account_contact_information_repository::read_latest_by_email(context ctx,
 }
 
 std::vector<domain::account_contact_information>
-account_contact_information_repository::read_any_by_email(context ctx, const std::string& email) {
+account_contact_information_repository::read_any_by_email(const context& ctx,
+                                                          const std::string& email) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any account contact information by email: " << email;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_contact_information_entity>> |
@@ -263,7 +264,7 @@ account_contact_information_repository::read_any_by_email(context ctx, const std
 
 
 std::vector<domain::account_contact_information>
-account_contact_information_repository::read_all(context ctx, const std::string& id) {
+account_contact_information_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all account contact information versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -281,7 +282,7 @@ account_contact_information_repository::read_all(context ctx, const std::string&
 }
 
 std::optional<domain::account_contact_information>
-account_contact_information_repository::read_at_version(context ctx,
+account_contact_information_repository::read_at_version(const context& ctx,
                                                         const std::string& id,
                                                         std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading account contact information at version. " << "id: " << id
@@ -307,7 +308,7 @@ account_contact_information_repository::read_at_version(context ctx,
 
 std::vector<domain::account_contact_information>
 account_contact_information_repository::read_latest_by_account_id(
-    context ctx,
+    const context& ctx,
     const std::string& account_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -335,7 +336,7 @@ account_contact_information_repository::read_latest_by_account_id(
 
 std::uint32_t
 account_contact_information_repository::get_total_account_contact_information_count_by_account_id(
-    context ctx,
+    const context& ctx,
     const std::string& account_id,
     const std::optional<messaging::account_contact_informations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -358,7 +359,7 @@ account_contact_information_repository::get_total_account_contact_information_co
 
 std::vector<domain::account_contact_information>
 account_contact_information_repository::read_by_account_id_as_of(
-    context ctx,
+    const context& ctx,
     const std::string& account_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
@@ -383,7 +384,7 @@ account_contact_information_repository::read_by_account_id_as_of(
 }
 
 account_contact_information_repository::remove_status
-account_contact_information_repository::remove(context ctx,
+account_contact_information_repository::remove(const context& ctx,
                                                const std::string& id,
                                                std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing account contact information. " << "id: " << id;
@@ -414,13 +415,13 @@ account_contact_information_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void account_contact_information_repository::remove(context ctx, const std::string& id) {
+void account_contact_information_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::account_contact_information>
 account_contact_information_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -446,7 +447,7 @@ account_contact_information_repository::read_latest(
 }
 
 std::uint32_t account_contact_information_repository::get_total_account_contact_information_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::account_contact_informations_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account contact information count";
@@ -465,7 +466,7 @@ std::uint32_t account_contact_information_repository::get_total_account_contact_
 }
 
 std::vector<domain::account_contact_information>
-account_contact_information_repository::read_latest(context ctx,
+account_contact_information_repository::read_latest(const context& ctx,
                                                     const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -484,7 +485,7 @@ account_contact_information_repository::read_latest(context ctx,
     return result;
 }
 
-void account_contact_information_repository::remove(context ctx,
+void account_contact_information_repository::remove(const context& ctx,
                                                     const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

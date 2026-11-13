@@ -20,7 +20,7 @@
 #ifndef ORES_IAM_CORE_REPOSITORY_DATABASE_INFO_LOOKUPS_HPP
 #define ORES_IAM_CORE_REPOSITORY_DATABASE_INFO_LOOKUPS_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.core/export.hpp"
 

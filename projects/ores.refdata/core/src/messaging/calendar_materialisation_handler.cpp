@@ -53,11 +53,11 @@ inline auto& calendar_materialisation_handler_lg() {
 
 calendar_materialisation_handler::calendar_materialisation_handler(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , verifier_(std::move(verifier)) {}
+    , ctx_(ctx)
+    , verifier_(verifier) {}
 
 void calendar_materialisation_handler::regenerate(ores::nats::message msg) {
     BOOST_LOG_SEV(calendar_materialisation_handler_lg(), debug) << "Handling " << msg.subject;

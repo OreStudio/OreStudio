@@ -160,8 +160,8 @@ bool is_weekend(std::chrono::weekday wd, const std::bitset<7>& weekend_mask) {
 
 } // namespace
 
-calendar_materialisation_service::calendar_materialisation_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+calendar_materialisation_service::calendar_materialisation_service(const context& ctx)
+    : ctx_(ctx) {}
 
 std::size_t
 calendar_materialisation_service::regenerate(const std::string& calendar_code,

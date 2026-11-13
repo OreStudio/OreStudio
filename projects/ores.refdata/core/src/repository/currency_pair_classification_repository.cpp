@@ -101,7 +101,7 @@ std::optional<query_builder::condition> currency_pair_classification_filter_cond
 }
 
 ores::utility::domain::precondition currency_pair_classification_repository::replace_claim(
-    context ctx, const domain::currency_pair_classification& v) {
+    const context& ctx, const domain::currency_pair_classification& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +110,7 @@ ores::utility::domain::precondition currency_pair_classification_repository::rep
 }
 
 domain::currency_pair_classification currency_pair_classification_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::currency_pair_classification& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,13 +137,13 @@ domain::currency_pair_classification currency_pair_classification_repository::ap
     return t;
 }
 
-void currency_pair_classification_repository::write(context ctx,
+void currency_pair_classification_repository::write(const context& ctx,
                                                     const domain::currency_pair_classification& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void currency_pair_classification_repository::write(
-    context ctx, const std::vector<domain::currency_pair_classification>& v) {
+    const context& ctx, const std::vector<domain::currency_pair_classification>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -152,7 +152,7 @@ void currency_pair_classification_repository::write(
 }
 
 void currency_pair_classification_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::currency_pair_classification& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency pair classification. " << "code: " << v.code;
@@ -164,7 +164,7 @@ void currency_pair_classification_repository::write(
 }
 
 void currency_pair_classification_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::currency_pair_classification>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency pair classifications. Count: " << v.size();
@@ -179,7 +179,7 @@ void currency_pair_classification_repository::write(
 }
 
 std::vector<domain::currency_pair_classification>
-currency_pair_classification_repository::read_latest(context ctx) {
+currency_pair_classification_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_pair_classification_entity>> |
@@ -196,7 +196,7 @@ currency_pair_classification_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::currency_pair_classification>
-currency_pair_classification_repository::read_latest(context ctx, const std::string& code) {
+currency_pair_classification_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair classification. "
                                << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -216,7 +216,7 @@ currency_pair_classification_repository::read_latest(context ctx, const std::str
 
 
 std::vector<domain::currency_pair_classification>
-currency_pair_classification_repository::read_all(context ctx, const std::string& code) {
+currency_pair_classification_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all currency pair classification versions. "
                                << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -234,7 +234,7 @@ currency_pair_classification_repository::read_all(context ctx, const std::string
 }
 
 std::optional<domain::currency_pair_classification>
-currency_pair_classification_repository::read_at_version(context ctx,
+currency_pair_classification_repository::read_at_version(const context& ctx,
                                                          const std::string& code,
                                                          std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading currency pair classification at version. "
@@ -259,7 +259,7 @@ currency_pair_classification_repository::read_at_version(context ctx,
 }
 
 currency_pair_classification_repository::remove_status
-currency_pair_classification_repository::remove(context ctx,
+currency_pair_classification_repository::remove(const context& ctx,
                                                 const std::string& code,
                                                 std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency pair classification. " << "code: " << code;
@@ -290,13 +290,13 @@ currency_pair_classification_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void currency_pair_classification_repository::remove(context ctx, const std::string& code) {
+void currency_pair_classification_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::currency_pair_classification>
 currency_pair_classification_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -322,7 +322,7 @@ currency_pair_classification_repository::read_latest(
 }
 
 std::uint32_t currency_pair_classification_repository::get_total_classification_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::currency_pair_classifications_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency pair classification count";
@@ -341,7 +341,7 @@ std::uint32_t currency_pair_classification_repository::get_total_classification_
 }
 
 std::vector<domain::currency_pair_classification>
-currency_pair_classification_repository::read_latest(context ctx,
+currency_pair_classification_repository::read_latest(const context& ctx,
                                                      const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
@@ -360,7 +360,7 @@ currency_pair_classification_repository::read_latest(context ctx,
     return result;
 }
 
-void currency_pair_classification_repository::remove(context ctx,
+void currency_pair_classification_repository::remove(const context& ctx,
                                                      const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

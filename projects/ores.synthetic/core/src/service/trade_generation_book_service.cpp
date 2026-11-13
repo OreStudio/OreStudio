@@ -58,8 +58,8 @@ namespace ores::synthetic::service {
 
 using namespace ores::logging;
 
-trade_generation_book_service::trade_generation_book_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+trade_generation_book_service::trade_generation_book_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

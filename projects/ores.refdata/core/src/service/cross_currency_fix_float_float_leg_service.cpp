@@ -59,8 +59,9 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-cross_currency_fix_float_float_leg_service::cross_currency_fix_float_float_leg_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+cross_currency_fix_float_float_leg_service::cross_currency_fix_float_float_leg_service(
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

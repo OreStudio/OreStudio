@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-monetary_nature_service::monetary_nature_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+monetary_nature_service::monetary_nature_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

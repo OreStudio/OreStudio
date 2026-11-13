@@ -54,8 +54,8 @@ namespace ores::reporting::service {
 
 using namespace ores::logging;
 
-report_type_service::report_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+report_type_service::report_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -132,7 +132,7 @@ session_filter_condition(const std::optional<messaging::sessions_filter>& filter
 
 }
 
-ores::utility::domain::precondition session_repository::replace_claim(context ctx,
+ores::utility::domain::precondition session_repository::replace_claim(const context& ctx,
                                                                       const domain::session& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
@@ -141,7 +141,7 @@ ores::utility::domain::precondition session_repository::replace_claim(context ct
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::session session_repository::apply_claim(context ctx,
+domain::session session_repository::apply_claim(const context& ctx,
                                                 const domain::session& v,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -168,11 +168,11 @@ domain::session session_repository::apply_claim(context ctx,
     return t;
 }
 
-void session_repository::write(context ctx, const domain::session& v) {
+void session_repository::write(const context& ctx, const domain::session& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void session_repository::write(context ctx, const std::vector<domain::session>& v) {
+void session_repository::write(const context& ctx, const std::vector<domain::session>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -180,7 +180,7 @@ void session_repository::write(context ctx, const std::vector<domain::session>& 
     write(ctx, v, claims);
 }
 
-void session_repository::write(context ctx,
+void session_repository::write(const context& ctx,
                                const domain::session& v,
                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market data session. " << "code: " << v.code;
@@ -189,7 +189,7 @@ void session_repository::write(context ctx,
         ctx, session_mapper::map(t), lg(), "Writing market data session to database.");
 }
 
-void session_repository::write(context ctx,
+void session_repository::write(const context& ctx,
                                const std::vector<domain::session>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market data sessions. Count: " << v.size();
@@ -201,7 +201,7 @@ void session_repository::write(context ctx,
         ctx, session_mapper::map(batch), lg(), "Writing market data sessions to database.");
 }
 
-std::vector<domain::session> session_repository::read_latest(context ctx) {
+std::vector<domain::session> session_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -218,7 +218,8 @@ std::vector<domain::session> session_repository::read_latest(context ctx) {
         "Reading latest market data sessions");
 }
 
-std::vector<domain::session> session_repository::read_latest(context ctx, const std::string& code) {
+std::vector<domain::session> session_repository::read_latest(const context& ctx,
+                                                             const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market data session. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -236,7 +237,8 @@ std::vector<domain::session> session_repository::read_latest(context ctx, const 
 }
 
 
-std::vector<domain::session> session_repository::read_all(context ctx, const std::string& code) {
+std::vector<domain::session> session_repository::read_all(const context& ctx,
+                                                          const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market data session versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -253,8 +255,9 @@ std::vector<domain::session> session_repository::read_all(context ctx, const std
         "Reading all market data session versions by code.");
 }
 
-std::optional<domain::session>
-session_repository::read_at_version(context ctx, const std::string& code, std::uint32_t version) {
+std::optional<domain::session> session_repository::read_at_version(const context& ctx,
+                                                                   const std::string& code,
+                                                                   std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading market data session at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -276,7 +279,7 @@ session_repository::read_at_version(context ctx, const std::string& code, std::u
     return entities.front();
 }
 
-session_repository::remove_status session_repository::remove(context ctx,
+session_repository::remove_status session_repository::remove(const context& ctx,
                                                              const std::string& code,
                                                              std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing market data session. " << "code: " << code;
@@ -307,12 +310,12 @@ session_repository::remove_status session_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void session_repository::remove(context ctx, const std::string& code) {
+void session_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::session>
-session_repository::read_latest(context ctx,
+session_repository::read_latest(const context& ctx,
                                 std::uint32_t offset,
                                 std::uint32_t limit,
                                 const ores::utility::domain::order& order,
@@ -337,7 +340,7 @@ session_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-session_repository::get_total_session_count(context ctx,
+session_repository::get_total_session_count(const context& ctx,
                                             const std::optional<messaging::sessions_filter>& filter,
                                             const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market data session count";
@@ -356,7 +359,7 @@ session_repository::get_total_session_count(context ctx,
 }
 
 std::vector<domain::session>
-session_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+session_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -374,7 +377,7 @@ session_repository::read_latest(context ctx, const std::vector<std::string>& cod
     return result;
 }
 
-void session_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void session_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

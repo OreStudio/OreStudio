@@ -58,8 +58,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-bond_repo_service::bond_repo_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+bond_repo_service::bond_repo_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

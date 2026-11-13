@@ -101,7 +101,8 @@ std::optional<query_builder::condition> treatment_dimension_filter_condition(
 }
 
 ores::utility::domain::precondition
-treatment_dimension_repository::replace_claim(context ctx, const domain::treatment_dimension& v) {
+treatment_dimension_repository::replace_claim(const context& ctx,
+                                              const domain::treatment_dimension& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +111,7 @@ treatment_dimension_repository::replace_claim(context ctx, const domain::treatme
 }
 
 domain::treatment_dimension
-treatment_dimension_repository::apply_claim(context ctx,
+treatment_dimension_repository::apply_claim(const context& ctx,
                                             const domain::treatment_dimension& v,
                                             const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,11 +138,12 @@ treatment_dimension_repository::apply_claim(context ctx,
     return t;
 }
 
-void treatment_dimension_repository::write(context ctx, const domain::treatment_dimension& v) {
+void treatment_dimension_repository::write(const context& ctx,
+                                           const domain::treatment_dimension& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void treatment_dimension_repository::write(context ctx,
+void treatment_dimension_repository::write(const context& ctx,
                                            const std::vector<domain::treatment_dimension>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -150,7 +152,7 @@ void treatment_dimension_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void treatment_dimension_repository::write(context ctx,
+void treatment_dimension_repository::write(const context& ctx,
                                            const domain::treatment_dimension& v,
                                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing treatment dimension. " << "code: " << v.code;
@@ -160,7 +162,7 @@ void treatment_dimension_repository::write(context ctx,
 }
 
 void treatment_dimension_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::treatment_dimension>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing treatment dimensions. Count: " << v.size();
@@ -174,7 +176,8 @@ void treatment_dimension_repository::write(
                                        "Writing treatment dimensions to database.");
 }
 
-std::vector<domain::treatment_dimension> treatment_dimension_repository::read_latest(context ctx) {
+std::vector<domain::treatment_dimension>
+treatment_dimension_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<treatment_dimension_entity>> |
                        query_builder::where("valid_to"_c == max) |
@@ -190,7 +193,7 @@ std::vector<domain::treatment_dimension> treatment_dimension_repository::read_la
 }
 
 std::vector<domain::treatment_dimension>
-treatment_dimension_repository::read_latest(context ctx, const std::string& code) {
+treatment_dimension_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest treatment dimension. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<treatment_dimension_entity>> |
@@ -207,7 +210,7 @@ treatment_dimension_repository::read_latest(context ctx, const std::string& code
 
 
 std::vector<domain::treatment_dimension>
-treatment_dimension_repository::read_all(context ctx, const std::string& code) {
+treatment_dimension_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all treatment dimension versions. " << "code: " << code;
     const auto query = query_builder::read<std::vector<treatment_dimension_entity>> |
                        query_builder::where("code"_c == code) |
@@ -223,7 +226,7 @@ treatment_dimension_repository::read_all(context ctx, const std::string& code) {
 }
 
 std::optional<domain::treatment_dimension> treatment_dimension_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading treatment dimension at version. " << "code: " << code
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<treatment_dimension_entity>> |
@@ -244,7 +247,7 @@ std::optional<domain::treatment_dimension> treatment_dimension_repository::read_
 }
 
 treatment_dimension_repository::remove_status treatment_dimension_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing treatment dimension. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -273,12 +276,12 @@ treatment_dimension_repository::remove_status treatment_dimension_repository::re
     return remove_status::removed;
 }
 
-void treatment_dimension_repository::remove(context ctx, const std::string& code) {
+void treatment_dimension_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::treatment_dimension> treatment_dimension_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -302,7 +305,7 @@ std::vector<domain::treatment_dimension> treatment_dimension_repository::read_la
 }
 
 std::uint32_t treatment_dimension_repository::get_total_dimension_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::treatment_dimensions_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active treatment dimension count";
@@ -319,7 +322,8 @@ std::uint32_t treatment_dimension_repository::get_total_dimension_count(
 }
 
 std::vector<domain::treatment_dimension>
-treatment_dimension_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+treatment_dimension_repository::read_latest(const context& ctx,
+                                            const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -335,7 +339,8 @@ treatment_dimension_repository::read_latest(context ctx, const std::vector<std::
     return result;
 }
 
-void treatment_dimension_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void treatment_dimension_repository::remove(const context& ctx,
+                                            const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

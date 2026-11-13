@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-ir_curve_bootstrap_config_service::ir_curve_bootstrap_config_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+ir_curve_bootstrap_config_service::ir_curve_bootstrap_config_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

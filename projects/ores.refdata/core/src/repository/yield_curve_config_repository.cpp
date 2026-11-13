@@ -102,7 +102,8 @@ std::optional<query_builder::condition> yield_curve_config_filter_condition(
 }
 
 ores::utility::domain::precondition
-yield_curve_config_repository::replace_claim(context ctx, const domain::yield_curve_config& v) {
+yield_curve_config_repository::replace_claim(const context& ctx,
+                                             const domain::yield_curve_config& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,7 +112,7 @@ yield_curve_config_repository::replace_claim(context ctx, const domain::yield_cu
 }
 
 domain::yield_curve_config
-yield_curve_config_repository::apply_claim(context ctx,
+yield_curve_config_repository::apply_claim(const context& ctx,
                                            const domain::yield_curve_config& v,
                                            const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,11 +139,11 @@ yield_curve_config_repository::apply_claim(context ctx,
     return t;
 }
 
-void yield_curve_config_repository::write(context ctx, const domain::yield_curve_config& v) {
+void yield_curve_config_repository::write(const context& ctx, const domain::yield_curve_config& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void yield_curve_config_repository::write(context ctx,
+void yield_curve_config_repository::write(const context& ctx,
                                           const std::vector<domain::yield_curve_config>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -151,7 +152,7 @@ void yield_curve_config_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void yield_curve_config_repository::write(context ctx,
+void yield_curve_config_repository::write(const context& ctx,
                                           const domain::yield_curve_config& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing yield curve config. " << "id: " << v.id;
@@ -161,7 +162,7 @@ void yield_curve_config_repository::write(context ctx,
 }
 
 void yield_curve_config_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::yield_curve_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing yield curve configs. Count: " << v.size();
@@ -175,7 +176,8 @@ void yield_curve_config_repository::write(
                                        "Writing yield curve configs to database.");
 }
 
-std::vector<domain::yield_curve_config> yield_curve_config_repository::read_latest(context ctx) {
+std::vector<domain::yield_curve_config>
+yield_curve_config_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<yield_curve_config_entity>> |
@@ -191,7 +193,7 @@ std::vector<domain::yield_curve_config> yield_curve_config_repository::read_late
 }
 
 std::vector<domain::yield_curve_config>
-yield_curve_config_repository::read_latest(context ctx, const std::string& id) {
+yield_curve_config_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest yield curve config. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -209,7 +211,7 @@ yield_curve_config_repository::read_latest(context ctx, const std::string& id) {
 
 
 std::vector<domain::yield_curve_config>
-yield_curve_config_repository::read_all(context ctx, const std::string& id) {
+yield_curve_config_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all yield curve config versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<yield_curve_config_entity>> |
@@ -225,7 +227,7 @@ yield_curve_config_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::yield_curve_config> yield_curve_config_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading yield curve config at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -249,7 +251,7 @@ std::optional<domain::yield_curve_config> yield_curve_config_repository::read_at
 
 
 yield_curve_config_repository::remove_status yield_curve_config_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing yield curve config. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -278,12 +280,12 @@ yield_curve_config_repository::remove_status yield_curve_config_repository::remo
     return remove_status::removed;
 }
 
-void yield_curve_config_repository::remove(context ctx, const std::string& id) {
+void yield_curve_config_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::yield_curve_config> yield_curve_config_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -309,7 +311,7 @@ std::vector<domain::yield_curve_config> yield_curve_config_repository::read_late
 }
 
 std::uint32_t yield_curve_config_repository::get_total_yield_curve_config_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::yield_curve_configs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active yield curve config count";
@@ -328,7 +330,8 @@ std::uint32_t yield_curve_config_repository::get_total_yield_curve_config_count(
 }
 
 std::vector<domain::yield_curve_config>
-yield_curve_config_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+yield_curve_config_repository::read_latest(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -346,7 +349,8 @@ yield_curve_config_repository::read_latest(context ctx, const std::vector<std::s
     return result;
 }
 
-void yield_curve_config_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void yield_curve_config_repository::remove(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

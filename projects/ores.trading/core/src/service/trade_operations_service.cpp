@@ -55,8 +55,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-trade_operations_service::trade_operations_service(context ctx, const book_rules_port& books)
-    : ctx_(std::move(ctx))
+trade_operations_service::trade_operations_service(const context& ctx, const book_rules_port& books)
+    : ctx_(ctx)
     , books_(&books) {}
 
 namespace {
@@ -350,7 +350,7 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
 }
 
 std::optional<raised_authorisation>
-trade_operations_service::execute_within(context ctx,
+trade_operations_service::execute_within(const context& ctx,
                                          const authorisation_policy& authorisation,
                                          const boost::uuids::uuid& trade_id,
                                          const std::string& change_reason_code,

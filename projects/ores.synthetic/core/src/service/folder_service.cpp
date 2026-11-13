@@ -59,8 +59,8 @@ namespace ores::synthetic::service {
 
 using namespace ores::logging;
 
-folder_service::folder_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+folder_service::folder_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

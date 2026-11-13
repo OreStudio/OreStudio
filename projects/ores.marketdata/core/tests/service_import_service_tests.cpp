@@ -51,7 +51,7 @@ namespace {
 // given -- so the helper takes that identity rather than a decomposition.
 std::vector<ores::marketdata::domain::market_series>
 series_with_uri(ores::marketdata::repository::market_series_repository& repo,
-                ores::database::context ctx,
+                const ores::database::context& ctx,
                 const std::string& oresmd_uri) {
     return repo.read_latest_by_key(ctx, oresmd_uri, "ore");
 }
@@ -66,7 +66,7 @@ std::string zero_series_uri(const std::string& curve_id) {
 // The values of one axis, in the order the shape stores them.
 std::vector<std::string> axis_values(const boost::uuids::uuid& series_id,
                                      const std::string& axis_field,
-                                     ores::database::context ctx) {
+                                     const ores::database::context& ctx) {
     using namespace ores::marketdata;
     const std::vector<std::string> ids{boost::uuids::to_string(series_id)};
     std::vector<std::pair<int, std::string>> ordered;
@@ -84,8 +84,8 @@ std::vector<std::string> axis_values(const boost::uuids::uuid& series_id,
 
 // The values of the 'term' axis, in the order the shape stores them.
 std::vector<std::string> term_values(const boost::uuids::uuid& series_id,
-                                     ores::database::context ctx) {
-    return axis_values(series_id, "term", std::move(ctx));
+                                     const ores::database::context& ctx) {
+    return axis_values(series_id, "term", ctx);
 }
 
 }

@@ -109,7 +109,7 @@ std::optional<query_builder::condition> balance_guaranteed_swap_tranche_filter_c
 }
 
 ores::utility::domain::precondition balance_guaranteed_swap_tranche_repository::replace_claim(
-    context ctx, const domain::balance_guaranteed_swap_tranche& v) {
+    const context& ctx, const domain::balance_guaranteed_swap_tranche& v) {
     const auto current =
         read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
     if (current.empty())
@@ -119,7 +119,7 @@ ores::utility::domain::precondition balance_guaranteed_swap_tranche_repository::
 }
 
 domain::balance_guaranteed_swap_tranche balance_guaranteed_swap_tranche_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::balance_guaranteed_swap_tranche& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -148,12 +148,12 @@ domain::balance_guaranteed_swap_tranche balance_guaranteed_swap_tranche_reposito
 }
 
 void balance_guaranteed_swap_tranche_repository::write(
-    context ctx, const domain::balance_guaranteed_swap_tranche& v) {
+    const context& ctx, const domain::balance_guaranteed_swap_tranche& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void balance_guaranteed_swap_tranche_repository::write(
-    context ctx, const std::vector<domain::balance_guaranteed_swap_tranche>& v) {
+    const context& ctx, const std::vector<domain::balance_guaranteed_swap_tranche>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -162,7 +162,7 @@ void balance_guaranteed_swap_tranche_repository::write(
 }
 
 void balance_guaranteed_swap_tranche_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::balance_guaranteed_swap_tranche& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing balance guaranteed swap tranche. "
@@ -176,7 +176,7 @@ void balance_guaranteed_swap_tranche_repository::write(
 }
 
 void balance_guaranteed_swap_tranche_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::balance_guaranteed_swap_tranche>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing balance guaranteed swap tranches. Count: " << v.size();
@@ -191,7 +191,7 @@ void balance_guaranteed_swap_tranche_repository::write(
 }
 
 std::vector<domain::balance_guaranteed_swap_tranche>
-balance_guaranteed_swap_tranche_repository::read_latest(context ctx) {
+balance_guaranteed_swap_tranche_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<balance_guaranteed_swap_tranche_entity>> |
@@ -208,7 +208,7 @@ balance_guaranteed_swap_tranche_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::balance_guaranteed_swap_tranche>
-balance_guaranteed_swap_tranche_repository::read_latest(context ctx,
+balance_guaranteed_swap_tranche_repository::read_latest(const context& ctx,
                                                         const std::string& trade_id,
                                                         const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest balance guaranteed swap tranche. "
@@ -232,7 +232,7 @@ balance_guaranteed_swap_tranche_repository::read_latest(context ctx,
 
 
 std::vector<domain::balance_guaranteed_swap_tranche>
-balance_guaranteed_swap_tranche_repository::read_all(context ctx,
+balance_guaranteed_swap_tranche_repository::read_all(const context& ctx,
                                                      const std::string& trade_id,
                                                      const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all balance guaranteed swap tranche versions. "
@@ -254,7 +254,7 @@ balance_guaranteed_swap_tranche_repository::read_all(context ctx,
 }
 
 std::optional<domain::balance_guaranteed_swap_tranche>
-balance_guaranteed_swap_tranche_repository::read_at_version(context ctx,
+balance_guaranteed_swap_tranche_repository::read_at_version(const context& ctx,
                                                             const std::string& trade_id,
                                                             const std::string& sequence_number,
                                                             std::uint32_t version) {
@@ -287,7 +287,7 @@ balance_guaranteed_swap_tranche_repository::read_at_version(context ctx,
 
 std::vector<domain::balance_guaranteed_swap_tranche>
 balance_guaranteed_swap_tranche_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -315,7 +315,7 @@ balance_guaranteed_swap_tranche_repository::read_latest_by_trade_id(
 
 std::uint32_t balance_guaranteed_swap_tranche_repository::
     get_total_balance_guaranteed_swap_tranche_count_by_trade_id(
-        context ctx,
+        const context& ctx,
         const std::string& trade_id,
         const std::optional<messaging::balance_guaranteed_swap_tranches_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -337,7 +337,7 @@ std::uint32_t balance_guaranteed_swap_tranche_repository::
 
 
 balance_guaranteed_swap_tranche_repository::remove_status
-balance_guaranteed_swap_tranche_repository::remove(context ctx,
+balance_guaranteed_swap_tranche_repository::remove(const context& ctx,
                                                    const std::string& trade_id,
                                                    const std::string& sequence_number,
                                                    std::optional<std::uint32_t> version) {
@@ -372,7 +372,7 @@ balance_guaranteed_swap_tranche_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void balance_guaranteed_swap_tranche_repository::remove(context ctx,
+void balance_guaranteed_swap_tranche_repository::remove(const context& ctx,
                                                         const std::string& trade_id,
                                                         const std::string& sequence_number) {
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
@@ -380,7 +380,7 @@ void balance_guaranteed_swap_tranche_repository::remove(context ctx,
 
 std::vector<domain::balance_guaranteed_swap_tranche>
 balance_guaranteed_swap_tranche_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -407,7 +407,7 @@ balance_guaranteed_swap_tranche_repository::read_latest(
 
 std::uint32_t
 balance_guaranteed_swap_tranche_repository::get_total_balance_guaranteed_swap_tranche_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::balance_guaranteed_swap_tranches_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active balance guaranteed swap tranche count";
@@ -427,7 +427,7 @@ balance_guaranteed_swap_tranche_repository::get_total_balance_guaranteed_swap_tr
 
 std::vector<domain::balance_guaranteed_swap_tranche>
 balance_guaranteed_swap_tranche_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
@@ -465,7 +465,7 @@ balance_guaranteed_swap_tranche_repository::read_latest(
 }
 
 void balance_guaranteed_swap_tranche_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product
@@ -481,7 +481,7 @@ void balance_guaranteed_swap_tranche_repository::remove(
 
 std::vector<domain::balance_guaranteed_swap_tranche>
 balance_guaranteed_swap_tranche_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();

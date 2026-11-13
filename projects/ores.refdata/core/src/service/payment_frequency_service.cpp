@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-payment_frequency_service::payment_frequency_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+payment_frequency_service::payment_frequency_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

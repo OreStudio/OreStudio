@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit demand_interval_service(context ctx);
+    explicit demand_interval_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

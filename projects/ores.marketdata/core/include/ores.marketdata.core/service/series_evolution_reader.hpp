@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_SERIES_EVOLUTION_READER_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_SERIES_EVOLUTION_READER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 
@@ -68,7 +68,8 @@ public:
      * @c max_instants, or a stored oresmd URI does not read.
      */
     static messaging::get_series_evolution_response
-    read(ores::database::context ctx, const messaging::get_series_evolution_request& request);
+    read(const ores::database::context& ctx,
+         const messaging::get_series_evolution_request& request);
 };
 
 }

@@ -58,8 +58,8 @@ namespace ores::synthetic::service {
 
 using namespace ores::logging;
 
-fx_vol_surface_feed_expiry_service::fx_vol_surface_feed_expiry_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+fx_vol_surface_feed_expiry_service::fx_vol_surface_feed_expiry_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

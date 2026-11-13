@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-reporting_regime_service::reporting_regime_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+reporting_regime_service::reporting_regime_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -767,14 +767,14 @@ same code the generated reads use.
      * not this method.
      */
     std::vector<domain::report_instance>
-    read_latest_by_definition_ids(context ctx,
+    read_latest_by_definition_ids(const context& ctx,
                                   const std::vector<boost::uuids::uuid>& definition_ids);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::report_instance>
 report_instance_repository::read_latest_by_definition_ids(
-    context ctx, const std::vector<boost::uuids::uuid>& definition_ids) {
+    const context& ctx, const std::vector<boost::uuids::uuid>& definition_ids) {
     if (definition_ids.empty())
         return {};
 
@@ -851,7 +851,7 @@ struct report_instance_health_facts {
      * states no word for it rather than inventing one.
      */
     std::vector<report_instance_health_facts>
-    read_health_facts_by_instance_ids(context ctx,
+    read_health_facts_by_instance_ids(const context& ctx,
                                       const std::vector<boost::uuids::uuid>& instance_ids);
 #+end_src
 
@@ -863,7 +863,7 @@ struct report_instance_health_facts {
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<report_instance_health_facts>
 report_instance_repository::read_health_facts_by_instance_ids(
-    context ctx, const std::vector<boost::uuids::uuid>& instance_ids) {
+    const context& ctx, const std::vector<boost::uuids::uuid>& instance_ids) {
     if (instance_ids.empty())
         return {};
 

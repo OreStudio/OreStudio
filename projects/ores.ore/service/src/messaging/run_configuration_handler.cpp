@@ -67,13 +67,13 @@ input_files files_of(const std::vector<run_input_file>& files) {
 }
 
 run_configuration_handler::run_configuration_handler(ores::nats::service::client& nats,
-                                                     ores::database::context ctx,
+                                                     const ores::database::context& ctx,
                                                      ores::security::jwt::jwt_authenticator signer,
                                                      ores::nats::service::nats_client outbound_nats)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , signer_(std::move(signer))
-    , outbound_nats_(std::move(outbound_nats)) {}
+    , ctx_(ctx)
+    , signer_(signer)
+    , outbound_nats_(outbound_nats) {}
 
 void run_configuration_handler::import_run_configuration(ores::nats::message msg) {
     using ores::workflow::messaging::start_workflow_message;
@@ -170,7 +170,7 @@ void run_configuration_handler::export_run_configuration(ores::nats::message msg
 run_configuration_import_handler::run_configuration_import_handler(
     ores::nats::service::client& nats, ores::nats::service::nats_client outbound_nats)
     : nats_(nats)
-    , outbound_nats_(std::move(outbound_nats)) {}
+    , outbound_nats_(outbound_nats) {}
 
 void run_configuration_import_handler::execute(ores::nats::delivery delivery) {
     const auto& msg = delivery.msg();

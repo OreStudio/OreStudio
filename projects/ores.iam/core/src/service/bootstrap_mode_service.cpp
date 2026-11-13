@@ -28,11 +28,11 @@ namespace ores::iam::service {
 using namespace ores::logging;
 namespace reason = ores::dq::domain::change_reason_constants;
 
-bootstrap_mode_service::bootstrap_mode_service(database::context ctx,
+bootstrap_mode_service::bootstrap_mode_service(const database::context& ctx,
                                                std::string tenant_id,
                                                std::shared_ptr<authorization_service> auth_service)
     : system_settings_service_(ctx, std::move(tenant_id))
-    , auth_service_(std::move(auth_service))
+    , auth_service_(auth_service)
     , ctx_(ctx) {
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
     system_settings_service_.refresh();

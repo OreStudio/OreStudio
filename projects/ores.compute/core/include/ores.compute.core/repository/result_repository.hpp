@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::result& v);
-    void write(context ctx, const std::vector<domain::result>& v);
+    void write(const context& ctx, const domain::result& v);
+    void write(const context& ctx, const std::vector<domain::result>& v);
     /**@}*/
 
     /**
@@ -84,14 +84,15 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void
-    write(context ctx, const domain::result& v, const ores::utility::domain::precondition& claim);
+    void write(const context& ctx,
+               const domain::result& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
      * @brief Writes a set of compute results, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::result>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -99,16 +100,17 @@ public:
      * @brief Reads latest compute results, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::result> read_latest(context ctx);
-    std::vector<domain::result> read_latest(context ctx, const std::string& id);
-    std::vector<domain::result> read_latest(context ctx, const std::vector<std::string>& ids);
+    std::vector<domain::result> read_latest(const context& ctx);
+    std::vector<domain::result> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::result> read_latest(const context& ctx,
+                                            const std::vector<std::string>& ids);
     /**@}*/
 
 
     /**
      * @brief Reads all compute results, possibly filtered by primary key.
      */
-    std::vector<domain::result> read_all(context ctx, const std::string& id);
+    std::vector<domain::result> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single compute result as it stood at a specific
@@ -120,7 +122,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::result>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest compute results filtered by workunit_id, with pagination.
@@ -131,7 +133,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::result> read_latest_by_workunit_id(
-        context ctx,
+        const context& ctx,
         const std::string& workunit_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -142,7 +144,7 @@ public:
      * @brief Gets the total count of active compute results filtered by workunit_id.
      */
     std::uint32_t get_total_result_count_by_workunit_id(
-        context ctx,
+        const context& ctx,
         const std::string& workunit_id,
         const std::optional<messaging::results_filter>& filter = std::nullopt);
 
@@ -164,7 +166,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::result>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -177,14 +179,14 @@ public:
      * @return Total number of active compute results
      */
     std::uint32_t
-    get_total_result_count(context ctx,
+    get_total_result_count(const context& ctx,
                            const std::optional<messaging::results_filter>& filter = std::nullopt,
                            const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a compute result by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -206,31 +208,32 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes compute results by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
     /**
      * @brief Reads the latest version of all results in a given server state.
      */
-    std::vector<domain::result> read_by_state(context ctx, int server_state);
+    std::vector<domain::result> read_by_state(const context& ctx, int server_state);
 
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::result& v);
+    ores::utility::domain::precondition replace_claim(const context& ctx, const domain::result& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::result apply_claim(context ctx,
+    domain::result apply_claim(const context& ctx,
                                const domain::result& v,
                                const ores::utility::domain::precondition& claim);
 };

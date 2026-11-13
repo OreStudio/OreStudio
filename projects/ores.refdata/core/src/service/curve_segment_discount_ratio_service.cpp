@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-curve_segment_discount_ratio_service::curve_segment_discount_ratio_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+curve_segment_discount_ratio_service::curve_segment_discount_ratio_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

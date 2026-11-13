@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-currency_pair_convention_service::currency_pair_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+currency_pair_convention_service::currency_pair_convention_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

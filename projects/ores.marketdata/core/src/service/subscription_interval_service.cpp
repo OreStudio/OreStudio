@@ -58,8 +58,8 @@ namespace ores::marketdata::service {
 
 using namespace ores::logging;
 
-subscription_interval_service::subscription_interval_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+subscription_interval_service::subscription_interval_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

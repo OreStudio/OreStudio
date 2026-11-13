@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-commodity_forward_convention_service::commodity_forward_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+commodity_forward_convention_service::commodity_forward_convention_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

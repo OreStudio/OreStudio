@@ -87,7 +87,7 @@ equity_basket_constituent_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-equity_basket_constituent_repository::replace_claim(context ctx,
+equity_basket_constituent_repository::replace_claim(const context& ctx,
                                                     const domain::equity_basket_constituent& v) {
     const auto current =
         read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
@@ -98,7 +98,7 @@ equity_basket_constituent_repository::replace_claim(context ctx,
 }
 
 domain::equity_basket_constituent equity_basket_constituent_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::equity_basket_constituent& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -126,13 +126,13 @@ domain::equity_basket_constituent equity_basket_constituent_repository::apply_cl
     return t;
 }
 
-void equity_basket_constituent_repository::write(context ctx,
+void equity_basket_constituent_repository::write(const context& ctx,
                                                  const domain::equity_basket_constituent& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void equity_basket_constituent_repository::write(
-    context ctx, const std::vector<domain::equity_basket_constituent>& v) {
+    const context& ctx, const std::vector<domain::equity_basket_constituent>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -140,7 +140,7 @@ void equity_basket_constituent_repository::write(
     write(ctx, v, claims);
 }
 
-void equity_basket_constituent_repository::write(context ctx,
+void equity_basket_constituent_repository::write(const context& ctx,
                                                  const domain::equity_basket_constituent& v,
                                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing equity basket constituent. "
@@ -154,7 +154,7 @@ void equity_basket_constituent_repository::write(context ctx,
 }
 
 void equity_basket_constituent_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::equity_basket_constituent>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing equity basket constituents. Count: " << v.size();
@@ -169,7 +169,7 @@ void equity_basket_constituent_repository::write(
 }
 
 std::vector<domain::equity_basket_constituent>
-equity_basket_constituent_repository::read_latest(context ctx) {
+equity_basket_constituent_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_basket_constituent_entity>> |
@@ -186,7 +186,7 @@ equity_basket_constituent_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::equity_basket_constituent> equity_basket_constituent_repository::read_latest(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest equity basket constituent. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -208,7 +208,7 @@ std::vector<domain::equity_basket_constituent> equity_basket_constituent_reposit
 
 
 std::vector<domain::equity_basket_constituent> equity_basket_constituent_repository::read_all(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all equity basket constituent versions. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -228,7 +228,7 @@ std::vector<domain::equity_basket_constituent> equity_basket_constituent_reposit
 }
 
 std::optional<domain::equity_basket_constituent>
-equity_basket_constituent_repository::read_at_version(context ctx,
+equity_basket_constituent_repository::read_at_version(const context& ctx,
                                                       const std::string& trade_id,
                                                       const std::string& sequence_number,
                                                       std::uint32_t version) {
@@ -257,7 +257,7 @@ equity_basket_constituent_repository::read_at_version(context ctx,
 }
 
 equity_basket_constituent_repository::remove_status
-equity_basket_constituent_repository::remove(context ctx,
+equity_basket_constituent_repository::remove(const context& ctx,
                                              const std::string& trade_id,
                                              const std::string& sequence_number,
                                              std::optional<std::uint32_t> version) {
@@ -291,14 +291,14 @@ equity_basket_constituent_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void equity_basket_constituent_repository::remove(context ctx,
+void equity_basket_constituent_repository::remove(const context& ctx,
                                                   const std::string& trade_id,
                                                   const std::string& sequence_number) {
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
 }
 
 std::vector<domain::equity_basket_constituent>
-equity_basket_constituent_repository::read_latest(context ctx,
+equity_basket_constituent_repository::read_latest(const context& ctx,
                                                   std::uint32_t offset,
                                                   std::uint32_t limit,
                                                   const ores::utility::domain::order& order,
@@ -322,7 +322,7 @@ equity_basket_constituent_repository::read_latest(context ctx,
 }
 
 std::uint32_t equity_basket_constituent_repository::get_total_equity_basket_constituent_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active equity basket constituent count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -338,7 +338,7 @@ std::uint32_t equity_basket_constituent_repository::get_total_equity_basket_cons
 }
 
 std::vector<domain::equity_basket_constituent> equity_basket_constituent_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
@@ -376,7 +376,7 @@ std::vector<domain::equity_basket_constituent> equity_basket_constituent_reposit
 }
 
 void equity_basket_constituent_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product

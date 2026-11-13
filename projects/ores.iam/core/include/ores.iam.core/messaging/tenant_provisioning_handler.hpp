@@ -170,13 +170,13 @@ using namespace ores::logging;
 class tenant_provisioning_handler {
 public:
     tenant_provisioning_handler(ores::nats::service::client& nats,
-                                ores::database::context ctx,
+                                const ores::database::context& ctx,
                                 ores::security::jwt::jwt_authenticator signer,
                                 ores::iam::service::internal_impersonation_service impersonation)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , signer_(std::move(signer))
-        , impersonation_(std::move(impersonation)) {}
+        , ctx_(ctx)
+        , signer_(signer)
+        , impersonation_(impersonation) {}
 
     /**
      * @brief Provisions a tenant from a seed profile.

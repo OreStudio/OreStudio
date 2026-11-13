@@ -136,7 +136,8 @@ std::optional<query_builder::condition> report_text_value_filter_condition(
 }
 
 ores::utility::domain::precondition
-report_text_value_repository::replace_claim(context ctx, const domain::report_text_value& v) {
+report_text_value_repository::replace_claim(const context& ctx,
+                                            const domain::report_text_value& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -147,7 +148,7 @@ report_text_value_repository::replace_claim(context ctx, const domain::report_te
 }
 
 domain::report_text_value
-report_text_value_repository::apply_claim(context ctx,
+report_text_value_repository::apply_claim(const context& ctx,
                                           const domain::report_text_value& v,
                                           const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -163,24 +164,24 @@ report_text_value_repository::apply_claim(context ctx,
     return t;
 }
 
-void report_text_value_repository::write(context ctx, const domain::report_text_value& v) {
+void report_text_value_repository::write(const context& ctx, const domain::report_text_value& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void report_text_value_repository::insert(context ctx, const domain::report_text_value& v) {
+void report_text_value_repository::insert(const context& ctx, const domain::report_text_value& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting report text value. " << "id: " << v.id;
     query_builder::execute_write_query(
         ctx, report_text_value_mapper::map(v), lg(), "Inserting report text value into database.");
 }
 
-void report_text_value_repository::insert(context ctx,
+void report_text_value_repository::insert(const context& ctx,
                                           const std::vector<domain::report_text_value>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting report text values. Count: " << v.size();
     query_builder::execute_write_query(
         ctx, report_text_value_mapper::map(v), lg(), "Inserting report text values into database.");
 }
 
-void report_text_value_repository::write(context ctx,
+void report_text_value_repository::write(const context& ctx,
                                          const std::vector<domain::report_text_value>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -189,7 +190,7 @@ void report_text_value_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void report_text_value_repository::write(context ctx,
+void report_text_value_repository::write(const context& ctx,
                                          const domain::report_text_value& v,
                                          const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report text value. " << "id: " << v.id;
@@ -199,7 +200,7 @@ void report_text_value_repository::write(context ctx,
 }
 
 void report_text_value_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::report_text_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report text values. Count: " << v.size();
@@ -211,7 +212,8 @@ void report_text_value_repository::write(
         ctx, report_text_value_mapper::map(batch), lg(), "Writing report text values to database.");
 }
 
-std::vector<domain::report_text_value> report_text_value_repository::read_latest(context ctx) {
+std::vector<domain::report_text_value>
+report_text_value_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_text_value_entity>> |
@@ -227,7 +229,7 @@ std::vector<domain::report_text_value> report_text_value_repository::read_latest
 }
 
 std::vector<domain::report_text_value>
-report_text_value_repository::read_latest(context ctx, const std::string& id) {
+report_text_value_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report text value. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -245,7 +247,7 @@ report_text_value_repository::read_latest(context ctx, const std::string& id) {
 
 
 std::vector<domain::report_text_value>
-report_text_value_repository::read_all(context ctx, const std::string& id) {
+report_text_value_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all report text value versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_text_value_entity>> |
@@ -262,7 +264,7 @@ report_text_value_repository::read_all(context ctx, const std::string& id) {
 
 
 report_text_value_repository::remove_status report_text_value_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing report text value. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -282,12 +284,12 @@ report_text_value_repository::remove_status report_text_value_repository::remove
     return remove_status::removed;
 }
 
-void report_text_value_repository::remove(context ctx, const std::string& id) {
+void report_text_value_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::report_text_value> report_text_value_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -313,7 +315,7 @@ std::vector<domain::report_text_value> report_text_value_repository::read_latest
 }
 
 std::uint32_t report_text_value_repository::get_total_value_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::report_text_values_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report text value count";
@@ -332,7 +334,7 @@ std::uint32_t report_text_value_repository::get_total_value_count(
 }
 
 std::vector<domain::report_text_value>
-report_text_value_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+report_text_value_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -350,7 +352,7 @@ report_text_value_repository::read_latest(context ctx, const std::vector<std::st
     return result;
 }
 
-void report_text_value_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void report_text_value_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

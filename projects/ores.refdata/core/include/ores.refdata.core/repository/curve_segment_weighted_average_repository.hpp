@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::curve_segment_weighted_average& v);
-    void write(context ctx, const std::vector<domain::curve_segment_weighted_average>& v);
+    void write(const context& ctx, const domain::curve_segment_weighted_average& v);
+    void write(const context& ctx, const std::vector<domain::curve_segment_weighted_average>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::curve_segment_weighted_average& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of curve segment weighted averages, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::curve_segment_weighted_average>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,18 +101,18 @@ public:
      * @brief Reads latest curve segment weighted averages, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::curve_segment_weighted_average> read_latest(context ctx);
-    std::vector<domain::curve_segment_weighted_average> read_latest(context ctx,
+    std::vector<domain::curve_segment_weighted_average> read_latest(const context& ctx);
+    std::vector<domain::curve_segment_weighted_average> read_latest(const context& ctx,
                                                                     const std::string& id);
     std::vector<domain::curve_segment_weighted_average>
-    read_latest(context ctx, const std::vector<std::string>& ids);
+    read_latest(const context& ctx, const std::vector<std::string>& ids);
     /**@}*/
 
 
     /**
      * @brief Reads all curve segment weighted averages, possibly filtered by primary key.
      */
-    std::vector<domain::curve_segment_weighted_average> read_all(context ctx,
+    std::vector<domain::curve_segment_weighted_average> read_all(const context& ctx,
                                                                  const std::string& id);
 
     /**
@@ -125,7 +125,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::curve_segment_weighted_average>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
 
     /**
@@ -145,7 +145,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::curve_segment_weighted_average>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -159,7 +159,7 @@ public:
      * @return Total number of active curve segment weighted averages
      */
     std::uint32_t get_total_segment_weighted_average_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::curve_segment_weighted_averages_filter>& filter =
             std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
@@ -167,7 +167,7 @@ public:
     /**
      * @brief Deletes a curve segment weighted average by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -189,12 +189,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes curve segment weighted averages by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -203,7 +204,7 @@ private:
      * that no row exists yet.
      */
     ores::utility::domain::precondition
-    replace_claim(context ctx, const domain::curve_segment_weighted_average& v);
+    replace_claim(const context& ctx, const domain::curve_segment_weighted_average& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
@@ -211,7 +212,7 @@ private:
      * A claim the store cannot check is refused here rather than ignored.
      */
     domain::curve_segment_weighted_average
-    apply_claim(context ctx,
+    apply_claim(const context& ctx,
                 const domain::curve_segment_weighted_average& v,
                 const ores::utility::domain::precondition& claim);
 };

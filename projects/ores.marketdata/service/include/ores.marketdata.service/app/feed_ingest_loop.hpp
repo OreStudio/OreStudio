@@ -129,7 +129,7 @@ public:
     /// is false, the worker prepares and copies each batch itself, one after the other. The burst
     /// tests use that to compare the two.
     feed_ingest_loop(ores::nats::service::client& nats,
-                     ores::database::context ctx,
+                     const ores::database::context& ctx,
                      std::shared_ptr<crm_ingest_bridge> crm_bridge = nullptr,
                      std::shared_ptr<tick_writer> tick_writer = nullptr,
                      bool pipelined = true);

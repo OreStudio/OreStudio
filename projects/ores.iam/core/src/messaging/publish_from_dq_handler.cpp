@@ -67,9 +67,9 @@ std::string subject_to_fn(std::string_view subject) {
 } // namespace
 
 publish_from_dq_handler::publish_from_dq_handler(ores::nats::service::client& nats,
-                                                 ores::database::context ctx)
+                                                 const ores::database::context& ctx)
     : nats_(nats)
-    , ctx_(std::move(ctx)) {}
+    , ctx_(ctx) {}
 
 void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
     const auto& msg = delivery.msg();

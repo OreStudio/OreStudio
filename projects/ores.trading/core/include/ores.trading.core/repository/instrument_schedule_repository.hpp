@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::instrument_schedule& v);
-    void write(context ctx, const std::vector<domain::instrument_schedule>& v);
+    void write(const context& ctx, const domain::instrument_schedule& v);
+    void write(const context& ctx, const std::vector<domain::instrument_schedule>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::instrument_schedule& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of instrument schedules, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::instrument_schedule>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,15 +101,15 @@ public:
      * @brief Reads latest instrument schedules, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::instrument_schedule> read_latest(context ctx);
-    std::vector<domain::instrument_schedule> read_latest(context ctx,
+    std::vector<domain::instrument_schedule> read_latest(const context& ctx);
+    std::vector<domain::instrument_schedule> read_latest(const context& ctx,
                                                          const std::string& trade_id,
                                                          const std::string& owner_role,
                                                          const std::string& owner_number,
                                                          const std::string& schedule_role,
                                                          const std::string& sequence_number);
     std::vector<domain::instrument_schedule>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& owner_roles,
                 const std::vector<std::string>& owner_numbers,
@@ -121,7 +121,7 @@ public:
     /**
      * @brief Reads all instrument schedules, possibly filtered by primary key.
      */
-    std::vector<domain::instrument_schedule> read_all(context ctx,
+    std::vector<domain::instrument_schedule> read_all(const context& ctx,
                                                       const std::string& trade_id,
                                                       const std::string& owner_role,
                                                       const std::string& owner_number,
@@ -137,7 +137,7 @@ public:
      * @param ctx Repository context with database connection
      * @param version The version to fetch
      */
-    std::optional<domain::instrument_schedule> read_at_version(context ctx,
+    std::optional<domain::instrument_schedule> read_at_version(const context& ctx,
                                                                const std::string& trade_id,
                                                                const std::string& owner_role,
                                                                const std::string& owner_number,
@@ -154,7 +154,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::instrument_schedule> read_latest_by_trade_id(
-        context ctx,
+        const context& ctx,
         const std::string& trade_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -165,7 +165,7 @@ public:
      * @brief Gets the total count of active instrument schedules filtered by trade_id.
      */
     std::uint32_t get_total_instrument_schedule_count_by_trade_id(
-        context ctx,
+        const context& ctx,
         const std::string& trade_id,
         const std::optional<messaging::instrument_schedules_filter>& filter = std::nullopt);
 
@@ -187,7 +187,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::instrument_schedule>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -200,14 +200,14 @@ public:
      * @return Total number of active instrument schedules
      */
     std::uint32_t get_total_instrument_schedule_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::instrument_schedules_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a instrument schedule by closing its temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::string& trade_id,
                 const std::string& owner_role,
                 const std::string& owner_number,
@@ -234,7 +234,7 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& trade_id,
                          const std::string& owner_role,
                          const std::string& owner_number,
@@ -245,7 +245,7 @@ public:
     /**
      * @brief Deletes instrument schedules by closing their temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& owner_roles,
                 const std::vector<std::string>& owner_numbers,
@@ -258,7 +258,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::instrument_schedule& v);
 
     /**
@@ -266,7 +266,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::instrument_schedule apply_claim(context ctx,
+    domain::instrument_schedule apply_claim(const context& ctx,
                                             const domain::instrument_schedule& v,
                                             const ores::utility::domain::precondition& claim);
 };

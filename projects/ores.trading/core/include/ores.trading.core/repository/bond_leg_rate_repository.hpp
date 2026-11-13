@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::bond_leg_rate& v);
-    void write(context ctx, const std::vector<domain::bond_leg_rate>& v);
+    void write(const context& ctx, const domain::bond_leg_rate& v);
+    void write(const context& ctx, const std::vector<domain::bond_leg_rate>& v);
     /**@}*/
 
     /**
@@ -84,7 +84,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::bond_leg_rate& v,
                const ores::utility::domain::precondition& claim);
 
@@ -92,7 +92,7 @@ public:
      * @brief Writes a set of bond leg rates, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::bond_leg_rate>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -100,12 +100,12 @@ public:
      * @brief Reads latest bond leg rates, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::bond_leg_rate> read_latest(context ctx);
-    std::vector<domain::bond_leg_rate> read_latest(context ctx,
+    std::vector<domain::bond_leg_rate> read_latest(const context& ctx);
+    std::vector<domain::bond_leg_rate> read_latest(const context& ctx,
                                                    const std::string& trade_id,
                                                    const std::string& leg_role,
                                                    const std::string& leg_number);
-    std::vector<domain::bond_leg_rate> read_latest(context ctx,
+    std::vector<domain::bond_leg_rate> read_latest(const context& ctx,
                                                    const std::vector<std::string>& trade_ids,
                                                    const std::vector<std::string>& leg_roles,
                                                    const std::vector<std::string>& leg_numbers);
@@ -115,7 +115,7 @@ public:
     /**
      * @brief Reads all bond leg rates, possibly filtered by primary key.
      */
-    std::vector<domain::bond_leg_rate> read_all(context ctx,
+    std::vector<domain::bond_leg_rate> read_all(const context& ctx,
                                                 const std::string& trade_id,
                                                 const std::string& leg_role,
                                                 const std::string& leg_number);
@@ -129,7 +129,7 @@ public:
      * @param ctx Repository context with database connection
      * @param version The version to fetch
      */
-    std::optional<domain::bond_leg_rate> read_at_version(context ctx,
+    std::optional<domain::bond_leg_rate> read_at_version(const context& ctx,
                                                          const std::string& trade_id,
                                                          const std::string& leg_role,
                                                          const std::string& leg_number,
@@ -144,7 +144,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::bond_leg_rate> read_latest_by_trade_id(
-        context ctx,
+        const context& ctx,
         const std::string& trade_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -155,7 +155,7 @@ public:
      * @brief Gets the total count of active bond leg rates filtered by trade_id.
      */
     std::uint32_t get_total_bond_leg_rate_count_by_trade_id(
-        context ctx,
+        const context& ctx,
         const std::string& trade_id,
         const std::optional<messaging::bond_leg_rates_filter>& filter = std::nullopt);
 
@@ -172,7 +172,7 @@ public:
      * @param valid_to_bound The parent version's own valid_to
      */
     std::vector<domain::bond_leg_rate>
-    read_by_trade_id_as_of(context ctx,
+    read_by_trade_id_as_of(const context& ctx,
                            const std::string& trade_id,
                            std::chrono::system_clock::time_point valid_from_bound,
                            std::chrono::system_clock::time_point valid_to_bound);
@@ -195,7 +195,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::bond_leg_rate>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -208,14 +208,14 @@ public:
      * @return Total number of active bond leg rates
      */
     std::uint32_t get_total_bond_leg_rate_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::bond_leg_rates_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a bond leg rate by closing its temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::string& trade_id,
                 const std::string& leg_role,
                 const std::string& leg_number);
@@ -240,7 +240,7 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& trade_id,
                          const std::string& leg_role,
                          const std::string& leg_number,
@@ -249,7 +249,7 @@ public:
     /**
      * @brief Deletes bond leg rates by closing their temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& leg_roles,
                 const std::vector<std::string>& leg_numbers);
@@ -260,14 +260,15 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::bond_leg_rate& v);
+    ores::utility::domain::precondition replace_claim(const context& ctx,
+                                                      const domain::bond_leg_rate& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::bond_leg_rate apply_claim(context ctx,
+    domain::bond_leg_rate apply_claim(const context& ctx,
                                       const domain::bond_leg_rate& v,
                                       const ores::utility::domain::precondition& claim);
 };

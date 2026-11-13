@@ -145,7 +145,7 @@ file_type_filter_condition(const std::optional<messaging::file_types_filter>& fi
 }
 
 ores::utility::domain::precondition
-file_type_repository::replace_claim(context ctx, const domain::file_type& v) {
+file_type_repository::replace_claim(const context& ctx, const domain::file_type& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -153,8 +153,10 @@ file_type_repository::replace_claim(context ctx, const domain::file_type& v) {
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::file_type file_type_repository::apply_claim(
-    context ctx, const domain::file_type& v, const ores::utility::domain::precondition& claim) {
+domain::file_type
+file_type_repository::apply_claim(const context& ctx,
+                                  const domain::file_type& v,
+                                  const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -179,11 +181,11 @@ domain::file_type file_type_repository::apply_claim(
     return t;
 }
 
-void file_type_repository::write(context ctx, const domain::file_type& v) {
+void file_type_repository::write(const context& ctx, const domain::file_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void file_type_repository::write(context ctx, const std::vector<domain::file_type>& v) {
+void file_type_repository::write(const context& ctx, const std::vector<domain::file_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -191,7 +193,7 @@ void file_type_repository::write(context ctx, const std::vector<domain::file_typ
     write(ctx, v, claims);
 }
 
-void file_type_repository::write(context ctx,
+void file_type_repository::write(const context& ctx,
                                  const domain::file_type& v,
                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing file type. " << "code: " << v.code;
@@ -200,7 +202,7 @@ void file_type_repository::write(context ctx,
         ctx, file_type_mapper::map(t), lg(), "Writing file type to database.");
 }
 
-void file_type_repository::write(context ctx,
+void file_type_repository::write(const context& ctx,
                                  const std::vector<domain::file_type>& v,
                                  const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing file types. Count: " << v.size();
@@ -212,7 +214,7 @@ void file_type_repository::write(context ctx,
         ctx, file_type_mapper::map(batch), lg(), "Writing file types to database.");
 }
 
-std::vector<domain::file_type> file_type_repository::read_latest(context ctx) {
+std::vector<domain::file_type> file_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<file_type_entity>> |
@@ -227,7 +229,7 @@ std::vector<domain::file_type> file_type_repository::read_latest(context ctx) {
         "Reading latest file types");
 }
 
-std::vector<domain::file_type> file_type_repository::read_latest(context ctx,
+std::vector<domain::file_type> file_type_repository::read_latest(const context& ctx,
                                                                  const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest file type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -245,7 +247,7 @@ std::vector<domain::file_type> file_type_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::file_type> file_type_repository::read_all(context ctx,
+std::vector<domain::file_type> file_type_repository::read_all(const context& ctx,
                                                               const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all file type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -261,8 +263,9 @@ std::vector<domain::file_type> file_type_repository::read_all(context ctx,
         "Reading all file type versions by code.");
 }
 
-std::optional<domain::file_type>
-file_type_repository::read_at_version(context ctx, const std::string& code, std::uint32_t version) {
+std::optional<domain::file_type> file_type_repository::read_at_version(const context& ctx,
+                                                                       const std::string& code,
+                                                                       std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading file type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -284,7 +287,7 @@ file_type_repository::read_at_version(context ctx, const std::string& code, std:
 }
 
 std::vector<domain::file_type> file_type_repository::read_latest_by_ore_file_code(
-    context ctx,
+    const context& ctx,
     const std::string& ore_file_code,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -311,7 +314,7 @@ std::vector<domain::file_type> file_type_repository::read_latest_by_ore_file_cod
 }
 
 std::uint32_t file_type_repository::get_total_type_count_by_ore_file_code(
-    context ctx,
+    const context& ctx,
     const std::string& ore_file_code,
     const std::optional<messaging::file_types_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active file types count. ore_file_code: "
@@ -334,7 +337,7 @@ std::uint32_t file_type_repository::get_total_type_count_by_ore_file_code(
 
 
 std::vector<domain::file_type> file_type_repository::read_latest_by_analytic_type_code(
-    context ctx,
+    const context& ctx,
     const std::string& analytic_type_code,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -362,7 +365,7 @@ std::vector<domain::file_type> file_type_repository::read_latest_by_analytic_typ
 }
 
 std::uint32_t file_type_repository::get_total_type_count_by_analytic_type_code(
-    context ctx,
+    const context& ctx,
     const std::string& analytic_type_code,
     const std::optional<messaging::file_types_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active file types count. analytic_type_code: "
@@ -385,7 +388,7 @@ std::uint32_t file_type_repository::get_total_type_count_by_analytic_type_code(
 
 
 std::vector<domain::file_type> file_type_repository::read_latest_by_configuration_type_code(
-    context ctx,
+    const context& ctx,
     const std::string& configuration_type_code,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -414,7 +417,7 @@ std::vector<domain::file_type> file_type_repository::read_latest_by_configuratio
 }
 
 std::uint32_t file_type_repository::get_total_type_count_by_configuration_type_code(
-    context ctx,
+    const context& ctx,
     const std::string& configuration_type_code,
     const std::optional<messaging::file_types_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -439,7 +442,7 @@ std::uint32_t file_type_repository::get_total_type_count_by_configuration_type_c
 
 
 std::vector<domain::file_type> file_type_repository::read_latest_by_produced_by_file_type_code(
-    context ctx,
+    const context& ctx,
     const std::string& produced_by_file_type_code,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -468,7 +471,7 @@ std::vector<domain::file_type> file_type_repository::read_latest_by_produced_by_
 }
 
 std::uint32_t file_type_repository::get_total_type_count_by_produced_by_file_type_code(
-    context ctx,
+    const context& ctx,
     const std::string& produced_by_file_type_code,
     const std::optional<messaging::file_types_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -493,7 +496,7 @@ std::uint32_t file_type_repository::get_total_type_count_by_produced_by_file_typ
 
 
 file_type_repository::remove_status file_type_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing file type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -521,12 +524,12 @@ file_type_repository::remove_status file_type_repository::remove(
     return remove_status::removed;
 }
 
-void file_type_repository::remove(context ctx, const std::string& code) {
+void file_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::file_type>
-file_type_repository::read_latest(context ctx,
+file_type_repository::read_latest(const context& ctx,
                                   std::uint32_t offset,
                                   std::uint32_t limit,
                                   const ores::utility::domain::order& order,
@@ -550,7 +553,7 @@ file_type_repository::read_latest(context ctx,
 }
 
 std::uint32_t file_type_repository::get_total_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::file_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active file type count";
@@ -568,7 +571,7 @@ std::uint32_t file_type_repository::get_total_type_count(
 }
 
 std::vector<domain::file_type>
-file_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+file_type_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -585,7 +588,7 @@ file_type_repository::read_latest(context ctx, const std::vector<std::string>& c
     return result;
 }
 
-void file_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void file_type_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit csa_service(context ctx);
+    explicit csa_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

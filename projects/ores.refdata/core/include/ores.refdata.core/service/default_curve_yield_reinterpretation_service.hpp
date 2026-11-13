@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit default_curve_yield_reinterpretation_service(context ctx);
+    explicit default_curve_yield_reinterpretation_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

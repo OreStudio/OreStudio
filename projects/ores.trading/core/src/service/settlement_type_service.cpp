@@ -54,8 +54,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-settlement_type_service::settlement_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+settlement_type_service::settlement_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

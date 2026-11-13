@@ -83,7 +83,7 @@ public:
     /** The kind of approval request an engine run settings change is raised as. */
     static constexpr std::string_view kind_code = "reporting.engine_settings_change";
 
-    explicit engine_settings_proposal_service(ores::database::context ctx);
+    explicit engine_settings_proposal_service(const ores::database::context& ctx);
 
     /**
      * @brief The groups the data states, in the order it places them.

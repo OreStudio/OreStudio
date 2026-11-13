@@ -51,7 +51,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit trade_export_service(context ctx);
+    explicit trade_export_service(const context& ctx);
 
     /**
      * @brief The trades booked under a book, a portfolio or a business unit,

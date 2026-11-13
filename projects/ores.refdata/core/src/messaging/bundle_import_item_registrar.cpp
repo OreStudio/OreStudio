@@ -44,11 +44,10 @@ static constexpr std::string_view bundle_import_item_queue_group = "ores.refdata
 
 std::vector<ores::nats::service::subscription> register_bundle_import_item_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h =
-        std::make_shared<bundle_import_item_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<bundle_import_item_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_bundle_import_items_request::nats_subject,
         bundle_import_item_queue_group,

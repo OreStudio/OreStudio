@@ -40,10 +40,10 @@ using namespace ores::logging;
 
 lease_reaper::lease_reaper(std::uint32_t interval_seconds,
                            ores::nats::service::client& nats,
-                           ores::database::context ctx)
+                           const ores::database::context& ctx)
     : interval_seconds_(interval_seconds)
     , nats_(nats)
-    , ctx_(std::move(ctx)) {}
+    , ctx_(ctx) {}
 
 void lease_reaper::sweep() {
     repository::work_ledger_repository ledger;

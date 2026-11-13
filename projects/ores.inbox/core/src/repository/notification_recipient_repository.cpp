@@ -54,8 +54,8 @@ std::string notification_recipient_repository::sql() {
     return query_builder::insert_statement_sql<notification_recipient_entity>(lg());
 }
 
-notification_recipient_repository::notification_recipient_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+notification_recipient_repository::notification_recipient_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 notification_recipient_repository::replace_claim(const domain::notification_recipient& v) {

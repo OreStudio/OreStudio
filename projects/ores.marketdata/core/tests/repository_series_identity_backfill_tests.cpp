@@ -43,7 +43,7 @@ using ores::testing::database_helper;
 
 /// Inserts a series the way the data quality publish does: in SQL, which cannot run the
 /// codec, so the series has no identity row. Returns its id.
-std::string insert_without_identity(ores::database::context ctx,
+std::string insert_without_identity(const ores::database::context& ctx,
                                     const boost::uuids::uuid& party,
                                     const std::string& uri) {
     const auto id = boost::uuids::to_string(boost::uuids::random_generator{}());

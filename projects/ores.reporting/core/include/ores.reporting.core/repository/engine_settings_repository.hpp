@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::engine_settings& v);
-    void write(context ctx, const std::vector<domain::engine_settings>& v);
+    void write(const context& ctx, const domain::engine_settings& v);
+    void write(const context& ctx, const std::vector<domain::engine_settings>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::engine_settings& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of engine settings, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::engine_settings>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,16 +101,17 @@ public:
      * @brief Reads latest engine settings, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::engine_settings> read_latest(context ctx);
-    std::vector<domain::engine_settings> read_latest(context ctx, const std::string& id);
-    std::vector<domain::engine_settings> read_latest(context ctx,
+    std::vector<domain::engine_settings> read_latest(const context& ctx);
+    std::vector<domain::engine_settings> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::engine_settings> read_latest(const context& ctx,
                                                      const std::vector<std::string>& ids);
     /**@}*/
 
     /**
      * @brief Reads latest engine settings filtered by name.
      */
-    std::vector<domain::engine_settings> read_latest_by_name(context ctx, const std::string& name);
+    std::vector<domain::engine_settings> read_latest_by_name(const context& ctx,
+                                                             const std::string& name);
 
     /**
      * @brief Reads the newest engine settings filtered by name, current or not.
@@ -125,13 +126,14 @@ public:
      * column means the row belongs to the whole tenant and is kept for every
      * party.
      */
-    std::vector<domain::engine_settings> read_any_by_name(context ctx, const std::string& name);
+    std::vector<domain::engine_settings> read_any_by_name(const context& ctx,
+                                                          const std::string& name);
 
 
     /**
      * @brief Reads all engine settings, possibly filtered by primary key.
      */
-    std::vector<domain::engine_settings> read_all(context ctx, const std::string& id);
+    std::vector<domain::engine_settings> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single engine settings as it stood at a specific
@@ -143,7 +145,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::engine_settings>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest engine settings filtered by configuration_id, with pagination.
@@ -154,7 +156,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::engine_settings> read_latest_by_configuration_id(
-        context ctx,
+        const context& ctx,
         const std::string& configuration_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -165,7 +167,7 @@ public:
      * @brief Gets the total count of active engine settings filtered by configuration_id.
      */
     std::uint32_t get_total_settings_count_by_configuration_id(
-        context ctx,
+        const context& ctx,
         const std::string& configuration_id,
         const std::optional<messaging::engine_settings_filter>& filter = std::nullopt);
 
@@ -187,7 +189,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::engine_settings>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -200,14 +202,14 @@ public:
      * @return Total number of active engine settings
      */
     std::uint32_t get_total_settings_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::engine_settings_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a engine settings by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -229,12 +231,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes engine settings by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -242,7 +245,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::engine_settings& v);
 
     /**
@@ -250,7 +253,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::engine_settings apply_claim(context ctx,
+    domain::engine_settings apply_claim(const context& ctx,
                                         const domain::engine_settings& v,
                                         const ores::utility::domain::precondition& claim);
 };

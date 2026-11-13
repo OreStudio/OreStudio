@@ -110,7 +110,7 @@ app_version_filter_condition(const std::optional<messaging::app_versions_filter>
 }
 
 ores::utility::domain::precondition
-app_version_repository::replace_claim(context ctx, const domain::app_version& v) {
+app_version_repository::replace_claim(const context& ctx, const domain::app_version& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -118,8 +118,10 @@ app_version_repository::replace_claim(context ctx, const domain::app_version& v)
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::app_version app_version_repository::apply_claim(
-    context ctx, const domain::app_version& v, const ores::utility::domain::precondition& claim) {
+domain::app_version
+app_version_repository::apply_claim(const context& ctx,
+                                    const domain::app_version& v,
+                                    const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -144,11 +146,11 @@ domain::app_version app_version_repository::apply_claim(
     return t;
 }
 
-void app_version_repository::write(context ctx, const domain::app_version& v) {
+void app_version_repository::write(const context& ctx, const domain::app_version& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void app_version_repository::write(context ctx, const std::vector<domain::app_version>& v) {
+void app_version_repository::write(const context& ctx, const std::vector<domain::app_version>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -156,7 +158,7 @@ void app_version_repository::write(context ctx, const std::vector<domain::app_ve
     write(ctx, v, claims);
 }
 
-void app_version_repository::write(context ctx,
+void app_version_repository::write(const context& ctx,
                                    const domain::app_version& v,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing app version. " << "id: " << v.id;
@@ -165,7 +167,7 @@ void app_version_repository::write(context ctx,
         ctx, app_version_mapper::map(t), lg(), "Writing app version to database.");
 }
 
-void app_version_repository::write(context ctx,
+void app_version_repository::write(const context& ctx,
                                    const std::vector<domain::app_version>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing app versions. Count: " << v.size();
@@ -177,7 +179,7 @@ void app_version_repository::write(context ctx,
         ctx, app_version_mapper::map(batch), lg(), "Writing app versions to database.");
 }
 
-std::vector<domain::app_version> app_version_repository::read_latest(context ctx) {
+std::vector<domain::app_version> app_version_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -194,7 +196,7 @@ std::vector<domain::app_version> app_version_repository::read_latest(context ctx
         "Reading latest app versions");
 }
 
-std::vector<domain::app_version> app_version_repository::read_latest(context ctx,
+std::vector<domain::app_version> app_version_repository::read_latest(const context& ctx,
                                                                      const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest app version. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -213,7 +215,7 @@ std::vector<domain::app_version> app_version_repository::read_latest(context ctx
 }
 
 
-std::vector<domain::app_version> app_version_repository::read_all(context ctx,
+std::vector<domain::app_version> app_version_repository::read_all(const context& ctx,
                                                                   const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all app version versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -231,8 +233,9 @@ std::vector<domain::app_version> app_version_repository::read_all(context ctx,
         "Reading all app version versions by id.");
 }
 
-std::optional<domain::app_version>
-app_version_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::app_version> app_version_repository::read_at_version(const context& ctx,
+                                                                           const std::string& id,
+                                                                           std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading app version at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -256,7 +259,7 @@ app_version_repository::read_at_version(context ctx, const std::string& id, std:
 }
 
 std::vector<domain::app_version> app_version_repository::read_latest_by_app_id(
-    context ctx,
+    const context& ctx,
     const std::string& app_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -283,7 +286,7 @@ std::vector<domain::app_version> app_version_repository::read_latest_by_app_id(
 }
 
 std::uint32_t app_version_repository::get_total_app_version_count_by_app_id(
-    context ctx,
+    const context& ctx,
     const std::string& app_id,
     const std::optional<messaging::app_versions_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active app versions count. app_id: " << app_id;
@@ -301,7 +304,7 @@ std::uint32_t app_version_repository::get_total_app_version_count_by_app_id(
 
 
 app_version_repository::remove_status app_version_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing app version. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -329,12 +332,12 @@ app_version_repository::remove_status app_version_repository::remove(
     return remove_status::removed;
 }
 
-void app_version_repository::remove(context ctx, const std::string& id) {
+void app_version_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::app_version>
-app_version_repository::read_latest(context ctx,
+app_version_repository::read_latest(const context& ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
@@ -360,7 +363,7 @@ app_version_repository::read_latest(context ctx,
 }
 
 std::uint32_t app_version_repository::get_total_app_version_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::app_versions_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active app version count";
@@ -380,7 +383,7 @@ std::uint32_t app_version_repository::get_total_app_version_count(
 }
 
 std::vector<domain::app_version>
-app_version_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+app_version_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -398,7 +401,7 @@ app_version_repository::read_latest(context ctx, const std::vector<std::string>&
     return result;
 }
 
-void app_version_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void app_version_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

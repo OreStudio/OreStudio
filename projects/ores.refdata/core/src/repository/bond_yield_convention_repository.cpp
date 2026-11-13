@@ -102,7 +102,7 @@ std::optional<query_builder::condition> bond_yield_convention_filter_condition(
 }
 
 ores::utility::domain::precondition
-bond_yield_convention_repository::replace_claim(context ctx,
+bond_yield_convention_repository::replace_claim(const context& ctx,
                                                 const domain::bond_yield_convention& v) {
     const auto current = read_latest(ctx, v.id);
     if (current.empty())
@@ -112,7 +112,7 @@ bond_yield_convention_repository::replace_claim(context ctx,
 }
 
 domain::bond_yield_convention
-bond_yield_convention_repository::apply_claim(context ctx,
+bond_yield_convention_repository::apply_claim(const context& ctx,
                                               const domain::bond_yield_convention& v,
                                               const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,11 +139,12 @@ bond_yield_convention_repository::apply_claim(context ctx,
     return t;
 }
 
-void bond_yield_convention_repository::write(context ctx, const domain::bond_yield_convention& v) {
+void bond_yield_convention_repository::write(const context& ctx,
+                                             const domain::bond_yield_convention& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void bond_yield_convention_repository::write(context ctx,
+void bond_yield_convention_repository::write(const context& ctx,
                                              const std::vector<domain::bond_yield_convention>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -152,7 +153,7 @@ void bond_yield_convention_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void bond_yield_convention_repository::write(context ctx,
+void bond_yield_convention_repository::write(const context& ctx,
                                              const domain::bond_yield_convention& v,
                                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond yield convention. " << "id: " << v.id;
@@ -164,7 +165,7 @@ void bond_yield_convention_repository::write(context ctx,
 }
 
 void bond_yield_convention_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::bond_yield_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond yield conventions. Count: " << v.size();
@@ -179,7 +180,7 @@ void bond_yield_convention_repository::write(
 }
 
 std::vector<domain::bond_yield_convention>
-bond_yield_convention_repository::read_latest(context ctx) {
+bond_yield_convention_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_yield_convention_entity>> |
@@ -196,7 +197,7 @@ bond_yield_convention_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::bond_yield_convention>
-bond_yield_convention_repository::read_latest(context ctx, const std::string& id) {
+bond_yield_convention_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond yield convention. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -231,7 +232,7 @@ bond_yield_convention_repository::read_latest(context ctx, const std::string& id
 
 
 std::vector<domain::bond_yield_convention>
-bond_yield_convention_repository::read_all(context ctx, const std::string& id) {
+bond_yield_convention_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all bond yield convention versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_yield_convention_entity>> |
@@ -248,7 +249,7 @@ bond_yield_convention_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::bond_yield_convention> bond_yield_convention_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading bond yield convention at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -271,7 +272,7 @@ std::optional<domain::bond_yield_convention> bond_yield_convention_repository::r
 }
 
 bond_yield_convention_repository::remove_status bond_yield_convention_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing bond yield convention. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -308,12 +309,12 @@ bond_yield_convention_repository::remove_status bond_yield_convention_repository
     return remove_status::removed;
 }
 
-void bond_yield_convention_repository::remove(context ctx, const std::string& id) {
+void bond_yield_convention_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::bond_yield_convention> bond_yield_convention_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -339,7 +340,7 @@ std::vector<domain::bond_yield_convention> bond_yield_convention_repository::rea
 }
 
 std::uint32_t bond_yield_convention_repository::get_total_bond_yield_convention_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::bond_yield_conventions_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond yield convention count";
@@ -358,7 +359,8 @@ std::uint32_t bond_yield_convention_repository::get_total_bond_yield_convention_
 }
 
 std::vector<domain::bond_yield_convention>
-bond_yield_convention_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+bond_yield_convention_repository::read_latest(const context& ctx,
+                                              const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -376,7 +378,8 @@ bond_yield_convention_repository::read_latest(context ctx, const std::vector<std
     return result;
 }
 
-void bond_yield_convention_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void bond_yield_convention_repository::remove(const context& ctx,
+                                              const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

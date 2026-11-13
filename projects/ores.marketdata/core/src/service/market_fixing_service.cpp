@@ -55,8 +55,8 @@ namespace ores::marketdata::service {
 
 using namespace ores::logging;
 
-market_fixing_service::market_fixing_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+market_fixing_service::market_fixing_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

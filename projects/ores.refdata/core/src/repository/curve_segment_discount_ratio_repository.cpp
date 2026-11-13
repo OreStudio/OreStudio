@@ -102,7 +102,7 @@ std::optional<query_builder::condition> curve_segment_discount_ratio_filter_cond
 }
 
 ores::utility::domain::precondition curve_segment_discount_ratio_repository::replace_claim(
-    context ctx, const domain::curve_segment_discount_ratio& v) {
+    const context& ctx, const domain::curve_segment_discount_ratio& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,7 +111,7 @@ ores::utility::domain::precondition curve_segment_discount_ratio_repository::rep
 }
 
 domain::curve_segment_discount_ratio curve_segment_discount_ratio_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::curve_segment_discount_ratio& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,13 +138,13 @@ domain::curve_segment_discount_ratio curve_segment_discount_ratio_repository::ap
     return t;
 }
 
-void curve_segment_discount_ratio_repository::write(context ctx,
+void curve_segment_discount_ratio_repository::write(const context& ctx,
                                                     const domain::curve_segment_discount_ratio& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void curve_segment_discount_ratio_repository::write(
-    context ctx, const std::vector<domain::curve_segment_discount_ratio>& v) {
+    const context& ctx, const std::vector<domain::curve_segment_discount_ratio>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -153,7 +153,7 @@ void curve_segment_discount_ratio_repository::write(
 }
 
 void curve_segment_discount_ratio_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::curve_segment_discount_ratio& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve segment discount ratio. " << "id: " << v.id;
@@ -165,7 +165,7 @@ void curve_segment_discount_ratio_repository::write(
 }
 
 void curve_segment_discount_ratio_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::curve_segment_discount_ratio>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve segment discount ratios. Count: " << v.size();
@@ -180,7 +180,7 @@ void curve_segment_discount_ratio_repository::write(
 }
 
 std::vector<domain::curve_segment_discount_ratio>
-curve_segment_discount_ratio_repository::read_latest(context ctx) {
+curve_segment_discount_ratio_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_segment_discount_ratio_entity>> |
@@ -197,7 +197,7 @@ curve_segment_discount_ratio_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::curve_segment_discount_ratio>
-curve_segment_discount_ratio_repository::read_latest(context ctx, const std::string& id) {
+curve_segment_discount_ratio_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest curve segment discount ratio. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +216,7 @@ curve_segment_discount_ratio_repository::read_latest(context ctx, const std::str
 
 
 std::vector<domain::curve_segment_discount_ratio>
-curve_segment_discount_ratio_repository::read_all(context ctx, const std::string& id) {
+curve_segment_discount_ratio_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all curve segment discount ratio versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -234,7 +234,7 @@ curve_segment_discount_ratio_repository::read_all(context ctx, const std::string
 }
 
 std::optional<domain::curve_segment_discount_ratio>
-curve_segment_discount_ratio_repository::read_at_version(context ctx,
+curve_segment_discount_ratio_repository::read_at_version(const context& ctx,
                                                          const std::string& id,
                                                          std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading curve segment discount ratio at version. "
@@ -260,7 +260,7 @@ curve_segment_discount_ratio_repository::read_at_version(context ctx,
 
 
 curve_segment_discount_ratio_repository::remove_status
-curve_segment_discount_ratio_repository::remove(context ctx,
+curve_segment_discount_ratio_repository::remove(const context& ctx,
                                                 const std::string& id,
                                                 std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing curve segment discount ratio. " << "id: " << id;
@@ -291,13 +291,13 @@ curve_segment_discount_ratio_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void curve_segment_discount_ratio_repository::remove(context ctx, const std::string& id) {
+void curve_segment_discount_ratio_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::curve_segment_discount_ratio>
 curve_segment_discount_ratio_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -323,7 +323,7 @@ curve_segment_discount_ratio_repository::read_latest(
 }
 
 std::uint32_t curve_segment_discount_ratio_repository::get_total_segment_discount_ratio_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::curve_segment_discount_ratios_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active curve segment discount ratio count";
@@ -342,7 +342,7 @@ std::uint32_t curve_segment_discount_ratio_repository::get_total_segment_discoun
 }
 
 std::vector<domain::curve_segment_discount_ratio>
-curve_segment_discount_ratio_repository::read_latest(context ctx,
+curve_segment_discount_ratio_repository::read_latest(const context& ctx,
                                                      const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -361,7 +361,7 @@ curve_segment_discount_ratio_repository::read_latest(context ctx,
     return result;
 }
 
-void curve_segment_discount_ratio_repository::remove(context ctx,
+void curve_segment_discount_ratio_repository::remove(const context& ctx,
                                                      const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

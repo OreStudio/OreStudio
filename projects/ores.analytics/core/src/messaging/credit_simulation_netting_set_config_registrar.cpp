@@ -46,11 +46,11 @@ static constexpr std::string_view credit_simulation_netting_set_config_queue_gro
 std::vector<ores::nats::service::subscription>
 register_credit_simulation_netting_set_config_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<credit_simulation_netting_set_config_handler>(
-        nats, std::move(ctx), std::move(verifier));
+        nats, ctx, std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_credit_simulation_netting_set_configs_request::nats_subject,
                              credit_simulation_netting_set_config_queue_group,

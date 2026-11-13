@@ -85,7 +85,7 @@ query_builder::order person_role_list_order(const ores::utility::domain::order& 
 }
 
 ores::utility::domain::precondition
-person_role_repository::replace_claim(context ctx, const domain::person_role& v) {
+person_role_repository::replace_claim(const context& ctx, const domain::person_role& v) {
     const auto current = read_latest(ctx, v.code, v.coding_scheme_code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -93,8 +93,10 @@ person_role_repository::replace_claim(context ctx, const domain::person_role& v)
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::person_role person_role_repository::apply_claim(
-    context ctx, const domain::person_role& v, const ores::utility::domain::precondition& claim) {
+domain::person_role
+person_role_repository::apply_claim(const context& ctx,
+                                    const domain::person_role& v,
+                                    const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -119,11 +121,11 @@ domain::person_role person_role_repository::apply_claim(
     return t;
 }
 
-void person_role_repository::write(context ctx, const domain::person_role& v) {
+void person_role_repository::write(const context& ctx, const domain::person_role& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void person_role_repository::write(context ctx, const std::vector<domain::person_role>& v) {
+void person_role_repository::write(const context& ctx, const std::vector<domain::person_role>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -131,7 +133,7 @@ void person_role_repository::write(context ctx, const std::vector<domain::person
     write(ctx, v, claims);
 }
 
-void person_role_repository::write(context ctx,
+void person_role_repository::write(const context& ctx,
                                    const domain::person_role& v,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing person role. " << "code: " << v.code
@@ -141,7 +143,7 @@ void person_role_repository::write(context ctx,
         ctx, person_role_mapper::map(t), lg(), "Writing person role to database.");
 }
 
-void person_role_repository::write(context ctx,
+void person_role_repository::write(const context& ctx,
                                    const std::vector<domain::person_role>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing person roles. Count: " << v.size();
@@ -153,7 +155,7 @@ void person_role_repository::write(context ctx,
         ctx, person_role_mapper::map(batch), lg(), "Writing person roles to database.");
 }
 
-std::vector<domain::person_role> person_role_repository::read_latest(context ctx) {
+std::vector<domain::person_role> person_role_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<person_role_entity>> |
@@ -169,7 +171,7 @@ std::vector<domain::person_role> person_role_repository::read_latest(context ctx
 }
 
 std::vector<domain::person_role> person_role_repository::read_latest(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest person role. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
@@ -189,7 +191,7 @@ std::vector<domain::person_role> person_role_repository::read_latest(
 
 
 std::vector<domain::person_role> person_role_repository::read_all(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all person role versions. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -207,7 +209,7 @@ std::vector<domain::person_role> person_role_repository::read_all(
 }
 
 std::optional<domain::person_role>
-person_role_repository::read_at_version(context ctx,
+person_role_repository::read_at_version(const context& ctx,
                                         const std::string& code,
                                         const std::string& coding_scheme_code,
                                         std::uint32_t version) {
@@ -235,7 +237,7 @@ person_role_repository::read_at_version(context ctx,
 }
 
 person_role_repository::remove_status
-person_role_repository::remove(context ctx,
+person_role_repository::remove(const context& ctx,
                                const std::string& code,
                                const std::string& coding_scheme_code,
                                std::optional<std::uint32_t> version) {
@@ -268,14 +270,14 @@ person_role_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void person_role_repository::remove(context ctx,
+void person_role_repository::remove(const context& ctx,
                                     const std::string& code,
                                     const std::string& coding_scheme_code) {
     static_cast<void>(remove(ctx, code, coding_scheme_code, std::nullopt));
 }
 
 std::vector<domain::person_role>
-person_role_repository::read_latest(context ctx,
+person_role_repository::read_latest(const context& ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
@@ -298,7 +300,8 @@ person_role_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-person_role_repository::get_total_role_count(context ctx, const std::optional<std::string>& as_of) {
+person_role_repository::get_total_role_count(const context& ctx,
+                                             const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active person role count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -314,7 +317,7 @@ person_role_repository::get_total_role_count(context ctx, const std::optional<st
 }
 
 std::vector<domain::person_role>
-person_role_repository::read_latest(context ctx,
+person_role_repository::read_latest(const context& ctx,
                                     const std::vector<std::string>& codes,
                                     const std::vector<std::string>& coding_scheme_codes) {
     if (codes.empty() || coding_scheme_codes.empty())
@@ -349,7 +352,7 @@ person_role_repository::read_latest(context ctx,
     return filtered;
 }
 
-void person_role_repository::remove(context ctx,
+void person_role_repository::remove(const context& ctx,
                                     const std::vector<std::string>& codes,
                                     const std::vector<std::string>& coding_scheme_codes) {
     // Compound key: a per-column .in() DELETE would be a cross-product

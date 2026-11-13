@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-party_product_type_deal_class_service::party_product_type_deal_class_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+party_product_type_deal_class_service::party_product_type_deal_class_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

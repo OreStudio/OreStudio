@@ -118,7 +118,7 @@ ir_curve_generation_config_process_parameter_value_filter_condition(
 
 ores::utility::domain::precondition
 ir_curve_generation_config_process_parameter_value_repository::replace_claim(
-    context ctx, const domain::ir_curve_generation_config_process_parameter_value& v) {
+    const context& ctx, const domain::ir_curve_generation_config_process_parameter_value& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -128,7 +128,7 @@ ir_curve_generation_config_process_parameter_value_repository::replace_claim(
 
 domain::ir_curve_generation_config_process_parameter_value
 ir_curve_generation_config_process_parameter_value_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::ir_curve_generation_config_process_parameter_value& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -156,12 +156,13 @@ ir_curve_generation_config_process_parameter_value_repository::apply_claim(
 }
 
 void ir_curve_generation_config_process_parameter_value_repository::write(
-    context ctx, const domain::ir_curve_generation_config_process_parameter_value& v) {
+    const context& ctx, const domain::ir_curve_generation_config_process_parameter_value& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void ir_curve_generation_config_process_parameter_value_repository::write(
-    context ctx, const std::vector<domain::ir_curve_generation_config_process_parameter_value>& v) {
+    const context& ctx,
+    const std::vector<domain::ir_curve_generation_config_process_parameter_value>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -170,7 +171,7 @@ void ir_curve_generation_config_process_parameter_value_repository::write(
 }
 
 void ir_curve_generation_config_process_parameter_value_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::ir_curve_generation_config_process_parameter_value& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing IR curve generation config process parameter value. "
@@ -184,7 +185,7 @@ void ir_curve_generation_config_process_parameter_value_repository::write(
 }
 
 void ir_curve_generation_config_process_parameter_value_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::ir_curve_generation_config_process_parameter_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug)
@@ -201,7 +202,7 @@ void ir_curve_generation_config_process_parameter_value_repository::write(
 }
 
 std::vector<domain::ir_curve_generation_config_process_parameter_value>
-ir_curve_generation_config_process_parameter_value_repository::read_latest(context ctx) {
+ir_curve_generation_config_process_parameter_value_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -224,7 +225,7 @@ ir_curve_generation_config_process_parameter_value_repository::read_latest(conte
 }
 
 std::vector<domain::ir_curve_generation_config_process_parameter_value>
-ir_curve_generation_config_process_parameter_value_repository::read_latest(context ctx,
+ir_curve_generation_config_process_parameter_value_repository::read_latest(const context& ctx,
                                                                            const std::string& id) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest IR curve generation config process parameter value. " << "id: " << id;
@@ -250,7 +251,7 @@ ir_curve_generation_config_process_parameter_value_repository::read_latest(conte
 
 
 std::vector<domain::ir_curve_generation_config_process_parameter_value>
-ir_curve_generation_config_process_parameter_value_repository::read_all(context ctx,
+ir_curve_generation_config_process_parameter_value_repository::read_all(const context& ctx,
                                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading all IR curve generation config process parameter value versions. "
@@ -277,7 +278,7 @@ ir_curve_generation_config_process_parameter_value_repository::read_all(context 
 
 std::optional<domain::ir_curve_generation_config_process_parameter_value>
 ir_curve_generation_config_process_parameter_value_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading IR curve generation config process parameter value at version. " << "id: " << id
         << " version: " << version;
@@ -308,7 +309,7 @@ ir_curve_generation_config_process_parameter_value_repository::read_at_version(
 
 ir_curve_generation_config_process_parameter_value_repository::remove_status
 ir_curve_generation_config_process_parameter_value_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing IR curve generation config process parameter value. "
                                << "id: " << id;
     const auto current = read_latest(ctx, id);
@@ -342,14 +343,14 @@ ir_curve_generation_config_process_parameter_value_repository::remove(
     return remove_status::removed;
 }
 
-void ir_curve_generation_config_process_parameter_value_repository::remove(context ctx,
+void ir_curve_generation_config_process_parameter_value_repository::remove(const context& ctx,
                                                                            const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::ir_curve_generation_config_process_parameter_value>
 ir_curve_generation_config_process_parameter_value_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -384,7 +385,7 @@ ir_curve_generation_config_process_parameter_value_repository::read_latest(
 
 std::uint32_t ir_curve_generation_config_process_parameter_value_repository::
     get_total_process_parameter_value_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::ir_curve_generation_config_process_parameter_values_filter>&
             filter,
         const std::optional<std::string>& as_of) {
@@ -410,7 +411,7 @@ std::uint32_t ir_curve_generation_config_process_parameter_value_repository::
 
 std::vector<domain::ir_curve_generation_config_process_parameter_value>
 ir_curve_generation_config_process_parameter_value_repository::read_latest(
-    context ctx, const std::vector<std::string>& ids) {
+    const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -434,7 +435,7 @@ ir_curve_generation_config_process_parameter_value_repository::read_latest(
 }
 
 void ir_curve_generation_config_process_parameter_value_repository::remove(
-    context ctx, const std::vector<std::string>& ids) {
+    const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

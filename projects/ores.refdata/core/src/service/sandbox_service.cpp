@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-sandbox_service::sandbox_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+sandbox_service::sandbox_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

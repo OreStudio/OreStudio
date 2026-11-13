@@ -222,8 +222,8 @@ key_from_swap_terms(const domain::cross_currency_fix_float_swap_terms& v) {
 }
 
 cross_currency_fix_float_convention_service::cross_currency_fix_float_convention_service(
-    context ctx)
-    : ctx_(std::move(ctx)) {}
+    const context& ctx)
+    : ctx_(ctx) {}
 
 messaging::get_cross_currency_fix_float_convention_response
 cross_currency_fix_float_convention_service::get_cross_currency_fix_float_convention(

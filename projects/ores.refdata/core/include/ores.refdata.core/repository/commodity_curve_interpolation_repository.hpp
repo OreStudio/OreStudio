@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::commodity_curve_interpolation& v);
-    void write(context ctx, const std::vector<domain::commodity_curve_interpolation>& v);
+    void write(const context& ctx, const domain::commodity_curve_interpolation& v);
+    void write(const context& ctx, const std::vector<domain::commodity_curve_interpolation>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::commodity_curve_interpolation& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of commodity curve interpolations, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::commodity_curve_interpolation>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,18 +101,19 @@ public:
      * @brief Reads latest commodity curve interpolations, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::commodity_curve_interpolation> read_latest(context ctx);
-    std::vector<domain::commodity_curve_interpolation> read_latest(context ctx,
+    std::vector<domain::commodity_curve_interpolation> read_latest(const context& ctx);
+    std::vector<domain::commodity_curve_interpolation> read_latest(const context& ctx,
                                                                    const std::string& id);
     std::vector<domain::commodity_curve_interpolation>
-    read_latest(context ctx, const std::vector<std::string>& ids);
+    read_latest(const context& ctx, const std::vector<std::string>& ids);
     /**@}*/
 
 
     /**
      * @brief Reads all commodity curve interpolations, possibly filtered by primary key.
      */
-    std::vector<domain::commodity_curve_interpolation> read_all(context ctx, const std::string& id);
+    std::vector<domain::commodity_curve_interpolation> read_all(const context& ctx,
+                                                                const std::string& id);
 
     /**
      * @brief Reads a single commodity curve interpolation as it stood at a specific
@@ -124,7 +125,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::commodity_curve_interpolation>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
 
     /**
@@ -144,7 +145,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::commodity_curve_interpolation>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -158,7 +159,7 @@ public:
      * @return Total number of active commodity curve interpolations
      */
     std::uint32_t get_total_interpolation_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::commodity_curve_interpolations_filter>& filter =
             std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
@@ -166,7 +167,7 @@ public:
     /**
      * @brief Deletes a commodity curve interpolation by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -188,12 +189,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes commodity curve interpolations by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -202,7 +204,7 @@ private:
      * that no row exists yet.
      */
     ores::utility::domain::precondition
-    replace_claim(context ctx, const domain::commodity_curve_interpolation& v);
+    replace_claim(const context& ctx, const domain::commodity_curve_interpolation& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
@@ -210,7 +212,7 @@ private:
      * A claim the store cannot check is refused here rather than ignored.
      */
     domain::commodity_curve_interpolation
-    apply_claim(context ctx,
+    apply_claim(const context& ctx,
                 const domain::commodity_curve_interpolation& v,
                 const ores::utility::domain::precondition& claim);
 };

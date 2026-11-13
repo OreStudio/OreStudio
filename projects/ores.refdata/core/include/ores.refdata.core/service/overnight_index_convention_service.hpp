@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit overnight_index_convention_service(context ctx);
+    explicit overnight_index_convention_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

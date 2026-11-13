@@ -45,8 +45,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-badge_mapping_service::badge_mapping_service(context ctx)
-    : ctx_(std::move(ctx))
+badge_mapping_service::badge_mapping_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

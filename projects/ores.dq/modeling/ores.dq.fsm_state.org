@@ -161,7 +161,7 @@ the machine's id and then reads its states.
      * Throws nothing and returns empty when no machine carries the name, so
      * a caller can tell an unknown machine from one with no states.
      */
-    std::vector<domain::fsm_state> read_latest_by_machine_name(context ctx,
+    std::vector<domain::fsm_state> read_latest_by_machine_name(const context& ctx,
                                                                const std::string& machine_name);
 #+end_src
 
@@ -169,7 +169,7 @@ the machine's id and then reads its states.
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::fsm_state>
-fsm_state_repository::read_latest_by_machine_name(context ctx,
+fsm_state_repository::read_latest_by_machine_name(const context& ctx,
                                                   const std::string& machine_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm states for machine: " << machine_name;
     static constexpr auto max = db_timestamp::max();

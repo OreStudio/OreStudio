@@ -107,7 +107,7 @@ std::optional<query_builder::condition> trade_party_role_filter_condition(
 }
 
 ores::utility::domain::precondition
-trade_party_role_repository::replace_claim(context ctx, const domain::trade_party_role& v) {
+trade_party_role_repository::replace_claim(const context& ctx, const domain::trade_party_role& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id), v.role);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -116,7 +116,7 @@ trade_party_role_repository::replace_claim(context ctx, const domain::trade_part
 }
 
 domain::trade_party_role
-trade_party_role_repository::apply_claim(context ctx,
+trade_party_role_repository::apply_claim(const context& ctx,
                                          const domain::trade_party_role& v,
                                          const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -143,11 +143,11 @@ trade_party_role_repository::apply_claim(context ctx,
     return t;
 }
 
-void trade_party_role_repository::write(context ctx, const domain::trade_party_role& v) {
+void trade_party_role_repository::write(const context& ctx, const domain::trade_party_role& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void trade_party_role_repository::write(context ctx,
+void trade_party_role_repository::write(const context& ctx,
                                         const std::vector<domain::trade_party_role>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -156,7 +156,7 @@ void trade_party_role_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void trade_party_role_repository::write(context ctx,
+void trade_party_role_repository::write(const context& ctx,
                                         const domain::trade_party_role& v,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade party role. " << "trade_id: " << v.trade_id
@@ -167,7 +167,7 @@ void trade_party_role_repository::write(context ctx,
 }
 
 void trade_party_role_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::trade_party_role>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade party roles. Count: " << v.size();
@@ -179,7 +179,7 @@ void trade_party_role_repository::write(
         ctx, trade_party_role_mapper::map(batch), lg(), "Writing trade party roles to database.");
 }
 
-std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(context ctx) {
+std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_party_role_entity>> |
@@ -195,7 +195,7 @@ std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(c
 }
 
 std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(
-    context ctx, const std::string& trade_id, const std::string& role) {
+    const context& ctx, const std::string& trade_id, const std::string& role) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade party role. " << "trade_id: " << trade_id
                                << " role: " << role;
     static constexpr auto max = db_timestamp::max();
@@ -214,7 +214,7 @@ std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(
 
 
 std::vector<domain::trade_party_role> trade_party_role_repository::read_all(
-    context ctx, const std::string& trade_id, const std::string& role) {
+    const context& ctx, const std::string& trade_id, const std::string& role) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade party role versions. "
                                << "trade_id: " << trade_id << " role: " << role;
     const auto tid = ctx.tenant_id().to_string();
@@ -231,8 +231,11 @@ std::vector<domain::trade_party_role> trade_party_role_repository::read_all(
         "Reading all trade party role versions by trade_id.");
 }
 
-std::optional<domain::trade_party_role> trade_party_role_repository::read_at_version(
-    context ctx, const std::string& trade_id, const std::string& role, std::uint32_t version) {
+std::optional<domain::trade_party_role>
+trade_party_role_repository::read_at_version(const context& ctx,
+                                             const std::string& trade_id,
+                                             const std::string& role,
+                                             std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading trade party role at version. "
                                << "trade_id: " << trade_id << " role: " << role
                                << " version: " << version;
@@ -256,7 +259,7 @@ std::optional<domain::trade_party_role> trade_party_role_repository::read_at_ver
 }
 
 std::vector<domain::trade_party_role> trade_party_role_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -283,7 +286,7 @@ std::vector<domain::trade_party_role> trade_party_role_repository::read_latest_b
 }
 
 std::uint32_t trade_party_role_repository::get_total_role_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::trade_party_roles_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade party roles count. trade_id: "
@@ -305,7 +308,7 @@ std::uint32_t trade_party_role_repository::get_total_role_count_by_trade_id(
 
 
 trade_party_role_repository::remove_status
-trade_party_role_repository::remove(context ctx,
+trade_party_role_repository::remove(const context& ctx,
                                     const std::string& trade_id,
                                     const std::string& role,
                                     std::optional<std::uint32_t> version) {
@@ -339,14 +342,14 @@ trade_party_role_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void trade_party_role_repository::remove(context ctx,
+void trade_party_role_repository::remove(const context& ctx,
                                          const std::string& trade_id,
                                          const std::string& role) {
     static_cast<void>(remove(ctx, trade_id, role, std::nullopt));
 }
 
 std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -372,7 +375,7 @@ std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(
 }
 
 std::uint32_t trade_party_role_repository::get_total_role_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::trade_party_roles_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade party role count";
@@ -390,8 +393,10 @@ std::uint32_t trade_party_role_repository::get_total_role_count(
         "Counting trade party roles");
 }
 
-std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(
-    context ctx, const std::vector<std::string>& trade_ids, const std::vector<std::string>& roles) {
+std::vector<domain::trade_party_role>
+trade_party_role_repository::read_latest(const context& ctx,
+                                         const std::vector<std::string>& trade_ids,
+                                         const std::vector<std::string>& roles) {
     if (trade_ids.empty() || roles.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -424,7 +429,7 @@ std::vector<domain::trade_party_role> trade_party_role_repository::read_latest(
     return filtered;
 }
 
-void trade_party_role_repository::remove(context ctx,
+void trade_party_role_repository::remove(const context& ctx,
                                          const std::vector<std::string>& trade_ids,
                                          const std::vector<std::string>& roles) {
     // Compound key: a per-column .in() DELETE would be a cross-product

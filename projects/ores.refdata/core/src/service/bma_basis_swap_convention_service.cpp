@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-bma_basis_swap_convention_service::bma_basis_swap_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+bma_basis_swap_convention_service::bma_basis_swap_convention_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

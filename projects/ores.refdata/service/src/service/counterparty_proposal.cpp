@@ -538,8 +538,8 @@ bool counterparty_preview::refused() const {
     return std::ranges::any_of(lines, [](const auto& l) { return !l.refusal.empty(); });
 }
 
-counterparty_proposal_service::counterparty_proposal_service(ores::database::context ctx)
-    : ctx_(std::move(ctx)) {}
+counterparty_proposal_service::counterparty_proposal_service(const ores::database::context& ctx)
+    : ctx_(ctx) {}
 
 counterparty_preview counterparty_proposal_service::preview(const counterparty_lines& lines) {
     // The transaction is never committed. Its destructor rolls back every write

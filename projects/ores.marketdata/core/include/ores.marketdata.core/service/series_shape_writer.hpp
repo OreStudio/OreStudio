@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_SERIES_SHAPE_WRITER_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_SERIES_SHAPE_WRITER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -95,7 +95,7 @@ public:
      * @p points, or @p check is against_reference_tenors and a term value is not
      * a code the reference tenor table holds.
      */
-    static void declare(ores::database::context ctx,
+    static void declare(const ores::database::context& ctx,
                         const datum::market_datum& series,
                         const boost::uuids::uuid& series_id,
                         const boost::uuids::uuid& party_id,

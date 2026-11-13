@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_SERIES_SNAPSHOT_READER_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_SERIES_SNAPSHOT_READER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <chrono>
@@ -54,7 +54,7 @@ public:
      * @throws std::runtime_error if a stored oresmd URI does not read.
      */
     static messaging::get_curve_snapshot_response
-    read(ores::database::context ctx,
+    read(const ores::database::context& ctx,
          const messaging::get_curve_snapshot_request& request,
          std::chrono::system_clock::time_point as_of);
 };

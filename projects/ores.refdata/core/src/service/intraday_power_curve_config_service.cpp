@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-intraday_power_curve_config_service::intraday_power_curve_config_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+intraday_power_curve_config_service::intraday_power_curve_config_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -54,8 +54,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-activity_type_service::activity_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+activity_type_service::activity_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

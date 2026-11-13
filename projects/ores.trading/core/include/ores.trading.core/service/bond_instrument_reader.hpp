@@ -140,7 +140,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit bond_instrument_reader(context ctx);
+    explicit bond_instrument_reader(const context& ctx);
 
     /**
      * @brief Reads the containers of a set of bond instruments.

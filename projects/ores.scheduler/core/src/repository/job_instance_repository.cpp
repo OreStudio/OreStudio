@@ -70,7 +70,8 @@ parse_rows(const std::vector<std::vector<std::optional<std::string>>>& rows) {
 
 } // anonymous namespace
 
-std::int64_t job_instance_repository::write_started(context ctx, const domain::job_instance& inst) {
+std::int64_t job_instance_repository::write_started(const context& ctx,
+                                                    const domain::job_instance& inst) {
     BOOST_LOG_SEV(lg(), debug) << "Writing started job instance for: " << inst.job_definition_id;
 
     const auto job_def_id = boost::uuids::to_string(inst.job_definition_id);
@@ -107,7 +108,7 @@ std::int64_t job_instance_repository::write_started(context ctx, const domain::j
 }
 
 void job_instance_repository::write_completed(
-    context ctx,
+    const context& ctx,
     std::int64_t id,
     const std::chrono::system_clock::time_point& triggered_at,
     domain::job_status status,
@@ -138,7 +139,7 @@ void job_instance_repository::write_completed(
 }
 
 std::vector<domain::job_instance> job_instance_repository::read_latest(
-    context ctx, const boost::uuids::uuid& job_definition_id, std::size_t limit) {
+    const context& ctx, const boost::uuids::uuid& job_definition_id, std::size_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest job instances for: " << job_definition_id;
 
     const auto job_def_id_str = boost::uuids::to_string(job_definition_id);
@@ -162,7 +163,7 @@ std::vector<domain::job_instance> job_instance_repository::read_latest(
     return result;
 }
 
-std::vector<domain::job_instance> job_instance_repository::read_all_latest(context ctx,
+std::vector<domain::job_instance> job_instance_repository::read_all_latest(const context& ctx,
                                                                            std::size_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all latest job instances, limit=" << limit;
 
@@ -185,7 +186,8 @@ std::vector<domain::job_instance> job_instance_repository::read_all_latest(conte
 }
 
 std::optional<std::chrono::system_clock::time_point>
-job_instance_repository::last_run_at(context ctx, const boost::uuids::uuid& job_definition_id) {
+job_instance_repository::last_run_at(const context& ctx,
+                                     const boost::uuids::uuid& job_definition_id) {
     BOOST_LOG_SEV(lg(), debug) << "Querying last_run_at for: " << job_definition_id;
 
     const auto job_def_id_str = boost::uuids::to_string(job_definition_id);

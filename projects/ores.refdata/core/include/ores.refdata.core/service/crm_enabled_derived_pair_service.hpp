@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit crm_enabled_derived_pair_service(context ctx);
+    explicit crm_enabled_derived_pair_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

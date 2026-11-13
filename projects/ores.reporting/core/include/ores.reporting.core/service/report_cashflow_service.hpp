@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit report_cashflow_service(context ctx);
+    explicit report_cashflow_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

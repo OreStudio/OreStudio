@@ -51,7 +51,7 @@ private:
 public:
     nats_poller(const std::string& monitor_url,
                 std::uint32_t interval_seconds,
-                ores::database::context ctx);
+                const ores::database::context& ctx);
 
     /**
      * @brief Runs the polling loop as an awaitable coroutine.

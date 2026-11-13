@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::todays_market_entry& v);
-    void write(context ctx, const std::vector<domain::todays_market_entry>& v);
+    void write(const context& ctx, const domain::todays_market_entry& v);
+    void write(const context& ctx, const std::vector<domain::todays_market_entry>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::todays_market_entry& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of today's market entries, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::todays_market_entry>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,9 +101,9 @@ public:
      * @brief Reads latest today's market entries, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::todays_market_entry> read_latest(context ctx);
-    std::vector<domain::todays_market_entry> read_latest(context ctx, const std::string& id);
-    std::vector<domain::todays_market_entry> read_latest(context ctx,
+    std::vector<domain::todays_market_entry> read_latest(const context& ctx);
+    std::vector<domain::todays_market_entry> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::todays_market_entry> read_latest(const context& ctx,
                                                          const std::vector<std::string>& ids);
     /**@}*/
 
@@ -111,7 +111,7 @@ public:
     /**
      * @brief Reads all today's market entries, possibly filtered by primary key.
      */
-    std::vector<domain::todays_market_entry> read_all(context ctx, const std::string& id);
+    std::vector<domain::todays_market_entry> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single today's market entry as it stood at a specific
@@ -123,7 +123,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::todays_market_entry>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest today's market entries filtered by todays_market_config_id, with
@@ -135,7 +135,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::todays_market_entry> read_latest_by_todays_market_config_id(
-        context ctx,
+        const context& ctx,
         const std::string& todays_market_config_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -147,7 +147,7 @@ public:
      * todays_market_config_id.
      */
     std::uint32_t get_total_entry_count_by_todays_market_config_id(
-        context ctx,
+        const context& ctx,
         const std::string& todays_market_config_id,
         const std::optional<messaging::todays_market_entries_filter>& filter = std::nullopt);
 
@@ -162,7 +162,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::todays_market_entry> read_latest_by_todays_market_collection_id(
-        context ctx,
+        const context& ctx,
         const std::string& todays_market_collection_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -174,7 +174,7 @@ public:
      * todays_market_collection_id.
      */
     std::uint32_t get_total_entry_count_by_todays_market_collection_id(
-        context ctx,
+        const context& ctx,
         const std::string& todays_market_collection_id,
         const std::optional<messaging::todays_market_entries_filter>& filter = std::nullopt);
 
@@ -196,7 +196,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::todays_market_entry>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -209,14 +209,14 @@ public:
      * @return Total number of active today's market entries
      */
     std::uint32_t get_total_entry_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::todays_market_entries_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a today's market entry by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -238,12 +238,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes today's market entries by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -251,7 +252,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::todays_market_entry& v);
 
     /**
@@ -259,7 +260,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::todays_market_entry apply_claim(context ctx,
+    domain::todays_market_entry apply_claim(const context& ctx,
                                             const domain::todays_market_entry& v,
                                             const ores::utility::domain::precondition& claim);
 };

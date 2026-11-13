@@ -112,7 +112,7 @@ std::optional<query_builder::condition> party_identifier_filter_condition(
 }
 
 ores::utility::domain::precondition
-party_identifier_repository::replace_claim(context ctx, const domain::party_identifier& v) {
+party_identifier_repository::replace_claim(const context& ctx, const domain::party_identifier& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -121,7 +121,7 @@ party_identifier_repository::replace_claim(context ctx, const domain::party_iden
 }
 
 domain::party_identifier
-party_identifier_repository::apply_claim(context ctx,
+party_identifier_repository::apply_claim(const context& ctx,
                                          const domain::party_identifier& v,
                                          const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -148,11 +148,11 @@ party_identifier_repository::apply_claim(context ctx,
     return t;
 }
 
-void party_identifier_repository::write(context ctx, const domain::party_identifier& v) {
+void party_identifier_repository::write(const context& ctx, const domain::party_identifier& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void party_identifier_repository::write(context ctx,
+void party_identifier_repository::write(const context& ctx,
                                         const std::vector<domain::party_identifier>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -161,7 +161,7 @@ void party_identifier_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void party_identifier_repository::write(context ctx,
+void party_identifier_repository::write(const context& ctx,
                                         const domain::party_identifier& v,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party identifier. " << "id: " << v.id;
@@ -171,7 +171,7 @@ void party_identifier_repository::write(context ctx,
 }
 
 void party_identifier_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::party_identifier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party identifiers. Count: " << v.size();
@@ -183,7 +183,7 @@ void party_identifier_repository::write(
         ctx, party_identifier_mapper::map(batch), lg(), "Writing party identifiers to database.");
 }
 
-std::vector<domain::party_identifier> party_identifier_repository::read_latest(context ctx) {
+std::vector<domain::party_identifier> party_identifier_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_identifier_entity>> |
@@ -199,7 +199,7 @@ std::vector<domain::party_identifier> party_identifier_repository::read_latest(c
 }
 
 std::vector<domain::party_identifier>
-party_identifier_repository::read_latest(context ctx, const std::string& id) {
+party_identifier_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifier. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +216,7 @@ party_identifier_repository::read_latest(context ctx, const std::string& id) {
 }
 
 std::vector<domain::party_identifier> party_identifier_repository::read_latest_by_code(
-    context ctx, const std::string& party_id, const std::string& id_scheme) {
+    const context& ctx, const std::string& party_id, const std::string& id_scheme) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifier by party_id/id_scheme: "
                                << party_id << "/" << id_scheme;
     static constexpr auto max = db_timestamp::max();
@@ -233,7 +233,8 @@ std::vector<domain::party_identifier> party_identifier_repository::read_latest_b
         "Reading latest party identifier by id_scheme.");
 }
 std::vector<domain::party_identifier>
-party_identifier_repository::read_latest_by_id_value(context ctx, const std::string& id_value) {
+party_identifier_repository::read_latest_by_id_value(const context& ctx,
+                                                     const std::string& id_value) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party identifier by id_value: " << id_value;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -257,7 +258,7 @@ party_identifier_repository::read_latest_by_id_value(context ctx, const std::str
 }
 
 std::vector<domain::party_identifier>
-party_identifier_repository::read_any_by_id_value(context ctx, const std::string& id_value) {
+party_identifier_repository::read_any_by_id_value(const context& ctx, const std::string& id_value) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any party identifier by id_value: " << id_value;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_identifier_entity>> |
@@ -284,7 +285,7 @@ party_identifier_repository::read_any_by_id_value(context ctx, const std::string
 }
 
 
-std::vector<domain::party_identifier> party_identifier_repository::read_all(context ctx,
+std::vector<domain::party_identifier> party_identifier_repository::read_all(const context& ctx,
                                                                             const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all party identifier versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -301,7 +302,7 @@ std::vector<domain::party_identifier> party_identifier_repository::read_all(cont
 }
 
 std::optional<domain::party_identifier> party_identifier_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading party identifier at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -324,7 +325,7 @@ std::optional<domain::party_identifier> party_identifier_repository::read_at_ver
 }
 
 std::vector<domain::party_identifier> party_identifier_repository::read_latest_by_party_id(
-    context ctx,
+    const context& ctx,
     const std::string& party_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -351,7 +352,7 @@ std::vector<domain::party_identifier> party_identifier_repository::read_latest_b
 }
 
 std::uint32_t party_identifier_repository::get_total_party_identifier_count_by_party_id(
-    context ctx,
+    const context& ctx,
     const std::string& party_id,
     const std::optional<messaging::party_identifiers_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party identifiers count. party_id: "
@@ -373,7 +374,7 @@ std::uint32_t party_identifier_repository::get_total_party_identifier_count_by_p
 
 
 std::vector<domain::party_identifier> party_identifier_repository::read_by_party_id_as_of(
-    context ctx,
+    const context& ctx,
     const std::string& party_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
@@ -396,7 +397,7 @@ std::vector<domain::party_identifier> party_identifier_repository::read_by_party
 }
 
 party_identifier_repository::remove_status party_identifier_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party identifier. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -425,12 +426,12 @@ party_identifier_repository::remove_status party_identifier_repository::remove(
     return remove_status::removed;
 }
 
-void party_identifier_repository::remove(context ctx, const std::string& id) {
+void party_identifier_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::party_identifier> party_identifier_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -456,7 +457,7 @@ std::vector<domain::party_identifier> party_identifier_repository::read_latest(
 }
 
 std::uint32_t party_identifier_repository::get_total_party_identifier_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::party_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party identifier count";
@@ -475,7 +476,7 @@ std::uint32_t party_identifier_repository::get_total_party_identifier_count(
 }
 
 std::vector<domain::party_identifier>
-party_identifier_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+party_identifier_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -493,7 +494,7 @@ party_identifier_repository::read_latest(context ctx, const std::vector<std::str
     return result;
 }
 
-void party_identifier_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void party_identifier_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

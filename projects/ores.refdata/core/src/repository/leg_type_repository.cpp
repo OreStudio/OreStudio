@@ -99,7 +99,7 @@ leg_type_filter_condition(const std::optional<messaging::leg_types_filter>& filt
 
 }
 
-ores::utility::domain::precondition leg_type_repository::replace_claim(context ctx,
+ores::utility::domain::precondition leg_type_repository::replace_claim(const context& ctx,
                                                                        const domain::leg_type& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
@@ -108,8 +108,10 @@ ores::utility::domain::precondition leg_type_repository::replace_claim(context c
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::leg_type leg_type_repository::apply_claim(
-    context ctx, const domain::leg_type& v, const ores::utility::domain::precondition& claim) {
+domain::leg_type
+leg_type_repository::apply_claim(const context& ctx,
+                                 const domain::leg_type& v,
+                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -134,11 +136,11 @@ domain::leg_type leg_type_repository::apply_claim(
     return t;
 }
 
-void leg_type_repository::write(context ctx, const domain::leg_type& v) {
+void leg_type_repository::write(const context& ctx, const domain::leg_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void leg_type_repository::write(context ctx, const std::vector<domain::leg_type>& v) {
+void leg_type_repository::write(const context& ctx, const std::vector<domain::leg_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -146,7 +148,7 @@ void leg_type_repository::write(context ctx, const std::vector<domain::leg_type>
     write(ctx, v, claims);
 }
 
-void leg_type_repository::write(context ctx,
+void leg_type_repository::write(const context& ctx,
                                 const domain::leg_type& v,
                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing leg type. " << "code: " << v.code;
@@ -155,7 +157,7 @@ void leg_type_repository::write(context ctx,
         ctx, leg_type_mapper::map(t), lg(), "Writing leg type to database.");
 }
 
-void leg_type_repository::write(context ctx,
+void leg_type_repository::write(const context& ctx,
                                 const std::vector<domain::leg_type>& v,
                                 const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing leg types. Count: " << v.size();
@@ -167,7 +169,7 @@ void leg_type_repository::write(context ctx,
         ctx, leg_type_mapper::map(batch), lg(), "Writing leg types to database.");
 }
 
-std::vector<domain::leg_type> leg_type_repository::read_latest(context ctx) {
+std::vector<domain::leg_type> leg_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<leg_type_entity>> |
@@ -182,7 +184,7 @@ std::vector<domain::leg_type> leg_type_repository::read_latest(context ctx) {
         "Reading latest leg types");
 }
 
-std::vector<domain::leg_type> leg_type_repository::read_latest(context ctx,
+std::vector<domain::leg_type> leg_type_repository::read_latest(const context& ctx,
                                                                const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest leg type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -200,7 +202,8 @@ std::vector<domain::leg_type> leg_type_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::leg_type> leg_type_repository::read_all(context ctx, const std::string& code) {
+std::vector<domain::leg_type> leg_type_repository::read_all(const context& ctx,
+                                                            const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all leg type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<leg_type_entity>> |
@@ -215,8 +218,9 @@ std::vector<domain::leg_type> leg_type_repository::read_all(context ctx, const s
         "Reading all leg type versions by code.");
 }
 
-std::optional<domain::leg_type>
-leg_type_repository::read_at_version(context ctx, const std::string& code, std::uint32_t version) {
+std::optional<domain::leg_type> leg_type_repository::read_at_version(const context& ctx,
+                                                                     const std::string& code,
+                                                                     std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading leg type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -238,7 +242,7 @@ leg_type_repository::read_at_version(context ctx, const std::string& code, std::
 }
 
 leg_type_repository::remove_status leg_type_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing leg type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -266,12 +270,12 @@ leg_type_repository::remove_status leg_type_repository::remove(
     return remove_status::removed;
 }
 
-void leg_type_repository::remove(context ctx, const std::string& code) {
+void leg_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::leg_type>
-leg_type_repository::read_latest(context ctx,
+leg_type_repository::read_latest(const context& ctx,
                                  std::uint32_t offset,
                                  std::uint32_t limit,
                                  const ores::utility::domain::order& order,
@@ -295,7 +299,7 @@ leg_type_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-leg_type_repository::get_total_type_count(context ctx,
+leg_type_repository::get_total_type_count(const context& ctx,
                                           const std::optional<messaging::leg_types_filter>& filter,
                                           const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active leg type count";
@@ -313,7 +317,7 @@ leg_type_repository::get_total_type_count(context ctx,
 }
 
 std::vector<domain::leg_type>
-leg_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+leg_type_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -330,7 +334,7 @@ leg_type_repository::read_latest(context ctx, const std::vector<std::string>& co
     return result;
 }
 
-void leg_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void leg_type_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

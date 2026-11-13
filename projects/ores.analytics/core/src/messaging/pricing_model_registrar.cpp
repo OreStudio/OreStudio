@@ -44,10 +44,10 @@ static constexpr std::string_view pricing_model_queue_group = "ores.analytics.se
 
 std::vector<ores::nats::service::subscription>
 register_pricing_model_handlers(ores::nats::service::client& nats,
-                                ores::database::context ctx,
+                                const ores::database::context& ctx,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<pricing_model_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<pricing_model_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_pricing_models_request::nats_subject,
         pricing_model_queue_group,

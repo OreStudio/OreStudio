@@ -20,7 +20,7 @@
 #ifndef ORES_HISTORY_MESSAGING_REGISTRAR_HPP
 #define ORES_HISTORY_MESSAGING_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.history.core/export.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.nats/service/client.hpp"
@@ -56,7 +56,7 @@ register_history_handlers(ores::nats::service::client& nats,
                           const service::dispatch_registry& registry,
                           std::string_view component,
                           std::string_view queue_group,
-                          ores::database::context ctx,
+                          const ores::database::context& ctx,
                           std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }

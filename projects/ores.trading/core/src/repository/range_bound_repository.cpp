@@ -108,7 +108,7 @@ range_bound_filter_condition(const std::optional<messaging::range_bounds_filter>
 }
 
 ores::utility::domain::precondition
-range_bound_repository::replace_claim(context ctx, const domain::range_bound& v) {
+range_bound_repository::replace_claim(const context& ctx, const domain::range_bound& v) {
     const auto current =
         read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
     if (current.empty())
@@ -117,8 +117,10 @@ range_bound_repository::replace_claim(context ctx, const domain::range_bound& v)
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::range_bound range_bound_repository::apply_claim(
-    context ctx, const domain::range_bound& v, const ores::utility::domain::precondition& claim) {
+domain::range_bound
+range_bound_repository::apply_claim(const context& ctx,
+                                    const domain::range_bound& v,
+                                    const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -144,11 +146,11 @@ domain::range_bound range_bound_repository::apply_claim(
     return t;
 }
 
-void range_bound_repository::write(context ctx, const domain::range_bound& v) {
+void range_bound_repository::write(const context& ctx, const domain::range_bound& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void range_bound_repository::write(context ctx, const std::vector<domain::range_bound>& v) {
+void range_bound_repository::write(const context& ctx, const std::vector<domain::range_bound>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -156,7 +158,7 @@ void range_bound_repository::write(context ctx, const std::vector<domain::range_
     write(ctx, v, claims);
 }
 
-void range_bound_repository::write(context ctx,
+void range_bound_repository::write(const context& ctx,
                                    const domain::range_bound& v,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing range bound. " << "trade_id: " << v.trade_id
@@ -166,7 +168,7 @@ void range_bound_repository::write(context ctx,
         ctx, range_bound_mapper::map(t), lg(), "Writing range bound to database.");
 }
 
-void range_bound_repository::write(context ctx,
+void range_bound_repository::write(const context& ctx,
                                    const std::vector<domain::range_bound>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing range bounds. Count: " << v.size();
@@ -178,7 +180,7 @@ void range_bound_repository::write(context ctx,
         ctx, range_bound_mapper::map(batch), lg(), "Writing range bounds to database.");
 }
 
-std::vector<domain::range_bound> range_bound_repository::read_latest(context ctx) {
+std::vector<domain::range_bound> range_bound_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<range_bound_entity>> |
@@ -194,7 +196,7 @@ std::vector<domain::range_bound> range_bound_repository::read_latest(context ctx
 }
 
 std::vector<domain::range_bound> range_bound_repository::read_latest(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest range bound. " << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
     static constexpr auto max = db_timestamp::max();
@@ -214,7 +216,7 @@ std::vector<domain::range_bound> range_bound_repository::read_latest(
 
 
 std::vector<domain::range_bound> range_bound_repository::read_all(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all range bound versions. " << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
@@ -232,7 +234,7 @@ std::vector<domain::range_bound> range_bound_repository::read_all(
 }
 
 std::optional<domain::range_bound>
-range_bound_repository::read_at_version(context ctx,
+range_bound_repository::read_at_version(const context& ctx,
                                         const std::string& trade_id,
                                         const std::string& sequence_number,
                                         std::uint32_t version) {
@@ -260,7 +262,7 @@ range_bound_repository::read_at_version(context ctx,
 }
 
 std::vector<domain::range_bound> range_bound_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -286,7 +288,7 @@ std::vector<domain::range_bound> range_bound_repository::read_latest_by_trade_id
 }
 
 std::uint32_t range_bound_repository::get_total_range_bound_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::range_bounds_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active range bounds count. trade_id: "
@@ -308,7 +310,7 @@ std::uint32_t range_bound_repository::get_total_range_bound_count_by_trade_id(
 
 
 range_bound_repository::remove_status
-range_bound_repository::remove(context ctx,
+range_bound_repository::remove(const context& ctx,
                                const std::string& trade_id,
                                const std::string& sequence_number,
                                std::optional<std::uint32_t> version) {
@@ -341,14 +343,14 @@ range_bound_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void range_bound_repository::remove(context ctx,
+void range_bound_repository::remove(const context& ctx,
                                     const std::string& trade_id,
                                     const std::string& sequence_number) {
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
 }
 
 std::vector<domain::range_bound>
-range_bound_repository::read_latest(context ctx,
+range_bound_repository::read_latest(const context& ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
@@ -373,7 +375,7 @@ range_bound_repository::read_latest(context ctx,
 }
 
 std::uint32_t range_bound_repository::get_total_range_bound_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::range_bounds_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active range bound count";
@@ -392,7 +394,7 @@ std::uint32_t range_bound_repository::get_total_range_bound_count(
 }
 
 std::vector<domain::range_bound>
-range_bound_repository::read_latest(context ctx,
+range_bound_repository::read_latest(const context& ctx,
                                     const std::vector<std::string>& trade_ids,
                                     const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
@@ -428,7 +430,7 @@ range_bound_repository::read_latest(context ctx,
     return filtered;
 }
 
-void range_bound_repository::remove(context ctx,
+void range_bound_repository::remove(const context& ctx,
                                     const std::vector<std::string>& trade_ids,
                                     const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product
@@ -443,7 +445,7 @@ void range_bound_repository::remove(context ctx,
 
 
 std::vector<domain::range_bound>
-range_bound_repository::read_by_instruments_batch(context ctx,
+range_bound_repository::read_by_instruments_batch(const context& ctx,
                                                   const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};

@@ -59,8 +59,8 @@ namespace ores::analytics::service {
 using namespace ores::logging;
 
 todays_market_configuration_binding_service::todays_market_configuration_binding_service(
-    context ctx)
-    : ctx_(std::move(ctx)) {}
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

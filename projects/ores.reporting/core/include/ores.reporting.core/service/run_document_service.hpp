@@ -47,7 +47,7 @@ class ORES_REPORTING_CORE_EXPORT run_document_service {
 public:
     using context = ores::database::context;
 
-    explicit run_document_service(context ctx);
+    explicit run_document_service(const context& ctx);
 
     /**
      * @brief Stores a run document against a report definition.

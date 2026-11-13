@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit provider_service(context ctx);
+    explicit provider_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit flexi_swap_lower_notional_service(context ctx);
+    explicit flexi_swap_lower_notional_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

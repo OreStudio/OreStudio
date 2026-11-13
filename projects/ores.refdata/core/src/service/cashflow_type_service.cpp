@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-cashflow_type_service::cashflow_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+cashflow_type_service::cashflow_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

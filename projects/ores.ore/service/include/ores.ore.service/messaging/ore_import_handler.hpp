@@ -49,7 +49,7 @@ private:
 
 public:
     ore_import_handler(ores::nats::service::client& nats,
-                       ores::database::context ctx,
+                       const ores::database::context& ctx,
                        ores::security::jwt::jwt_authenticator signer);
 
     /**

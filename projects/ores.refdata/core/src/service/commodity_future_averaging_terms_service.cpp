@@ -59,8 +59,9 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-commodity_future_averaging_terms_service::commodity_future_averaging_terms_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+commodity_future_averaging_terms_service::commodity_future_averaging_terms_service(
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

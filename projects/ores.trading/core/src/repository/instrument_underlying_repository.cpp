@@ -109,7 +109,7 @@ std::optional<query_builder::condition> instrument_underlying_filter_condition(
 }
 
 ores::utility::domain::precondition
-instrument_underlying_repository::replace_claim(context ctx,
+instrument_underlying_repository::replace_claim(const context& ctx,
                                                 const domain::instrument_underlying& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.trade_id),
@@ -122,7 +122,7 @@ instrument_underlying_repository::replace_claim(context ctx,
 }
 
 domain::instrument_underlying
-instrument_underlying_repository::apply_claim(context ctx,
+instrument_underlying_repository::apply_claim(const context& ctx,
                                               const domain::instrument_underlying& v,
                                               const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -152,11 +152,12 @@ instrument_underlying_repository::apply_claim(context ctx,
     return t;
 }
 
-void instrument_underlying_repository::write(context ctx, const domain::instrument_underlying& v) {
+void instrument_underlying_repository::write(const context& ctx,
+                                             const domain::instrument_underlying& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void instrument_underlying_repository::write(context ctx,
+void instrument_underlying_repository::write(const context& ctx,
                                              const std::vector<domain::instrument_underlying>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -165,7 +166,7 @@ void instrument_underlying_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void instrument_underlying_repository::write(context ctx,
+void instrument_underlying_repository::write(const context& ctx,
                                              const domain::instrument_underlying& v,
                                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument underlying. " << "trade_id: " << v.trade_id
@@ -179,7 +180,7 @@ void instrument_underlying_repository::write(context ctx,
 }
 
 void instrument_underlying_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::instrument_underlying>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument underlyings. Count: " << v.size();
@@ -194,7 +195,7 @@ void instrument_underlying_repository::write(
 }
 
 std::vector<domain::instrument_underlying>
-instrument_underlying_repository::read_latest(context ctx) {
+instrument_underlying_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -212,7 +213,7 @@ instrument_underlying_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::instrument_underlying>
-instrument_underlying_repository::read_latest(context ctx,
+instrument_underlying_repository::read_latest(const context& ctx,
                                               const std::string& trade_id,
                                               const std::string& underlying_role,
                                               const std::string& sequence_number) {
@@ -239,7 +240,7 @@ instrument_underlying_repository::read_latest(context ctx,
 
 
 std::vector<domain::instrument_underlying>
-instrument_underlying_repository::read_all(context ctx,
+instrument_underlying_repository::read_all(const context& ctx,
                                            const std::string& trade_id,
                                            const std::string& underlying_role,
                                            const std::string& sequence_number) {
@@ -264,7 +265,7 @@ instrument_underlying_repository::read_all(context ctx,
 }
 
 std::optional<domain::instrument_underlying>
-instrument_underlying_repository::read_at_version(context ctx,
+instrument_underlying_repository::read_at_version(const context& ctx,
                                                   const std::string& trade_id,
                                                   const std::string& underlying_role,
                                                   const std::string& sequence_number,
@@ -297,7 +298,7 @@ instrument_underlying_repository::read_at_version(context ctx,
 
 std::vector<domain::instrument_underlying>
 instrument_underlying_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -325,7 +326,7 @@ instrument_underlying_repository::read_latest_by_trade_id(
 }
 
 std::uint32_t instrument_underlying_repository::get_total_instrument_underlying_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::instrument_underlyings_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument underlyings count. trade_id: "
@@ -347,7 +348,7 @@ std::uint32_t instrument_underlying_repository::get_total_instrument_underlying_
 
 
 instrument_underlying_repository::remove_status
-instrument_underlying_repository::remove(context ctx,
+instrument_underlying_repository::remove(const context& ctx,
                                          const std::string& trade_id,
                                          const std::string& underlying_role,
                                          const std::string& sequence_number,
@@ -384,7 +385,7 @@ instrument_underlying_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void instrument_underlying_repository::remove(context ctx,
+void instrument_underlying_repository::remove(const context& ctx,
                                               const std::string& trade_id,
                                               const std::string& underlying_role,
                                               const std::string& sequence_number) {
@@ -392,7 +393,7 @@ void instrument_underlying_repository::remove(context ctx,
 }
 
 std::vector<domain::instrument_underlying> instrument_underlying_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -419,7 +420,7 @@ std::vector<domain::instrument_underlying> instrument_underlying_repository::rea
 }
 
 std::uint32_t instrument_underlying_repository::get_total_instrument_underlying_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::instrument_underlyings_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument underlying count";
@@ -438,7 +439,7 @@ std::uint32_t instrument_underlying_repository::get_total_instrument_underlying_
 }
 
 std::vector<domain::instrument_underlying>
-instrument_underlying_repository::read_latest(context ctx,
+instrument_underlying_repository::read_latest(const context& ctx,
                                               const std::vector<std::string>& trade_ids,
                                               const std::vector<std::string>& underlying_roles,
                                               const std::vector<std::string>& sequence_numbers) {
@@ -478,7 +479,7 @@ instrument_underlying_repository::read_latest(context ctx,
     return filtered;
 }
 
-void instrument_underlying_repository::remove(context ctx,
+void instrument_underlying_repository::remove(const context& ctx,
                                               const std::vector<std::string>& trade_ids,
                                               const std::vector<std::string>& underlying_roles,
                                               const std::vector<std::string>& sequence_numbers) {
@@ -495,7 +496,7 @@ void instrument_underlying_repository::remove(context ctx,
 
 std::vector<domain::instrument_underlying>
 instrument_underlying_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();

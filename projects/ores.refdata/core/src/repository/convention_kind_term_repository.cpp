@@ -101,7 +101,8 @@ std::optional<query_builder::condition> convention_kind_term_filter_condition(
 }
 
 ores::utility::domain::precondition
-convention_kind_term_repository::replace_claim(context ctx, const domain::convention_kind_term& v) {
+convention_kind_term_repository::replace_claim(const context& ctx,
+                                               const domain::convention_kind_term& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +111,7 @@ convention_kind_term_repository::replace_claim(context ctx, const domain::conven
 }
 
 domain::convention_kind_term
-convention_kind_term_repository::apply_claim(context ctx,
+convention_kind_term_repository::apply_claim(const context& ctx,
                                              const domain::convention_kind_term& v,
                                              const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,11 +138,12 @@ convention_kind_term_repository::apply_claim(context ctx,
     return t;
 }
 
-void convention_kind_term_repository::write(context ctx, const domain::convention_kind_term& v) {
+void convention_kind_term_repository::write(const context& ctx,
+                                            const domain::convention_kind_term& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void convention_kind_term_repository::write(context ctx,
+void convention_kind_term_repository::write(const context& ctx,
                                             const std::vector<domain::convention_kind_term>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -150,7 +152,7 @@ void convention_kind_term_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void convention_kind_term_repository::write(context ctx,
+void convention_kind_term_repository::write(const context& ctx,
                                             const domain::convention_kind_term& v,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing convention kind term. " << "code: " << v.code;
@@ -162,7 +164,7 @@ void convention_kind_term_repository::write(context ctx,
 }
 
 void convention_kind_term_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::convention_kind_term>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing convention kind terms. Count: " << v.size();
@@ -177,7 +179,7 @@ void convention_kind_term_repository::write(
 }
 
 std::vector<domain::convention_kind_term>
-convention_kind_term_repository::read_latest(context ctx) {
+convention_kind_term_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<convention_kind_term_entity>> |
@@ -194,7 +196,7 @@ convention_kind_term_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::convention_kind_term>
-convention_kind_term_repository::read_latest(context ctx, const std::string& code) {
+convention_kind_term_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest convention kind term. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -213,7 +215,7 @@ convention_kind_term_repository::read_latest(context ctx, const std::string& cod
 
 
 std::vector<domain::convention_kind_term>
-convention_kind_term_repository::read_all(context ctx, const std::string& code) {
+convention_kind_term_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all convention kind term versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<convention_kind_term_entity>> |
@@ -230,7 +232,7 @@ convention_kind_term_repository::read_all(context ctx, const std::string& code) 
 }
 
 std::optional<domain::convention_kind_term> convention_kind_term_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading convention kind term at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -253,7 +255,7 @@ std::optional<domain::convention_kind_term> convention_kind_term_repository::rea
 }
 
 convention_kind_term_repository::remove_status convention_kind_term_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing convention kind term. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -282,12 +284,12 @@ convention_kind_term_repository::remove_status convention_kind_term_repository::
     return remove_status::removed;
 }
 
-void convention_kind_term_repository::remove(context ctx, const std::string& code) {
+void convention_kind_term_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::convention_kind_term> convention_kind_term_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -313,7 +315,7 @@ std::vector<domain::convention_kind_term> convention_kind_term_repository::read_
 }
 
 std::uint32_t convention_kind_term_repository::get_total_term_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::convention_kind_terms_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active convention kind term count";
@@ -332,7 +334,8 @@ std::uint32_t convention_kind_term_repository::get_total_term_count(
 }
 
 std::vector<domain::convention_kind_term>
-convention_kind_term_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+convention_kind_term_repository::read_latest(const context& ctx,
+                                             const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -350,7 +353,8 @@ convention_kind_term_repository::read_latest(context ctx, const std::vector<std:
     return result;
 }
 
-void convention_kind_term_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void convention_kind_term_repository::remove(const context& ctx,
+                                             const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

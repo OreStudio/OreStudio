@@ -86,7 +86,7 @@ series_classification_rule_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-series_classification_rule_repository::replace_claim(context ctx,
+series_classification_rule_repository::replace_claim(const context& ctx,
                                                      const domain::series_classification_rule& v) {
     const auto current = read_latest(ctx, v.instrument, v.quote, v.key_kind);
     if (current.empty())
@@ -96,7 +96,7 @@ series_classification_rule_repository::replace_claim(context ctx,
 }
 
 domain::series_classification_rule series_classification_rule_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::series_classification_rule& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -123,13 +123,13 @@ domain::series_classification_rule series_classification_rule_repository::apply_
     return t;
 }
 
-void series_classification_rule_repository::write(context ctx,
+void series_classification_rule_repository::write(const context& ctx,
                                                   const domain::series_classification_rule& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void series_classification_rule_repository::write(
-    context ctx, const std::vector<domain::series_classification_rule>& v) {
+    const context& ctx, const std::vector<domain::series_classification_rule>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -138,7 +138,7 @@ void series_classification_rule_repository::write(
 }
 
 void series_classification_rule_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::series_classification_rule& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series classification rule. "
@@ -152,7 +152,7 @@ void series_classification_rule_repository::write(
 }
 
 void series_classification_rule_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::series_classification_rule>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series classification rules. Count: " << v.size();
@@ -167,7 +167,7 @@ void series_classification_rule_repository::write(
 }
 
 std::vector<domain::series_classification_rule>
-series_classification_rule_repository::read_latest(context ctx) {
+series_classification_rule_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
@@ -184,7 +184,7 @@ series_classification_rule_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::series_classification_rule>
-series_classification_rule_repository::read_latest(context ctx,
+series_classification_rule_repository::read_latest(const context& ctx,
                                                    const std::string& instrument,
                                                    const std::string& quote,
                                                    const std::string& key_kind) {
@@ -209,7 +209,7 @@ series_classification_rule_repository::read_latest(context ctx,
 
 
 std::vector<domain::series_classification_rule>
-series_classification_rule_repository::read_all(context ctx,
+series_classification_rule_repository::read_all(const context& ctx,
                                                 const std::string& instrument,
                                                 const std::string& quote,
                                                 const std::string& key_kind) {
@@ -232,7 +232,7 @@ series_classification_rule_repository::read_all(context ctx,
 }
 
 std::optional<domain::series_classification_rule>
-series_classification_rule_repository::read_at_version(context ctx,
+series_classification_rule_repository::read_at_version(const context& ctx,
                                                        const std::string& instrument,
                                                        const std::string& quote,
                                                        const std::string& key_kind,
@@ -261,7 +261,7 @@ series_classification_rule_repository::read_at_version(context ctx,
 }
 
 series_classification_rule_repository::remove_status
-series_classification_rule_repository::remove(context ctx,
+series_classification_rule_repository::remove(const context& ctx,
                                               const std::string& instrument,
                                               const std::string& quote,
                                               const std::string& key_kind,
@@ -297,7 +297,7 @@ series_classification_rule_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void series_classification_rule_repository::remove(context ctx,
+void series_classification_rule_repository::remove(const context& ctx,
                                                    const std::string& instrument,
                                                    const std::string& quote,
                                                    const std::string& key_kind) {
@@ -305,7 +305,7 @@ void series_classification_rule_repository::remove(context ctx,
 }
 
 std::vector<domain::series_classification_rule>
-series_classification_rule_repository::read_latest(context ctx,
+series_classification_rule_repository::read_latest(const context& ctx,
                                                    std::uint32_t offset,
                                                    std::uint32_t limit,
                                                    const ores::utility::domain::order& order,
@@ -329,7 +329,7 @@ series_classification_rule_repository::read_latest(context ctx,
 }
 
 std::uint32_t series_classification_rule_repository::get_total_rule_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active series classification rule count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -345,7 +345,7 @@ std::uint32_t series_classification_rule_repository::get_total_rule_count(
 }
 
 std::vector<domain::series_classification_rule>
-series_classification_rule_repository::read_latest(context ctx,
+series_classification_rule_repository::read_latest(const context& ctx,
                                                    const std::vector<std::string>& instruments,
                                                    const std::vector<std::string>& quotes,
                                                    const std::vector<std::string>& key_kinds) {
@@ -383,7 +383,7 @@ series_classification_rule_repository::read_latest(context ctx,
     return filtered;
 }
 
-void series_classification_rule_repository::remove(context ctx,
+void series_classification_rule_repository::remove(const context& ctx,
                                                    const std::vector<std::string>& instruments,
                                                    const std::vector<std::string>& quotes,
                                                    const std::vector<std::string>& key_kinds) {

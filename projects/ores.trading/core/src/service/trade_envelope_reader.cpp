@@ -32,8 +32,8 @@ namespace ores::trading::service {
 using namespace ores::logging;
 
 
-trade_envelope_reader::trade_envelope_reader(context ctx)
-    : ctx_(std::move(ctx)) {}
+trade_envelope_reader::trade_envelope_reader(const context& ctx)
+    : ctx_(ctx) {}
 
 std::unordered_map<std::string, domain::trade_envelope_data>
 trade_envelope_reader::read_envelopes(const std::vector<std::string>& trade_ids) const {

@@ -113,8 +113,8 @@ void stamp_decision(domain::cut& cut,
 
 } // namespace
 
-cut_authorisation_applier::cut_authorisation_applier(ores::database::context ctx)
-    : ctx_(std::move(ctx)) {}
+cut_authorisation_applier::cut_authorisation_applier(const ores::database::context& ctx)
+    : ctx_(ctx) {}
 
 int cut_authorisation_applier::apply() {
     std::lock_guard lock(mutex_);

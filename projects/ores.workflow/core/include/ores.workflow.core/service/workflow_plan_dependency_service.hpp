@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit workflow_plan_dependency_service(context ctx);
+    explicit workflow_plan_dependency_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

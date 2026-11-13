@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit report_text_value_service(context ctx);
+    explicit report_text_value_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

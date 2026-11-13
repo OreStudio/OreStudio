@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-asset_class_service::asset_class_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+asset_class_service::asset_class_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

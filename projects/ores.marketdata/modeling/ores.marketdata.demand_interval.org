@@ -173,12 +173,12 @@ that are open for every party, so it cannot filter on one tenant. Queries only o
 =valid_to == max=.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::demand_interval> read_latest_all_tenants(context ctx);
+std::vector<domain::demand_interval> read_latest_all_tenants(const context& ctx);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::demand_interval>
-demand_interval_repository::read_latest_all_tenants(context ctx) {
+demand_interval_repository::read_latest_all_tenants(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<demand_interval_entity>> |
                        query_builder::where("valid_to"_c == max) |

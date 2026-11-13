@@ -153,7 +153,7 @@ report_cashflow_filter_condition(const std::optional<messaging::report_cashflows
 }
 
 ores::utility::domain::precondition
-report_cashflow_repository::replace_claim(context ctx, const domain::report_cashflow& v) {
+report_cashflow_repository::replace_claim(const context& ctx, const domain::report_cashflow& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -164,7 +164,7 @@ report_cashflow_repository::replace_claim(context ctx, const domain::report_cash
 }
 
 domain::report_cashflow
-report_cashflow_repository::apply_claim(context ctx,
+report_cashflow_repository::apply_claim(const context& ctx,
                                         const domain::report_cashflow& v,
                                         const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -180,24 +180,25 @@ report_cashflow_repository::apply_claim(context ctx,
     return t;
 }
 
-void report_cashflow_repository::write(context ctx, const domain::report_cashflow& v) {
+void report_cashflow_repository::write(const context& ctx, const domain::report_cashflow& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void report_cashflow_repository::insert(context ctx, const domain::report_cashflow& v) {
+void report_cashflow_repository::insert(const context& ctx, const domain::report_cashflow& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting report cashflow. " << "id: " << v.id;
     query_builder::execute_write_query(
         ctx, report_cashflow_mapper::map(v), lg(), "Inserting report cashflow into database.");
 }
 
-void report_cashflow_repository::insert(context ctx,
+void report_cashflow_repository::insert(const context& ctx,
                                         const std::vector<domain::report_cashflow>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting report cashflows. Count: " << v.size();
     query_builder::execute_write_query(
         ctx, report_cashflow_mapper::map(v), lg(), "Inserting report cashflows into database.");
 }
 
-void report_cashflow_repository::write(context ctx, const std::vector<domain::report_cashflow>& v) {
+void report_cashflow_repository::write(const context& ctx,
+                                       const std::vector<domain::report_cashflow>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -205,7 +206,7 @@ void report_cashflow_repository::write(context ctx, const std::vector<domain::re
     write(ctx, v, claims);
 }
 
-void report_cashflow_repository::write(context ctx,
+void report_cashflow_repository::write(const context& ctx,
                                        const domain::report_cashflow& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report cashflow. " << "id: " << v.id;
@@ -215,7 +216,7 @@ void report_cashflow_repository::write(context ctx,
 }
 
 void report_cashflow_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::report_cashflow>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report cashflows. Count: " << v.size();
@@ -227,7 +228,7 @@ void report_cashflow_repository::write(
         ctx, report_cashflow_mapper::map(batch), lg(), "Writing report cashflows to database.");
 }
 
-std::vector<domain::report_cashflow> report_cashflow_repository::read_latest(context ctx) {
+std::vector<domain::report_cashflow> report_cashflow_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_cashflow_entity>> |
@@ -243,7 +244,7 @@ std::vector<domain::report_cashflow> report_cashflow_repository::read_latest(con
 }
 
 std::vector<domain::report_cashflow>
-report_cashflow_repository::read_latest(context ctx, const std::string& id) {
+report_cashflow_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report cashflow. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -260,7 +261,7 @@ report_cashflow_repository::read_latest(context ctx, const std::string& id) {
 }
 
 
-std::vector<domain::report_cashflow> report_cashflow_repository::read_all(context ctx,
+std::vector<domain::report_cashflow> report_cashflow_repository::read_all(const context& ctx,
                                                                           const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all report cashflow versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -278,7 +279,7 @@ std::vector<domain::report_cashflow> report_cashflow_repository::read_all(contex
 
 
 report_cashflow_repository::remove_status report_cashflow_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing report cashflow. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -298,12 +299,12 @@ report_cashflow_repository::remove_status report_cashflow_repository::remove(
     return remove_status::removed;
 }
 
-void report_cashflow_repository::remove(context ctx, const std::string& id) {
+void report_cashflow_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::report_cashflow> report_cashflow_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -329,7 +330,7 @@ std::vector<domain::report_cashflow> report_cashflow_repository::read_latest(
 }
 
 std::uint32_t report_cashflow_repository::get_total_cashflow_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::report_cashflows_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report cashflow count";
@@ -348,7 +349,7 @@ std::uint32_t report_cashflow_repository::get_total_cashflow_count(
 }
 
 std::vector<domain::report_cashflow>
-report_cashflow_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+report_cashflow_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -366,7 +367,7 @@ report_cashflow_repository::read_latest(context ctx, const std::vector<std::stri
     return result;
 }
 
-void report_cashflow_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void report_cashflow_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

@@ -58,8 +58,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-fx_barrier_option_instrument_service::fx_barrier_option_instrument_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+fx_barrier_option_instrument_service::fx_barrier_option_instrument_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -100,7 +100,7 @@ account_type_filter_condition(const std::optional<messaging::account_types_filte
 }
 
 ores::utility::domain::precondition
-account_type_repository::replace_claim(context ctx, const domain::account_type& v) {
+account_type_repository::replace_claim(const context& ctx, const domain::account_type& v) {
     const auto current = read_latest(ctx, v.type);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -108,8 +108,10 @@ account_type_repository::replace_claim(context ctx, const domain::account_type& 
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::account_type account_type_repository::apply_claim(
-    context ctx, const domain::account_type& v, const ores::utility::domain::precondition& claim) {
+domain::account_type
+account_type_repository::apply_claim(const context& ctx,
+                                     const domain::account_type& v,
+                                     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -134,11 +136,12 @@ domain::account_type account_type_repository::apply_claim(
     return t;
 }
 
-void account_type_repository::write(context ctx, const domain::account_type& v) {
+void account_type_repository::write(const context& ctx, const domain::account_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void account_type_repository::write(context ctx, const std::vector<domain::account_type>& v) {
+void account_type_repository::write(const context& ctx,
+                                    const std::vector<domain::account_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -146,7 +149,7 @@ void account_type_repository::write(context ctx, const std::vector<domain::accou
     write(ctx, v, claims);
 }
 
-void account_type_repository::write(context ctx,
+void account_type_repository::write(const context& ctx,
                                     const domain::account_type& v,
                                     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account type. " << "type: " << v.type;
@@ -156,7 +159,7 @@ void account_type_repository::write(context ctx,
 }
 
 void account_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::account_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account types. Count: " << v.size();
@@ -168,7 +171,7 @@ void account_type_repository::write(
         ctx, account_type_mapper::map(batch), lg(), "Writing account types to database.");
 }
 
-std::vector<domain::account_type> account_type_repository::read_latest(context ctx) {
+std::vector<domain::account_type> account_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_type_entity>> |
@@ -183,7 +186,7 @@ std::vector<domain::account_type> account_type_repository::read_latest(context c
         "Reading latest account types");
 }
 
-std::vector<domain::account_type> account_type_repository::read_latest(context ctx,
+std::vector<domain::account_type> account_type_repository::read_latest(const context& ctx,
                                                                        const std::string& type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account type. " << "type: " << type;
     static constexpr auto max = db_timestamp::max();
@@ -201,7 +204,7 @@ std::vector<domain::account_type> account_type_repository::read_latest(context c
 }
 
 
-std::vector<domain::account_type> account_type_repository::read_all(context ctx,
+std::vector<domain::account_type> account_type_repository::read_all(const context& ctx,
                                                                     const std::string& type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all account type versions. " << "type: " << type;
     const auto tid = ctx.tenant_id().to_string();
@@ -218,7 +221,7 @@ std::vector<domain::account_type> account_type_repository::read_all(context ctx,
 }
 
 std::optional<domain::account_type> account_type_repository::read_at_version(
-    context ctx, const std::string& type, std::uint32_t version) {
+    const context& ctx, const std::string& type, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading account type at version. " << "type: " << type
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -241,7 +244,7 @@ std::optional<domain::account_type> account_type_repository::read_at_version(
 }
 
 account_type_repository::remove_status account_type_repository::remove(
-    context ctx, const std::string& type, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& type, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing account type. " << "type: " << type;
     const auto current = read_latest(ctx, type);
     if (current.empty())
@@ -269,12 +272,12 @@ account_type_repository::remove_status account_type_repository::remove(
     return remove_status::removed;
 }
 
-void account_type_repository::remove(context ctx, const std::string& type) {
+void account_type_repository::remove(const context& ctx, const std::string& type) {
     static_cast<void>(remove(ctx, type, std::nullopt));
 }
 
 std::vector<domain::account_type>
-account_type_repository::read_latest(context ctx,
+account_type_repository::read_latest(const context& ctx,
                                      std::uint32_t offset,
                                      std::uint32_t limit,
                                      const ores::utility::domain::order& order,
@@ -299,7 +302,7 @@ account_type_repository::read_latest(context ctx,
 }
 
 std::uint32_t account_type_repository::get_total_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::account_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account type count";
@@ -318,7 +321,7 @@ std::uint32_t account_type_repository::get_total_type_count(
 }
 
 std::vector<domain::account_type>
-account_type_repository::read_latest(context ctx, const std::vector<std::string>& types) {
+account_type_repository::read_latest(const context& ctx, const std::vector<std::string>& types) {
     if (types.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -335,7 +338,7 @@ account_type_repository::read_latest(context ctx, const std::vector<std::string>
     return result;
 }
 
-void account_type_repository::remove(context ctx, const std::vector<std::string>& types) {
+void account_type_repository::remove(const context& ctx, const std::vector<std::string>& types) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

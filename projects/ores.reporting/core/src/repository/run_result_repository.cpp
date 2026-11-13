@@ -176,7 +176,7 @@ run_result_filter_condition(const std::optional<messaging::run_results_filter>& 
 }
 
 ores::utility::domain::precondition
-run_result_repository::replace_claim(context ctx, const domain::run_result& v) {
+run_result_repository::replace_claim(const context& ctx, const domain::run_result& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -186,8 +186,10 @@ run_result_repository::replace_claim(context ctx, const domain::run_result& v) {
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::run_result run_result_repository::apply_claim(
-    context ctx, const domain::run_result& v, const ores::utility::domain::precondition& claim) {
+domain::run_result
+run_result_repository::apply_claim(const context& ctx,
+                                   const domain::run_result& v,
+                                   const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
@@ -200,11 +202,11 @@ domain::run_result run_result_repository::apply_claim(
     return t;
 }
 
-void run_result_repository::write(context ctx, const domain::run_result& v) {
+void run_result_repository::write(const context& ctx, const domain::run_result& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void run_result_repository::write(context ctx, const std::vector<domain::run_result>& v) {
+void run_result_repository::write(const context& ctx, const std::vector<domain::run_result>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -212,7 +214,7 @@ void run_result_repository::write(context ctx, const std::vector<domain::run_res
     write(ctx, v, claims);
 }
 
-void run_result_repository::write(context ctx,
+void run_result_repository::write(const context& ctx,
                                   const domain::run_result& v,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing run result. " << "id: " << v.id;
@@ -223,7 +225,7 @@ void run_result_repository::write(context ctx,
                                     "Writing run result to database.");
 }
 
-void run_result_repository::write(context ctx,
+void run_result_repository::write(const context& ctx,
                                   const std::vector<domain::run_result>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing run results. Count: " << v.size();
@@ -237,7 +239,7 @@ void run_result_repository::write(context ctx,
                                     "Writing run results to database.");
 }
 
-std::vector<domain::run_result> run_result_repository::read_latest(context ctx) {
+std::vector<domain::run_result> run_result_repository::read_latest(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_result_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::order_by("id"_c);
@@ -250,7 +252,7 @@ std::vector<domain::run_result> run_result_repository::read_latest(context ctx) 
         "Reading latest run results");
 }
 
-std::vector<domain::run_result> run_result_repository::read_latest(context ctx,
+std::vector<domain::run_result> run_result_repository::read_latest(const context& ctx,
                                                                    const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest run result. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -266,7 +268,7 @@ std::vector<domain::run_result> run_result_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::run_result> run_result_repository::read_all(context ctx,
+std::vector<domain::run_result> run_result_repository::read_all(const context& ctx,
                                                                 const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all run result versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -284,7 +286,7 @@ std::vector<domain::run_result> run_result_repository::read_all(context ctx,
 
 
 run_result_repository::remove_status run_result_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing run result. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -301,12 +303,12 @@ run_result_repository::remove_status run_result_repository::remove(
     return remove_status::removed;
 }
 
-void run_result_repository::remove(context ctx, const std::string& id) {
+void run_result_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::run_result>
-run_result_repository::read_latest(context ctx,
+run_result_repository::read_latest(const context& ctx,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order,
@@ -329,7 +331,7 @@ run_result_repository::read_latest(context ctx,
 }
 
 std::uint32_t run_result_repository::get_total_result_count(
-    context ctx, const std::optional<messaging::run_results_filter>& filter) {
+    const context& ctx, const std::optional<messaging::run_results_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active run result count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -341,7 +343,7 @@ std::uint32_t run_result_repository::get_total_result_count(
 }
 
 std::vector<domain::run_result>
-run_result_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+run_result_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     const auto tid = ctx.tenant_id().to_string();
@@ -356,7 +358,7 @@ run_result_repository::read_latest(context ctx, const std::vector<std::string>& 
     return result;
 }
 
-void run_result_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void run_result_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

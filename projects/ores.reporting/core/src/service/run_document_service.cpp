@@ -241,8 +241,8 @@ void write_binding(const ores::database::context& ctx,
 
 }
 
-run_document_service::run_document_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+run_document_service::run_document_service(const context& ctx)
+    : ctx_(ctx) {}
 
 void run_document_service::save(const boost::uuids::uuid& report_definition_id,
                                 messaging::run_document v) {

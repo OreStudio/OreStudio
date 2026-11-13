@@ -102,7 +102,7 @@ std::optional<query_builder::condition> commodity_curve_interpolation_filter_con
 }
 
 ores::utility::domain::precondition commodity_curve_interpolation_repository::replace_claim(
-    context ctx, const domain::commodity_curve_interpolation& v) {
+    const context& ctx, const domain::commodity_curve_interpolation& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,7 +111,7 @@ ores::utility::domain::precondition commodity_curve_interpolation_repository::re
 }
 
 domain::commodity_curve_interpolation commodity_curve_interpolation_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::commodity_curve_interpolation& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,12 +139,12 @@ domain::commodity_curve_interpolation commodity_curve_interpolation_repository::
 }
 
 void commodity_curve_interpolation_repository::write(
-    context ctx, const domain::commodity_curve_interpolation& v) {
+    const context& ctx, const domain::commodity_curve_interpolation& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void commodity_curve_interpolation_repository::write(
-    context ctx, const std::vector<domain::commodity_curve_interpolation>& v) {
+    const context& ctx, const std::vector<domain::commodity_curve_interpolation>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -153,7 +153,7 @@ void commodity_curve_interpolation_repository::write(
 }
 
 void commodity_curve_interpolation_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::commodity_curve_interpolation& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing commodity curve interpolation. " << "id: " << v.id;
@@ -165,7 +165,7 @@ void commodity_curve_interpolation_repository::write(
 }
 
 void commodity_curve_interpolation_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::commodity_curve_interpolation>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing commodity curve interpolations. Count: " << v.size();
@@ -180,7 +180,7 @@ void commodity_curve_interpolation_repository::write(
 }
 
 std::vector<domain::commodity_curve_interpolation>
-commodity_curve_interpolation_repository::read_latest(context ctx) {
+commodity_curve_interpolation_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<commodity_curve_interpolation_entity>> |
@@ -197,7 +197,7 @@ commodity_curve_interpolation_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::commodity_curve_interpolation>
-commodity_curve_interpolation_repository::read_latest(context ctx, const std::string& id) {
+commodity_curve_interpolation_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest commodity curve interpolation. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +216,7 @@ commodity_curve_interpolation_repository::read_latest(context ctx, const std::st
 
 
 std::vector<domain::commodity_curve_interpolation>
-commodity_curve_interpolation_repository::read_all(context ctx, const std::string& id) {
+commodity_curve_interpolation_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all commodity curve interpolation versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -234,7 +234,7 @@ commodity_curve_interpolation_repository::read_all(context ctx, const std::strin
 }
 
 std::optional<domain::commodity_curve_interpolation>
-commodity_curve_interpolation_repository::read_at_version(context ctx,
+commodity_curve_interpolation_repository::read_at_version(const context& ctx,
                                                           const std::string& id,
                                                           std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading commodity curve interpolation at version. "
@@ -260,7 +260,7 @@ commodity_curve_interpolation_repository::read_at_version(context ctx,
 
 
 commodity_curve_interpolation_repository::remove_status
-commodity_curve_interpolation_repository::remove(context ctx,
+commodity_curve_interpolation_repository::remove(const context& ctx,
                                                  const std::string& id,
                                                  std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing commodity curve interpolation. " << "id: " << id;
@@ -291,13 +291,13 @@ commodity_curve_interpolation_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void commodity_curve_interpolation_repository::remove(context ctx, const std::string& id) {
+void commodity_curve_interpolation_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::commodity_curve_interpolation>
 commodity_curve_interpolation_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -323,7 +323,7 @@ commodity_curve_interpolation_repository::read_latest(
 }
 
 std::uint32_t commodity_curve_interpolation_repository::get_total_interpolation_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::commodity_curve_interpolations_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active commodity curve interpolation count";
@@ -342,7 +342,7 @@ std::uint32_t commodity_curve_interpolation_repository::get_total_interpolation_
 }
 
 std::vector<domain::commodity_curve_interpolation>
-commodity_curve_interpolation_repository::read_latest(context ctx,
+commodity_curve_interpolation_repository::read_latest(const context& ctx,
                                                       const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -361,7 +361,7 @@ commodity_curve_interpolation_repository::read_latest(context ctx,
     return result;
 }
 
-void commodity_curve_interpolation_repository::remove(context ctx,
+void commodity_curve_interpolation_repository::remove(const context& ctx,
                                                       const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

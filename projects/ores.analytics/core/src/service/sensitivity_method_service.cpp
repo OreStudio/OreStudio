@@ -54,8 +54,8 @@ namespace ores::analytics::service {
 
 using namespace ores::logging;
 
-sensitivity_method_service::sensitivity_method_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+sensitivity_method_service::sensitivity_method_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

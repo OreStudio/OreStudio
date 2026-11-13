@@ -50,8 +50,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-lei_entity_service::lei_entity_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+lei_entity_service::lei_entity_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

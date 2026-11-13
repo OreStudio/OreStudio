@@ -54,8 +54,8 @@ namespace ores::reporting::service {
 
 using namespace ores::logging;
 
-concurrency_policy_service::concurrency_policy_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+concurrency_policy_service::concurrency_policy_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

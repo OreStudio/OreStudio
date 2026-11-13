@@ -54,8 +54,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-badge_definition_service::badge_definition_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+badge_definition_service::badge_definition_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

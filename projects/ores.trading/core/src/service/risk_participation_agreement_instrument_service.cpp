@@ -59,8 +59,8 @@ namespace ores::trading::service {
 using namespace ores::logging;
 
 risk_participation_agreement_instrument_service::risk_participation_agreement_instrument_service(
-    context ctx)
-    : ctx_(std::move(ctx)) {}
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

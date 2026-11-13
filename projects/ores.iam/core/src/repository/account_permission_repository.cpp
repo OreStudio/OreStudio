@@ -28,8 +28,8 @@ namespace ores::iam::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-account_permission_repository::account_permission_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+account_permission_repository::account_permission_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 std::vector<std::string>
 account_permission_repository::read_effective_permissions(const boost::uuids::uuid& account_id) {

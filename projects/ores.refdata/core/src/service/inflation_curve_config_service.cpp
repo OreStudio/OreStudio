@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-inflation_curve_config_service::inflation_curve_config_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+inflation_curve_config_service::inflation_curve_config_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

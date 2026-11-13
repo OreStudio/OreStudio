@@ -101,7 +101,7 @@ std::optional<query_builder::condition> day_count_fraction_type_filter_condition
 }
 
 ores::utility::domain::precondition
-day_count_fraction_type_repository::replace_claim(context ctx,
+day_count_fraction_type_repository::replace_claim(const context& ctx,
                                                   const domain::day_count_fraction_type& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
@@ -111,7 +111,7 @@ day_count_fraction_type_repository::replace_claim(context ctx,
 }
 
 domain::day_count_fraction_type
-day_count_fraction_type_repository::apply_claim(context ctx,
+day_count_fraction_type_repository::apply_claim(const context& ctx,
                                                 const domain::day_count_fraction_type& v,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,13 +138,13 @@ day_count_fraction_type_repository::apply_claim(context ctx,
     return t;
 }
 
-void day_count_fraction_type_repository::write(context ctx,
+void day_count_fraction_type_repository::write(const context& ctx,
                                                const domain::day_count_fraction_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void day_count_fraction_type_repository::write(
-    context ctx, const std::vector<domain::day_count_fraction_type>& v) {
+    const context& ctx, const std::vector<domain::day_count_fraction_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -152,7 +152,7 @@ void day_count_fraction_type_repository::write(
     write(ctx, v, claims);
 }
 
-void day_count_fraction_type_repository::write(context ctx,
+void day_count_fraction_type_repository::write(const context& ctx,
                                                const domain::day_count_fraction_type& v,
                                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing day count fraction type. " << "code: " << v.code;
@@ -164,7 +164,7 @@ void day_count_fraction_type_repository::write(context ctx,
 }
 
 void day_count_fraction_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::day_count_fraction_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing day count fraction types. Count: " << v.size();
@@ -179,7 +179,7 @@ void day_count_fraction_type_repository::write(
 }
 
 std::vector<domain::day_count_fraction_type>
-day_count_fraction_type_repository::read_latest(context ctx) {
+day_count_fraction_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<day_count_fraction_type_entity>> |
@@ -196,7 +196,7 @@ day_count_fraction_type_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::day_count_fraction_type>
-day_count_fraction_type_repository::read_latest(context ctx, const std::string& code) {
+day_count_fraction_type_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest day count fraction type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -215,7 +215,7 @@ day_count_fraction_type_repository::read_latest(context ctx, const std::string& 
 
 
 std::vector<domain::day_count_fraction_type>
-day_count_fraction_type_repository::read_all(context ctx, const std::string& code) {
+day_count_fraction_type_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all day count fraction type versions. "
                                << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -233,7 +233,7 @@ day_count_fraction_type_repository::read_all(context ctx, const std::string& cod
 }
 
 std::optional<domain::day_count_fraction_type> day_count_fraction_type_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading day count fraction type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -256,7 +256,7 @@ std::optional<domain::day_count_fraction_type> day_count_fraction_type_repositor
 }
 
 day_count_fraction_type_repository::remove_status day_count_fraction_type_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing day count fraction type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -285,12 +285,12 @@ day_count_fraction_type_repository::remove_status day_count_fraction_type_reposi
     return remove_status::removed;
 }
 
-void day_count_fraction_type_repository::remove(context ctx, const std::string& code) {
+void day_count_fraction_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::day_count_fraction_type> day_count_fraction_type_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -316,7 +316,7 @@ std::vector<domain::day_count_fraction_type> day_count_fraction_type_repository:
 }
 
 std::uint32_t day_count_fraction_type_repository::get_total_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::day_count_fraction_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active day count fraction type count";
@@ -335,7 +335,7 @@ std::uint32_t day_count_fraction_type_repository::get_total_type_count(
 }
 
 std::vector<domain::day_count_fraction_type>
-day_count_fraction_type_repository::read_latest(context ctx,
+day_count_fraction_type_repository::read_latest(const context& ctx,
                                                 const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
@@ -354,7 +354,7 @@ day_count_fraction_type_repository::read_latest(context ctx,
     return result;
 }
 
-void day_count_fraction_type_repository::remove(context ctx,
+void day_count_fraction_type_repository::remove(const context& ctx,
                                                 const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

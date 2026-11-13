@@ -44,11 +44,10 @@ static constexpr std::string_view trading_account_type_queue_group = "ores.refda
 
 std::vector<ores::nats::service::subscription> register_trading_account_type_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h =
-        std::make_shared<trading_account_type_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<trading_account_type_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_trading_account_types_request::nats_subject,
         trading_account_type_queue_group,

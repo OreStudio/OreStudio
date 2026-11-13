@@ -45,8 +45,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-report_type_configuration_type_service::report_type_configuration_type_service(context ctx)
-    : ctx_(std::move(ctx))
+report_type_configuration_type_service::report_type_configuration_type_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

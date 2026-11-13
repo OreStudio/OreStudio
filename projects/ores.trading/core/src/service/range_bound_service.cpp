@@ -57,8 +57,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-range_bound_service::range_bound_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+range_bound_service::range_bound_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -46,7 +46,7 @@ using state_names_t =
  * that cannot be told what to do would have to guess, and both guesses -- do
  * the work anyway, or drop the command -- are worse than saying which it is.
  */
-claim_step_response decide(ores::database::context ctx,
+claim_step_response decide(const ores::database::context& ctx,
                            const state_names_t& state_names,
                            repository::step_claim_repository& claim_repo,
                            repository::workflow_step_repository& step_repo,
@@ -117,7 +117,7 @@ claim_step_response decide(ores::database::context ctx,
  * @brief Decides one renewal: the lease runs a full term again only for the holder the claim
  * still names, and only while the step is in progress.
  */
-renew_step_claim_response renew(ores::database::context ctx,
+renew_step_claim_response renew(const ores::database::context& ctx,
                                 const state_names_t& state_names,
                                 repository::step_claim_repository& claim_repo,
                                 repository::workflow_step_repository& step_repo,
@@ -163,10 +163,10 @@ renew_step_claim_response renew(ores::database::context ctx,
 } // namespace
 
 workflow_claim_handler::workflow_claim_handler(ores::nats::service::client& nats,
-                                               ores::database::context ctx,
+                                               const ores::database::context& ctx,
                                                const service::fsm_state_map& step_states)
     : nats_(nats)
-    , ctx_(std::move(ctx)) {
+    , ctx_(ctx) {
 
     for (const auto& [name, uuid] : step_states.states)
         step_state_names_[uuid] = name;

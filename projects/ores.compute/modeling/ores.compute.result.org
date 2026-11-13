@@ -290,13 +290,13 @@ method beyond it.
     /**
      * @brief Reads the latest version of all results in a given server state.
      */
-    std::vector<domain::result> read_by_state(context ctx, int server_state);
+    std::vector<domain::result> read_by_state(const context& ctx, int server_state);
 #+end_src
 
 *** Repository implementations
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-std::vector<domain::result> result_repository::read_by_state(context ctx, int server_state) {
+std::vector<domain::result> result_repository::read_by_state(const context& ctx, int server_state) {
     BOOST_LOG_SEV(lg(), debug) << "Reading results by state: " << server_state;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();

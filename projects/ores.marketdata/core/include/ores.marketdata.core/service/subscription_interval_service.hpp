@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit subscription_interval_service(context ctx);
+    explicit subscription_interval_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

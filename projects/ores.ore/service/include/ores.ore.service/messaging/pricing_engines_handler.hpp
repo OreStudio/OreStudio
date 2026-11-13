@@ -61,7 +61,7 @@ private:
 
 public:
     pricing_engines_handler(ores::nats::service::client& nats,
-                            ores::database::context ctx,
+                            const ores::database::context& ctx,
                             ores::security::jwt::jwt_authenticator signer,
                             ores::nats::service::nats_client outbound_nats);
 

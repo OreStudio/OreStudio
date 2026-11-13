@@ -113,7 +113,7 @@ std::optional<query_builder::condition> counterparty_identifier_filter_condition
 }
 
 ores::utility::domain::precondition
-counterparty_identifier_repository::replace_claim(context ctx,
+counterparty_identifier_repository::replace_claim(const context& ctx,
                                                   const domain::counterparty_identifier& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -123,7 +123,7 @@ counterparty_identifier_repository::replace_claim(context ctx,
 }
 
 domain::counterparty_identifier
-counterparty_identifier_repository::apply_claim(context ctx,
+counterparty_identifier_repository::apply_claim(const context& ctx,
                                                 const domain::counterparty_identifier& v,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -150,13 +150,13 @@ counterparty_identifier_repository::apply_claim(context ctx,
     return t;
 }
 
-void counterparty_identifier_repository::write(context ctx,
+void counterparty_identifier_repository::write(const context& ctx,
                                                const domain::counterparty_identifier& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void counterparty_identifier_repository::write(
-    context ctx, const std::vector<domain::counterparty_identifier>& v) {
+    const context& ctx, const std::vector<domain::counterparty_identifier>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -164,7 +164,7 @@ void counterparty_identifier_repository::write(
     write(ctx, v, claims);
 }
 
-void counterparty_identifier_repository::write(context ctx,
+void counterparty_identifier_repository::write(const context& ctx,
                                                const domain::counterparty_identifier& v,
                                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing counterparty identifier. " << "id: " << v.id;
@@ -176,7 +176,7 @@ void counterparty_identifier_repository::write(context ctx,
 }
 
 void counterparty_identifier_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::counterparty_identifier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing counterparty identifiers. Count: " << v.size();
@@ -191,7 +191,7 @@ void counterparty_identifier_repository::write(
 }
 
 std::vector<domain::counterparty_identifier>
-counterparty_identifier_repository::read_latest(context ctx) {
+counterparty_identifier_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_identifier_entity>> |
@@ -208,7 +208,7 @@ counterparty_identifier_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::counterparty_identifier>
-counterparty_identifier_repository::read_latest(context ctx, const std::string& id) {
+counterparty_identifier_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifier. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -226,7 +226,7 @@ counterparty_identifier_repository::read_latest(context ctx, const std::string& 
 }
 
 std::vector<domain::counterparty_identifier>
-counterparty_identifier_repository::read_latest_by_code(context ctx,
+counterparty_identifier_repository::read_latest_by_code(const context& ctx,
                                                         const std::string& counterparty_id,
                                                         const std::string& id_scheme) {
     BOOST_LOG_SEV(lg(), debug)
@@ -248,7 +248,7 @@ counterparty_identifier_repository::read_latest_by_code(context ctx,
         "Reading latest counterparty identifier by id_scheme.");
 }
 std::vector<domain::counterparty_identifier>
-counterparty_identifier_repository::read_latest_by_id_value(context ctx,
+counterparty_identifier_repository::read_latest_by_id_value(const context& ctx,
                                                             const std::string& id_value) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty identifier by id_value: "
                                << id_value;
@@ -268,7 +268,8 @@ counterparty_identifier_repository::read_latest_by_id_value(context ctx,
 }
 
 std::vector<domain::counterparty_identifier>
-counterparty_identifier_repository::read_any_by_id_value(context ctx, const std::string& id_value) {
+counterparty_identifier_repository::read_any_by_id_value(const context& ctx,
+                                                         const std::string& id_value) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any counterparty identifier by id_value: " << id_value;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_identifier_entity>> |
@@ -286,7 +287,7 @@ counterparty_identifier_repository::read_any_by_id_value(context ctx, const std:
 
 
 std::vector<domain::counterparty_identifier>
-counterparty_identifier_repository::read_all(context ctx, const std::string& id) {
+counterparty_identifier_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all counterparty identifier versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<counterparty_identifier_entity>> |
@@ -303,7 +304,7 @@ counterparty_identifier_repository::read_all(context ctx, const std::string& id)
 }
 
 std::optional<domain::counterparty_identifier> counterparty_identifier_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading counterparty identifier at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -327,7 +328,7 @@ std::optional<domain::counterparty_identifier> counterparty_identifier_repositor
 
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_latest_by_counterparty_id(
-    context ctx,
+    const context& ctx,
     const std::string& counterparty_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -356,7 +357,7 @@ counterparty_identifier_repository::read_latest_by_counterparty_id(
 
 std::uint32_t
 counterparty_identifier_repository::get_total_counterparty_identifier_count_by_counterparty_id(
-    context ctx,
+    const context& ctx,
     const std::string& counterparty_id,
     const std::optional<messaging::counterparty_identifiers_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -381,7 +382,7 @@ counterparty_identifier_repository::get_total_counterparty_identifier_count_by_c
 
 std::vector<domain::counterparty_identifier>
 counterparty_identifier_repository::read_by_counterparty_id_as_of(
-    context ctx,
+    const context& ctx,
     const std::string& counterparty_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
@@ -407,7 +408,7 @@ counterparty_identifier_repository::read_by_counterparty_id_as_of(
 }
 
 counterparty_identifier_repository::remove_status counterparty_identifier_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty identifier. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -436,12 +437,12 @@ counterparty_identifier_repository::remove_status counterparty_identifier_reposi
     return remove_status::removed;
 }
 
-void counterparty_identifier_repository::remove(context ctx, const std::string& id) {
+void counterparty_identifier_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::counterparty_identifier> counterparty_identifier_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -467,7 +468,7 @@ std::vector<domain::counterparty_identifier> counterparty_identifier_repository:
 }
 
 std::uint32_t counterparty_identifier_repository::get_total_counterparty_identifier_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::counterparty_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty identifier count";
@@ -486,7 +487,8 @@ std::uint32_t counterparty_identifier_repository::get_total_counterparty_identif
 }
 
 std::vector<domain::counterparty_identifier>
-counterparty_identifier_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+counterparty_identifier_repository::read_latest(const context& ctx,
+                                                const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -504,7 +506,8 @@ counterparty_identifier_repository::read_latest(context ctx, const std::vector<s
     return result;
 }
 
-void counterparty_identifier_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void counterparty_identifier_repository::remove(const context& ctx,
+                                                const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

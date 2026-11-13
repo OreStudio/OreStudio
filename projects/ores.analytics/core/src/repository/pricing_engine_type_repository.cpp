@@ -101,7 +101,8 @@ std::optional<query_builder::condition> pricing_engine_type_filter_condition(
 }
 
 ores::utility::domain::precondition
-pricing_engine_type_repository::replace_claim(context ctx, const domain::pricing_engine_type& v) {
+pricing_engine_type_repository::replace_claim(const context& ctx,
+                                              const domain::pricing_engine_type& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +111,7 @@ pricing_engine_type_repository::replace_claim(context ctx, const domain::pricing
 }
 
 domain::pricing_engine_type
-pricing_engine_type_repository::apply_claim(context ctx,
+pricing_engine_type_repository::apply_claim(const context& ctx,
                                             const domain::pricing_engine_type& v,
                                             const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,11 +138,12 @@ pricing_engine_type_repository::apply_claim(context ctx,
     return t;
 }
 
-void pricing_engine_type_repository::write(context ctx, const domain::pricing_engine_type& v) {
+void pricing_engine_type_repository::write(const context& ctx,
+                                           const domain::pricing_engine_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void pricing_engine_type_repository::write(context ctx,
+void pricing_engine_type_repository::write(const context& ctx,
                                            const std::vector<domain::pricing_engine_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -150,7 +152,7 @@ void pricing_engine_type_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void pricing_engine_type_repository::write(context ctx,
+void pricing_engine_type_repository::write(const context& ctx,
                                            const domain::pricing_engine_type& v,
                                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing pricing engine type. " << "code: " << v.code;
@@ -160,7 +162,7 @@ void pricing_engine_type_repository::write(context ctx,
 }
 
 void pricing_engine_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::pricing_engine_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing pricing engine types. Count: " << v.size();
@@ -174,7 +176,8 @@ void pricing_engine_type_repository::write(
                                        "Writing pricing engine types to database.");
 }
 
-std::vector<domain::pricing_engine_type> pricing_engine_type_repository::read_latest(context ctx) {
+std::vector<domain::pricing_engine_type>
+pricing_engine_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<pricing_engine_type_entity>> |
@@ -191,7 +194,7 @@ std::vector<domain::pricing_engine_type> pricing_engine_type_repository::read_la
 }
 
 std::vector<domain::pricing_engine_type>
-pricing_engine_type_repository::read_latest(context ctx, const std::string& code) {
+pricing_engine_type_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing engine type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -210,7 +213,7 @@ pricing_engine_type_repository::read_latest(context ctx, const std::string& code
 
 
 std::vector<domain::pricing_engine_type>
-pricing_engine_type_repository::read_all(context ctx, const std::string& code) {
+pricing_engine_type_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all pricing engine type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<pricing_engine_type_entity>> |
@@ -227,7 +230,7 @@ pricing_engine_type_repository::read_all(context ctx, const std::string& code) {
 }
 
 std::optional<domain::pricing_engine_type> pricing_engine_type_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading pricing engine type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -250,7 +253,7 @@ std::optional<domain::pricing_engine_type> pricing_engine_type_repository::read_
 }
 
 pricing_engine_type_repository::remove_status pricing_engine_type_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing pricing engine type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -279,12 +282,12 @@ pricing_engine_type_repository::remove_status pricing_engine_type_repository::re
     return remove_status::removed;
 }
 
-void pricing_engine_type_repository::remove(context ctx, const std::string& code) {
+void pricing_engine_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::pricing_engine_type> pricing_engine_type_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -310,7 +313,7 @@ std::vector<domain::pricing_engine_type> pricing_engine_type_repository::read_la
 }
 
 std::uint32_t pricing_engine_type_repository::get_total_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::pricing_engine_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active pricing engine type count";
@@ -329,7 +332,8 @@ std::uint32_t pricing_engine_type_repository::get_total_type_count(
 }
 
 std::vector<domain::pricing_engine_type>
-pricing_engine_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+pricing_engine_type_repository::read_latest(const context& ctx,
+                                            const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -347,7 +351,8 @@ pricing_engine_type_repository::read_latest(context ctx, const std::vector<std::
     return result;
 }
 
-void pricing_engine_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void pricing_engine_type_repository::remove(const context& ctx,
+                                            const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

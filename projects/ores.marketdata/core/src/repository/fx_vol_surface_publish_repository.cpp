@@ -131,7 +131,7 @@ std::optional<query_builder::condition> fx_vol_surface_publish_filter_condition(
 }
 
 ores::utility::domain::precondition
-fx_vol_surface_publish_repository::replace_claim(context ctx,
+fx_vol_surface_publish_repository::replace_claim(const context& ctx,
                                                  const domain::fx_vol_surface_publish& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -141,7 +141,7 @@ fx_vol_surface_publish_repository::replace_claim(context ctx,
 }
 
 domain::fx_vol_surface_publish
-fx_vol_surface_publish_repository::apply_claim(context ctx,
+fx_vol_surface_publish_repository::apply_claim(const context& ctx,
                                                const domain::fx_vol_surface_publish& v,
                                                const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -168,13 +168,13 @@ fx_vol_surface_publish_repository::apply_claim(context ctx,
     return t;
 }
 
-void fx_vol_surface_publish_repository::write(context ctx,
+void fx_vol_surface_publish_repository::write(const context& ctx,
                                               const domain::fx_vol_surface_publish& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void fx_vol_surface_publish_repository::write(
-    context ctx, const std::vector<domain::fx_vol_surface_publish>& v) {
+    const context& ctx, const std::vector<domain::fx_vol_surface_publish>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -182,7 +182,7 @@ void fx_vol_surface_publish_repository::write(
     write(ctx, v, claims);
 }
 
-void fx_vol_surface_publish_repository::write(context ctx,
+void fx_vol_surface_publish_repository::write(const context& ctx,
                                               const domain::fx_vol_surface_publish& v,
                                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX volatility surface publish. " << "id: " << v.id;
@@ -194,7 +194,7 @@ void fx_vol_surface_publish_repository::write(context ctx,
 }
 
 void fx_vol_surface_publish_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::fx_vol_surface_publish>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX volatility surface publishes. Count: " << v.size();
@@ -209,7 +209,7 @@ void fx_vol_surface_publish_repository::write(
 }
 
 std::vector<domain::fx_vol_surface_publish>
-fx_vol_surface_publish_repository::read_latest(context ctx) {
+fx_vol_surface_publish_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
@@ -226,7 +226,7 @@ fx_vol_surface_publish_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::fx_vol_surface_publish>
-fx_vol_surface_publish_repository::read_latest(context ctx, const std::string& id) {
+fx_vol_surface_publish_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest FX volatility surface publish. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -245,7 +245,7 @@ fx_vol_surface_publish_repository::read_latest(context ctx, const std::string& i
 
 
 std::vector<domain::fx_vol_surface_publish>
-fx_vol_surface_publish_repository::read_all(context ctx, const std::string& id) {
+fx_vol_surface_publish_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all FX volatility surface publish versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -263,7 +263,7 @@ fx_vol_surface_publish_repository::read_all(context ctx, const std::string& id) 
 }
 
 std::optional<domain::fx_vol_surface_publish> fx_vol_surface_publish_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading FX volatility surface publish at version. "
                                << "id: " << id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -287,7 +287,7 @@ std::optional<domain::fx_vol_surface_publish> fx_vol_surface_publish_repository:
 
 std::vector<domain::fx_vol_surface_publish>
 fx_vol_surface_publish_repository::read_latest_by_request_id(
-    context ctx,
+    const context& ctx,
     const std::string& request_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -314,7 +314,7 @@ fx_vol_surface_publish_repository::read_latest_by_request_id(
 }
 
 std::uint32_t fx_vol_surface_publish_repository::get_total_publish_count_by_request_id(
-    context ctx,
+    const context& ctx,
     const std::string& request_id,
     const std::optional<messaging::fx_vol_surface_publishes_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -337,7 +337,7 @@ std::uint32_t fx_vol_surface_publish_repository::get_total_publish_count_by_requ
 
 
 fx_vol_surface_publish_repository::remove_status fx_vol_surface_publish_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing FX volatility surface publish. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -366,12 +366,12 @@ fx_vol_surface_publish_repository::remove_status fx_vol_surface_publish_reposito
     return remove_status::removed;
 }
 
-void fx_vol_surface_publish_repository::remove(context ctx, const std::string& id) {
+void fx_vol_surface_publish_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::fx_vol_surface_publish> fx_vol_surface_publish_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -397,7 +397,7 @@ std::vector<domain::fx_vol_surface_publish> fx_vol_surface_publish_repository::r
 }
 
 std::uint32_t fx_vol_surface_publish_repository::get_total_publish_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::fx_vol_surface_publishes_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active FX volatility surface publish count";
@@ -416,7 +416,8 @@ std::uint32_t fx_vol_surface_publish_repository::get_total_publish_count(
 }
 
 std::vector<domain::fx_vol_surface_publish>
-fx_vol_surface_publish_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+fx_vol_surface_publish_repository::read_latest(const context& ctx,
+                                               const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -434,7 +435,8 @@ fx_vol_surface_publish_repository::read_latest(context ctx, const std::vector<st
     return result;
 }
 
-void fx_vol_surface_publish_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void fx_vol_surface_publish_repository::remove(const context& ctx,
+                                               const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -454,7 +456,7 @@ void fx_vol_surface_publish_repository::remove(context ctx, const std::vector<st
 
 
 std::optional<domain::fx_vol_surface_publish>
-fx_vol_surface_publish_repository::read_latest_by_request(context ctx,
+fx_vol_surface_publish_repository::read_latest_by_request(const context& ctx,
                                                           const std::string& request_id) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -474,7 +476,7 @@ fx_vol_surface_publish_repository::read_latest_by_request(context ctx,
 }
 
 std::vector<domain::fx_vol_surface_publish>
-fx_vol_surface_publish_repository::read_live_for_series(context ctx,
+fx_vol_surface_publish_repository::read_live_for_series(const context& ctx,
                                                         const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the live sets of series: " << series_id;
     static constexpr auto max = db_timestamp::max();
@@ -509,7 +511,7 @@ fx_vol_surface_publish_repository::read_live_for_series(context ctx,
 
 std::vector<domain::fx_vol_surface_publish>
 fx_vol_surface_publish_repository::read_published_for_blueprint(
-    context ctx, const boost::uuids::uuid& blueprint_id) {
+    const context& ctx, const boost::uuids::uuid& blueprint_id) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto bid = boost::uuids::to_string(blueprint_id);

@@ -28,7 +28,7 @@ namespace ores::workflow::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-std::optional<int> step_claim_repository::claim(context ctx,
+std::optional<int> step_claim_repository::claim(const context& ctx,
                                                 const boost::uuids::uuid& step_id,
                                                 const boost::uuids::uuid& work_tenant_id,
                                                 const std::string& owner,
@@ -71,7 +71,7 @@ std::optional<int> step_claim_repository::claim(context ctx,
     return std::stoi(*rows.front()[1]);
 }
 
-bool step_claim_repository::renew(context ctx,
+bool step_claim_repository::renew(const context& ctx,
                                   const boost::uuids::uuid& step_id,
                                   const std::string& owner,
                                   std::chrono::seconds lease,
@@ -112,7 +112,7 @@ bool step_claim_repository::renew(context ctx,
     return !rows.empty();
 }
 
-bool step_claim_repository::release(context ctx, const boost::uuids::uuid& step_id) {
+bool step_claim_repository::release(const context& ctx, const boost::uuids::uuid& step_id) {
     // No owner predicate. The engine writes the step's state away from
     // in_progress, and that write is what decides the work is over; the claim
     // only governed the window while it was in flight. Naming the holder here
@@ -137,7 +137,7 @@ bool step_claim_repository::release(context ctx, const boost::uuids::uuid& step_
 }
 
 std::optional<step_claim_activity>
-step_claim_repository::activity(context ctx, const boost::uuids::uuid& step_id) {
+step_claim_repository::activity(const context& ctx, const boost::uuids::uuid& step_id) {
     static const std::string sql = R"(
         SELECT claimed_at, progressed_at, progress, progress_done, progress_total
             FROM ores_workflow_step_claims_tbl WHERE step_id = $1::uuid
@@ -161,7 +161,7 @@ step_claim_repository::activity(context ctx, const boost::uuids::uuid& step_id) 
     return result;
 }
 
-std::optional<std::string> step_claim_repository::holder(context ctx,
+std::optional<std::string> step_claim_repository::holder(const context& ctx,
                                                          const boost::uuids::uuid& step_id) {
     static const std::string sql =
         "SELECT owner FROM ores_workflow_step_claims_tbl WHERE step_id = $1::uuid";

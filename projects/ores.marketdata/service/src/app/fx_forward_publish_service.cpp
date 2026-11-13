@@ -298,7 +298,8 @@ void approval_of(const context& ctx, msg::get_published_fx_forward_response& out
 }
 
 msg::publish_fx_forward_response
-fx_forward_publish_service::publish(context ctx, const msg::publish_fx_forward_request& req) {
+fx_forward_publish_service::publish(const context& ctx,
+                                    const msg::publish_fx_forward_request& req) {
     msg::publish_fx_forward_response resp;
     try {
         const auto party = ores::service::messaging::session_party(ctx, "A forward set");
@@ -352,7 +353,8 @@ fx_forward_publish_service::publish(context ctx, const msg::publish_fx_forward_r
 }
 
 msg::get_published_fx_forward_response
-fx_forward_publish_service::read(context ctx, const msg::get_published_fx_forward_request& req) {
+fx_forward_publish_service::read(const context& ctx,
+                                 const msg::get_published_fx_forward_request& req) {
     msg::get_published_fx_forward_response out;
     out.pair_code = req.pair_code;
     try {

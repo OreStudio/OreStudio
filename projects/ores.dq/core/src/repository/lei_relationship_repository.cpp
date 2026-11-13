@@ -102,7 +102,7 @@ std::optional<query_builder::condition> lei_relationship_filter_condition(
 }
 
 ores::utility::domain::precondition
-lei_relationship_repository::replace_claim(context ctx, const domain::lei_relationship& v) {
+lei_relationship_repository::replace_claim(const context& ctx, const domain::lei_relationship& v) {
     const auto current = read_latest(ctx, v.relationship_start_node_node_id);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -113,7 +113,7 @@ lei_relationship_repository::replace_claim(context ctx, const domain::lei_relati
 }
 
 domain::lei_relationship
-lei_relationship_repository::apply_claim(context ctx,
+lei_relationship_repository::apply_claim(const context& ctx,
                                          const domain::lei_relationship& v,
                                          const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -129,11 +129,11 @@ lei_relationship_repository::apply_claim(context ctx,
     return t;
 }
 
-void lei_relationship_repository::write(context ctx, const domain::lei_relationship& v) {
+void lei_relationship_repository::write(const context& ctx, const domain::lei_relationship& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void lei_relationship_repository::write(context ctx,
+void lei_relationship_repository::write(const context& ctx,
                                         const std::vector<domain::lei_relationship>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -142,7 +142,7 @@ void lei_relationship_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void lei_relationship_repository::write(context ctx,
+void lei_relationship_repository::write(const context& ctx,
                                         const domain::lei_relationship& v,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing LEI relationship. "
@@ -157,7 +157,7 @@ void lei_relationship_repository::write(context ctx,
 }
 
 void lei_relationship_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::lei_relationship>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing LEI relationships. Count: " << v.size();
@@ -172,7 +172,7 @@ void lei_relationship_repository::write(
         "Writing LEI relationships to database.");
 }
 
-std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(context ctx) {
+std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(const context& ctx) {
     const auto query = query_builder::read<std::vector<lei_relationship_entity>> |
                        query_builder::order_by("relationship_start_node_node_id"_c);
 
@@ -185,7 +185,7 @@ std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(c
 }
 
 std::vector<domain::lei_relationship>
-lei_relationship_repository::read_latest(context ctx,
+lei_relationship_repository::read_latest(const context& ctx,
                                          const std::string& relationship_start_node_node_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest LEI relationship. "
                                << "relationship_start_node_node_id: "
@@ -204,7 +204,7 @@ lei_relationship_repository::read_latest(context ctx,
 
 
 std::vector<domain::lei_relationship>
-lei_relationship_repository::read_all(context ctx,
+lei_relationship_repository::read_all(const context& ctx,
                                       const std::string& relationship_start_node_node_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all LEI relationship versions. "
                                << "relationship_start_node_node_id: "
@@ -224,7 +224,7 @@ lei_relationship_repository::read_all(context ctx,
 
 
 lei_relationship_repository::remove_status
-lei_relationship_repository::remove(context ctx,
+lei_relationship_repository::remove(const context& ctx,
                                     const std::string& relationship_start_node_node_id,
                                     std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing LEI relationship. "
@@ -248,13 +248,13 @@ lei_relationship_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void lei_relationship_repository::remove(context ctx,
+void lei_relationship_repository::remove(const context& ctx,
                                          const std::string& relationship_start_node_node_id) {
     static_cast<void>(remove(ctx, relationship_start_node_node_id, std::nullopt));
 }
 
 std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -276,7 +276,7 @@ std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(
 }
 
 std::uint32_t lei_relationship_repository::get_total_relationship_count(
-    context ctx, const std::optional<messaging::lei_relationships_filter>& filter) {
+    const context& ctx, const std::optional<messaging::lei_relationships_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active LEI relationship count";
 
     const auto query = query_builder::read<std::vector<lei_relationship_entity>>;
@@ -286,7 +286,7 @@ std::uint32_t lei_relationship_repository::get_total_relationship_count(
 }
 
 std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(
-    context ctx, const std::vector<std::string>& relationship_start_node_node_ids) {
+    const context& ctx, const std::vector<std::string>& relationship_start_node_node_ids) {
     if (relationship_start_node_node_ids.empty())
         return {};
     const auto query = query_builder::read<std::vector<lei_relationship_entity>> |
@@ -303,7 +303,7 @@ std::vector<domain::lei_relationship> lei_relationship_repository::read_latest(
 }
 
 void lei_relationship_repository::remove(
-    context ctx, const std::vector<std::string>& relationship_start_node_node_ids) {
+    const context& ctx, const std::vector<std::string>& relationship_start_node_node_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

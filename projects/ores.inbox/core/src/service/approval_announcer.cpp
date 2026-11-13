@@ -28,8 +28,8 @@ namespace ores::inbox::service {
 
 using namespace ores::logging;
 
-approval_announcer::approval_announcer(ores::database::context ctx)
-    : ctx_(std::move(ctx)) {}
+approval_announcer::approval_announcer(const ores::database::context& ctx)
+    : ctx_(ctx) {}
 
 void approval_announcer::tell_open_parts(approval_lifecycle& lifecycle,
                                          const domain::approval_kind& kind,

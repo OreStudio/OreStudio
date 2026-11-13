@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-curve_segment_ibor_fallback_service::curve_segment_ibor_fallback_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+curve_segment_ibor_fallback_service::curve_segment_ibor_fallback_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

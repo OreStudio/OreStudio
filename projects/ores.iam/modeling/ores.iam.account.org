@@ -495,11 +495,11 @@ because a tenant also reads the shared rows of the system tenant, and an
 export of a tenant's accounts is not an export of the platform's.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-    std::vector<domain::account> read_all(context ctx);
+    std::vector<domain::account> read_all(const context& ctx);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-std::vector<domain::account> account_repository::read_all(context ctx) {
+std::vector<domain::account> account_repository::read_all(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::order_by("valid_from"_c.desc());
@@ -528,12 +528,12 @@ the super admin for a tenant user. The login flow takes its tenant from the
 host name before it looks the account up.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-    std::vector<domain::account> read_latest_by_username(context ctx, const std::string& username);
+    std::vector<domain::account> read_latest_by_username(const context& ctx, const std::string& username);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::account>
-account_repository::read_latest_by_username(context ctx, const std::string& username) {
+account_repository::read_latest_by_username(const context& ctx, const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
     static constexpr auto max = db_timestamp::max();
@@ -563,12 +563,12 @@ declared here rather than forcing those callers onto a full table scan. It
 names the session's tenant, for the same reason as the username read.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-    std::vector<domain::account> read_latest_by_email(context ctx, const std::string& email);
+    std::vector<domain::account> read_latest_by_email(const context& ctx, const std::string& email);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::account>
-account_repository::read_latest_by_email(context ctx, const std::string& email) {
+account_repository::read_latest_by_email(const context& ctx, const std::string& email) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
 
     static constexpr auto max = db_timestamp::max();

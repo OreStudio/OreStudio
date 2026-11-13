@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-base_correlation_config_service::base_correlation_config_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+base_correlation_config_service::base_correlation_config_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

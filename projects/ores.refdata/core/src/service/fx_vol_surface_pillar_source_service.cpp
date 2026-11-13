@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-fx_vol_surface_pillar_source_service::fx_vol_surface_pillar_source_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+fx_vol_surface_pillar_source_service::fx_vol_surface_pillar_source_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

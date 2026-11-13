@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit currency_pair_convention_calendar_service(context ctx);
+    explicit currency_pair_convention_calendar_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

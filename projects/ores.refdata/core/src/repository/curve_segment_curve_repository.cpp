@@ -102,7 +102,8 @@ std::optional<query_builder::condition> curve_segment_curve_filter_condition(
 }
 
 ores::utility::domain::precondition
-curve_segment_curve_repository::replace_claim(context ctx, const domain::curve_segment_curve& v) {
+curve_segment_curve_repository::replace_claim(const context& ctx,
+                                              const domain::curve_segment_curve& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,7 +112,7 @@ curve_segment_curve_repository::replace_claim(context ctx, const domain::curve_s
 }
 
 domain::curve_segment_curve
-curve_segment_curve_repository::apply_claim(context ctx,
+curve_segment_curve_repository::apply_claim(const context& ctx,
                                             const domain::curve_segment_curve& v,
                                             const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,11 +139,12 @@ curve_segment_curve_repository::apply_claim(context ctx,
     return t;
 }
 
-void curve_segment_curve_repository::write(context ctx, const domain::curve_segment_curve& v) {
+void curve_segment_curve_repository::write(const context& ctx,
+                                           const domain::curve_segment_curve& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void curve_segment_curve_repository::write(context ctx,
+void curve_segment_curve_repository::write(const context& ctx,
                                            const std::vector<domain::curve_segment_curve>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -151,7 +153,7 @@ void curve_segment_curve_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void curve_segment_curve_repository::write(context ctx,
+void curve_segment_curve_repository::write(const context& ctx,
                                            const domain::curve_segment_curve& v,
                                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve segment curve. " << "id: " << v.id;
@@ -161,7 +163,7 @@ void curve_segment_curve_repository::write(context ctx,
 }
 
 void curve_segment_curve_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::curve_segment_curve>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve segment curves. Count: " << v.size();
@@ -175,7 +177,8 @@ void curve_segment_curve_repository::write(
                                        "Writing curve segment curves to database.");
 }
 
-std::vector<domain::curve_segment_curve> curve_segment_curve_repository::read_latest(context ctx) {
+std::vector<domain::curve_segment_curve>
+curve_segment_curve_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_segment_curve_entity>> |
@@ -192,7 +195,7 @@ std::vector<domain::curve_segment_curve> curve_segment_curve_repository::read_la
 }
 
 std::vector<domain::curve_segment_curve>
-curve_segment_curve_repository::read_latest(context ctx, const std::string& id) {
+curve_segment_curve_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest curve segment curve. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -211,7 +214,7 @@ curve_segment_curve_repository::read_latest(context ctx, const std::string& id) 
 
 
 std::vector<domain::curve_segment_curve>
-curve_segment_curve_repository::read_all(context ctx, const std::string& id) {
+curve_segment_curve_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all curve segment curve versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_segment_curve_entity>> |
@@ -228,7 +231,7 @@ curve_segment_curve_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::curve_segment_curve> curve_segment_curve_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading curve segment curve at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -252,7 +255,7 @@ std::optional<domain::curve_segment_curve> curve_segment_curve_repository::read_
 
 
 curve_segment_curve_repository::remove_status curve_segment_curve_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing curve segment curve. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -281,12 +284,12 @@ curve_segment_curve_repository::remove_status curve_segment_curve_repository::re
     return remove_status::removed;
 }
 
-void curve_segment_curve_repository::remove(context ctx, const std::string& id) {
+void curve_segment_curve_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::curve_segment_curve> curve_segment_curve_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -312,7 +315,7 @@ std::vector<domain::curve_segment_curve> curve_segment_curve_repository::read_la
 }
 
 std::uint32_t curve_segment_curve_repository::get_total_segment_curve_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::curve_segment_curves_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active curve segment curve count";
@@ -331,7 +334,8 @@ std::uint32_t curve_segment_curve_repository::get_total_segment_curve_count(
 }
 
 std::vector<domain::curve_segment_curve>
-curve_segment_curve_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+curve_segment_curve_repository::read_latest(const context& ctx,
+                                            const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -349,7 +353,8 @@ curve_segment_curve_repository::read_latest(context ctx, const std::vector<std::
     return result;
 }
 
-void curve_segment_curve_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void curve_segment_curve_repository::remove(const context& ctx,
+                                            const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

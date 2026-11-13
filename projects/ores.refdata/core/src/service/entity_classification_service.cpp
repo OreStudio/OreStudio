@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-entity_classification_service::entity_classification_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+entity_classification_service::entity_classification_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

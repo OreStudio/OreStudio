@@ -101,7 +101,7 @@ login_info_filter_condition(const std::optional<messaging::login_info_filter>& f
 }
 
 ores::utility::domain::precondition
-login_info_repository::replace_claim(context ctx, const domain::login_info& v) {
+login_info_repository::replace_claim(const context& ctx, const domain::login_info& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.account_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,8 +111,10 @@ login_info_repository::replace_claim(context ctx, const domain::login_info& v) {
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::login_info login_info_repository::apply_claim(
-    context ctx, const domain::login_info& v, const ores::utility::domain::precondition& claim) {
+domain::login_info
+login_info_repository::apply_claim(const context& ctx,
+                                   const domain::login_info& v,
+                                   const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
@@ -125,11 +127,11 @@ domain::login_info login_info_repository::apply_claim(
     return t;
 }
 
-void login_info_repository::write(context ctx, const domain::login_info& v) {
+void login_info_repository::write(const context& ctx, const domain::login_info& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void login_info_repository::write(context ctx, const std::vector<domain::login_info>& v) {
+void login_info_repository::write(const context& ctx, const std::vector<domain::login_info>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -137,7 +139,7 @@ void login_info_repository::write(context ctx, const std::vector<domain::login_i
     write(ctx, v, claims);
 }
 
-void login_info_repository::write(context ctx,
+void login_info_repository::write(const context& ctx,
                                   const domain::login_info& v,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing login info. " << "account_id: " << v.account_id;
@@ -148,7 +150,7 @@ void login_info_repository::write(context ctx,
                                     "Writing login info to database.");
 }
 
-void login_info_repository::write(context ctx,
+void login_info_repository::write(const context& ctx,
                                   const std::vector<domain::login_info>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing login info. Count: " << v.size();
@@ -162,7 +164,7 @@ void login_info_repository::write(context ctx,
                                     "Writing login info to database.");
 }
 
-std::vector<domain::login_info> login_info_repository::read_latest(context ctx) {
+std::vector<domain::login_info> login_info_repository::read_latest(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<login_info_entity>> |
                        query_builder::where("tenant_id"_c == tid) |
@@ -176,7 +178,7 @@ std::vector<domain::login_info> login_info_repository::read_latest(context ctx) 
         "Reading latest login info");
 }
 
-std::vector<domain::login_info> login_info_repository::read_latest(context ctx,
+std::vector<domain::login_info> login_info_repository::read_latest(const context& ctx,
                                                                    const std::string& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest login info. " << "account_id: " << account_id;
     const auto tid = ctx.tenant_id().to_string();
@@ -192,7 +194,7 @@ std::vector<domain::login_info> login_info_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::login_info> login_info_repository::read_all(context ctx,
+std::vector<domain::login_info> login_info_repository::read_all(const context& ctx,
                                                                 const std::string& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all login info versions. "
                                << "account_id: " << account_id;
@@ -211,7 +213,7 @@ std::vector<domain::login_info> login_info_repository::read_all(context ctx,
 
 
 login_info_repository::remove_status login_info_repository::remove(
-    context ctx, const std::string& account_id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& account_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing login info. " << "account_id: " << account_id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -228,12 +230,12 @@ login_info_repository::remove_status login_info_repository::remove(
     return remove_status::removed;
 }
 
-void login_info_repository::remove(context ctx, const std::string& account_id) {
+void login_info_repository::remove(const context& ctx, const std::string& account_id) {
     static_cast<void>(remove(ctx, account_id, std::nullopt));
 }
 
 std::vector<domain::login_info>
-login_info_repository::read_latest(context ctx,
+login_info_repository::read_latest(const context& ctx,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order,
@@ -256,7 +258,7 @@ login_info_repository::read_latest(context ctx,
 }
 
 std::uint32_t login_info_repository::get_total_login_info_count(
-    context ctx, const std::optional<messaging::login_info_filter>& filter) {
+    const context& ctx, const std::optional<messaging::login_info_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active login info count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -268,7 +270,8 @@ std::uint32_t login_info_repository::get_total_login_info_count(
 }
 
 std::vector<domain::login_info>
-login_info_repository::read_latest(context ctx, const std::vector<std::string>& account_ids) {
+login_info_repository::read_latest(const context& ctx,
+                                   const std::vector<std::string>& account_ids) {
     if (account_ids.empty())
         return {};
     const auto tid = ctx.tenant_id().to_string();
@@ -283,7 +286,8 @@ login_info_repository::read_latest(context ctx, const std::vector<std::string>& 
     return result;
 }
 
-void login_info_repository::remove(context ctx, const std::vector<std::string>& account_ids) {
+void login_info_repository::remove(const context& ctx,
+                                   const std::vector<std::string>& account_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

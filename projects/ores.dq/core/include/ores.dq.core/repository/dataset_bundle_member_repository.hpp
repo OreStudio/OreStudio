@@ -75,7 +75,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit dataset_bundle_member_repository(context ctx);
+    explicit dataset_bundle_member_repository(const context& ctx);
 
     std::string sql();
 

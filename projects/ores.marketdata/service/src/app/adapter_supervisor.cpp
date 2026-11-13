@@ -60,10 +60,10 @@ struct adapter_supervisor::snapshot {
 };
 
 adapter_supervisor::adapter_supervisor(ores::nats::service::client& nats,
-                                       ores::database::context ctx,
+                                       const ores::database::context& ctx,
                                        std::chrono::milliseconds heartbeat_timeout)
     : nats_(nats)
-    , ctx_(std::move(ctx))
+    , ctx_(ctx)
     , registry_(heartbeat_timeout)
     , snapshot_(std::make_shared<snapshot>()) {}
 

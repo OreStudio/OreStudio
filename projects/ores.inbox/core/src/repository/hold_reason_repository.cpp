@@ -101,7 +101,7 @@ hold_reason_filter_condition(const std::optional<messaging::hold_reasons_filter>
 }
 
 ores::utility::domain::precondition
-hold_reason_repository::replace_claim(context ctx, const domain::hold_reason& v) {
+hold_reason_repository::replace_claim(const context& ctx, const domain::hold_reason& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -109,8 +109,10 @@ hold_reason_repository::replace_claim(context ctx, const domain::hold_reason& v)
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::hold_reason hold_reason_repository::apply_claim(
-    context ctx, const domain::hold_reason& v, const ores::utility::domain::precondition& claim) {
+domain::hold_reason
+hold_reason_repository::apply_claim(const context& ctx,
+                                    const domain::hold_reason& v,
+                                    const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -135,11 +137,11 @@ domain::hold_reason hold_reason_repository::apply_claim(
     return t;
 }
 
-void hold_reason_repository::write(context ctx, const domain::hold_reason& v) {
+void hold_reason_repository::write(const context& ctx, const domain::hold_reason& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void hold_reason_repository::write(context ctx, const std::vector<domain::hold_reason>& v) {
+void hold_reason_repository::write(const context& ctx, const std::vector<domain::hold_reason>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -147,7 +149,7 @@ void hold_reason_repository::write(context ctx, const std::vector<domain::hold_r
     write(ctx, v, claims);
 }
 
-void hold_reason_repository::write(context ctx,
+void hold_reason_repository::write(const context& ctx,
                                    const domain::hold_reason& v,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing hold reason. " << "code: " << v.code;
@@ -156,7 +158,7 @@ void hold_reason_repository::write(context ctx,
         ctx, hold_reason_mapper::map(t), lg(), "Writing hold reason to database.");
 }
 
-void hold_reason_repository::write(context ctx,
+void hold_reason_repository::write(const context& ctx,
                                    const std::vector<domain::hold_reason>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing hold reasons. Count: " << v.size();
@@ -168,7 +170,7 @@ void hold_reason_repository::write(context ctx,
         ctx, hold_reason_mapper::map(batch), lg(), "Writing hold reasons to database.");
 }
 
-std::vector<domain::hold_reason> hold_reason_repository::read_latest(context ctx) {
+std::vector<domain::hold_reason> hold_reason_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -185,7 +187,7 @@ std::vector<domain::hold_reason> hold_reason_repository::read_latest(context ctx
         "Reading latest hold reasons");
 }
 
-std::vector<domain::hold_reason> hold_reason_repository::read_latest(context ctx,
+std::vector<domain::hold_reason> hold_reason_repository::read_latest(const context& ctx,
                                                                      const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest hold reason. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -204,7 +206,7 @@ std::vector<domain::hold_reason> hold_reason_repository::read_latest(context ctx
 }
 
 
-std::vector<domain::hold_reason> hold_reason_repository::read_all(context ctx,
+std::vector<domain::hold_reason> hold_reason_repository::read_all(const context& ctx,
                                                                   const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all hold reason versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -222,7 +224,7 @@ std::vector<domain::hold_reason> hold_reason_repository::read_all(context ctx,
         "Reading all hold reason versions by code.");
 }
 
-std::optional<domain::hold_reason> hold_reason_repository::read_at_version(context ctx,
+std::optional<domain::hold_reason> hold_reason_repository::read_at_version(const context& ctx,
                                                                            const std::string& code,
                                                                            std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading hold reason at version. " << "code: " << code
@@ -248,7 +250,7 @@ std::optional<domain::hold_reason> hold_reason_repository::read_at_version(conte
 }
 
 hold_reason_repository::remove_status hold_reason_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing hold reason. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -276,12 +278,12 @@ hold_reason_repository::remove_status hold_reason_repository::remove(
     return remove_status::removed;
 }
 
-void hold_reason_repository::remove(context ctx, const std::string& code) {
+void hold_reason_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::hold_reason>
-hold_reason_repository::read_latest(context ctx,
+hold_reason_repository::read_latest(const context& ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
@@ -307,7 +309,7 @@ hold_reason_repository::read_latest(context ctx,
 }
 
 std::uint32_t hold_reason_repository::get_total_reason_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::hold_reasons_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active hold reason count";
@@ -327,7 +329,7 @@ std::uint32_t hold_reason_repository::get_total_reason_count(
 }
 
 std::vector<domain::hold_reason>
-hold_reason_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+hold_reason_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -345,7 +347,7 @@ hold_reason_repository::read_latest(context ctx, const std::vector<std::string>&
     return result;
 }
 
-void hold_reason_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void hold_reason_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

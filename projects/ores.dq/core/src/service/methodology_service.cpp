@@ -58,8 +58,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-methodology_service::methodology_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+methodology_service::methodology_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

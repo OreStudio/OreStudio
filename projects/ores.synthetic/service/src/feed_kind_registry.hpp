@@ -21,7 +21,7 @@
 #define ORES_SYNTHETIC_SERVICE_FEED_KIND_REGISTRY_HPP
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/vendor/quote_description.hpp"

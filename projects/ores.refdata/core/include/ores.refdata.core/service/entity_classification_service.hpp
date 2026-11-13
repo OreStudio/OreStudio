@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit entity_classification_service(context ctx);
+    explicit entity_classification_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

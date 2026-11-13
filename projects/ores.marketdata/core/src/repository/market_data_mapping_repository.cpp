@@ -123,7 +123,8 @@ std::optional<query_builder::condition> market_data_mapping_filter_condition(
 }
 
 ores::utility::domain::precondition
-market_data_mapping_repository::replace_claim(context ctx, const domain::market_data_mapping& v) {
+market_data_mapping_repository::replace_claim(const context& ctx,
+                                              const domain::market_data_mapping& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -132,7 +133,7 @@ market_data_mapping_repository::replace_claim(context ctx, const domain::market_
 }
 
 domain::market_data_mapping
-market_data_mapping_repository::apply_claim(context ctx,
+market_data_mapping_repository::apply_claim(const context& ctx,
                                             const domain::market_data_mapping& v,
                                             const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -159,11 +160,12 @@ market_data_mapping_repository::apply_claim(context ctx,
     return t;
 }
 
-void market_data_mapping_repository::write(context ctx, const domain::market_data_mapping& v) {
+void market_data_mapping_repository::write(const context& ctx,
+                                           const domain::market_data_mapping& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void market_data_mapping_repository::write(context ctx,
+void market_data_mapping_repository::write(const context& ctx,
                                            const std::vector<domain::market_data_mapping>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -172,7 +174,7 @@ void market_data_mapping_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void market_data_mapping_repository::write(context ctx,
+void market_data_mapping_repository::write(const context& ctx,
                                            const domain::market_data_mapping& v,
                                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market data mapping. " << "id: " << v.id;
@@ -182,7 +184,7 @@ void market_data_mapping_repository::write(context ctx,
 }
 
 void market_data_mapping_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::market_data_mapping>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market data mappings. Count: " << v.size();
@@ -196,7 +198,8 @@ void market_data_mapping_repository::write(
                                        "Writing market data mappings to database.");
 }
 
-std::vector<domain::market_data_mapping> market_data_mapping_repository::read_latest(context ctx) {
+std::vector<domain::market_data_mapping>
+market_data_mapping_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -215,7 +218,7 @@ std::vector<domain::market_data_mapping> market_data_mapping_repository::read_la
 }
 
 std::vector<domain::market_data_mapping>
-market_data_mapping_repository::read_latest(context ctx, const std::string& id) {
+market_data_mapping_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market data mapping. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -234,7 +237,7 @@ market_data_mapping_repository::read_latest(context ctx, const std::string& id) 
 }
 
 std::vector<domain::market_data_mapping>
-market_data_mapping_repository::read_latest_by_oresmd_uri(context ctx,
+market_data_mapping_repository::read_latest_by_oresmd_uri(const context& ctx,
                                                           const std::string& oresmd_uri) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market data mapping by oresmd_uri: "
                                << oresmd_uri;
@@ -255,7 +258,8 @@ market_data_mapping_repository::read_latest_by_oresmd_uri(context ctx,
 }
 
 std::vector<domain::market_data_mapping>
-market_data_mapping_repository::read_any_by_oresmd_uri(context ctx, const std::string& oresmd_uri) {
+market_data_mapping_repository::read_any_by_oresmd_uri(const context& ctx,
+                                                       const std::string& oresmd_uri) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any market data mapping by oresmd_uri: " << oresmd_uri;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -275,7 +279,7 @@ market_data_mapping_repository::read_any_by_oresmd_uri(context ctx, const std::s
 
 
 std::vector<domain::market_data_mapping>
-market_data_mapping_repository::read_all(context ctx, const std::string& id) {
+market_data_mapping_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market data mapping versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -294,7 +298,7 @@ market_data_mapping_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::market_data_mapping> market_data_mapping_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading market data mapping at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -318,7 +322,7 @@ std::optional<domain::market_data_mapping> market_data_mapping_repository::read_
 }
 
 market_data_mapping_repository::remove_status market_data_mapping_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing market data mapping. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -347,12 +351,12 @@ market_data_mapping_repository::remove_status market_data_mapping_repository::re
     return remove_status::removed;
 }
 
-void market_data_mapping_repository::remove(context ctx, const std::string& id) {
+void market_data_mapping_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::market_data_mapping> market_data_mapping_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -379,7 +383,7 @@ std::vector<domain::market_data_mapping> market_data_mapping_repository::read_la
 }
 
 std::uint32_t market_data_mapping_repository::get_total_mapping_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::market_data_mappings_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market data mapping count";
@@ -399,7 +403,8 @@ std::uint32_t market_data_mapping_repository::get_total_mapping_count(
 }
 
 std::vector<domain::market_data_mapping>
-market_data_mapping_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+market_data_mapping_repository::read_latest(const context& ctx,
+                                            const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -418,7 +423,8 @@ market_data_mapping_repository::read_latest(context ctx, const std::vector<std::
     return result;
 }
 
-void market_data_mapping_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void market_data_mapping_repository::remove(const context& ctx,
+                                            const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

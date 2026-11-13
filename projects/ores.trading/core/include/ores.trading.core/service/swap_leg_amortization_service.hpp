@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit swap_leg_amortization_service(context ctx);
+    explicit swap_leg_amortization_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -54,8 +54,8 @@ namespace ores::analytics::service {
 
 using namespace ores::logging;
 
-stress_shift_family_service::stress_shift_family_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+stress_shift_family_service::stress_shift_family_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

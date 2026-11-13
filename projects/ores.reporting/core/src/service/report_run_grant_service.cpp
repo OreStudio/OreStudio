@@ -47,10 +47,10 @@ std::string resource_of(const domain::report_definition& def) {
 
 }
 
-report_run_grant_service::report_run_grant_service(ores::database::context ctx,
+report_run_grant_service::report_run_grant_service(const ores::database::context& ctx,
                                                    ores::nats::service::nats_client person_nats)
-    : ctx_(std::move(ctx))
-    , person_nats_(std::move(person_nats)) {}
+    : ctx_(ctx)
+    , person_nats_(person_nats) {}
 
 std::expected<boost::uuids::uuid, std::string>
 report_run_grant_service::create(const domain::report_definition& def) {

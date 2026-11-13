@@ -54,8 +54,8 @@ namespace ores::inbox::service {
 
 using namespace ores::logging;
 
-hold_reason_service::hold_reason_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+hold_reason_service::hold_reason_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

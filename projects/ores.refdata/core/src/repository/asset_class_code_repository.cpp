@@ -100,7 +100,7 @@ std::optional<query_builder::condition> asset_class_code_filter_condition(
 }
 
 ores::utility::domain::precondition
-asset_class_code_repository::replace_claim(context ctx, const domain::asset_class_code& v) {
+asset_class_code_repository::replace_claim(const context& ctx, const domain::asset_class_code& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -109,7 +109,7 @@ asset_class_code_repository::replace_claim(context ctx, const domain::asset_clas
 }
 
 domain::asset_class_code
-asset_class_code_repository::apply_claim(context ctx,
+asset_class_code_repository::apply_claim(const context& ctx,
                                          const domain::asset_class_code& v,
                                          const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -136,11 +136,11 @@ asset_class_code_repository::apply_claim(context ctx,
     return t;
 }
 
-void asset_class_code_repository::write(context ctx, const domain::asset_class_code& v) {
+void asset_class_code_repository::write(const context& ctx, const domain::asset_class_code& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void asset_class_code_repository::write(context ctx,
+void asset_class_code_repository::write(const context& ctx,
                                         const std::vector<domain::asset_class_code>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -149,7 +149,7 @@ void asset_class_code_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void asset_class_code_repository::write(context ctx,
+void asset_class_code_repository::write(const context& ctx,
                                         const domain::asset_class_code& v,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset class code. " << "code: " << v.code;
@@ -159,7 +159,7 @@ void asset_class_code_repository::write(context ctx,
 }
 
 void asset_class_code_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::asset_class_code>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset class codes. Count: " << v.size();
@@ -171,7 +171,7 @@ void asset_class_code_repository::write(
         ctx, asset_class_code_mapper::map(batch), lg(), "Writing asset class codes to database.");
 }
 
-std::vector<domain::asset_class_code> asset_class_code_repository::read_latest(context ctx) {
+std::vector<domain::asset_class_code> asset_class_code_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<asset_class_code_entity>> |
@@ -187,7 +187,7 @@ std::vector<domain::asset_class_code> asset_class_code_repository::read_latest(c
 }
 
 std::vector<domain::asset_class_code>
-asset_class_code_repository::read_latest(context ctx, const std::string& code) {
+asset_class_code_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset class code. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -205,7 +205,7 @@ asset_class_code_repository::read_latest(context ctx, const std::string& code) {
 
 
 std::vector<domain::asset_class_code>
-asset_class_code_repository::read_all(context ctx, const std::string& code) {
+asset_class_code_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all asset class code versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<asset_class_code_entity>> |
@@ -221,7 +221,7 @@ asset_class_code_repository::read_all(context ctx, const std::string& code) {
 }
 
 std::optional<domain::asset_class_code> asset_class_code_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading asset class code at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -244,7 +244,7 @@ std::optional<domain::asset_class_code> asset_class_code_repository::read_at_ver
 }
 
 asset_class_code_repository::remove_status asset_class_code_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing asset class code. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -273,12 +273,12 @@ asset_class_code_repository::remove_status asset_class_code_repository::remove(
     return remove_status::removed;
 }
 
-void asset_class_code_repository::remove(context ctx, const std::string& code) {
+void asset_class_code_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::asset_class_code> asset_class_code_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -304,7 +304,7 @@ std::vector<domain::asset_class_code> asset_class_code_repository::read_latest(
 }
 
 std::uint32_t asset_class_code_repository::get_total_asset_class_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::asset_class_codes_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset class code count";
@@ -323,7 +323,8 @@ std::uint32_t asset_class_code_repository::get_total_asset_class_count(
 }
 
 std::vector<domain::asset_class_code>
-asset_class_code_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+asset_class_code_repository::read_latest(const context& ctx,
+                                         const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -341,7 +342,8 @@ asset_class_code_repository::read_latest(context ctx, const std::vector<std::str
     return result;
 }
 
-void asset_class_code_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void asset_class_code_repository::remove(const context& ctx,
+                                         const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

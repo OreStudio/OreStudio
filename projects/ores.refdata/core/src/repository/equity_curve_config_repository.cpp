@@ -102,7 +102,8 @@ std::optional<query_builder::condition> equity_curve_config_filter_condition(
 }
 
 ores::utility::domain::precondition
-equity_curve_config_repository::replace_claim(context ctx, const domain::equity_curve_config& v) {
+equity_curve_config_repository::replace_claim(const context& ctx,
+                                              const domain::equity_curve_config& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,7 +112,7 @@ equity_curve_config_repository::replace_claim(context ctx, const domain::equity_
 }
 
 domain::equity_curve_config
-equity_curve_config_repository::apply_claim(context ctx,
+equity_curve_config_repository::apply_claim(const context& ctx,
                                             const domain::equity_curve_config& v,
                                             const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,11 +139,12 @@ equity_curve_config_repository::apply_claim(context ctx,
     return t;
 }
 
-void equity_curve_config_repository::write(context ctx, const domain::equity_curve_config& v) {
+void equity_curve_config_repository::write(const context& ctx,
+                                           const domain::equity_curve_config& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void equity_curve_config_repository::write(context ctx,
+void equity_curve_config_repository::write(const context& ctx,
                                            const std::vector<domain::equity_curve_config>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -151,7 +153,7 @@ void equity_curve_config_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void equity_curve_config_repository::write(context ctx,
+void equity_curve_config_repository::write(const context& ctx,
                                            const domain::equity_curve_config& v,
                                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing equity curve config. " << "id: " << v.id;
@@ -161,7 +163,7 @@ void equity_curve_config_repository::write(context ctx,
 }
 
 void equity_curve_config_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::equity_curve_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing equity curve configs. Count: " << v.size();
@@ -175,7 +177,8 @@ void equity_curve_config_repository::write(
                                        "Writing equity curve configs to database.");
 }
 
-std::vector<domain::equity_curve_config> equity_curve_config_repository::read_latest(context ctx) {
+std::vector<domain::equity_curve_config>
+equity_curve_config_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_curve_config_entity>> |
@@ -192,7 +195,7 @@ std::vector<domain::equity_curve_config> equity_curve_config_repository::read_la
 }
 
 std::vector<domain::equity_curve_config>
-equity_curve_config_repository::read_latest(context ctx, const std::string& id) {
+equity_curve_config_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest equity curve config. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -211,7 +214,7 @@ equity_curve_config_repository::read_latest(context ctx, const std::string& id) 
 
 
 std::vector<domain::equity_curve_config>
-equity_curve_config_repository::read_all(context ctx, const std::string& id) {
+equity_curve_config_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all equity curve config versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_curve_config_entity>> |
@@ -228,7 +231,7 @@ equity_curve_config_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::equity_curve_config> equity_curve_config_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading equity curve config at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -252,7 +255,7 @@ std::optional<domain::equity_curve_config> equity_curve_config_repository::read_
 
 
 equity_curve_config_repository::remove_status equity_curve_config_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing equity curve config. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -281,12 +284,12 @@ equity_curve_config_repository::remove_status equity_curve_config_repository::re
     return remove_status::removed;
 }
 
-void equity_curve_config_repository::remove(context ctx, const std::string& id) {
+void equity_curve_config_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::equity_curve_config> equity_curve_config_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -312,7 +315,7 @@ std::vector<domain::equity_curve_config> equity_curve_config_repository::read_la
 }
 
 std::uint32_t equity_curve_config_repository::get_total_equity_curve_config_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::equity_curve_configs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active equity curve config count";
@@ -331,7 +334,8 @@ std::uint32_t equity_curve_config_repository::get_total_equity_curve_config_coun
 }
 
 std::vector<domain::equity_curve_config>
-equity_curve_config_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+equity_curve_config_repository::read_latest(const context& ctx,
+                                            const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -349,7 +353,8 @@ equity_curve_config_repository::read_latest(context ctx, const std::vector<std::
     return result;
 }
 
-void equity_curve_config_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void equity_curve_config_repository::remove(const context& ctx,
+                                            const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

@@ -181,16 +181,16 @@ void report_execution_handler::mark_instance_failed(const std::string& tenant_id
 
 report_execution_handler::report_execution_handler(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     ores::nats::service::nats_client svc_nats,
     ores::workflow::service::fsm_state_map instance_states,
     std::string http_base_url)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , svc_nats_(std::move(svc_nats))
+    , ctx_(ctx)
+    , svc_nats_(svc_nats)
     , run_tokens_(ores::iam::client::make_run_token_minter(svc_nats_))
-    , instance_states_(std::move(instance_states))
-    , http_base_url_(std::move(http_base_url)) {}
+    , instance_states_(instance_states)
+    , http_base_url_(http_base_url) {}
 
 std::optional<ores::nats::service::nats_client> report_execution_handler::run_token_client(
     const std::string& tenant_id, const std::string& run_id, bool renew, std::string& error) {

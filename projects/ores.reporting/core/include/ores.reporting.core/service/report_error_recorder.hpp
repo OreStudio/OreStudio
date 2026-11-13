@@ -52,7 +52,7 @@ struct recorded_engine_errors {
  */
 class ORES_REPORTING_CORE_EXPORT report_error_recorder final {
 public:
-    explicit report_error_recorder(ores::database::context ctx);
+    explicit report_error_recorder(const ores::database::context& ctx);
 
     /**
      * @brief Writes the run's log rows that say something went wrong.

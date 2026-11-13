@@ -54,8 +54,8 @@ std::string calendar_date_repository::sql() {
     return query_builder::insert_statement_sql<calendar_date_entity>(lg());
 }
 
-calendar_date_repository::calendar_date_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+calendar_date_repository::calendar_date_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 calendar_date_repository::replace_claim(const domain::calendar_date& v) {

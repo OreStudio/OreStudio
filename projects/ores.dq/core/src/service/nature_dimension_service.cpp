@@ -54,8 +54,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-nature_dimension_service::nature_dimension_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+nature_dimension_service::nature_dimension_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

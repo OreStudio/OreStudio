@@ -45,8 +45,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-tenor_convention_resolution_service::tenor_convention_resolution_service(context ctx)
-    : ctx_(std::move(ctx))
+tenor_convention_resolution_service::tenor_convention_resolution_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

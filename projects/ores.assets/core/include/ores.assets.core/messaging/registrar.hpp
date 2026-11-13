@@ -21,7 +21,7 @@
 #define ORES_ASSETS_MESSAGING_REGISTRAR_HPP
 
 #include "ores.assets.core/export.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -34,7 +34,7 @@ class ORES_ASSETS_CORE_EXPORT registrar {
 public:
     static std::vector<ores::nats::service::subscription> register_handlers(
         ores::nats::service::client& nats,
-        ores::database::context ctx,
+        const ores::database::context& ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt);
 };
 

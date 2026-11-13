@@ -44,11 +44,10 @@ static constexpr std::string_view calibration_provider_order_queue_group = "ores
 
 std::vector<ores::nats::service::subscription> register_calibration_provider_order_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<calibration_provider_order_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<calibration_provider_order_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_calibration_provider_orders_request::nats_subject,
         calibration_provider_order_queue_group,

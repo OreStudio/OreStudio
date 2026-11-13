@@ -20,7 +20,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_PARENT_SCOPED_QUERIES_HPP
 #define ORES_TRADING_CORE_REPOSITORY_PARENT_SCOPED_QUERIES_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.trading.api/domain/bond_forward.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
 #include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
@@ -75,7 +75,7 @@ using context = ores::database::context;
  * @param issue_ids UUIDs of the issues whose call dates to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_call_date>
-read_call_dates_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+read_call_dates_by_issue_ids(const context& ctx, const std::vector<std::string>& issue_ids);
 
 /**
  * @brief Reads the conversion targets of a set of bond issues.
@@ -86,7 +86,7 @@ read_call_dates_by_issue_ids(context ctx, const std::vector<std::string>& issue_
  * @param issue_ids UUIDs of the issues whose conversion targets to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_conversion_target>
-read_conversion_targets_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+read_conversion_targets_by_issue_ids(const context& ctx, const std::vector<std::string>& issue_ids);
 
 /**
  * @brief Reads the legs of a set of instruments.
@@ -97,7 +97,7 @@ read_conversion_targets_by_issue_ids(context ctx, const std::vector<std::string>
  * @param trade_ids UUIDs of the trades whose legs to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_leg>
-read_legs_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_legs_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the named amounts of a set of instruments' legs.
@@ -108,7 +108,7 @@ read_legs_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
  * @param trade_ids UUIDs of the trades whose leg amounts to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_leg_amount>
-read_leg_amounts_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_leg_amounts_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the rate group rows of a set of instruments' legs.
@@ -117,7 +117,7 @@ read_leg_amounts_by_trade_ids(context ctx, const std::vector<std::string>& trade
  * @param trade_ids UUIDs of the trades whose leg rates to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_leg_rate>
-read_leg_rates_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_leg_rates_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the amortizations of a set of instruments' legs.
@@ -126,7 +126,7 @@ read_leg_rates_by_trade_ids(context ctx, const std::vector<std::string>& trade_i
  * @param trade_ids UUIDs of the trades whose amortizations to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_leg_amortization>
-read_leg_amortizations_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_leg_amortizations_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the legs of a set of bond issues.
@@ -139,7 +139,7 @@ read_leg_amortizations_by_trade_ids(context ctx, const std::vector<std::string>&
  * @param issue_ids UUIDs of the issues whose legs to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_leg>
-read_issue_legs_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+read_issue_legs_by_issue_ids(const context& ctx, const std::vector<std::string>& issue_ids);
 
 /**
  * @brief Reads the named amounts of a set of bond issues' legs.
@@ -148,7 +148,7 @@ read_issue_legs_by_issue_ids(context ctx, const std::vector<std::string>& issue_
  * @param issue_ids UUIDs of the issues whose leg amounts to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_leg_amount>
-read_issue_leg_amounts_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+read_issue_leg_amounts_by_issue_ids(const context& ctx, const std::vector<std::string>& issue_ids);
 
 /**
  * @brief Reads the rate group rows of a set of bond issues' legs.
@@ -157,7 +157,7 @@ read_issue_leg_amounts_by_issue_ids(context ctx, const std::vector<std::string>&
  * @param issue_ids UUIDs of the issues whose leg rates to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_leg_rate>
-read_issue_leg_rates_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+read_issue_leg_rates_by_issue_ids(const context& ctx, const std::vector<std::string>& issue_ids);
 
 /**
  * @brief Reads the amortizations of a set of bond issues' legs.
@@ -166,7 +166,8 @@ read_issue_leg_rates_by_issue_ids(context ctx, const std::vector<std::string>& i
  * @param issue_ids UUIDs of the issues whose leg amortizations to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_leg_amortization>
-read_issue_leg_amortizations_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+read_issue_leg_amortizations_by_issue_ids(const context& ctx,
+                                          const std::vector<std::string>& issue_ids);
 
 /**
  * @brief Reads the schedules of a set of bond issues' legs.
@@ -175,7 +176,7 @@ read_issue_leg_amortizations_by_issue_ids(context ctx, const std::vector<std::st
  * @param issue_ids UUIDs of the issues whose leg schedules to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_leg_schedule>
-read_issue_schedules_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+read_issue_schedules_by_issue_ids(const context& ctx, const std::vector<std::string>& issue_ids);
 
 /**
  * @brief Reads the dates of a set of bond issues' leg schedules.
@@ -184,7 +185,8 @@ read_issue_schedules_by_issue_ids(context ctx, const std::vector<std::string>& i
  * @param issue_ids UUIDs of the issues whose leg schedule dates to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_leg_schedule_date>
-read_issue_schedule_dates_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+read_issue_schedule_dates_by_issue_ids(const context& ctx,
+                                       const std::vector<std::string>& issue_ids);
 
 /**
  * @brief Reads the schedules of a set of instruments, whichever owner stated them.
@@ -196,7 +198,7 @@ read_issue_schedule_dates_by_issue_ids(context ctx, const std::vector<std::strin
  * @param trade_ids UUIDs of the trades whose schedules to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_schedule>
-read_schedules_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_schedules_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the dates of a set of instruments' schedules.
@@ -208,7 +210,7 @@ read_schedules_by_trade_ids(context ctx, const std::vector<std::string>& trade_i
  * @param trade_ids UUIDs of the trades whose schedule dates to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_schedule_date>
-read_schedule_dates_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_schedule_dates_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the option row of a set of instruments.
@@ -217,7 +219,7 @@ read_schedule_dates_by_trade_ids(context ctx, const std::vector<std::string>& tr
  * @param trade_ids UUIDs of the trades whose option row to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option>
-read_options_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_options_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the premiums of a set of instruments' option rows.
@@ -228,7 +230,7 @@ read_options_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids
  * @param trade_ids UUIDs of the trades whose premiums to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option_premium>
-read_option_premiums_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_option_premiums_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the exercise fees of a set of instruments' option rows.
@@ -239,7 +241,8 @@ read_option_premiums_by_trade_ids(context ctx, const std::vector<std::string>& t
  * @param trade_ids UUIDs of the trades whose exercise fees to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option_exercise_fee>
-read_option_exercise_fees_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_option_exercise_fees_by_trade_ids(const context& ctx,
+                                       const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the payment dates of a set of instruments' option rows.
@@ -250,7 +253,8 @@ read_option_exercise_fees_by_trade_ids(context ctx, const std::vector<std::strin
  * @param trade_ids UUIDs of the trades whose payment dates to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option_payment_date>
-read_option_payment_dates_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_option_payment_dates_by_trade_ids(const context& ctx,
+                                       const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the exercise prices of a set of instruments' option rows.
@@ -261,7 +265,8 @@ read_option_payment_dates_by_trade_ids(context ctx, const std::vector<std::strin
  * @param trade_ids UUIDs of the trades whose exercise prices to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option_exercise_price>
-read_option_exercise_prices_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_option_exercise_prices_by_trade_ids(const context& ctx,
+                                         const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the strike of a set of instruments.
@@ -270,7 +275,7 @@ read_option_exercise_prices_by_trade_ids(context ctx, const std::vector<std::str
  * @param trade_ids UUIDs of the trades whose strike to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_strike>
-read_strikes_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_strikes_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the range bounds of a set of instruments.
@@ -281,7 +286,7 @@ read_strikes_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids
  * @param trade_ids UUIDs of the trades whose range bounds to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::range_bound>
-read_range_bounds_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_range_bounds_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the forward terms of a set of instruments.
@@ -290,7 +295,7 @@ read_range_bounds_by_trade_ids(context ctx, const std::vector<std::string>& trad
  * @param trade_ids UUIDs of the trades whose forward terms to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_forward>
-read_forwards_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+read_forwards_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids);
 
 /**@}*/
 

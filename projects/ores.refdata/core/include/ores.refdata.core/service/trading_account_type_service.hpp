@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit trading_account_type_service(context ctx);
+    explicit trading_account_type_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

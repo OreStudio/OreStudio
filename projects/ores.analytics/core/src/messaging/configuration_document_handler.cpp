@@ -57,11 +57,11 @@ std::string problem_summary(std::size_t count) {
 
 configuration_document_handler::configuration_document_handler(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , verifier_(std::move(verifier)) {}
+    , ctx_(ctx)
+    , verifier_(verifier) {}
 
 
 void configuration_document_handler::save_pricing_engines_document(ores::nats::message msg) {

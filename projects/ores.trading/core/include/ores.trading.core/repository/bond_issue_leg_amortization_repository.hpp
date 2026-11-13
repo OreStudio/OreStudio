@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::bond_issue_leg_amortization& v);
-    void write(context ctx, const std::vector<domain::bond_issue_leg_amortization>& v);
+    void write(const context& ctx, const domain::bond_issue_leg_amortization& v);
+    void write(const context& ctx, const std::vector<domain::bond_issue_leg_amortization>& v);
     /**@}*/
 
     /**
@@ -84,7 +84,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::bond_issue_leg_amortization& v,
                const ores::utility::domain::precondition& claim);
 
@@ -92,7 +92,7 @@ public:
      * @brief Writes a set of bond issue leg amortizations, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::bond_issue_leg_amortization>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -100,14 +100,14 @@ public:
      * @brief Reads latest bond issue leg amortizations, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::bond_issue_leg_amortization> read_latest(context ctx);
+    std::vector<domain::bond_issue_leg_amortization> read_latest(const context& ctx);
     std::vector<domain::bond_issue_leg_amortization>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 const std::string& issue_id,
                 const std::string& leg_number,
                 const std::string& sequence_number);
     std::vector<domain::bond_issue_leg_amortization>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 const std::vector<std::string>& issue_ids,
                 const std::vector<std::string>& leg_numbers,
                 const std::vector<std::string>& sequence_numbers);
@@ -117,7 +117,7 @@ public:
     /**
      * @brief Reads all bond issue leg amortizations, possibly filtered by primary key.
      */
-    std::vector<domain::bond_issue_leg_amortization> read_all(context ctx,
+    std::vector<domain::bond_issue_leg_amortization> read_all(const context& ctx,
                                                               const std::string& issue_id,
                                                               const std::string& leg_number,
                                                               const std::string& sequence_number);
@@ -132,7 +132,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::bond_issue_leg_amortization>
-    read_at_version(context ctx,
+    read_at_version(const context& ctx,
                     const std::string& issue_id,
                     const std::string& leg_number,
                     const std::string& sequence_number,
@@ -156,7 +156,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::bond_issue_leg_amortization>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -168,12 +168,12 @@ public:
      * @return Total number of active bond issue leg amortizations
      */
     std::uint32_t get_total_bond_issue_leg_amortization_count(
-        context ctx, const std::optional<std::string>& as_of = std::nullopt);
+        const context& ctx, const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a bond issue leg amortization by closing its temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::string& issue_id,
                 const std::string& leg_number,
                 const std::string& sequence_number);
@@ -198,7 +198,7 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& issue_id,
                          const std::string& leg_number,
                          const std::string& sequence_number,
@@ -207,7 +207,7 @@ public:
     /**
      * @brief Deletes bond issue leg amortizations by closing their temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::vector<std::string>& issue_ids,
                 const std::vector<std::string>& leg_numbers,
                 const std::vector<std::string>& sequence_numbers);
@@ -218,7 +218,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::bond_issue_leg_amortization& v);
 
     /**
@@ -227,7 +227,7 @@ private:
      * A claim the store cannot check is refused here rather than ignored.
      */
     domain::bond_issue_leg_amortization
-    apply_claim(context ctx,
+    apply_claim(const context& ctx,
                 const domain::bond_issue_leg_amortization& v,
                 const ores::utility::domain::precondition& claim);
 };

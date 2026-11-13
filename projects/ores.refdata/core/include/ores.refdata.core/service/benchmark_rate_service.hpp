@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit benchmark_rate_service(context ctx);
+    explicit benchmark_rate_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

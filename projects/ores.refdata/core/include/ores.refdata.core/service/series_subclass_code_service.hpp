@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit series_subclass_code_service(context ctx);
+    explicit series_subclass_code_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

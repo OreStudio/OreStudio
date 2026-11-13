@@ -100,7 +100,7 @@ legal_entity_filter_condition(const std::optional<messaging::legal_entities_filt
 }
 
 ores::utility::domain::precondition
-legal_entity_repository::replace_claim(context ctx, const domain::legal_entity& v) {
+legal_entity_repository::replace_claim(const context& ctx, const domain::legal_entity& v) {
     const auto current = read_latest(ctx, v.lei);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -108,8 +108,10 @@ legal_entity_repository::replace_claim(context ctx, const domain::legal_entity& 
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::legal_entity legal_entity_repository::apply_claim(
-    context ctx, const domain::legal_entity& v, const ores::utility::domain::precondition& claim) {
+domain::legal_entity
+legal_entity_repository::apply_claim(const context& ctx,
+                                     const domain::legal_entity& v,
+                                     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -134,11 +136,12 @@ domain::legal_entity legal_entity_repository::apply_claim(
     return t;
 }
 
-void legal_entity_repository::write(context ctx, const domain::legal_entity& v) {
+void legal_entity_repository::write(const context& ctx, const domain::legal_entity& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void legal_entity_repository::write(context ctx, const std::vector<domain::legal_entity>& v) {
+void legal_entity_repository::write(const context& ctx,
+                                    const std::vector<domain::legal_entity>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -146,7 +149,7 @@ void legal_entity_repository::write(context ctx, const std::vector<domain::legal
     write(ctx, v, claims);
 }
 
-void legal_entity_repository::write(context ctx,
+void legal_entity_repository::write(const context& ctx,
                                     const domain::legal_entity& v,
                                     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing legal entity. " << "lei: " << v.lei;
@@ -156,7 +159,7 @@ void legal_entity_repository::write(context ctx,
 }
 
 void legal_entity_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::legal_entity>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing legal entities. Count: " << v.size();
@@ -168,7 +171,7 @@ void legal_entity_repository::write(
         ctx, legal_entity_mapper::map(batch), lg(), "Writing legal entities to database.");
 }
 
-std::vector<domain::legal_entity> legal_entity_repository::read_latest(context ctx) {
+std::vector<domain::legal_entity> legal_entity_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<legal_entity_entity>> |
@@ -183,7 +186,7 @@ std::vector<domain::legal_entity> legal_entity_repository::read_latest(context c
         "Reading latest legal entities");
 }
 
-std::vector<domain::legal_entity> legal_entity_repository::read_latest(context ctx,
+std::vector<domain::legal_entity> legal_entity_repository::read_latest(const context& ctx,
                                                                        const std::string& lei) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest legal entity. " << "lei: " << lei;
     static constexpr auto max = db_timestamp::max();
@@ -201,7 +204,7 @@ std::vector<domain::legal_entity> legal_entity_repository::read_latest(context c
 }
 
 
-std::vector<domain::legal_entity> legal_entity_repository::read_all(context ctx,
+std::vector<domain::legal_entity> legal_entity_repository::read_all(const context& ctx,
                                                                     const std::string& lei) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all legal entity versions. " << "lei: " << lei;
     const auto tid = ctx.tenant_id().to_string();
@@ -218,7 +221,7 @@ std::vector<domain::legal_entity> legal_entity_repository::read_all(context ctx,
 }
 
 std::optional<domain::legal_entity> legal_entity_repository::read_at_version(
-    context ctx, const std::string& lei, std::uint32_t version) {
+    const context& ctx, const std::string& lei, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading legal entity at version. " << "lei: " << lei
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -241,7 +244,7 @@ std::optional<domain::legal_entity> legal_entity_repository::read_at_version(
 }
 
 legal_entity_repository::remove_status legal_entity_repository::remove(
-    context ctx, const std::string& lei, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& lei, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing legal entity. " << "lei: " << lei;
     const auto current = read_latest(ctx, lei);
     if (current.empty())
@@ -269,12 +272,12 @@ legal_entity_repository::remove_status legal_entity_repository::remove(
     return remove_status::removed;
 }
 
-void legal_entity_repository::remove(context ctx, const std::string& lei) {
+void legal_entity_repository::remove(const context& ctx, const std::string& lei) {
     static_cast<void>(remove(ctx, lei, std::nullopt));
 }
 
 std::vector<domain::legal_entity>
-legal_entity_repository::read_latest(context ctx,
+legal_entity_repository::read_latest(const context& ctx,
                                      std::uint32_t offset,
                                      std::uint32_t limit,
                                      const ores::utility::domain::order& order,
@@ -299,7 +302,7 @@ legal_entity_repository::read_latest(context ctx,
 }
 
 std::uint32_t legal_entity_repository::get_total_legal_entity_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::legal_entities_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active legal entity count";
@@ -318,7 +321,7 @@ std::uint32_t legal_entity_repository::get_total_legal_entity_count(
 }
 
 std::vector<domain::legal_entity>
-legal_entity_repository::read_latest(context ctx, const std::vector<std::string>& leis) {
+legal_entity_repository::read_latest(const context& ctx, const std::vector<std::string>& leis) {
     if (leis.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -335,7 +338,7 @@ legal_entity_repository::read_latest(context ctx, const std::vector<std::string>
     return result;
 }
 
-void legal_entity_repository::remove(context ctx, const std::vector<std::string>& leis) {
+void legal_entity_repository::remove(const context& ctx, const std::vector<std::string>& leis) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

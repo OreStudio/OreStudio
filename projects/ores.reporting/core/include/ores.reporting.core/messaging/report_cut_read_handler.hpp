@@ -99,11 +99,11 @@ inline cut_row row_of(const service::cut_row_view& view) {
 class report_cut_read_handler {
 public:
     report_cut_read_handler(ores::nats::service::client& nats,
-                            ores::database::context ctx,
+                            const ores::database::context& ctx,
                             std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     /**
      * @brief Serves reporting.v1.ops.list_cut_rows.

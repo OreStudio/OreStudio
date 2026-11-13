@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit entry_channel_type_service(context ctx);
+    explicit entry_channel_type_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

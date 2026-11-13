@@ -102,7 +102,7 @@ std::optional<query_builder::condition> swaption_volatility_config_filter_condit
 }
 
 ores::utility::domain::precondition
-swaption_volatility_config_repository::replace_claim(context ctx,
+swaption_volatility_config_repository::replace_claim(const context& ctx,
                                                      const domain::swaption_volatility_config& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -112,7 +112,7 @@ swaption_volatility_config_repository::replace_claim(context ctx,
 }
 
 domain::swaption_volatility_config swaption_volatility_config_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::swaption_volatility_config& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,13 +139,13 @@ domain::swaption_volatility_config swaption_volatility_config_repository::apply_
     return t;
 }
 
-void swaption_volatility_config_repository::write(context ctx,
+void swaption_volatility_config_repository::write(const context& ctx,
                                                   const domain::swaption_volatility_config& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void swaption_volatility_config_repository::write(
-    context ctx, const std::vector<domain::swaption_volatility_config>& v) {
+    const context& ctx, const std::vector<domain::swaption_volatility_config>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -154,7 +154,7 @@ void swaption_volatility_config_repository::write(
 }
 
 void swaption_volatility_config_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::swaption_volatility_config& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing swaption volatility config. " << "id: " << v.id;
@@ -166,7 +166,7 @@ void swaption_volatility_config_repository::write(
 }
 
 void swaption_volatility_config_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::swaption_volatility_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing swaption volatility configs. Count: " << v.size();
@@ -181,7 +181,7 @@ void swaption_volatility_config_repository::write(
 }
 
 std::vector<domain::swaption_volatility_config>
-swaption_volatility_config_repository::read_latest(context ctx) {
+swaption_volatility_config_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<swaption_volatility_config_entity>> |
@@ -198,7 +198,7 @@ swaption_volatility_config_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::swaption_volatility_config>
-swaption_volatility_config_repository::read_latest(context ctx, const std::string& id) {
+swaption_volatility_config_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest swaption volatility config. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -217,7 +217,7 @@ swaption_volatility_config_repository::read_latest(context ctx, const std::strin
 
 
 std::vector<domain::swaption_volatility_config>
-swaption_volatility_config_repository::read_all(context ctx, const std::string& id) {
+swaption_volatility_config_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all swaption volatility config versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -235,7 +235,7 @@ swaption_volatility_config_repository::read_all(context ctx, const std::string& 
 }
 
 std::optional<domain::swaption_volatility_config>
-swaption_volatility_config_repository::read_at_version(context ctx,
+swaption_volatility_config_repository::read_at_version(const context& ctx,
                                                        const std::string& id,
                                                        std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading swaption volatility config at version. " << "id: " << id
@@ -261,7 +261,7 @@ swaption_volatility_config_repository::read_at_version(context ctx,
 
 
 swaption_volatility_config_repository::remove_status swaption_volatility_config_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing swaption volatility config. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -290,12 +290,12 @@ swaption_volatility_config_repository::remove_status swaption_volatility_config_
     return remove_status::removed;
 }
 
-void swaption_volatility_config_repository::remove(context ctx, const std::string& id) {
+void swaption_volatility_config_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::swaption_volatility_config> swaption_volatility_config_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -321,7 +321,7 @@ std::vector<domain::swaption_volatility_config> swaption_volatility_config_repos
 }
 
 std::uint32_t swaption_volatility_config_repository::get_total_swaption_volatility_config_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::swaption_volatility_configs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active swaption volatility config count";
@@ -340,7 +340,7 @@ std::uint32_t swaption_volatility_config_repository::get_total_swaption_volatili
 }
 
 std::vector<domain::swaption_volatility_config>
-swaption_volatility_config_repository::read_latest(context ctx,
+swaption_volatility_config_repository::read_latest(const context& ctx,
                                                    const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -359,7 +359,7 @@ swaption_volatility_config_repository::read_latest(context ctx,
     return result;
 }
 
-void swaption_volatility_config_repository::remove(context ctx,
+void swaption_volatility_config_repository::remove(const context& ctx,
                                                    const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

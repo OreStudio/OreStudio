@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit variance_calibration_input_service(context ctx);
+    explicit variance_calibration_input_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

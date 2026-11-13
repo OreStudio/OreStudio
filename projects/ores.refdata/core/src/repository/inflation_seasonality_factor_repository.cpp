@@ -102,7 +102,7 @@ std::optional<query_builder::condition> inflation_seasonality_factor_filter_cond
 }
 
 ores::utility::domain::precondition inflation_seasonality_factor_repository::replace_claim(
-    context ctx, const domain::inflation_seasonality_factor& v) {
+    const context& ctx, const domain::inflation_seasonality_factor& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,7 +111,7 @@ ores::utility::domain::precondition inflation_seasonality_factor_repository::rep
 }
 
 domain::inflation_seasonality_factor inflation_seasonality_factor_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::inflation_seasonality_factor& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,13 +138,13 @@ domain::inflation_seasonality_factor inflation_seasonality_factor_repository::ap
     return t;
 }
 
-void inflation_seasonality_factor_repository::write(context ctx,
+void inflation_seasonality_factor_repository::write(const context& ctx,
                                                     const domain::inflation_seasonality_factor& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void inflation_seasonality_factor_repository::write(
-    context ctx, const std::vector<domain::inflation_seasonality_factor>& v) {
+    const context& ctx, const std::vector<domain::inflation_seasonality_factor>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -153,7 +153,7 @@ void inflation_seasonality_factor_repository::write(
 }
 
 void inflation_seasonality_factor_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::inflation_seasonality_factor& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing inflation seasonality factor. " << "id: " << v.id;
@@ -165,7 +165,7 @@ void inflation_seasonality_factor_repository::write(
 }
 
 void inflation_seasonality_factor_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::inflation_seasonality_factor>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing inflation seasonality factors. Count: " << v.size();
@@ -180,7 +180,7 @@ void inflation_seasonality_factor_repository::write(
 }
 
 std::vector<domain::inflation_seasonality_factor>
-inflation_seasonality_factor_repository::read_latest(context ctx) {
+inflation_seasonality_factor_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<inflation_seasonality_factor_entity>> |
@@ -197,7 +197,7 @@ inflation_seasonality_factor_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::inflation_seasonality_factor>
-inflation_seasonality_factor_repository::read_latest(context ctx, const std::string& id) {
+inflation_seasonality_factor_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest inflation seasonality factor. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +216,7 @@ inflation_seasonality_factor_repository::read_latest(context ctx, const std::str
 
 
 std::vector<domain::inflation_seasonality_factor>
-inflation_seasonality_factor_repository::read_all(context ctx, const std::string& id) {
+inflation_seasonality_factor_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all inflation seasonality factor versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -234,7 +234,7 @@ inflation_seasonality_factor_repository::read_all(context ctx, const std::string
 }
 
 std::optional<domain::inflation_seasonality_factor>
-inflation_seasonality_factor_repository::read_at_version(context ctx,
+inflation_seasonality_factor_repository::read_at_version(const context& ctx,
                                                          const std::string& id,
                                                          std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading inflation seasonality factor at version. "
@@ -260,7 +260,7 @@ inflation_seasonality_factor_repository::read_at_version(context ctx,
 
 
 inflation_seasonality_factor_repository::remove_status
-inflation_seasonality_factor_repository::remove(context ctx,
+inflation_seasonality_factor_repository::remove(const context& ctx,
                                                 const std::string& id,
                                                 std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing inflation seasonality factor. " << "id: " << id;
@@ -291,13 +291,13 @@ inflation_seasonality_factor_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void inflation_seasonality_factor_repository::remove(context ctx, const std::string& id) {
+void inflation_seasonality_factor_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::inflation_seasonality_factor>
 inflation_seasonality_factor_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -323,7 +323,7 @@ inflation_seasonality_factor_repository::read_latest(
 }
 
 std::uint32_t inflation_seasonality_factor_repository::get_total_seasonality_factor_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::inflation_seasonality_factors_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active inflation seasonality factor count";
@@ -342,7 +342,7 @@ std::uint32_t inflation_seasonality_factor_repository::get_total_seasonality_fac
 }
 
 std::vector<domain::inflation_seasonality_factor>
-inflation_seasonality_factor_repository::read_latest(context ctx,
+inflation_seasonality_factor_repository::read_latest(const context& ctx,
                                                      const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -361,7 +361,7 @@ inflation_seasonality_factor_repository::read_latest(context ctx,
     return result;
 }
 
-void inflation_seasonality_factor_repository::remove(context ctx,
+void inflation_seasonality_factor_repository::remove(const context& ctx,
                                                      const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

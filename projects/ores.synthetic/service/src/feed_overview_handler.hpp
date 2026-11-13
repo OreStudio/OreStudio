@@ -71,13 +71,13 @@ class feed_overview_handler {
 public:
     feed_overview_handler(ores::nats::service::client& nats,
                           generator_fleet& generators,
-                          ores::database::context ctx,
+                          const ores::database::context& ctx,
                           std::optional<ores::security::jwt::jwt_authenticator> verifier,
                           const feed_kind_registry& registry)
         : nats_(nats)
         , generators_(generators)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
+        , ctx_(ctx)
+        , verifier_(verifier)
         , registry_(registry) {}
 
     void list(ores::nats::message msg) {

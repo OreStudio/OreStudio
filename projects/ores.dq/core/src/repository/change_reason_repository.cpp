@@ -100,7 +100,7 @@ change_reason_filter_condition(const std::optional<messaging::change_reasons_fil
 }
 
 ores::utility::domain::precondition
-change_reason_repository::replace_claim(context ctx, const domain::change_reason& v) {
+change_reason_repository::replace_claim(const context& ctx, const domain::change_reason& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -108,8 +108,10 @@ change_reason_repository::replace_claim(context ctx, const domain::change_reason
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::change_reason change_reason_repository::apply_claim(
-    context ctx, const domain::change_reason& v, const ores::utility::domain::precondition& claim) {
+domain::change_reason
+change_reason_repository::apply_claim(const context& ctx,
+                                      const domain::change_reason& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -134,11 +136,12 @@ domain::change_reason change_reason_repository::apply_claim(
     return t;
 }
 
-void change_reason_repository::write(context ctx, const domain::change_reason& v) {
+void change_reason_repository::write(const context& ctx, const domain::change_reason& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void change_reason_repository::write(context ctx, const std::vector<domain::change_reason>& v) {
+void change_reason_repository::write(const context& ctx,
+                                     const std::vector<domain::change_reason>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -146,7 +149,7 @@ void change_reason_repository::write(context ctx, const std::vector<domain::chan
     write(ctx, v, claims);
 }
 
-void change_reason_repository::write(context ctx,
+void change_reason_repository::write(const context& ctx,
                                      const domain::change_reason& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing change reason. " << "code: " << v.code;
@@ -156,7 +159,7 @@ void change_reason_repository::write(context ctx,
 }
 
 void change_reason_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::change_reason>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing change reasons. Count: " << v.size();
@@ -168,7 +171,7 @@ void change_reason_repository::write(
         ctx, change_reason_mapper::map(batch), lg(), "Writing change reasons to database.");
 }
 
-std::vector<domain::change_reason> change_reason_repository::read_latest(context ctx) {
+std::vector<domain::change_reason> change_reason_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<change_reason_entity>> |
                        query_builder::where("valid_to"_c == max) |
@@ -182,7 +185,7 @@ std::vector<domain::change_reason> change_reason_repository::read_latest(context
         "Reading latest change reasons");
 }
 
-std::vector<domain::change_reason> change_reason_repository::read_latest(context ctx,
+std::vector<domain::change_reason> change_reason_repository::read_latest(const context& ctx,
                                                                          const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest change reason. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -198,7 +201,7 @@ std::vector<domain::change_reason> change_reason_repository::read_latest(context
 }
 
 
-std::vector<domain::change_reason> change_reason_repository::read_all(context ctx,
+std::vector<domain::change_reason> change_reason_repository::read_all(const context& ctx,
                                                                       const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all change reason versions. " << "code: " << code;
     const auto query = query_builder::read<std::vector<change_reason_entity>> |
@@ -214,7 +217,7 @@ std::vector<domain::change_reason> change_reason_repository::read_all(context ct
 }
 
 std::optional<domain::change_reason> change_reason_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading change reason at version. " << "code: " << code
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<change_reason_entity>> |
@@ -235,7 +238,7 @@ std::optional<domain::change_reason> change_reason_repository::read_at_version(
 }
 
 change_reason_repository::remove_status change_reason_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing change reason. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -263,12 +266,12 @@ change_reason_repository::remove_status change_reason_repository::remove(
     return remove_status::removed;
 }
 
-void change_reason_repository::remove(context ctx, const std::string& code) {
+void change_reason_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::change_reason>
-change_reason_repository::read_latest(context ctx,
+change_reason_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -291,7 +294,7 @@ change_reason_repository::read_latest(context ctx,
 }
 
 std::uint32_t change_reason_repository::get_total_reason_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::change_reasons_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active change reason count";
@@ -308,7 +311,7 @@ std::uint32_t change_reason_repository::get_total_reason_count(
 }
 
 std::vector<domain::change_reason>
-change_reason_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+change_reason_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -323,7 +326,7 @@ change_reason_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void change_reason_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void change_reason_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

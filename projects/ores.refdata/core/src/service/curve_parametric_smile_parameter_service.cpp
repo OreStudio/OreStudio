@@ -58,8 +58,9 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-curve_parametric_smile_parameter_service::curve_parametric_smile_parameter_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+curve_parametric_smile_parameter_service::curve_parametric_smile_parameter_service(
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -58,8 +58,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-fsm_transition_service::fsm_transition_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+fsm_transition_service::fsm_transition_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

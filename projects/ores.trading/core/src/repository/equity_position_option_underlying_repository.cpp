@@ -110,7 +110,7 @@ std::optional<query_builder::condition> equity_position_option_underlying_filter
 }
 
 ores::utility::domain::precondition equity_position_option_underlying_repository::replace_claim(
-    context ctx, const domain::equity_position_option_underlying& v) {
+    const context& ctx, const domain::equity_position_option_underlying& v) {
     const auto current =
         read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
     if (current.empty())
@@ -120,7 +120,7 @@ ores::utility::domain::precondition equity_position_option_underlying_repository
 }
 
 domain::equity_position_option_underlying equity_position_option_underlying_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::equity_position_option_underlying& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -149,12 +149,12 @@ domain::equity_position_option_underlying equity_position_option_underlying_repo
 }
 
 void equity_position_option_underlying_repository::write(
-    context ctx, const domain::equity_position_option_underlying& v) {
+    const context& ctx, const domain::equity_position_option_underlying& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void equity_position_option_underlying_repository::write(
-    context ctx, const std::vector<domain::equity_position_option_underlying>& v) {
+    const context& ctx, const std::vector<domain::equity_position_option_underlying>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -163,7 +163,7 @@ void equity_position_option_underlying_repository::write(
 }
 
 void equity_position_option_underlying_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::equity_position_option_underlying& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing equity position option underlying. "
@@ -177,7 +177,7 @@ void equity_position_option_underlying_repository::write(
 }
 
 void equity_position_option_underlying_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::equity_position_option_underlying>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing equity position option underlyings. Count: " << v.size();
@@ -192,7 +192,7 @@ void equity_position_option_underlying_repository::write(
 }
 
 std::vector<domain::equity_position_option_underlying>
-equity_position_option_underlying_repository::read_latest(context ctx) {
+equity_position_option_underlying_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_position_option_underlying_entity>> |
@@ -211,7 +211,7 @@ equity_position_option_underlying_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::equity_position_option_underlying>
-equity_position_option_underlying_repository::read_latest(context ctx,
+equity_position_option_underlying_repository::read_latest(const context& ctx,
                                                           const std::string& trade_id,
                                                           const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest equity position option underlying. "
@@ -237,7 +237,7 @@ equity_position_option_underlying_repository::read_latest(context ctx,
 
 
 std::vector<domain::equity_position_option_underlying>
-equity_position_option_underlying_repository::read_all(context ctx,
+equity_position_option_underlying_repository::read_all(const context& ctx,
                                                        const std::string& trade_id,
                                                        const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all equity position option underlying versions. "
@@ -261,7 +261,7 @@ equity_position_option_underlying_repository::read_all(context ctx,
 }
 
 std::optional<domain::equity_position_option_underlying>
-equity_position_option_underlying_repository::read_at_version(context ctx,
+equity_position_option_underlying_repository::read_at_version(const context& ctx,
                                                               const std::string& trade_id,
                                                               const std::string& sequence_number,
                                                               std::uint32_t version) {
@@ -294,7 +294,7 @@ equity_position_option_underlying_repository::read_at_version(context ctx,
 
 std::vector<domain::equity_position_option_underlying>
 equity_position_option_underlying_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -324,7 +324,7 @@ equity_position_option_underlying_repository::read_latest_by_trade_id(
 
 std::uint32_t equity_position_option_underlying_repository::
     get_total_equity_position_option_underlying_count_by_trade_id(
-        context ctx,
+        const context& ctx,
         const std::string& trade_id,
         const std::optional<messaging::equity_position_option_underlyings_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -347,7 +347,7 @@ std::uint32_t equity_position_option_underlying_repository::
 
 
 equity_position_option_underlying_repository::remove_status
-equity_position_option_underlying_repository::remove(context ctx,
+equity_position_option_underlying_repository::remove(const context& ctx,
                                                      const std::string& trade_id,
                                                      const std::string& sequence_number,
                                                      std::optional<std::uint32_t> version) {
@@ -382,7 +382,7 @@ equity_position_option_underlying_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void equity_position_option_underlying_repository::remove(context ctx,
+void equity_position_option_underlying_repository::remove(const context& ctx,
                                                           const std::string& trade_id,
                                                           const std::string& sequence_number) {
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
@@ -390,7 +390,7 @@ void equity_position_option_underlying_repository::remove(context ctx,
 
 std::vector<domain::equity_position_option_underlying>
 equity_position_option_underlying_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -419,7 +419,7 @@ equity_position_option_underlying_repository::read_latest(
 
 std::uint32_t
 equity_position_option_underlying_repository::get_total_equity_position_option_underlying_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::equity_position_option_underlyings_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active equity position option underlying count";
@@ -439,7 +439,7 @@ equity_position_option_underlying_repository::get_total_equity_position_option_u
 
 std::vector<domain::equity_position_option_underlying>
 equity_position_option_underlying_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
@@ -479,7 +479,7 @@ equity_position_option_underlying_repository::read_latest(
 }
 
 void equity_position_option_underlying_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product
@@ -495,7 +495,7 @@ void equity_position_option_underlying_repository::remove(
 
 std::vector<domain::equity_position_option_underlying>
 equity_position_option_underlying_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();

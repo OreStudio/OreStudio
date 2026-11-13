@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit configuration_analytic_parameter_service(context ctx);
+    explicit configuration_analytic_parameter_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

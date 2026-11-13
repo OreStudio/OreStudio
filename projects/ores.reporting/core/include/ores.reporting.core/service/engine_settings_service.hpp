@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit engine_settings_service(context ctx);
+    explicit engine_settings_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

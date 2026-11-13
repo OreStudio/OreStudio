@@ -21,7 +21,7 @@
 #define ORES_COMPUTE_REPOSITORY_WORK_TENANT_REPOSITORY_HPP
 
 #include "ores.compute.core/export.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string_view>
@@ -53,12 +53,12 @@ public:
     /**
      * @brief Record that a tenant dispatches work. A tenant already listed is left as it is.
      */
-    void note(context ctx, const boost::uuids::uuid& work_tenant_id);
+    void note(const context& ctx, const boost::uuids::uuid& work_tenant_id);
 
     /**
      * @brief Every tenant that has dispatched work.
      */
-    std::vector<boost::uuids::uuid> list(context ctx);
+    std::vector<boost::uuids::uuid> list(const context& ctx);
 };
 
 }

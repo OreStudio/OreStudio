@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::series_classification_rule& v);
-    void write(context ctx, const std::vector<domain::series_classification_rule>& v);
+    void write(const context& ctx, const domain::series_classification_rule& v);
+    void write(const context& ctx, const std::vector<domain::series_classification_rule>& v);
     /**@}*/
 
     /**
@@ -84,7 +84,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::series_classification_rule& v,
                const ores::utility::domain::precondition& claim);
 
@@ -92,7 +92,7 @@ public:
      * @brief Writes a set of series classification rules, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::series_classification_rule>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -100,13 +100,13 @@ public:
      * @brief Reads latest series classification rules, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::series_classification_rule> read_latest(context ctx);
-    std::vector<domain::series_classification_rule> read_latest(context ctx,
+    std::vector<domain::series_classification_rule> read_latest(const context& ctx);
+    std::vector<domain::series_classification_rule> read_latest(const context& ctx,
                                                                 const std::string& instrument,
                                                                 const std::string& quote,
                                                                 const std::string& key_kind);
     std::vector<domain::series_classification_rule>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 const std::vector<std::string>& instruments,
                 const std::vector<std::string>& quotes,
                 const std::vector<std::string>& key_kinds);
@@ -116,7 +116,7 @@ public:
     /**
      * @brief Reads all series classification rules, possibly filtered by primary key.
      */
-    std::vector<domain::series_classification_rule> read_all(context ctx,
+    std::vector<domain::series_classification_rule> read_all(const context& ctx,
                                                              const std::string& instrument,
                                                              const std::string& quote,
                                                              const std::string& key_kind);
@@ -130,7 +130,7 @@ public:
      * @param ctx Repository context with database connection
      * @param version The version to fetch
      */
-    std::optional<domain::series_classification_rule> read_at_version(context ctx,
+    std::optional<domain::series_classification_rule> read_at_version(const context& ctx,
                                                                       const std::string& instrument,
                                                                       const std::string& quote,
                                                                       const std::string& key_kind,
@@ -153,7 +153,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::series_classification_rule>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -164,13 +164,13 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active series classification rules
      */
-    std::uint32_t get_total_rule_count(context ctx,
+    std::uint32_t get_total_rule_count(const context& ctx,
                                        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a series classification rule by closing its temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::string& instrument,
                 const std::string& quote,
                 const std::string& key_kind);
@@ -195,7 +195,7 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& instrument,
                          const std::string& quote,
                          const std::string& key_kind,
@@ -204,7 +204,7 @@ public:
     /**
      * @brief Deletes series classification rules by closing their temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::vector<std::string>& instruments,
                 const std::vector<std::string>& quotes,
                 const std::vector<std::string>& key_kinds);
@@ -215,7 +215,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::series_classification_rule& v);
 
     /**
@@ -224,7 +224,7 @@ private:
      * A claim the store cannot check is refused here rather than ignored.
      */
     domain::series_classification_rule
-    apply_claim(context ctx,
+    apply_claim(const context& ctx,
                 const domain::series_classification_rule& v,
                 const ores::utility::domain::precondition& claim);
 };

@@ -117,7 +117,7 @@ inline boost::uuids::uuid stream_of(const std::string& provider_code,
 /// Stores one tick on @p stream unless its key already holds one. The shared store keeps its rows
 /// between runs, so a test that names a fixed series and a fixed instant finds its own earlier
 /// tick. Use it only where every writer of the key states the same value.
-inline void ensure_tick(ores::database::context ctx,
+inline void ensure_tick(const ores::database::context& ctx,
                         const boost::uuids::uuid& stream_id,
                         int coord,
                         std::chrono::system_clock::time_point ts,
@@ -140,7 +140,7 @@ inline void ensure_tick(ores::database::context ctx,
 
 /// Appends one tick to @p stream. A statement that returns no row is refused by the read
 /// helper, so the insert states one.
-inline void insert_tick(ores::database::context ctx,
+inline void insert_tick(const ores::database::context& ctx,
                         const boost::uuids::uuid& stream_id,
                         int coord,
                         std::chrono::system_clock::time_point ts,

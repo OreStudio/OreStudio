@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit login_info_service(context ctx);
+    explicit login_info_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

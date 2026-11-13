@@ -55,7 +55,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit image_operations_service(context ctx);
+    explicit image_operations_service(const context& ctx);
 
     /**
      * @brief Stores an uploaded image and answers its id.

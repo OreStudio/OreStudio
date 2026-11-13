@@ -104,7 +104,7 @@ std::optional<query_builder::condition> balance_guaranteed_swap_instrument_filte
 }
 
 ores::utility::domain::precondition balance_guaranteed_swap_instrument_repository::replace_claim(
-    context ctx, const domain::balance_guaranteed_swap_instrument& v) {
+    const context& ctx, const domain::balance_guaranteed_swap_instrument& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -114,7 +114,7 @@ ores::utility::domain::precondition balance_guaranteed_swap_instrument_repositor
 
 domain::balance_guaranteed_swap_instrument
 balance_guaranteed_swap_instrument_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::balance_guaranteed_swap_instrument& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -142,12 +142,12 @@ balance_guaranteed_swap_instrument_repository::apply_claim(
 }
 
 void balance_guaranteed_swap_instrument_repository::write(
-    context ctx, const domain::balance_guaranteed_swap_instrument& v) {
+    const context& ctx, const domain::balance_guaranteed_swap_instrument& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void balance_guaranteed_swap_instrument_repository::write(
-    context ctx, const std::vector<domain::balance_guaranteed_swap_instrument>& v) {
+    const context& ctx, const std::vector<domain::balance_guaranteed_swap_instrument>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -156,7 +156,7 @@ void balance_guaranteed_swap_instrument_repository::write(
 }
 
 void balance_guaranteed_swap_instrument_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::balance_guaranteed_swap_instrument& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing balance guaranteed swap instrument. "
@@ -169,7 +169,7 @@ void balance_guaranteed_swap_instrument_repository::write(
 }
 
 void balance_guaranteed_swap_instrument_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::balance_guaranteed_swap_instrument>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing balance guaranteed swap instruments. Count: "
@@ -185,7 +185,7 @@ void balance_guaranteed_swap_instrument_repository::write(
 }
 
 std::vector<domain::balance_guaranteed_swap_instrument>
-balance_guaranteed_swap_instrument_repository::read_latest(context ctx) {
+balance_guaranteed_swap_instrument_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<balance_guaranteed_swap_instrument_entity>> |
@@ -204,7 +204,7 @@ balance_guaranteed_swap_instrument_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::balance_guaranteed_swap_instrument>
-balance_guaranteed_swap_instrument_repository::read_latest(context ctx,
+balance_guaranteed_swap_instrument_repository::read_latest(const context& ctx,
                                                            const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest balance guaranteed swap instrument. "
                                << "trade_id: " << trade_id;
@@ -227,7 +227,8 @@ balance_guaranteed_swap_instrument_repository::read_latest(context ctx,
 
 
 std::vector<domain::balance_guaranteed_swap_instrument>
-balance_guaranteed_swap_instrument_repository::read_all(context ctx, const std::string& trade_id) {
+balance_guaranteed_swap_instrument_repository::read_all(const context& ctx,
+                                                        const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all balance guaranteed swap instrument versions. "
                                << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
@@ -247,7 +248,7 @@ balance_guaranteed_swap_instrument_repository::read_all(context ctx, const std::
 }
 
 std::optional<domain::balance_guaranteed_swap_instrument>
-balance_guaranteed_swap_instrument_repository::read_at_version(context ctx,
+balance_guaranteed_swap_instrument_repository::read_at_version(const context& ctx,
                                                                const std::string& trade_id,
                                                                std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading balance guaranteed swap instrument at version. "
@@ -276,7 +277,7 @@ balance_guaranteed_swap_instrument_repository::read_at_version(context ctx,
 
 
 balance_guaranteed_swap_instrument_repository::remove_status
-balance_guaranteed_swap_instrument_repository::remove(context ctx,
+balance_guaranteed_swap_instrument_repository::remove(const context& ctx,
                                                       const std::string& trade_id,
                                                       std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing balance guaranteed swap instrument. "
@@ -308,14 +309,14 @@ balance_guaranteed_swap_instrument_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void balance_guaranteed_swap_instrument_repository::remove(context ctx,
+void balance_guaranteed_swap_instrument_repository::remove(const context& ctx,
                                                            const std::string& trade_id) {
     static_cast<void>(remove(ctx, trade_id, std::nullopt));
 }
 
 std::vector<domain::balance_guaranteed_swap_instrument>
 balance_guaranteed_swap_instrument_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -344,7 +345,7 @@ balance_guaranteed_swap_instrument_repository::read_latest(
 
 std::uint32_t
 balance_guaranteed_swap_instrument_repository::get_total_balance_guaranteed_swap_instrument_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::balance_guaranteed_swap_instruments_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug)
@@ -365,7 +366,7 @@ balance_guaranteed_swap_instrument_repository::get_total_balance_guaranteed_swap
 
 std::vector<domain::balance_guaranteed_swap_instrument>
 balance_guaranteed_swap_instrument_repository::read_latest(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -386,7 +387,7 @@ balance_guaranteed_swap_instrument_repository::read_latest(
 }
 
 void balance_guaranteed_swap_instrument_repository::remove(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

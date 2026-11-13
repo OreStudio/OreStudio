@@ -406,7 +406,7 @@ column of the config.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::optional<domain::risk_report_config>
-find_by_definition_id(context ctx, const std::string& definition_id);
+find_by_definition_id(const context& ctx, const std::string& definition_id);
 #+end_src
 
 **** resolve_book_ids
@@ -429,7 +429,7 @@ books to read.
  *
  * A typed definition reads only the books of its regulatory book type.
  */
-std::vector<std::string> resolve_book_ids(context ctx,
+std::vector<std::string> resolve_book_ids(const context& ctx,
                                           const std::string& config_id,
                                           const std::string& definition_id);
 
@@ -437,7 +437,7 @@ std::vector<std::string> resolve_book_ids(context ctx,
  * @brief The regulatory book type a definition is limited to, or nothing
  * when it reads any book.
  */
-std::optional<std::string> regulatory_book_type_of(context ctx,
+std::optional<std::string> regulatory_book_type_of(const context& ctx,
                                                    const std::string& definition_id);
 #+end_src
 
@@ -450,7 +450,7 @@ Returns the active book UUIDs explicitly scoped to a configuration. An
 empty vector means "all books within the selected portfolios".
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<std::string> get_book_scope(context ctx, const std::string& config_id);
+std::vector<std::string> get_book_scope(const context& ctx, const std::string& config_id);
 #+end_src
 
 **** get_portfolio_scope
@@ -462,7 +462,7 @@ Returns the active portfolio UUIDs explicitly scoped to a configuration.
 An empty vector means "all portfolios visible to the tenant".
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<std::string> get_portfolio_scope(context ctx, const std::string& config_id);
+std::vector<std::string> get_portfolio_scope(const context& ctx, const std::string& config_id);
 #+end_src
 
 *** Additional out-of-class implementations
@@ -557,7 +557,7 @@ struct portfolio_scope_entity {
 
 #+begin_src cpp :name body :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::risk_report_config>
-risk_report_config_repository::find_by_definition_id(context ctx,
+risk_report_config_repository::find_by_definition_id(const context& ctx,
                                                      const std::string& definition_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Finding risk_report_config by definition_id: " << definition_id;
@@ -604,7 +604,7 @@ risk_report_config_repository::find_by_definition_id(context ctx,
 
 #+begin_src cpp :name body :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<std::string>
-risk_report_config_repository::resolve_book_ids(context ctx,
+risk_report_config_repository::resolve_book_ids(const context& ctx,
                                                 const std::string& config_id,
                                                 const std::string& definition_id) {
 
@@ -621,7 +621,7 @@ risk_report_config_repository::resolve_book_ids(context ctx,
 }
 
 std::optional<std::string>
-risk_report_config_repository::regulatory_book_type_of(context ctx,
+risk_report_config_repository::regulatory_book_type_of(const context& ctx,
                                                        const std::string& definition_id) {
     const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
@@ -642,7 +642,7 @@ risk_report_config_repository::regulatory_book_type_of(context ctx,
 
 #+begin_src cpp :name body :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<std::string>
-risk_report_config_repository::get_book_scope(context ctx, const std::string& config_id) {
+risk_report_config_repository::get_book_scope(const context& ctx, const std::string& config_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Reading book scope for config: " << config_id;
 
@@ -672,7 +672,7 @@ risk_report_config_repository::get_book_scope(context ctx, const std::string& co
 
 #+begin_src cpp :name body :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<std::string>
-risk_report_config_repository::get_portfolio_scope(context ctx, const std::string& config_id) {
+risk_report_config_repository::get_portfolio_scope(const context& ctx, const std::string& config_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Reading portfolio scope for config: " << config_id;
 

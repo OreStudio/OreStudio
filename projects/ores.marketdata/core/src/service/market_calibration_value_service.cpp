@@ -55,8 +55,8 @@ namespace ores::marketdata::service {
 
 using namespace ores::logging;
 
-market_calibration_value_service::market_calibration_value_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+market_calibration_value_service::market_calibration_value_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

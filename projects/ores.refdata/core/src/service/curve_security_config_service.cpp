@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-curve_security_config_service::curve_security_config_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+curve_security_config_service::curve_security_config_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit series_classification_rule_service(context ctx);
+    explicit series_classification_rule_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

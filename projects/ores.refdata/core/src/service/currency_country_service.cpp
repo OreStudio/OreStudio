@@ -45,8 +45,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-currency_country_service::currency_country_service(context ctx)
-    : ctx_(std::move(ctx))
+currency_country_service::currency_country_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

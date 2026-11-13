@@ -64,8 +64,8 @@ namespace ores::reporting::service {
 
 using namespace ores::logging;
 
-report_instance_service::report_instance_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+report_instance_service::report_instance_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

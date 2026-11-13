@@ -101,7 +101,7 @@ std::optional<query_builder::condition> change_reason_category_filter_condition(
 }
 
 ores::utility::domain::precondition
-change_reason_category_repository::replace_claim(context ctx,
+change_reason_category_repository::replace_claim(const context& ctx,
                                                  const domain::change_reason_category& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
@@ -111,7 +111,7 @@ change_reason_category_repository::replace_claim(context ctx,
 }
 
 domain::change_reason_category
-change_reason_category_repository::apply_claim(context ctx,
+change_reason_category_repository::apply_claim(const context& ctx,
                                                const domain::change_reason_category& v,
                                                const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,13 +138,13 @@ change_reason_category_repository::apply_claim(context ctx,
     return t;
 }
 
-void change_reason_category_repository::write(context ctx,
+void change_reason_category_repository::write(const context& ctx,
                                               const domain::change_reason_category& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void change_reason_category_repository::write(
-    context ctx, const std::vector<domain::change_reason_category>& v) {
+    const context& ctx, const std::vector<domain::change_reason_category>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -152,7 +152,7 @@ void change_reason_category_repository::write(
     write(ctx, v, claims);
 }
 
-void change_reason_category_repository::write(context ctx,
+void change_reason_category_repository::write(const context& ctx,
                                               const domain::change_reason_category& v,
                                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing change reason category. " << "code: " << v.code;
@@ -164,7 +164,7 @@ void change_reason_category_repository::write(context ctx,
 }
 
 void change_reason_category_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::change_reason_category>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing change reason categories. Count: " << v.size();
@@ -179,7 +179,7 @@ void change_reason_category_repository::write(
 }
 
 std::vector<domain::change_reason_category>
-change_reason_category_repository::read_latest(context ctx) {
+change_reason_category_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<change_reason_category_entity>> |
                        query_builder::where("valid_to"_c == max) |
@@ -195,7 +195,7 @@ change_reason_category_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::change_reason_category>
-change_reason_category_repository::read_latest(context ctx, const std::string& code) {
+change_reason_category_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest change reason category. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<change_reason_category_entity>> |
@@ -212,7 +212,7 @@ change_reason_category_repository::read_latest(context ctx, const std::string& c
 
 
 std::vector<domain::change_reason_category>
-change_reason_category_repository::read_all(context ctx, const std::string& code) {
+change_reason_category_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all change reason category versions. "
                                << "code: " << code;
     const auto query = query_builder::read<std::vector<change_reason_category_entity>> |
@@ -229,7 +229,7 @@ change_reason_category_repository::read_all(context ctx, const std::string& code
 }
 
 std::optional<domain::change_reason_category> change_reason_category_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading change reason category at version. " << "code: " << code
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<change_reason_category_entity>> |
@@ -250,7 +250,7 @@ std::optional<domain::change_reason_category> change_reason_category_repository:
 }
 
 change_reason_category_repository::remove_status change_reason_category_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing change reason category. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -279,12 +279,12 @@ change_reason_category_repository::remove_status change_reason_category_reposito
     return remove_status::removed;
 }
 
-void change_reason_category_repository::remove(context ctx, const std::string& code) {
+void change_reason_category_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::change_reason_category> change_reason_category_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -308,7 +308,7 @@ std::vector<domain::change_reason_category> change_reason_category_repository::r
 }
 
 std::uint32_t change_reason_category_repository::get_total_category_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::change_reason_categories_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active change reason category count";
@@ -325,7 +325,8 @@ std::uint32_t change_reason_category_repository::get_total_category_count(
 }
 
 std::vector<domain::change_reason_category>
-change_reason_category_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+change_reason_category_repository::read_latest(const context& ctx,
+                                               const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -341,7 +342,8 @@ change_reason_category_repository::read_latest(context ctx, const std::vector<st
     return result;
 }
 
-void change_reason_category_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void change_reason_category_repository::remove(const context& ctx,
+                                               const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

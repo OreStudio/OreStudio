@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-day_count_fraction_type_service::day_count_fraction_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+day_count_fraction_type_service::day_count_fraction_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

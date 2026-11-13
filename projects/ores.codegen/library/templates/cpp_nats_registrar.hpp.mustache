@@ -15,7 +15,7 @@ namespace ores::{{component}}::messaging {
 
 std::vector<ores::nats::service::subscription>
 register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
-                                       ores::database::context ctx,
+                                       const ores::database::context& ctx,
                                        std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }
@@ -37,7 +37,7 @@ namespace ores::{{component}}::messaging {
 
 std::vector<ores::nats::service::subscription>
 register_{{name_singular}}_handlers(ores::nats::service::client& nats,
-                                     ores::database::context ctx,
+                                     const ores::database::context& ctx,
                                      std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }
@@ -59,7 +59,7 @@ namespace ores::{{component}}::messaging {
 
 std::vector<ores::nats::service::subscription>
 register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
-                                       ores::database::context ctx,
+                                       const ores::database::context& ctx,
                                        std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }
@@ -81,7 +81,7 @@ namespace ores::{{component}}::messaging {
 
 std::vector<ores::nats::service::subscription>
 register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
-                                       ores::database::context ctx,
+                                       const ores::database::context& ctx,
                                        std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }

@@ -58,8 +58,8 @@ namespace ores::marketdata::service {
 
 using namespace ores::logging;
 
-rate_card_component_service::rate_card_component_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+rate_card_component_service::rate_card_component_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

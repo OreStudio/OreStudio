@@ -287,7 +287,7 @@ Reads every current observation of one series, in observation time order. The
 ORE export walks a tenant's series and writes each one's observations.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::market_observation> read_latest_for_series(context ctx,
+std::vector<domain::market_observation> read_latest_for_series(const context& ctx,
                                                                const boost::uuids::uuid& series_id);
 #+end_src
 
@@ -314,7 +314,7 @@ std::vector<domain::market_observation> read_latest_for_series(context ctx,
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::market_observation>
-market_observation_repository::read_latest_for_series(context ctx,
+market_observation_repository::read_latest_for_series(const context& ctx,
                                                      const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest observations for series: " << series_id;
     static constexpr auto max = db_timestamp::max();
@@ -353,12 +353,12 @@ and the export of a tenant with 306 series took 38 seconds that way.
  * every chunk of the hypertable. The rows are held in memory together, so the size
  * of the answer grows with the history the tenant keeps.
  */
-std::vector<domain::market_observation> read_latest_all(context ctx);
+std::vector<domain::market_observation> read_latest_all(const context& ctx);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::market_observation>
-market_observation_repository::read_latest_all(context ctx) {
+market_observation_repository::read_latest_all(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the latest observations of every series";
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -403,7 +403,7 @@ struct observation_record;
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<observation_record>
-read_as_of_records(context ctx,
+read_as_of_records(const context& ctx,
                    const boost::uuids::uuid& series_id,
                    const std::chrono::system_clock::time_point& as_of_datetime);
 #+end_src
@@ -419,7 +419,7 @@ namespace {
  * service context, which reads the store on its own authority, as every service read does. The
  * id is stored nowhere, so every read computes it. @p allowed is the right the read needs.
  */
-std::string stream_of(market_observation_repository::context ctx,
+std::string stream_of(const market_observation_repository::context& ctx,
                                      const boost::uuids::uuid& series_id,
                                      bool (*allowed)(const ores::database::context&, const std::string&)) {
     const auto series =
@@ -438,7 +438,7 @@ std::string stream_of(market_observation_repository::context ctx,
  * no statement derives the id.
  */
 std::pair<std::vector<std::string>, std::vector<std::string>>
-streams_of_every_series(market_observation_repository::context ctx) {
+streams_of_every_series(const market_observation_repository::context& ctx) {
     const auto party = ctx.party_id();
     const auto usable = party ? computable_providers(ctx) : std::set<std::string>{};
     std::vector<std::string> series;
@@ -499,7 +499,7 @@ std::string latest_tick_points(std::string_view bound, std::string_view max) {
  * tick path unchanged.
  */
 std::vector<observation_record>
-read_manual_points(market_observation_repository::context ctx,
+read_manual_points(const market_observation_repository::context& ctx,
                    const boost::uuids::uuid& series_id,
                    ores::logging::logger_t& log) {
     const auto tid = ctx.tenant_id().to_string();
@@ -532,7 +532,7 @@ read_manual_points(market_observation_repository::context ctx,
 /*
  * The manual points of every series of the tenant: the read above without its series.
  */
-std::vector<observation_record> read_manual_points_all(market_observation_repository::context ctx,
+std::vector<observation_record> read_manual_points_all(const market_observation_repository::context& ctx,
                                                        ores::logging::logger_t& log) {
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sql = R"(
@@ -563,7 +563,7 @@ std::vector<observation_record> read_manual_points_all(market_observation_reposi
 }
 
 std::vector<observation_record> market_observation_repository::read_as_of_records(
-    context ctx,
+    const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::chrono::system_clock::time_point& as_of_datetime) {
     using ores::platform::time::datetime;
@@ -656,14 +656,14 @@ report on it.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::market_observation>
-read_as_of(context ctx,
+read_as_of(const context& ctx,
            const boost::uuids::uuid& series_id,
            const std::chrono::system_clock::time_point& as_of_datetime);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::market_observation> market_observation_repository::read_as_of(
-    context ctx,
+    const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::chrono::system_clock::time_point& as_of_datetime) {
     const auto records = read_as_of_records(ctx, series_id, as_of_datetime);
@@ -698,12 +698,12 @@ the other.
  * is a change to the other.
  */
 std::vector<domain::market_observation>
-read_as_of_all(context ctx, const std::chrono::system_clock::time_point& as_of_datetime);
+read_as_of_all(const context& ctx, const std::chrono::system_clock::time_point& as_of_datetime);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::market_observation> market_observation_repository::read_as_of_all(
-    context ctx, const std::chrono::system_clock::time_point& as_of_datetime) {
+    const context& ctx, const std::chrono::system_clock::time_point& as_of_datetime) {
     using ores::platform::time::datetime;
     const auto tid = ctx.tenant_id().to_string();
     const auto as_of_str = datetime::to_iso8601_utc(as_of_datetime);
@@ -802,7 +802,7 @@ queries. A bucket with no observation at or before its boundary is empty.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<std::vector<domain::market_observation>>
-read_as_of_buckets(context ctx,
+read_as_of_buckets(const context& ctx,
                    const boost::uuids::uuid& series_id,
                    const std::chrono::system_clock::time_point& latest_boundary,
                    const std::chrono::seconds& bucket_size,
@@ -812,7 +812,7 @@ read_as_of_buckets(context ctx,
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<std::vector<domain::market_observation>>
 market_observation_repository::read_as_of_buckets(
-    context ctx,
+    const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::chrono::system_clock::time_point& latest_boundary,
     const std::chrono::seconds& bucket_size,
@@ -945,7 +945,7 @@ struct series_instant {
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<series_instant>
-read_instants(context ctx,
+read_instants(const context& ctx,
               const boost::uuids::uuid& series_id,
               const std::chrono::system_clock::time_point& from_datetime,
               const std::chrono::system_clock::time_point& to_datetime,
@@ -956,7 +956,7 @@ read_instants(context ctx,
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<series_instant>
 market_observation_repository::read_instants(
-    context ctx,
+    const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::chrono::system_clock::time_point& from_datetime,
     const std::chrono::system_clock::time_point& to_datetime,
@@ -1084,7 +1084,7 @@ names who keyed the point, and the reason code and commentary are the
 caller's.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-void write_manual_point(context ctx,
+void write_manual_point(const context& ctx,
                         const boost::uuids::uuid& series_id,
                         const std::string& oresmd_uri,
                         std::chrono::system_clock::time_point observation_datetime,
@@ -1095,7 +1095,7 @@ void write_manual_point(context ctx,
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 void market_observation_repository::write_manual_point(
-    context ctx,
+    const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::string& oresmd_uri,
     std::chrono::system_clock::time_point observation_datetime,
@@ -1177,7 +1177,7 @@ place, the keyed value would stay the newest row of the coordinate and read as
 a quoted one.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-void clear_manual_point(context ctx,
+void clear_manual_point(const context& ctx,
                         const boost::uuids::uuid& series_id,
                         const std::string& oresmd_uri,
                         std::chrono::system_clock::time_point observation_datetime);
@@ -1185,7 +1185,7 @@ void clear_manual_point(context ctx,
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 void market_observation_repository::clear_manual_point(
-    context ctx,
+    const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::string& oresmd_uri,
     std::chrono::system_clock::time_point observation_datetime) {
@@ -1235,14 +1235,14 @@ over-keys were withdrawn. A coordinate that holds none answers zero and writes
 nothing.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::size_t clear_manual_points(context ctx,
+std::size_t clear_manual_points(const context& ctx,
                                 const boost::uuids::uuid& series_id,
                                 const std::string& oresmd_uri);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::size_t market_observation_repository::clear_manual_points(
-    context ctx, const boost::uuids::uuid& series_id, const std::string& oresmd_uri) {
+    const context& ctx, const boost::uuids::uuid& series_id, const std::string& oresmd_uri) {
     BOOST_LOG_SEV(lg(), debug) << "Clearing every manual point for series: " << series_id
                                << " coordinate: " << oresmd_uri;
 

@@ -58,8 +58,8 @@ namespace ores::marketdata::service {
 
 using namespace ores::logging;
 
-market_data_vendor_instrument_service::market_data_vendor_instrument_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+market_data_vendor_instrument_service::market_data_vendor_instrument_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

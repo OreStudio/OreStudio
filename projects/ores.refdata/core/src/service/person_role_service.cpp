@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-person_role_service::person_role_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+person_role_service::person_role_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

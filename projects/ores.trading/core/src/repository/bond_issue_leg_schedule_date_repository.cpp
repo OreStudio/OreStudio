@@ -93,7 +93,7 @@ bond_issue_leg_schedule_date_list_order(const ores::utility::domain::order& orde
 }
 
 ores::utility::domain::precondition bond_issue_leg_schedule_date_repository::replace_claim(
-    context ctx, const domain::bond_issue_leg_schedule_date& v) {
+    const context& ctx, const domain::bond_issue_leg_schedule_date& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.issue_id),
                                      std::to_string(v.leg_number),
@@ -107,7 +107,7 @@ ores::utility::domain::precondition bond_issue_leg_schedule_date_repository::rep
 }
 
 domain::bond_issue_leg_schedule_date bond_issue_leg_schedule_date_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::bond_issue_leg_schedule_date& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,13 +139,13 @@ domain::bond_issue_leg_schedule_date bond_issue_leg_schedule_date_repository::ap
     return t;
 }
 
-void bond_issue_leg_schedule_date_repository::write(context ctx,
+void bond_issue_leg_schedule_date_repository::write(const context& ctx,
                                                     const domain::bond_issue_leg_schedule_date& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void bond_issue_leg_schedule_date_repository::write(
-    context ctx, const std::vector<domain::bond_issue_leg_schedule_date>& v) {
+    const context& ctx, const std::vector<domain::bond_issue_leg_schedule_date>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -154,7 +154,7 @@ void bond_issue_leg_schedule_date_repository::write(
 }
 
 void bond_issue_leg_schedule_date_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::bond_issue_leg_schedule_date& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond issue leg schedule date. "
@@ -170,7 +170,7 @@ void bond_issue_leg_schedule_date_repository::write(
 }
 
 void bond_issue_leg_schedule_date_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::bond_issue_leg_schedule_date>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond issue leg schedule dates. Count: " << v.size();
@@ -185,7 +185,7 @@ void bond_issue_leg_schedule_date_repository::write(
 }
 
 std::vector<domain::bond_issue_leg_schedule_date>
-bond_issue_leg_schedule_date_repository::read_latest(context ctx) {
+bond_issue_leg_schedule_date_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_issue_leg_schedule_date_entity>> |
@@ -206,7 +206,7 @@ bond_issue_leg_schedule_date_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::bond_issue_leg_schedule_date>
-bond_issue_leg_schedule_date_repository::read_latest(context ctx,
+bond_issue_leg_schedule_date_repository::read_latest(const context& ctx,
                                                      const std::string& issue_id,
                                                      const std::string& leg_number,
                                                      const std::string& schedule_role,
@@ -237,7 +237,7 @@ bond_issue_leg_schedule_date_repository::read_latest(context ctx,
 
 
 std::vector<domain::bond_issue_leg_schedule_date>
-bond_issue_leg_schedule_date_repository::read_all(context ctx,
+bond_issue_leg_schedule_date_repository::read_all(const context& ctx,
                                                   const std::string& issue_id,
                                                   const std::string& leg_number,
                                                   const std::string& schedule_role,
@@ -268,7 +268,7 @@ bond_issue_leg_schedule_date_repository::read_all(context ctx,
 
 std::optional<domain::bond_issue_leg_schedule_date>
 bond_issue_leg_schedule_date_repository::read_at_version(
-    context ctx,
+    const context& ctx,
     const std::string& issue_id,
     const std::string& leg_number,
     const std::string& schedule_role,
@@ -305,7 +305,7 @@ bond_issue_leg_schedule_date_repository::read_at_version(
 
 
 bond_issue_leg_schedule_date_repository::remove_status
-bond_issue_leg_schedule_date_repository::remove(context ctx,
+bond_issue_leg_schedule_date_repository::remove(const context& ctx,
                                                 const std::string& issue_id,
                                                 const std::string& leg_number,
                                                 const std::string& schedule_role,
@@ -351,7 +351,7 @@ bond_issue_leg_schedule_date_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void bond_issue_leg_schedule_date_repository::remove(context ctx,
+void bond_issue_leg_schedule_date_repository::remove(const context& ctx,
                                                      const std::string& issue_id,
                                                      const std::string& leg_number,
                                                      const std::string& schedule_role,
@@ -367,7 +367,7 @@ void bond_issue_leg_schedule_date_repository::remove(context ctx,
 }
 
 std::vector<domain::bond_issue_leg_schedule_date>
-bond_issue_leg_schedule_date_repository::read_latest(context ctx,
+bond_issue_leg_schedule_date_repository::read_latest(const context& ctx,
                                                      std::uint32_t offset,
                                                      std::uint32_t limit,
                                                      const ores::utility::domain::order& order,
@@ -397,7 +397,7 @@ bond_issue_leg_schedule_date_repository::read_latest(context ctx,
 }
 
 std::uint32_t bond_issue_leg_schedule_date_repository::get_total_bond_issue_leg_schedule_date_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond issue leg schedule date count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -414,7 +414,7 @@ std::uint32_t bond_issue_leg_schedule_date_repository::get_total_bond_issue_leg_
 
 std::vector<domain::bond_issue_leg_schedule_date>
 bond_issue_leg_schedule_date_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& issue_ids,
     const std::vector<std::string>& leg_numbers,
     const std::vector<std::string>& schedule_roles,
@@ -467,7 +467,7 @@ bond_issue_leg_schedule_date_repository::read_latest(
 }
 
 void bond_issue_leg_schedule_date_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& issue_ids,
     const std::vector<std::string>& leg_numbers,
     const std::vector<std::string>& schedule_roles,

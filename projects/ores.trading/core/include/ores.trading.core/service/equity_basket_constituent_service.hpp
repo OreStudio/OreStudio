@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit equity_basket_constituent_service(context ctx);
+    explicit equity_basket_constituent_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -57,8 +57,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-instrument_option_exercise_fee_service::instrument_option_exercise_fee_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+instrument_option_exercise_fee_service::instrument_option_exercise_fee_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

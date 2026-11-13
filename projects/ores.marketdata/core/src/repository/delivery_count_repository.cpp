@@ -128,7 +128,7 @@ delivery_count_filter_condition(const std::optional<messaging::delivery_counts_f
 }
 
 ores::utility::domain::precondition
-delivery_count_repository::replace_claim(context ctx, const domain::delivery_count& v) {
+delivery_count_repository::replace_claim(const context& ctx, const domain::delivery_count& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -137,7 +137,7 @@ delivery_count_repository::replace_claim(context ctx, const domain::delivery_cou
 }
 
 domain::delivery_count
-delivery_count_repository::apply_claim(context ctx,
+delivery_count_repository::apply_claim(const context& ctx,
                                        const domain::delivery_count& v,
                                        const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -164,11 +164,12 @@ delivery_count_repository::apply_claim(context ctx,
     return t;
 }
 
-void delivery_count_repository::write(context ctx, const domain::delivery_count& v) {
+void delivery_count_repository::write(const context& ctx, const domain::delivery_count& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void delivery_count_repository::write(context ctx, const std::vector<domain::delivery_count>& v) {
+void delivery_count_repository::write(const context& ctx,
+                                      const std::vector<domain::delivery_count>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -176,7 +177,7 @@ void delivery_count_repository::write(context ctx, const std::vector<domain::del
     write(ctx, v, claims);
 }
 
-void delivery_count_repository::write(context ctx,
+void delivery_count_repository::write(const context& ctx,
                                       const domain::delivery_count& v,
                                       const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing delivery count. " << "id: " << v.id;
@@ -186,7 +187,7 @@ void delivery_count_repository::write(context ctx,
 }
 
 void delivery_count_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::delivery_count>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing delivery counts. Count: " << v.size();
@@ -198,7 +199,7 @@ void delivery_count_repository::write(
         ctx, delivery_count_mapper::map(batch), lg(), "Writing delivery counts to database.");
 }
 
-std::vector<domain::delivery_count> delivery_count_repository::read_latest(context ctx) {
+std::vector<domain::delivery_count> delivery_count_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<delivery_count_entity>> |
@@ -213,7 +214,7 @@ std::vector<domain::delivery_count> delivery_count_repository::read_latest(conte
         "Reading latest delivery counts");
 }
 
-std::vector<domain::delivery_count> delivery_count_repository::read_latest(context ctx,
+std::vector<domain::delivery_count> delivery_count_repository::read_latest(const context& ctx,
                                                                            const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest delivery count. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -231,7 +232,8 @@ std::vector<domain::delivery_count> delivery_count_repository::read_latest(conte
 }
 
 std::vector<domain::delivery_count>
-delivery_count_repository::read_latest_by_oresmd_uri(context ctx, const std::string& oresmd_uri) {
+delivery_count_repository::read_latest_by_oresmd_uri(const context& ctx,
+                                                     const std::string& oresmd_uri) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest delivery count by oresmd_uri: " << oresmd_uri;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -254,7 +256,8 @@ delivery_count_repository::read_latest_by_oresmd_uri(context ctx, const std::str
 }
 
 std::vector<domain::delivery_count>
-delivery_count_repository::read_any_by_oresmd_uri(context ctx, const std::string& oresmd_uri) {
+delivery_count_repository::read_any_by_oresmd_uri(const context& ctx,
+                                                  const std::string& oresmd_uri) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any delivery count by oresmd_uri: " << oresmd_uri;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<delivery_count_entity>> |
@@ -280,7 +283,7 @@ delivery_count_repository::read_any_by_oresmd_uri(context ctx, const std::string
 }
 
 
-std::vector<domain::delivery_count> delivery_count_repository::read_all(context ctx,
+std::vector<domain::delivery_count> delivery_count_repository::read_all(const context& ctx,
                                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all delivery count versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -297,7 +300,7 @@ std::vector<domain::delivery_count> delivery_count_repository::read_all(context 
 }
 
 std::optional<domain::delivery_count> delivery_count_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading delivery count at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -320,7 +323,7 @@ std::optional<domain::delivery_count> delivery_count_repository::read_at_version
 }
 
 delivery_count_repository::remove_status delivery_count_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing delivery count. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -348,12 +351,12 @@ delivery_count_repository::remove_status delivery_count_repository::remove(
     return remove_status::removed;
 }
 
-void delivery_count_repository::remove(context ctx, const std::string& id) {
+void delivery_count_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::delivery_count> delivery_count_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -378,7 +381,7 @@ std::vector<domain::delivery_count> delivery_count_repository::read_latest(
 }
 
 std::uint32_t delivery_count_repository::get_total_delivery_count_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::delivery_counts_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active delivery count count";
@@ -397,7 +400,7 @@ std::uint32_t delivery_count_repository::get_total_delivery_count_count(
 }
 
 std::vector<domain::delivery_count>
-delivery_count_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+delivery_count_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -414,7 +417,7 @@ delivery_count_repository::read_latest(context ctx, const std::vector<std::strin
     return result;
 }
 
-void delivery_count_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void delivery_count_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -433,7 +436,7 @@ void delivery_count_repository::remove(context ctx, const std::vector<std::strin
 
 
 std::vector<domain::delivery_count>
-delivery_count_repository::read_latest_all_tenants(context ctx) {
+delivery_count_repository::read_latest_all_tenants(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<delivery_count_entity>> |
                        query_builder::where("valid_to"_c == max) | query_builder::order_by("id"_c);

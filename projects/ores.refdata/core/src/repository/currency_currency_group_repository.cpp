@@ -52,8 +52,8 @@ std::string currency_currency_group_repository::sql() {
     return query_builder::insert_statement_sql<currency_currency_group_entity>(lg());
 }
 
-currency_currency_group_repository::currency_currency_group_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+currency_currency_group_repository::currency_currency_group_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 currency_currency_group_repository::replace_claim(const domain::currency_currency_group& v) {

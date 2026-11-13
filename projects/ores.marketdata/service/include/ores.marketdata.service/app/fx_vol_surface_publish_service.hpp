@@ -19,7 +19,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_FX_VOL_SURFACE_PUBLISH_SERVICE_HPP
 #define ORES_MARKETDATA_SERVICE_APP_FX_VOL_SURFACE_PUBLISH_SERVICE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/domain/fx_vol_surface_calibration.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
@@ -55,17 +55,17 @@ blocking_failure_of(const ores::marketdata::domain::fx_vol_surface_calibration& 
 class ORES_MARKETDATA_SERVICE_EXPORT fx_vol_surface_publish_service final {
 public:
     [[nodiscard]] static ores::marketdata::messaging::publish_fx_vol_surface_response
-    publish(ores::database::context ctx,
+    publish(const ores::database::context& ctx,
             const ores::marketdata::messaging::publish_fx_vol_surface_request& request);
 
     /// The published surface of a blueprint at an as-of, or a slice of it. Never a candidate.
     [[nodiscard]] static ores::marketdata::messaging::get_published_fx_vol_surface_response
     read_published(
-        ores::database::context ctx,
+        const ores::database::context& ctx,
         const ores::marketdata::messaging::get_published_fx_vol_surface_request& request);
 
     [[nodiscard]] static ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response
-    read(ores::database::context ctx,
+    read(const ores::database::context& ctx,
          const ores::marketdata::messaging::get_fx_vol_surface_publish_subject_request& request);
 };
 

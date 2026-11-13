@@ -35,8 +35,8 @@ using ores::database::repository::ids_of;
 using ores::database::repository::read_one;
 using ores::database::repository::read_where;
 
-todays_market_document_service::todays_market_document_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+todays_market_document_service::todays_market_document_service(const context& ctx)
+    : ctx_(ctx) {}
 
 void todays_market_document_service::save(messaging::todays_market_document v) {
     ores::service::messaging::stamp_document(v, ctx_);

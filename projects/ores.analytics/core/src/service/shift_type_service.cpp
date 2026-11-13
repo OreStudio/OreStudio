@@ -54,8 +54,8 @@ namespace ores::analytics::service {
 
 using namespace ores::logging;
 
-shift_type_service::shift_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+shift_type_service::shift_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

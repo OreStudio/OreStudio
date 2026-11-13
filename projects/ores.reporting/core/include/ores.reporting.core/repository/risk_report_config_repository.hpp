@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::risk_report_config& v);
-    void write(context ctx, const std::vector<domain::risk_report_config>& v);
+    void write(const context& ctx, const domain::risk_report_config& v);
+    void write(const context& ctx, const std::vector<domain::risk_report_config>& v);
     /**@}*/
 
     /**
@@ -84,7 +84,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::risk_report_config& v,
                const ores::utility::domain::precondition& claim);
 
@@ -92,7 +92,7 @@ public:
      * @brief Writes a set of risk report configs, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::risk_report_config>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -100,9 +100,9 @@ public:
      * @brief Reads latest risk report configs, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::risk_report_config> read_latest(context ctx);
-    std::vector<domain::risk_report_config> read_latest(context ctx, const std::string& id);
-    std::vector<domain::risk_report_config> read_latest(context ctx,
+    std::vector<domain::risk_report_config> read_latest(const context& ctx);
+    std::vector<domain::risk_report_config> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::risk_report_config> read_latest(const context& ctx,
                                                         const std::vector<std::string>& ids);
     /**@}*/
 
@@ -110,7 +110,7 @@ public:
     /**
      * @brief Reads all risk report configs, possibly filtered by primary key.
      */
-    std::vector<domain::risk_report_config> read_all(context ctx, const std::string& id);
+    std::vector<domain::risk_report_config> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single risk report config as it stood at a specific
@@ -122,7 +122,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::risk_report_config>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest risk report configs filtered by configuration_id, with pagination.
@@ -133,7 +133,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::risk_report_config>
-    read_latest_by_configuration_id(context ctx,
+    read_latest_by_configuration_id(const context& ctx,
                                     const std::string& configuration_id,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
@@ -142,7 +142,7 @@ public:
     /**
      * @brief Gets the total count of active risk report configs filtered by configuration_id.
      */
-    std::uint32_t get_total_config_count_by_configuration_id(context ctx,
+    std::uint32_t get_total_config_count_by_configuration_id(const context& ctx,
                                                              const std::string& configuration_id);
 
 
@@ -163,7 +163,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::risk_report_config>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -174,13 +174,13 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active risk report configs
      */
-    std::uint32_t get_total_config_count(context ctx,
+    std::uint32_t get_total_config_count(const context& ctx,
                                          const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a risk report config by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -202,41 +202,43 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes risk report configs by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
     std::optional<domain::risk_report_config>
-    find_by_definition_id(context ctx, const std::string& definition_id);
+    find_by_definition_id(const context& ctx, const std::string& definition_id);
 
     /**
      * @brief The books a run of a definition reads under a risk report config.
      *
      * A typed definition reads only the books of its regulatory book type.
      */
-    std::vector<std::string>
-    resolve_book_ids(context ctx, const std::string& config_id, const std::string& definition_id);
+    std::vector<std::string> resolve_book_ids(const context& ctx,
+                                              const std::string& config_id,
+                                              const std::string& definition_id);
 
     /**
      * @brief The regulatory book type a definition is limited to, or nothing
      * when it reads any book.
      */
-    std::optional<std::string> regulatory_book_type_of(context ctx,
+    std::optional<std::string> regulatory_book_type_of(const context& ctx,
                                                        const std::string& definition_id);
 
-    std::vector<std::string> get_book_scope(context ctx, const std::string& config_id);
+    std::vector<std::string> get_book_scope(const context& ctx, const std::string& config_id);
 
-    std::vector<std::string> get_portfolio_scope(context ctx, const std::string& config_id);
+    std::vector<std::string> get_portfolio_scope(const context& ctx, const std::string& config_id);
 
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::risk_report_config& v);
 
     /**
@@ -244,7 +246,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::risk_report_config apply_claim(context ctx,
+    domain::risk_report_config apply_claim(const context& ctx,
                                            const domain::risk_report_config& v,
                                            const ores::utility::domain::precondition& claim);
 };

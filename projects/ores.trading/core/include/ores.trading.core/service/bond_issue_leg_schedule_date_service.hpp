@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit bond_issue_leg_schedule_date_service(context ctx);
+    explicit bond_issue_leg_schedule_date_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

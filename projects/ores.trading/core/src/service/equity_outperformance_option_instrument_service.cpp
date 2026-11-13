@@ -59,8 +59,8 @@ namespace ores::trading::service {
 using namespace ores::logging;
 
 equity_outperformance_option_instrument_service::equity_outperformance_option_instrument_service(
-    context ctx)
-    : ctx_(std::move(ctx)) {}
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

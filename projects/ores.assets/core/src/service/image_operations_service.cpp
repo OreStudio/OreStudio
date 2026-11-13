@@ -50,8 +50,8 @@ ores::utility::domain::result refusal_result(const validation::image_upload_refu
 
 }
 
-image_operations_service::image_operations_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+image_operations_service::image_operations_service(const context& ctx)
+    : ctx_(ctx) {}
 
 messaging::upload_image_response
 image_operations_service::upload_image(const messaging::upload_image_request& request) {

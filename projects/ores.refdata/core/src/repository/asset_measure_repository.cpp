@@ -85,7 +85,7 @@ query_builder::order asset_measure_list_order(const ores::utility::domain::order
 }
 
 ores::utility::domain::precondition
-asset_measure_repository::replace_claim(context ctx, const domain::asset_measure& v) {
+asset_measure_repository::replace_claim(const context& ctx, const domain::asset_measure& v) {
     const auto current = read_latest(ctx, v.code, v.coding_scheme_code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -93,8 +93,10 @@ asset_measure_repository::replace_claim(context ctx, const domain::asset_measure
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::asset_measure asset_measure_repository::apply_claim(
-    context ctx, const domain::asset_measure& v, const ores::utility::domain::precondition& claim) {
+domain::asset_measure
+asset_measure_repository::apply_claim(const context& ctx,
+                                      const domain::asset_measure& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -119,11 +121,12 @@ domain::asset_measure asset_measure_repository::apply_claim(
     return t;
 }
 
-void asset_measure_repository::write(context ctx, const domain::asset_measure& v) {
+void asset_measure_repository::write(const context& ctx, const domain::asset_measure& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void asset_measure_repository::write(context ctx, const std::vector<domain::asset_measure>& v) {
+void asset_measure_repository::write(const context& ctx,
+                                     const std::vector<domain::asset_measure>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -131,7 +134,7 @@ void asset_measure_repository::write(context ctx, const std::vector<domain::asse
     write(ctx, v, claims);
 }
 
-void asset_measure_repository::write(context ctx,
+void asset_measure_repository::write(const context& ctx,
                                      const domain::asset_measure& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset measure. " << "code: " << v.code
@@ -142,7 +145,7 @@ void asset_measure_repository::write(context ctx,
 }
 
 void asset_measure_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::asset_measure>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset measures. Count: " << v.size();
@@ -154,7 +157,7 @@ void asset_measure_repository::write(
         ctx, asset_measure_mapper::map(batch), lg(), "Writing asset measures to database.");
 }
 
-std::vector<domain::asset_measure> asset_measure_repository::read_latest(context ctx) {
+std::vector<domain::asset_measure> asset_measure_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<asset_measure_entity>> |
@@ -170,7 +173,7 @@ std::vector<domain::asset_measure> asset_measure_repository::read_latest(context
 }
 
 std::vector<domain::asset_measure> asset_measure_repository::read_latest(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset measure. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
@@ -190,7 +193,7 @@ std::vector<domain::asset_measure> asset_measure_repository::read_latest(
 
 
 std::vector<domain::asset_measure> asset_measure_repository::read_all(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all asset measure versions. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -208,7 +211,7 @@ std::vector<domain::asset_measure> asset_measure_repository::read_all(
 }
 
 std::optional<domain::asset_measure>
-asset_measure_repository::read_at_version(context ctx,
+asset_measure_repository::read_at_version(const context& ctx,
                                           const std::string& code,
                                           const std::string& coding_scheme_code,
                                           std::uint32_t version) {
@@ -236,7 +239,7 @@ asset_measure_repository::read_at_version(context ctx,
 }
 
 asset_measure_repository::remove_status
-asset_measure_repository::remove(context ctx,
+asset_measure_repository::remove(const context& ctx,
                                  const std::string& code,
                                  const std::string& coding_scheme_code,
                                  std::optional<std::uint32_t> version) {
@@ -269,14 +272,14 @@ asset_measure_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void asset_measure_repository::remove(context ctx,
+void asset_measure_repository::remove(const context& ctx,
                                       const std::string& code,
                                       const std::string& coding_scheme_code) {
     static_cast<void>(remove(ctx, code, coding_scheme_code, std::nullopt));
 }
 
 std::vector<domain::asset_measure>
-asset_measure_repository::read_latest(context ctx,
+asset_measure_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -299,7 +302,7 @@ asset_measure_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-asset_measure_repository::get_total_measure_count(context ctx,
+asset_measure_repository::get_total_measure_count(const context& ctx,
                                                   const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset measure count";
 
@@ -316,7 +319,7 @@ asset_measure_repository::get_total_measure_count(context ctx,
 }
 
 std::vector<domain::asset_measure>
-asset_measure_repository::read_latest(context ctx,
+asset_measure_repository::read_latest(const context& ctx,
                                       const std::vector<std::string>& codes,
                                       const std::vector<std::string>& coding_scheme_codes) {
     if (codes.empty() || coding_scheme_codes.empty())
@@ -351,7 +354,7 @@ asset_measure_repository::read_latest(context ctx,
     return filtered;
 }
 
-void asset_measure_repository::remove(context ctx,
+void asset_measure_repository::remove(const context& ctx,
                                       const std::vector<std::string>& codes,
                                       const std::vector<std::string>& coding_scheme_codes) {
     // Compound key: a per-column .in() DELETE would be a cross-product

@@ -71,12 +71,12 @@ using ores::synthetic::feed::resolve;
 class ir_curve_preview_handler {
 public:
     ir_curve_preview_handler(ores::nats::service::client& nats,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              const feed_kind_registry& registry)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
+        , ctx_(ctx)
+        , verifier_(verifier)
         , registry_(registry) {}
 
     void preview_shape(ores::nats::message msg, const std::string& kind) {

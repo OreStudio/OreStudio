@@ -146,8 +146,8 @@ bool run_holds_errors(const ores::database::context& ctx, const std::string& ins
 
 }
 
-report_error_recorder::report_error_recorder(ores::database::context ctx)
-    : ctx_(std::move(ctx)) {}
+report_error_recorder::report_error_recorder(const ores::database::context& ctx)
+    : ctx_(ctx) {}
 
 recorded_engine_errors
 report_error_recorder::record_engine_errors(const std::string& report_instance_id,

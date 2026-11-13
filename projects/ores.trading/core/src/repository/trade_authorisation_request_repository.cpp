@@ -111,7 +111,7 @@ std::optional<query_builder::condition> trade_authorisation_request_filter_condi
 }
 
 ores::utility::domain::precondition trade_authorisation_request_repository::replace_claim(
-    context ctx, const domain::trade_authorisation_request& v) {
+    const context& ctx, const domain::trade_authorisation_request& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.request_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -120,7 +120,7 @@ ores::utility::domain::precondition trade_authorisation_request_repository::repl
 }
 
 domain::trade_authorisation_request trade_authorisation_request_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::trade_authorisation_request& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -147,13 +147,13 @@ domain::trade_authorisation_request trade_authorisation_request_repository::appl
     return t;
 }
 
-void trade_authorisation_request_repository::write(context ctx,
+void trade_authorisation_request_repository::write(const context& ctx,
                                                    const domain::trade_authorisation_request& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void trade_authorisation_request_repository::write(
-    context ctx, const std::vector<domain::trade_authorisation_request>& v) {
+    const context& ctx, const std::vector<domain::trade_authorisation_request>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -162,7 +162,7 @@ void trade_authorisation_request_repository::write(
 }
 
 void trade_authorisation_request_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::trade_authorisation_request& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade authorisation request. "
@@ -175,7 +175,7 @@ void trade_authorisation_request_repository::write(
 }
 
 void trade_authorisation_request_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::trade_authorisation_request>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade authorisation requests. Count: " << v.size();
@@ -190,7 +190,7 @@ void trade_authorisation_request_repository::write(
 }
 
 std::vector<domain::trade_authorisation_request>
-trade_authorisation_request_repository::read_latest(context ctx) {
+trade_authorisation_request_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_authorisation_request_entity>> |
@@ -207,7 +207,8 @@ trade_authorisation_request_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::trade_authorisation_request>
-trade_authorisation_request_repository::read_latest(context ctx, const std::string& request_id) {
+trade_authorisation_request_repository::read_latest(const context& ctx,
+                                                    const std::string& request_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade authorisation request. "
                                << "request_id: " << request_id;
     static constexpr auto max = db_timestamp::max();
@@ -227,7 +228,8 @@ trade_authorisation_request_repository::read_latest(context ctx, const std::stri
 
 
 std::vector<domain::trade_authorisation_request>
-trade_authorisation_request_repository::read_all(context ctx, const std::string& request_id) {
+trade_authorisation_request_repository::read_all(const context& ctx,
+                                                 const std::string& request_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade authorisation request versions. "
                                << "request_id: " << request_id;
     const auto tid = ctx.tenant_id().to_string();
@@ -245,7 +247,7 @@ trade_authorisation_request_repository::read_all(context ctx, const std::string&
 }
 
 std::optional<domain::trade_authorisation_request>
-trade_authorisation_request_repository::read_at_version(context ctx,
+trade_authorisation_request_repository::read_at_version(const context& ctx,
                                                         const std::string& request_id,
                                                         std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading trade authorisation request at version. "
@@ -272,7 +274,7 @@ trade_authorisation_request_repository::read_at_version(context ctx,
 
 std::vector<domain::trade_authorisation_request>
 trade_authorisation_request_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -300,7 +302,7 @@ trade_authorisation_request_repository::read_latest_by_trade_id(
 
 std::uint32_t
 trade_authorisation_request_repository::get_total_trade_authorisation_request_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::trade_authorisation_requests_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -322,7 +324,7 @@ trade_authorisation_request_repository::get_total_trade_authorisation_request_co
 
 
 trade_authorisation_request_repository::remove_status
-trade_authorisation_request_repository::remove(context ctx,
+trade_authorisation_request_repository::remove(const context& ctx,
                                                const std::string& request_id,
                                                std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing trade authorisation request. "
@@ -354,13 +356,14 @@ trade_authorisation_request_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void trade_authorisation_request_repository::remove(context ctx, const std::string& request_id) {
+void trade_authorisation_request_repository::remove(const context& ctx,
+                                                    const std::string& request_id) {
     static_cast<void>(remove(ctx, request_id, std::nullopt));
 }
 
 std::vector<domain::trade_authorisation_request>
 trade_authorisation_request_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -386,7 +389,7 @@ trade_authorisation_request_repository::read_latest(
 }
 
 std::uint32_t trade_authorisation_request_repository::get_total_trade_authorisation_request_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::trade_authorisation_requests_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade authorisation request count";
@@ -405,7 +408,7 @@ std::uint32_t trade_authorisation_request_repository::get_total_trade_authorisat
 }
 
 std::vector<domain::trade_authorisation_request>
-trade_authorisation_request_repository::read_latest(context ctx,
+trade_authorisation_request_repository::read_latest(const context& ctx,
                                                     const std::vector<std::string>& request_ids) {
     if (request_ids.empty())
         return {};
@@ -424,7 +427,7 @@ trade_authorisation_request_repository::read_latest(context ctx,
     return result;
 }
 
-void trade_authorisation_request_repository::remove(context ctx,
+void trade_authorisation_request_repository::remove(const context& ctx,
                                                     const std::vector<std::string>& request_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

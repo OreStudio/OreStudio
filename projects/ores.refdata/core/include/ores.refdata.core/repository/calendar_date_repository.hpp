@@ -74,7 +74,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit calendar_date_repository(context ctx);
+    explicit calendar_date_repository(const context& ctx);
 
     std::string sql();
 

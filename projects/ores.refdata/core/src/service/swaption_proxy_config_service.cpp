@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-swaption_proxy_config_service::swaption_proxy_config_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+swaption_proxy_config_service::swaption_proxy_config_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

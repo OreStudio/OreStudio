@@ -108,7 +108,7 @@ csa_filter_condition(const std::optional<messaging::csas_filter>& filter) {
 
 }
 
-ores::utility::domain::precondition csa_repository::replace_claim(context ctx,
+ores::utility::domain::precondition csa_repository::replace_claim(const context& ctx,
                                                                   const domain::csa& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -117,7 +117,7 @@ ores::utility::domain::precondition csa_repository::replace_claim(context ctx,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::csa csa_repository::apply_claim(context ctx,
+domain::csa csa_repository::apply_claim(const context& ctx,
                                         const domain::csa& v,
                                         const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -144,11 +144,11 @@ domain::csa csa_repository::apply_claim(context ctx,
     return t;
 }
 
-void csa_repository::write(context ctx, const domain::csa& v) {
+void csa_repository::write(const context& ctx, const domain::csa& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void csa_repository::write(context ctx, const std::vector<domain::csa>& v) {
+void csa_repository::write(const context& ctx, const std::vector<domain::csa>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -156,7 +156,7 @@ void csa_repository::write(context ctx, const std::vector<domain::csa>& v) {
     write(ctx, v, claims);
 }
 
-void csa_repository::write(context ctx,
+void csa_repository::write(const context& ctx,
                            const domain::csa& v,
                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing CSA. " << "id: " << v.id;
@@ -164,7 +164,7 @@ void csa_repository::write(context ctx,
     query_builder::execute_write_query(ctx, csa_mapper::map(t), lg(), "Writing CSA to database.");
 }
 
-void csa_repository::write(context ctx,
+void csa_repository::write(const context& ctx,
                            const std::vector<domain::csa>& v,
                            const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing CSAs. Count: " << v.size();
@@ -176,7 +176,7 @@ void csa_repository::write(context ctx,
         ctx, csa_mapper::map(batch), lg(), "Writing CSAs to database.");
 }
 
-std::vector<domain::csa> csa_repository::read_latest(context ctx) {
+std::vector<domain::csa> csa_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<csa_entity>> |
@@ -191,7 +191,7 @@ std::vector<domain::csa> csa_repository::read_latest(context ctx) {
         "Reading latest CSAs");
 }
 
-std::vector<domain::csa> csa_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::csa> csa_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest CSA. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -208,7 +208,7 @@ std::vector<domain::csa> csa_repository::read_latest(context ctx, const std::str
 }
 
 
-std::vector<domain::csa> csa_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::csa> csa_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all CSA versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<csa_entity>> |
@@ -224,7 +224,7 @@ std::vector<domain::csa> csa_repository::read_all(context ctx, const std::string
 }
 
 std::optional<domain::csa>
-csa_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+csa_repository::read_at_version(const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading CSA at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -247,7 +247,7 @@ csa_repository::read_at_version(context ctx, const std::string& id, std::uint32_
 
 
 std::vector<domain::csa>
-csa_repository::read_latest_by_netting_set_id(context ctx,
+csa_repository::read_latest_by_netting_set_id(const context& ctx,
                                               const std::string& netting_set_id,
                                               std::uint32_t offset,
                                               std::uint32_t limit,
@@ -274,7 +274,7 @@ csa_repository::read_latest_by_netting_set_id(context ctx,
 }
 
 std::uint32_t csa_repository::get_total_csa_count_by_netting_set_id(
-    context ctx,
+    const context& ctx,
     const std::string& netting_set_id,
     const std::optional<messaging::csas_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active CSAs count. netting_set_id: "
@@ -292,8 +292,9 @@ std::uint32_t csa_repository::get_total_csa_count_by_netting_set_id(
 }
 
 
-csa_repository::remove_status
-csa_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+csa_repository::remove_status csa_repository::remove(const context& ctx,
+                                                     const std::string& id,
+                                                     std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing CSA. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -321,12 +322,12 @@ csa_repository::remove(context ctx, const std::string& id, std::optional<std::ui
     return remove_status::removed;
 }
 
-void csa_repository::remove(context ctx, const std::string& id) {
+void csa_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::csa>
-csa_repository::read_latest(context ctx,
+csa_repository::read_latest(const context& ctx,
                             std::uint32_t offset,
                             std::uint32_t limit,
                             const ores::utility::domain::order& order,
@@ -350,7 +351,7 @@ csa_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-csa_repository::get_total_csa_count(context ctx,
+csa_repository::get_total_csa_count(const context& ctx,
                                     const std::optional<messaging::csas_filter>& filter,
                                     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active CSA count";
@@ -367,7 +368,7 @@ csa_repository::get_total_csa_count(context ctx,
         "Counting CSAs");
 }
 
-std::vector<domain::csa> csa_repository::read_latest(context ctx,
+std::vector<domain::csa> csa_repository::read_latest(const context& ctx,
                                                      const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -385,7 +386,7 @@ std::vector<domain::csa> csa_repository::read_latest(context ctx,
     return result;
 }
 
-void csa_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void csa_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

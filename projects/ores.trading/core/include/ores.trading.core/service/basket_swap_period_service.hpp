@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit basket_swap_period_service(context ctx);
+    explicit basket_swap_period_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -101,7 +101,7 @@ std::optional<query_builder::condition> engine_settings_group_filter_condition(
 }
 
 ores::utility::domain::precondition
-engine_settings_group_repository::replace_claim(context ctx,
+engine_settings_group_repository::replace_claim(const context& ctx,
                                                 const domain::engine_settings_group& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
@@ -111,7 +111,7 @@ engine_settings_group_repository::replace_claim(context ctx,
 }
 
 domain::engine_settings_group
-engine_settings_group_repository::apply_claim(context ctx,
+engine_settings_group_repository::apply_claim(const context& ctx,
                                               const domain::engine_settings_group& v,
                                               const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,11 +138,12 @@ engine_settings_group_repository::apply_claim(context ctx,
     return t;
 }
 
-void engine_settings_group_repository::write(context ctx, const domain::engine_settings_group& v) {
+void engine_settings_group_repository::write(const context& ctx,
+                                             const domain::engine_settings_group& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void engine_settings_group_repository::write(context ctx,
+void engine_settings_group_repository::write(const context& ctx,
                                              const std::vector<domain::engine_settings_group>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -151,7 +152,7 @@ void engine_settings_group_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void engine_settings_group_repository::write(context ctx,
+void engine_settings_group_repository::write(const context& ctx,
                                              const domain::engine_settings_group& v,
                                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing engine settings group. " << "code: " << v.code;
@@ -163,7 +164,7 @@ void engine_settings_group_repository::write(context ctx,
 }
 
 void engine_settings_group_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::engine_settings_group>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing engine settings groups. Count: " << v.size();
@@ -178,7 +179,7 @@ void engine_settings_group_repository::write(
 }
 
 std::vector<domain::engine_settings_group>
-engine_settings_group_repository::read_latest(context ctx) {
+engine_settings_group_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<engine_settings_group_entity>> |
@@ -195,7 +196,7 @@ engine_settings_group_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::engine_settings_group>
-engine_settings_group_repository::read_latest(context ctx, const std::string& code) {
+engine_settings_group_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest engine settings group. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -214,7 +215,7 @@ engine_settings_group_repository::read_latest(context ctx, const std::string& co
 
 
 std::vector<domain::engine_settings_group>
-engine_settings_group_repository::read_all(context ctx, const std::string& code) {
+engine_settings_group_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all engine settings group versions. "
                                << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -232,7 +233,7 @@ engine_settings_group_repository::read_all(context ctx, const std::string& code)
 }
 
 std::optional<domain::engine_settings_group> engine_settings_group_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading engine settings group at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -255,7 +256,7 @@ std::optional<domain::engine_settings_group> engine_settings_group_repository::r
 }
 
 engine_settings_group_repository::remove_status engine_settings_group_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing engine settings group. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -284,12 +285,12 @@ engine_settings_group_repository::remove_status engine_settings_group_repository
     return remove_status::removed;
 }
 
-void engine_settings_group_repository::remove(context ctx, const std::string& code) {
+void engine_settings_group_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::engine_settings_group> engine_settings_group_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -315,7 +316,7 @@ std::vector<domain::engine_settings_group> engine_settings_group_repository::rea
 }
 
 std::uint32_t engine_settings_group_repository::get_total_group_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::engine_settings_groups_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active engine settings group count";
@@ -334,7 +335,8 @@ std::uint32_t engine_settings_group_repository::get_total_group_count(
 }
 
 std::vector<domain::engine_settings_group>
-engine_settings_group_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+engine_settings_group_repository::read_latest(const context& ctx,
+                                              const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -352,7 +354,8 @@ engine_settings_group_repository::read_latest(context ctx, const std::vector<std
     return result;
 }
 
-void engine_settings_group_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void engine_settings_group_repository::remove(const context& ctx,
+                                              const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

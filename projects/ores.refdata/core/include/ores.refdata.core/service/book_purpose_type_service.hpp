@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit book_purpose_type_service(context ctx);
+    explicit book_purpose_type_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

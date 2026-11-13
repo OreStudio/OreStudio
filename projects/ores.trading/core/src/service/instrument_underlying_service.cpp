@@ -57,8 +57,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-instrument_underlying_service::instrument_underlying_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+instrument_underlying_service::instrument_underlying_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

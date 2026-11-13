@@ -39,7 +39,7 @@ using ores::utility::domain::result;
 namespace {
 
 template <typename Response>
-void name_the_source(ores::database::context ctx,
+void name_the_source(const ores::database::context& ctx,
                      const std::string& item,
                      const repository::fixing_series& series,
                      Response& response) {
@@ -53,7 +53,7 @@ void name_the_source(ores::database::context ctx,
 
 }
 
-messaging::get_fixing_response fixing_reader::latest(ores::database::context ctx,
+messaging::get_fixing_response fixing_reader::latest(const ores::database::context& ctx,
                                                      const messaging::get_fixing_request& request) {
     messaging::get_fixing_response response;
     if (!request.on_or_before.ok()) {
@@ -83,7 +83,7 @@ messaging::get_fixing_response fixing_reader::latest(ores::database::context ctx
 }
 
 messaging::get_fixing_window_response
-fixing_reader::window(ores::database::context ctx,
+fixing_reader::window(const ores::database::context& ctx,
                       const messaging::get_fixing_window_request& request) {
     messaging::get_fixing_window_response response;
     response.days = request.days;

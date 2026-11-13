@@ -44,10 +44,10 @@ static constexpr std::string_view login_info_queue_group = "ores.iam.service";
 
 std::vector<ores::nats::service::subscription>
 register_login_info_handlers(ores::nats::service::client& nats,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<login_info_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<login_info_handler>(nats, ctx, std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_login_info_request::nats_subject,
                              login_info_queue_group,

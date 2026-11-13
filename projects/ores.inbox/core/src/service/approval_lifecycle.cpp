@@ -155,8 +155,8 @@ int clamp_limit(int limit) {
 
 }
 
-approval_lifecycle::approval_lifecycle(ores::database::context ctx)
-    : ctx_(std::move(ctx)) {}
+approval_lifecycle::approval_lifecycle(const ores::database::context& ctx)
+    : ctx_(ctx) {}
 
 std::optional<boost::uuids::uuid> approval_lifecycle::actor_account_id() {
     ores::iam::repository::account_repository accounts;

@@ -102,7 +102,7 @@ std::optional<query_builder::condition> default_curve_market_terms_filter_condit
 }
 
 ores::utility::domain::precondition
-default_curve_market_terms_repository::replace_claim(context ctx,
+default_curve_market_terms_repository::replace_claim(const context& ctx,
                                                      const domain::default_curve_market_terms& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -112,7 +112,7 @@ default_curve_market_terms_repository::replace_claim(context ctx,
 }
 
 domain::default_curve_market_terms default_curve_market_terms_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::default_curve_market_terms& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,13 +139,13 @@ domain::default_curve_market_terms default_curve_market_terms_repository::apply_
     return t;
 }
 
-void default_curve_market_terms_repository::write(context ctx,
+void default_curve_market_terms_repository::write(const context& ctx,
                                                   const domain::default_curve_market_terms& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void default_curve_market_terms_repository::write(
-    context ctx, const std::vector<domain::default_curve_market_terms>& v) {
+    const context& ctx, const std::vector<domain::default_curve_market_terms>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -154,7 +154,7 @@ void default_curve_market_terms_repository::write(
 }
 
 void default_curve_market_terms_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::default_curve_market_terms& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing default curve market terms. " << "id: " << v.id;
@@ -166,7 +166,7 @@ void default_curve_market_terms_repository::write(
 }
 
 void default_curve_market_terms_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::default_curve_market_terms>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing default curve market terms. Count: " << v.size();
@@ -181,7 +181,7 @@ void default_curve_market_terms_repository::write(
 }
 
 std::vector<domain::default_curve_market_terms>
-default_curve_market_terms_repository::read_latest(context ctx) {
+default_curve_market_terms_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<default_curve_market_terms_entity>> |
@@ -198,7 +198,7 @@ default_curve_market_terms_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::default_curve_market_terms>
-default_curve_market_terms_repository::read_latest(context ctx, const std::string& id) {
+default_curve_market_terms_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest default curve market terms. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -217,7 +217,7 @@ default_curve_market_terms_repository::read_latest(context ctx, const std::strin
 
 
 std::vector<domain::default_curve_market_terms>
-default_curve_market_terms_repository::read_all(context ctx, const std::string& id) {
+default_curve_market_terms_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all default curve market terms versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -235,7 +235,7 @@ default_curve_market_terms_repository::read_all(context ctx, const std::string& 
 }
 
 std::optional<domain::default_curve_market_terms>
-default_curve_market_terms_repository::read_at_version(context ctx,
+default_curve_market_terms_repository::read_at_version(const context& ctx,
                                                        const std::string& id,
                                                        std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading default curve market terms at version. " << "id: " << id
@@ -261,7 +261,7 @@ default_curve_market_terms_repository::read_at_version(context ctx,
 
 
 default_curve_market_terms_repository::remove_status default_curve_market_terms_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing default curve market terms. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -290,12 +290,12 @@ default_curve_market_terms_repository::remove_status default_curve_market_terms_
     return remove_status::removed;
 }
 
-void default_curve_market_terms_repository::remove(context ctx, const std::string& id) {
+void default_curve_market_terms_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::default_curve_market_terms> default_curve_market_terms_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -321,7 +321,7 @@ std::vector<domain::default_curve_market_terms> default_curve_market_terms_repos
 }
 
 std::uint32_t default_curve_market_terms_repository::get_total_market_terms_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::default_curve_market_terms_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active default curve market terms count";
@@ -340,7 +340,7 @@ std::uint32_t default_curve_market_terms_repository::get_total_market_terms_coun
 }
 
 std::vector<domain::default_curve_market_terms>
-default_curve_market_terms_repository::read_latest(context ctx,
+default_curve_market_terms_repository::read_latest(const context& ctx,
                                                    const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -359,7 +359,7 @@ default_curve_market_terms_repository::read_latest(context ctx,
     return result;
 }
 
-void default_curve_market_terms_repository::remove(context ctx,
+void default_curve_market_terms_repository::remove(const context& ctx,
                                                    const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-commodity_curve_cross_currency_service::commodity_curve_cross_currency_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+commodity_curve_cross_currency_service::commodity_curve_cross_currency_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

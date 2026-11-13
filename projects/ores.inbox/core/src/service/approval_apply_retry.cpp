@@ -25,8 +25,8 @@ namespace ores::inbox::service {
 
 using namespace ores::logging;
 
-approval_apply_retry::approval_apply_retry(ores::database::context ctx, apply_engine& engine)
-    : ctx_(std::move(ctx))
+approval_apply_retry::approval_apply_retry(const ores::database::context& ctx, apply_engine& engine)
+    : ctx_(ctx)
     , engine_(engine) {}
 
 apply_retry_outcome approval_apply_retry::run(std::chrono::system_clock::time_point as_of) {

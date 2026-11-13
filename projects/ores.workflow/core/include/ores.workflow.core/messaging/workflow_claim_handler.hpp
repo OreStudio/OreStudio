@@ -61,7 +61,7 @@ private:
 
 public:
     workflow_claim_handler(ores::nats::service::client& nats,
-                           ores::database::context ctx,
+                           const ores::database::context& ctx,
                            const service::fsm_state_map& step_states);
 
     /**

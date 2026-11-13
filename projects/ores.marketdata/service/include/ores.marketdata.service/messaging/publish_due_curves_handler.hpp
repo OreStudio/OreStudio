@@ -70,11 +70,11 @@ using namespace ores::logging;
 class publish_due_curves_handler {
 public:
     publish_due_curves_handler(ores::nats::service::client& nats,
-                               ores::database::context ctx,
+                               const ores::database::context& ctx,
                                std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     void publish_due(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =

@@ -278,7 +278,7 @@ config/version/source produced this" lookup the shared derivation-lineage
 design calls for, in one round trip.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::optional<domain::observation_lineage> read_latest_by_observation(context ctx,
+std::optional<domain::observation_lineage> read_latest_by_observation(const context& ctx,
     const boost::uuids::uuid& series_id,
     std::chrono::system_clock::time_point observation_datetime,
     const std::string& oresmd_uri);
@@ -292,7 +292,7 @@ std::optional<domain::observation_lineage> read_latest_by_observation(context ct
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::observation_lineage>
-observation_lineage_repository::read_latest_by_observation(context ctx,
+observation_lineage_repository::read_latest_by_observation(const context& ctx,
     const boost::uuids::uuid& series_id,
     std::chrono::system_clock::time_point observation_datetime,
     const std::string& oresmd_uri) {
@@ -347,7 +347,7 @@ struct point_key {
  * wide span can read more rows than it returns. The rows are the current ones,
  * the same generation the as-of observation read uses for its values.
  */
-std::vector<domain::observation_lineage> read_latest_for_points(context ctx,
+std::vector<domain::observation_lineage> read_latest_for_points(const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::vector<point_key>& points);
 #+end_src
@@ -362,7 +362,7 @@ std::vector<domain::observation_lineage> read_latest_for_points(context ctx,
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::observation_lineage>
-observation_lineage_repository::read_latest_for_points(context ctx,
+observation_lineage_repository::read_latest_for_points(const context& ctx,
     const boost::uuids::uuid& series_id,
     const std::vector<point_key>& points) {
     using ores::platform::time::datetime;
@@ -424,13 +424,13 @@ which coordinates an operator owns before it writes an automatic value.
 /**
  * @brief The current annex rows of the series that name a manual point.
  */
-std::vector<domain::observation_lineage> read_manual_for_series(context ctx,
+std::vector<domain::observation_lineage> read_manual_for_series(const context& ctx,
     const boost::uuids::uuid& series_id);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::observation_lineage>
-observation_lineage_repository::read_manual_for_series(context ctx,
+observation_lineage_repository::read_manual_for_series(const context& ctx,
     const boost::uuids::uuid& series_id) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();

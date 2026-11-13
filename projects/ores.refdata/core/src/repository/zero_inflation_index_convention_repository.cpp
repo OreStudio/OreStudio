@@ -102,7 +102,7 @@ std::optional<query_builder::condition> zero_inflation_index_convention_filter_c
 }
 
 ores::utility::domain::precondition zero_inflation_index_convention_repository::replace_claim(
-    context ctx, const domain::zero_inflation_index_convention& v) {
+    const context& ctx, const domain::zero_inflation_index_convention& v) {
     const auto current = read_latest(ctx, v.id);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,7 +111,7 @@ ores::utility::domain::precondition zero_inflation_index_convention_repository::
 }
 
 domain::zero_inflation_index_convention zero_inflation_index_convention_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::zero_inflation_index_convention& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,12 +139,12 @@ domain::zero_inflation_index_convention zero_inflation_index_convention_reposito
 }
 
 void zero_inflation_index_convention_repository::write(
-    context ctx, const domain::zero_inflation_index_convention& v) {
+    const context& ctx, const domain::zero_inflation_index_convention& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void zero_inflation_index_convention_repository::write(
-    context ctx, const std::vector<domain::zero_inflation_index_convention>& v) {
+    const context& ctx, const std::vector<domain::zero_inflation_index_convention>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -153,7 +153,7 @@ void zero_inflation_index_convention_repository::write(
 }
 
 void zero_inflation_index_convention_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::zero_inflation_index_convention& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing zero inflation index convention. " << "id: " << v.id;
@@ -165,7 +165,7 @@ void zero_inflation_index_convention_repository::write(
 }
 
 void zero_inflation_index_convention_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::zero_inflation_index_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing zero inflation index conventions. Count: " << v.size();
@@ -180,7 +180,7 @@ void zero_inflation_index_convention_repository::write(
 }
 
 std::vector<domain::zero_inflation_index_convention>
-zero_inflation_index_convention_repository::read_latest(context ctx) {
+zero_inflation_index_convention_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<zero_inflation_index_convention_entity>> |
@@ -197,7 +197,7 @@ zero_inflation_index_convention_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::zero_inflation_index_convention>
-zero_inflation_index_convention_repository::read_latest(context ctx, const std::string& id) {
+zero_inflation_index_convention_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest zero inflation index convention. "
                                << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -233,7 +233,7 @@ zero_inflation_index_convention_repository::read_latest(context ctx, const std::
 
 
 std::vector<domain::zero_inflation_index_convention>
-zero_inflation_index_convention_repository::read_all(context ctx, const std::string& id) {
+zero_inflation_index_convention_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all zero inflation index convention versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -251,7 +251,7 @@ zero_inflation_index_convention_repository::read_all(context ctx, const std::str
 }
 
 std::optional<domain::zero_inflation_index_convention>
-zero_inflation_index_convention_repository::read_at_version(context ctx,
+zero_inflation_index_convention_repository::read_at_version(const context& ctx,
                                                             const std::string& id,
                                                             std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading zero inflation index convention at version. "
@@ -279,7 +279,7 @@ zero_inflation_index_convention_repository::read_at_version(context ctx,
 }
 
 zero_inflation_index_convention_repository::remove_status
-zero_inflation_index_convention_repository::remove(context ctx,
+zero_inflation_index_convention_repository::remove(const context& ctx,
                                                    const std::string& id,
                                                    std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing zero inflation index convention. " << "id: " << id;
@@ -318,13 +318,13 @@ zero_inflation_index_convention_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void zero_inflation_index_convention_repository::remove(context ctx, const std::string& id) {
+void zero_inflation_index_convention_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::zero_inflation_index_convention>
 zero_inflation_index_convention_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -351,7 +351,7 @@ zero_inflation_index_convention_repository::read_latest(
 
 std::uint32_t
 zero_inflation_index_convention_repository::get_total_zero_inflation_index_convention_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::zero_inflation_index_conventions_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active zero inflation index convention count";
@@ -370,7 +370,7 @@ zero_inflation_index_convention_repository::get_total_zero_inflation_index_conve
 }
 
 std::vector<domain::zero_inflation_index_convention>
-zero_inflation_index_convention_repository::read_latest(context ctx,
+zero_inflation_index_convention_repository::read_latest(const context& ctx,
                                                         const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -389,7 +389,7 @@ zero_inflation_index_convention_repository::read_latest(context ctx,
     return result;
 }
 
-void zero_inflation_index_convention_repository::remove(context ctx,
+void zero_inflation_index_convention_repository::remove(const context& ctx,
                                                         const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

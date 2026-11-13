@@ -226,7 +226,7 @@ void apply_surface_publish(const context& ctx,
 }
 
 msg::publish_fx_vol_surface_response
-fx_vol_surface_publish_service::publish(context ctx,
+fx_vol_surface_publish_service::publish(const context& ctx,
                                         const msg::publish_fx_vol_surface_request& req) {
     msg::publish_fx_vol_surface_response resp;
     try {
@@ -334,7 +334,7 @@ fx_vol_surface_publish_service::publish(context ctx,
 }
 
 msg::get_fx_vol_surface_publish_subject_response
-fx_vol_surface_publish_service::read(context ctx,
+fx_vol_surface_publish_service::read(const context& ctx,
                                      const msg::get_fx_vol_surface_publish_subject_request& req) {
     msg::get_fx_vol_surface_publish_subject_response out;
     out.approval_request_id = req.approval_request_id;
@@ -381,7 +381,7 @@ fx_vol_surface_publish_service::read(context ctx,
 }
 
 msg::get_published_fx_vol_surface_response fx_vol_surface_publish_service::read_published(
-    context ctx, const msg::get_published_fx_vol_surface_request& req) {
+    const context& ctx, const msg::get_published_fx_vol_surface_request& req) {
     msg::get_published_fx_vol_surface_response out;
     try {
         const auto party = ores::service::messaging::session_party(ctx, "A surface");

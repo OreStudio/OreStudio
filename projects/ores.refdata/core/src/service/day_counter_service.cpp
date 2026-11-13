@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-day_counter_service::day_counter_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+day_counter_service::day_counter_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-commodity_price_segment_service::commodity_price_segment_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+commodity_price_segment_service::commodity_price_segment_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

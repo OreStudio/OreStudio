@@ -102,7 +102,7 @@ std::optional<query_builder::condition> commodity_volatility_config_filter_condi
 }
 
 ores::utility::domain::precondition commodity_volatility_config_repository::replace_claim(
-    context ctx, const domain::commodity_volatility_config& v) {
+    const context& ctx, const domain::commodity_volatility_config& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,7 +111,7 @@ ores::utility::domain::precondition commodity_volatility_config_repository::repl
 }
 
 domain::commodity_volatility_config commodity_volatility_config_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::commodity_volatility_config& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,13 +138,13 @@ domain::commodity_volatility_config commodity_volatility_config_repository::appl
     return t;
 }
 
-void commodity_volatility_config_repository::write(context ctx,
+void commodity_volatility_config_repository::write(const context& ctx,
                                                    const domain::commodity_volatility_config& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void commodity_volatility_config_repository::write(
-    context ctx, const std::vector<domain::commodity_volatility_config>& v) {
+    const context& ctx, const std::vector<domain::commodity_volatility_config>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -153,7 +153,7 @@ void commodity_volatility_config_repository::write(
 }
 
 void commodity_volatility_config_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::commodity_volatility_config& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing commodity volatility config. " << "id: " << v.id;
@@ -165,7 +165,7 @@ void commodity_volatility_config_repository::write(
 }
 
 void commodity_volatility_config_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::commodity_volatility_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing commodity volatility configs. Count: " << v.size();
@@ -180,7 +180,7 @@ void commodity_volatility_config_repository::write(
 }
 
 std::vector<domain::commodity_volatility_config>
-commodity_volatility_config_repository::read_latest(context ctx) {
+commodity_volatility_config_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<commodity_volatility_config_entity>> |
@@ -197,7 +197,7 @@ commodity_volatility_config_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::commodity_volatility_config>
-commodity_volatility_config_repository::read_latest(context ctx, const std::string& id) {
+commodity_volatility_config_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest commodity volatility config. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +216,7 @@ commodity_volatility_config_repository::read_latest(context ctx, const std::stri
 
 
 std::vector<domain::commodity_volatility_config>
-commodity_volatility_config_repository::read_all(context ctx, const std::string& id) {
+commodity_volatility_config_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all commodity volatility config versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -234,7 +234,7 @@ commodity_volatility_config_repository::read_all(context ctx, const std::string&
 }
 
 std::optional<domain::commodity_volatility_config>
-commodity_volatility_config_repository::read_at_version(context ctx,
+commodity_volatility_config_repository::read_at_version(const context& ctx,
                                                         const std::string& id,
                                                         std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading commodity volatility config at version. " << "id: " << id
@@ -260,7 +260,7 @@ commodity_volatility_config_repository::read_at_version(context ctx,
 
 
 commodity_volatility_config_repository::remove_status
-commodity_volatility_config_repository::remove(context ctx,
+commodity_volatility_config_repository::remove(const context& ctx,
                                                const std::string& id,
                                                std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing commodity volatility config. " << "id: " << id;
@@ -291,13 +291,13 @@ commodity_volatility_config_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void commodity_volatility_config_repository::remove(context ctx, const std::string& id) {
+void commodity_volatility_config_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::commodity_volatility_config>
 commodity_volatility_config_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -323,7 +323,7 @@ commodity_volatility_config_repository::read_latest(
 }
 
 std::uint32_t commodity_volatility_config_repository::get_total_commodity_volatility_config_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::commodity_volatility_configs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active commodity volatility config count";
@@ -342,7 +342,7 @@ std::uint32_t commodity_volatility_config_repository::get_total_commodity_volati
 }
 
 std::vector<domain::commodity_volatility_config>
-commodity_volatility_config_repository::read_latest(context ctx,
+commodity_volatility_config_repository::read_latest(const context& ctx,
                                                     const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -361,7 +361,7 @@ commodity_volatility_config_repository::read_latest(context ctx,
     return result;
 }
 
-void commodity_volatility_config_repository::remove(context ctx,
+void commodity_volatility_config_repository::remove(const context& ctx,
                                                     const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

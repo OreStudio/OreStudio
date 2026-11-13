@@ -69,11 +69,11 @@ using namespace ores::logging;
 class notification_operations_handler {
 public:
     notification_operations_handler(ores::nats::service::client& nats,
-                                    ores::database::context ctx,
+                                    const ores::database::context& ctx,
                                     std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     void raise(ores::nats::message msg) {
         using ores::utility::domain::outcome;

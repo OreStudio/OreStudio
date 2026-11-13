@@ -26,7 +26,7 @@ namespace ores::trading::repository {
  * component with no row for the trade appends an empty result.
  */
 template <typename Append>
-void read_instrument_components(ores::database::context ctx,
+void read_instrument_components(const ores::database::context& ctx,
                                 const std::string& trade_id,
                                 domain::instrument_table table,
                                 Append&& append) {
@@ -50,7 +50,7 @@ void read_instrument_components(ores::database::context ctx,
  * Generated from the digest section of ores.trading.trade_type_catalogue.
  */
 template <typename Append>
-void read_shared_components(ores::database::context ctx,
+void read_shared_components(const ores::database::context& ctx,
                             const std::string& trade_id,
                             Append&& append) {
     const auto ids = std::vector<std::string>{trade_id};

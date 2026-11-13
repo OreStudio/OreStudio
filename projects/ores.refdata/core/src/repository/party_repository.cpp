@@ -114,7 +114,7 @@ party_filter_condition(const std::optional<messaging::parties_filter>& filter) {
 
 }
 
-ores::utility::domain::precondition party_repository::replace_claim(context ctx,
+ores::utility::domain::precondition party_repository::replace_claim(const context& ctx,
                                                                     const domain::party& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -123,7 +123,7 @@ ores::utility::domain::precondition party_repository::replace_claim(context ctx,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::party party_repository::apply_claim(context ctx,
+domain::party party_repository::apply_claim(const context& ctx,
                                             const domain::party& v,
                                             const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -150,11 +150,11 @@ domain::party party_repository::apply_claim(context ctx,
     return t;
 }
 
-void party_repository::write(context ctx, const domain::party& v) {
+void party_repository::write(const context& ctx, const domain::party& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void party_repository::write(context ctx, const std::vector<domain::party>& v) {
+void party_repository::write(const context& ctx, const std::vector<domain::party>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -162,7 +162,7 @@ void party_repository::write(context ctx, const std::vector<domain::party>& v) {
     write(ctx, v, claims);
 }
 
-void party_repository::write(context ctx,
+void party_repository::write(const context& ctx,
                              const domain::party& v,
                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing party. " << "id: " << v.id;
@@ -171,7 +171,7 @@ void party_repository::write(context ctx,
         ctx, party_mapper::map(t), lg(), "Writing party to database.");
 }
 
-void party_repository::write(context ctx,
+void party_repository::write(const context& ctx,
                              const std::vector<domain::party>& v,
                              const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing parties. Count: " << v.size();
@@ -183,7 +183,7 @@ void party_repository::write(context ctx,
         ctx, party_mapper::map(batch), lg(), "Writing parties to database.");
 }
 
-std::vector<domain::party> party_repository::read_latest(context ctx) {
+std::vector<domain::party> party_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_entity>> |
@@ -198,7 +198,8 @@ std::vector<domain::party> party_repository::read_latest(context ctx) {
         "Reading latest parties");
 }
 
-std::vector<domain::party> party_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::party> party_repository::read_latest(const context& ctx,
+                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -214,7 +215,7 @@ std::vector<domain::party> party_repository::read_latest(context ctx, const std:
         "Reading latest party by id.");
 }
 
-std::vector<domain::party> party_repository::read_latest_by_code(context ctx,
+std::vector<domain::party> party_repository::read_latest_by_code(const context& ctx,
                                                                  const std::string& short_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party by short_code: " << short_code;
     static constexpr auto max = db_timestamp::max();
@@ -231,7 +232,7 @@ std::vector<domain::party> party_repository::read_latest_by_code(context ctx,
         "Reading latest party by short_code.");
 }
 std::vector<domain::party>
-party_repository::read_latest_by_short_code(context ctx, const std::string& short_code) {
+party_repository::read_latest_by_short_code(const context& ctx, const std::string& short_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party by short_code: " << short_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -247,7 +248,7 @@ party_repository::read_latest_by_short_code(context ctx, const std::string& shor
         "Reading latest party by short_code.");
 }
 
-std::vector<domain::party> party_repository::read_any_by_short_code(context ctx,
+std::vector<domain::party> party_repository::read_any_by_short_code(const context& ctx,
                                                                     const std::string& short_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any party by short_code: " << short_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -264,7 +265,7 @@ std::vector<domain::party> party_repository::read_any_by_short_code(context ctx,
 }
 
 
-std::vector<domain::party> party_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::party> party_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all party versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_entity>> |
@@ -279,8 +280,9 @@ std::vector<domain::party> party_repository::read_all(context ctx, const std::st
         "Reading all party versions by id.");
 }
 
-std::optional<domain::party>
-party_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::party> party_repository::read_at_version(const context& ctx,
+                                                               const std::string& id,
+                                                               std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading party at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -302,8 +304,9 @@ party_repository::read_at_version(context ctx, const std::string& id, std::uint3
 }
 
 
-party_repository::remove_status
-party_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+party_repository::remove_status party_repository::remove(const context& ctx,
+                                                         const std::string& id,
+                                                         std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -331,12 +334,12 @@ party_repository::remove(context ctx, const std::string& id, std::optional<std::
     return remove_status::removed;
 }
 
-void party_repository::remove(context ctx, const std::string& id) {
+void party_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::party>
-party_repository::read_latest(context ctx,
+party_repository::read_latest(const context& ctx,
                               std::uint32_t offset,
                               std::uint32_t limit,
                               const ores::utility::domain::order& order,
@@ -360,7 +363,7 @@ party_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-party_repository::get_total_party_count(context ctx,
+party_repository::get_total_party_count(const context& ctx,
                                         const std::optional<messaging::parties_filter>& filter,
                                         const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party count";
@@ -377,7 +380,7 @@ party_repository::get_total_party_count(context ctx,
         "Counting parties");
 }
 
-std::vector<domain::party> party_repository::read_latest(context ctx,
+std::vector<domain::party> party_repository::read_latest(const context& ctx,
                                                          const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -395,7 +398,7 @@ std::vector<domain::party> party_repository::read_latest(context ctx,
     return result;
 }
 
-void party_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void party_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -412,8 +415,8 @@ void party_repository::remove(context ctx, const std::vector<std::string>& ids) 
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing parties.");
 }
 
-std::vector<ores::utility::domain::hierarchy_flat_row>
-party_repository::get_hierarchy(context ctx, const boost::uuids::uuid& root_id, bool from_root) {
+std::vector<ores::utility::domain::hierarchy_flat_row> party_repository::get_hierarchy(
+    const context& ctx, const boost::uuids::uuid& root_id, bool from_root) {
     BOOST_LOG_SEV(lg(), debug) << "Reading party hierarchy. Root: " << root_id
                                << " from_root: " << from_root;
 
@@ -445,7 +448,7 @@ party_repository::get_hierarchy(context ctx, const boost::uuids::uuid& root_id, 
 }
 
 
-std::vector<domain::party> party_repository::read_system_party(context ctx,
+std::vector<domain::party> party_repository::read_system_party(const context& ctx,
                                                                const std::string& tenant_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading system party for tenant: " << tenant_id;
     const std::string sql =
@@ -480,7 +483,7 @@ std::vector<domain::party> party_repository::read_system_party(context ctx,
 }
 
 std::vector<boost::uuids::uuid>
-party_repository::read_descendants(context ctx, const boost::uuids::uuid& root_id) {
+party_repository::read_descendants(const context& ctx, const boost::uuids::uuid& root_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading party descendants. Root: " << root_id;
     const auto id_str = boost::uuids::to_string(root_id);
     const std::string sql = "WITH RECURSIVE party_tree AS ("
@@ -505,7 +508,7 @@ party_repository::read_descendants(context ctx, const boost::uuids::uuid& root_i
     return result;
 }
 
-std::optional<domain::party> party_repository::read_registration_default(context ctx) {
+std::optional<domain::party> party_repository::read_registration_default(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =

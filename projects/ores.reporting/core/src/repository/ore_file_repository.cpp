@@ -132,7 +132,7 @@ ore_file_filter_condition(const std::optional<messaging::ore_files_filter>& filt
 
 }
 
-ores::utility::domain::precondition ore_file_repository::replace_claim(context ctx,
+ores::utility::domain::precondition ore_file_repository::replace_claim(const context& ctx,
                                                                        const domain::ore_file& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
@@ -141,8 +141,10 @@ ores::utility::domain::precondition ore_file_repository::replace_claim(context c
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::ore_file ore_file_repository::apply_claim(
-    context ctx, const domain::ore_file& v, const ores::utility::domain::precondition& claim) {
+domain::ore_file
+ore_file_repository::apply_claim(const context& ctx,
+                                 const domain::ore_file& v,
+                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -167,11 +169,11 @@ domain::ore_file ore_file_repository::apply_claim(
     return t;
 }
 
-void ore_file_repository::write(context ctx, const domain::ore_file& v) {
+void ore_file_repository::write(const context& ctx, const domain::ore_file& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void ore_file_repository::write(context ctx, const std::vector<domain::ore_file>& v) {
+void ore_file_repository::write(const context& ctx, const std::vector<domain::ore_file>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -179,7 +181,7 @@ void ore_file_repository::write(context ctx, const std::vector<domain::ore_file>
     write(ctx, v, claims);
 }
 
-void ore_file_repository::write(context ctx,
+void ore_file_repository::write(const context& ctx,
                                 const domain::ore_file& v,
                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing ORE file. " << "code: " << v.code;
@@ -188,7 +190,7 @@ void ore_file_repository::write(context ctx,
         ctx, ore_file_mapper::map(t), lg(), "Writing ORE file to database.");
 }
 
-void ore_file_repository::write(context ctx,
+void ore_file_repository::write(const context& ctx,
                                 const std::vector<domain::ore_file>& v,
                                 const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing ORE files. Count: " << v.size();
@@ -200,7 +202,7 @@ void ore_file_repository::write(context ctx,
         ctx, ore_file_mapper::map(batch), lg(), "Writing ORE files to database.");
 }
 
-std::vector<domain::ore_file> ore_file_repository::read_latest(context ctx) {
+std::vector<domain::ore_file> ore_file_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ore_file_entity>> |
@@ -215,7 +217,7 @@ std::vector<domain::ore_file> ore_file_repository::read_latest(context ctx) {
         "Reading latest ORE files");
 }
 
-std::vector<domain::ore_file> ore_file_repository::read_latest(context ctx,
+std::vector<domain::ore_file> ore_file_repository::read_latest(const context& ctx,
                                                                const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest ORE file. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -233,7 +235,8 @@ std::vector<domain::ore_file> ore_file_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::ore_file> ore_file_repository::read_all(context ctx, const std::string& code) {
+std::vector<domain::ore_file> ore_file_repository::read_all(const context& ctx,
+                                                            const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all ORE file versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ore_file_entity>> |
@@ -248,8 +251,9 @@ std::vector<domain::ore_file> ore_file_repository::read_all(context ctx, const s
         "Reading all ORE file versions by code.");
 }
 
-std::optional<domain::ore_file>
-ore_file_repository::read_at_version(context ctx, const std::string& code, std::uint32_t version) {
+std::optional<domain::ore_file> ore_file_repository::read_at_version(const context& ctx,
+                                                                     const std::string& code,
+                                                                     std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading ORE file at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -271,7 +275,7 @@ ore_file_repository::read_at_version(context ctx, const std::string& code, std::
 }
 
 std::vector<domain::ore_file> ore_file_repository::read_latest_by_category_code(
-    context ctx,
+    const context& ctx,
     const std::string& category_code,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -298,7 +302,7 @@ std::vector<domain::ore_file> ore_file_repository::read_latest_by_category_code(
 }
 
 std::uint32_t ore_file_repository::get_total_file_count_by_category_code(
-    context ctx,
+    const context& ctx,
     const std::string& category_code,
     const std::optional<messaging::ore_files_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active ORE files count. category_code: "
@@ -317,7 +321,7 @@ std::uint32_t ore_file_repository::get_total_file_count_by_category_code(
 
 
 std::vector<domain::ore_file> ore_file_repository::read_latest_by_configuration_type_code(
-    context ctx,
+    const context& ctx,
     const std::string& configuration_type_code,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -346,7 +350,7 @@ std::vector<domain::ore_file> ore_file_repository::read_latest_by_configuration_
 }
 
 std::uint32_t ore_file_repository::get_total_file_count_by_configuration_type_code(
-    context ctx,
+    const context& ctx,
     const std::string& configuration_type_code,
     const std::optional<messaging::ore_files_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -371,7 +375,7 @@ std::uint32_t ore_file_repository::get_total_file_count_by_configuration_type_co
 
 
 std::vector<domain::ore_file> ore_file_repository::read_latest_by_schema_ore_file_code(
-    context ctx,
+    const context& ctx,
     const std::string& schema_ore_file_code,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -399,7 +403,7 @@ std::vector<domain::ore_file> ore_file_repository::read_latest_by_schema_ore_fil
 }
 
 std::uint32_t ore_file_repository::get_total_file_count_by_schema_ore_file_code(
-    context ctx,
+    const context& ctx,
     const std::string& schema_ore_file_code,
     const std::optional<messaging::ore_files_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active ORE files count. schema_ore_file_code: "
@@ -422,7 +426,7 @@ std::uint32_t ore_file_repository::get_total_file_count_by_schema_ore_file_code(
 
 
 ore_file_repository::remove_status ore_file_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing ORE file. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -450,12 +454,12 @@ ore_file_repository::remove_status ore_file_repository::remove(
     return remove_status::removed;
 }
 
-void ore_file_repository::remove(context ctx, const std::string& code) {
+void ore_file_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::ore_file>
-ore_file_repository::read_latest(context ctx,
+ore_file_repository::read_latest(const context& ctx,
                                  std::uint32_t offset,
                                  std::uint32_t limit,
                                  const ores::utility::domain::order& order,
@@ -479,7 +483,7 @@ ore_file_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-ore_file_repository::get_total_file_count(context ctx,
+ore_file_repository::get_total_file_count(const context& ctx,
                                           const std::optional<messaging::ore_files_filter>& filter,
                                           const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active ORE file count";
@@ -497,7 +501,7 @@ ore_file_repository::get_total_file_count(context ctx,
 }
 
 std::vector<domain::ore_file>
-ore_file_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+ore_file_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -514,7 +518,7 @@ ore_file_repository::read_latest(context ctx, const std::vector<std::string>& co
     return result;
 }
 
-void ore_file_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void ore_file_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

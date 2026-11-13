@@ -58,8 +58,8 @@ namespace ores::synthetic::service {
 
 using namespace ores::logging;
 
-fx_spot_generation_config_service::fx_spot_generation_config_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+fx_spot_generation_config_service::fx_spot_generation_config_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -109,7 +109,7 @@ std::optional<query_builder::condition> credit_basket_constituent_filter_conditi
 }
 
 ores::utility::domain::precondition
-credit_basket_constituent_repository::replace_claim(context ctx,
+credit_basket_constituent_repository::replace_claim(const context& ctx,
                                                     const domain::credit_basket_constituent& v) {
     const auto current =
         read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
@@ -120,7 +120,7 @@ credit_basket_constituent_repository::replace_claim(context ctx,
 }
 
 domain::credit_basket_constituent credit_basket_constituent_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::credit_basket_constituent& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -148,13 +148,13 @@ domain::credit_basket_constituent credit_basket_constituent_repository::apply_cl
     return t;
 }
 
-void credit_basket_constituent_repository::write(context ctx,
+void credit_basket_constituent_repository::write(const context& ctx,
                                                  const domain::credit_basket_constituent& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void credit_basket_constituent_repository::write(
-    context ctx, const std::vector<domain::credit_basket_constituent>& v) {
+    const context& ctx, const std::vector<domain::credit_basket_constituent>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -162,7 +162,7 @@ void credit_basket_constituent_repository::write(
     write(ctx, v, claims);
 }
 
-void credit_basket_constituent_repository::write(context ctx,
+void credit_basket_constituent_repository::write(const context& ctx,
                                                  const domain::credit_basket_constituent& v,
                                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing credit basket constituent. "
@@ -176,7 +176,7 @@ void credit_basket_constituent_repository::write(context ctx,
 }
 
 void credit_basket_constituent_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::credit_basket_constituent>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing credit basket constituents. Count: " << v.size();
@@ -191,7 +191,7 @@ void credit_basket_constituent_repository::write(
 }
 
 std::vector<domain::credit_basket_constituent>
-credit_basket_constituent_repository::read_latest(context ctx) {
+credit_basket_constituent_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<credit_basket_constituent_entity>> |
@@ -208,7 +208,7 @@ credit_basket_constituent_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::credit_basket_constituent> credit_basket_constituent_repository::read_latest(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest credit basket constituent. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -230,7 +230,7 @@ std::vector<domain::credit_basket_constituent> credit_basket_constituent_reposit
 
 
 std::vector<domain::credit_basket_constituent> credit_basket_constituent_repository::read_all(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all credit basket constituent versions. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -250,7 +250,7 @@ std::vector<domain::credit_basket_constituent> credit_basket_constituent_reposit
 }
 
 std::optional<domain::credit_basket_constituent>
-credit_basket_constituent_repository::read_at_version(context ctx,
+credit_basket_constituent_repository::read_at_version(const context& ctx,
                                                       const std::string& trade_id,
                                                       const std::string& sequence_number,
                                                       std::uint32_t version) {
@@ -280,7 +280,7 @@ credit_basket_constituent_repository::read_at_version(context ctx,
 
 std::vector<domain::credit_basket_constituent>
 credit_basket_constituent_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -308,7 +308,7 @@ credit_basket_constituent_repository::read_latest_by_trade_id(
 
 std::uint32_t
 credit_basket_constituent_repository::get_total_credit_basket_constituent_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::credit_basket_constituents_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -330,7 +330,7 @@ credit_basket_constituent_repository::get_total_credit_basket_constituent_count_
 
 
 credit_basket_constituent_repository::remove_status
-credit_basket_constituent_repository::remove(context ctx,
+credit_basket_constituent_repository::remove(const context& ctx,
                                              const std::string& trade_id,
                                              const std::string& sequence_number,
                                              std::optional<std::uint32_t> version) {
@@ -364,14 +364,14 @@ credit_basket_constituent_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void credit_basket_constituent_repository::remove(context ctx,
+void credit_basket_constituent_repository::remove(const context& ctx,
                                                   const std::string& trade_id,
                                                   const std::string& sequence_number) {
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
 }
 
 std::vector<domain::credit_basket_constituent> credit_basket_constituent_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -397,7 +397,7 @@ std::vector<domain::credit_basket_constituent> credit_basket_constituent_reposit
 }
 
 std::uint32_t credit_basket_constituent_repository::get_total_credit_basket_constituent_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::credit_basket_constituents_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active credit basket constituent count";
@@ -416,7 +416,7 @@ std::uint32_t credit_basket_constituent_repository::get_total_credit_basket_cons
 }
 
 std::vector<domain::credit_basket_constituent> credit_basket_constituent_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
@@ -454,7 +454,7 @@ std::vector<domain::credit_basket_constituent> credit_basket_constituent_reposit
 }
 
 void credit_basket_constituent_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product
@@ -470,7 +470,7 @@ void credit_basket_constituent_repository::remove(
 
 std::vector<domain::credit_basket_constituent>
 credit_basket_constituent_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();

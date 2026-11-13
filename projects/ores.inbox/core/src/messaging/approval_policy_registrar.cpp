@@ -44,10 +44,10 @@ static constexpr std::string_view approval_policy_queue_group = "ores.inbox.serv
 
 std::vector<ores::nats::service::subscription>
 register_approval_policy_handlers(ores::nats::service::client& nats,
-                                  ores::database::context ctx,
+                                  const ores::database::context& ctx,
                                   std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<approval_policy_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<approval_policy_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_approval_policies_request::nats_subject,
         approval_policy_queue_group,

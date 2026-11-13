@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit equity_curve_config_service(context ctx);
+    explicit equity_curve_config_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

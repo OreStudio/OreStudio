@@ -145,7 +145,7 @@ public:
         boost::uuids::uuid instance_id;
     };
 
-    explicit report_run_admission_service(context ctx);
+    explicit report_run_admission_service(const context& ctx);
 
     /**
      * @brief Writes the trigger row and the instance that names it.

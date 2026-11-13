@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-ledger_feed_type_service::ledger_feed_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+ledger_feed_type_service::ledger_feed_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

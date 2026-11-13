@@ -85,7 +85,7 @@ query_builder::order benchmark_rate_list_order(const ores::utility::domain::orde
 }
 
 ores::utility::domain::precondition
-benchmark_rate_repository::replace_claim(context ctx, const domain::benchmark_rate& v) {
+benchmark_rate_repository::replace_claim(const context& ctx, const domain::benchmark_rate& v) {
     const auto current = read_latest(ctx, v.code, v.coding_scheme_code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -94,7 +94,7 @@ benchmark_rate_repository::replace_claim(context ctx, const domain::benchmark_ra
 }
 
 domain::benchmark_rate
-benchmark_rate_repository::apply_claim(context ctx,
+benchmark_rate_repository::apply_claim(const context& ctx,
                                        const domain::benchmark_rate& v,
                                        const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -121,11 +121,12 @@ benchmark_rate_repository::apply_claim(context ctx,
     return t;
 }
 
-void benchmark_rate_repository::write(context ctx, const domain::benchmark_rate& v) {
+void benchmark_rate_repository::write(const context& ctx, const domain::benchmark_rate& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void benchmark_rate_repository::write(context ctx, const std::vector<domain::benchmark_rate>& v) {
+void benchmark_rate_repository::write(const context& ctx,
+                                      const std::vector<domain::benchmark_rate>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -133,7 +134,7 @@ void benchmark_rate_repository::write(context ctx, const std::vector<domain::ben
     write(ctx, v, claims);
 }
 
-void benchmark_rate_repository::write(context ctx,
+void benchmark_rate_repository::write(const context& ctx,
                                       const domain::benchmark_rate& v,
                                       const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing benchmark rate. " << "code: " << v.code
@@ -144,7 +145,7 @@ void benchmark_rate_repository::write(context ctx,
 }
 
 void benchmark_rate_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::benchmark_rate>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing benchmark rates. Count: " << v.size();
@@ -156,7 +157,7 @@ void benchmark_rate_repository::write(
         ctx, benchmark_rate_mapper::map(batch), lg(), "Writing benchmark rates to database.");
 }
 
-std::vector<domain::benchmark_rate> benchmark_rate_repository::read_latest(context ctx) {
+std::vector<domain::benchmark_rate> benchmark_rate_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<benchmark_rate_entity>> |
@@ -172,7 +173,7 @@ std::vector<domain::benchmark_rate> benchmark_rate_repository::read_latest(conte
 }
 
 std::vector<domain::benchmark_rate> benchmark_rate_repository::read_latest(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest benchmark rate. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
@@ -192,7 +193,7 @@ std::vector<domain::benchmark_rate> benchmark_rate_repository::read_latest(
 
 
 std::vector<domain::benchmark_rate> benchmark_rate_repository::read_all(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all benchmark rate versions. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -210,7 +211,7 @@ std::vector<domain::benchmark_rate> benchmark_rate_repository::read_all(
 }
 
 std::optional<domain::benchmark_rate>
-benchmark_rate_repository::read_at_version(context ctx,
+benchmark_rate_repository::read_at_version(const context& ctx,
                                            const std::string& code,
                                            const std::string& coding_scheme_code,
                                            std::uint32_t version) {
@@ -238,7 +239,7 @@ benchmark_rate_repository::read_at_version(context ctx,
 }
 
 benchmark_rate_repository::remove_status
-benchmark_rate_repository::remove(context ctx,
+benchmark_rate_repository::remove(const context& ctx,
                                   const std::string& code,
                                   const std::string& coding_scheme_code,
                                   std::optional<std::uint32_t> version) {
@@ -271,14 +272,14 @@ benchmark_rate_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void benchmark_rate_repository::remove(context ctx,
+void benchmark_rate_repository::remove(const context& ctx,
                                        const std::string& code,
                                        const std::string& coding_scheme_code) {
     static_cast<void>(remove(ctx, code, coding_scheme_code, std::nullopt));
 }
 
 std::vector<domain::benchmark_rate>
-benchmark_rate_repository::read_latest(context ctx,
+benchmark_rate_repository::read_latest(const context& ctx,
                                        std::uint32_t offset,
                                        std::uint32_t limit,
                                        const ores::utility::domain::order& order,
@@ -301,7 +302,7 @@ benchmark_rate_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-benchmark_rate_repository::get_total_rate_count(context ctx,
+benchmark_rate_repository::get_total_rate_count(const context& ctx,
                                                 const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active benchmark rate count";
 
@@ -318,7 +319,7 @@ benchmark_rate_repository::get_total_rate_count(context ctx,
 }
 
 std::vector<domain::benchmark_rate>
-benchmark_rate_repository::read_latest(context ctx,
+benchmark_rate_repository::read_latest(const context& ctx,
                                        const std::vector<std::string>& codes,
                                        const std::vector<std::string>& coding_scheme_codes) {
     if (codes.empty() || coding_scheme_codes.empty())
@@ -353,7 +354,7 @@ benchmark_rate_repository::read_latest(context ctx,
     return filtered;
 }
 
-void benchmark_rate_repository::remove(context ctx,
+void benchmark_rate_repository::remove(const context& ctx,
                                        const std::vector<std::string>& codes,
                                        const std::vector<std::string>& coding_scheme_codes) {
     // Compound key: a per-column .in() DELETE would be a cross-product

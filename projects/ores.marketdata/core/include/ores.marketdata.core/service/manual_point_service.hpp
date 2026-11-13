@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_MANUAL_POINT_SERVICE_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_MANUAL_POINT_SERVICE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <chrono>
@@ -53,7 +53,7 @@ public:
      * spell.
      */
     [[nodiscard]] static messaging::key_manual_point_response
-    key(ores::database::context ctx,
+    key(const ores::database::context& ctx,
         const messaging::key_manual_point_request& request,
         std::chrono::system_clock::time_point now = std::chrono::system_clock::now());
 
@@ -64,7 +64,7 @@ public:
      * spell.
      */
     [[nodiscard]] static messaging::clear_manual_point_response
-    clear(ores::database::context ctx, const messaging::clear_manual_point_request& request);
+    clear(const ores::database::context& ctx, const messaging::clear_manual_point_request& request);
 };
 
 }

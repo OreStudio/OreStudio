@@ -57,8 +57,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-bond_issue_leg_amortization_service::bond_issue_leg_amortization_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+bond_issue_leg_amortization_service::bond_issue_leg_amortization_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

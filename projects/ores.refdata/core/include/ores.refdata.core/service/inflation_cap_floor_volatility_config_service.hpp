@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit inflation_cap_floor_volatility_config_service(context ctx);
+    explicit inflation_cap_floor_volatility_config_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

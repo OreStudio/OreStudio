@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit report_error_scope_service(context ctx);
+    explicit report_error_scope_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -122,7 +122,7 @@ std::optional<query_builder::condition> fx_vol_surface_feed_contributor_filter_c
 }
 
 ores::utility::domain::precondition fx_vol_surface_feed_contributor_repository::replace_claim(
-    context ctx, const domain::fx_vol_surface_feed_contributor& v) {
+    const context& ctx, const domain::fx_vol_surface_feed_contributor& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -131,7 +131,7 @@ ores::utility::domain::precondition fx_vol_surface_feed_contributor_repository::
 }
 
 domain::fx_vol_surface_feed_contributor fx_vol_surface_feed_contributor_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::fx_vol_surface_feed_contributor& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -159,12 +159,12 @@ domain::fx_vol_surface_feed_contributor fx_vol_surface_feed_contributor_reposito
 }
 
 void fx_vol_surface_feed_contributor_repository::write(
-    context ctx, const domain::fx_vol_surface_feed_contributor& v) {
+    const context& ctx, const domain::fx_vol_surface_feed_contributor& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void fx_vol_surface_feed_contributor_repository::write(
-    context ctx, const std::vector<domain::fx_vol_surface_feed_contributor>& v) {
+    const context& ctx, const std::vector<domain::fx_vol_surface_feed_contributor>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -173,7 +173,7 @@ void fx_vol_surface_feed_contributor_repository::write(
 }
 
 void fx_vol_surface_feed_contributor_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::fx_vol_surface_feed_contributor& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX volatility surface feed contributor. "
@@ -187,7 +187,7 @@ void fx_vol_surface_feed_contributor_repository::write(
 }
 
 void fx_vol_surface_feed_contributor_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::fx_vol_surface_feed_contributor>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX volatility surface feed contributors. Count: "
@@ -204,7 +204,7 @@ void fx_vol_surface_feed_contributor_repository::write(
 }
 
 std::vector<domain::fx_vol_surface_feed_contributor>
-fx_vol_surface_feed_contributor_repository::read_latest(context ctx) {
+fx_vol_surface_feed_contributor_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -223,7 +223,7 @@ fx_vol_surface_feed_contributor_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::fx_vol_surface_feed_contributor>
-fx_vol_surface_feed_contributor_repository::read_latest(context ctx, const std::string& id) {
+fx_vol_surface_feed_contributor_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest FX volatility surface feed contributor. "
                                << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -244,7 +244,7 @@ fx_vol_surface_feed_contributor_repository::read_latest(context ctx, const std::
 
 
 std::vector<domain::fx_vol_surface_feed_contributor>
-fx_vol_surface_feed_contributor_repository::read_all(context ctx, const std::string& id) {
+fx_vol_surface_feed_contributor_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all FX volatility surface feed contributor versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -264,7 +264,7 @@ fx_vol_surface_feed_contributor_repository::read_all(context ctx, const std::str
 }
 
 std::optional<domain::fx_vol_surface_feed_contributor>
-fx_vol_surface_feed_contributor_repository::read_at_version(context ctx,
+fx_vol_surface_feed_contributor_repository::read_at_version(const context& ctx,
                                                             const std::string& id,
                                                             std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading FX volatility surface feed contributor at version. "
@@ -294,7 +294,7 @@ fx_vol_surface_feed_contributor_repository::read_at_version(context ctx,
 
 
 fx_vol_surface_feed_contributor_repository::remove_status
-fx_vol_surface_feed_contributor_repository::remove(context ctx,
+fx_vol_surface_feed_contributor_repository::remove(const context& ctx,
                                                    const std::string& id,
                                                    std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing FX volatility surface feed contributor. "
@@ -326,13 +326,13 @@ fx_vol_surface_feed_contributor_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void fx_vol_surface_feed_contributor_repository::remove(context ctx, const std::string& id) {
+void fx_vol_surface_feed_contributor_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::fx_vol_surface_feed_contributor>
 fx_vol_surface_feed_contributor_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -361,7 +361,7 @@ fx_vol_surface_feed_contributor_repository::read_latest(
 
 std::uint32_t
 fx_vol_surface_feed_contributor_repository::get_total_fx_vol_surface_feed_contributor_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::fx_vol_surface_feed_contributors_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug)
@@ -382,7 +382,7 @@ fx_vol_surface_feed_contributor_repository::get_total_fx_vol_surface_feed_contri
 }
 
 std::vector<domain::fx_vol_surface_feed_contributor>
-fx_vol_surface_feed_contributor_repository::read_latest(context ctx,
+fx_vol_surface_feed_contributor_repository::read_latest(const context& ctx,
                                                         const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -402,7 +402,7 @@ fx_vol_surface_feed_contributor_repository::read_latest(context ctx,
     return result;
 }
 
-void fx_vol_surface_feed_contributor_repository::remove(context ctx,
+void fx_vol_surface_feed_contributor_repository::remove(const context& ctx,
                                                         const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

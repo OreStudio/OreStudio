@@ -45,11 +45,11 @@ static constexpr std::string_view equity_barrier_option_instrument_queue_group =
 
 std::vector<ores::nats::service::subscription> register_equity_barrier_option_instrument_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<equity_barrier_option_instrument_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h =
+        std::make_shared<equity_barrier_option_instrument_handler>(nats, ctx, std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_equity_barrier_option_instruments_request::nats_subject,
                              equity_barrier_option_instrument_queue_group,

@@ -523,7 +523,7 @@ statement instead, and the rows never leave it.
      * this method.
      */
     std::vector<messaging::report_error_count>
-    read_counts_by_report_instance_ids(context ctx,
+    read_counts_by_report_instance_ids(const context& ctx,
                                        const std::vector<boost::uuids::uuid>& report_instance_ids);
 #+end_src
 
@@ -534,7 +534,7 @@ statement instead, and the rows never leave it.
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<messaging::report_error_count>
 report_error_event_repository::read_counts_by_report_instance_ids(
-    context ctx, const std::vector<boost::uuids::uuid>& report_instance_ids) {
+    const context& ctx, const std::vector<boost::uuids::uuid>& report_instance_ids) {
     if (report_instance_ids.empty())
         return {};
 

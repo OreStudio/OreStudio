@@ -59,11 +59,11 @@ using namespace ores::logging;
 class auth_event_handler {
 public:
     auth_event_handler(ores::nats::service::client& nats,
-                       ores::database::context ctx,
+                       const ores::database::context& ctx,
                        ores::security::jwt::jwt_authenticator signer)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , signer_(std::move(signer)) {}
+        , ctx_(ctx)
+        , signer_(signer) {}
 
     /**
      * @brief Serves iam.v1.auth_events.list.

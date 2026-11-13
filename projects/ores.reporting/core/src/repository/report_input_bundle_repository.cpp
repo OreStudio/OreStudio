@@ -27,7 +27,8 @@ namespace query_builder = ores::database::query_builder;
 using namespace ores::database::query_builder::literals;
 using namespace ores::logging;
 
-void report_input_bundle_repository::create(context ctx, const report_input_bundle_entity& bundle) {
+void report_input_bundle_repository::create(const context& ctx,
+                                            const report_input_bundle_entity& bundle) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating report_input_bundle: " << bundle.id;
 
@@ -37,7 +38,8 @@ void report_input_bundle_repository::create(context ctx, const report_input_bund
 }
 
 std::optional<report_input_bundle_entity>
-report_input_bundle_repository::find_by_instance_id(context ctx, const std::string& instance_id) {
+report_input_bundle_repository::find_by_instance_id(const context& ctx,
+                                                    const std::string& instance_id) {
 
     BOOST_LOG_SEV(lg(), debug) << "Finding report_input_bundle for instance: " << instance_id;
 

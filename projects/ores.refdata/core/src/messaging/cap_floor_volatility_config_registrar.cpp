@@ -44,11 +44,10 @@ static constexpr std::string_view cap_floor_volatility_config_queue_group = "ore
 
 std::vector<ores::nats::service::subscription> register_cap_floor_volatility_config_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<cap_floor_volatility_config_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<cap_floor_volatility_config_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_cap_floor_volatility_configs_request::nats_subject,
         cap_floor_volatility_config_queue_group,

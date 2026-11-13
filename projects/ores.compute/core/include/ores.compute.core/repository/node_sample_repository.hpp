@@ -69,8 +69,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::node_sample& v);
-    void write(context ctx, const std::vector<domain::node_sample>& v);
+    void write(const context& ctx, const domain::node_sample& v);
+    void write(const context& ctx, const std::vector<domain::node_sample>& v);
     /**@}*/
 
     /**
@@ -88,7 +88,7 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::node_sample& v,
                const ores::utility::domain::precondition& claim);
 
@@ -96,7 +96,7 @@ public:
      * @brief Writes a set of node samples, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::node_sample>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -104,10 +104,10 @@ public:
      * @brief Reads latest node samples, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::node_sample> read_latest(context ctx);
+    std::vector<domain::node_sample> read_latest(const context& ctx);
     std::vector<domain::node_sample>
-    read_latest(context ctx, const std::string& id, const std::string& sampled_at);
-    std::vector<domain::node_sample> read_latest(context ctx,
+    read_latest(const context& ctx, const std::string& id, const std::string& sampled_at);
+    std::vector<domain::node_sample> read_latest(const context& ctx,
                                                  const std::vector<std::string>& ids,
                                                  const std::vector<std::string>& sampled_ats);
     /**@}*/
@@ -120,7 +120,7 @@ public:
      * current row, not a version history.
      */
     std::vector<domain::node_sample>
-    read_all(context ctx, const std::string& id, const std::string& sampled_at);
+    read_all(const context& ctx, const std::string& id, const std::string& sampled_at);
 
 
     /**
@@ -139,7 +139,7 @@ public:
      * @param filter The filter record; the members it sets must all hold
      * @throws std::invalid_argument if the field is not sortable
      */
-    std::vector<domain::node_sample> read_latest(context ctx,
+    std::vector<domain::node_sample> read_latest(const context& ctx,
                                                  std::uint32_t offset,
                                                  std::uint32_t limit,
                                                  const ores::utility::domain::order& order = {});
@@ -149,7 +149,7 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active node samples
      */
-    std::uint32_t get_total__count(context ctx);
+    std::uint32_t get_total__count(const context& ctx);
 
     /**
      * @brief Deletes a sample permanently.
@@ -157,7 +157,7 @@ public:
      * A current-state table has no history, so the row is removed, not
      * soft-closed.
      */
-    void remove(context ctx, const std::string& id, const std::string& sampled_at);
+    void remove(const context& ctx, const std::string& id, const std::string& sampled_at);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -179,7 +179,7 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& id,
                          const std::string& sampled_at,
                          std::optional<std::uint32_t> version);
@@ -187,7 +187,7 @@ public:
     /**
      * @brief Deletes node samples permanently.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::vector<std::string>& ids,
                 const std::vector<std::string>& sampled_ats);
 
@@ -197,14 +197,15 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::node_sample& v);
+    ores::utility::domain::precondition replace_claim(const context& ctx,
+                                                      const domain::node_sample& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::node_sample apply_claim(context ctx,
+    domain::node_sample apply_claim(const context& ctx,
                                     const domain::node_sample& v,
                                     const ores::utility::domain::precondition& claim);
 };

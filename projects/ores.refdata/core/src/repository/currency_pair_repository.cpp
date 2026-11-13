@@ -108,7 +108,7 @@ currency_pair_filter_condition(const std::optional<messaging::currency_pairs_fil
 }
 
 ores::utility::domain::precondition
-currency_pair_repository::replace_claim(context ctx, const domain::currency_pair& v) {
+currency_pair_repository::replace_claim(const context& ctx, const domain::currency_pair& v) {
     const auto current = read_latest(ctx, v.pair_code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -116,8 +116,10 @@ currency_pair_repository::replace_claim(context ctx, const domain::currency_pair
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::currency_pair currency_pair_repository::apply_claim(
-    context ctx, const domain::currency_pair& v, const ores::utility::domain::precondition& claim) {
+domain::currency_pair
+currency_pair_repository::apply_claim(const context& ctx,
+                                      const domain::currency_pair& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -142,11 +144,12 @@ domain::currency_pair currency_pair_repository::apply_claim(
     return t;
 }
 
-void currency_pair_repository::write(context ctx, const domain::currency_pair& v) {
+void currency_pair_repository::write(const context& ctx, const domain::currency_pair& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void currency_pair_repository::write(context ctx, const std::vector<domain::currency_pair>& v) {
+void currency_pair_repository::write(const context& ctx,
+                                     const std::vector<domain::currency_pair>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -154,7 +157,7 @@ void currency_pair_repository::write(context ctx, const std::vector<domain::curr
     write(ctx, v, claims);
 }
 
-void currency_pair_repository::write(context ctx,
+void currency_pair_repository::write(const context& ctx,
                                      const domain::currency_pair& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency pair. " << "pair_code: " << v.pair_code;
@@ -164,7 +167,7 @@ void currency_pair_repository::write(context ctx,
 }
 
 void currency_pair_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::currency_pair>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing currency pairs. Count: " << v.size();
@@ -176,7 +179,7 @@ void currency_pair_repository::write(
         ctx, currency_pair_mapper::map(batch), lg(), "Writing currency pairs to database.");
 }
 
-std::vector<domain::currency_pair> currency_pair_repository::read_latest(context ctx) {
+std::vector<domain::currency_pair> currency_pair_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<currency_pair_entity>> |
@@ -192,7 +195,7 @@ std::vector<domain::currency_pair> currency_pair_repository::read_latest(context
 }
 
 std::vector<domain::currency_pair>
-currency_pair_repository::read_latest(context ctx, const std::string& pair_code) {
+currency_pair_repository::read_latest(const context& ctx, const std::string& pair_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency pair. " << "pair_code: " << pair_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -210,7 +213,7 @@ currency_pair_repository::read_latest(context ctx, const std::string& pair_code)
 
 
 std::vector<domain::currency_pair>
-currency_pair_repository::read_all(context ctx, const std::string& pair_code) {
+currency_pair_repository::read_all(const context& ctx, const std::string& pair_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all currency pair versions. "
                                << "pair_code: " << pair_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -227,7 +230,7 @@ currency_pair_repository::read_all(context ctx, const std::string& pair_code) {
 }
 
 std::optional<domain::currency_pair> currency_pair_repository::read_at_version(
-    context ctx, const std::string& pair_code, std::uint32_t version) {
+    const context& ctx, const std::string& pair_code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading currency pair at version. " << "pair_code: " << pair_code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -251,7 +254,7 @@ std::optional<domain::currency_pair> currency_pair_repository::read_at_version(
 
 
 currency_pair_repository::remove_status currency_pair_repository::remove(
-    context ctx, const std::string& pair_code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& pair_code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency pair. " << "pair_code: " << pair_code;
     const auto current = read_latest(ctx, pair_code);
     if (current.empty())
@@ -279,12 +282,12 @@ currency_pair_repository::remove_status currency_pair_repository::remove(
     return remove_status::removed;
 }
 
-void currency_pair_repository::remove(context ctx, const std::string& pair_code) {
+void currency_pair_repository::remove(const context& ctx, const std::string& pair_code) {
     static_cast<void>(remove(ctx, pair_code, std::nullopt));
 }
 
 std::vector<domain::currency_pair>
-currency_pair_repository::read_latest(context ctx,
+currency_pair_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -309,7 +312,7 @@ currency_pair_repository::read_latest(context ctx,
 }
 
 std::uint32_t currency_pair_repository::get_total_pair_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::currency_pairs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency pair count";
@@ -328,7 +331,8 @@ std::uint32_t currency_pair_repository::get_total_pair_count(
 }
 
 std::vector<domain::currency_pair>
-currency_pair_repository::read_latest(context ctx, const std::vector<std::string>& pair_codes) {
+currency_pair_repository::read_latest(const context& ctx,
+                                      const std::vector<std::string>& pair_codes) {
     if (pair_codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -345,7 +349,8 @@ currency_pair_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void currency_pair_repository::remove(context ctx, const std::vector<std::string>& pair_codes) {
+void currency_pair_repository::remove(const context& ctx,
+                                      const std::vector<std::string>& pair_codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit concurrency_policy_service(context ctx);
+    explicit concurrency_policy_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

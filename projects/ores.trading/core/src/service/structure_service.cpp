@@ -60,8 +60,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-structure_service::structure_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+structure_service::structure_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

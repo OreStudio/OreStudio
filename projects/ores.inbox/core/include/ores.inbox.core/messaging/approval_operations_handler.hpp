@@ -127,17 +127,17 @@ using namespace ores::logging;
 class approval_operations_handler {
 public:
     approval_operations_handler(ores::nats::service::client& nats,
-                                ores::database::context ctx,
+                                const ores::database::context& ctx,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier,
                                 std::chrono::seconds answered_window,
                                 std::chrono::seconds reminder_window,
                                 std::shared_ptr<service::apply_engine> engine)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
+        , ctx_(ctx)
+        , verifier_(verifier)
         , answered_window_(answered_window)
         , reminder_window_(reminder_window)
-        , engine_(std::move(engine)) {}
+        , engine_(engine) {}
 
     void raise(ores::nats::message msg) {
         using ores::utility::domain::outcome;

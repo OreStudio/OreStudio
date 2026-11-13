@@ -50,8 +50,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-lei_bic_service::lei_bic_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+lei_bic_service::lei_bic_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

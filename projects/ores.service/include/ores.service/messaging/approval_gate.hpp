@@ -20,7 +20,7 @@
 #ifndef ORES_SERVICE_MESSAGING_APPROVAL_GATE_HPP
 #define ORES_SERVICE_MESSAGING_APPROVAL_GATE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <stdexcept>

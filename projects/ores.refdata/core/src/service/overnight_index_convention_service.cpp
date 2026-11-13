@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-overnight_index_convention_service::overnight_index_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+overnight_index_convention_service::overnight_index_convention_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

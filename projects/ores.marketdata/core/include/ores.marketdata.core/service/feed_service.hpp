@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit feed_service(context ctx);
+    explicit feed_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

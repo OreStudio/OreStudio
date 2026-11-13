@@ -61,7 +61,7 @@ public:
      *
      * @param ctx Database context for PostgreSQL queries
      */
-    explicit geolocation_service(database::context ctx);
+    explicit geolocation_service(const database::context& ctx);
 
     /**
      * @brief Look up geolocation for an IP address.

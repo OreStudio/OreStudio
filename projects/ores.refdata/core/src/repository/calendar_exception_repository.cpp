@@ -113,7 +113,8 @@ std::optional<query_builder::condition> calendar_exception_filter_condition(
 }
 
 ores::utility::domain::precondition
-calendar_exception_repository::replace_claim(context ctx, const domain::calendar_exception& v) {
+calendar_exception_repository::replace_claim(const context& ctx,
+                                             const domain::calendar_exception& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -122,7 +123,7 @@ calendar_exception_repository::replace_claim(context ctx, const domain::calendar
 }
 
 domain::calendar_exception
-calendar_exception_repository::apply_claim(context ctx,
+calendar_exception_repository::apply_claim(const context& ctx,
                                            const domain::calendar_exception& v,
                                            const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -149,11 +150,11 @@ calendar_exception_repository::apply_claim(context ctx,
     return t;
 }
 
-void calendar_exception_repository::write(context ctx, const domain::calendar_exception& v) {
+void calendar_exception_repository::write(const context& ctx, const domain::calendar_exception& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void calendar_exception_repository::write(context ctx,
+void calendar_exception_repository::write(const context& ctx,
                                           const std::vector<domain::calendar_exception>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -162,7 +163,7 @@ void calendar_exception_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void calendar_exception_repository::write(context ctx,
+void calendar_exception_repository::write(const context& ctx,
                                           const domain::calendar_exception& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing calendar exception. " << "id: " << v.id;
@@ -172,7 +173,7 @@ void calendar_exception_repository::write(context ctx,
 }
 
 void calendar_exception_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::calendar_exception>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing calendar exceptions. Count: " << v.size();
@@ -186,7 +187,8 @@ void calendar_exception_repository::write(
                                        "Writing calendar exceptions to database.");
 }
 
-std::vector<domain::calendar_exception> calendar_exception_repository::read_latest(context ctx) {
+std::vector<domain::calendar_exception>
+calendar_exception_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
@@ -202,7 +204,7 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_late
 }
 
 std::vector<domain::calendar_exception>
-calendar_exception_repository::read_latest(context ctx, const std::string& id) {
+calendar_exception_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar exception. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -220,7 +222,7 @@ calendar_exception_repository::read_latest(context ctx, const std::string& id) {
 
 
 std::vector<domain::calendar_exception>
-calendar_exception_repository::read_all(context ctx, const std::string& id) {
+calendar_exception_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all calendar exception versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
@@ -236,7 +238,7 @@ calendar_exception_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::calendar_exception> calendar_exception_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading calendar exception at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -259,7 +261,7 @@ std::optional<domain::calendar_exception> calendar_exception_repository::read_at
 }
 
 std::vector<domain::calendar_exception> calendar_exception_repository::read_latest_by_calendar_code(
-    context ctx,
+    const context& ctx,
     const std::string& calendar_code,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -287,7 +289,7 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_late
 }
 
 std::uint32_t calendar_exception_repository::get_total_calendar_exception_count_by_calendar_code(
-    context ctx,
+    const context& ctx,
     const std::string& calendar_code,
     const std::optional<messaging::calendar_exceptions_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -310,7 +312,7 @@ std::uint32_t calendar_exception_repository::get_total_calendar_exception_count_
 
 
 std::vector<domain::calendar_exception> calendar_exception_repository::read_by_calendar_code_as_of(
-    context ctx,
+    const context& ctx,
     const std::string& calendar_code,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
@@ -335,7 +337,7 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_by_c
 }
 
 calendar_exception_repository::remove_status calendar_exception_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing calendar exception. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -364,12 +366,12 @@ calendar_exception_repository::remove_status calendar_exception_repository::remo
     return remove_status::removed;
 }
 
-void calendar_exception_repository::remove(context ctx, const std::string& id) {
+void calendar_exception_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::calendar_exception> calendar_exception_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -395,7 +397,7 @@ std::vector<domain::calendar_exception> calendar_exception_repository::read_late
 }
 
 std::uint32_t calendar_exception_repository::get_total_calendar_exception_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::calendar_exceptions_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar exception count";
@@ -414,7 +416,8 @@ std::uint32_t calendar_exception_repository::get_total_calendar_exception_count(
 }
 
 std::vector<domain::calendar_exception>
-calendar_exception_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+calendar_exception_repository::read_latest(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -432,7 +435,8 @@ calendar_exception_repository::read_latest(context ctx, const std::vector<std::s
     return result;
 }
 
-void calendar_exception_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void calendar_exception_repository::remove(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

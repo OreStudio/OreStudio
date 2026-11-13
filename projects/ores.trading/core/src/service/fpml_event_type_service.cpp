@@ -54,8 +54,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-fpml_event_type_service::fpml_event_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+fpml_event_type_service::fpml_event_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

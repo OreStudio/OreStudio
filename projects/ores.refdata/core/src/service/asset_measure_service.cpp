@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-asset_measure_service::asset_measure_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+asset_measure_service::asset_measure_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

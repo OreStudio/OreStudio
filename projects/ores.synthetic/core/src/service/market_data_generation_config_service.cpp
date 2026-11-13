@@ -58,8 +58,8 @@ namespace ores::synthetic::service {
 
 using namespace ores::logging;
 
-market_data_generation_config_service::market_data_generation_config_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+market_data_generation_config_service::market_data_generation_config_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

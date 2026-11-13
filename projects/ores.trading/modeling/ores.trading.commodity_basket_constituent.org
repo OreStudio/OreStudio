@@ -237,13 +237,13 @@ instrument and ordinal, in one statement. An empty input reads nothing.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::commodity_basket_constituent>
-read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+read_by_instruments_batch(const context& ctx, const std::vector<std::string>& trade_ids);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::commodity_basket_constituent>
 commodity_basket_constituent_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();

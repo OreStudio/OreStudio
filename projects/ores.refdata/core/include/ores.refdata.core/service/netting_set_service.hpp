@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit netting_set_service(context ctx);
+    explicit netting_set_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

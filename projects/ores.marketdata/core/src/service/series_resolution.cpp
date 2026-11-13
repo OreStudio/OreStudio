@@ -34,7 +34,7 @@ using ores::utility::domain::result;
 namespace {
 
 /// The context a read of @p party_id sees, or the refusal of a party it may not read.
-std::variant<ores::database::context, result> scope_to_party(ores::database::context ctx,
+std::variant<ores::database::context, result> scope_to_party(const ores::database::context& ctx,
                                                              const std::string& party_id,
                                                              const std::string& entity) {
     if (party_id.empty())
@@ -55,13 +55,13 @@ std::variant<ores::database::context, result> scope_to_party(ores::database::con
 
 }
 
-std::variant<repository::fixing_series, result> resolve_series(ores::database::context ctx,
+std::variant<repository::fixing_series, result> resolve_series(const ores::database::context& ctx,
                                                                const std::string& item,
                                                                const std::string& provider_code,
                                                                const std::string& party_id,
                                                                const std::string& entity,
                                                                const std::string& item_name) {
-    const auto scoped = scope_to_party(std::move(ctx), party_id, entity);
+    const auto scoped = scope_to_party(ctx, party_id, entity);
     if (const auto* refused = std::get_if<result>(&scoped))
         return *refused;
     ctx = std::get<ores::database::context>(scoped);

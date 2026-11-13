@@ -40,7 +40,7 @@ namespace ores::iam::service {
 using namespace ores::logging;
 namespace reason = ores::dq::domain::change_reason_constants;
 
-authorization_service::authorization_service(context ctx, event_bus* event_bus)
+authorization_service::authorization_service(const context& ctx, event_bus* event_bus)
     : ctx_(ctx)
     , account_role_repo_(ctx)
     , account_permission_repo_(ctx)

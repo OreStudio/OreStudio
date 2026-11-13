@@ -52,8 +52,8 @@ std::string dataset_bundle_member_repository::sql() {
     return query_builder::insert_statement_sql<dataset_bundle_member_entity>(lg());
 }
 
-dataset_bundle_member_repository::dataset_bundle_member_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+dataset_bundle_member_repository::dataset_bundle_member_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 dataset_bundle_member_repository::replace_claim(const domain::dataset_bundle_member& v) {

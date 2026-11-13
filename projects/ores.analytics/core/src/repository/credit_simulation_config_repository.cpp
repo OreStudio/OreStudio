@@ -111,7 +111,7 @@ std::optional<query_builder::condition> credit_simulation_config_filter_conditio
 }
 
 ores::utility::domain::precondition
-credit_simulation_config_repository::replace_claim(context ctx,
+credit_simulation_config_repository::replace_claim(const context& ctx,
                                                    const domain::credit_simulation_config& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -121,7 +121,7 @@ credit_simulation_config_repository::replace_claim(context ctx,
 }
 
 domain::credit_simulation_config
-credit_simulation_config_repository::apply_claim(context ctx,
+credit_simulation_config_repository::apply_claim(const context& ctx,
                                                  const domain::credit_simulation_config& v,
                                                  const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -148,13 +148,13 @@ credit_simulation_config_repository::apply_claim(context ctx,
     return t;
 }
 
-void credit_simulation_config_repository::write(context ctx,
+void credit_simulation_config_repository::write(const context& ctx,
                                                 const domain::credit_simulation_config& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void credit_simulation_config_repository::write(
-    context ctx, const std::vector<domain::credit_simulation_config>& v) {
+    const context& ctx, const std::vector<domain::credit_simulation_config>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -162,7 +162,7 @@ void credit_simulation_config_repository::write(
     write(ctx, v, claims);
 }
 
-void credit_simulation_config_repository::write(context ctx,
+void credit_simulation_config_repository::write(const context& ctx,
                                                 const domain::credit_simulation_config& v,
                                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing credit simulation configuration. " << "id: " << v.id;
@@ -174,7 +174,7 @@ void credit_simulation_config_repository::write(context ctx,
 }
 
 void credit_simulation_config_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::credit_simulation_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing credit simulation configurations. Count: " << v.size();
@@ -189,7 +189,7 @@ void credit_simulation_config_repository::write(
 }
 
 std::vector<domain::credit_simulation_config>
-credit_simulation_config_repository::read_latest(context ctx) {
+credit_simulation_config_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<credit_simulation_config_entity>> |
@@ -206,7 +206,7 @@ credit_simulation_config_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::credit_simulation_config>
-credit_simulation_config_repository::read_latest(context ctx, const std::string& id) {
+credit_simulation_config_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest credit simulation configuration. "
                                << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -225,7 +225,8 @@ credit_simulation_config_repository::read_latest(context ctx, const std::string&
 }
 
 std::vector<domain::credit_simulation_config>
-credit_simulation_config_repository::read_latest_by_name(context ctx, const std::string& name) {
+credit_simulation_config_repository::read_latest_by_name(const context& ctx,
+                                                         const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest credit simulation configuration by name: "
                                << name;
     static constexpr auto max = db_timestamp::max();
@@ -250,7 +251,7 @@ credit_simulation_config_repository::read_latest_by_name(context ctx, const std:
 }
 
 std::vector<domain::credit_simulation_config>
-credit_simulation_config_repository::read_any_by_name(context ctx, const std::string& name) {
+credit_simulation_config_repository::read_any_by_name(const context& ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any credit simulation configuration by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<credit_simulation_config_entity>> |
@@ -278,7 +279,7 @@ credit_simulation_config_repository::read_any_by_name(context ctx, const std::st
 
 
 std::vector<domain::credit_simulation_config>
-credit_simulation_config_repository::read_all(context ctx, const std::string& id) {
+credit_simulation_config_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all credit simulation configuration versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -296,7 +297,7 @@ credit_simulation_config_repository::read_all(context ctx, const std::string& id
 }
 
 std::optional<domain::credit_simulation_config>
-credit_simulation_config_repository::read_at_version(context ctx,
+credit_simulation_config_repository::read_at_version(const context& ctx,
                                                      const std::string& id,
                                                      std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading credit simulation configuration at version. "
@@ -322,7 +323,7 @@ credit_simulation_config_repository::read_at_version(context ctx,
 
 std::vector<domain::credit_simulation_config>
 credit_simulation_config_repository::read_latest_by_configuration_id(
-    context ctx,
+    const context& ctx,
     const std::string& configuration_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -351,7 +352,7 @@ credit_simulation_config_repository::read_latest_by_configuration_id(
 }
 
 std::uint32_t credit_simulation_config_repository::get_total_config_count_by_configuration_id(
-    context ctx,
+    const context& ctx,
     const std::string& configuration_id,
     const std::optional<messaging::credit_simulation_configs_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -375,7 +376,7 @@ std::uint32_t credit_simulation_config_repository::get_total_config_count_by_con
 
 
 credit_simulation_config_repository::remove_status credit_simulation_config_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing credit simulation configuration. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -404,12 +405,12 @@ credit_simulation_config_repository::remove_status credit_simulation_config_repo
     return remove_status::removed;
 }
 
-void credit_simulation_config_repository::remove(context ctx, const std::string& id) {
+void credit_simulation_config_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::credit_simulation_config> credit_simulation_config_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -435,7 +436,7 @@ std::vector<domain::credit_simulation_config> credit_simulation_config_repositor
 }
 
 std::uint32_t credit_simulation_config_repository::get_total_config_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::credit_simulation_configs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active credit simulation configuration count";
@@ -454,7 +455,8 @@ std::uint32_t credit_simulation_config_repository::get_total_config_count(
 }
 
 std::vector<domain::credit_simulation_config>
-credit_simulation_config_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+credit_simulation_config_repository::read_latest(const context& ctx,
+                                                 const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -472,7 +474,8 @@ credit_simulation_config_repository::read_latest(context ctx, const std::vector<
     return result;
 }
 
-void credit_simulation_config_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void credit_simulation_config_repository::remove(const context& ctx,
+                                                 const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

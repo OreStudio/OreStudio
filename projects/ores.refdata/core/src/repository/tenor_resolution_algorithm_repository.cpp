@@ -101,7 +101,7 @@ std::optional<query_builder::condition> tenor_resolution_algorithm_filter_condit
 }
 
 ores::utility::domain::precondition
-tenor_resolution_algorithm_repository::replace_claim(context ctx,
+tenor_resolution_algorithm_repository::replace_claim(const context& ctx,
                                                      const domain::tenor_resolution_algorithm& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
@@ -111,7 +111,7 @@ tenor_resolution_algorithm_repository::replace_claim(context ctx,
 }
 
 domain::tenor_resolution_algorithm tenor_resolution_algorithm_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::tenor_resolution_algorithm& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,13 +138,13 @@ domain::tenor_resolution_algorithm tenor_resolution_algorithm_repository::apply_
     return t;
 }
 
-void tenor_resolution_algorithm_repository::write(context ctx,
+void tenor_resolution_algorithm_repository::write(const context& ctx,
                                                   const domain::tenor_resolution_algorithm& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void tenor_resolution_algorithm_repository::write(
-    context ctx, const std::vector<domain::tenor_resolution_algorithm>& v) {
+    const context& ctx, const std::vector<domain::tenor_resolution_algorithm>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -153,7 +153,7 @@ void tenor_resolution_algorithm_repository::write(
 }
 
 void tenor_resolution_algorithm_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::tenor_resolution_algorithm& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor resolution algorithm. " << "code: " << v.code;
@@ -165,7 +165,7 @@ void tenor_resolution_algorithm_repository::write(
 }
 
 void tenor_resolution_algorithm_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::tenor_resolution_algorithm>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor resolution algorithms. Count: " << v.size();
@@ -180,7 +180,7 @@ void tenor_resolution_algorithm_repository::write(
 }
 
 std::vector<domain::tenor_resolution_algorithm>
-tenor_resolution_algorithm_repository::read_latest(context ctx) {
+tenor_resolution_algorithm_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_resolution_algorithm_entity>> |
@@ -197,7 +197,7 @@ tenor_resolution_algorithm_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::tenor_resolution_algorithm>
-tenor_resolution_algorithm_repository::read_latest(context ctx, const std::string& code) {
+tenor_resolution_algorithm_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor resolution algorithm. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +216,7 @@ tenor_resolution_algorithm_repository::read_latest(context ctx, const std::strin
 
 
 std::vector<domain::tenor_resolution_algorithm>
-tenor_resolution_algorithm_repository::read_all(context ctx, const std::string& code) {
+tenor_resolution_algorithm_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all tenor resolution algorithm versions. "
                                << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -234,7 +234,7 @@ tenor_resolution_algorithm_repository::read_all(context ctx, const std::string& 
 }
 
 std::optional<domain::tenor_resolution_algorithm>
-tenor_resolution_algorithm_repository::read_at_version(context ctx,
+tenor_resolution_algorithm_repository::read_at_version(const context& ctx,
                                                        const std::string& code,
                                                        std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading tenor resolution algorithm at version. "
@@ -259,7 +259,7 @@ tenor_resolution_algorithm_repository::read_at_version(context ctx,
 }
 
 tenor_resolution_algorithm_repository::remove_status tenor_resolution_algorithm_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenor resolution algorithm. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -288,12 +288,12 @@ tenor_resolution_algorithm_repository::remove_status tenor_resolution_algorithm_
     return remove_status::removed;
 }
 
-void tenor_resolution_algorithm_repository::remove(context ctx, const std::string& code) {
+void tenor_resolution_algorithm_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::tenor_resolution_algorithm> tenor_resolution_algorithm_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -319,7 +319,7 @@ std::vector<domain::tenor_resolution_algorithm> tenor_resolution_algorithm_repos
 }
 
 std::uint32_t tenor_resolution_algorithm_repository::get_total_algorithm_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::tenor_resolution_algorithms_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor resolution algorithm count";
@@ -338,7 +338,7 @@ std::uint32_t tenor_resolution_algorithm_repository::get_total_algorithm_count(
 }
 
 std::vector<domain::tenor_resolution_algorithm>
-tenor_resolution_algorithm_repository::read_latest(context ctx,
+tenor_resolution_algorithm_repository::read_latest(const context& ctx,
                                                    const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
@@ -357,7 +357,7 @@ tenor_resolution_algorithm_repository::read_latest(context ctx,
     return result;
 }
 
-void tenor_resolution_algorithm_repository::remove(context ctx,
+void tenor_resolution_algorithm_repository::remove(const context& ctx,
                                                    const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

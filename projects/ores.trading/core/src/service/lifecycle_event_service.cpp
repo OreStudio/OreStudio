@@ -54,8 +54,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-lifecycle_event_service::lifecycle_event_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+lifecycle_event_service::lifecycle_event_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

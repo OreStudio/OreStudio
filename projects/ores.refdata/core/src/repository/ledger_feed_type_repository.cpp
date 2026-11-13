@@ -100,7 +100,7 @@ std::optional<query_builder::condition> ledger_feed_type_filter_condition(
 }
 
 ores::utility::domain::precondition
-ledger_feed_type_repository::replace_claim(context ctx, const domain::ledger_feed_type& v) {
+ledger_feed_type_repository::replace_claim(const context& ctx, const domain::ledger_feed_type& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -109,7 +109,7 @@ ledger_feed_type_repository::replace_claim(context ctx, const domain::ledger_fee
 }
 
 domain::ledger_feed_type
-ledger_feed_type_repository::apply_claim(context ctx,
+ledger_feed_type_repository::apply_claim(const context& ctx,
                                          const domain::ledger_feed_type& v,
                                          const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -136,11 +136,11 @@ ledger_feed_type_repository::apply_claim(context ctx,
     return t;
 }
 
-void ledger_feed_type_repository::write(context ctx, const domain::ledger_feed_type& v) {
+void ledger_feed_type_repository::write(const context& ctx, const domain::ledger_feed_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void ledger_feed_type_repository::write(context ctx,
+void ledger_feed_type_repository::write(const context& ctx,
                                         const std::vector<domain::ledger_feed_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -149,7 +149,7 @@ void ledger_feed_type_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void ledger_feed_type_repository::write(context ctx,
+void ledger_feed_type_repository::write(const context& ctx,
                                         const domain::ledger_feed_type& v,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing ledger feed type. " << "code: " << v.code;
@@ -159,7 +159,7 @@ void ledger_feed_type_repository::write(context ctx,
 }
 
 void ledger_feed_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::ledger_feed_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing ledger feed types. Count: " << v.size();
@@ -171,7 +171,7 @@ void ledger_feed_type_repository::write(
         ctx, ledger_feed_type_mapper::map(batch), lg(), "Writing ledger feed types to database.");
 }
 
-std::vector<domain::ledger_feed_type> ledger_feed_type_repository::read_latest(context ctx) {
+std::vector<domain::ledger_feed_type> ledger_feed_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ledger_feed_type_entity>> |
@@ -187,7 +187,7 @@ std::vector<domain::ledger_feed_type> ledger_feed_type_repository::read_latest(c
 }
 
 std::vector<domain::ledger_feed_type>
-ledger_feed_type_repository::read_latest(context ctx, const std::string& code) {
+ledger_feed_type_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest ledger feed type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -205,7 +205,7 @@ ledger_feed_type_repository::read_latest(context ctx, const std::string& code) {
 
 
 std::vector<domain::ledger_feed_type>
-ledger_feed_type_repository::read_all(context ctx, const std::string& code) {
+ledger_feed_type_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all ledger feed type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ledger_feed_type_entity>> |
@@ -221,7 +221,7 @@ ledger_feed_type_repository::read_all(context ctx, const std::string& code) {
 }
 
 std::optional<domain::ledger_feed_type> ledger_feed_type_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading ledger feed type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -244,7 +244,7 @@ std::optional<domain::ledger_feed_type> ledger_feed_type_repository::read_at_ver
 }
 
 ledger_feed_type_repository::remove_status ledger_feed_type_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing ledger feed type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -273,12 +273,12 @@ ledger_feed_type_repository::remove_status ledger_feed_type_repository::remove(
     return remove_status::removed;
 }
 
-void ledger_feed_type_repository::remove(context ctx, const std::string& code) {
+void ledger_feed_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::ledger_feed_type> ledger_feed_type_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -304,7 +304,7 @@ std::vector<domain::ledger_feed_type> ledger_feed_type_repository::read_latest(
 }
 
 std::uint32_t ledger_feed_type_repository::get_total_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::ledger_feed_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active ledger feed type count";
@@ -323,7 +323,8 @@ std::uint32_t ledger_feed_type_repository::get_total_type_count(
 }
 
 std::vector<domain::ledger_feed_type>
-ledger_feed_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+ledger_feed_type_repository::read_latest(const context& ctx,
+                                         const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -341,7 +342,8 @@ ledger_feed_type_repository::read_latest(context ctx, const std::vector<std::str
     return result;
 }
 
-void ledger_feed_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void ledger_feed_type_repository::remove(const context& ctx,
+                                         const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

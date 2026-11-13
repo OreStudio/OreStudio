@@ -30,7 +30,7 @@ namespace ores::marketdata::repository {
 
 using namespace ores::logging;
 
-std::vector<tick> tick_repository::read_range(context ctx,
+std::vector<tick> tick_repository::read_range(const context& ctx,
                                               const boost::uuids::uuid& stream_id,
                                               std::chrono::system_clock::time_point from,
                                               std::chrono::system_clock::time_point to,

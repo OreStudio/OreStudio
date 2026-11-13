@@ -44,10 +44,10 @@ static constexpr std::string_view ore_file_queue_group = "ores.reporting.service
 
 std::vector<ores::nats::service::subscription>
 register_ore_file_handlers(ores::nats::service::client& nats,
-                           ores::database::context ctx,
+                           const ores::database::context& ctx,
                            std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<ore_file_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<ore_file_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_ore_files_request::nats_subject, ore_file_queue_group, [h](ores::nats::message msg) {
             h->list_ore_files(std::move(msg));

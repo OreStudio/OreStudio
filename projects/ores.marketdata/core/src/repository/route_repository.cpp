@@ -135,7 +135,7 @@ route_filter_condition(const std::optional<messaging::routes_filter>& filter) {
 
 }
 
-ores::utility::domain::precondition route_repository::replace_claim(context ctx,
+ores::utility::domain::precondition route_repository::replace_claim(const context& ctx,
                                                                     const domain::route& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -144,7 +144,7 @@ ores::utility::domain::precondition route_repository::replace_claim(context ctx,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::route route_repository::apply_claim(context ctx,
+domain::route route_repository::apply_claim(const context& ctx,
                                             const domain::route& v,
                                             const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -171,11 +171,11 @@ domain::route route_repository::apply_claim(context ctx,
     return t;
 }
 
-void route_repository::write(context ctx, const domain::route& v) {
+void route_repository::write(const context& ctx, const domain::route& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void route_repository::write(context ctx, const std::vector<domain::route>& v) {
+void route_repository::write(const context& ctx, const std::vector<domain::route>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -183,7 +183,7 @@ void route_repository::write(context ctx, const std::vector<domain::route>& v) {
     write(ctx, v, claims);
 }
 
-void route_repository::write(context ctx,
+void route_repository::write(const context& ctx,
                              const domain::route& v,
                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing route. " << "id: " << v.id;
@@ -192,7 +192,7 @@ void route_repository::write(context ctx,
         ctx, route_mapper::map(t), lg(), "Writing route to database.");
 }
 
-void route_repository::write(context ctx,
+void route_repository::write(const context& ctx,
                              const std::vector<domain::route>& v,
                              const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing routes. Count: " << v.size();
@@ -204,7 +204,7 @@ void route_repository::write(context ctx,
         ctx, route_mapper::map(batch), lg(), "Writing routes to database.");
 }
 
-std::vector<domain::route> route_repository::read_latest(context ctx) {
+std::vector<domain::route> route_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<route_entity>> |
@@ -219,7 +219,8 @@ std::vector<domain::route> route_repository::read_latest(context ctx) {
         "Reading latest routes");
 }
 
-std::vector<domain::route> route_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::route> route_repository::read_latest(const context& ctx,
+                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest route. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -236,7 +237,8 @@ std::vector<domain::route> route_repository::read_latest(context ctx, const std:
 }
 
 std::vector<domain::route>
-route_repository::read_latest_by_publisher_code(context ctx, const std::string& publisher_code) {
+route_repository::read_latest_by_publisher_code(const context& ctx,
+                                                const std::string& publisher_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest route by publisher_code: " << publisher_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -260,7 +262,8 @@ route_repository::read_latest_by_publisher_code(context ctx, const std::string& 
 }
 
 std::vector<domain::route>
-route_repository::read_any_by_publisher_code(context ctx, const std::string& publisher_code) {
+route_repository::read_any_by_publisher_code(const context& ctx,
+                                             const std::string& publisher_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any route by publisher_code: " << publisher_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -287,7 +290,7 @@ route_repository::read_any_by_publisher_code(context ctx, const std::string& pub
 }
 
 
-std::vector<domain::route> route_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::route> route_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all route versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<route_entity>> |
@@ -302,8 +305,9 @@ std::vector<domain::route> route_repository::read_all(context ctx, const std::st
         "Reading all route versions by id.");
 }
 
-std::optional<domain::route>
-route_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::route> route_repository::read_at_version(const context& ctx,
+                                                               const std::string& id,
+                                                               std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading route at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -324,8 +328,9 @@ route_repository::read_at_version(context ctx, const std::string& id, std::uint3
     return entities.front();
 }
 
-route_repository::remove_status
-route_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+route_repository::remove_status route_repository::remove(const context& ctx,
+                                                         const std::string& id,
+                                                         std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing route. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -353,12 +358,12 @@ route_repository::remove(context ctx, const std::string& id, std::optional<std::
     return remove_status::removed;
 }
 
-void route_repository::remove(context ctx, const std::string& id) {
+void route_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::route>
-route_repository::read_latest(context ctx,
+route_repository::read_latest(const context& ctx,
                               std::uint32_t offset,
                               std::uint32_t limit,
                               const ores::utility::domain::order& order,
@@ -382,7 +387,7 @@ route_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-route_repository::get_total_route_count(context ctx,
+route_repository::get_total_route_count(const context& ctx,
                                         const std::optional<messaging::routes_filter>& filter,
                                         const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active route count";
@@ -399,7 +404,7 @@ route_repository::get_total_route_count(context ctx,
         "Counting routes");
 }
 
-std::vector<domain::route> route_repository::read_latest(context ctx,
+std::vector<domain::route> route_repository::read_latest(const context& ctx,
                                                          const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -417,7 +422,7 @@ std::vector<domain::route> route_repository::read_latest(context ctx,
     return result;
 }
 
-void route_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void route_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -435,7 +440,7 @@ void route_repository::remove(context ctx, const std::vector<std::string>& ids) 
 }
 
 
-std::vector<domain::route> route_repository::read_latest_all_tenants(context ctx) {
+std::vector<domain::route> route_repository::read_latest_all_tenants(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<route_entity>> |
                        query_builder::where("valid_to"_c == max) | query_builder::order_by("id"_c);

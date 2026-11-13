@@ -60,8 +60,8 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 cross_currency_fix_float_swap_terms_service::cross_currency_fix_float_swap_terms_service(
-    context ctx)
-    : ctx_(std::move(ctx)) {}
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

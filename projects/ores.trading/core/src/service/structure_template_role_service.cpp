@@ -54,8 +54,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-structure_template_role_service::structure_template_role_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+structure_template_role_service::structure_template_role_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

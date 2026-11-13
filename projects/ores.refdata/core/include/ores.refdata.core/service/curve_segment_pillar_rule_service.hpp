@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit curve_segment_pillar_rule_service(context ctx);
+    explicit curve_segment_pillar_rule_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

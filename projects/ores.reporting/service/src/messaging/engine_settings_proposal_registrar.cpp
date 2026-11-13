@@ -38,7 +38,7 @@ constexpr std::string_view queue_group = "ores.reporting.service";
 std::vector<ores::nats::service::subscription>
 engine_settings_proposal_registrar::register_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
@@ -56,8 +56,7 @@ engine_settings_proposal_registrar::register_handlers(
 
     subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
 
-    auto h = std::make_shared<engine_settings_proposal_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<engine_settings_proposal_handler>(nats, ctx, std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(raise_engine_settings_change_request::nats_subject,
                              queue_group,

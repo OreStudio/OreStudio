@@ -88,7 +88,7 @@ ores::history::service::dispatch_registry& history_registry() {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              std::chrono::seconds answered_window,
                              std::chrono::seconds reminder_window,

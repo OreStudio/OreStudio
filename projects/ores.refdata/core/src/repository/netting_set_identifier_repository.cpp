@@ -111,7 +111,7 @@ std::optional<query_builder::condition> netting_set_identifier_filter_condition(
 }
 
 ores::utility::domain::precondition
-netting_set_identifier_repository::replace_claim(context ctx,
+netting_set_identifier_repository::replace_claim(const context& ctx,
                                                  const domain::netting_set_identifier& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -121,7 +121,7 @@ netting_set_identifier_repository::replace_claim(context ctx,
 }
 
 domain::netting_set_identifier
-netting_set_identifier_repository::apply_claim(context ctx,
+netting_set_identifier_repository::apply_claim(const context& ctx,
                                                const domain::netting_set_identifier& v,
                                                const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -148,13 +148,13 @@ netting_set_identifier_repository::apply_claim(context ctx,
     return t;
 }
 
-void netting_set_identifier_repository::write(context ctx,
+void netting_set_identifier_repository::write(const context& ctx,
                                               const domain::netting_set_identifier& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void netting_set_identifier_repository::write(
-    context ctx, const std::vector<domain::netting_set_identifier>& v) {
+    const context& ctx, const std::vector<domain::netting_set_identifier>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -162,7 +162,7 @@ void netting_set_identifier_repository::write(
     write(ctx, v, claims);
 }
 
-void netting_set_identifier_repository::write(context ctx,
+void netting_set_identifier_repository::write(const context& ctx,
                                               const domain::netting_set_identifier& v,
                                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing netting set identifier. " << "id: " << v.id;
@@ -174,7 +174,7 @@ void netting_set_identifier_repository::write(context ctx,
 }
 
 void netting_set_identifier_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::netting_set_identifier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing netting set identifiers. Count: " << v.size();
@@ -189,7 +189,7 @@ void netting_set_identifier_repository::write(
 }
 
 std::vector<domain::netting_set_identifier>
-netting_set_identifier_repository::read_latest(context ctx) {
+netting_set_identifier_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_set_identifier_entity>> |
@@ -206,7 +206,7 @@ netting_set_identifier_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::netting_set_identifier>
-netting_set_identifier_repository::read_latest(context ctx, const std::string& id) {
+netting_set_identifier_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest netting set identifier. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -224,7 +224,7 @@ netting_set_identifier_repository::read_latest(context ctx, const std::string& i
 }
 
 std::vector<domain::netting_set_identifier> netting_set_identifier_repository::read_latest_by_code(
-    context ctx, const std::string& netting_set_id, const std::string& id_scheme) {
+    const context& ctx, const std::string& netting_set_id, const std::string& id_scheme) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest netting set identifier by netting_set_id/id_scheme: " << netting_set_id
         << "/" << id_scheme;
@@ -244,7 +244,7 @@ std::vector<domain::netting_set_identifier> netting_set_identifier_repository::r
         "Reading latest netting set identifier by id_scheme.");
 }
 std::vector<domain::netting_set_identifier>
-netting_set_identifier_repository::read_latest_by_id_value(context ctx,
+netting_set_identifier_repository::read_latest_by_id_value(const context& ctx,
                                                            const std::string& id_value) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest netting set identifier by id_value: " << id_value;
     static constexpr auto max = db_timestamp::max();
@@ -269,7 +269,8 @@ netting_set_identifier_repository::read_latest_by_id_value(context ctx,
 }
 
 std::vector<domain::netting_set_identifier>
-netting_set_identifier_repository::read_any_by_id_value(context ctx, const std::string& id_value) {
+netting_set_identifier_repository::read_any_by_id_value(const context& ctx,
+                                                        const std::string& id_value) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any netting set identifier by id_value: " << id_value;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_set_identifier_entity>> |
@@ -297,7 +298,7 @@ netting_set_identifier_repository::read_any_by_id_value(context ctx, const std::
 
 
 std::vector<domain::netting_set_identifier>
-netting_set_identifier_repository::read_all(context ctx, const std::string& id) {
+netting_set_identifier_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all netting set identifier versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_set_identifier_entity>> |
@@ -314,7 +315,7 @@ netting_set_identifier_repository::read_all(context ctx, const std::string& id) 
 }
 
 std::optional<domain::netting_set_identifier> netting_set_identifier_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading netting set identifier at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -339,7 +340,7 @@ std::optional<domain::netting_set_identifier> netting_set_identifier_repository:
 
 std::vector<domain::netting_set_identifier>
 netting_set_identifier_repository::read_latest_by_netting_set_id(
-    context ctx,
+    const context& ctx,
     const std::string& netting_set_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -368,7 +369,7 @@ netting_set_identifier_repository::read_latest_by_netting_set_id(
 
 std::uint32_t
 netting_set_identifier_repository::get_total_netting_set_identifier_count_by_netting_set_id(
-    context ctx,
+    const context& ctx,
     const std::string& netting_set_id,
     const std::optional<messaging::netting_set_identifiers_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -392,7 +393,7 @@ netting_set_identifier_repository::get_total_netting_set_identifier_count_by_net
 
 
 netting_set_identifier_repository::remove_status netting_set_identifier_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing netting set identifier. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -421,12 +422,12 @@ netting_set_identifier_repository::remove_status netting_set_identifier_reposito
     return remove_status::removed;
 }
 
-void netting_set_identifier_repository::remove(context ctx, const std::string& id) {
+void netting_set_identifier_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::netting_set_identifier> netting_set_identifier_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -452,7 +453,7 @@ std::vector<domain::netting_set_identifier> netting_set_identifier_repository::r
 }
 
 std::uint32_t netting_set_identifier_repository::get_total_netting_set_identifier_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::netting_set_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active netting set identifier count";
@@ -471,7 +472,8 @@ std::uint32_t netting_set_identifier_repository::get_total_netting_set_identifie
 }
 
 std::vector<domain::netting_set_identifier>
-netting_set_identifier_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+netting_set_identifier_repository::read_latest(const context& ctx,
+                                               const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -489,7 +491,8 @@ netting_set_identifier_repository::read_latest(context ctx, const std::vector<st
     return result;
 }
 
-void netting_set_identifier_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void netting_set_identifier_repository::remove(const context& ctx,
+                                               const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

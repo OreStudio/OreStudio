@@ -109,7 +109,7 @@ std::optional<query_builder::condition> trade_additional_field_filter_condition(
 }
 
 ores::utility::domain::precondition
-trade_additional_field_repository::replace_claim(context ctx,
+trade_additional_field_repository::replace_claim(const context& ctx,
                                                  const domain::trade_additional_field& v) {
     const auto current =
         read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
@@ -120,7 +120,7 @@ trade_additional_field_repository::replace_claim(context ctx,
 }
 
 domain::trade_additional_field
-trade_additional_field_repository::apply_claim(context ctx,
+trade_additional_field_repository::apply_claim(const context& ctx,
                                                const domain::trade_additional_field& v,
                                                const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -148,13 +148,13 @@ trade_additional_field_repository::apply_claim(context ctx,
     return t;
 }
 
-void trade_additional_field_repository::write(context ctx,
+void trade_additional_field_repository::write(const context& ctx,
                                               const domain::trade_additional_field& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void trade_additional_field_repository::write(
-    context ctx, const std::vector<domain::trade_additional_field>& v) {
+    const context& ctx, const std::vector<domain::trade_additional_field>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -162,7 +162,7 @@ void trade_additional_field_repository::write(
     write(ctx, v, claims);
 }
 
-void trade_additional_field_repository::write(context ctx,
+void trade_additional_field_repository::write(const context& ctx,
                                               const domain::trade_additional_field& v,
                                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade additional field. " << "trade_id: " << v.trade_id
@@ -175,7 +175,7 @@ void trade_additional_field_repository::write(context ctx,
 }
 
 void trade_additional_field_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::trade_additional_field>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade additional fields. Count: " << v.size();
@@ -190,7 +190,7 @@ void trade_additional_field_repository::write(
 }
 
 std::vector<domain::trade_additional_field>
-trade_additional_field_repository::read_latest(context ctx) {
+trade_additional_field_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_additional_field_entity>> |
@@ -207,7 +207,7 @@ trade_additional_field_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::trade_additional_field> trade_additional_field_repository::read_latest(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade additional field. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -229,7 +229,7 @@ std::vector<domain::trade_additional_field> trade_additional_field_repository::r
 
 
 std::vector<domain::trade_additional_field> trade_additional_field_repository::read_all(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade additional field versions. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -249,7 +249,7 @@ std::vector<domain::trade_additional_field> trade_additional_field_repository::r
 }
 
 std::optional<domain::trade_additional_field>
-trade_additional_field_repository::read_at_version(context ctx,
+trade_additional_field_repository::read_at_version(const context& ctx,
                                                    const std::string& trade_id,
                                                    const std::string& sequence_number,
                                                    std::uint32_t version) {
@@ -279,7 +279,7 @@ trade_additional_field_repository::read_at_version(context ctx,
 
 std::vector<domain::trade_additional_field>
 trade_additional_field_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -306,7 +306,7 @@ trade_additional_field_repository::read_latest_by_trade_id(
 }
 
 std::uint32_t trade_additional_field_repository::get_total_trade_additional_field_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::trade_additional_fields_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -328,7 +328,7 @@ std::uint32_t trade_additional_field_repository::get_total_trade_additional_fiel
 
 
 trade_additional_field_repository::remove_status
-trade_additional_field_repository::remove(context ctx,
+trade_additional_field_repository::remove(const context& ctx,
                                           const std::string& trade_id,
                                           const std::string& sequence_number,
                                           std::optional<std::uint32_t> version) {
@@ -362,14 +362,14 @@ trade_additional_field_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void trade_additional_field_repository::remove(context ctx,
+void trade_additional_field_repository::remove(const context& ctx,
                                                const std::string& trade_id,
                                                const std::string& sequence_number) {
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
 }
 
 std::vector<domain::trade_additional_field> trade_additional_field_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -395,7 +395,7 @@ std::vector<domain::trade_additional_field> trade_additional_field_repository::r
 }
 
 std::uint32_t trade_additional_field_repository::get_total_trade_additional_field_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::trade_additional_fields_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade additional field count";
@@ -414,7 +414,7 @@ std::uint32_t trade_additional_field_repository::get_total_trade_additional_fiel
 }
 
 std::vector<domain::trade_additional_field>
-trade_additional_field_repository::read_latest(context ctx,
+trade_additional_field_repository::read_latest(const context& ctx,
                                                const std::vector<std::string>& trade_ids,
                                                const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
@@ -451,7 +451,7 @@ trade_additional_field_repository::read_latest(context ctx,
     return filtered;
 }
 
-void trade_additional_field_repository::remove(context ctx,
+void trade_additional_field_repository::remove(const context& ctx,
                                                const std::vector<std::string>& trade_ids,
                                                const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product

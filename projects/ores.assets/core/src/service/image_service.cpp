@@ -58,8 +58,8 @@ namespace ores::assets::service {
 
 using namespace ores::logging;
 
-image_service::image_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+image_service::image_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

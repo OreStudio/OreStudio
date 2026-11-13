@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit notification_channel_service(context ctx);
+    explicit notification_channel_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

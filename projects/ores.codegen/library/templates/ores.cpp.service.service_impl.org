@@ -99,8 +99,8 @@ namespace ores::{{component}}::service {
 
 using namespace ores::logging;
 
-{{entity_singular}}_service::{{entity_singular}}_service(context ctx)
-    : ctx_(std::move(ctx))
+{{entity_singular}}_service::{{entity_singular}}_service(const context& ctx)
+    : ctx_(ctx)
 <<paste:4F8A2B1E-7C3D-4E9F-B6A0-1D5C8F2E7A4B>>{}
 {{#protocol_derived}}
 namespace {
@@ -1264,8 +1264,8 @@ void stamp_{{name_singular}}(domain::{{name_singular}}& row,
 }
 {{/party_id_is_target}}
 
-{{name_singular}}_service::{{name_singular}}_service(context ctx)
-    : ctx_(std::move(ctx)), repo_(ctx_) {}
+{{name_singular}}_service::{{name_singular}}_service(const context& ctx)
+    : ctx_(ctx), repo_(ctx_) {}
 
 {{#protocol_derived}}
 namespace {
@@ -1871,8 +1871,8 @@ messaging::{{entity}}_key key_from_{{part}}(const domain::{{entity}}& v) {
 
 }
 
-{{entity_singular}}_service::{{entity_singular}}_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+{{entity_singular}}_service::{{entity_singular}}_service(const context& ctx)
+    : ctx_(ctx) {}
 
 {{#get_operations}}
 messaging::{{response}}

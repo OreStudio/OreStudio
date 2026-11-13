@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-party_relationship_service::party_relationship_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+party_relationship_service::party_relationship_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

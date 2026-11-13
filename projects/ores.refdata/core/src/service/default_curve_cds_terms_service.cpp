@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-default_curve_cds_terms_service::default_curve_cds_terms_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+default_curve_cds_terms_service::default_curve_cds_terms_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

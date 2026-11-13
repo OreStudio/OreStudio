@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-cms_spread_option_convention_service::cms_spread_option_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+cms_spread_option_convention_service::cms_spread_option_convention_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

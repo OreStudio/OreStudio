@@ -58,8 +58,8 @@ namespace ores::reporting::service {
 
 using namespace ores::logging;
 
-ore_file_version_service::ore_file_version_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+ore_file_version_service::ore_file_version_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

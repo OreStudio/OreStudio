@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::trade_link& v);
-    void write(context ctx, const std::vector<domain::trade_link>& v);
+    void write(const context& ctx, const domain::trade_link& v);
+    void write(const context& ctx, const std::vector<domain::trade_link>& v);
     /**@}*/
 
     /**
@@ -84,7 +84,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::trade_link& v,
                const ores::utility::domain::precondition& claim);
 
@@ -92,7 +92,7 @@ public:
      * @brief Writes a set of trade links, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::trade_link>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -100,12 +100,12 @@ public:
      * @brief Reads latest trade links, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::trade_link> read_latest(context ctx);
-    std::vector<domain::trade_link> read_latest(context ctx,
+    std::vector<domain::trade_link> read_latest(const context& ctx);
+    std::vector<domain::trade_link> read_latest(const context& ctx,
                                                 const std::string& from_trade_id,
                                                 const std::string& to_trade_id,
                                                 const std::string& link_type);
-    std::vector<domain::trade_link> read_latest(context ctx,
+    std::vector<domain::trade_link> read_latest(const context& ctx,
                                                 const std::vector<std::string>& from_trade_ids,
                                                 const std::vector<std::string>& to_trade_ids,
                                                 const std::vector<std::string>& link_types);
@@ -115,7 +115,7 @@ public:
     /**
      * @brief Reads all trade links, possibly filtered by primary key.
      */
-    std::vector<domain::trade_link> read_all(context ctx,
+    std::vector<domain::trade_link> read_all(const context& ctx,
                                              const std::string& from_trade_id,
                                              const std::string& to_trade_id,
                                              const std::string& link_type);
@@ -129,7 +129,7 @@ public:
      * @param ctx Repository context with database connection
      * @param version The version to fetch
      */
-    std::optional<domain::trade_link> read_at_version(context ctx,
+    std::optional<domain::trade_link> read_at_version(const context& ctx,
                                                       const std::string& from_trade_id,
                                                       const std::string& to_trade_id,
                                                       const std::string& link_type,
@@ -153,7 +153,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::trade_link>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -166,14 +166,14 @@ public:
      * @return Total number of active trade links
      */
     std::uint32_t
-    get_total_link_count(context ctx,
+    get_total_link_count(const context& ctx,
                          const std::optional<messaging::trade_links_filter>& filter = std::nullopt,
                          const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a trade link by closing its temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::string& from_trade_id,
                 const std::string& to_trade_id,
                 const std::string& link_type);
@@ -198,7 +198,7 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& from_trade_id,
                          const std::string& to_trade_id,
                          const std::string& link_type,
@@ -207,7 +207,7 @@ public:
     /**
      * @brief Deletes trade links by closing their temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::vector<std::string>& from_trade_ids,
                 const std::vector<std::string>& to_trade_ids,
                 const std::vector<std::string>& link_types);
@@ -218,14 +218,15 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::trade_link& v);
+    ores::utility::domain::precondition replace_claim(const context& ctx,
+                                                      const domain::trade_link& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::trade_link apply_claim(context ctx,
+    domain::trade_link apply_claim(const context& ctx,
                                    const domain::trade_link& v,
                                    const ores::utility::domain::precondition& claim);
 };

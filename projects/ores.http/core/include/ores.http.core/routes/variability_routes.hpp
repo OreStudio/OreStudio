@@ -42,7 +42,7 @@ namespace ores::http::server::routes {
 class ORES_HTTP_CORE_EXPORT variability_routes final {
 public:
     variability_routes(
-        database::context ctx,
+        const database::context& ctx,
         std::shared_ptr<variability::service::system_settings_service> system_settings,
         std::shared_ptr<iam::service::auth_session_service> sessions);
 

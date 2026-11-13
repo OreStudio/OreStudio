@@ -98,7 +98,7 @@ catalog_filter_condition(const std::optional<messaging::catalogs_filter>& filter
 
 }
 
-ores::utility::domain::precondition catalog_repository::replace_claim(context ctx,
+ores::utility::domain::precondition catalog_repository::replace_claim(const context& ctx,
                                                                       const domain::catalog& v) {
     const auto current = read_latest(ctx, v.name);
     if (current.empty())
@@ -107,7 +107,7 @@ ores::utility::domain::precondition catalog_repository::replace_claim(context ct
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::catalog catalog_repository::apply_claim(context ctx,
+domain::catalog catalog_repository::apply_claim(const context& ctx,
                                                 const domain::catalog& v,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -134,11 +134,11 @@ domain::catalog catalog_repository::apply_claim(context ctx,
     return t;
 }
 
-void catalog_repository::write(context ctx, const domain::catalog& v) {
+void catalog_repository::write(const context& ctx, const domain::catalog& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void catalog_repository::write(context ctx, const std::vector<domain::catalog>& v) {
+void catalog_repository::write(const context& ctx, const std::vector<domain::catalog>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -146,7 +146,7 @@ void catalog_repository::write(context ctx, const std::vector<domain::catalog>& 
     write(ctx, v, claims);
 }
 
-void catalog_repository::write(context ctx,
+void catalog_repository::write(const context& ctx,
                                const domain::catalog& v,
                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing catalog. " << "name: " << v.name;
@@ -155,7 +155,7 @@ void catalog_repository::write(context ctx,
         ctx, catalog_mapper::map(t), lg(), "Writing catalog to database.");
 }
 
-void catalog_repository::write(context ctx,
+void catalog_repository::write(const context& ctx,
                                const std::vector<domain::catalog>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing catalogs. Count: " << v.size();
@@ -167,7 +167,7 @@ void catalog_repository::write(context ctx,
         ctx, catalog_mapper::map(batch), lg(), "Writing catalogs to database.");
 }
 
-std::vector<domain::catalog> catalog_repository::read_latest(context ctx) {
+std::vector<domain::catalog> catalog_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<catalog_entity>> |
                        query_builder::where("valid_to"_c == max) |
@@ -181,7 +181,8 @@ std::vector<domain::catalog> catalog_repository::read_latest(context ctx) {
         "Reading latest catalogs");
 }
 
-std::vector<domain::catalog> catalog_repository::read_latest(context ctx, const std::string& name) {
+std::vector<domain::catalog> catalog_repository::read_latest(const context& ctx,
+                                                             const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest catalog. " << "name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<catalog_entity>> |
@@ -196,7 +197,8 @@ std::vector<domain::catalog> catalog_repository::read_latest(context ctx, const 
 }
 
 
-std::vector<domain::catalog> catalog_repository::read_all(context ctx, const std::string& name) {
+std::vector<domain::catalog> catalog_repository::read_all(const context& ctx,
+                                                          const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all catalog versions. " << "name: " << name;
     const auto query = query_builder::read<std::vector<catalog_entity>> |
                        query_builder::where("name"_c == name) |
@@ -210,8 +212,9 @@ std::vector<domain::catalog> catalog_repository::read_all(context ctx, const std
         "Reading all catalog versions by name.");
 }
 
-std::optional<domain::catalog>
-catalog_repository::read_at_version(context ctx, const std::string& name, std::uint32_t version) {
+std::optional<domain::catalog> catalog_repository::read_at_version(const context& ctx,
+                                                                   const std::string& name,
+                                                                   std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading catalog at version. " << "name: " << name
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<catalog_entity>> |
@@ -230,7 +233,7 @@ catalog_repository::read_at_version(context ctx, const std::string& name, std::u
     return entities.front();
 }
 
-catalog_repository::remove_status catalog_repository::remove(context ctx,
+catalog_repository::remove_status catalog_repository::remove(const context& ctx,
                                                              const std::string& name,
                                                              std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing catalog. " << "name: " << name;
@@ -260,12 +263,12 @@ catalog_repository::remove_status catalog_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void catalog_repository::remove(context ctx, const std::string& name) {
+void catalog_repository::remove(const context& ctx, const std::string& name) {
     static_cast<void>(remove(ctx, name, std::nullopt));
 }
 
 std::vector<domain::catalog>
-catalog_repository::read_latest(context ctx,
+catalog_repository::read_latest(const context& ctx,
                                 std::uint32_t offset,
                                 std::uint32_t limit,
                                 const ores::utility::domain::order& order,
@@ -287,7 +290,7 @@ catalog_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-catalog_repository::get_total_catalog_count(context ctx,
+catalog_repository::get_total_catalog_count(const context& ctx,
                                             const std::optional<messaging::catalogs_filter>& filter,
                                             const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active catalog count";
@@ -303,7 +306,7 @@ catalog_repository::get_total_catalog_count(context ctx,
 }
 
 std::vector<domain::catalog>
-catalog_repository::read_latest(context ctx, const std::vector<std::string>& names) {
+catalog_repository::read_latest(const context& ctx, const std::vector<std::string>& names) {
     if (names.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -318,7 +321,7 @@ catalog_repository::read_latest(context ctx, const std::vector<std::string>& nam
     return result;
 }
 
-void catalog_repository::remove(context ctx, const std::vector<std::string>& names) {
+void catalog_repository::remove(const context& ctx, const std::vector<std::string>& names) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

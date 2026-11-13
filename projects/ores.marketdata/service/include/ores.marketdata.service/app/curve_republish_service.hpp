@@ -21,7 +21,7 @@
 #define ORES_MARKETDATA_SERVICE_APP_CURVE_REPUBLISH_SERVICE_HPP
 
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -78,7 +78,7 @@ public:
      * engine's own "fails/defers cleanly" contract; callers must not treat this as a bug.
      */
     static std::vector<ores::analytics::quant::service::bootstrapped_point>
-    compute(context ctx,
+    compute(const context& ctx,
             const boost::uuids::uuid& bootstrap_config_id,
             std::chrono::system_clock::time_point as_of);
 
@@ -94,7 +94,7 @@ public:
      * the raw grid's observed rates are missing or malformed.
      * @throws ores::analytics::quant::service::discount_curve_required_error -- see compute().
      */
-    static void republish(context ctx,
+    static void republish(const context& ctx,
                           const boost::uuids::uuid& bootstrap_config_id,
                           std::chrono::system_clock::time_point as_of);
 };

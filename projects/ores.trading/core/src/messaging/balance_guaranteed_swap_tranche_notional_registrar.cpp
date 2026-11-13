@@ -46,11 +46,11 @@ static constexpr std::string_view balance_guaranteed_swap_tranche_notional_queue
 std::vector<ores::nats::service::subscription>
 register_balance_guaranteed_swap_tranche_notional_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<balance_guaranteed_swap_tranche_notional_handler>(
-        nats, std::move(ctx), std::move(verifier));
+        nats, ctx, std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_balance_guaranteed_swap_tranche_notionals_request::nats_subject,
                              balance_guaranteed_swap_tranche_notional_queue_group,

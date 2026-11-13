@@ -110,7 +110,7 @@ swap_leg_rate_filter_condition(const std::optional<messaging::swap_leg_rates_fil
 }
 
 ores::utility::domain::precondition
-swap_leg_rate_repository::replace_claim(context ctx, const domain::swap_leg_rate& v) {
+swap_leg_rate_repository::replace_claim(const context& ctx, const domain::swap_leg_rate& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.trade_id),
                                      std::to_string(v.leg_number),
@@ -122,8 +122,10 @@ swap_leg_rate_repository::replace_claim(context ctx, const domain::swap_leg_rate
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::swap_leg_rate swap_leg_rate_repository::apply_claim(
-    context ctx, const domain::swap_leg_rate& v, const ores::utility::domain::precondition& claim) {
+domain::swap_leg_rate
+swap_leg_rate_repository::apply_claim(const context& ctx,
+                                      const domain::swap_leg_rate& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -152,11 +154,12 @@ domain::swap_leg_rate swap_leg_rate_repository::apply_claim(
     return t;
 }
 
-void swap_leg_rate_repository::write(context ctx, const domain::swap_leg_rate& v) {
+void swap_leg_rate_repository::write(const context& ctx, const domain::swap_leg_rate& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void swap_leg_rate_repository::write(context ctx, const std::vector<domain::swap_leg_rate>& v) {
+void swap_leg_rate_repository::write(const context& ctx,
+                                     const std::vector<domain::swap_leg_rate>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -164,7 +167,7 @@ void swap_leg_rate_repository::write(context ctx, const std::vector<domain::swap
     write(ctx, v, claims);
 }
 
-void swap_leg_rate_repository::write(context ctx,
+void swap_leg_rate_repository::write(const context& ctx,
                                      const domain::swap_leg_rate& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing swap leg rate. " << "trade_id: " << v.trade_id
@@ -176,7 +179,7 @@ void swap_leg_rate_repository::write(context ctx,
 }
 
 void swap_leg_rate_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::swap_leg_rate>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing swap leg rates. Count: " << v.size();
@@ -188,7 +191,7 @@ void swap_leg_rate_repository::write(
         ctx, swap_leg_rate_mapper::map(batch), lg(), "Writing swap leg rates to database.");
 }
 
-std::vector<domain::swap_leg_rate> swap_leg_rate_repository::read_latest(context ctx) {
+std::vector<domain::swap_leg_rate> swap_leg_rate_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -205,7 +208,7 @@ std::vector<domain::swap_leg_rate> swap_leg_rate_repository::read_latest(context
 }
 
 std::vector<domain::swap_leg_rate>
-swap_leg_rate_repository::read_latest(context ctx,
+swap_leg_rate_repository::read_latest(const context& ctx,
                                       const std::string& trade_id,
                                       const std::string& leg_number,
                                       const std::string& rate_role,
@@ -231,7 +234,7 @@ swap_leg_rate_repository::read_latest(context ctx,
 
 
 std::vector<domain::swap_leg_rate>
-swap_leg_rate_repository::read_all(context ctx,
+swap_leg_rate_repository::read_all(const context& ctx,
                                    const std::string& trade_id,
                                    const std::string& leg_number,
                                    const std::string& rate_role,
@@ -256,7 +259,7 @@ swap_leg_rate_repository::read_all(context ctx,
 }
 
 std::optional<domain::swap_leg_rate>
-swap_leg_rate_repository::read_at_version(context ctx,
+swap_leg_rate_repository::read_at_version(const context& ctx,
                                           const std::string& trade_id,
                                           const std::string& leg_number,
                                           const std::string& rate_role,
@@ -288,7 +291,7 @@ swap_leg_rate_repository::read_at_version(context ctx,
 }
 
 std::vector<domain::swap_leg_rate> swap_leg_rate_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -315,7 +318,7 @@ std::vector<domain::swap_leg_rate> swap_leg_rate_repository::read_latest_by_trad
 }
 
 std::uint32_t swap_leg_rate_repository::get_total_swap_leg_rate_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::swap_leg_rates_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active swap leg rates count. trade_id: "
@@ -337,7 +340,7 @@ std::uint32_t swap_leg_rate_repository::get_total_swap_leg_rate_count_by_trade_i
 
 
 swap_leg_rate_repository::remove_status
-swap_leg_rate_repository::remove(context ctx,
+swap_leg_rate_repository::remove(const context& ctx,
                                  const std::string& trade_id,
                                  const std::string& leg_number,
                                  const std::string& rate_role,
@@ -375,7 +378,7 @@ swap_leg_rate_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void swap_leg_rate_repository::remove(context ctx,
+void swap_leg_rate_repository::remove(const context& ctx,
                                       const std::string& trade_id,
                                       const std::string& leg_number,
                                       const std::string& rate_role,
@@ -384,7 +387,7 @@ void swap_leg_rate_repository::remove(context ctx,
 }
 
 std::vector<domain::swap_leg_rate>
-swap_leg_rate_repository::read_latest(context ctx,
+swap_leg_rate_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -410,7 +413,7 @@ swap_leg_rate_repository::read_latest(context ctx,
 }
 
 std::uint32_t swap_leg_rate_repository::get_total_swap_leg_rate_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::swap_leg_rates_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active swap leg rate count";
@@ -429,7 +432,7 @@ std::uint32_t swap_leg_rate_repository::get_total_swap_leg_rate_count(
 }
 
 std::vector<domain::swap_leg_rate>
-swap_leg_rate_repository::read_latest(context ctx,
+swap_leg_rate_repository::read_latest(const context& ctx,
                                       const std::vector<std::string>& trade_ids,
                                       const std::vector<std::string>& leg_numbers,
                                       const std::vector<std::string>& rate_roles,
@@ -471,7 +474,7 @@ swap_leg_rate_repository::read_latest(context ctx,
     return filtered;
 }
 
-void swap_leg_rate_repository::remove(context ctx,
+void swap_leg_rate_repository::remove(const context& ctx,
                                       const std::vector<std::string>& trade_ids,
                                       const std::vector<std::string>& leg_numbers,
                                       const std::vector<std::string>& rate_roles,
@@ -489,7 +492,7 @@ void swap_leg_rate_repository::remove(context ctx,
 
 
 std::vector<domain::swap_leg_rate>
-swap_leg_rate_repository::read_by_instruments_batch(context ctx,
+swap_leg_rate_repository::read_by_instruments_batch(const context& ctx,
                                                     const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};

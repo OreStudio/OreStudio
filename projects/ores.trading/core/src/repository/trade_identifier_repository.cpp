@@ -107,7 +107,7 @@ std::optional<query_builder::condition> trade_identifier_filter_condition(
 }
 
 ores::utility::domain::precondition
-trade_identifier_repository::replace_claim(context ctx, const domain::trade_identifier& v) {
+trade_identifier_repository::replace_claim(const context& ctx, const domain::trade_identifier& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id), v.id_type);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -116,7 +116,7 @@ trade_identifier_repository::replace_claim(context ctx, const domain::trade_iden
 }
 
 domain::trade_identifier
-trade_identifier_repository::apply_claim(context ctx,
+trade_identifier_repository::apply_claim(const context& ctx,
                                          const domain::trade_identifier& v,
                                          const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -143,11 +143,11 @@ trade_identifier_repository::apply_claim(context ctx,
     return t;
 }
 
-void trade_identifier_repository::write(context ctx, const domain::trade_identifier& v) {
+void trade_identifier_repository::write(const context& ctx, const domain::trade_identifier& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void trade_identifier_repository::write(context ctx,
+void trade_identifier_repository::write(const context& ctx,
                                         const std::vector<domain::trade_identifier>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -156,7 +156,7 @@ void trade_identifier_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void trade_identifier_repository::write(context ctx,
+void trade_identifier_repository::write(const context& ctx,
                                         const domain::trade_identifier& v,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade identifier. " << "trade_id: " << v.trade_id
@@ -167,7 +167,7 @@ void trade_identifier_repository::write(context ctx,
 }
 
 void trade_identifier_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::trade_identifier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade identifiers. Count: " << v.size();
@@ -179,7 +179,7 @@ void trade_identifier_repository::write(
         ctx, trade_identifier_mapper::map(batch), lg(), "Writing trade identifiers to database.");
 }
 
-std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(context ctx) {
+std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_identifier_entity>> |
@@ -195,7 +195,7 @@ std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(c
 }
 
 std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(
-    context ctx, const std::string& trade_id, const std::string& id_type) {
+    const context& ctx, const std::string& trade_id, const std::string& id_type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade identifier. " << "trade_id: " << trade_id
                                << " id_type: " << id_type;
     static constexpr auto max = db_timestamp::max();
@@ -214,7 +214,7 @@ std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(
 
 
 std::vector<domain::trade_identifier> trade_identifier_repository::read_all(
-    context ctx, const std::string& trade_id, const std::string& id_type) {
+    const context& ctx, const std::string& trade_id, const std::string& id_type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade identifier versions. "
                                << "trade_id: " << trade_id << " id_type: " << id_type;
     const auto tid = ctx.tenant_id().to_string();
@@ -231,8 +231,11 @@ std::vector<domain::trade_identifier> trade_identifier_repository::read_all(
         "Reading all trade identifier versions by trade_id.");
 }
 
-std::optional<domain::trade_identifier> trade_identifier_repository::read_at_version(
-    context ctx, const std::string& trade_id, const std::string& id_type, std::uint32_t version) {
+std::optional<domain::trade_identifier>
+trade_identifier_repository::read_at_version(const context& ctx,
+                                             const std::string& trade_id,
+                                             const std::string& id_type,
+                                             std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading trade identifier at version. "
                                << "trade_id: " << trade_id << " id_type: " << id_type
                                << " version: " << version;
@@ -256,7 +259,7 @@ std::optional<domain::trade_identifier> trade_identifier_repository::read_at_ver
 }
 
 std::vector<domain::trade_identifier> trade_identifier_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -283,7 +286,7 @@ std::vector<domain::trade_identifier> trade_identifier_repository::read_latest_b
 }
 
 std::uint32_t trade_identifier_repository::get_total_identifier_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::trade_identifiers_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade identifiers count. trade_id: "
@@ -305,7 +308,7 @@ std::uint32_t trade_identifier_repository::get_total_identifier_count_by_trade_i
 
 
 trade_identifier_repository::remove_status
-trade_identifier_repository::remove(context ctx,
+trade_identifier_repository::remove(const context& ctx,
                                     const std::string& trade_id,
                                     const std::string& id_type,
                                     std::optional<std::uint32_t> version) {
@@ -339,14 +342,14 @@ trade_identifier_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void trade_identifier_repository::remove(context ctx,
+void trade_identifier_repository::remove(const context& ctx,
                                          const std::string& trade_id,
                                          const std::string& id_type) {
     static_cast<void>(remove(ctx, trade_id, id_type, std::nullopt));
 }
 
 std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -372,7 +375,7 @@ std::vector<domain::trade_identifier> trade_identifier_repository::read_latest(
 }
 
 std::uint32_t trade_identifier_repository::get_total_identifier_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::trade_identifiers_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade identifier count";
@@ -391,7 +394,7 @@ std::uint32_t trade_identifier_repository::get_total_identifier_count(
 }
 
 std::vector<domain::trade_identifier>
-trade_identifier_repository::read_latest(context ctx,
+trade_identifier_repository::read_latest(const context& ctx,
                                          const std::vector<std::string>& trade_ids,
                                          const std::vector<std::string>& id_types) {
     if (trade_ids.empty() || id_types.empty())
@@ -427,7 +430,7 @@ trade_identifier_repository::read_latest(context ctx,
     return filtered;
 }
 
-void trade_identifier_repository::remove(context ctx,
+void trade_identifier_repository::remove(const context& ctx,
                                          const std::vector<std::string>& trade_ids,
                                          const std::vector<std::string>& id_types) {
     // Compound key: a per-column .in() DELETE would be a cross-product

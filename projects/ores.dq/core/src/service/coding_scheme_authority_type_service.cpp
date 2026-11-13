@@ -54,8 +54,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-coding_scheme_authority_type_service::coding_scheme_authority_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+coding_scheme_authority_type_service::coding_scheme_authority_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

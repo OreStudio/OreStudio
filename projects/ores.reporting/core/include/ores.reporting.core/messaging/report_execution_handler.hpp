@@ -70,7 +70,7 @@ private:
 
 public:
     report_execution_handler(ores::nats::service::client& nats,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              ores::nats::service::nats_client svc_nats,
                              ores::workflow::service::fsm_state_map instance_states,
                              std::string http_base_url);

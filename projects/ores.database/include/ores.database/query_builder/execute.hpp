@@ -200,7 +200,7 @@ condition select_sql(const std::optional<condition>& filter,
 }
 
 template <typename Entity>
-std::vector<Entity> select(context ctx, const condition& statement) {
+std::vector<Entity> select(const context& ctx, const condition& statement) {
     return database::transact(ctx, [&](pq::transaction& tx) {
         return entity_rows<Entity>(
             run(tx, numbered(statement.sql), statement.params, statement.variadic));
@@ -218,7 +218,7 @@ std::vector<Entity> select(context ctx, const condition& statement) {
  * throws repository_exception with the server's SQLSTATE.
  */
 ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>>
-execute_parameterized_multi_column_query(context ctx,
+execute_parameterized_multi_column_query(const context& ctx,
                                          const std::string& sql,
                                          const std::vector<std::optional<std::string>>& params,
                                          logging::logger_t& lg,
@@ -229,7 +229,7 @@ execute_parameterized_multi_column_query(context ctx,
  * column of each row, leaving out a row whose first column is missing.
  */
 ORES_DATABASE_EXPORT std::vector<std::string>
-execute_parameterized_string_query(context ctx,
+execute_parameterized_string_query(const context& ctx,
                                    const std::string& sql,
                                    const std::vector<std::string>& params,
                                    logging::logger_t& lg,
@@ -239,7 +239,7 @@ execute_parameterized_string_query(context ctx,
  * @brief The same, for SQL with no parameters.
  */
 ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>>
-execute_raw_multi_column_query(context ctx,
+execute_raw_multi_column_query(const context& ctx,
                                const std::string& sql,
                                logging::logger_t& lg,
                                const std::string& operation_desc);
@@ -247,13 +247,16 @@ execute_raw_multi_column_query(context ctx,
 /**
  * @brief The first column of each row, for SQL with no parameters.
  */
-ORES_DATABASE_EXPORT std::vector<std::string> execute_raw_string_query(
-    context ctx, const std::string& sql, logging::logger_t& lg, const std::string& operation_desc);
+ORES_DATABASE_EXPORT std::vector<std::string>
+execute_raw_string_query(const context& ctx,
+                         const std::string& sql,
+                         logging::logger_t& lg,
+                         const std::string& operation_desc);
 
 /**
  * @brief Runs hand-written SQL with text parameters for its effect.
  */
-ORES_DATABASE_EXPORT void execute_parameterized_command(context ctx,
+ORES_DATABASE_EXPORT void execute_parameterized_command(const context& ctx,
                                                         const std::string& sql,
                                                         const std::vector<std::string>& params,
                                                         logging::logger_t& lg,
@@ -262,7 +265,7 @@ ORES_DATABASE_EXPORT void execute_parameterized_command(context ctx,
 /**
  * @brief The same, for SQL with no parameters.
  */
-ORES_DATABASE_EXPORT void execute_raw_command(context ctx,
+ORES_DATABASE_EXPORT void execute_raw_command(const context& ctx,
                                               const std::string& sql,
                                               logging::logger_t& lg,
                                               const std::string& operation_desc);
@@ -276,7 +279,7 @@ std::string insert_statement_sql(logging::logger_t&) {
 }
 
 template <typename Entity, typename Domain, typename Mapper>
-std::vector<Domain> execute_read_query(context ctx,
+std::vector<Domain> execute_read_query(const context& ctx,
                                        const read_query<Entity>& query,
                                        Mapper&& mapper,
                                        logging::logger_t& lg,
@@ -296,7 +299,7 @@ std::vector<Domain> execute_read_query(context ctx,
 }
 
 template <typename Entity, typename Domain, typename Mapper>
-std::vector<Domain> execute_ordered_read_query(context ctx,
+std::vector<Domain> execute_ordered_read_query(const context& ctx,
                                                const read_query<Entity>& query,
                                                order sorting,
                                                std::optional<condition> filter,
@@ -322,7 +325,7 @@ std::vector<Domain> execute_ordered_read_query(context ctx,
 }
 
 template <typename Entity>
-std::uint32_t execute_count_query(context ctx,
+std::uint32_t execute_count_query(const context& ctx,
                                   const read_query<Entity>& query,
                                   std::optional<condition> filter,
                                   logging::logger_t& lg,
@@ -348,7 +351,7 @@ std::uint32_t execute_count_query(context ctx,
 }
 
 template <typename Entity>
-void execute_write_op(context ctx,
+void execute_write_op(const context& ctx,
                       const write_query<Entity>& query,
                       logging::logger_t& lg,
                       const std::string& operation_desc) {
@@ -379,7 +382,7 @@ void execute_write_op(context ctx,
  * failure in the write or the observation leaves neither.
  */
 template <typename Entity>
-void execute_write_query(context ctx,
+void execute_write_query(const context& ctx,
                          const std::vector<Entity>& entities,
                          logging::logger_t& lg,
                          const std::string& operation_desc) {
@@ -403,7 +406,7 @@ void execute_write_query(context ctx,
 }
 
 template <typename Entity>
-void execute_write_query(context ctx,
+void execute_write_query(const context& ctx,
                          const Entity& entity,
                          logging::logger_t& lg,
                          const std::string& operation_desc) {
@@ -411,7 +414,7 @@ void execute_write_query(context ctx,
 }
 
 template <typename Entity>
-void execute_delete_query(context ctx,
+void execute_delete_query(const context& ctx,
                           const delete_query<Entity>& query,
                           logging::logger_t& lg,
                           const std::string& operation_desc) {

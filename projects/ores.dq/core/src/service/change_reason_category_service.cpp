@@ -54,8 +54,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-change_reason_category_service::change_reason_category_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+change_reason_category_service::change_reason_category_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

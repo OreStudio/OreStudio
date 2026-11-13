@@ -43,15 +43,15 @@ using namespace ores::service::messaging;
 
 workflow_query_handler::workflow_query_handler(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     ores::security::jwt::jwt_authenticator signer,
     const service::fsm_state_map& instance_states,
     const service::fsm_state_map& step_states,
     std::shared_ptr<const service::workflow_registry> registry)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , signer_(std::move(signer))
-    , registry_(std::move(registry)) {
+    , ctx_(ctx)
+    , signer_(signer)
+    , registry_(registry) {
 
     // Build reverse maps: UUID → name
     for (const auto& [name, uuid] : instance_states.states)

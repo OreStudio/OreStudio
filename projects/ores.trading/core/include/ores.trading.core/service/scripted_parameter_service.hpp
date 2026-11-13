@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit scripted_parameter_service(context ctx);
+    explicit scripted_parameter_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

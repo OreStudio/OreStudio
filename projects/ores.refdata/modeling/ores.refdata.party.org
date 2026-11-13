@@ -600,7 +600,7 @@ root of the party hierarchy.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::party>
-read_system_party(context ctx, const std::string& tenant_id);
+read_system_party(const context& ctx, const std::string& tenant_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -612,7 +612,7 @@ read_system_party(context ctx, const std::string& tenant_id);
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::party>
-party_repository::read_system_party(context ctx, const std::string& tenant_id) {
+party_repository::read_system_party(const context& ctx, const std::string& tenant_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading system party for tenant: " << tenant_id;
     const std::string sql =
         "SELECT * FROM ores_refdata_read_system_party_fn('" + tenant_id + "'::uuid)";
@@ -656,7 +656,7 @@ Returns the root plus every descendant (active records only).
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<boost::uuids::uuid>
-read_descendants(context ctx, const boost::uuids::uuid& root_id);
+read_descendants(const context& ctx, const boost::uuids::uuid& root_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -666,7 +666,7 @@ read_descendants(context ctx, const boost::uuids::uuid& root_id);
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<boost::uuids::uuid>
-party_repository::read_descendants(context ctx, const boost::uuids::uuid& root_id) {
+party_repository::read_descendants(const context& ctx, const boost::uuids::uuid& root_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading party descendants. Root: " << root_id;
     const auto id_str = boost::uuids::to_string(root_id);
     const std::string sql =
@@ -700,12 +700,12 @@ this is one row or none. A registration into a tenant with no flagged party
 creates a pending account rather than failing.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::optional<domain::party> read_registration_default(context ctx);
+std::optional<domain::party> read_registration_default(const context& ctx);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::party>
-party_repository::read_registration_default(context ctx) {
+party_repository::read_registration_default(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<party_entity>> |

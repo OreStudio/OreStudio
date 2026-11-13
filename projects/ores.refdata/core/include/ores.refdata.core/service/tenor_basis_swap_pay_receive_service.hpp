@@ -65,7 +65,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit tenor_basis_swap_pay_receive_service(context ctx);
+    explicit tenor_basis_swap_pay_receive_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

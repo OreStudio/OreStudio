@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Implemented on this branch, build and suites green. |
+| Now          | Closed. Merged on this branch.          |
 | Waiting on   | Nothing.                               |
-| Next         | Review and merge.                      |
+| Next         | None.                                  |
 | Last touched | 2026-11-13                             |
 
 * Acceptance
@@ -193,3 +193,29 @@ Do this after [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that c
 |   |                 |      |          |       |
 
 * Result
+
+The context is passed by reference behind its own declaration, and the header
+that names it is no longer the header that defines it.
+
+- =context.hpp= includes neither libpq nor the pool: =pq/options.hpp= holds the
+  connection options, the pool slot is a pointer to an incomplete type defined
+  in the =.cpp=, and the pool, the transaction and the session context are
+  forward-declared. The header falls from 6.60 s to 2.85 s of parse time on its
+  own, and the =pq= family's blast radius moves with it.
+- =domain/context_fwd.hpp= declares the class, and the codemod puts it in the 87
+  hand-written headers that only name it.
+- 683 hand-written parameters and 187 model snippets take =const context&=, and
+  the code is regenerated from the models, so a rerun reproduces the change.
+- The stored member keeps its value and the service runners keep theirs. A
+  coroutine holds a parameter across every suspension point, and the IAM service
+  proved it: the compiler and eleven suites were green and the process aborted
+  with heap corruption. Valgrind named the borrowed context.
+- The check that guards the rule runs in the gate and records the header
+  families that still include the definition: the =repository= archetype, 539
+  files, and one header that cannot drop the include.
+
+Measured, at the commits the measurements name: the build is clean (720 steps,
+50 minutes) and the eleven suites this change reaches pass (11 of 11, 604 s).
+The gate passes every check that passes on =main=; the two that fail,
+=conventions-dataset= and =xml-benchmark-recorded=, fail identically on =main=
+at this commit and are not caused by this change.

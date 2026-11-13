@@ -54,7 +54,7 @@ insert into ores_scheduler_job_definitions_tbl (
     '',
     '*/15 * * * *',
     'nats_request',
-    '{"subject": "marketdata.v1.ops.publish_due_curves", "body": "{}"}',
+    '{"subject": "marketdata.v1.ops.publish_due_curves"}',
     true,
     'system', 'system', 'system.new_record', '',
     current_timestamp, ores_utility_infinity_timestamp_fn()

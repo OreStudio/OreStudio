@@ -20,6 +20,7 @@
 #include "ores.scheduler.core/service/nats_request_action_handler.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.scheduler.core/service/action_payloads.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include <string>
@@ -67,8 +68,11 @@ nats_request_action_handler::execute(const action_context& ctx) {
 
         // The answer carries the callee's own outcome, so its body is not read
         // here. An envelope refusal is the only failure this action can name,
-        // and it must reach the job record rather than be discarded.
-        const auto reply = svc_nats_.authenticated_request(subject, parsed.body.value_or("{}"));
+        // and it must reach the job record rather than be discarded. The request
+        // it sends has no members, so the callee's own no-member type reads it.
+        const nats_request_body body;
+        const auto reply =
+            svc_nats_.authenticated_request(subject, ores::nats::default_wire_codec().encode(body));
         const auto err = reply.headers.find(std::string(ores::nats::headers::x_error));
         if (err != reply.headers.end()) {
             const auto msg = "Subject " + subject + " refused the request: " + err->second;

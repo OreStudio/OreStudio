@@ -62,6 +62,122 @@ Settled, because the stages depend on the shapes:
 - *The emitter.* =fx_vol_surface_emitter::step= takes the per-expiry markets; =make= stops taking them. The markets are positional in the emitter's own expiry order and checked by size, so a tick does no string work.
 - *Two gates, deliberately different.* A configured pair whose currencies have no configured curve feed is refused when the start verb builds the feed: that is a configuration error, static, and it names the currency. A board member missing at tick time publishes nothing and says which: that is not an error but an ordering, because a surface may tick before any curve has, and a curve may be stopped.
 
+* Architecture review
+
+Taken when the board was wired into the scheduler, because that placement was a
+change to the shape of the run and not a detail of the board.
+
+** What each class is responsible for today
+
+| Class | Says it is | Actually owns | Depends on |
+|-------+------------+---------------+------------|
+| =tick_scheduler= | "the one loop of a run: it owns the market and decides which series ticks next" | the clock, the heap and arrival laws, the pace and the heat and the regime, the history and the trace, the series groups and names, a driver hook, a published hook and a failure hook | =i_run_clock=, =market_config= |
+| =latent_market= | the run's shared noise | factors, keyed walks, per-series loadings, the driver values a series reads | nothing |
+| =run_market= (service) | "the one latent market a run owns, and where each feed's drivers are" | the latent market, its blocks, the series-to-drivers map, and it installs the driver hook on a scheduler it is handed | =latent_market=, =tick_scheduler= |
+| =market_board= | the values the run's feeds share | a curve per currency and a spot per pair, each with the time it was last published | nothing |
+
+** Three smells, one of them this task's
+
+1. *Cohesion.* The scheduler already owns more than timing: the market's pace, its
+   heat, its regime, and the run's whole observability. Its own doc calls it "the one
+   loop of a run: it owns the market". So the name is the first problem, not the
+   board. Putting the board there adds a second axis -- values published by feeds --
+   to a class that already mixes time, market state and observability. That is how a
+   god object begins.
+2. *Visibility, and this is the load-bearing one.* A feed that reads market values
+   through the scheduler has an invisible dependency: at the call site
+   =scheduler_.board()= nothing says "this feed consumes another feed's output". The
+   dependencies between feeds are exactly what the architecture exists to make
+   explicit -- a surface reads two curves and a spot, an equity option will read an
+   equity spot, the capfloor shift reads an IR curve -- and a dependency reached
+   through an unrelated object hides the graph.
+3. *Lifetime, which is older than this task.* The driver hook is a lambda over
+   =run_market=, so the application must declare =run_market= before the scheduler and
+   rely on a comment saying the scheduler's hook points at it. Ownership that exists to
+   satisfy a callback's capture is a footgun, and it is invisible at the type level.
+
+** The direction that is right, and the one that is not
+
+"A market board owning a scheduler", taken literally, is wrong: the board is a store of
+values, and giving it a loop makes data own time and inverts the dependency. What the
+instinct is right about is that the object owning both should be a *market*, not the
+loop: the loop is one part of a run's market, not its container.
+
+** Target
+
+#+begin_example
+quant::service::run_market          one run's market: composition, no policy of its own
+  tick_scheduler  loop              when: the clock, the heap, the laws, pace, heat, regime, trace
+  latent_market   noise             why prices co-move: factors, loadings, drivers
+  market_board    values            what the feeds share: curves, spots, when each was published
+#+end_example
+
+The rules the shape is worth having for:
+
+- *The loop knows nothing of noise or values.* It calls one driver hook and nothing
+  else. A scheduler that can hand out market data is a scheduler that will.
+- *Noise knows nothing of the loop or of values*, as today.
+- *Values know nothing of either*: the board is a table with ids, not a service.
+- *=run_market= wires them.* It builds its own loop, so it installs the driver hook on
+  the object it owns and no declaration-order rule survives. It also keeps the
+  block-to-series map, which is noise wiring, not service policy.
+- *A feed depends on =run_market= and reaches =loop()= and =values()=.* A feed's
+  dependency on another asset class is then a line in its constructor, and no feed
+  reaches values through the loop.
+
+It belongs in =ores.analytics.quant=, not in the service: the feeds live in
+=ores.synthetic.api=, which must not depend on =ores.synthetic.service=. The aggregate
+has to sit below both, beside the three things it wires. That also retires the
+service's own =run_market=, which duplicates what the aggregate should be.
+
+** How a new asset class joins, which is the test of the shape
+
+- A new feed kind registers in the factory and the registry, as today.
+- A feed that publishes a value another feed reads defines a member kind and a code and
+  writes it to =values()=: no change to the loop, no change to the other feeds.
+- A feed that is a block -- a volatility surface today, an equity or commodity surface
+  later -- calls =add_block(anchor_series, name, ...)=, which is already generic and
+  only named for FX at its call site.
+- A feed that needs an input holds the aggregate and reads =values()= in its
+  constructor, so the dependency is visible where it is created.
+- Nothing in the aggregate is FX-specific: no =fx_vol_surface_*= type appears in it, and
+  a new asset class adds no field to it.
+
+** Performance and data orientation
+
+- *No interface is introduced.* The aggregate is concrete and a feed holds a reference
+  to it, so the tick path gains no indirection and no type erasure. The driver hook
+  stays a =std::function= whose capture is one pointer, set once, which fits its small
+  buffer and allocates nothing.
+- *The board is already shaped for the many case*: capacity fixed when the run is built,
+  a member id resolved once and used by index afterwards, a member's points in its own
+  reused buffer, no lock on the tick path, and the one lock only when a member is added
+  off the loop. A tick allocates nothing for a curve whose size has not changed, which
+  its tests pin by checking the buffer's address across publishes.
+- *A budget, so nobody optimises the wrong thing*: per tick the loop costs one
+  =std::function= call and one =std::string= from the body, against a wire encode and a
+  publish which are orders of magnitude larger. At ten thousand ticks a second the
+  dispatch is well under a millisecond a second. The rule this review proposes is the
+  one that matters: *nothing on the tick path may allocate per lookup*, which is why the
+  board deals in ids.
+
+** Migration, each step green
+
+1. =quant::service::run_market=: move the service's aggregate down into quant and give
+   it the loop and the board. It installs its own driver hook in =build()=. Delete the
+   service's copy and move its tests.
+2. Take the board out of =tick_scheduler=, and the local variable that feed ordering
+   leaned on.
+3. The feeds take =run_market=& instead of =tick_scheduler=&, and the factory's build
+   context carries the aggregate.
+4. The application constructs one aggregate; the declaration-order comment goes.
+5. Stage 4 then reads the values through =market.values()=.
+
+What this review does not change: the loop's =std::string=-returning body and its
+=std::function= driver hook stay, having been measured as noise against a publish. If a
+run ever costs more in dispatch than in work, that is the next thing to look at, and it
+is a change inside the loop, not to this shape.
+
 * Stages
 
 Four stages and a measurement. Each ends green, and each leaves the tree working: no stage breaks a suite it does not fix.

@@ -56,11 +56,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Request types the provisioning handler sends | 46 | =grep -o "messaging::[a-z_]*_request" tenant_provisioning_handler.hpp \| sort -u \| wc -l= | =2babccb0f0= |
-| Handlers that read a catalogue and narrowed it in memory | 5 | read of every handler named in the investigation | =2babccb0f0= |
-| Handlers left with work that grows with the data | 2 | =regenerate_calendar_dates=, =attach_account_pictures= | =2babccb0f0= |
-| =ores.marketdata.service.tests=, after the change | passed, 34.6 s | =compass test run -- -R ores.marketdata.service.tests= | =c49ceaab91= |
-| =ores.iam.service.tests=, after the change | passed, 4.0 s | =compass test run -- -R ores.iam.service.tests= | =c49ceaab91= |
+| Request types a provisioning step sends | 54 | =grep -oE "((ores|[a-z]+)::)+(messaging|api)::[a-z_]+_request" projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp | sed 's/.*:://' | sort -u | wc -l= gives 54 names; less =attach_account_pictures_request=, which the file serves, plus =clear_bootstrap_mode_request=, which it names through a =using namespace=. | =2babccb0f0= |
+| Request types that read a catalogue and narrowed it in memory | 5 | The inventory's "5 request types were unbounded" table, each read at the line it names. | =2babccb0f0= |
+| Request types left with work that grows with the data | 2 | =list_accounts_request= at =tenant_provisioning_handler.hpp:2439= and =:3567=; =regenerate_calendar_dates= at =calendar_materialisation_service.cpp:307-333=. | =2babccb0f0= |
+| Request types bounded by what they name | 47 | The inventory's "47 request types are bounded" table. | =2babccb0f0= |
+| =ores.marketdata.service.tests=, after the change | passed, 31.0 s | =compass test run -- -R ores.marketdata.service.tests= | =adbc51f6b1= |
+| =ores.iam.service.tests=, after the change | passed, 3.7 s | =compass test run -- -R ores.iam.service.tests= | =adbc51f6b1= |
 
 * Notes
 
@@ -102,10 +103,9 @@ via its "Verifies task" field.
 
 * Result
 
-Every request a provisioning step makes now costs what the request names, or
-runs as a step: 46 request types were read handler by handler, and the five that
-read a catalogue and narrowed it in memory now ask the store for their own rows.
-The inventory is
+All 54 request types a provisioning step makes were read handler by handler. The
+five that read a catalogue and narrowed it in memory now ask the store for their
+own rows. The inventory is
 [[id:BCC7D01B-6BA9-40F0-8402-41C9DC249DE6][The work each provisioning request does, and what bounds it]].
 
 What the five were, and what they read now:
@@ -125,18 +125,20 @@ Each repository already offered the filtered, paged read: the handlers were
 simply not using it. Each read is paged, so a request cannot be made unbounded
 again by a tenant that adds rows.
 
-Two request types needed more than a filtered read, and neither is an unbounded
-read any more:
+Two request types do not meet the first sentence of the acceptance, and both are
+stated rather than implied:
 
-- =regenerate_calendar_dates= is bounded by the year and the calendars the
-  request names, which the service caps, and it runs as a step with a 600 s
-  deadline, so the story's second clause covers it. Its read of the existing
-  days loads a whole calendar into memory to subtract them, which is a memory
-  cost and is named in the recommendations.
-- =attach_account_pictures= is the one request on this path that nothing bounds:
-  it attaches a picture to every account of the tenant that names one, read
-  10,000 at a time, and drops the rest without a word. It is captured as
-  [[id:7849DEEF-9C8A-40C2-BA80-20C90505AB75][Attaching account pictures does a whole tenant's work in one request]]
+- =regenerate_calendar_dates= writes a day per calendar in use, about 37,000 days
+  each, and the request names no calendars because =in_use_only= is set. It is
+  bounded by the years the service caps, and it runs as =build_calendars_step=
+  with a 600 s deadline, so the acceptance's second clause covers it. Its read of
+  the existing days loads each calendar into memory to subtract them, which is a
+  memory cost and is named in the recommendations.
+- =list_accounts= is the one read on this path that grows with the tenant's data:
+  both the password and the picture step ask for its accounts with
+  =limit = 10'000= and work one by one over the answer, dropping the rest past the
+  ceiling without a word. It is captured as
+  [[id:DC63BCCB-0967-4A2D-B978-2033DF7C943D][Provisioning asks for every account in one request, and drops what is past ten thousand]]
   for the step that moves to its owning service.
 
 The =put_many_*= handlers are bounded by the rows they are handed, but pay 2N+1

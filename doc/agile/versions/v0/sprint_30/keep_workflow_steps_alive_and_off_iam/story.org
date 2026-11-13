@@ -75,5 +75,12 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
 
 * Out of scope
 
+- The account read that the password and picture steps make with
+  =limit = 10'000= is the one request left that grows with the tenant's data. It
+  is captured as
+  [[id:DC63BCCB-0967-4A2D-B978-2033DF7C943D][Provisioning asks for every account in one request, and drops what is past ten thousand]],
+  because bounding it means giving the step a page to advance through, which is
+  the shape of the step that moves to its owning service.
+
 - Changing what provisioning provisions: the steps, the profile and the data
   stay as they are; only where and how a step runs changes.

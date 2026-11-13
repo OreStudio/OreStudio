@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6A8F01EC-54BE-4730-B7EC-8CF6438A6725][Start the synthetic service on a fresh database]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -83,3 +83,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The fix is two edits and the evidence that it works: the registrar skips a feed
+kind that states no simulate subject, and the scheduler thread's stop token is
+wired to the scheduler's own stop.
+
+Verified on this environment after rebuilding: =compass services start= reports
+running=25 failed=0, and the synthetic service's log contains "Service ready".
+The local gate passes build, db, ticks-smoke, pgtap, codegen-tests and
+step-consumers; ctest carries two failures outside this change.
+
+The defect report's four tests and its two recommended hardenings are not part
+of this task.

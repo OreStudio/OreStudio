@@ -1,0 +1,24 @@
+2026-11-13 14:15:00.628035 [INFO] [ores.scheduler.service.scheduler_loop] Firing job: ores.marketdata.curve_republish
+2026-11-13 14:15:07.314402 [INFO] [ores.scheduler.service.nats_request_action_handler] NATS request action succeeded for job: ores.marketdata.curve_republish (subject: marketdata.v1.ops.publish_due_curves)
+2026-11-13 14:15:07.319298 [INFO] [ores.scheduler.service.scheduler_loop] Job succeeded: ores.marketdata.curve_republish
+2026-11-13 14:15:01.209392 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='KRW-KOFR' as_of='2026-11-13 14:15:00.634106Z' duration=567ms published=yes
+2026-11-13 14:15:01.637047 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='MXN-TIIE' as_of='2026-11-13 14:15:00.634106Z' duration=427ms published=yes
+2026-11-13 14:15:02.055231 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='COP-IBR' as_of='2026-11-13 14:15:00.634106Z' duration=418ms published=yes
+2026-11-13 14:15:02.501465 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='HKD-HONIA' as_of='2026-11-13 14:15:00.634106Z' duration=446ms published=yes
+2026-11-13 14:15:02.776708 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='CZK-CZEONIA' as_of='2026-11-13 14:15:00.634106Z' duration=275ms published=yes
+2026-11-13 14:15:03.035520 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='SEK-SWESTR' as_of='2026-11-13 14:15:00.634106Z' duration=258ms published=yes
+2026-11-13 14:15:03.342316 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='SGD-SORA' as_of='2026-11-13 14:15:00.634106Z' duration=306ms published=yes
+2026-11-13 14:15:03.623350 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='EUR-ESTR' as_of='2026-11-13 14:15:00.634106Z' duration=281ms published=yes
+2026-11-13 14:15:04.191536 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='AUD-AONIA' as_of='2026-11-13 14:15:00.634106Z' duration=568ms published=yes
+2026-11-13 14:15:04.473074 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='CHF-SARON' as_of='2026-11-13 14:15:00.634106Z' duration=281ms published=yes
+2026-11-13 14:15:04.702303 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='TRY-TLREF' as_of='2026-11-13 14:15:00.634106Z' duration=229ms published=yes
+2026-11-13 14:15:04.934388 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='GBP-SONIA' as_of='2026-11-13 14:15:00.634106Z' duration=232ms published=yes
+2026-11-13 14:15:05.252922 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='ZAR-ZARONIA' as_of='2026-11-13 14:15:00.634106Z' duration=318ms published=yes
+2026-11-13 14:15:05.580361 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='NZD-NZONIA' as_of='2026-11-13 14:15:00.634106Z' duration=327ms published=yes
+2026-11-13 14:15:06.190581 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='CAD-CORRA' as_of='2026-11-13 14:15:00.634106Z' duration=610ms published=yes
+2026-11-13 14:15:06.374476 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='DKK-DESTR' as_of='2026-11-13 14:15:00.634106Z' duration=183ms published=yes
+2026-11-13 14:15:06.587736 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='CLP-CAMARA' as_of='2026-11-13 14:15:00.634106Z' duration=213ms published=yes
+2026-11-13 14:15:06.844689 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='USD-SOFR-FOMC' as_of='2026-11-13 14:15:00.634106Z' duration=256ms published=yes
+2026-11-13 14:15:07.106117 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='INR-MIBOR' as_of='2026-11-13 14:15:00.634106Z' duration=261ms published=yes
+2026-11-13 14:15:07.313992 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish: name='JPY-TONA' as_of='2026-11-13 14:15:00.634106Z' duration=207ms published=yes
+2026-11-13 14:15:07.314037 [INFO] [ores.marketdata.messaging.publish_due_curves_handler] Curve republish sweep: published 20 of 20 curve(s)

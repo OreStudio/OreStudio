@@ -91,7 +91,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Curves a live firing republished | 20 of 20, one as-of, about 250 ms each | =grep 'Curve republish' .../ores.marketdata.service.0.log=; raw lines in =evidence/curve_republish_sweep_2026-11-13.log= | 6bd451cb83 |
+| Publish records after the firing | 40 superseded, 100 live, newest as-of 2026-11-13 14:15:00 | =select count(*) filter (where superseded_at is not null), count(*) filter (where superseded_at is null), max(as_of) ...= | 6bd451cb83 |
+| Suites | scheduler core 29 cases, marketdata service 251 cases, both green | =./compass.sh test run -- -R 'ores\.(scheduler\.core|marketdata\.service)'= | 6bd451cb83 |
 
 * Notes
 
@@ -104,8 +106,16 @@ task and name that file in the Command column.
   cause was stale binaries: the worktree had been rebuilt only in parts after
   the branch moved onto the workflow change, so a process built against one
   shape of =workflow_step_summary= talked to a library built against another.
-  A rebuilt workflow service stopped crashing; the shell is rebuilt next, and
-  the provisioning run after that is the proof.
+  A rebuilt workflow service stopped crashing; a rebuilt shell ended it, and
+  the provisioning runs have been clean since.
+- Proven live, 2026-11-13 14:15. A fresh provision completed on the rebased
+  tree: the =acme_demo= profile no longer orders the surface steps, so nothing
+  waits on the derived volatility series. The scheduler fired the job at
+  14:15:00; the sweep published 20 of 20 system curves, each in about 250 ms,
+  and every one carried the same as-of. The row count shows 40 earlier set
+  records superseded and 100 live, with the newest as-of at the sweep's
+  instant. The raw lines are in
+  =evidence/curve_republish_sweep_2026-11-13.log=.
 
 * Test Scenarios
 

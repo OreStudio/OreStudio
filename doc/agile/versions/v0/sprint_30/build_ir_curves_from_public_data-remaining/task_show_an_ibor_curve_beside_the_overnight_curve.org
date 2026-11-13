@@ -72,6 +72,10 @@ task and name that file in the Command column.
   and never the IBOR curve; the grouping is part of this task.
 - The bootstrap config seeds live in =refdata_ir_curve_bootstrap_configs_populate.sql= and
   name a discount curve, so AUD-LIBOR-3M points at AUD-AONIA rather than at itself.
+- The comparison prototype is =doc/prototypes/curves/ibor-beside-overnight/index.html=: the
+  inspector drawn for two curves at once, with the conventions strip for each and a panel
+  that states the four differences (underlying, fixing, use, why the shape differs). It is
+  static data for the design; the task builds the live version against it.
 
 * Test Scenarios
 

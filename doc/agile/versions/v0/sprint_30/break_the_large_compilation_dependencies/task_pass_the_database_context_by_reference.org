@@ -8,7 +8,7 @@
 #+filetags: :build:compilation:headers:database:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
 #+branch: feature/pass-the-database-context-by-reference
-#+pr:
+#+pr: 4691
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -184,7 +184,7 @@ Do this after [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that c
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4691][#4691]] | [database] Pass the database context by reference behind a forward declaration |
 
 * Review
 

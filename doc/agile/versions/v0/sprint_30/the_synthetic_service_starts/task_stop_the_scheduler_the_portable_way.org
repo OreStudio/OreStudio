@@ -8,7 +8,7 @@
 #+filetags: :the_synthetic_service_starts:sprint_30:v0:
 #+owner: marco
 #+branch: fix/the-synthetic-start-is-portable
-#+pr:
+#+pr: 4687
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4687][#4687]] | [synthetic] Stop the scheduler the portable way |
 
 * Review
 

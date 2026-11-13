@@ -127,7 +127,7 @@ derived =CORRELATION/RATE= quotes are later work, as the design note's
 | 3. The driven step | DONE 2026-11-12, five processes drivable | =5f127589f0=, =b31521e545= |
 | 4. The tick context carries the market | the mixture and its variance wrapper take the normal; the feeds and the service are outstanding, and land with step 6 | =a5b1881944= |
 | 5. Configuration | the model and the depth rule done; the block's correlations are already typed columns of =fx_vol_surface_feed=, so what remains is the read, the tab and the shell verbs | =cf90e7236a= |
-| 6. The FX volatility surface | the quant seam is done and the emitter steps a surface on the market's normals; the start level, the feed kind and the service's market remain | =1ea0ec0df1=, =d8c6acb028=, =d31c9ae527=, =27b0c97626= |
+| 6. The FX volatility surface | the level is configured, the emitter steps a surface on the market's normals, and the =fx_vol_surface= kind is registered in the factory; the service's registry entry needs a market the synthetic service cannot yet build, and the service still needs its latent market | =1ea0ec0df1=, =d8c6acb028=, =d31c9ae527=, =27b0c97626=, =9e6497d4f8=, =3bf225e457= |
 
 Step 2 keeps the many case in view: a factor owns a path and a fifty-six byte
 walk, a series owns two doubles, and the loadings are one flat array written in
@@ -204,24 +204,46 @@ two surfaces on one pair drift apart.
 
 ** What step 6 still owes
 
-The emitter, in =ores.synthetic=, steps a surface on the market's normals and
-refreshes every point of every contributor. What is still owed is everything
-around it:
+The start level is configured (see below), the emitter steps a surface on the
+market's normals, and the =fx_vol_surface= kind is built and registered in the feed
+factory. What is still owed is the wiring that makes it startable and correlated:
 
-- *The start level, which no table holds.* The feed's row carries the three
-  correlations and the skew's and curvature's laws, and each expiry row carries
-  its segment's reversion and volatility. Between them they carry the laws and
-  nothing carries the *level*: the ATM total variance of each expiry, the skew and
-  the curvature the surface starts at. The generator task planned this as a child
-  entity of template points, and until it exists the emitter starts from an
-  =ssvi_parameters= its caller makes, so its tests do and the service cannot.
-- *The feed kind.* A =fx_vol_surface= kind that reads those rows, builds the
-  emitter, ticks it and publishes each contributor's quotes under the market data
-  notation, registered in the feed factory with its permission and grant.
+- *The kind in the service's registry.* =feed_kind_registry= needs a
+  =make_fx_vol_surface_kind()=: a =candidates= read of the feed, its expiry rows and
+  its contributor rows, and a =build_input= that turns one into the factory input.
+- *The market the feed quotes against, which the synthetic service cannot build.*
+  The build input carries an =fx_market=: the spot and the two discount factors.
+  Today nothing in =ores.synthetic= resolves one. The market data service does it
+  from a published forward set, in
+  =ores.marketdata.service/src/app/fx_vol_surface_calibration_plan.cpp=, which is a
+  calibration path and not a synthetic one. This is the one thing standing between
+  the kind and a row a person can start, and it is a design decision rather than
+  typing: the feed either reads a published forward set or the configuration names
+  the spot and the curves directly.
 - *The service's market.* One latent market per run, built from the loaded
   configuration, with a driver source that answers each tick with the normals the
   series declared. Then the spot feed and the surface feed both read their drivers
   from the tick context and no feed draws its own.
+
+** What the surface's configuration now holds
+
+The generator needs a level and a law for every driver, and it has both.
+
+| What | Where | Column |
+|------+-------+--------|
+| The skew the surface starts at and reverts to | the feed's row | =start_skew= |
+| The curvature the surface starts at and reverts to | the feed's row | =start_curvature= |
+| The ATM volatility of each expiry | each expiry row | =atm_vol= |
+| Each segment's forward-variance law | each expiry row | =variance_reversion=, =variance_volatility= |
+| The skew's and curvature's laws | the feed's row | =skew_reversion=, =skew_volatility=, =curvature_reversion=, =curvature_volatility= |
+| The correlation of the shocks | the feed's row | =spot_variance_correlation=, =spot_skew_correlation=, =segment_correlation= |
+
+The ATM total variance is the volatility squared times the expiry. It must rise
+strictly from one expiry to the next for the segment between them to have a
+positive forward variance; no check on one row can decide that, so the maker
+refuses a set that does not and names the expiry it failed at. A tenor is a count
+and a unit, and =fx_vol_tenor_years= is the whole of the mapping until a resolved
+calendar and day count replace it.
 
 ** Open-source work to copy from
 

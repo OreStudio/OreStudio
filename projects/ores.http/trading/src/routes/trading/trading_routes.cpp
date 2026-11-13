@@ -22,6 +22,7 @@
 #include "ores.http/routes/trading/booking_routes.hpp"
 #include "ores.http/routes/trading/structure_routes.hpp"
 #include "ores.http/routes/trading/trade_read_routes.hpp"
+#include "ores.http/routes/trading/trading_view_routes.hpp"
 
 namespace ores::http::routes::trading {
 
@@ -33,6 +34,7 @@ void trading_routes::register_routes(
     booking_routes::register_routes(router, registry, session);
     structure_routes::register_routes(router, registry, session);
     book_routes::register_routes(router, registry, session);
+    trading_view_routes::register_routes(router, registry, session);
 }
 
 }

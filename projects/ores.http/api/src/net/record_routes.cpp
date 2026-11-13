@@ -236,4 +236,12 @@ std::string object_with_members(const std::string& object,
     return written;
 }
 
+std::string as_text(const boost::uuids::uuid& id) {
+    return boost::uuids::to_string(id);
+}
+
+std::string as_text(const std::optional<boost::uuids::uuid>& id) {
+    return id ? boost::uuids::to_string(*id) : std::string();
+}
+
 }

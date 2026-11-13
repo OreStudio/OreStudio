@@ -76,14 +76,6 @@ constexpr int trade_page_most_rows = 1000;
 /// The identifier types a desk quotes, in the order the screen prefers them.
 constexpr std::array<std::string_view, 4> identifier_order{"Internal", "UTI", "USI", "ORE"};
 
-std::string text_of(const boost::uuids::uuid& id) {
-    return boost::uuids::to_string(id);
-}
-
-std::string text_of(const std::optional<boost::uuids::uuid>& id) {
-    return id ? boost::uuids::to_string(*id) : std::string();
-}
-
 /// The ids named, without repeats, in the order first named.
 std::vector<boost::uuids::uuid> distinct(const std::vector<boost::uuids::uuid>& ids) {
     std::vector<boost::uuids::uuid> out;
@@ -306,7 +298,7 @@ std::map<std::string, std::string> trade_read_routes::best_identifiers(
     for (const auto& i : identifiers) {
         if (i.id_value.empty())
             continue;
-        const auto trade = text_of(i.trade_id);
+        const auto trade = rr::as_text(i.trade_id);
         const auto rank = rank_of(i.id_type);
         const auto held = best.find(trade);
         if (held == best.end() || rank < held->second.first)
@@ -340,16 +332,16 @@ std::vector<std::string> trade_read_routes::enriched_rows(
     const auto identifier_of = best_identifiers(identifiers);
     std::map<std::string, std::string> structure_reference;
     for (const auto& s : structures)
-        if (!s.id_value.empty() && !structure_reference.contains(text_of(s.structure_id)))
-            structure_reference[text_of(s.structure_id)] = s.id_value;
+        if (!s.id_value.empty() && !structure_reference.contains(rr::as_text(s.structure_id)))
+            structure_reference[rr::as_text(s.structure_id)] = s.id_value;
     std::map<std::string, std::string> book_name, counterparty_name;
     for (const auto& b : books)
-        book_name[text_of(b.id)] = b.name;
+        book_name[rr::as_text(b.id)] = b.name;
     for (const auto& c : counterparties)
-        counterparty_name[text_of(c.id)] = c.full_name;
+        counterparty_name[rr::as_text(c.id)] = c.full_name;
     std::map<std::string, const trading_domain::trade*> trade_of;
     for (const auto& t : trades)
-        trade_of[text_of(t.id)] = &t;
+        trade_of[rr::as_text(t.id)] = &t;
 
     const auto found_in = [](const std::map<std::string, std::string>& names,
                              const std::string& key) {
@@ -357,7 +349,7 @@ std::vector<std::string> trade_read_routes::enriched_rows(
         return found == names.end() ? std::string() : found->second;
     };
     for (const auto& s : summaries) {
-        const auto id = text_of(s.id);
+        const auto id = rr::as_text(s.id);
         const auto trade = trade_of.find(id);
         const bool is_structure = s.row_kind == "structure";
         out.push_back(rr::object_with_members(
@@ -366,8 +358,8 @@ std::vector<std::string> trade_read_routes::enriched_rows(
               json::write(is_structure ? found_in(structure_reference, id) :
                                          found_in(identifier_of, id))},
              {"counterparty_name",
-              json::write(found_in(counterparty_name, text_of(s.counterparty_id)))},
-             {"book_name", json::write(found_in(book_name, text_of(s.book_id)))},
+              json::write(found_in(counterparty_name, rr::as_text(s.counterparty_id)))},
+             {"book_name", json::write(found_in(book_name, rr::as_text(s.book_id)))},
              {"version",
               trade == trade_of.end() ? std::string("null") : json::write(trade->second->version)},
              {"external_version",
@@ -382,10 +374,10 @@ std::string trade_read_routes::structures_json(
     const std::vector<trading_domain::structure_identifier>& identifiers) {
     std::map<std::string, std::string> reference_of;
     for (const auto& i : identifiers)
-        reference_of[text_of(i.structure_id)] = i.id_value;
+        reference_of[rr::as_text(i.structure_id)] = i.id_value;
     std::string out = "[";
     for (const auto& m : members) {
-        const auto structure = text_of(m.structure_id);
+        const auto structure = rr::as_text(m.structure_id);
         const auto reference = reference_of.find(structure);
         out += out.size() == 1 ? "{" : ",{";
         out += "\"structure_id\":" + json::write(structure);
@@ -404,7 +396,7 @@ std::string trade_read_routes::links_json(const std::vector<trading_domain::trad
     std::vector<std::string> rows;
     rows.reserve(links.size());
     for (const auto& l : links) {
-        const auto other = text_of(other_is_to ? l.to_trade_id : l.from_trade_id);
+        const auto other = rr::as_text(other_is_to ? l.to_trade_id : l.from_trade_id);
         const auto label = labels.find(other);
         rows.push_back(rr::object_with_members(
             json::write(l),
@@ -520,7 +512,7 @@ void trade_read_routes::register_routes(
                                  msg,
                                  &trading_messaging::list_trade_identifiers_response::identifiers))
                             if (!found.id_value.empty())
-                                labels.try_emplace(text_of(found.trade_id), found.id_value);
+                                labels.try_emplace(rr::as_text(found.trade_id), found.id_value);
                     }
 
                     trading_messaging::list_structure_members_request members_msg;

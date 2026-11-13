@@ -25,4 +25,5 @@ set(files
     "main.cpp"
     "structure_routes_tests.cpp"
     "trade_read_routes_tests.cpp"
+    "trading_view_routes_tests.cpp"
 )

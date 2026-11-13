@@ -24,9 +24,9 @@ it lands, and the browser keeps calling the BFF until the last one does.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | 44 of 57 tasks are done. The gateway answers the access, auth, tenancy, reference-data, simulation and trading areas, and the IAM, synthetic, image map and tenor catalogue views. 149 of the 324 BFF routes have no C++ equivalent yet. |
+| Now           | 45 of 57 tasks are done. The gateway answers the access, auth, tenancy, reference-data, simulation and trading areas, the trading composed views, and the IAM, synthetic, image map and tenor catalogue views. 147 of the 324 BFF routes have no C++ equivalent yet. |
 | Waiting on    | Nothing.                               |
-| Next          | Serve the trading composed views, then stand up the market data part. |
+| Next          | Stand up the market data part and serve its resources. |
 | Last touched  | 2026-11-12 |
 
 * Acceptance
@@ -85,7 +85,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:297C5264-A2AB-4DB2-B3C9-15FB5DBB5D4B][Serve the IAM composed views]] | DONE | 2026-11-11 | 2026-11-12 | Three IAM views are answered only by the BFF. |
 | [[id:BE5A7BF2-B680-42BF-AB49-E9801C307742][Serve the synthetic composed views]] | DONE | 2026-11-11 | 2026-11-11 | Three synthetic views are answered only by the BFF. |
 | [[id:A2165589-71E8-4107-856A-77FB5FDD32E0][Serve the grid composed views]] | BACKLOG | | | Three grid views are answered only by the BFF. |
-| [[id:350D91AF-A4E0-43B0-849E-8188345DA443][Serve the trading composed views]] | BACKLOG | | | Two trading views are answered only by the BFF. |
+| [[id:350D91AF-A4E0-43B0-849E-8188345DA443][Serve the trading composed views]] | DONE | 2026-11-13 | 2026-11-13 | Two trading views are answered only by the BFF. |
 | [[id:878A1153-2C81-4857-8CB8-A619EE74A7BE][Serve the message bus composed view]] | BACKLOG | | | The message bus view is answered only by the BFF. |
 | [[id:767BF782-CF59-4A55-8268-5DBDBABCC298][Serve the image map composed view]] | DONE | 2026-11-12 | 2026-11-12 | The image map view is answered only by the BFF. |
 | [[id:068865A5-2C31-4735-873E-2CB04A134EF2][Serve the tenor catalogue composed view]] | DONE | 2026-11-12 | 2026-11-12 | The tenor catalogue view is answered only by the BFF. |
@@ -127,6 +127,15 @@ it lands, and the browser keeps calling the BFF until the last one does.
 - Decided on 2026-11-12: the book and portfolio writes forward every column the
   screen states and check only the row's id, party and name, because the BFF's
   schema let every column through and the screens send the whole row.
+
+- Decided on 2026-11-13: the blotter reads its rail from every row a filter
+  matches, because a count cannot come from a page, and orders the page in the
+  gateway, because a structure has no date of its own.
+- Decided on 2026-11-13: both trading composed views are kept by the caller under
+  an ETag, fresh for 30 seconds for the blotter and 60 for the book tree, as the
+  route inventory records the obligation of each.
+- Decided on 2026-11-13: a rail's party label is empty, for the reason a structure
+  page's party name is empty: the caller's token names the party by id only.
 
 * Out of scope
 

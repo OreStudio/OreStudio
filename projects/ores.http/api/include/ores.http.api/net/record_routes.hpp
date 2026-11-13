@@ -240,6 +240,17 @@ object_with_members(const std::string& object,
                     const std::vector<std::pair<std::string, std::string>>& members);
 
 /**
+ * @brief The written document without each named member.
+ *
+ * An operation's reply carries the protocol's success and message beside the
+ * payload, and a screen reads the payload alone: this states that answer, as the
+ * BFF's forwarding did. A document that is not a JSON object comes back as it
+ * was, because a caller that wrote one meant it.
+ */
+[[nodiscard]] ORES_HTTP_API_EXPORT std::string
+object_without_members(std::string_view object, std::initializer_list<std::string_view> names);
+
+/**
  * @brief Refuse with the status a refused outcome names.
  *
  * A conflict the service states no words for says what it means.

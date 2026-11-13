@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "adapter_routes_tests.cpp"
+    "curve_routes_tests.cpp"
     "main.cpp"
     "public_rate_routes_tests.cpp"
     "subscription_routes_tests.cpp"

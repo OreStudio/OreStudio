@@ -72,7 +72,7 @@ an API publishes no area, so it is counted under =(none)=.
 | auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
 | grid | grid-app-versions, grid-downloads, grid-jobs, operations | 14 | composed view 3, resource 11 |
-| market-data | adapters, connectivity, curves, fixing-series, marketdata, public-rates, series, subscriptions | 42 | composed view 6, resource 36 |
+| market-data | adapters, connectivity, curves, fixing-series, marketdata, public-rates, series, subscriptions | 55 | composed view 6, resource 49 |
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 301 | composed view 2, resource 299 |
@@ -150,7 +150,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
 | grid | 14 | 0 | 14 |
-| market-data | 31 | 11 | 20 |
+| market-data | 31 | 24 | 7 |
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 25 | 5 |
@@ -160,7 +160,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 22 | 13 |
-| total | 324 | 188 | 136 |
+| total | 324 | 201 | 123 |
 
 * The pairing
 
@@ -231,19 +231,19 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/counterparties/children= | GET /api/counterparties/children |
 | PUT =/api/counterparties/composite= | PUT /api/counterparties/composite |
 | GET =/api/counterparties/pick-lists= | GET /api/counterparties/pick-lists |
-| POST =/api/curves/compute= | none |
-| POST =/api/curves/evolution= | none |
-| POST =/api/curves/fx-forward-ladder= | none |
-| POST =/api/curves/manual-point= | none |
-| POST =/api/curves/manual-point/clear= | none |
-| POST =/api/curves/published= | none |
-| POST =/api/curves/published-sets= | none |
-| POST =/api/curves/published/withdraw= | none |
-| POST =/api/curves/series= | none |
-| POST =/api/curves/series-by-id= | none |
-| POST =/api/curves/series-list= | none |
-| POST =/api/curves/slice= | none |
-| POST =/api/curves/snapshot= | none |
+| POST =/api/curves/compute= | POST /api/curves/compute |
+| POST =/api/curves/evolution= | POST /api/curves/evolution |
+| POST =/api/curves/fx-forward-ladder= | POST /api/curves/fx-forward-ladder |
+| POST =/api/curves/manual-point= | POST /api/curves/manual-point |
+| POST =/api/curves/manual-point/clear= | POST /api/curves/manual-point/clear |
+| POST =/api/curves/published= | POST /api/curves/published |
+| POST =/api/curves/published-sets= | POST /api/curves/published-sets |
+| POST =/api/curves/published/withdraw= | POST /api/curves/published/withdraw |
+| POST =/api/curves/series= | POST /api/curves/series |
+| POST =/api/curves/series-by-id= | POST /api/curves/series-by-id |
+| POST =/api/curves/series-list= | POST /api/curves/series-list |
+| POST =/api/curves/slice= | POST /api/curves/slice |
+| POST =/api/curves/snapshot= | POST /api/curves/snapshot |
 | GET =/api/draft-reasons= | GET /api/draft-reasons |
 | GET =/api/events= | GET /api/events |
 | POST =/api/events/watch= | POST /api/events/watch |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1278 routes: 324 answered by the BFF and 954 by ores.http.
+1291 routes: 324 answered by the BFF and 967 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -774,18 +774,31 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reference-data | get | =/api/counterparties/{id}/visibility= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:330 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | put | =/api/counterparties/{id}/visibility= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:349 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
 | resource | market-data | post | =/api/curves/compute= | bff | projects/ores.web/packages/bff/src/curves.ts:312 | Computes a curve's points from a bootstrap configuration and stores nothing, a derived read of the curve the configuration describes. |
+| resource | market-data | post | =/api/curves/compute= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:482 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/evolution= | bff | projects/ores.web/packages/bff/src/curves.ts:378 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/evolution= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:589 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/fx-forward-ladder= | bff | projects/ores.web/packages/bff/src/curves.ts:410 | One currency pair's forward ladder at one as-of, one service read that stores nothing and names the missing input when it refuses. |
+| resource | market-data | post | =/api/curves/fx-forward-ladder= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:674 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/manual-point= | bff | projects/ores.web/packages/bff/src/curves.ts:353 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/manual-point= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:509 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/manual-point/clear= | bff | projects/ores.web/packages/bff/src/curves.ts:360 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/manual-point/clear= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:537 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/published= | bff | projects/ores.web/packages/bff/src/curves.ts:394 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| resource | market-data | post | =/api/curves/published= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:618 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/published-sets= | bff | projects/ores.web/packages/bff/src/curves.ts:402 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| resource | market-data | post | =/api/curves/published-sets= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:652 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/published/withdraw= | bff | projects/ores.web/packages/bff/src/curves.ts:418 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| resource | market-data | post | =/api/curves/published/withdraw= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:688 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/series= | bff | projects/ores.web/packages/bff/src/curves.ts:258 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/series= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:453 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/series-by-id= | bff | projects/ores.web/packages/bff/src/curves.ts:268 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/series-by-id= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:466 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/series-list= | bff | projects/ores.web/packages/bff/src/curves.ts:346 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/series-list= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:496 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/slice= | bff | projects/ores.web/packages/bff/src/curves.ts:372 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/slice= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:565 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | market-data | post | =/api/curves/snapshot= | bff | projects/ores.web/packages/bff/src/curves.ts:366 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/snapshot= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/curve_routes.cpp:550 | The curves at the address and in the shape the BFF answered: the series an identity names, the series a party sees, the URIs of the series a blueprint names, the object snapshotted and sliced and evolved, the points a recipe computes without storing them, the manual points a person keys and clears, the published sets a party holds, the FX forward ladder of one pair, and the withdrawal that takes a set out of use. |
 | resource | trading | get | =/api/draft-reasons= | bff | projects/ores.web/packages/bff/src/booking.ts:366 | The reasons a trade may be captured as a draft with, a tenant-wide code list the booking form offers. |
 | resource | trading | get | =/api/draft-reasons= | ores.http | projects/ores.http/trading/src/routes/trading/booking_routes.cpp:440 | The booking screens at the address and in the shape the BFF answered: what the form offers, the reasons a deal is a draft, the link types a person records, a link between two trades, and the booking write itself. |
 | transport capability | changes | get | =/api/events= | bff | projects/ores.web/packages/bff/src/server.ts:2944 | The change stream a client subscribes to, and the watch set that says which subjects it wants; delivery of events, not a domain object. |

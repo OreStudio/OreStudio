@@ -171,3 +171,14 @@ TEST_CASE("record_routes_refuses_a_body_member_the_shape_does_not_name", "[recor
     CHECK(refused->status == http_status::bad_request);
     CHECK(refused->message == "A switch states a mode.");
 }
+
+TEST_CASE("record_routes_states_a_reply_without_the_protocols_own_words", "[record_routes]") {
+    const auto payload = rr::object_without_members(
+        R"({"success":true,"message":"","points":[],"total":2})", {"success", "message"});
+
+    CHECK(payload == R"({"points":[],"total":2})");
+    CHECK(rr::object_without_members(R"({"success":false})", {"success"}) == "{}");
+    // A document that is not an object is a caller's own, and comes back as it was.
+    CHECK(rr::object_without_members("[]", {"success"}) == "[]");
+    CHECK(rr::object_without_members("", {"success"}).empty());
+}

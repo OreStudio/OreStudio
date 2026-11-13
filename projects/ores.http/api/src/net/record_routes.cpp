@@ -236,6 +236,26 @@ std::string object_with_members(const std::string& object,
     return written;
 }
 
+std::string object_without_members(std::string_view object,
+                                   std::initializer_list<std::string_view> names) {
+    const std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> doc(
+        yyjson_read(object.data(), object.size(), 0), &yyjson_doc_free);
+    if (!doc || !yyjson_is_obj(yyjson_doc_get_root(doc.get())))
+        return std::string(object);
+    const std::unique_ptr<yyjson_mut_doc, decltype(&yyjson_mut_doc_free)> out(
+        yyjson_doc_mut_copy(doc.get(), nullptr), &yyjson_mut_doc_free);
+    auto* root = yyjson_mut_doc_get_root(out.get());
+    for (const auto name : names)
+        yyjson_mut_obj_remove_keyn(root, name.data(), name.size());
+    std::size_t length = 0;
+    char* text = yyjson_mut_write(out.get(), 0, &length);
+    if (text == nullptr)
+        throw std::runtime_error("A row could not be written as JSON.");
+    std::string written(text, length);
+    std::free(text);
+    return written;
+}
+
 std::string as_text(const boost::uuids::uuid& id) {
     return boost::uuids::to_string(id);
 }

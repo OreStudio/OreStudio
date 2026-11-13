@@ -106,6 +106,16 @@ RULES = (
          "The fixings the store holds for up to a dozen series, oldest first, and the three"
          " answers a person gives to a publisher's terms: accept one at the version read,"
          " withdraw one, and accept many in one request."),
+    Rule("the curves' route",
+         ("regex", r"^POST /api/curves/(series|series-by-id|series-list|slice|evolution"
+                   r"|snapshot|manual-point(/clear)?|compute|fx-forward-ladder"
+                   r"|published(/withdraw|-sets)?)$"),
+         CPP, RESOURCE, "market-data",
+         "The curves at the address and in the shape the BFF answered: the series an identity"
+         " names, the series a party sees, the URIs of the series a blueprint names, the object"
+         " snapshotted and sliced and evolved, the points a recipe computes without storing"
+         " them, the manual points a person keys and clears, the published sets a party holds,"
+         " the FX forward ladder of one pair, and the withdrawal that takes a set out of use."),
     Rule("the market data subscriptions' route",
          ("regex", r"^(GET|POST|DELETE) /api/marketdata/(subscriptions|routes)"
                    r"(/\{(provider|publisher)\})?$"),

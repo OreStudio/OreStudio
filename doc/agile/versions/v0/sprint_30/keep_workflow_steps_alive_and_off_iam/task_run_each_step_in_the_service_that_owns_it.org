@@ -61,7 +61,11 @@ The move is one kind at a time, because each kind drags its own dependencies:
 4. Then the marketdata kinds: the curve, forward and surface publishes, the
    surface blueprints and the subscription setup.
 5. Then the reporting, dq and inbox kinds: =schedule_reports=,
-   =publish_bundle= and the two approval-mode steps.
+   =publish_bundle= and the two approval-mode steps. When a stage moves a kind
+   that runs *beside* another in the same run — =generate_trades= beside the
+   party publishes, or the surfaces beside the schedules — measure that the two
+   services work at once, which is the acceptance line this task has not yet
+   shown.
 
 Each stage is its own PR, because each one moves an executor and its link, and
 a stage that lands alone is a stage a run can be proved against.
@@ -78,12 +82,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Step kinds the definition can declare | 17 | =grep -c "_step_kind," projects/ores.iam/api/include/ores.iam.api/workflow/provision_tenant_workflow.hpp= inside =provision_executed_step_kinds= | =d7e9d200cd= |
-| Step kinds ores.refdata serves | 1 | =grep -rn "routes.on" projects/ores.refdata/service/src/messaging/provisioning_step_registrar.cpp= | =d7e9d200cd= |
-| Core libraries ores.iam no longer links | 1 (=ores.marketdata.core=) | =grep -n "core.lib" projects/ores.iam/core/src/CMakeLists.txt= | =d7e9d200cd= |
-| Core libraries ores.iam still links for other services' work | 2 (=ores.refdata.core=, =ores.synthetic.core=) | the same command | =d7e9d200cd= |
-| =ores.iam.api.tests= | passed, 3.3 s | =compass test run -- -R ores.iam.api.tests= | =d7e9d200cd= |
-| The calendar step, as refdata served it | completed; wrote 473,025 day(s) | =grep build_calendars publish/log/ores.refdata.service.0.log= | =8f39ee4dac=, run =d7e883ce-e3dd-4c61-b801-d82c00a12cdc= |
+| Step kinds the build can declare | 18 | =sed -n '/provision_executed_step_kinds\[\] = {/,/};/p' projects/ores.iam/api/include/ores.iam.api/workflow/provision_tenant_workflow.hpp \| grep -cE "^ +[a-z_]+_step_kind\b"= | =daaf53ddfc= |
+| Step kinds ores.refdata serves | 1 | =grep -c "routes.on" projects/ores.refdata/service/src/messaging/provisioning_step_registrar.cpp= | =daaf53ddfc= |
+| Step kinds that still run in ores.iam | 17 | The 18 less the one row of =provision_step_owners=. | =daaf53ddfc= |
+| Core libraries ores.iam stopped linking | 1 (=ores.marketdata.core=) | =grep -c "ores.marketdata.core" projects/ores.iam/core/src/CMakeLists.txt= gives 0; it gave 1 at =2dbcef74b9=. | =daaf53ddfc= |
+| Core libraries ores.iam still links for other services' work | 2 (=ores.refdata.core=, =ores.synthetic.core=) | =grep -nE "ores\.(refdata\|synthetic)\.core" projects/ores.iam/core/src/CMakeLists.txt= | =daaf53ddfc= |
+| =ores.iam.api.tests= | passed | =compass test run -- -R ores.iam.api.tests= | =daaf53ddfc= |
+| The calendar step, as refdata served it | completed; wrote 473,025 day(s) | =grep build_calendars build/output/linux-clang-release-ninja/publish/log/ores.refdata.service.0.log=, and the step row: =compass sql -- -c "select name, command_subject from ores_workflow_workflow_steps_tbl where name = 'build_calendars'"= | =d03a2d5890=, run =d7e883ce-e3dd-4c61-b801-d82c00a12cdc= |
 | The run | failed at step 13 of 15, on a quant refusal that is
   captured, not on a step of this change | =compass smoke ticks --fresh= | the same run |
 | =ores.iam.core.tests= | passed, 27.5 s | =compass test run -- -R ores.iam.core.tests= | =d7e9d200cd= |
@@ -133,10 +138,17 @@ ores.refdata serves the calendar step in its own process.
 - A test states the dispatch two ways: the table's answer for a kind, and the
   subject a built definition puts on the step.
 
-What this stage does not do, and the plan's later stages cover: the remaining
-16 kinds still run in ores.iam, and it still links =ores.synthetic.core= for
-=generate_trades=. The parallel steps of a run now reach two services, and they
-reach the rest as the stages land.
+What this stage does not do, and the plan's later stages cover:
+
+- 17 of the 18 kinds still run in ores.iam, and it still links
+  =ores.synthetic.core= for =generate_trades=. It also still links
+  =ores.refdata.core= for the party repository that its identity handlers read,
+  which is identity work and not this task's to remove.
+- That the parallel steps of a run execute in different services at once is not
+  yet measured. Nothing in the definition dispatches two *parallel* kinds to two
+  services today: =build_calendars= sits in the tenant-setup run beside the
+  identity steps, which all run in iam. The line is proven when a kind that runs
+  beside another in the same run moves, which stages 2 and 4 bring.
 
 Proven end to end on 2026-11-13. =compass smoke ticks --fresh= provisioned
 Acme from a recreated database, and the calendar step was dispatched to

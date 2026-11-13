@@ -73,6 +73,20 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
   workers. That shortens the queue inside one service; this story removes
   the reason the queue forms in iam.
 
+- *A service serves one family of step commands per stream, 2026-11-13.* The
+  first end-to-end run of the per-service dispatch failed because ores.refdata
+  declared a second step family on the consumer its data-quality publish steps
+  already used: the second family replaced the first one's filter, the countries
+  publish was never delivered, and the run that nested it stood still for twenty
+  minutes with nothing in the log to say why. A family now names a group of its
+  own, and =serve_step_commands= refuses a second family on one stream rather
+  than let a service silently stop serving one.
+- *A moved step writes as its own service, 2026-11-13.* The calendar step wrote
+  =modified_by = "system"=, which the account trigger refuses now that the tenant
+  has accounts. A step that acts for the tenant being provisioned writes as the
+  service that runs it, which is an account of the system tenant, so the trigger
+  accepts it and the row says which service did the work.
+
 * Out of scope
 
 - The account read that the password and picture steps make with

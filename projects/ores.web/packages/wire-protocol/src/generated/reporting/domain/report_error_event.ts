@@ -44,5 +44,6 @@ export interface ReportErrorEvent {
     subject_as_of: string | null;
     cause: string | null;
     detail: string;
+    location: string;
     event_time: string;
 }

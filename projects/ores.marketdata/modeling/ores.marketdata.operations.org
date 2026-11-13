@@ -1308,6 +1308,21 @@ The ladder, in maturity order, and the facts its numbers rest on.
 :default: 0
 :END:
 
+*** tenor_convention
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The convention the maturity dates were resolved under. A ladder series does not
+carry its own, so the server states the one it used.
+
+*** day_count_convention
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The convention the year fractions were computed under, stated for the same reason.
+
 *** rungs
 :PROPERTIES:
 :cpp_type: std::vector<rate_ladder_rung>

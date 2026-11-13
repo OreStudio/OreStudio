@@ -574,6 +574,8 @@ struct get_rate_ladder_response {
     std::string forward_start;
     std::chrono::system_clock::time_point as_of;
     int provider_count = 0;
+    std::string tenor_convention;
+    std::string day_count_convention;
     std::vector<rate_ladder_rung> rungs;
 
     friend bool operator==(const get_rate_ladder_response&,
@@ -2254,6 +2256,10 @@ struct store_market_state_response {
         ::ores::utility::codec::field{"forward_start", &get_rate_ladder_response::forward_start},
         ::ores::utility::codec::field{"as_of", &get_rate_ladder_response::as_of},
         ::ores::utility::codec::field{"provider_count", &get_rate_ladder_response::provider_count},
+        ::ores::utility::codec::field{"tenor_convention",
+                                      &get_rate_ladder_response::tenor_convention},
+        ::ores::utility::codec::field{"day_count_convention",
+                                      &get_rate_ladder_response::day_count_convention},
         ::ores::utility::codec::field{"rungs", &get_rate_ladder_response::rungs},
     };
 }

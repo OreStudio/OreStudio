@@ -45,6 +45,14 @@ An ORE input directory holds one run document and the configuration files its
 | =todaysmarket.xml= | =<TodaysMarket>= | =todays_market_projection= | =ores.analytics= |
 | =pricingengine.xml= | =<PricingEngines>= | =pricing_engine_projection= | =ores.analytics= |
 
+The =<FX>= entries of =conventions.xml= are the one category that is not a family
+of its own. Refdata holds a currency pair, that pair's convention and the calendars
+the pair advances on, and the document states the three as one element, so the
+category is a projection in both directions: =conventions_family::project_fx= reads
+it, and =fx_conventions= writes it back from the pair rows. A written convention
+takes its name from the =<FxOption>= convention that resolves it, because ORE finds
+an FX convention by name and an ORE example spells that name more than one way.
+
 The =Setup= parameter is the only link between the run document and the other
 four. =projects/ores.ore/core/include/ores.ore.core/xml/run_document_files.hpp:48=
 lists the four pairs in one array, so the document names its own files and the

@@ -7294,6 +7294,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -7405,6 +7423,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -7550,6 +7586,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -7589,6 +7643,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -8036,6 +8108,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -8147,6 +8237,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -8292,6 +8400,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -8331,6 +8457,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -8437,9 +8581,16 @@
   "used_by": "EquityBarrierOption resp. FxBarrierOption.",
   "pairs": [
    {
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "usual": true,
+    "note": "Prices the barrier analytically on the Garman-Kohlhagen process of the currency pair.",
+    "settings": []
+   },
+   {
+    "model": "BlackScholesMerton",
+    "engine": "AnalyticBarrierEngine",
+    "usual": false,
     "note": "Builds a AnalyticBarrierEngine.for equity. The configuration for fx is identical except the Model is set to GarmanKohlhagen.",
     "settings": [
      {
@@ -8542,6 +8693,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -8603,6 +8772,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -8625,6 +8812,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -9107,9 +9312,16 @@
   "used_by": "EquityTouchOption, FxTouchOption.",
   "pairs": [
    {
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "usual": true,
+    "note": "Prices the one-touch as a digital American option on the Garman-Kohlhagen process of the currency pair.",
+    "settings": []
+   },
+   {
+    "model": "BlackScholesMerton",
+    "engine": "AnalyticDigitalAmericanEngine",
+    "usual": false,
     "note": "(equity) reps. GarmanKohlhagen/AnalyticDigitalAmericanEngine (fx) builds a AnalyticDigitalAmericanEngine (one touch) or AnalyticDigitalAmericanKOEngine (no touch).for fx. The configuration for equity is the same except the Model ist set to BlackScholesMerton.",
     "settings": [
      {
@@ -9371,8 +9583,15 @@
   "pairs": [
    {
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "usual": true,
+    "note": "Replicates the variance swap from the options of its maturity. Every engine parameter has a default, so the pair prices without settings.",
+    "settings": []
+   },
+   {
+    "model": "BlackScholesMerton",
+    "engine": "EquityVarianceSwap",
+    "usual": false,
     "note": "(resp. Commodity, Fx) builds a GeneralisedReplicatingVarianceSwapEngine or VolatilityFromVarianceSwapEngine depending on MomentType Variance, Volatility.and. The example is for Equity, but holds equally for product types CommodityVarianceSwap, FxVarianceSwap.",
     "settings": [
      {
@@ -9393,8 +9612,15 @@
   "pairs": [
    {
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "usual": true,
+    "note": "Replicates the variance swap from the options of its maturity. Every engine parameter has a default, so the pair prices without settings.",
+    "settings": []
+   },
+   {
+    "model": "BlackScholesMerton",
+    "engine": "EquityVarianceSwap",
+    "usual": false,
     "note": "(resp. Commodity, Fx) builds a GeneralisedReplicatingVarianceSwapEngine or VolatilityFromVarianceSwapEngine depending on MomentType Variance, Volatility.and. The example is for Equity, but holds equally for product types CommodityVarianceSwap, FxVarianceSwap.",
     "settings": [
      {
@@ -9415,8 +9641,15 @@
   "pairs": [
    {
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "usual": true,
+    "note": "Replicates the variance swap from the options of its maturity. Every engine parameter has a default, so the pair prices without settings.",
+    "settings": []
+   },
+   {
+    "model": "BlackScholesMerton",
+    "engine": "EquityVarianceSwap",
+    "usual": false,
     "note": "(resp. Commodity, Fx) builds a GeneralisedReplicatingVarianceSwapEngine or VolatilityFromVarianceSwapEngine depending on MomentType Variance, Volatility.and. The example is for Equity, but holds equally for product types CommodityVarianceSwap, FxVarianceSwap.",
     "settings": [
      {
@@ -9555,6 +9788,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -9666,6 +9917,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -9811,6 +10080,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -9850,6 +10137,24 @@
       "options": [],
       "required": false,
       "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     },
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
      }
     ]
    }
@@ -10825,11 +11130,266 @@
   "used_by": "ScriptedTrade (and trades wrapped as scripted trade).",
   "pairs": [
    {
+    "model": "Generic",
+    "engine": "Generic",
+    "usual": true,
+    "note": "Builds the pricing engine from the trade's own script, so the pair takes no model or engine parameters.",
+    "settings": [
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
+     }
+    ]
+   },
+   {
     "model": "ScriptedTrade",
     "engine": "ScriptedTrade",
-    "usual": true,
+    "usual": false,
     "note": "Builds a ScriptedInstrumentPricingEngine (and variants). We refer to the scripted trade module documentation for a sample configuration and more details. subsectionGlobal Parameters In addition to product specific settings there is also a block with global parameters with the following meaning: beginitemize item ContinueOnCalibrationError: If set to true an exceedence of a prescribed model calibration tolerance (for e.g. the LGM model) will not cause the trade building to fail, instead a warning is logged and the trade is processed anyway. Optional, defaults to false. item AllowModelFallbacks: If set to true a missing market object during the build of a model will not cause the build to fail. Instead, a fallback will be used. For example, if a volatility surface is missing during the build of the LGM or CAM model, a zero volatility surface might be used as a fallback and the calculation continues. Optional, defaults to false. item Calibrate: If false, model calibration is disabled. This flag is usually not present in a user configuration, but only used internally for certain workflows within ORE which do not require a model calibration. Optional, defaults to true. item GenerateAdditionalResults: If false, the generation of additional results within pricing engines will be suppressed (for those pricing engines which support this). This flag is usually not present in a user configuration, but only used internally to improve the performance for processes which only rely on the NPV as a result from pricing engines, e.g. when repricing trades under sensitivity or stress scenarios. Optional, defaults to false. item RunType: Set automatically. One of NPV, SensitivityDelta, SensitivityDeltaGamma, Stress, Exposure, Capital, TradeDetails, PortfolioAnalyser, HistoricalPnL, BondSpreadImply, AbsMaturityUpdate depending on the context for which a portfolio was built. Might also be left empty. This is used by some pricing engines to adapt to certain run types. E.g. a first order sensitivity pnl expansion might be used for a SensitivityDelta run by an engine which is able to compute analytical or AAD first order sensitivities. item McType: Set automatically. One of Classic and American depending on the context for which the pricinge engines file is referenced. Might also be left empty. This is used by some trade constructions to adapt to certain monte carlo types. E.g. Pricer would not be attached to coupons which can be computed in AMC without a leg / coupon pricer item StrikeSpread: Defaults to 0.1. If set, overrides the default value used to calculate the strike spread for replication engines. item BondFutureAmericanAsEuropean: This parameter can be set to true or false or to a regex inclusion pattern. If set to false, the default, there is no effect. If set to true, all bond future option trades with American exercise are priced as if they had European exercise i.e. with a European bond future option engine. If set to a regex pattern, all bond future option trades where the underlying contract name matches the regex will be priced as if they had European exercise. Bond future option trades where the underlying contract name does not match the regex will not be impacted i.e. if they have American exercise, they will be priced as such. enditemize.",
+    "settings": [
+     {
+      "scope": "engine",
+      "name": "Engine",
+      "kind": "text",
+      "usual": "MC",
+      "options": [],
+      "required": true,
+      "text": "The pricing engine used for the scripted trade. Allowed values are MC and FD; MC is the only engine that can be combined with the AMC and AMCCG modes. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Model",
+      "kind": "text",
+      "usual": "BlackScholes",
+      "options": [],
+      "required": true,
+      "text": "The model used to price the scripted trade. Allowed values are BlackScholes, LocalVolDupire, LocalVolAndreasenHuge, Heston and GaussianCam. Required."
+     }
+    ]
+   }
+  ]
+ },
+ "FlexiSwap": {
+  "used_by": "FlexiSwap",
+  "pairs": [
+   {
+    "model": "Replication",
+    "engine": "Replication",
+    "usual": true,
+    "note": "Builds the flexible swap by replicating it from the swaptions it contains. The builder builds no engine of its own, so the only choice it takes is whether one model serves the whole basket.",
+    "settings": [
+     {
+      "scope": "model",
+      "name": "GlobalModel",
+      "kind": "text",
+      "usual": "true",
+      "options": [],
+      "required": true,
+      "text": "When true, a single global model is built for the whole FlexiSwap basket; otherwise a separate model is built for each constituent. Required."
+     }
+    ]
+   }
+  ]
+ },
+ "BalanceGuaranteedSwap": {
+  "used_by": "BalanceGuaranteedSwap",
+  "pairs": [
+   {
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingSwapEngine",
+    "usual": true,
+    "note": "Discounts the tranche notionals from the currency's discount curve. The balance guaranteed feature is part of the instrument, so the engine needs no calibration.",
     "settings": []
+   },
+   {
+    "model": "LGM-FlexiSwap",
+    "engine": "Grid",
+    "usual": false,
+    "note": "Prices the balance guaranteed swap by simulating its pre-payment option on an LGM grid. The values are the ones the ORE example configuration Products/Input/pricingengine.xml sets for this product.",
+    "settings": [
+     {
+      "scope": "model",
+      "name": "MinCPRMultiplier",
+      "kind": "text",
+      "usual": "0.0",
+      "options": [],
+      "required": true,
+      "text": "Lower bound for the multiplier applied to the market CPR in the balance guaranteed swap engine. Required."
+     },
+     {
+      "scope": "model",
+      "name": "MaxCPRMultiplier",
+      "kind": "text",
+      "usual": "2.0",
+      "options": [],
+      "required": true,
+      "text": "Upper bound for the multiplier applied to the market CPR in the balance guaranteed swap engine. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Calibration",
+      "kind": "select",
+      "usual": "Bootstrap",
+      "options": [
+       "Bootstrap",
+       "BestFit",
+       "None"
+      ],
+      "required": true,
+      "text": "How the model is fitted to the market: Bootstrap fits one instrument at a time, BestFit fits all at once, None keeps the starting values."
+     },
+     {
+      "scope": "model",
+      "name": "CalibrationStrategy",
+      "kind": "select",
+      "usual": "CoterminalDealStrike",
+      "options": [
+       "CoterminalDealStrike",
+       "CoterminalATM",
+       "DeltaGammaAdjusted",
+       "None"
+      ],
+      "required": true,
+      "text": "Which swaptions the fit uses: those that end with the deal and start at the money, those at the strike of the deal, or the delta gamma adjusted set."
+     },
+     {
+      "scope": "model",
+      "name": "ReferenceCalibrationGrid",
+      "kind": "text",
+      "usual": "400,3M",
+      "options": [],
+      "required": true,
+      "text": "Mandatory calibration grid."
+     },
+     {
+      "scope": "model",
+      "name": "Reversion",
+      "kind": "number",
+      "usual": "0.0",
+      "options": [],
+      "required": true,
+      "text": "The mean reversion speed of the model. A calibrated model starts here."
+     },
+     {
+      "scope": "model",
+      "name": "ReversionType",
+      "kind": "select",
+      "usual": "HullWhite",
+      "options": [
+       "Hagan",
+       "HullWhite"
+      ],
+      "required": true,
+      "text": "The form of the mean reversion parameter: Hagan or Hull-White."
+     },
+     {
+      "scope": "model",
+      "name": "Volatility",
+      "kind": "number",
+      "usual": "0.01",
+      "options": [],
+      "required": true,
+      "text": "The volatility of the model. A calibrated model starts here."
+     },
+     {
+      "scope": "model",
+      "name": "VolatilityType",
+      "kind": "select",
+      "usual": "HullWhite",
+      "options": [
+       "Hagan",
+       "HullWhite"
+      ],
+      "required": true,
+      "text": "The form of the volatility parameter: Hagan or Hull-White."
+     },
+     {
+      "scope": "model",
+      "name": "Tolerance",
+      "kind": "number",
+      "usual": "0.02",
+      "options": [],
+      "required": true,
+      "text": "Error tolerance for calibration."
+     },
+     {
+      "scope": "engine",
+      "name": "method",
+      "kind": "text",
+      "usual": "Automatic",
+      "options": [],
+      "required": true,
+      "text": "Method used by the LGM grid engine for a balance guaranteed FlexiSwap. Allowed values are SingleSwaptions, SwaptionArray and Automatic; required."
+     },
+     {
+      "scope": "engine",
+      "name": "singleSwaptionThreshold",
+      "kind": "text",
+      "usual": "20.0",
+      "options": [],
+      "required": true,
+      "text": "In Automatic mode, the effective number of full swaptions below which the engine prices single swaptions; above it the swaption array method is used. Required."
+     },
+     {
+      "scope": "engine",
+      "name": "sy",
+      "kind": "number",
+      "usual": "5.0",
+      "options": [],
+      "required": true,
+      "text": "The width of the grid on the value axis, in standard deviations, in the notation of Hagan."
+     },
+     {
+      "scope": "engine",
+      "name": "ny",
+      "kind": "number",
+      "usual": "30",
+      "options": [],
+      "required": true,
+      "text": "The number of grid points on the value axis, in the notation of Hagan."
+     },
+     {
+      "scope": "engine",
+      "name": "sx",
+      "kind": "number",
+      "usual": "5.0",
+      "options": [],
+      "required": true,
+      "text": "The width of the grid on the state axis, in standard deviations, in the notation of Hagan."
+     },
+     {
+      "scope": "engine",
+      "name": "nx",
+      "kind": "number",
+      "usual": "30",
+      "options": [],
+      "required": true,
+      "text": "The number of grid points on the state axis, in the notation of Hagan."
+     },
+     {
+      "scope": "engine",
+      "name": "SensitivityTemplate",
+      "kind": "reference",
+      "usual": "IR_Semianalytical",
+      "options": [],
+      "required": false,
+      "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     }
+    ]
    }
   ]
  }

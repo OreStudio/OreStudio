@@ -216,7 +216,7 @@
     "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
     "section_code": "YieldCurves",
     "curve_id": "HUF1D",
-    "description": "HUF discount curve bootstrapped from HUF-BUBORON swap rates",
+    "description": "HUF discount curve bootstrapped from HUF-HUFONIA swap rates",
     "position": 15
   },
   {
@@ -227,7 +227,7 @@
     "curve_configuration_id": "04fb9b73-c17d-536f-ab92-afe92a42cd64",
     "section_code": "YieldCurves",
     "curve_id": "ILS1D",
-    "description": "ILS discount curve bootstrapped from ILS-TELBORON swap rates",
+    "description": "ILS discount curve bootstrapped from ILS-SHIR swap rates",
     "position": 16
   },
   {

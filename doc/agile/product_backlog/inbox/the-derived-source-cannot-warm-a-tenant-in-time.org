@@ -72,9 +72,18 @@ Two distinct things, and only the first is new:
 
 - The first party is given nothing while the other three are given 37 of 39 each, although all
   four read the same per-tenant series and all 39 series exist by the time the run ends. The step
-  asks a party again every ten seconds and gave up eighteen times. So its retry does not see what
-  the derived source published for that same tenant -- a served-order or caching question in the
-  step, not a throughput question.
+  asks a party again every ten seconds and gave up eighteen times.
+
+  The two halves of that sentence sit in two different places, and the gap between them is the
+  defect. =plan_party_surfaces= -- =ores.iam.core/messaging/party_surface_blueprints.hpp= -- looks
+  the quotes up among the *party's own* series, =own_series.find({oresmd_uri, provider_code})=,
+  and refuses the blueprint when the party holds none. The derived adapter that writes those
+  series -- =ores.synthetic.service/src/derived_fx_vol_adapter.cpp=, =make_store()= -- creates and
+  writes every one of them **under the tenant's system party**, from =system_party()=. A business
+  party's own copy therefore has to come from somewhere else, and for the group entity it does
+  not: the other three parties got theirs. The next reader should find who copies a provider's
+  series onto a party -- the curve path has the same shape -- and why the first party in the
+  profile misses it.
 - USD/CLP and USD/COP have no volatility quotes and never will from this source: the ECB publishes
   no CLP or COP fixing, so the derivation says so by name -- =not_found: The fixing item
   oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=CLP does not exist=. Their blueprints should

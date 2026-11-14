@@ -234,10 +234,11 @@ std::map<std::string, engine_party_name> read_party_names(const http_request& re
 
 std::vector<engine_bound_report> read_bound_reports(const http_request& req,
                                                     nats_client& session,
+                                                    std::string_view configuration_type,
                                                     const boost::uuids::uuid& configuration_id) {
     reporting_messaging::list_report_configurations_request ask;
     ask.filter.emplace();
-    ask.filter->configuration_type_code = std::string(engine_settings_configuration_type);
+    ask.filter->configuration_type_code = std::string(configuration_type);
     ask.filter->configuration_id = configuration_id;
     const auto bindings = forwarding::forward_all(
         req,

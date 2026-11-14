@@ -252,9 +252,15 @@ async function ask<Schema extends z.ZodType>(
         message?: string;
     };
     if (reply.success === false) {
-        throw refused(reply.message ?? '');
+        throw new HttpFailure(422, { code: 'invalid-request', message: reply.message ?? '' });
     }
     return reply;
+}
+
+/** The answer without the fields every answer carries, for a route that serves facts. */
+function factsOf<Reply extends { success?: boolean; message?: string }>(reply: Reply): unknown {
+    const { success: _success, message: _message, ...facts } = reply;
+    return facts;
 }
 
 export function registerMarketReadRoutes(
@@ -305,8 +311,7 @@ export function registerMarketReadRoutes(
             },
             rateLadderReply,
         );
-        const { success: _success, message: _message, ...facts } = reply;
-        return facts;
+        return factsOf(reply);
     });
 
     // One base currency's crosses at an instant, measured from the instant the
@@ -325,8 +330,7 @@ export function registerMarketReadRoutes(
             },
             fxMontageReply,
         );
-        const { success: _success, message: _message, ...facts } = reply;
-        return facts;
+        return factsOf(reply);
     });
 
     // One curve's conventions, its market pillars and what the bootstrap makes
@@ -344,7 +348,6 @@ export function registerMarketReadRoutes(
             },
             curveAnalyticsReply,
         );
-        const { success: _success, message: _message, ...facts } = reply;
-        return facts;
+        return factsOf(reply);
     });
 }

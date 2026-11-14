@@ -25,6 +25,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { formatDateTime, relativeTime } from '../ui/Time.js';
+import { DATA_CELL, HEAD_CELL, asOfInstant, oneOf, todayIso, useReadParty } from './readScreen.js';
 
 /**
  * One base currency's crosses, from
@@ -40,18 +41,6 @@ const BASES = ['EUR', 'USD', 'GBP', 'AUD', 'JPY', 'CHF', 'CAD', 'NZD'] as const;
 const SORTS = ['pair', 'move'] as const;
 
 type Sort = (typeof SORTS)[number];
-
-function asOfInstant(date: string): string {
-    return `${date} 23:59:59Z`;
-}
-
-function todayIso(): string {
-    return new Date().toISOString().slice(0, 10);
-}
-
-function oneOf<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
-    return allowed.find((candidate) => candidate === value) ?? fallback;
-}
 
 function fixed(value: number, places: number, language: string): string {
     return value.toLocaleString(language, {
@@ -75,20 +64,22 @@ function rowAge(pair: FxMontagePair, language: string): string {
 /**
  * The day's range as a bar with the consensus on it.
  *
- * The prototype drew a sparkline from a path it generated. This read holds the
- * low, the high and the last price and no path, so the bar is what the data
- * supports: where the pair has traded today, and where it stands now.
+ * The read states the low, the high and the consensus, and no path, so the bar
+ * is what the data supports: where the pair has traded today, and where it
+ * stands now.
  */
 function RangeBar({
     low,
     high,
     last,
     up,
+    label,
 }: {
     readonly low: number | null;
     readonly high: number | null;
     readonly last: number;
     readonly up: boolean;
+    readonly label: string;
 }): ReactNode {
     if (low === null || high === null || !(high > low)) return <span>—</span>;
     const width = 120;
@@ -101,7 +92,7 @@ function RangeBar({
             height={height}
             viewBox={`0 0 ${width} ${height}`}
             role="img"
-            aria-label={`today ${low} to ${high}, last ${last}`}
+            aria-label={label}
         >
             <line
                 x1="4"
@@ -124,6 +115,7 @@ function RangeBar({
 
 export function FxMontagePage(): ReactNode {
     const { t, language } = useTranslation();
+    const party = useReadParty();
     const [search, setSearch] = useSearchParams();
     const set = (values: Readonly<Record<string, string>>): void => {
         const next = new URLSearchParams(search);
@@ -146,16 +138,26 @@ export function FxMontagePage(): ReactNode {
 
     const rows = montage.data === undefined ? [] : sorted(montage.data.pairs, sort);
     const places = 4;
-    const head = 'px-2 py-1 text-right text-xs font-semibold text-ink-faint';
-    const cell = 'px-2 py-1 text-right font-mono whitespace-nowrap';
+    const head = HEAD_CELL;
+    const cell = DATA_CELL;
+    const providers = [
+        ...new Set(rows.flatMap((pair) => pair.spot_by_provider.map((spot) => spot.provider_code))),
+    ];
 
     return (
         <div className="space-y-4">
             <AreaTrail area="marketdata" screen={t('marketdata.fxMontage.title')} />
-            <PageHeader
-                title={t('marketdata.fxMontage.title')}
-                description={t('marketdata.fxMontage.lead')}
-            />
+            <div className="flex items-start justify-between gap-3">
+                <PageHeader
+                    title={t('marketdata.fxMontage.title')}
+                    description={t('marketdata.fxMontage.lead')}
+                />
+                {party !== '' && (
+                    <p className="text-xs text-ink-faint">
+                        {t('marketdata.fxMontage.readingFor', { party })}
+                    </p>
+                )}
+            </div>
             <section className="flex flex-wrap items-end gap-4 rounded-md border border-line p-4">
                 <Field label={t('marketdata.fxMontage.base')}>
                     <Select
@@ -213,6 +215,11 @@ export function FxMontagePage(): ReactNode {
                                     <th className={cx(head, 'text-left')}>
                                         {t('marketdata.fxMontage.pair')}
                                     </th>
+                                    {providers.map((provider) => (
+                                        <th className={head} key={provider}>
+                                            {provider}
+                                        </th>
+                                    ))}
                                     <th className={head}>{t('marketdata.fxMontage.last')}</th>
                                     <th className={head}>{t('marketdata.fxMontage.change')}</th>
                                     <th className={head}>{t('marketdata.fxMontage.low')}</th>
@@ -241,9 +248,37 @@ export function FxMontagePage(): ReactNode {
                                                         high={pair.day_high}
                                                         last={pair.consensus}
                                                         up={(pair.change_pct ?? 0) >= 0}
+                                                        label={t(
+                                                            'marketdata.fxMontage.rangeLabel',
+                                                            {
+                                                                low: pair.day_low ?? '',
+                                                                high: pair.day_high ?? '',
+                                                                last: pair.consensus,
+                                                            },
+                                                        )}
                                                     />
                                                 </div>
                                             </td>
+                                            {providers.map((provider) => {
+                                                const spot = pair.spot_by_provider.find(
+                                                    (one) => one.provider_code === provider,
+                                                );
+                                                return (
+                                                    <td
+                                                        className={cx(
+                                                            cell,
+                                                            spot === undefined
+                                                                ? 'text-ink-faint'
+                                                                : undefined,
+                                                        )}
+                                                        key={provider}
+                                                    >
+                                                        {spot === undefined
+                                                            ? '—'
+                                                            : fixed(spot.value, places, language)}
+                                                    </td>
+                                                );
+                                            })}
                                             <td className={cell}>
                                                 {fixed(pair.consensus, places, language)}
                                             </td>

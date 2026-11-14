@@ -89,7 +89,29 @@ const ladder: RateLadder = {
 
 function draw(address: string, set: RateLadder = ladder): string {
     const client = new QueryClient();
-    client.setQueryData(['rate-ladder', 'USD', '2026-11-13', '', '0D'], set);
+    client.setQueryData(['rate-ladder', 'USD', '2026-11-13', '', '0D', 'discount'], set);
+    client.setQueryData(['market-instruments', 'USD', 'curve', ''], {
+        total: 1,
+        truncated: false,
+        instruments: [
+            {
+                instrument_id: 'p-1|oresmd://ir/USD?type=series&instrument=discount&quote=rate',
+                kind: 'curve',
+                name: 'USD-SOFR',
+                currency: 'USD',
+                base_currency: '',
+                quote_currency: '',
+                instrument_type: 'discount',
+                quote_type: 'rate',
+                forward_start: '',
+                axes: [],
+                sources: [],
+                party_id: 'p-1',
+                stale: false,
+                as_of: '2026-11-13 10:00:00Z',
+            },
+        ],
+    });
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>

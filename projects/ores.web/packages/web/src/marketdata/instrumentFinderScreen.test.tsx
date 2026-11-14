@@ -140,18 +140,16 @@ describe('the instrument finder', () => {
         expect(page).toContain('1W, 1M, ATM, DEL/Spot/Call/25');
     });
 
-    it('opens a pair at its convention and leaves the other kinds as text', () => {
+    it('opens a pair at the FX montage of its base, as the journey says', () => {
         const page = draw('/market-data/instruments');
-        expect(page).toContain('href="/refdata/currency-pairs/EUR%2FUSD"');
-        expect(page).not.toContain('href="/refdata/currency-pairs/USD-SOFR"');
+        expect(page).toContain('href="/market-data/fx-montage?base=EUR"');
     });
 
-    it('opens a curve at its published sets and leaves a surface as text', () => {
+    it('opens a curve at the curve inspector and leaves a surface as text', () => {
         const page = draw('/market-data/instruments');
-        expect(page).toContain('href="/market-data/published-curves/USD-SOFR"');
+        expect(page).toContain('href="/market-data/curve-analytics?curve=USD-SOFR"');
         // A surface has no page, so its name is not a link.
-        expect(page).not.toContain('href="/market-data/published-curves/EURUSD_SSVI"');
-        expect(page).not.toContain('href="/market-data/instruments/EURUSD_SSVI"');
+        expect(page).not.toContain('href="/market-data/curve-analytics?curve=EURUSD_SSVI"');
     });
 
     it('says nothing matched when the catalogue answers nothing', () => {

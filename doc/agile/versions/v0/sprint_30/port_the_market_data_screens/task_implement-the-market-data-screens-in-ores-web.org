@@ -87,9 +87,15 @@ task and name that file in the Command column.
   identities and the screen says which it is choosing.
 - The curve analytics prototype's T-1 columns are not drawn: the read carries no
   prior close, so the screen says so instead of deriving a change.
-- The ladder holds one consensus column and a quoted-by column rather than a
-  column per provider: the providers a party has are not in the answer, so the
-  screen cannot name the ones missing from a rung, only the ones present.
+- The ladder holds one column per provider that quotes any rung, and a dash where
+  a provider does not quote one. The answer does not name the providers a party
+  holds, so a column is drawn only for a provider the market shows, and the
+  absent ones cannot be named.
+- The ladder's window is the prototype's own control (short dates, the whole
+  curve, 1Y to 10Y) applied to the year fraction the server dates each rung with.
+- The finder's Enter destinations follow the published journey: a pair opens the
+  FX montage of its base, a curve the curve inspector, a ladder the rate ladder,
+  a fixing its observations. A surface has no page yet.
 
 * Test Scenarios
 

@@ -23,8 +23,8 @@ import { Link, useSearchParams } from 'react-router';
 import { api, type MarketInstrument } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { pairPath } from '../refdata/currencyPairs.js';
-import { PATHS, publishedCurvePath } from '../shell/paths.js';
+import { PATHS } from '../shell/paths.js';
+import { useReadParty } from './readScreen.js';
 import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { relativeTime } from '../ui/Time.js';
 
@@ -57,26 +57,39 @@ function sourcesOf(instrument: MarketInstrument): string {
 }
 
 /**
- * The page a row opens, for the kinds the product has a page for.
+ * The series URI inside an instrument's id.
  *
- * The catalogue's instrument id is the party and the series' URI, so a kind whose
- * page is addressed by the series reads that URI out of the id. A surface has no
- * page yet, so its row stays text rather than linking somewhere that would say
- * nothing.
+ * The catalogue's id is the party and the series' URI joined by a bar: the id
+ * names one series of one party, and the URI is what a screen that shows a
+ * fixing's observations is addressed by.
+ */
+function seriesUriOf(instrument: MarketInstrument): string {
+    return instrument.instrument_id.split('|')[1] ?? '';
+}
+
+/**
+ * The page a row opens, as the finder's journey states it: a ladder opens the
+ * rate ladder, a curve the curve inspector, a pair the FX montage and a fixing
+ * that fixing's observations. A surface has no page yet, so its row stays text
+ * rather than linking somewhere that would say nothing.
  */
 function destination(instrument: MarketInstrument): string | undefined {
-    const uri = instrument.instrument_id.split('|')[1] ?? '';
+    const uri = seriesUriOf(instrument);
     switch (instrument.kind) {
-        case 'pair':
-            return instrument.name.includes('/') ? pairPath(instrument.name) : undefined;
+        case 'pair': {
+            const [base = ''] = instrument.name.split('/');
+            return base === '' ? undefined : `${PATHS.fxMontage}?base=${base}`;
+        }
         case 'curve':
-            return instrument.name === '' ? undefined : publishedCurvePath(instrument.name);
-        case 'fixing':
-            return uri === '' ? undefined : `${PATHS.fixingSeries}?uri=${encodeURIComponent(uri)}`;
+            return instrument.name === ''
+                ? undefined
+                : `${PATHS.curveAnalytics}?curve=${encodeURIComponent(instrument.name)}`;
         case 'ladder':
             return instrument.currency === ''
                 ? undefined
                 : `${PATHS.rateLadder}?ccy=${instrument.currency}`;
+        case 'fixing':
+            return uri === '' ? undefined : `${PATHS.fixingSeries}?uri=${encodeURIComponent(uri)}`;
         default:
             return undefined;
     }
@@ -113,6 +126,7 @@ function Row({ instrument }: { readonly instrument: MarketInstrument }): ReactNo
 
 export function InstrumentFinderPage(): ReactNode {
     const { t } = useTranslation();
+    const party = useReadParty();
     const [search, setSearch] = useSearchParams();
     const set = (values: Readonly<Record<string, string>>): void => {
         const next = new URLSearchParams(search);
@@ -145,10 +159,17 @@ export function InstrumentFinderPage(): ReactNode {
     return (
         <div className="space-y-4">
             <AreaTrail area="marketdata" screen={t('marketdata.instruments.title')} />
-            <PageHeader
-                title={t('marketdata.instruments.title')}
-                description={t('marketdata.instruments.lead')}
-            />
+            <div className="flex items-start justify-between gap-3">
+                <PageHeader
+                    title={t('marketdata.instruments.title')}
+                    description={t('marketdata.instruments.lead')}
+                />
+                {party !== '' && (
+                    <p className="text-xs text-ink-faint">
+                        {t('marketdata.instruments.readingFor', { party })}
+                    </p>
+                )}
+            </div>
             <section className="flex flex-wrap items-end gap-4 rounded-md border border-line p-4">
                 <Field label={t('marketdata.instruments.search')}>
                     <Input

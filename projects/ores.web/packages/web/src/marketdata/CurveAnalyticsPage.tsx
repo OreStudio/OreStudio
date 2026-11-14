@@ -25,6 +25,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { LineChart, SERIES_COLOURS, type ChartSeries } from './LineChart.js';
+import { HEAD_CELL, DATA_CELL, asOfInstant, oneOf, todayIso, useReadParty } from './readScreen.js';
 
 /**
  * One curve's analytics, from
@@ -42,19 +43,11 @@ const CONFIGS = 'ir-curve-bootstrap-configs';
 /** What the chart draws: the curve's own numbers, one metric at a time, as the prototype does. */
 const METRICS = ['zero', 'forward', 'discount'] as const;
 
+/// What the chart's x axis counts: the tenor code, or the days to maturity.
+const AXES = ['tenor', 'maturity'] as const;
+
 type Metric = (typeof METRICS)[number];
-
-function oneOf<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
-    return allowed.find((candidate) => candidate === value) ?? fallback;
-}
-
-function asOfInstant(date: string): string {
-    return `${date} 23:59:59Z`;
-}
-
-function todayIso(): string {
-    return new Date().toISOString().slice(0, 10);
-}
+type ChartAxis = (typeof AXES)[number];
 
 function percent(value: number, language: string): string {
     return (value * 100).toLocaleString(language, {
@@ -69,6 +62,7 @@ function basisPoints(value: number): string {
 
 export function CurveAnalyticsPage(): ReactNode {
     const { t, language } = useTranslation();
+    const party = useReadParty();
     const [search, setSearch] = useSearchParams();
     const set = (values: Readonly<Record<string, string>>): void => {
         const next = new URLSearchParams(search);
@@ -92,6 +86,7 @@ export function CurveAnalyticsPage(): ReactNode {
         options.find((option) => option.id === stated || option.name === stated) ?? options[0];
     const asOf = search.get('asof') ?? todayIso();
     const metric = oneOf(search.get('m'), METRICS, 'zero');
+    const axis = oneOf(search.get('axis'), AXES, 'tenor');
 
     const key = ['curve-analytics', chosen?.id ?? '', asOf] as const;
     const analytics = useQuery({
@@ -105,16 +100,23 @@ export function CurveAnalyticsPage(): ReactNode {
     const data: CurveAnalytics | undefined = analytics.data;
     const market = data?.market_pillars ?? [];
     const bootstrapped = data?.bootstrapped ?? [];
-    const head = 'px-2 py-1 text-right text-xs font-semibold text-ink-faint';
-    const cell = 'px-2 py-1 text-right font-mono whitespace-nowrap';
+    const head = HEAD_CELL;
+    const cell = DATA_CELL;
 
     return (
         <div className="space-y-4">
             <AreaTrail area="marketdata" screen={t('marketdata.curveAnalytics.title')} />
-            <PageHeader
-                title={t('marketdata.curveAnalytics.title')}
-                description={t('marketdata.curveAnalytics.lead')}
-            />
+            <div className="flex items-start justify-between gap-3">
+                <PageHeader
+                    title={t('marketdata.curveAnalytics.title')}
+                    description={t('marketdata.curveAnalytics.lead')}
+                />
+                {party !== '' && (
+                    <p className="text-xs text-ink-faint">
+                        {t('marketdata.curveAnalytics.readingFor', { party })}
+                    </p>
+                )}
+            </div>
             <section className="flex flex-wrap items-end gap-4 rounded-md border border-line p-4">
                 <Field label={t('marketdata.curveAnalytics.curve')}>
                     <Select
@@ -177,18 +179,32 @@ export function CurveAnalyticsPage(): ReactNode {
                         <h2 className="text-sm font-semibold">
                             {t('marketdata.curveAnalytics.chart')}
                         </h2>
-                        <Select
-                            value={metric}
-                            onChange={(event) => {
-                                set({ m: event.target.value });
-                            }}
-                        >
-                            {METRICS.map((option) => (
-                                <option key={option} value={option}>
-                                    {t(`marketdata.curveAnalytics.metrics.${option}`)}
-                                </option>
-                            ))}
-                        </Select>
+                        <div className="flex items-end gap-2">
+                            <Select
+                                value={metric}
+                                onChange={(event) => {
+                                    set({ m: event.target.value });
+                                }}
+                            >
+                                {METRICS.map((option) => (
+                                    <option key={option} value={option}>
+                                        {t(`marketdata.curveAnalytics.metrics.${option}`)}
+                                    </option>
+                                ))}
+                            </Select>
+                            <Select
+                                value={axis}
+                                onChange={(event) => {
+                                    set({ axis: event.target.value });
+                                }}
+                            >
+                                {AXES.map((option) => (
+                                    <option key={option} value={option}>
+                                        {t(`marketdata.curveAnalytics.axes.${option}`)}
+                                    </option>
+                                ))}
+                            </Select>
+                        </div>
                     </div>
                     <p className="text-xs text-ink-faint">
                         {t(`marketdata.curveAnalytics.chartLegend.${metric}`, {
@@ -197,7 +213,9 @@ export function CurveAnalyticsPage(): ReactNode {
                     </p>
                     <LineChart
                         series={chartSeries(data, metric)}
-                        categories={data.bootstrapped.map((point) => point.tenor)}
+                        categories={data.bootstrapped.map((point) =>
+                            axis === 'tenor' ? point.tenor : point.maturity_date,
+                        )}
                         format={(value) =>
                             metric === 'discount' ? value.toFixed(4) : `${value.toFixed(3)}%`
                         }

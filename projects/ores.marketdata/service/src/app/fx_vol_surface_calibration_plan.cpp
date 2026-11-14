@@ -154,6 +154,11 @@ std::expected<expiry_terms, std::string> terms_at(const surface_calibration_reci
         .convention = *convention};
 }
 
+/// Whether a row of a forward set discounts to a factor at all: no factor is a zero or below.
+bool discounts_to_a_factor(const surface_forward_point& point) {
+    return point.base_discount > 0.0 && point.quote_discount > 0.0;
+}
+
 }
 
 std::expected<surface_forward_set, std::string> spot_starting(const surface_forward_set& forwards) {
@@ -165,7 +170,7 @@ std::expected<surface_forward_set, std::string> spot_starting(const surface_forw
         return std::unexpected(
             "the forward set " + forwards.publish_id + " has no row on its spot date " +
             std::format("{}", forwards.spot_date) + ", so it cannot be read from spot");
-    if (!(anchor->base_discount > 0.0) || !(anchor->quote_discount > 0.0))
+    if (!discounts_to_a_factor(*anchor))
         return std::unexpected("the row on the spot date " + std::format("{}", forwards.spot_date) +
                                " of the forward set " + forwards.publish_id +
                                " discounts to a factor that is not above zero");
@@ -178,7 +183,7 @@ std::expected<surface_forward_set, std::string> spot_starting(const surface_forw
         // ON and any other delivery before spot are not part of a spot-starting market.
         if (std::chrono::sys_days(point.value_date) < std::chrono::sys_days(forwards.spot_date))
             continue;
-        if (!(point.base_discount > 0.0) || !(point.quote_discount > 0.0))
+        if (!discounts_to_a_factor(point))
             return std::unexpected("the " + point.tenor + " row of the forward set " +
                                    forwards.publish_id +
                                    " discounts to a factor that is not above zero");

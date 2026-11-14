@@ -86,3 +86,16 @@ TEST_CASE("an_unknown_curve_is_refused_in_words", analytics_tags) {
     CHECK(resp.success == false);
     CHECK(resp.message.empty() == false);
 }
+
+TEST_CASE("the_verdict_is_the_servers_of_when_the_market_was_written", analytics_tags) {
+    curve_fixture f;
+
+    const auto resp = get_curve_analytics(*f.party, request_for(f));
+
+    REQUIRE(resp.success);
+    // The fixture's market is dated in the past, so the curve reads as stale: the
+    // verdict measures the newest observation, not the instant the read was made.
+    CHECK(resp.stale == true);
+    for (const auto& pillar : resp.market_pillars)
+        CHECK(pillar.as_of != std::chrono::system_clock::time_point{});
+}

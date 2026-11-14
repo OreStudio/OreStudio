@@ -52,6 +52,9 @@ auto& rate_ladder_lg() {
     return instance;
 }
 
+/// The instrument type whose series hold factors rather than rates.
+constexpr const char* discount_ladder_instrument = "discount";
+
 /// A ladder series carries no convention of its own, so the read states the one
 /// it resolved the dates under rather than leaving the client to guess.
 constexpr const char* ladder_tenor_convention = "RATES_SPOT_FORWARD";
@@ -204,8 +207,13 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
     const auto day_count = ores::analytics::quant::service::day_count_convention_code::A365F;
     // A discount ladder's observations are factors. Every other instrument type
     // quotes its rate, so only this one is converted.
-    const bool discount_ladder = request.instrument_type == "discount";
+    const bool discount_ladder = request.instrument_type == discount_ladder_instrument;
     std::string unreadable;
+    const auto note_unreadable = [&unreadable](const std::string& what) {
+        if (!unreadable.empty())
+            unreadable += "; ";
+        unreadable += what;
+    };
 
     std::vector<std::pair<std::chrono::year_month_day, std::string>> dated;
     std::string undated;
@@ -243,9 +251,7 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
             if (discount_ladder) {
                 const auto rate = implied_zero_rate(q.value, rung.year_fraction);
                 if (!rate) {
-                    if (!unreadable.empty())
-                        unreadable += "; ";
-                    unreadable += tenor + " of " + q.provider_code;
+                    note_unreadable(tenor + " of " + q.provider_code);
                     continue;
                 }
                 value = *rate;

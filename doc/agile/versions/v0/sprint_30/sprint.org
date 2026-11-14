@@ -155,6 +155,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:6A8F01EC-54BE-4730-B7EC-8CF6438A6725][Start the synthetic service on a fresh database]] | DONE | 2026-11-13 | | The synthetic service never became ready on a recreated database, so the fleet start timed out and no tenant was provisioned. |
 | [[id:0721569D-CBEF-4779-8726-F62A7179D567][Hotfix: Clear the Windows, GCC and test breakages CI now reports]] | STARTED | 2026-11-14 | | CI reports a Windows export collision, a GCC name collision and a set of failing tests. |
 | [[id:EAD87500-027A-46B7-BD34-911D827DCF71][Hotfix: Fix the AppleClang min call and the generated link drift]] | STARTED | | | macOS fails to compile a min call, and three generated CMake files no longer match their models. |
+| [[id:07B94320-9844-4292-A266-3F63639B2CB6][Hotfix: Publish the catalogues the booking test reads]] | STARTED | | | The generated-trade booking test is refused because the refdata catalogues are never published in a recreated database. |
 
 * Achievements
 

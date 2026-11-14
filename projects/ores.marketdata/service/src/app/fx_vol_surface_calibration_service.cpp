@@ -234,10 +234,8 @@ fx_vol_surface_calibration_service::calibrate(const context& ctx,
             if (!quotes.contains(source.market_series_id))
                 quotes.emplace(source.market_series_id,
                                read_quotes(ctx, source.market_series_id, as_of));
-        const auto as_of_date =
-            std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(as_of)};
         const auto prepared =
-            prepare_calibration(recipe, *checked, forwards, quotes, as_of_date, pillar_tolerance);
+            prepare_calibration(recipe, *checked, forwards, quotes, pillar_tolerance);
         if (!prepared)
             throw std::invalid_argument("The quotes of " + recipe.blueprint.name +
                                         " are refused: " + prepared.error() + ".");

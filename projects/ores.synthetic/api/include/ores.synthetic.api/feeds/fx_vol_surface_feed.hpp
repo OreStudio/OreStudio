@@ -45,19 +45,6 @@ namespace ores::synthetic::feed {
 inline constexpr std::string_view fx_vol_surface_feed_kind = "fx_vol_surface";
 
 /**
- * @brief The year fraction a tenor names, as a surface's expiries are counted.
- *
- * Days are counted over 365 and months over 12, which is what a quoted expiry grid
- * means before a calendar and a day count are applied. The generator task's later
- * work resolves tensors through the pair's convention; until then this is the whole
- * of the mapping and it is stated rather than assumed.
- *
- * @return The year fraction, or nothing when the tenor is not a count and a unit.
- */
-[[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::optional<double>
-fx_vol_tenor_years(std::string_view tenor);
-
-/**
  * @brief Everything a surface feed reads, gathered by the caller.
  *
  * The caller resolves the pair's market and convention because it alone holds the

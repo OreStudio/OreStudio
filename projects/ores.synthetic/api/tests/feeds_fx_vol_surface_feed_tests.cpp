@@ -24,7 +24,6 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
 #include "ores.testing/nats_options_helper.hpp"
-#include <bitset>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -82,11 +81,11 @@ feed_markets(std::size_t expiries, ores::analytics::quant::math::fx_market marke
 
 /// The pair's rule: weekends closed, no dated holidays, so a tenor that lands on one moves.
 fx_expiry_date_rule feed_rule() {
-    return fx_expiry_date_rule(ores::analytics::quant::domain::business_day_convention::following,
-                               false,
-                               0,
-                               ores::analytics::quant::domain::business_day_calendar_set::from_rows(
-                                   {}, 1, {std::bitset<7>{0b1000001}}));
+    return fx_expiry_date_rule(
+        ores::analytics::quant::domain::business_day_convention::following,
+        false,
+        0,
+        ores::analytics::quant::domain::business_day_calendar_set::weekends_only());
 }
 
 fx_vol_surface_feed_build_input feed_input() {
@@ -103,17 +102,23 @@ fx_vol_surface_feed_build_input feed_input() {
 
 }
 
-TEST_CASE("a tenor names a year fraction, or nothing", "[fx_vol_surface_feed]") {
-    CHECK(*fx_vol_tenor_years("1W") == Catch::Approx(7.0 / 365.0));
-    CHECK(*fx_vol_tenor_years("1M") == Catch::Approx(1.0 / 12.0));
-    CHECK(*fx_vol_tenor_years("3M") == Catch::Approx(0.25));
-    CHECK(*fx_vol_tenor_years("1Y") == Catch::Approx(1.0));
-    CHECK(*fx_vol_tenor_years("10D") == Catch::Approx(10.0 / 365.0));
-    CHECK_FALSE(fx_vol_tenor_years("1X").has_value());
-    CHECK_FALSE(fx_vol_tenor_years("M").has_value());
-    CHECK_FALSE(fx_vol_tenor_years("").has_value());
-    CHECK_FALSE(fx_vol_tenor_years("0M").has_value());
-    CHECK_FALSE(fx_vol_tenor_years("1.5Y").has_value());
+TEST_CASE("a surface with no expiry date rule refuses to date an expiry", "[fx_vol_surface_feed]") {
+    // A rule the registry never read names no calendar, and the arithmetic refuses rather than
+    // treat an unread calendar as one closed only at weekends. The surface says so instead of
+    // quoting on a date nobody chose.
+    const std::chrono::year_month_day spot_date{
+        std::chrono::year{2026}, std::chrono::November, std::chrono::day{16}};
+    const std::vector<fx_curve_point> curve{{.date = spot_date, .discount_factor = 1.0}};
+    const fx_vol_market_inputs in{
+        .spot = feed_eur_usd, .base = curve, .quote = curve, .spot_date = spot_date};
+    const std::vector<ores::analytics::quant::domain::date_period> periods{
+        {.unit = ores::analytics::quant::domain::period_unit::month, .multiplier = 1}};
+
+    std::vector<fx_market> markets;
+    const auto built = fx_vol_expiry_markets(in, periods, fx_expiry_date_rule{}, markets);
+    REQUIRE_FALSE(built);
+    CHECK(built.error().contains("no calendar"));
+    CHECK(markets.empty());
 }
 
 TEST_CASE("a feed row makes an emitter that starts where the row says", "[fx_vol_surface_feed]") {

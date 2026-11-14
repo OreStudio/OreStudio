@@ -41,6 +41,7 @@ using ores::analytics::quant::domain::date_period;
 using ores::analytics::quant::domain::period_unit;
 using ores::analytics::quant::service::calendar_arithmetic;
 using ores::analytics::quant::service::calendar_rule_engine;
+using ores::analytics::quant::service::fx_vol_tenor_years;
 using ores::analytics::quant::service::fx_expiry_date_rule;
 using ores::analytics::quant::service::quantlib_calendar_rulesets;
 
@@ -139,6 +140,40 @@ TEST_CASE("a business day count walks business days, not calendar days", "[fx_ex
                                           make_south_africa(year{2014}, year{2016}));
 
     CHECK(rule.business_day(year{2014} / December / 19, 3) == year{2014} / December / 24);
+}
+
+TEST_CASE("a ladder starts from the pair's own business day", "[fx_expiry_dates]") {
+    // Saturday 7 November 2026: a pair that rolls forward counts from the Monday, and one that
+    // rolls back from the Friday. The horizon is the rule's answer, so neither is guessed here.
+    const auto saturday = year{2026} / November / 7;
+    const auto forward = rule_today(business_day_convention::following);
+    const auto backward = rule_today(business_day_convention::preceding);
+
+    CHECK(forward.horizon(saturday) == year{2026} / November / 9);
+    CHECK(backward.horizon(saturday) == year{2026} / November / 6);
+}
+
+TEST_CASE("the spot date is the pair's spot days after its horizon", "[fx_expiry_dates]") {
+    // Monday 9 November plus two business days settles on the Wednesday.
+    const auto rule = rule_today(business_day_convention::following);
+
+    CHECK(rule.spot_date(year{2026} / November / 9, 2) == year{2026} / November / 11);
+    CHECK(rule.spot_date(year{2026} / November / 13, 2) == year{2026} / November / 17);
+}
+
+TEST_CASE("a tenor names its own length, not a calendar walk", "[fx_expiry_dates]") {
+    // The surface's time axis: 1M is one twelfth of a year and 1W is seven 365ths, whatever the
+    // calendar does to the date the cash moves.
+    CHECK(*fx_vol_tenor_years("1W") == Catch::Approx(7.0 / 365.0));
+    CHECK(*fx_vol_tenor_years("1M") == Catch::Approx(1.0 / 12.0));
+    CHECK(*fx_vol_tenor_years("3M") == Catch::Approx(0.25));
+    CHECK(*fx_vol_tenor_years("1Y") == Catch::Approx(1.0));
+    CHECK(*fx_vol_tenor_years("10D") == Catch::Approx(10.0 / 365.0));
+    CHECK_FALSE(fx_vol_tenor_years("1X").has_value());
+    CHECK_FALSE(fx_vol_tenor_years("M").has_value());
+    CHECK_FALSE(fx_vol_tenor_years("").has_value());
+    CHECK_FALSE(fx_vol_tenor_years("0M").has_value());
+    CHECK_FALSE(fx_vol_tenor_years("1.5Y").has_value());
 }
 
 TEST_CASE("a rule built without a calendar refuses to date anything", "[fx_expiry_dates]") {

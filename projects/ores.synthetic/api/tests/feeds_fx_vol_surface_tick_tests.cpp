@@ -25,7 +25,6 @@
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_emitter.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
-#include <bitset>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -68,10 +67,7 @@ const fx_quote_convention tick_convention{.atm = fx_atm_type::delta_neutral,
 /// settles on, so an expiry the calendar closes moves the way the ladder's row does.
 fx_expiry_date_rule tick_rule() {
     return fx_expiry_date_rule(
-        business_day_convention::following,
-        false,
-        0,
-        business_day_calendar_set::from_rows({}, 1, {std::bitset<7>{0b1000001}}));
+        business_day_convention::following, false, 0, business_day_calendar_set::weekends_only());
 }
 
 int tick_days_to(std::chrono::year_month_day date) {

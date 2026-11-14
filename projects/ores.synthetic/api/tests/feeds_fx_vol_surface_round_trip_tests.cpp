@@ -25,7 +25,6 @@
 #include "ores.synthetic.api/feeds/fx_vol_surface_emitter.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
 #include <algorithm>
-#include <bitset>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -67,10 +66,7 @@ const fx_quote_convention round_trip_convention{.atm = fx_atm_type::delta_neutra
 /// settles on, so an expiry the calendar closes moves the way the ladder's row does.
 fx_expiry_date_rule round_trip_rule() {
     return fx_expiry_date_rule(
-        business_day_convention::following,
-        false,
-        0,
-        business_day_calendar_set::from_rows({}, 1, {std::bitset<7>{0b1000001}}));
+        business_day_convention::following, false, 0, business_day_calendar_set::weekends_only());
 }
 
 int round_trip_days_to(std::chrono::year_month_day date) {
@@ -119,6 +115,7 @@ fx_vol_surface_feed_build_input round_trip_input() {
     in.contributors = {"reference"};
     in.convention = round_trip_convention;
     in.deltas = {0.25, 0.10};
+    in.expiry_rule = round_trip_rule();
     return in;
 }
 

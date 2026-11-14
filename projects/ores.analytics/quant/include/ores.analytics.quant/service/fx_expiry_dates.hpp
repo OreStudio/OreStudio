@@ -25,6 +25,8 @@
 #include "ores.analytics.quant/export.hpp"
 #include <chrono>
 #include <cstddef>
+#include <optional>
+#include <string_view>
 
 namespace ores::analytics::quant::service {
 
@@ -50,6 +52,16 @@ public:
      */
     fx_expiry_date_rule() = default;
 
+    /**
+     * @brief The rule a pair's convention states.
+     *
+     * @param roll How a date that lands off a business day moves.
+     * @param end_of_month Whether a month- or year-counted period snaps to the month's last
+     * business day when the date it starts from is at or after that month's last one.
+     * @param calendar_index Which of @p calendars is the pair's, whose holidays both currencies'
+     * sets were joined into.
+     * @param calendars The holiday set the rule rolls on.
+     */
     fx_expiry_date_rule(domain::business_day_convention roll,
                         bool end_of_month,
                         std::size_t calendar_index,
@@ -78,6 +90,23 @@ public:
     [[nodiscard]] std::chrono::year_month_day business_day(std::chrono::year_month_day from,
                                                            int n) const;
 
+    /**
+     * @brief The day a ladder counts from when its as-of is not a business day: @p as_of moved
+     * under the pair's own convention.
+     *
+     * @throws std::out_of_range if this rule's calendar index is not one of its calendars.
+     */
+    [[nodiscard]] std::chrono::year_month_day horizon(std::chrono::year_month_day as_of) const;
+
+    /**
+     * @brief The day the pair settles on: @p spot_days business days after the horizon of
+     * @p as_of.
+     *
+     * @throws std::out_of_range if this rule's calendar index is not one of its calendars.
+     */
+    [[nodiscard]] std::chrono::year_month_day spot_date(std::chrono::year_month_day as_of,
+                                                        int spot_days) const;
+
     [[nodiscard]] domain::business_day_convention roll() const noexcept {
         return roll_;
     }
@@ -91,18 +120,27 @@ public:
         return calendars_.calendar_count();
     }
 
-    /// The calendars the rule rolls on, for the few callers that ask a date question the rule
-    /// does not name -- such as where a ladder starts when the as-of is not a business day.
-    [[nodiscard]] const domain::business_day_calendar_set& calendars() const noexcept {
-        return calendars_;
-    }
-
 private:
     domain::business_day_convention roll_{domain::business_day_convention::following};
     bool end_of_month_{false};
     std::size_t calendar_index_{0};
     domain::business_day_calendar_set calendars_;
 };
+
+/**
+ * @brief The time a quoted tenor names, in years: the axis a volatility surface is quoted on.
+ *
+ * Days count over 365 and months over 12, so 1M is one twelfth of a year whatever the calendar
+ * does to the date, 1W is seven 365ths and 1Y is one. This is the grid, not the settlement: the
+ * date the cash moves is fx_expiry_date_rule's answer, and the two are deliberately different
+ * questions. The generator annualises total variance over this and the calibration reads it back
+ * over this, so producer and consumer cannot disagree about how long a tenor is.
+ *
+ * @return The year fraction, or nothing when @p tenor is not a count and a unit, or names no
+ * time at all.
+ */
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::optional<double>
+fx_vol_tenor_years(std::string_view tenor);
 
 }
 

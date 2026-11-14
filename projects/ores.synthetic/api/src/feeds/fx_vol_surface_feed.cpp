@@ -26,7 +26,6 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include <algorithm>
-#include <charconv>
 #include <chrono>
 #include <format>
 #include <map>
@@ -42,6 +41,7 @@ using ores::analytics::quant::math::rng_stream;
 using ores::analytics::quant::math::series_key;
 using ores::analytics::quant::math::stream_key;
 using ores::analytics::quant::service::fx_vol_slice_market;
+using ores::analytics::quant::service::fx_vol_tenor_years;
 using ores::analytics::quant::service::fx_vol_surface_dynamics;
 using ores::analytics::quant::service::ssvi_expiry_fit;
 using ores::analytics::quant::service::ssvi_parameters;
@@ -51,23 +51,6 @@ using ores::analytics::quant::service::run_market;
 namespace {
 
 constexpr int days_in_a_year = 365;
-constexpr int months_in_a_year = 12;
-
-double fx_vol_year_fraction(std::string_view count, char unit) {
-    int n = 0;
-    const auto parsed = std::from_chars(count.data(), count.data() + count.size(), n);
-    static_cast<void>(parsed);
-    switch (unit) {
-        case 'D':
-            return static_cast<double>(n) / days_in_a_year;
-        case 'W':
-            return 7.0 * static_cast<double>(n) / days_in_a_year;
-        case 'M':
-            return static_cast<double>(n) / months_in_a_year;
-        default:
-            return static_cast<double>(n);
-    }
-}
 
 /// The emitter a row describes, or the exception a feed cannot start without.
 fx_vol_surface_emitter surface_or_throw(const fx_vol_surface_feed_build_input& input,
@@ -79,21 +62,6 @@ fx_vol_surface_emitter surface_or_throw(const fx_vol_surface_feed_build_input& i
     return std::move(*built);
 }
 
-}
-
-std::optional<double> fx_vol_tenor_years(std::string_view tenor) {
-    // A tenor is a count of one or two digits and one unit, as the column's check states.
-    if (tenor.size() < 2 || tenor.size() > 3)
-        return std::nullopt;
-    const char unit = tenor.back();
-    if (unit != 'D' && unit != 'W' && unit != 'M' && unit != 'Y')
-        return std::nullopt;
-    if (!std::all_of(tenor.begin(), tenor.end() - 1, [](char c) { return c >= '0' && c <= '9'; }))
-        return std::nullopt;
-    const double years = fx_vol_year_fraction(tenor.substr(0, tenor.size() - 1), unit);
-    if (!(years > 0.0))
-        return std::nullopt;
-    return years;
 }
 
 std::expected<fx_vol_surface_emitter, std::string>

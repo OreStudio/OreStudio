@@ -18,7 +18,6 @@
  *
  */
 #include "fx_forward_ladder_plan.hpp"
-#include "ores.analytics.quant/service/calendar_arithmetic.hpp"
 #include <algorithm>
 #include <utility>
 
@@ -29,10 +28,7 @@ namespace {
 namespace quant = ores::analytics::quant;
 using quant::domain::date_period;
 using quant::domain::period_unit;
-using quant::service::calendar_arithmetic;
 using quant::service::fx_forward_tenor;
-
-constexpr std::size_t only_calendar = 0;
 
 struct ladder_tenor final {
     const char* id;
@@ -92,30 +88,23 @@ anchor_curve(std::vector<quant::service::bootstrapped_point> points,
 fx_ladder_dates build_ladder_dates(std::chrono::year_month_day as_of_date,
                                    int spot_days,
                                    const quant::service::fx_expiry_date_rule& rule) {
-    const auto horizon =
-        calendar_arithmetic::adjust(as_of_date,
-                                    quant::domain::business_day_convention::following,
-                                    only_calendar,
-                                    rule.calendars());
-    const auto advance = [&](std::chrono::year_month_day from, date_period period) {
-        return rule.expiry(from, period);
-    };
-    const auto business_days = [&](int n) {
-        return rule.business_day(horizon, n);
-    };
+    // Every date below is the rule's answer: where it counts from, where the pair settles, and
+    // what each tenor values on. The pair's roll is the rule's, so a pair that settles before a
+    // holiday dates its ladder the same way its expiries are dated.
+    const auto horizon = rule.horizon(as_of_date);
 
     fx_ladder_dates out;
-    out.spot_date = business_days(spot_days);
-    const auto tomorrow = business_days(1);
+    out.spot_date = rule.spot_date(as_of_date, spot_days);
+    const auto tomorrow = rule.business_day(horizon, 1);
     out.tenors.push_back({.tenor_id = "ON", .value_date = tomorrow, .near_date = horizon});
     if (spot_days > 1)
         out.tenors.push_back(
-            {.tenor_id = "TN", .value_date = business_days(2), .near_date = tomorrow});
+            {.tenor_id = "TN", .value_date = rule.business_day(horizon, 2), .near_date = tomorrow});
     out.tenors.push_back({.tenor_id = "SP", .value_date = out.spot_date});
-    out.tenors.push_back(
-        {.tenor_id = "SN", .value_date = advance(out.spot_date, {period_unit::day, 1})});
+    out.tenors.push_back({.tenor_id = "SN", .value_date = rule.business_day(out.spot_date, 1)});
     for (const auto& t : standard_tenors)
-        out.tenors.push_back({.tenor_id = t.id, .value_date = advance(out.spot_date, t.period)});
+        out.tenors.push_back(
+            {.tenor_id = t.id, .value_date = rule.expiry(out.spot_date, t.period)});
     return out;
 }
 

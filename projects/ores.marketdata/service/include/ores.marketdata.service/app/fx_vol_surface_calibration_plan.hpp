@@ -154,7 +154,6 @@ struct prepared_surface_calibration final {
                         const checked_recipe& checked,
                         const surface_forward_set& forwards,
                         const std::map<boost::uuids::uuid, surface_series_quotes>& quotes,
-                        std::chrono::year_month_day as_of,
                         double pillar_tolerance);
 
 /// The items of a blueprint's comma-separated list, such as its output strikes, trimmed.

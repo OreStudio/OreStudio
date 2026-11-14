@@ -118,10 +118,6 @@ std::expected<qs::ssvi_grid_strike, std::string> grid_strike_of(const std::strin
                                                       .delta = size / 100.0}};
 }
 
-int days_between(std::chrono::year_month_day a, std::chrono::year_month_day b) {
-    return static_cast<int>((std::chrono::sys_days(b) - std::chrono::sys_days(a)).count());
-}
-
 /// An expiry's time, market and convention, as the engine reads them.
 struct expiry_terms final {
     double years = 0.0;
@@ -133,8 +129,7 @@ std::expected<expiry_terms, std::string> terms_at(const surface_calibration_reci
                                                   const surface_forward_set& forwards,
                                                   std::span<const qm::fx_discount_point> by_date,
                                                   const std::string& code,
-                                                  qd::date_period period,
-                                                  std::chrono::year_month_day as_of) {
+                                                  qd::date_period period) {
     const auto convention = mapping::to_quote_convention(*recipe.convention, period);
     if (!convention)
         return std::unexpected("expiry " + code + ": " + convention.error());
@@ -147,24 +142,27 @@ std::expected<expiry_terms, std::string> terms_at(const surface_calibration_reci
     if (row == forwards.points.end()) {
         const auto last = std::ranges::max_element(
             forwards.points, {}, [](const auto& p) { return std::chrono::sys_days(p.value_date); });
-        return std::unexpected(
-            "expiry " + code + ": the forward set " + forwards.publish_id +
-            " has no row for that tenor; the ladder ends at " +
-            (last == forwards.points.end() ?
-                 std::string("no date at all") :
-                 std::format("{}", std::chrono::sys_days(last->value_date))) +
-            ", so the expiry has no value date");
+        return std::unexpected("expiry " + code + ": the forward set " + forwards.publish_id +
+                               " has no row for that tenor; the ladder ends at " +
+                               (last == forwards.points.end() ?
+                                    std::string("no date at all") :
+                                    std::format("{}", std::chrono::sys_days(last->value_date))) +
+                               ", so the expiry has no value date");
     }
     const auto market = qm::pair_market_at(
         forwards.spot, forwards.spot_date, by_date, row->value_date, "expiry " + code);
     if (!market)
         return std::unexpected(market.error());
-    // An FX option expires a tenor after the trade and delivers a tenor after spot, so its time
-    // runs from the as-of and its discounting from the value date the ladder publishes.
-    return expiry_terms{
-        .years = days_between(as_of, qs::calendar_arithmetic::add_period(as_of, period)) / 365.0,
-        .market = *market,
-        .convention = *convention};
+    // A surface is quoted on a tenor grid, so its time axis is the tenor's own length: 1M is one
+    // twelfth of a year whatever the calendar does to the date. The date itself is the ladder's,
+    // and it is what the market discounts to; the two answer different questions and both come
+    // from one definition each rather than from arithmetic done here.
+    const auto years = qs::fx_vol_tenor_years(code);
+    if (!years)
+        return std::unexpected("expiry " + code +
+                               ": the tenor is not a count and a unit, so the "
+                               "surface has no time axis for it");
+    return expiry_terms{.years = *years, .market = *market, .convention = *convention};
 }
 
 /// Whether a row of a forward set discounts to a factor at all: no factor is a zero or below.
@@ -319,7 +317,6 @@ prepare_calibration(const surface_calibration_recipe& recipe,
                     const checked_recipe& checked,
                     const surface_forward_set& forwards,
                     const std::map<boost::uuids::uuid, surface_series_quotes>& quotes,
-                    std::chrono::year_month_day as_of,
                     double pillar_tolerance) {
     if (!(forwards.spot > 0.0))
         return std::unexpected("the forward set " + forwards.publish_id + " has no spot");
@@ -342,7 +339,7 @@ prepare_calibration(const surface_calibration_recipe& recipe,
     prepared_surface_calibration out;
     out.request.pillar_tolerance = pillar_tolerance;
     for (const auto& expiry : checked.expiries) {
-        const auto terms = terms_at(recipe, forwards, by_date, expiry.code, expiry.period, as_of);
+        const auto terms = terms_at(recipe, forwards, by_date, expiry.code, expiry.period);
         if (!terms)
             return std::unexpected(terms.error());
         qs::ssvi_expiry_quotes quoted{.expiry_id = expiry.code,
@@ -414,7 +411,7 @@ prepare_calibration(const surface_calibration_recipe& recipe,
         out.request.expiries.push_back(std::move(quoted));
     }
     for (const auto& grid : checked.grid_expiries) {
-        const auto terms = terms_at(recipe, forwards, by_date, grid.code, grid.period, as_of);
+        const auto terms = terms_at(recipe, forwards, by_date, grid.code, grid.period);
         if (!terms)
             return std::unexpected(terms.error());
         out.request.grid_expiries.push_back({.expiry_id = grid.code,

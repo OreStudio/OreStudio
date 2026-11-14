@@ -26,6 +26,7 @@
 #include "ores.http.core/routes/ore_value_sets.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/reporting/engine_settings_rows.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
 #include "ores.reporting.api/messaging/configuration_protocol.hpp"
@@ -72,6 +73,11 @@ using ores::http::routes::value_set_error;
 using ores::http::routes::value_set_reader;
 using ores::http::routes::value_set_tables;
 using ores::nats::service::nats_client;
+
+auto& engine_settings_lg() {
+    static auto instance = ores::logging::make_logger("ores.http.reporting.engine_settings");
+    return instance;
+}
 
 /// The schema and the scope whose parameters the documentation page states.
 constexpr std::string_view ore_schema_code = "ore.xsd";
@@ -378,6 +384,29 @@ std::string document_json_of(const ores::reporting::domain::engine_settings& row
          member_of("reports", reports_json)});
 }
 
+/// What a screen reads of one configuration, as the answer states it.
+http_response document_answer(const http_request& req,
+                              nats_client& session,
+                              const ores::reporting::domain::engine_settings& row,
+                              http_status status) {
+    const auto groups = engine_settings_rows::read_groups(req, session);
+    const auto parties = engine_settings_rows::read_party_names(req, session);
+    const auto parts = engine_settings_rows::read_parts(req, session, {row.id});
+    std::optional<std::vector<engine_bound_report>> reports;
+    try {
+        reports = engine_settings_rows::read_bound_reports(req, session, row.configuration_id);
+    } catch (const std::exception&) {
+        // A binding that cannot be read must not hide the settings, so the page
+        // states it as unknown rather than refusing.
+        BOOST_LOG_SEV(engine_settings_lg(), ores::logging::debug)
+            << "The reports that bind configuration "
+            << boost::uuids::to_string(row.configuration_id)
+            << " could not be read, so the page states them as unknown.";
+        reports = std::nullopt;
+    }
+    return http_response::json(document_json_of(row, groups, parts, parties, reports), status);
+}
+
 /// One version of a configuration, or of one of its parts, as the history states it.
 struct history_entry final {
     std::string kind;
@@ -478,20 +507,10 @@ void engine_settings_routes::register_read_routes(
                     if (!rr::is_uuid(raw))
                         rr::invalid("Engine settings are named by their id.");
                     const auto id = boost::uuids::string_generator()(raw);
-                    const auto groups = engine_settings_rows::read_groups(req, session);
-                    const auto row = engine_settings_rows::read_central(req, session, id);
-                    const auto parties = engine_settings_rows::read_party_names(req, session);
-                    const auto parts = engine_settings_rows::read_parts(req, session, {id});
-                    std::optional<std::vector<engine_bound_report>> reports;
-                    try {
-                        reports = engine_settings_rows::read_bound_reports(
-                            req, session, row.configuration_id);
-                    } catch (const std::exception&) {
-                        // A binding that cannot be read must not hide the settings.
-                        reports = std::nullopt;
-                    }
-                    return http_response::json(
-                        document_json_of(row, groups, parts, parties, reports));
+                    return document_answer(req,
+                                           session,
+                                           engine_settings_rows::read_central(req, session, id),
+                                           http_status::ok);
                 });
             }));
 
@@ -631,10 +650,8 @@ boost::uuids::uuid settings_id_of(const http_request& req) {
 }
 
 /**
- * @brief The party that holds a new configuration: the one asked for, else the
- * one the caller's token states.
- *
- * The BFF read its own session's party, which is the party the token carries.
+ * @brief The party that holds a new configuration: the one the body names, else
+ * the one the caller's token states.
  */
 boost::uuids::uuid party_for_new(const http_request& req, const std::optional<std::string>& asked) {
     if (asked && !asked->empty()) {
@@ -660,11 +677,11 @@ const engine_group_row& group_of(const std::vector<engine_group_row>& groups,
     return *found;
 }
 
-/// The reporting configuration a create writes first, so a report can bind it.
-boost::uuids::uuid create_header(const http_request& req,
-                                 nats_client& session,
-                                 const std::string& name,
-                                 const change_intent& intent) {
+/// The reporting configuration a create registers the settings as.
+boost::uuids::uuid register_configuration(const http_request& req,
+                                          nats_client& session,
+                                          const std::string& name,
+                                          const change_intent& intent) {
     reporting_messaging::put_configuration_request msg;
     msg.change.write.id = boost::uuids::random_generator()();
     msg.change.write.name = name;
@@ -678,10 +695,10 @@ boost::uuids::uuid create_header(const http_request& req,
 }
 
 /// Remove the configuration a failed create wrote, stating no failure of its own.
-void remove_header(const http_request& req,
-                   nats_client& session,
-                   const std::string& name,
-                   const change_intent& intent) {
+void remove_configuration(const http_request& req,
+                          nats_client& session,
+                          const std::string& name,
+                          const change_intent& intent) {
     try {
         reporting_messaging::delete_configuration_request msg;
         msg.removal.key.name = name;
@@ -751,47 +768,138 @@ group_write group_write_of(const http_request& req,
     }
     row_json += "}";
 
+    const auto version = root.member("version");
+    const auto intent = root.member("intent");
+    if (!version.exists() || !intent.exists())
+        rr::invalid(std::string(malformed));
+
     group_write out;
-    const auto stated = root.member("version").integer();
-    if (stated)
+    if (version.write() != "null") {
+        const auto stated = version.integer();
+        if (!stated || *stated < 1)
+            rr::invalid("A group write states the version it was read at, or null when the group "
+                        "has no row.");
         out.version = static_cast<std::uint32_t>(*stated);
-    const auto stated_intent = rr::read_body<rr::stated_intent>(root.member("intent").write());
+    }
+    const auto stated_intent = rr::read_body<rr::stated_intent>(intent.write());
     out.intent = stated_intent ? intent_or_none(*stated_intent) : change_intent{};
     out.row_json = std::move(row_json);
     return out;
 }
 
-/// Write one group's part, at the version the form read or as a new row.
-template <typename Request, typename Row>
-void put_part(const http_request& req, nats_client& session, const group_write& body) {
-    Row row;
+/// The groups whose part a write reaches, in the words a part travels under.
+enum class part_kind { building, execution, fixings };
+
+part_kind kind_of(std::string_view code) {
+    if (code == "building")
+        return part_kind::building;
+    if (code == "execution")
+        return part_kind::execution;
+    if (code == "fixings")
+        return part_kind::fixings;
+    rr::invalid("There is no such group of engine settings.");
+}
+
+/// Read one group's values as the row its part travels as.
+template <typename Row>
+Row read_part_row(const std::string& row_json) {
     try {
-        row = ores::utility::codec::wire_traits<Row>::read_json(body.row_json);
+        return ores::utility::codec::wire_traits<Row>::read_json(row_json);
     } catch (const std::exception&) {
         rr::invalid("A group write states a value in a form the group does not hold.");
     }
-    Request msg;
-    msg.change.write = row;
-    msg.change.precondition.kind =
-        body.version ? precondition_kind::must_match_version : precondition_kind::must_not_exist;
-    msg.change.precondition.version = body.version;
-    msg.intent = body.intent;
-    const auto reply = forwarding::forward(req, session, msg);
-    rr::require_ok(reply.result);
+}
+
+/// Refuse a group's values when they are not the form its columns hold.
+void check_values_of(part_kind kind, const std::string& row_json) {
+    switch (kind) {
+        case part_kind::building:
+            static_cast<void>(
+                read_part_row<reporting_messaging::engine_settings_building_write>(row_json));
+            return;
+        case part_kind::execution:
+            static_cast<void>(
+                read_part_row<reporting_messaging::engine_settings_execution_write>(row_json));
+            return;
+        case part_kind::fixings:
+            static_cast<void>(
+                read_part_row<reporting_messaging::engine_settings_fixings_write>(row_json));
+            return;
+    }
+}
+
+/// Write one group's part, at the version the form read or as a new row.
+void write_part(const http_request& req,
+                nats_client& session,
+                part_kind kind,
+                const group_write& body) {
+    const auto precondition = [&body] {
+        ores::utility::domain::precondition out;
+        out.kind = body.version ? precondition_kind::must_match_version :
+                                  precondition_kind::must_not_exist;
+        out.version = body.version;
+        return out;
+    };
+    switch (kind) {
+        case part_kind::building: {
+            reporting_messaging::put_engine_settings_building_request msg;
+            msg.change.write =
+                read_part_row<reporting_messaging::engine_settings_building_write>(body.row_json);
+            msg.change.precondition = precondition();
+            msg.intent = body.intent;
+            rr::require_ok(forwarding::forward(req, session, msg).result);
+            return;
+        }
+        case part_kind::execution: {
+            reporting_messaging::put_engine_settings_execution_request msg;
+            msg.change.write =
+                read_part_row<reporting_messaging::engine_settings_execution_write>(body.row_json);
+            msg.change.precondition = precondition();
+            msg.intent = body.intent;
+            rr::require_ok(forwarding::forward(req, session, msg).result);
+            return;
+        }
+        case part_kind::fixings: {
+            reporting_messaging::put_engine_settings_fixings_request msg;
+            msg.change.write =
+                read_part_row<reporting_messaging::engine_settings_fixings_write>(body.row_json);
+            msg.change.precondition = precondition();
+            msg.intent = body.intent;
+            rr::require_ok(forwarding::forward(req, session, msg).result);
+            return;
+        }
+    }
 }
 
 /// Remove one group's part.
-template <typename Request>
 void delete_part(const http_request& req,
                  nats_client& session,
+                 part_kind kind,
                  const boost::uuids::uuid& part_id,
                  const change_intent& intent) {
-    Request msg;
-    msg.removal.key.id = part_id;
-    msg.removal.precondition.kind = precondition_kind::any;
-    msg.intent = intent;
-    const auto reply = forwarding::forward(req, session, msg);
-    rr::require_ok(reply.result);
+    switch (kind) {
+        case part_kind::building: {
+            reporting_messaging::delete_engine_settings_building_request msg;
+            msg.removal.key.id = part_id;
+            msg.intent = intent;
+            rr::require_ok(forwarding::forward(req, session, msg).result);
+            return;
+        }
+        case part_kind::execution: {
+            reporting_messaging::delete_engine_settings_execution_request msg;
+            msg.removal.key.id = part_id;
+            msg.intent = intent;
+            rr::require_ok(forwarding::forward(req, session, msg).result);
+            return;
+        }
+        case part_kind::fixings: {
+            reporting_messaging::delete_engine_settings_fixings_request msg;
+            msg.removal.key.id = part_id;
+            msg.intent = intent;
+            rr::require_ok(forwarding::forward(req, session, msg).result);
+            return;
+        }
+    }
 }
 
 /// The reason a proposal carries, as the service states it.
@@ -844,24 +952,6 @@ std::string propose_group(const http_request& req,
     return reply.request_id;
 }
 
-/// What a screen reads of one configuration, as the answer states it.
-http_response document_answer(const http_request& req,
-                              nats_client& session,
-                              const ores::reporting::domain::engine_settings& row,
-                              http_status status) {
-    const auto groups = engine_settings_rows::read_groups(req, session);
-    const auto parties = engine_settings_rows::read_party_names(req, session);
-    const auto parts = engine_settings_rows::read_parts(req, session, {row.id});
-    std::optional<std::vector<engine_bound_report>> reports;
-    try {
-        reports = engine_settings_rows::read_bound_reports(req, session, row.configuration_id);
-    } catch (const std::exception&) {
-        // A binding that cannot be read must not hide the settings.
-        reports = std::nullopt;
-    }
-    return http_response::json(document_json_of(row, groups, parts, parties, reports), status);
-}
-
 }
 
 void engine_settings_routes::register_write_routes(
@@ -877,8 +967,9 @@ void engine_settings_routes::register_write_routes(
 
     add(router->post("/api/reporting/engine-settings")
             .summary("Create a configuration and the reporting header a report binds it through")
-            .description("The header is written first and the central row second, and a failed "
-                         "second step removes the header, so a failed create leaves nothing.")
+            .description("The configuration a report binds is written first and the central row "
+                         "second, and a refused central write removes it again, so a "
+                         "create the service refuses leaves nothing behind.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<reporting_messaging::put_engine_settings_request>([&] {
                     const auto body = rr::lenient_body_of<engine_create_body>(
@@ -891,7 +982,8 @@ void engine_settings_routes::register_write_routes(
                         rr::invalid(std::string(malformed_settings_write));
                     const auto party = party_for_new(req, body.party_id);
                     const auto intent = intent_or_none(body.intent);
-                    const auto configuration_id = create_header(req, session, name, intent);
+                    const auto configuration_id =
+                        register_configuration(req, session, name, intent);
                     const auto id = boost::uuids::random_generator()();
                     try {
                         reporting_messaging::engine_settings_write write;
@@ -903,7 +995,7 @@ void engine_settings_routes::register_write_routes(
                         const auto central = put_central(req, session, write, std::nullopt, intent);
                         return document_answer(req, session, central, http_status::created);
                     } catch (...) {
-                        remove_header(req, session, name, intent);
+                        remove_configuration(req, session, name, intent);
                         throw;
                     }
                 });
@@ -949,7 +1041,11 @@ void engine_settings_routes::register_write_routes(
                 co_return guarded<reporting_messaging::put_engine_settings_execution_request>([&] {
                     const auto id = settings_id_of(req);
                     const auto groups = engine_settings_rows::read_groups(req, session);
-                    const auto& group = group_of(groups, req.get_path_param("group"));
+                    const auto code = req.get_path_param("group");
+                    const auto wired = engine_settings_rows::wired_groups();
+                    if (std::ranges::find(wired, code) == wired.end())
+                        rr::invalid("There is no such group of engine settings.");
+                    const auto& group = group_of(groups, code);
                     const auto central = engine_settings_rows::read_central(req, session, id);
                     const auto parts = engine_settings_rows::read_parts(req, session, {id});
 
@@ -977,6 +1073,10 @@ void engine_settings_routes::register_write_routes(
                             reports = std::nullopt;
                         }
                         if (!reports || !reports->empty()) {
+                            // A proposal states the values a write would, so they are
+                            // read as the row the part's own codec writes before they
+                            // travel: a value of the wrong form is refused here.
+                            check_values_of(kind_of(group.code), body.row_json);
                             const auto request_id = propose_group(req, session, group, id, body);
                             const auto document =
                                 document_answer(req, session, central, http_status::ok);
@@ -989,18 +1089,7 @@ void engine_settings_routes::register_write_routes(
                         }
                     }
 
-                    if (group.code == "building")
-                        put_part<reporting_messaging::put_engine_settings_building_request,
-                                 reporting_messaging::engine_settings_building_write>(
-                            req, session, body);
-                    else if (group.code == "execution")
-                        put_part<reporting_messaging::put_engine_settings_execution_request,
-                                 reporting_messaging::engine_settings_execution_write>(
-                            req, session, body);
-                    else
-                        put_part<reporting_messaging::put_engine_settings_fixings_request,
-                                 reporting_messaging::engine_settings_fixings_write>(
-                            req, session, body);
+                    write_part(req, session, kind_of(group.code), body);
 
                     const auto written = engine_settings_rows::read_central(req, session, id);
                     const auto document = document_answer(req, session, written, http_status::ok);
@@ -1036,19 +1125,11 @@ void engine_settings_routes::register_write_routes(
                         const auto part = of_code.find(id_text);
                         if (part == of_code.end())
                             continue;
-                        const auto part_id = boost::uuids::string_generator()(part->second.id);
-                        if (code == "building")
-                            delete_part<
-                                reporting_messaging::delete_engine_settings_building_request>(
-                                req, session, part_id, intent);
-                        else if (code == "execution")
-                            delete_part<
-                                reporting_messaging::delete_engine_settings_execution_request>(
-                                req, session, part_id, intent);
-                        else
-                            delete_part<
-                                reporting_messaging::delete_engine_settings_fixings_request>(
-                                req, session, part_id, intent);
+                        delete_part(req,
+                                    session,
+                                    kind_of(code),
+                                    boost::uuids::string_generator()(part->second.id),
+                                    intent);
                     }
 
                     reporting_messaging::delete_engine_settings_request msg;
@@ -1057,7 +1138,7 @@ void engine_settings_routes::register_write_routes(
                     msg.intent = intent;
                     const auto reply = forwarding::forward(req, session, msg);
                     rr::require_ok(reply.result);
-                    remove_header(req, session, central.name, intent);
+                    remove_configuration(req, session, central.name, intent);
                     return rr::no_content();
                 });
             }));

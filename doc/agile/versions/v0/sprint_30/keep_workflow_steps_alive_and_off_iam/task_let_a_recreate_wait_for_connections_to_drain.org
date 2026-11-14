@@ -28,9 +28,9 @@ compass db recreate waits for the stopped services' connections to close, instea
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | The refusal is understood: the kill path waits 10 seconds, and the backends of a stopped service close for longer. |
+| Now          | The wait is a bounded minute, it says what it waits for, and stopping the services then recreating succeeds back to back. |
 | Waiting on   | Nothing.                               |
-| Next         | Widen the wait and make it say what it is waiting for. |
+| Next         | Raise the PR.                          |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -67,24 +67,41 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The drain window today | 10 seconds, one constant in =check_connections= | read =projects/ores.compass/src/compass_db.py= | d38ed21c8c |
-| The suite that pins the wait | 3 cases pass | =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests/test_compass_db_connections.py -q= | d38ed21c8c |
+| The drain window before the change | 10 seconds | read =projects/ores.compass/src/compass_db.py= | d38ed21c8c |
+| The drain window after the change | =DRAIN_SECONDS = 60= | read =projects/ores.compass/src/compass_db.py= | 86dd1539d2 |
+| The suite that pins the wait | 4 cases pass, from 3 | =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests/test_compass_db_connections.py -q= | 86dd1539d2 |
+| The compass suite | passes | =python3 build/scripts/local_checks.py --only compass-tests= | 86dd1539d2 |
+| Stop the services, then recreate, back to back | succeed, 1m 33s, and no wait was needed | =./compass.sh services stop=, then =time ./compass.sh db recreate -y -k= | 86dd1539d2 |
 
 * Notes
 
-- The refusal is a 10 second wait in =check_connections=, in
-  =projects/ores.compass/src/compass_db.py=. After it terminates the backends,
-  it polls every half second until the count is zero or the deadline passes,
-  and the deadline is short: the story recorded a recreate refusing while the
-  stopped services' connections drained for about 15 seconds. The wait is
-  already the right shape, so the work is its window and what it says, not its
-  algorithm.
-- The function is well covered: =test_compass_db_connections.py= already pins
-  the kill path, the deadline path and the refusal without =-k=, through a
-  stand-in for =psql=. The deadline case counts the kill rounds, which is how
-  the current window was measured.
-- The story's evidence names the failing shape concretely: =compass db recreate
-  -k= refused while the connections of 25 stopped services drained.
+- The refusal was a bare =10= second deadline in =check_connections=, in
+  =projects/ores.compass/src/compass_db.py=. After it terminates the backends it
+  polls every half second until the count is zero or the deadline passes, so
+  the algorithm was right and the window was short. A fleet of stopped services
+  closes for longer: the story recorded a recreate refusing while 25 stopped
+  services' connections drained, for about 15 seconds.
+- The change is two named constants and a report. =DRAIN_SECONDS = 60= is the
+  window, =DRAIN_POLL_SECONDS= is how often the count is taken, and the wait
+  names the count it is waiting for once per change, because a silent wait
+  reads as a hang. The window stays bounded: a backend that never closes still
+  fails the recreate rather than hanging it.
+- The function was already covered: =test_compass_db_connections.py= pins the
+  kill path, the deadline path and the refusal without =-k=, through a stand-in
+  for =psql=. The deadline case counted kill rounds against a magic number, so
+  it now states the window through the constant, and a fourth case holds the
+  reporting.
+- The acceptance holds on this environment: stopping the 25 services and
+  recreating straight after succeeded, in 1m 33s. The wait said nothing during
+  that run, which is the honest reading: systemd's stop had already closed the
+  backends, so this host did not reproduce the 15 second drain. The case that
+  would have exercised it is the one the unit tests pin, where the count stays
+  above zero and the window is what ends the wait.
+- The shell path is unchanged and different: =projects/ores.sql/utility/
+  check_db_connections.sh= does not wait at all, it counts and points at
+  =kill_db_connections.sh=. =recreate_env.sh= sources it, and the backlog's
+  *Consolidate the scripts into compass* work is where the two become one. This
+  task is =compass db recreate=, so the shell keeps its behaviour.
 
 * Test Scenarios
 

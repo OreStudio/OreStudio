@@ -161,10 +161,6 @@ struct prepared_surface_calibration final {
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::vector<std::string>
 split_blueprint_list(const std::string& text);
 
-/// The day a period after @p from falls on, unadjusted, the end of a short month clamped.
-[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::chrono::year_month_day
-add_period(std::chrono::year_month_day from, analytics::quant::domain::date_period period);
-
 }
 
 #endif

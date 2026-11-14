@@ -90,3 +90,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The port is delivered: five prototypes and their journeys merged, and the service
+answers all five reads. This branch carries what the first pull request left open
+and what the run exposed: the published surface's contract has four cases, every
+read that states a staleness verdict asks the one policy, a discount ladder states
+the rates its factors imply, and a published forward set is read from spot, which
+is what let the tenant finish provisioning.
+
+Twelve commits, no quant: every number the screens show was already computed.

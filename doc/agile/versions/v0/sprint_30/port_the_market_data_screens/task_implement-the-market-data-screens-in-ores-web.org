@@ -115,3 +115,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The four desk screens are in ores.web, each reading the service through a route
+of its own: the instrument finder with a kind badge, its sources and its axes;
+the rate ladder with a forward start, a window, a column per provider and the
+consensus drawn across the rungs; the FX montage with the change the server
+measures from its own instant and the day's range as a bar; and the curve
+inspector with the metric chart, the market's quote dashed beside the curve, and
+the shift stated as the curve less the market.
+
+The generated TypeScript protocol types had drifted from the org models, so the
+four reads were regenerated rather than written by hand, and the application
+declares the screens, their cards and their three languages. Every screen has a
+case that seeds an answer and asserts the page: 22 cases across the four suites,
+and the web gate runs typecheck, prettier and 2,526 tests.
+
+What the screens do not show, they say: the curve inspector states that its read
+carries no prior close, and the montage draws a range bar rather than the
+prototype's sparkline, because the read holds the low, the high and the last and
+no path.

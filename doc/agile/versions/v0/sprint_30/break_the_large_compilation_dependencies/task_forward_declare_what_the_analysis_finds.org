@@ -84,11 +84,11 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Files the change touches | 1088: 1079 generated C++ files, 6 templates, 1 baseline, 2 agile docs | =git diff --name-only origin/main...HEAD= | =f2594af9ae= |
-| Generated repository headers that take the declaration | 539 | =git diff --name-only origin/main...HEAD | grep '_repository\.hpp$' | xargs grep -l context_fwd.hpp | wc -l= | =2e1c0fcc14= |
+| Generated repository headers that take the declaration | 539 of 601 | =grep -l context_fwd.hpp= over the generated =repository/*.hpp= files | =2e1c0fcc14= |
 | Repository headers that keep the definition because they hold a member | 29, each carrying =context ctx_= | =grep -rl 'ores.database/domain/context.hpp' projects --include=*_repository.hpp= | =2e1c0fcc14= |
 | Archetypes the check's baseline held before | 5 | =check_forward_declarable_includes.py= | =2e1c0fcc14= |
 | Archetypes it holds after the first family | 3: =cpp_nats_registrar=, =cpp_trade_type_digest=, =cpp_trade_type_writer= | the same check | =2e1c0fcc14= |
-| Registrar headers that take the declaration | 556 | =git diff --name-only main...HEAD | grep -c '_registrar\.hpp$'= | =74f9d7d07e= |
+| Registrar headers that take the declaration | 563 in the tree, 556 changed by that PR | =grep -l context_fwd.hpp= over the generated =*_registrar.hpp= files | =74f9d7d07e= |
 | Archetypes it holds after the second family | 2: =cpp_trade_type_digest= and =cpp_trade_type_writer= | the same check | =74f9d7d07e= |
 | Archetypes it holds after the third family | 0 | the same check | =2f0f0f4c8f=, working tree |
 | Headers it reports at close | 1: =pq/unit_of_work.hpp=, which cannot drop the include | the same check | working tree |
@@ -182,6 +182,14 @@ handler they construct, and their implementations include the definition
 themselves. So the swap was the four lines the model shows, with no junction
 case, and the check's reading held.
 
+*The sweep missed main's newer code, twice.* The codemod is rerun over the tree
+at the end of a branch, not only over the files it changed, because =main= adds
+hand-written handlers that take a context by value. Five such parameters were
+converted after the registrar family was reviewed, in =run_files_handler= and the
+refdata provisioning step, including a registrar that was the one hand-written
+header still including the definition next to 556 generated siblings taking the
+declaration.
+
 *The third family closed the list.* =cpp_trade_type_digest= and
 =cpp_trade_type_writer= are one generated file each. Their bodies live in
 hand-written =.cpp= files that had been getting the definition from the generated
@@ -191,6 +199,15 @@ core export tests. Each now includes the definition itself. With that, the check
 reports one header and no archetypes: =pq/unit_of_work.hpp=, whose body needs
 =pq::transaction= from the same header that defines =pq::session_context=, and
 which cannot drop the include without splitting that header.
+
+*The per-family before and after was not measured, and this is the record of
+that.* The acceptance asks for it for each PR. What was measured once, after the
+repository family, is that =context.hpp='s dependents did not move: 373 objects
+in 68 targets, against 365 on the smaller tree the analysis used. The other two
+families inherited that finding instead of repeating the measurement, which the
+review of the registrar family correctly called an assertion rather than a
+measurement. Anyone claiming a rebuild saving for a family needs the pair taken
+before and after that family, not a build time and a reason.
 
 *What the whole task measured.* Five archetypes to none, in three PRs, and no
 rebuild saving at any point: the implementations construct a context and read it,

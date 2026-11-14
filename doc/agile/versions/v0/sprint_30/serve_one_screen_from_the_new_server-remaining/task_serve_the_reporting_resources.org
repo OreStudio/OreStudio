@@ -28,7 +28,7 @@ The gateway has no part for the reporting area. Add the part with the adapter re
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The part answers the form's codes, the whole definitions family, a report's start and its runs, one run's page and the problems it recorded. Ten routes of the fifty are paired in the inventory. |
+| Now          | The part answers the form's codes, the whole definitions family, a report's start and its runs, one run's page and the problems it recorded, and the first family: a run's files, the bytes of one of them, what a file is, and the run's figures at the level the reader asks for. Fourteen routes of the fifty are paired in the inventory. |
 | Waiting on   | Nothing.                               |
 | Next         | Serve a run's files and results, then the two schedule writes. |
 | Last touched | 2026-11-13                               |
@@ -99,8 +99,11 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | The part's test suite | 11 cases, 154 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the run page commit |
-| The reporting area's routes the C++ server answers | 10 of 50 paired | =python3 build/scripts/route_inventory.py --check= | the run page commit |
-| The gateway's routes in the inventory | 1306 routes, 216 of the BFF's 324 paired | =python3 build/scripts/route_inventory.py --check= | the run page commit |
+| The reporting area's routes the C++ server answers | 14 of 50 paired | =python3 build/scripts/route_inventory.py --check= | the run's files and results commit |
+| The reporting part's test suite | 24 cases, 252 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the run's results commit |
+| The storage core's test suite | 30 cases, 112 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.storage.core.tests= | the run's results commit |
+| The gateway's routes in the inventory | 1310 routes, 986 of the BFF's 324 answered by the gateway | =python3 build/scripts/route_inventory.py --check= | the run's results commit |
+| The gateway's routes before this family | 1306 routes, 982 answered by the gateway | =python3 build/scripts/route_inventory.py --check= | the run page commit |
 
 * Notes
 
@@ -168,3 +171,4 @@ delivered in the row below, and the task stays open until the last family.
 | Pull request | Delivered |
 |--------------+-----------|
 | #4685 | The part, stood up by the adapter recipe, and ten routes: the form's codes, the definitions list, one definition by id or by an older name, its configurations, its write, a report's start, its runs, one run's page and the problems it recorded. The design note for a run's files and results. |
+| the branch =feature/serve-the-reporting-schedules= | The run's files and results, the first family: four routes, and the three service reads they stand on. =ores.storage.core= reads and streams one file out of a package, =list_archive_entries= answers what a set of packages holds, the file service answers =?entry== and =Range= with a 206 or a 416, and =ores.compute= answers =list_run_files=: the batch a run drove, its workunits and the package each read and wrote. The gateway then serves the tree, the bytes of one file, what a file is, and the run's figures at the trade, book or counterparty level, with the roll-up as its own tested unit. |

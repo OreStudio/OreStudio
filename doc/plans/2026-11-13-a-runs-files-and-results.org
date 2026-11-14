@@ -4,9 +4,9 @@
 #+title: A run's files and results: where the work belongs
 #+description: The four BFF routes that draw a report run's files and results compose a tree across three services and fetch every object whole over HTTP. This states the problem and the options before any of it is ported.
 #+type: plan
-#+status: AGREED
+#+status: BUILT
 #+created: 2026-11-13
-#+updated: 2026-11-13
+#+updated: 2026-11-14
 #+filetags: :plan:http:reporting:
 
 * Why this note exists
@@ -127,6 +127,46 @@ The gateway routes land after the two service reads exist; until then the four
 routes stay unpaired and this note is the record of why. The =report-run-files=
 and =grid-downloads= modules of the BFF are retired with them, and the tar walk
 they keep leaves the estate entirely once storage answers entries.
+
+* What was built, and where it departed from this note
+
+The family is served, and two decisions changed while it was built.
+
+** The output files come from each result's manifest
+
+A result writes two things: its output package, a tarball of the engine's
+output directory, and its output files as one gzipped object each beside a
+manifest that names them with their sizes and digests. This note treated the
+two like the input packages and expected the archive read to list them.
+
+It should not, and the manifest is why. The tarball states a name and a size.
+The manifest states the family the catalogue assigns each file and the digest
+of its bytes, and the screen draws both. A listing of the tarball would lose
+them.
+
+So =list_archive_entries= answers the run's input packages, which are what a
+tarball is, and each accepted result's manifest names its own files. The
+manifest is an object under the same storage root the file service serves, so
+the gateway reads it where it lies: no service learns the engine's own format,
+and no file is copied to learn its name.
+
+** The archive read is an operation, not an entity verb
+
+=storage.v1.objects.list_archive_entries= broke the subject protocol, whose
+verbs are a closed set of eight. Reading inside an object is an operation, so
+the subject is =storage.v1.ops.list_archive_entries=, beside the compute
+grid's own computed reads.
+
+** Where each piece landed
+
+| Piece | Where |
+|-------+-------|
+| Reading and streaming one file out of a package, and its byte range | =ores.storage.core=, =archive_reader= |
+| =list_archive_entries=, its handler and its subject | =ores.storage= |
+| =?entry== and =Range= on the object read, with 206 and 416 | the file service in =ores.http.core= |
+| =list_run_files= | =ores.compute= |
+| The four routes | =ores.http.reporting=, in =run_file_routes= and =result_routes= |
+| The roll-up by book, counterparty and portfolio, and the comparison | =ores.http.reporting=, =result_rollup=, which holds no I/O and is tested on its own |
 
 * What this does not change
 

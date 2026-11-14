@@ -22,6 +22,7 @@
 set(files
     "codec_wire_bytes_tests.cpp"
     "configuration_type_seed_tests.cpp"
+    "conventions_fx_conventions_tests.cpp"
     "conventions_package_tests.cpp"
     "hierarchy_hierarchy_builder_tests.cpp"
     "log_engine_log_tests.cpp"

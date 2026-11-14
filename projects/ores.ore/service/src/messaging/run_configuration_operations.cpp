@@ -34,6 +34,11 @@
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.api/messaging/bundle_import_operations_protocol.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_pair_convention_calendar_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_pair_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.api/messaging/fx_option_convention_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include "ores.utility/codec/json_document.hpp"
 #include "ores.utility/codec/json_document_wire.hpp"
@@ -47,6 +52,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -215,8 +221,100 @@ rd::commit_bundle_import_response save_conventions(nats_client& owners,
     return committed;
 }
 
+// Every row of one list, page by page. The services read a list request strictly,
+// so the members they require are stated even when they hold no value.
+template <typename Request, typename RowsOf>
+auto read_all(nats_client& owners, const Request& first, RowsOf rows_of) {
+    using Rows =
+        std::decay_t<decltype(rows_of(std::declval<const typename Request::response_type&>()))>;
+    constexpr std::uint32_t page_size = 1000;
+    Rows out;
+    for (std::uint32_t offset = 0;; offset += page_size) {
+        auto request = first;
+        request.offset = offset;
+        request.limit = page_size;
+        const auto response = run_configuration_operations_call(owners, request);
+        auto page = rows_of(response);
+        out.insert(
+            out.end(), std::make_move_iterator(page.begin()), std::make_move_iterator(page.end()));
+        if (page.size() < page_size)
+            break;
+    }
+    return out;
+}
+
+/**
+ * @brief The FX conventions the party sees, built from the rows refdata holds.
+ *
+ * An FX convention is a projection rather than a store: a currency pair, that
+ * pair's convention and the calendars the pair advances on are the same three
+ * facts the document states as one element, and refdata holds them for every
+ * pair. The name of each convention is the one an FX option convention of the
+ * document resolves it by, because ORE finds a convention by name.
+ */
+std::vector<rd::fx_convention> fx_conventions_of(nats_client& owners) {
+    namespace rdomain = ores::refdata::domain;
+    const auto pairs = read_all(owners,
+                                rd::list_currency_pairs_request{},
+                                [](const rd::list_currency_pairs_response& r) { return r.pairs; });
+    const auto conventions = read_all(
+        owners,
+        rd::list_currency_pair_conventions_request{},
+        [](const rd::list_currency_pair_conventions_response& r) { return r.conventions; });
+    const auto calendars =
+        read_all(owners,
+                 rd::list_currency_pair_convention_calendars_request{},
+                 [](const rd::list_currency_pair_convention_calendars_response& r) {
+                     return r.currency_pair_convention_calendars;
+                 });
+    const auto currencies =
+        read_all(owners, rd::list_currencies_request{}, [](const rd::list_currencies_response& r) {
+            return r.currencies;
+        });
+    const auto options = read_all(
+        owners,
+        rd::list_fx_option_conventions_request{},
+        [](const rd::list_fx_option_conventions_response& r) { return r.fx_option_conventions; });
+
+    std::unordered_map<std::string, const rdomain::currency_pair_convention*> convention_of_pair;
+    for (const auto& c : conventions)
+        convention_of_pair[c.pair_code] = &c;
+    std::unordered_map<std::string, int> spot_days_of_currency;
+    for (const auto& c : currencies)
+        spot_days_of_currency[c.iso_code] = c.spot_days;
+    std::unordered_map<std::string, std::vector<std::string>> calendars_of_pair;
+    for (const auto& c : calendars)
+        calendars_of_pair[c.pair_code].push_back(c.calendar_code);
+
+    std::vector<domain::fx_pair_source> sources;
+    for (const auto& pair : pairs) {
+        const auto found = convention_of_pair.find(pair.pair_code);
+        if (found == convention_of_pair.end())
+            continue;
+        domain::fx_pair_source source;
+        source.pair_code = pair.pair_code;
+        source.base_currency = pair.base_currency;
+        source.quote_currency = pair.quote_currency;
+        source.convention = *found->second;
+        source.spot_days = std::max(spot_days_of_currency[pair.base_currency],
+                                    spot_days_of_currency[pair.quote_currency]);
+        if (const auto held = calendars_of_pair.find(pair.pair_code);
+            held != calendars_of_pair.end())
+            source.advance_calendars = held->second;
+        sources.push_back(std::move(source));
+    }
+
+    std::vector<std::string> references;
+    for (const auto& option : options)
+        if (option.fx_convention_id)
+            references.push_back(*option.fx_convention_id);
+    return domain::fx_conventions(sources, references);
+}
+
 // Reads one page group per family, and the payloads are the bundle. No family
-// carries the whole document, and no read spans the others.
+// carries the whole document, and no read spans the others. The FX conventions
+// have no family of their own: refdata holds them as currency pairs, so they are
+// projected here rather than read as rows.
 domain::conventions_package read_conventions(nats_client& owners, const std::string& party_id) {
     domain::conventions_package package;
     for (const auto& family : ores::refdata::domain::convention_families) {
@@ -224,7 +322,7 @@ domain::conventions_package read_conventions(nats_client& owners, const std::str
         for (auto& row : read_family(owners, family, party_id))
             package.bundle.rows.push_back({std::string(family.key), sequence++, std::move(row)});
     }
-    // FX conventions have no store, as they have none on the write path.
+    package.fx = fx_conventions_of(owners);
     return package;
 }
 

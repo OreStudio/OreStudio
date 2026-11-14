@@ -22,6 +22,7 @@
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include <cmath>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -42,6 +43,7 @@ ores::refdata::messaging::fx_convention conventions_mapper::map_fx(const record_
     BOOST_LOG_SEV(lg(), trace) << "Mapping FX convention: " << text_of(v, "Id");
 
     ores::refdata::messaging::fx_convention r;
+    r.id = text_of(v, "Id");
     r.spot_days = integer_of(v, "SpotDays");
     const double points_factor = decimal_of(v, "PointsFactor");
 
@@ -81,7 +83,8 @@ ores::refdata::messaging::fx_convention conventions_mapper::map_fx(const record_
 
 void conventions_mapper::reverse_fx(const ores::refdata::messaging::fx_convention& v,
                                     record_writer w) {
-    w.set_text("Id", fx_convention_id(v.pair.base_currency, v.pair.quote_currency));
+    w.set_text("Id",
+               v.id.empty() ? fx_convention_id(v.pair.base_currency, v.pair.quote_currency) : v.id);
     w.set_integer("SpotDays", v.spot_days);
     put_enum(w, "SourceCurrency", v.pair.base_currency, "currency code");
     put_enum(w, "TargetCurrency", v.pair.quote_currency, "currency code");
@@ -113,6 +116,100 @@ void join_fx(const std::vector<refdata::messaging::fx_convention>& fx, record_wr
         conventions_mapper::reverse_fx(v, root.append("FX"));
 }
 
+}
+
+namespace {
+
+/**
+ * @brief How plainly @p name spells the pair @p base / @p quote.
+ *
+ * A name that starts with the pair spells it plainly, and one that states
+ * something else first still spells it. A longer pair beats a shorter one, and
+ * an earlier spelling beats a later one, so the answer does not depend on the
+ * order the store read the names in. Zero when the name does not spell the pair.
+ */
+std::size_t
+plainness_of(const std::string& name, const std::string& base, const std::string& quote) {
+    const auto pair = base + "-" + quote;
+    if (pair.size() < 3)
+        return 0;
+    const auto at = name.find(pair);
+    if (at == std::string::npos)
+        return 0;
+    return (at == 0 ? name.size() : name.size() + at) - pair.size() + 1;
+}
+
+/**
+ * @brief The pair @p name spells, over @p sources, or the end of the list.
+ *
+ * A name states a source currency and a target currency, and refdata holds one
+ * row per pair whichever way round the pair is quoted, so a name either way round
+ * names the row.
+ */
+const fx_pair_source*
+pair_named_by(const std::string& name, const std::vector<fx_pair_source>& sources, bool& reversed) {
+    const fx_pair_source* best = nullptr;
+    std::size_t best_plainness = 0;
+    for (const auto& source : sources) {
+        for (const bool way : {false, true}) {
+            const auto& base = way ? source.quote_currency : source.base_currency;
+            const auto& quote = way ? source.base_currency : source.quote_currency;
+            const auto plainness = plainness_of(name, base, quote);
+            if (plainness > 0 && (best == nullptr || plainness < best_plainness)) {
+                best = &source;
+                best_plainness = plainness;
+                reversed = way;
+            }
+        }
+    }
+    return best;
+}
+
+}
+
+std::vector<refdata::messaging::fx_convention>
+fx_conventions(const std::vector<fx_pair_source>& sources,
+               const std::vector<std::string>& references) {
+    std::vector<refdata::messaging::fx_convention> out;
+    std::set<const fx_pair_source*> named;
+
+    const auto written = [](const fx_pair_source& source, const std::string& id, bool reversed) {
+        refdata::messaging::fx_convention c;
+        c.id = id;
+        c.pair.pair_code = source.pair_code;
+        c.pair.base_currency = reversed ? source.quote_currency : source.base_currency;
+        c.pair.quote_currency = reversed ? source.base_currency : source.quote_currency;
+        c.convention = source.convention;
+        c.spot_days = source.spot_days;
+        c.advance_calendars = source.advance_calendars;
+        conventions_fields::set_audit(c.pair);
+        conventions_fields::set_audit(c.convention);
+        return c;
+    };
+
+    // A name the document already states is a convention of its own, because ORE
+    // resolves an FX convention by name and one pair may be named twice.
+    std::set<std::string> emitted;
+    for (const auto& name : references) {
+        if (name.empty() || !emitted.insert(name).second)
+            continue;
+        bool reversed = false;
+        const auto* source = pair_named_by(name, sources, reversed);
+        if (source == nullptr)
+            continue;
+        named.insert(source);
+        out.push_back(written(*source, name, reversed));
+    }
+
+    // Every other pair the store holds is stated once, under the name refdata's
+    // readers expect.
+    for (const auto& source : sources) {
+        if (named.contains(&source) || source.base_currency.empty() ||
+            source.quote_currency.empty())
+            continue;
+        out.push_back(written(source, {}, false));
+    }
+    return out;
 }
 
 std::vector<std::string> skipped_fx_conventions(const conventions_package& p) {

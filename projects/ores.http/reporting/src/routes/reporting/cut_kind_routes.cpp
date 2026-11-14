@@ -77,9 +77,8 @@ bool is_kind_sort(const std::string& sort) {
 }
 
 std::string lowered(std::string text) {
-    std::ranges::transform(text, text.begin(), [](unsigned char c) {
-        return static_cast<char>(std::tolower(c));
-    });
+    std::ranges::transform(
+        text, text.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return text;
 }
 
@@ -206,9 +205,8 @@ std::vector<cuts::kind_row> all_kinds(const http_request& req, nats_client& sess
     rows.reserve(reply.kinds.size());
     for (const auto& kind : reply.kinds) {
         const auto found = counts.per_kind.find(kind.code);
-        rows.push_back(cuts::row_of(kind,
-                                    lookups,
-                                    found == counts.per_kind.end() ? 0 : found->second));
+        rows.push_back(
+            cuts::row_of(kind, lookups, found == counts.per_kind.end() ? 0 : found->second));
     }
     std::ranges::sort(rows, [](const cuts::kind_row& left, const cuts::kind_row& right) {
         if (left.display_order != right.display_order)
@@ -220,7 +218,7 @@ std::vector<cuts::kind_row> all_kinds(const http_request& req, nats_client& sess
 
 /// The kinds a search matched, largest of nothing and in the order asked for.
 std::vector<cuts::kind_row> kinds_matched(const std::vector<cuts::kind_row>& rows,
-                                         const kind_page& asked) {
+                                          const kind_page& asked) {
     const auto needle = lowered(asked.search);
     std::vector<cuts::kind_row> found;
     for (const auto& row : rows) {
@@ -230,13 +228,11 @@ std::vector<cuts::kind_row> kinds_matched(const std::vector<cuts::kind_row>& row
             found.push_back(row);
     }
     if (asked.sort == "code") {
-        std::ranges::sort(found, [](const auto& left, const auto& right) {
-            return left.code < right.code;
-        });
+        std::ranges::sort(
+            found, [](const auto& left, const auto& right) { return left.code < right.code; });
     } else if (asked.sort == "name") {
-        std::ranges::sort(found, [](const auto& left, const auto& right) {
-            return left.name < right.name;
-        });
+        std::ranges::sort(
+            found, [](const auto& left, const auto& right) { return left.name < right.name; });
     } else if (asked.sort == "family") {
         std::ranges::sort(found, [](const auto& left, const auto& right) {
             return left.family_name < right.family_name;
@@ -254,7 +250,7 @@ std::string rows_json(const std::vector<std::string>& written) {
 /// The service's kind, as the write states it. The retention destination is the
 /// row just read, because no lookup of tiers states one.
 reporting_messaging::cut_kind_write kind_write_of(const ores::reporting::domain::cut_kind& kind,
-                                                   const kind_change& change) {
+                                                  const kind_change& change) {
     reporting_messaging::cut_kind_write write;
     write.code = kind.code;
     write.name = change.name;
@@ -329,10 +325,10 @@ void cut_kind_routes::register_routes(
                         written.push_back(cuts::kind_json(found[i]));
 
                     const auto counts = kinds::kind_cut_counts_of(req, session);
-                    return http_response::json("{\"rows\":" + kinds::rows_json(written) +
-                                               ",\"total\":" + std::to_string(found.size()) +
-                                               ",\"partial\":" +
-                                               (counts.partial ? "true" : "false") + "}");
+                    return http_response::json(
+                        "{\"rows\":" + kinds::rows_json(written) +
+                        ",\"total\":" + std::to_string(found.size()) +
+                        ",\"partial\":" + (counts.partial ? "true" : "false") + "}");
                 });
             }));
 
@@ -346,12 +342,10 @@ void cut_kind_routes::register_routes(
                     rr::refuse_unknown_params(req, {});
                     const auto lookups = cuts::read_kind_lookups(req, session);
 
-                    std::vector<std::pair<std::string, std::string>> families{lookups.families
-                                                                                 .begin(),
-                                                                             lookups.families
-                                                                                 .end()};
+                    std::vector<std::pair<std::string, std::string>> families{
+                        lookups.families.begin(), lookups.families.end()};
                     std::vector<std::pair<std::string, std::string>> rules{lookups.rules.begin(),
-                                                                          lookups.rules.end()};
+                                                                           lookups.rules.end()};
 
                     reporting_messaging::list_cut_kinds_request msg;
                     msg.limit = kinds_limit;
@@ -389,12 +383,11 @@ void cut_kind_routes::register_routes(
                     for (const auto& centre : answered.centres)
                         centre_pairs.emplace_back(centre.code, centre.code);
 
-                    return http_response::json(
-                        "{\"families\":" + codes(families) +
-                        ",\"resolutionRules\":" + codes(rules) +
-                        ",\"approvalKinds\":" + codes(approvals) +
-                        ",\"retentionDestinations\":" + rr::array_of(tiers) +
-                        ",\"businessCentres\":" + codes(centre_pairs) + "}");
+                    return http_response::json("{\"families\":" + codes(families) +
+                                               ",\"resolutionRules\":" + codes(rules) +
+                                               ",\"approvalKinds\":" + codes(approvals) +
+                                               ",\"retentionDestinations\":" + rr::array_of(tiers) +
+                                               ",\"businessCentres\":" + codes(centre_pairs) + "}");
                 });
             }));
 
@@ -444,11 +437,12 @@ void cut_kind_routes::register_routes(
                     if (code.empty() || code.size() > 100)
                         rr::invalid("The address names no code of a kind of cut.");
 
-                    const auto body = rr::body_of<kinds::kind_edit_body>(req,
-                                                             {"version", "change", "intent"},
-                                                             "A kind of cut states the version it "
-                                                             "was read at, its fields and why it "
-                                                             "changed.");
+                    const auto body =
+                        rr::body_of<kinds::kind_edit_body>(req,
+                                                           {"version", "change", "intent"},
+                                                           "A kind of cut states the version it "
+                                                           "was read at, its fields and why it "
+                                                           "changed.");
                     kinds::check_kind_write(body.change);
                     const auto intent = rr::intent_of(body.intent);
                     if (!intent)
@@ -491,10 +485,11 @@ void cut_kind_routes::register_routes(
                     if (code.empty() || code.size() > 100)
                         rr::invalid("The address names no code of a kind of cut.");
 
-                    const auto body = rr::body_of<kinds::kind_removal_body>(req,
-                                                                 {"version", "intent"},
-                                                                 "A removal states the version it "
-                                                                 "was read at and why.");
+                    const auto body =
+                        rr::body_of<kinds::kind_removal_body>(req,
+                                                              {"version", "intent"},
+                                                              "A removal states the version it "
+                                                              "was read at and why.");
                     const auto intent = rr::intent_of(body.intent);
                     if (!intent)
                         rr::invalid("A removal states why it is made, in 1 to 200 characters.");

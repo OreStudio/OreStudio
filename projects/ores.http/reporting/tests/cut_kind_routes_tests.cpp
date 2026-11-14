@@ -39,8 +39,7 @@ const std::string kind_address = "/api/reporting/cut-kinds/end_of_day";
 const std::string kind_pattern = "/api/reporting/cut-kinds/{code}";
 
 /// The intent every write states.
-const std::string an_intent =
-    R"("intent":{"reason_code":"refdata.initial_load","commentary":""})";
+const std::string an_intent = R"("intent":{"reason_code":"refdata.initial_load","commentary":""})";
 
 /// A change the form offers, with the retention it states and one member appended.
 std::string a_change(int retention_months = 12, const std::string& extra = "") {
@@ -76,8 +75,9 @@ TEST_CASE("the_kinds_of_cut_refuse_a_page_they_do_not_read", "[cut_kind]") {
     http_request sorted;
     sorted.query_params["limit"] = "10";
     sorted.query_params["sort"] = "retention";
-    CHECK(answer_at<cut_kind_routes>(http_method::get, kinds_address, sorted, kinds_address)
-              .status == http_status::bad_request);
+    CHECK(
+        answer_at<cut_kind_routes>(http_method::get, kinds_address, sorted, kinds_address).status ==
+        http_status::bad_request);
 }
 
 TEST_CASE("the_kinds_of_cut_refuse_a_query_they_do_not_read", "[cut_kind]") {
@@ -114,8 +114,9 @@ TEST_CASE("a_kind_keeps_the_retention_destination_the_form_never_offers", "[cut_
     // The form offers nine of the row's fields, and the destination is not one
     // of them: the write is assembled from the row just read, so a body that
     // states a destination is ignored and the row's stands.
-    const auto body = "{\"version\":1,\"change\":" +
-                      a_change(12, R"("retentionDestinationCode":"cold")") + "," + an_intent + "}";
+    const auto body =
+        "{\"version\":1,\"change\":" + a_change(12, R"("retentionDestinationCode":"cold")") + "," +
+        an_intent + "}";
     CHECK(put_of(body) == http_status::bad_gateway);
 }
 
@@ -123,10 +124,7 @@ TEST_CASE("a_kind_of_cut_read_with_no_service_is_refused_as_upstream", "[cut_kin
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing a kind read with no service behind it";
 
-    CHECK(answer_at<cut_kind_routes>(http_method::get,
-                                     kind_address,
-                                     http_request{},
-                                     kind_pattern)
+    CHECK(answer_at<cut_kind_routes>(http_method::get, kind_address, http_request{}, kind_pattern)
               .status == http_status::bad_gateway);
 
     http_request req;

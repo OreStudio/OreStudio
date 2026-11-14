@@ -61,8 +61,7 @@ std::map<std::string, std::string> names_of(const http_request& req,
 }
 
 /// The names of the resolution rules, keyed by code.
-std::map<std::string, std::string> rule_names_of(const http_request& req,
-                                                 nats_client& session) {
+std::map<std::string, std::string> rule_names_of(const http_request& req, nats_client& session) {
     reporting_messaging::list_cut_resolution_rules_request msg;
     msg.limit = lookup_limit;
     const auto reply = forwarding::forward(req, session, msg);
@@ -88,13 +87,14 @@ std::map<std::string, approval_kind> approval_kinds_of(const http_request& req,
         msg.limit = lookup_limit;
         const auto reply = forwarding::forward(req, session, msg);
         for (const auto& row : reply.kinds)
-            kinds.emplace(row.code,
-                          approval_kind{row.code,
-                                        row.name,
-                                        std::optional<int>(row.approvals_required),
-                                        row.decide_permission_code.empty() ?
-                                            std::nullopt :
-                                            std::optional<std::string>(row.decide_permission_code)});
+            kinds.emplace(
+                row.code,
+                approval_kind{row.code,
+                              row.name,
+                              std::optional<int>(row.approvals_required),
+                              row.decide_permission_code.empty() ?
+                                  std::nullopt :
+                                  std::optional<std::string>(row.decide_permission_code)});
     } catch (const rr::refusal& refused) {
         if (refused.status != ores::http::domain::http_status::forbidden)
             throw;
@@ -121,22 +121,20 @@ kind_lookups read_kind_lookups(const http_request& req, nats_client& session) {
                         approval_kinds_of(req, session)};
 }
 
-kind_row row_of(const ores::reporting::domain::cut_kind& kind,
-                const kind_lookups& lookups,
-                int cuts_count) {
+kind_row
+row_of(const ores::reporting::domain::cut_kind& kind, const kind_lookups& lookups, int cuts_count) {
     const auto family = lookups.families.find(kind.family_code);
     const auto rule = lookups.rules.find(kind.resolution_rule_code);
-    const auto approval =
-        kind.approval_kind_code ? lookups.approvals.find(*kind.approval_kind_code) :
-                                  lookups.approvals.end();
+    const auto approval = kind.approval_kind_code ?
+                              lookups.approvals.find(*kind.approval_kind_code) :
+                              lookups.approvals.end();
 
     kind_row row;
     row.code = kind.code;
     row.name = kind.name;
     row.description = kind.description;
     row.family_code = kind.family_code;
-    row.family_name =
-        family == lookups.families.end() ? kind.family_code : family->second;
+    row.family_name = family == lookups.families.end() ? kind.family_code : family->second;
     // The signed-or-not a person reads is the approval kind's presence, and
     // nothing else: a firm that gives the close elsewhere changes one approval
     // kind and no kind of cut.
@@ -164,9 +162,8 @@ kind_row row_of(const ores::reporting::domain::cut_kind& kind,
     return row;
 }
 
-std::optional<kind_row> read_one_kind(const http_request& req,
-                                      nats_client& session,
-                                      const std::string& code) {
+std::optional<kind_row>
+read_one_kind(const http_request& req, nats_client& session, const std::string& code) {
     const auto lookups = read_kind_lookups(req, session);
 
     // The count of one kind's cuts is that kind's own read, so a record costs
@@ -215,8 +212,7 @@ std::string cut_row_json(const ores::reporting::messaging::cut_row& row) {
          << ",\"refusedAt\":" << text_or_null(row.refused_at)
          << ",\"requiresAuthorisation\":" << (row.requires_authorisation ? "true" : "false")
          << ",\"outputIsIndicative\":" << (row.output_is_indicative ? "true" : "false")
-         << ",\"takeOrdinal\":" << row.take_ordinal
-         << ",\"runCount\":" << row.run_count
+         << ",\"takeOrdinal\":" << row.take_ordinal << ",\"runCount\":" << row.run_count
          << ",\"supersededById\":" << text_or_null(row.superseded_by_id) << '}';
     return body.str();
 }
@@ -238,8 +234,8 @@ std::string kind_json(const kind_row& row) {
          << ",\"retentionMonths\":" << row.retention_months
          << ",\"retentionDestinationCode\":" << json::write(row.retention_destination_code)
          << ",\"legalHoldDefault\":" << (row.legal_hold_default ? "true" : "false")
-         << ",\"displayOrder\":" << row.display_order
-         << ",\"cutsCount\":" << row.cuts_count << ",\"version\":" << row.version << '}';
+         << ",\"displayOrder\":" << row.display_order << ",\"cutsCount\":" << row.cuts_count
+         << ",\"version\":" << row.version << '}';
     return body.str();
 }
 

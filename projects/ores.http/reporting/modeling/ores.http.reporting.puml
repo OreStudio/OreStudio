@@ -29,6 +29,15 @@ namespace ores #F2F2F2 {
                     +choices_json(const vector<string>& report_types, const vector<string>& concurrency_policies, const vector<string>& regulatory_book_types) : string
                     +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
                 }
+                class configuration_routes {
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
+                class cut_kind_routes {
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
+                class cut_routes {
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
                 class report_routes {
                     +rows_json(const vector<ores::reporting::domain::report_definition>& definitions, const optional<vector<party_name>>& parties, const optional<vector<run_row>>& runs, const vector<health_row>& health, const optional<vector<count_row>>& counts, const optional<vector<fire_row>>& fires)
                     +write_of(const ores::reporting::domain::report_definition& definition, const edit_change& change) : ores::reporting::messaging::report_definition_write
@@ -46,6 +55,40 @@ namespace ores #F2F2F2 {
                 class run_routes {
                     +runs_json(vector<run_view> runs) : string
                     +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
+                namespace cuts #F2F2F2 {
+                    class approval_kind <<struct>> {
+                        +code : string
+                        +name : string
+                        +approvals_required : optional<int>
+                        +decide_permission_code : optional<string>
+                    }
+                    class kind_lookups <<struct>> {
+                        +families : map<string, string>
+                        +rules : map<string, string>
+                        +approvals : map<string, approval_kind>
+                    }
+                    class kind_row <<struct>> {
+                        +code : string
+                        +name : string
+                        +description : string
+                        +family_code : string
+                        +family_name : string
+                        +signed_by_kind : bool
+                        +approval_kind_code : optional<string>
+                        +approval_kind_name : optional<string>
+                        +approvals_required : optional<int>
+                        +decide_permission_code : optional<string>
+                        +output_is_indicative : bool
+                        +resolution_rule_code : string
+                        +resolution_rule_name : string
+                        +retention_months : int
+                        +retention_destination_code : string
+                        +legal_hold_default : bool
+                        +display_order : int
+                        +cuts_count : int
+                        +version : int
+                    }
                 }
                 namespace rollup #F2F2F2 {
                     class money <<struct>> {

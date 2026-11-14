@@ -80,9 +80,8 @@ struct kind_row final {
     int version = 0;
 };
 
-kind_row row_of(const ores::reporting::domain::cut_kind& kind,
-                const kind_lookups& lookups,
-                int cuts_count);
+kind_row
+row_of(const ores::reporting::domain::cut_kind& kind, const kind_lookups& lookups, int cuts_count);
 
 /// One kind, with the count of the party's cuts of it, or nothing when the
 /// store holds none of that code.

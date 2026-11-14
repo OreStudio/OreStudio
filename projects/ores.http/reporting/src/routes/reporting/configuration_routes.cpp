@@ -31,8 +31,8 @@
 #include "ores.reporting.api/messaging/report_configuration_protocol.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <map>
 #include <optional>
 #include <sstream>
@@ -72,9 +72,7 @@ std::map<std::string, std::string> party_names_of(const http_request& req, nats_
 }
 
 /// One configuration and what its five keys point at.
-std::string detail_of(const http_request& req,
-                      nats_client& session,
-                      const boost::uuids::uuid& id) {
+std::string detail_of(const http_request& req, nats_client& session, const boost::uuids::uuid& id) {
     reporting_messaging::list_configurations_request asked;
     asked.limit = 1;
     asked.filter.emplace();
@@ -84,11 +82,11 @@ std::string detail_of(const http_request& req,
         rr::refuse(http_status::not_found, "not-found", "There is no such configuration.");
     const auto& configuration = found.configurations.front();
 
-    const auto types = forwarding::forward_all(req,
-                                               session,
-                                               reporting_messaging::list_configuration_types_request{},
-                                               &reporting_messaging::list_configuration_types_response::
-                                                   types);
+    const auto types =
+        forwarding::forward_all(req,
+                                session,
+                                reporting_messaging::list_configuration_types_request{},
+                                &reporting_messaging::list_configuration_types_response::types);
     std::map<std::string, std::string> type_names;
     for (const auto& type : types)
         type_names.emplace(type.code, type.name);
@@ -104,11 +102,11 @@ std::string detail_of(const http_request& req,
     // A refused read of the analytic types costs their names, not the page.
     std::map<std::string, std::string> analytic_names;
     try {
-        const auto types_read = forwarding::forward_all(
-            req,
-            session,
-            reporting_messaging::list_analytic_types_request{},
-            &reporting_messaging::list_analytic_types_response::types);
+        const auto types_read =
+            forwarding::forward_all(req,
+                                    session,
+                                    reporting_messaging::list_analytic_types_request{},
+                                    &reporting_messaging::list_analytic_types_response::types);
         for (const auto& type : types_read)
             analytic_names.emplace(type.code, type.name);
     } catch (const rr::refusal& refused) {
@@ -147,28 +145,25 @@ std::string detail_of(const http_request& req,
     for (const auto& analytic : ordered) {
         const auto named = analytic_names.find(analytic.analytic_type_code);
         analytic_rows.push_back(
-            "{\"code\":" + json::write(analytic.analytic_type_code) +
-            ",\"name\":" +
+            "{\"code\":" + json::write(analytic.analytic_type_code) + ",\"name\":" +
             json::write(named == analytic_names.end() ? analytic.analytic_type_code :
                                                         named->second) +
             ",\"active\":" + (analytic.active == "Y" ? "true" : "false") + "}");
     }
 
-    std::ranges::sort(definitions, [](const auto& left, const auto& right) {
-        return left.name < right.name;
-    });
+    std::ranges::sort(definitions,
+                      [](const auto& left, const auto& right) { return left.name < right.name; });
     std::vector<std::string> report_rows;
     for (const auto& definition : definitions) {
         const auto party = parties.find(boost::uuids::to_string(definition.party_id));
-        report_rows.push_back(
-            "{\"id\":" + json::write(boost::uuids::to_string(definition.id)) +
-            ",\"name\":" + json::write(definition.name) +
-            ",\"partyName\":" +
-            json::write(party == parties.end() ? std::string() : party->second) +
-            ",\"regulatoryBookType\":" +
-            (definition.regulatory_book_type ? json::write(*definition.regulatory_book_type) :
-                                               std::string("null")) +
-            "}");
+        report_rows.push_back("{\"id\":" + json::write(boost::uuids::to_string(definition.id)) +
+                              ",\"name\":" + json::write(definition.name) + ",\"partyName\":" +
+                              json::write(party == parties.end() ? std::string() : party->second) +
+                              ",\"regulatoryBookType\":" +
+                              (definition.regulatory_book_type ?
+                                   json::write(*definition.regulatory_book_type) :
+                                   std::string("null")) +
+                              "}");
     }
 
     const auto type = type_names.find(configuration.configuration_type_code);
@@ -183,8 +178,7 @@ std::string detail_of(const http_request& req,
                                                    type->second)
          << ",\"owningComponent\":" << json::write(configuration.owning_component)
          << ",\"partyId\":" << json::write(boost::uuids::to_string(configuration.party_id))
-         << ",\"partyName\":"
-         << json::write(party == parties.end() ? std::string() : party->second)
+         << ",\"partyName\":" << json::write(party == parties.end() ? std::string() : party->second)
          << ",\"version\":" << configuration.version
          << ",\"modified_by\":" << json::write(configuration.modified_by)
          << ",\"performed_by\":" << json::write(configuration.performed_by)

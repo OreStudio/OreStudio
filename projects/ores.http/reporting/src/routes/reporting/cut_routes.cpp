@@ -27,8 +27,8 @@
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
-#include <algorithm>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <map>
 #include <optional>
 #include <sstream>
@@ -61,8 +61,8 @@ constexpr std::uint32_t runs_of_a_cut_page = 200;
 namespace cuts_unit {
 
 /// The seven states a cut may be in, as the service words them.
-constexpr std::string_view state_words[] = {"draft",     "incomplete", "taken", "in_use",
-                                            "authorised", "refused",   "superseded"};
+constexpr std::string_view state_words[] = {
+    "draft", "incomplete", "taken", "in_use", "authorised", "refused", "superseded"};
 
 bool is_state_word(const std::string& stated) {
     return stated.empty() ||
@@ -123,9 +123,8 @@ std::string gaps_json(const std::vector<ores::reporting::domain::cut_gap>& gaps)
     written.reserve(gaps.size());
     for (const auto& gap : gaps) {
         written.push_back("{\"id\":" + json::write(boost::uuids::to_string(gap.id)) +
-                          ",\"partCode\":" + json::write(gap.part_code) +
-                          ",\"item\":" + json::write(gap.item) +
-                          ",\"reason\":" + json::write(gap.reason) + "}");
+                          ",\"partCode\":" + json::write(gap.part_code) + ",\"item\":" +
+                          json::write(gap.item) + ",\"reason\":" + json::write(gap.reason) + "}");
     }
     return rr::array_of(written);
 }
@@ -134,17 +133,16 @@ std::string gaps_json(const std::vector<ores::reporting::domain::cut_gap>& gaps)
 std::string detail_json(const std::optional<ores::reporting::domain::cut_approval_detail>& detail) {
     if (!detail)
         return "null";
-    const auto applied_at = detail->applied_at ?
-                                json::write(*detail->applied_at) :
-                                std::string("null");
+    const auto applied_at =
+        detail->applied_at ? json::write(*detail->applied_at) : std::string("null");
     return "{\"id\":" + json::write(boost::uuids::to_string(detail->id)) +
            ",\"requestId\":" + json::write(boost::uuids::to_string(detail->request_id)) +
            ",\"cutId\":" + json::write(boost::uuids::to_string(detail->cut_id)) +
            ",\"dealCount\":" + std::to_string(detail->deal_count) +
            ",\"marketDataSetCount\":" + std::to_string(detail->market_data_set_count) +
            ",\"gapCount\":" + std::to_string(detail->gap_count) +
-           ",\"appliedBy\":" + json::write(detail->applied_by) +
-           ",\"appliedAt\":" + applied_at + "}";
+           ",\"appliedBy\":" + json::write(detail->applied_by) + ",\"appliedAt\":" + applied_at +
+           "}";
 }
 
 /// One cut's body, as its record page draws it.
@@ -156,9 +154,10 @@ std::string body_json(const ores::reporting::domain::cut& cut) {
         return stated && !stated->is_nil() ? json::write(boost::uuids::to_string(*stated)) :
                                              std::string("null");
     };
-    const auto instant_or_null = [](const std::optional<std::chrono::system_clock::time_point>& at) {
-        return at ? json::write(*at) : std::string("null");
-    };
+    const auto instant_or_null =
+        [](const std::optional<std::chrono::system_clock::time_point>& at) {
+            return at ? json::write(*at) : std::string("null");
+        };
 
     std::ostringstream body;
     body << "{\"id\":" << json::write(boost::uuids::to_string(cut.id))
@@ -241,8 +240,7 @@ std::string runs_of_cut(const http_request& req, nats_client& session, const std
                                 json::write(found->second.second);
         written.push_back(
             "{\"id\":" + json::write(boost::uuids::to_string(run.id)) +
-            ",\"name\":" + json::write(run.name) +
-            ",\"stateName\":" +
+            ",\"name\":" + json::write(run.name) + ",\"stateName\":" +
             json::write(found == state_of.end() ? std::string() : found->second.first) +
             ",\"health\":" + health + ",\"startedAt\":" + instant(run.started_at) +
             ",\"completedAt\":" + instant(run.completed_at) +
@@ -264,16 +262,15 @@ struct take_body final {
 };
 
 constexpr auto wire_fields(std::type_identity<take_body>) {
-    return ores::utility::codec::field_list{field{"kindCode", &take_body::kind_code},
-                                            field{"scopeCode", &take_body::scope_code},
-                                            field{"businessCentreCode",
-                                                  &take_body::business_centre_code},
-                                            field{"timepoint", &take_body::timepoint},
-                                            field{"timepointTimezone",
-                                                  &take_body::timepoint_timezone},
-                                            field{"cutTimeCode", &take_body::cut_time_code},
-                                            field{"reason", &take_body::reason},
-                                            field{"preview", &take_body::preview}};
+    return ores::utility::codec::field_list{
+        field{"kindCode", &take_body::kind_code},
+        field{"scopeCode", &take_body::scope_code},
+        field{"businessCentreCode", &take_body::business_centre_code},
+        field{"timepoint", &take_body::timepoint},
+        field{"timepointTimezone", &take_body::timepoint_timezone},
+        field{"cutTimeCode", &take_body::cut_time_code},
+        field{"reason", &take_body::reason},
+        field{"preview", &take_body::preview}};
 }
 
 /// One part of a body the assembly answered, with the state it reached.
@@ -281,10 +278,8 @@ std::string part_json(const reporting_messaging::cut_body_part& part) {
     return "{\"partCode\":" + json::write(part.part_code) +
            ",\"state\":" + json::write(std::string(part.state == "gapped" ? "gapped" : "closed")) +
            ",\"summary\":" + json::write(part.summary) +
-           ",\"reference\":" + json::write(part.reference) +
-           ",\"item\":" + json::write(part.item) +
-           ",\"reason\":" + json::write(part.reason) +
-           ",\"remedy\":" + json::write(part.remedy) +
+           ",\"reference\":" + json::write(part.reference) + ",\"item\":" + json::write(part.item) +
+           ",\"reason\":" + json::write(part.reason) + ",\"remedy\":" + json::write(part.remedy) +
            ",\"snapshotNote\":" + json::write(part.snapshot_note) + "}";
 }
 
@@ -306,8 +301,7 @@ std::string take_json(const reporting_messaging::take_cut_response& reply) {
          << ",\"approvalKindCode\":" << json::write(reply.approval_kind_code)
          << ",\"approvalKindName\":" << json::write(reply.approval_kind_name)
          << ",\"decidePermissionCode\":" << json::write(reply.decide_permission_code)
-         << ",\"parts\":" << rr::array_of(parts)
-         << ",\"gaps\":" << gaps_json(reply.gaps)
+         << ",\"parts\":" << rr::array_of(parts) << ",\"gaps\":" << gaps_json(reply.gaps)
          << ",\"dealCount\":" << reply.deal_count
          << ",\"marketDataSetCount\":" << reply.market_data_set_count
          << ",\"referenceDataVersion\":" << json::write(reply.reference_data_version)
@@ -359,9 +353,8 @@ void cut_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                     for (const auto& row : reply.rows)
                         written.push_back(cuts::cut_row_json(row));
                     const auto partial =
-                        reply.total > static_cast<int>(asked.offset + reply.rows.size()) ?
-                            "true" :
-                            "false";
+                        reply.total > static_cast<int>(asked.offset + reply.rows.size()) ? "true" :
+                                                                                           "false";
                     return http_response::json("{\"rows\":" + rr::array_of(written) +
                                                ",\"total\":" + std::to_string(reply.total) +
                                                ",\"partial\":" + partial + "}");
@@ -415,8 +408,7 @@ void cut_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                     if (!reply.superseded_by_id.empty()) {
                         try {
                             reporting_messaging::get_cut_record_request later;
-                            later.cut_id =
-                                boost::uuids::string_generator()(reply.superseded_by_id);
+                            later.cut_id = boost::uuids::string_generator()(reply.superseded_by_id);
                             const auto answered = forwarding::forward(req, session, later);
                             if (answered.result.outcome == reply.result.outcome &&
                                 !answered.label.empty())
@@ -432,13 +424,11 @@ void cut_routes::register_routes(std::shared_ptr<ores::http::net::router> router
                     return http_response::json(
                         "{\"cut\":" + body_json(reply.cut) +
                         ",\"label\":" + json::write(reply.label) +
-                        ",\"state\":" + json::write(reply.state) +
-                        ",\"supersededById\":" +
+                        ",\"state\":" + json::write(reply.state) + ",\"supersededById\":" +
                         (reply.superseded_by_id.empty() ? std::string("null") :
                                                           json::write(reply.superseded_by_id)) +
-                        ",\"supersededByLabel\":" + superseded_by_label +
-                        ",\"kind\":" + cuts::kind_json(*kind) +
-                        ",\"gaps\":" + gaps_json(reply.gaps) +
+                        ",\"supersededByLabel\":" + superseded_by_label + ",\"kind\":" +
+                        cuts::kind_json(*kind) + ",\"gaps\":" + gaps_json(reply.gaps) +
                         ",\"runCount\":" + std::to_string(reply.run_count) +
                         ",\"detail\":" + detail_json(reply.detail) + "}");
                 });

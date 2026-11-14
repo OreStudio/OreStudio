@@ -72,8 +72,8 @@ TEST_CASE("the_cuts_refuse_a_page_or_a_narrowing_they_do_not_read", "[cut]") {
     BOOST_LOG_SEV(lg, info) << "Testing the cuts list's query";
 
     // A page states a limit, as the BFF's own schema required.
-    CHECK(answer_at<cut_routes>(http_method::get, cuts_address, http_request{}, cuts_address).status ==
-          http_status::bad_request);
+    CHECK(answer_at<cut_routes>(http_method::get, cuts_address, http_request{}, cuts_address)
+              .status == http_status::bad_request);
 
     http_request sorted;
     sorted.query_params["limit"] = "10";
@@ -96,10 +96,8 @@ TEST_CASE("a_cut_refuses_an_id_that_is_not_a_uuid", "[cut]") {
     req.path_params["id"] = "not-an-id";
     CHECK(answer_at<cut_routes>(http_method::get, "/api/reporting/cuts/not-an-id", req, cut_pattern)
               .status == http_status::bad_request);
-    CHECK(answer_at<cut_routes>(http_method::get,
-                                "/api/reporting/cuts/not-an-id/runs",
-                                req,
-                                runs_pattern)
+    CHECK(answer_at<cut_routes>(
+              http_method::get, "/api/reporting/cuts/not-an-id/runs", req, runs_pattern)
               .status == http_status::bad_request);
 }
 
@@ -133,11 +131,9 @@ TEST_CASE("the_runs_of_a_cut_with_no_service_are_refused_as_upstream", "[cut]") 
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing a cut's runs with no service behind it";
 
-    CHECK(answer_at<cut_routes>(http_method::get,
-                                cut_address + "/runs",
-                                http_request{},
-                                runs_pattern)
-              .status == http_status::bad_gateway);
+    CHECK(
+        answer_at<cut_routes>(http_method::get, cut_address + "/runs", http_request{}, runs_pattern)
+            .status == http_status::bad_gateway);
 }
 
 TEST_CASE("a_configuration_refuses_an_id_that_is_not_a_uuid", "[configuration]") {

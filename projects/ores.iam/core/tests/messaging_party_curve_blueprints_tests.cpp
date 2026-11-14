@@ -221,3 +221,60 @@ TEST_CASE("two parties get different copies of one system row", "[party_curves]"
     CHECK(party_copy_id(acme_us, "ir_curve_bootstrap_config", eur_config) !=
           party_copy_id(acme_us, "market_series", eur_config));
 }
+
+TEST_CASE("a_party_writes_a_projection_after_the_funding_curve_it_discounts_off",
+          "[party_curves]") {
+    // The system states its configs in name order, so a projection can sort before the funding
+    // curve it names -- USD-LIBOR-1M before USD-SOFR-FOMC. The store checks the discount curve
+    // as each row lands, so the batch must name the funding curve first however the system
+    // lists them.
+    auto system = eur_estr();
+    const auto projection_config = uuid_of("00000000-0000-4000-8000-0000000000c3");
+    const auto projection_output = uuid_of("00000000-0000-4000-8000-0000000000d3");
+    const auto projection_quotes = uuid_of("00000000-0000-4000-8000-0000000000e3");
+    const std::string projection_uri =
+        "oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M";
+    ir_curve_bootstrap_config projection;
+    projection.id = projection_config;
+    projection.party_id = system_party;
+    projection.name = "AAA-EURIBOR-6M";
+    projection.output_series_id = projection_output;
+    projection.curve_family_role = "PROJECTION";
+    projection.discount_curve_config_id = eur_config;
+    system.configs.insert(system.configs.begin(), projection);
+    ir_curve_bootstrap_pillar pillar;
+    pillar.id = uuid_of("00000000-0000-4000-8000-0000000000fa");
+    pillar.party_id = system_party;
+    pillar.bootstrap_config_id = projection_config;
+    pillar.market_series_id = projection_quotes;
+    system.pillars.push_back(pillar);
+    system.series.push_back(
+        market_series_row(projection_output,
+                          system_party,
+                          "oresmd://ir/EUR?type=series&instrument=discount&quote=rate"
+                          "&curve_id=AAA-EURIBOR-6M",
+                          "ore",
+                          "yield"));
+    system.series.push_back(
+        market_series_row(projection_quotes, system_party, projection_uri, "bloomberg", "yield"));
+
+    party_curve_holdings acme;
+    acme.party_id = acme_us;
+    acme.series = {market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b5"),
+                                     acme_us,
+                                     eur_quotes_uri,
+                                     "bloomberg",
+                                     "yield"),
+                   market_series_row(uuid_of("00000000-0000-4000-8000-0000000000b6"),
+                                     acme_us,
+                                     projection_uri,
+                                     "bloomberg",
+                                     "yield")};
+
+    const auto plan = plan_party_curves(system, acme);
+
+    REQUIRE(plan.configs_to_write.size() == 2);
+    CHECK(plan.configs_to_write[0].name == "EUR-ESTR");
+    CHECK(plan.configs_to_write[1].name == "AAA-EURIBOR-6M");
+    CHECK(plan.configs_to_write[1].discount_curve_config_id == plan.configs_to_write[0].id);
+}

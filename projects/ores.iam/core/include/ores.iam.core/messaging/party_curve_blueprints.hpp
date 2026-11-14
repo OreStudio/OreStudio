@@ -211,6 +211,30 @@ struct party_curve_plan {
             dropped = true;
         }
     }
+
+    // A config must land after the one it discounts off: as each row is written the store
+    // checks that a projection names an active FUNDING config, and a batch that named the
+    // projection first was refused. The system states its configs in name order, which is not
+    // that order -- USD-LIBOR-1M comes before USD-SOFR-FOMC -- so the batch is sorted here.
+    std::vector<ores::refdata::domain::ir_curve_bootstrap_config> ordered;
+    ordered.reserve(plan.configs_to_write.size());
+    std::set<boost::uuids::uuid> placed(party.config_ids.begin(), party.config_ids.end());
+    for (bool moved = true; moved && !plan.configs_to_write.empty();) {
+        moved = false;
+        for (auto it = plan.configs_to_write.begin(); it != plan.configs_to_write.end();) {
+            if (it->discount_curve_config_id && !placed.contains(*it->discount_curve_config_id)) {
+                ++it;
+                continue;
+            }
+            placed.insert(it->id);
+            ordered.push_back(std::move(*it));
+            it = plan.configs_to_write.erase(it);
+            moved = true;
+        }
+    }
+    for (auto& c : plan.configs_to_write)
+        ordered.push_back(std::move(c));
+    plan.configs_to_write = std::move(ordered);
     return plan;
 }
 

@@ -1,25 +1,19 @@
-# Publishing pipeline — architecture review
+:PROPERTIES:
+:ID: 16920F25-F0EF-4031-9C2D-DF57B5865072
+:END:
+#+title: Investigation: publishing pipeline
+#+description: Which write paths reach ores_refdata_*, which datasets are published, at what level, and why a fresh database has no published reference data.
+#+type: investigation
+#+level: s1
+#+filetags: :dq:publishing:investigation:take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+created: 2026-11-14
+#+updated: 2026-11-14
 
-## Status: OPEN — 2026-11-14
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into Which write paths reach ores_refdata_*, which datasets are published, at what level, and why a fresh database has no published reference data..
 
-Analysis only. The fixes it recommends are not started.
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
 
-**Related:** `2026-03-30-three-level-provisioning-and-workflow-service.md` settles
-the three-level *account* model (system, tenant, party) and states that tenants
-own the `ores_refdata_*` lookup tables. This review asks the adjacent question —
-which reference data is published at which level, and by what. The two must agree
-before either is implemented.
-
----
-
-**Repository:** `/home/marco/Development/OreStudio/ores_dev_swift_curie`
-**Scope:** the reference-data publishing pipeline (`ores.refdata`, `ores.dq`, tenant provisioning, populate tree, docs).
-**Date:** review of the working tree at `a2c80d7a48`.
-**Method:** reading the SQL, C++ and Org sources, plus read-only `grep`/parsing. No build, no database, no `compass` command was run. Every count below comes from a command recorded in §7.
-
----
-
-## 1. The model as documented
+* Context
 
 Six documents describe the pipeline. They do not agree with each other, and two describe code that no longer exists.
 
@@ -38,17 +32,15 @@ Six documents describe the pipeline. They do not agree with each other, and two 
 
 ---
 
-## 2. The model as implemented
-
 Five distinct write paths reach `ores_refdata_*` tables. Only two of them are in the documentation.
 
-### Flow A — direct insert at populate time (system tenant)
+** Flow A — direct insert at populate time (system tenant)
 `projects/ores.sql/populate/populate.sql:312` calls `refdata/refdata_populate.sql`, which seeds **DQ artefacts only**. The tier-1 vocabularies are loaded earlier, by `foundation/foundation_populate.sql:114-182`, which `\ir`s **57** scripts in `populate/refdata/` that `insert into ores_refdata_*_tbl` with `tenant_id = ores_utility_system_tenant_id_fn()`. These rows exist in a freshly created database.
 
-### Flow B — DQ seeding (system tenant, artefacts)
+** Flow B — DQ seeding (system tenant, artefacts)
 `refdata_populate.sql` includes 17 scripts that (a) register a dataset with `ores_dq_datasets_upsert_fn`, (b) register dependency edges, and (c) insert rows into `ores_dq_*_artefact_tbl`. No refdata publish function is called here. A recreated database therefore holds the artefacts and an empty published catalogue.
 
-### Flow C — runtime bundle publish (target tenant)
+** Flow C — runtime bundle publish (target tenant)
 1. Caller sends `dq.v1.ops.publish_bundle` (shell `bundles publish`, or the provisioning workflow's `publish_bundle` step; the web app only has test doubles).
 2. `publish_handler::publish_bundle` (`projects/ores.dq/core/include/ores.dq.core/messaging/publish_handler.hpp:147-232`) authorises `dq::datasets:write`, calls `publish_service::list_bundle_publishable_datasets`.
 3. That reads `ores_dq_bundle_datasets_list_fn(bundle)` **ordered by `display_order`**, then calls `list_publishable_datasets(member_ids, resolve_dependencies = true)`. Dependency closure **adds datasets that are not bundle members** (`projects/ores.dq/core/src/service/publish_service.cpp:487`, `:403-450`). Datasets with no `target_subject` are silently dropped.
@@ -57,21 +49,31 @@ Five distinct write paths reach `ores_refdata_*` tables. Only two of them are in
 6. The target service's handler derives the SQL function from the subject (`<service>.v1.ops.<operation>` → `ores_<service>_<operation>_fn`, `projects/ores.refdata/core/src/messaging/publish_from_dq_handler.cpp:61-72`) and calls it with `(dataset_id, cmd.tenant_id, mode, params)` (`:127-135`).
 7. **Tenant:** `cmd.tenant_id` is the caller's tenant (`publish_handler.hpp:255`, `start_publish_workflow`). For `system_core` the caller is the system tenant's super-admin (`tenant_provisioning_handler.hpp:1069-1096`); for `base` and `party_essentials` it is the tenant being provisioned. **Party:** `p_params->>'party_id'`, else the tenant's root party, else the system party (`refdata_publish_from_dq_create.sql:2223-2265`).
 
-### Flow D — tenant provisioner copy (new tenant)
+** Flow D — tenant provisioner copy (new tenant)
 `ores_iam_provision_tenant_fn` copies ~36 system-tenant tables into the new tenant, row by row, with `change_commentary = 'Copied from system tenant during provisioning'` (`iam_tenant_provisioner_create.sql:232-873`). This is how a tenant gets `payment_frequencies`, `tenor_conventions`, `instrument_codes`, and the rest of the tier-1 vocabulary. It is invisible to the DQ model, to the bundle catalogue, and to `data_tiers.org`.
 
-### Flow E — publish during populate (exceptions)
+** Flow E — publish during populate (exceptions)
 Three populate scripts do call a publish function as the DDL owner:
 `populate/assets/system_avatars_populate.sql:66` (`ores_assets_publish_images_from_dq_fn`), `populate/iso/iso_populate.sql:39` and `populate/fpml/fpml_populate.sql:39` (`ores_dq_coding_schemes_publish_fn`). These are the only populate-time publishes; no refdata publish function is called there.
 
-### Dead path — in-process publish
+** Dead path — in-process publish
 `publish_service::publish` (`publish_service.cpp:95-180`) has no caller. It also passes `artefact_type.target_subject` (a NATS subject) as a SQL function name (`:352-362`), so it could not work if called. Only `list_*` methods are live.
 
 ---
 
-## 3. Inventory
+* Methodology
 
-### 3.1 The 17 datasets seeded in `populate/refdata/`
+The review was read-only. It enumerated every populate script that writes an
+=ores_refdata_*= table, every publish function in
+=refdata_publish_from_dq_create.sql=, and every seeded dataset in
+=refdata_populate.sql=; then traced the runtime publish path from the NATS
+subject through the handler, the dependency closure and the workflow to the SQL
+function. Each claim in this page carries the file and line it was read from.
+Nothing was built and no database was touched.
+
+* Inventory
+
+** 3.1 The 17 datasets seeded in `populate/refdata/`
 
 `published where` is bundle membership; **no** dataset is published by a populate script. Level is the reviewer's classification against requirements 3–4, using the bundle that carries it. `Direct-insert twin` names a script that writes the same live table without DQ.
 
@@ -101,7 +103,7 @@ Notes:
 - `refdata.calendars` depends on `iso.coding_schemes`, which is *not* a base member and which the bundle file says must not be published per tenant. The closure publishes it anyway (defect D4).
 - `refdata.equity_underlyings` and `refdata.commodities` have **no dependencies** and are per-tenant copies of world data. Nothing declares that they must exist before a population runs; the bundle comment says they must (`dq_dataset_bundle_member_populate.sql:111-113`), but that is prose, not an edge.
 
-### 3.2 The 57 functions in `refdata_publish_from_dq_create.sql`
+** 3.2 The 57 functions in `refdata_publish_from_dq_create.sql`
 
 **52 entity publishers** (one per registered subject) plus five helpers with no subject of their own: `ores_refdata_publish_target_party_fn` and the four convention sub-publishers (`tenor_basis_swap_conventions`, `xccy_fix_float_conventions`, `xccy_basis_conventions`, `commodity_future_conventions`) that `conventions` calls directly. The 52 subjects registered in `projects/ores.refdata/core/src/messaging/registrar.cpp:667-719` match the 52 publishers exactly.
 
@@ -171,7 +173,7 @@ Findings:
 - 33 of the 52 publishers have at least one dataset seeded outside `populate/refdata/` (iso, fpml, gleif, acme, northwind, testdata, ore, crypto). They are outside this review's dataset table but are listed above so the function inventory is complete.
 - Every function is `security definer set search_path = public, pg_temp`, validates `mode`, and is tenant-scoped in its `exists` checks (checked in the bodies). The one exception is `publish_countries_from_dq_fn`, whose `v_exists` probe omits `tenant_id` (`refdata_publish_from_dq_create.sql:119-124`); it only affects `insert_only`.
 
-### 3.3 Direct-insert inventory (57 files, 57 distinct tables)
+** 3.3 Direct-insert inventory (57 files, 57 distinct tables)
 
 `Has publish fn` = some `ores_refdata_publish_*_from_dq_fn` writes the table. `Copied` = `ores_iam_provision_tenant_fn` copies it into a new tenant. The table has 59 rows for 57 distinct tables because the two IR-curve files write the same two tables.
 
@@ -243,7 +245,7 @@ Groups:
 - **Copied to tenants (32 tables, no DQ route):** tier-1 vocabularies. Consistent with `data_tiers.org` tier 1, except that the delivery mechanism (`provisioner copy`) is undocumented.
 - **System-tenant only (11 tables):** `convention_kind_terms`, `curve_configuration_columns`, `curve_roles`, `derivation_kinds`, `ir_curve_bootstrap_configs`/`_pillars`, `leg_types`, `producer_kinds`, `product_family_codes`, `source_kinds`, `sub_periods_coupon_types`. `derivation_kinds` is deliberately system-only (`projects/ores.sql/test/refdata_derived_source_system_tenant_test.sql:37-45`); the rest are unclassified. If any is read through a tenant-scoped repository, tenant screens will be empty.
 
-### 3.4 Bundle levels
+** 3.4 Bundle levels
 
 | Bundle | Members | Published into | Evidence |
 |---|---|---|---|
@@ -258,34 +260,34 @@ There is no bundle at "base system" level that carries the refdata catalogues. T
 
 ---
 
-## 4. Where it hangs together, and where it does not
+* Conclusions
 
-### Requirement 1 — tests must run without ACME provisioning
+** Requirement 1 — tests must run without ACME provisioning
 
 **Does not hold.** `populate.sql:332-341` states the choice explicitly: a fresh database has artefacts and empty refdata tables. `refdata.equity_underlyings_tbl` is populated only by the DQ publish, so `.SPX` exists in `ores_dq_equity_underlyings_artefact_tbl` and nowhere else. The check that refused the booking reads the live table (`trading_basket_constituent_functions_create.sql:49-56`). The 22 SQL tests that call publish functions run against a provisioned development database (e.g. `projects/ores.sql/test/refdata_currency_groups_publish_test.sql:30` says `pg_prove -d ores_dev_local1`), so they inherit whatever provisioning left behind.
 
-### Requirement 2 — tests must still work after ACME provisioning
+** Requirement 2 — tests must still work after ACME provisioning
 
 **Holds, by accident.** `ores_trading_basket_constituent_resolves_fn` is `security definer` and its query has no `tenant_id` predicate. The table enables RLS but does not force it (`refdata_equity_underlyings_create.sql:189-195`), and the owner bypasses RLS. So after ACME's `base` publish, *any* tenant's booking is accepted, because the resolver sees ACME's rows. The same mechanism lets a tenant book an underlying that it cannot itself see, and lets it fail when ACME has not been provisioned. The comment at `projects/ores.sql/create/trading/trading_basket_constituent_functions_create.sql:30-36` states the cross-tenant read as deliberate; the consequence is that the catalogue check is not a check on the caller's catalogue.
 
-### Requirement 3 — datasets supply all static data needed to value every trade
+** Requirement 3 — datasets supply all static data needed to value every trade
 
 **Partly holds.** The convention set is real: 24 convention kinds in one artefact type plus `currency_pair_conventions` gives 25 of 26, and the 26th (`tenor`) is copied from the system tenant (`journey_publish_conventions_from_data_quality.org:85-95`). What is missing is a statement of coverage. There is no dataset-level list of "the trade types this catalogue can value", and no test publishes `base` + `party_essentials` and then prices one trade of each type. Two concrete gaps:
 - `refdata.equity_underlyings` and `refdata.commodities` are required before a population (`dq_dataset_bundle_member_populate.sql:111-113`) but are not dependencies of the populations that read them, and no test proves the order.
 - `refdata.payment_frequencies` has no dataset, so it is not part of any bundle. A tenant gets it only through the provisioner copy.
 
-### Requirement 4 — every dataset is published at the right level (base system or ACME)
+** Requirement 4 — every dataset is published at the right level (base system or ACME)
 
 **Cannot be answered as posed, because the tree uses three levels and the words collide.** The code has *installation* (`system_core`), *tenant* (`base`), and *party* (`party_essentials`). The owner's requirement names two. Under the code's naming, "base" is the per-tenant bundle; under the requirement's naming, "base system" reads as the system tenant. The concrete misclassifications are:
 - `iso.countries`, `iso.currencies`, `fpml.asset_class`, `fpml.non_iso_currency` are in **both** `system_core` and `base`, on purpose (`dq_dataset_bundle_member_populate.sql:44-56`, `one_source_for_system_and_tenant_reference_data.org`). Two copies can drift; no reader is authoritative.
 - `refdata.calendars` and `refdata.equity_underlyings` are **world data** (no `party_id`) but are published per tenant, so every tenant holds its own copy of a fact that should be identical. `world_data_versus_party_configuration.org` names this as an open question and still open.
 - `refdata.conventions` is **both** the system party's copy (`system_core`) and each party's copy (`party_essentials`). It is the one dataset whose level is deliberately doubled.
 
-### Requirement 5 — the publishing architecture hangs together conceptually
+** Requirement 5 — the publishing architecture hangs together conceptually
 
 **Does not hold yet.** The model a reader can reconstruct from the code has five write paths (§2) and three levels, with two paths undocumented and two paths writing the same tables. The reader cannot answer "what turns a blank database into a usable one?" from any single document: `populate.sql` says "not here", `dq_artefacts` says "bundles", `data_tiers` says "populate for tier 1", and the provisioner says "copy". Each is true of a part.
 
-### What does hang together
+** What does hang together
 
 - The function contract is consistent: 57 functions, same signature, same modes, same return shape, `security definer`, tenant-scoped, idempotent-by-upsert.
 - The subject naming is consistent and derived: 52 registered subjects ↔ 52 publishers; four helpers are internal.
@@ -293,8 +295,6 @@ There is no bundle at "base system" level that carries the refdata catalogues. T
 - The party resolution rule is explicit and documented in the function (`refdata_publish_from_dq_create.sql:2223-2245`).
 
 ---
-
-## 5. Concrete defects
 
 | # | Defect | Evidence | Consequence |
 |---|---|---|---|
@@ -316,9 +316,9 @@ There is no bundle at "base system" level that carries the refdata catalogues. T
 
 ---
 
-## 6. Proposed end-to-end model
+* Recommendations
 
-### 6.1 Levels (three, named so they cannot be confused)
+** 6.1 Levels (three, named so they cannot be confused)
 
 | Level | Name | Who owns the rows | Written into | Examples |
 |---|---|---|---|---|
@@ -328,7 +328,7 @@ There is no bundle at "base system" level that carries the refdata catalogues. T
 
 Rule: **each table is written by exactly one mechanism, at exactly one level.** The mechanism follows the level: L0 and L1 canonical data through DQ datasets (because they are versioned, previewable and republishable); L1 *platform vocabulary* through the provisioner copy; L2 through party-scoped DQ datasets.
 
-### 6.2 The boot sequence (blank database → usable)
+** 6.2 The boot sequence (blank database → usable)
 
 1. **Schema.** Create tables, triggers, functions.
 2. **L0 populate.** Insert the platform's own vocabularies into the system tenant. This is today's Flow A, limited to data the platform defines (trade statuses, code domains, tenant lookup tables, instrument codes, payment frequencies, convention kinds/terms, day counters, curve roles, leg types, product families).
@@ -339,7 +339,7 @@ Rule: **each table is written by exactly one mechanism, at exactly one level.** 
 7. **Tenant onboarding.** Publish `base` (L1 world) then `party_essentials` (L2) into the tenant/party. This is today's Flow C, unchanged except for the dataset set.
 8. **Test bootstrap.** A test fixture that needs published data calls the same function as step 4 and, for a tenant, steps 6–7 into a test tenant. No test asserts against a dev database's provisioning state.
 
-### 6.3 What moves
+** 6.3 What moves
 
 | Change | Files |
 |---|---|
@@ -353,29 +353,17 @@ Rule: **each table is written by exactly one mechanism, at exactly one level.** 
 | Classify the 11 system-only tables. Move L1 ones to the provisioner copy list; leave L0 ones and say so. | `iam_tenant_provisioner_create.sql`, `data_tiers.org` |
 | Rewrite the docs around the three levels: delete the superseded sections, record 57 functions and 52 subjects, state the boot sequence. | `doc/plans/2026-05-14-dq-publish-pattern.org` (mark superseded), `projects/ores.dq/modeling/publication_pipeline.org`, `doc/knowledge/architecture/data_tiers.org`, `doc/knowledge/architecture/dq_artefacts.org` |
 
-### 6.4 The strongest single recommendation
+** 6.4 The strongest single recommendation
 
 **Make publication part of bringing a database up, not a runtime act that tests must imitate.** Add one `system_core` bootstrap publish to the populate path and one tenant bootstrap publish to the test fixture, then delete one side of each dual-path table. That closes D1, D5, D12 and D13 in one wave, and it gives the three-level model a place to live.
 
 ---
 
-## 7. Commands used (reproducible)
+* See also
 
-```text
-grep -c '^create or replace function ores_refdata_publish_' projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql   # 57
-grep -rn "ores_dq_datasets_upsert_fn" projects/ores.sql/populate --include=*.sql | wc -l                                          # 183 lines; parse finds 182 datasets
-python3 parse of populate/**/*.sql → datasets.tsv (182), members.tsv (212), deps.tsv (160)
-grep -l "insert into ores_refdata_" projects/ores.sql/populate/refdata/*.sql | wc -l                                              # 57
-grep -rn "ores_dq_bundles_publish_fn" projects/ doc/                                                                             # only drop script + docs
-grep -rn "insert into ores_dq_bundle_publications_tbl" projects/                                                                  # none
-grep -c "publish_" projects/ores.refdata/core/src/messaging/registrar.cpp                                                         # 58 lines, 52 subjects
-python3 set difference: direct-insert ∪ provisioner-copy ∪ publish-target tables                                                  # 57 direct tables = 4 triple + 10 dual + 32 copy-only + 11 system-only
-```
+- [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end]] — the story this investigation answers to.
+- The three-level *account* model this review must agree with:
+  =doc/plans/2026-03-30-three-level-provisioning-and-workflow-service.md=.
+- The captured cost of hand-writing artefact tables, which the inventories here
+  make concrete.
 
----
-
-## 8. Hypotheses (labelled, not proven)
-
-- **H1.** The original booking failure was a C++ or seeding test that booked a trade with an equity basket constituent and ran against a freshly populated database. The mechanism is proven (§4, D1/D2); the exact test binary was not located, and no test in `projects/ores.sql/test/` mentions baskets.
-- **H2.** The `iso.coding_schemes` edge was added when the calendars trigger validated the published coding-schemes table, and was not removed when the trigger moved to the DQ table. The commit that moved it would confirm this; the current code makes the edge unnecessary.
-- **H3.** The 11 system-only tables are read through security-definer helpers or system-tenant-only screens, which is why no tenant complaint exists yet. `curve_roles` and `convention_kind_terms` are the two to check first.

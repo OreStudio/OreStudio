@@ -8,7 +8,7 @@
 #+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
 #+branch: feature/forward-declare-what-the-analysis-finds
-#+pr:
+#+pr: 4695
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -93,7 +93,7 @@ A decision that turns out wrong while it is applied, such as a type that cannot 
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4695][#4695]] | [codegen] Take the declaration in the repository headers |
 
 * Review
 

@@ -173,4 +173,43 @@ std::vector<std::string> missing_named_files(const input_files& files) {
     return missing;
 }
 
+
+pruned_analytics without_unloadable_analytics(const input_files& files) {
+    const auto run = files.find(std::string(run_document_file));
+    if (run == files.end())
+        throw std::invalid_argument(
+            std::format("An ORE input holds its run document as {}.", run_document_file));
+
+    auto document = domain::run_document_projection::read(run->second);
+    auto& analytics = document.analytics.analytic;
+
+    // An analytic states the files it reads in its own parameters, so the ones it
+    // cannot show are the ones whose names the input set does not hold.
+    std::vector<std::string> dropped;
+    const auto loadable = [&files](const auto& analytic) {
+        for (const auto& parameter : analytic.parameter)
+            if (names_a_file(parameter.value) && !files.contains(parameter.value))
+                return false;
+        return true;
+    };
+    for (auto it = analytics.begin(); it != analytics.end();) {
+        if (loadable(*it)) {
+            ++it;
+            continue;
+        }
+        dropped.push_back(it->type);
+        it = analytics.erase(it);
+    }
+    if (!dropped.empty())
+        document.analytics.present = analytics.empty() ? 0 : document.analytics.present;
+
+    pruned_analytics pruned;
+    pruned.files = files;
+    pruned.dropped = std::move(dropped);
+    if (!pruned.dropped.empty())
+        pruned.files[std::string(run_document_file)] =
+            domain::run_document_projection::write(document);
+    return pruned;
+}
+
 }

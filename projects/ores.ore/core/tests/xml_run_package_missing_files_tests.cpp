@@ -76,3 +76,49 @@ TEST_CASE("an input that holds every file its run document names holds nothing m
     // A flag, a date and a count are not file names.
     CHECK(ores::ore::xml::missing_named_files(pack).empty());
 }
+
+TEST_CASE("an analytic whose files the input does not carry is dropped from the document",
+          "[ore][run_package]") {
+    std::map<std::string, std::string> pack;
+    pack["ore.xml"] = R"(<ORE>
+  <Setup>
+    <Parameter name="asofDate">2026-01-02</Parameter>
+    <Parameter name="conventionsFile">conventions.xml</Parameter>
+  </Setup>
+  <Analytics>
+    <Analytic type="npv"><Parameter name="active">Y</Parameter></Analytic>
+    <Analytic type="sensitivity">
+      <Parameter name="active">Y</Parameter>
+      <Parameter name="marketConfigFile">simulation.xml</Parameter>
+    </Analytic>
+  </Analytics>
+</ORE>)";
+    pack["conventions.xml"] = "<Conventions/>";
+
+    const auto pruned = ores::ore::xml::without_unloadable_analytics(pack);
+
+    // The analytic that cannot load is gone, and the run that could price stays.
+    REQUIRE(pruned.dropped.size() == 1);
+    CHECK(pruned.dropped[0] == "sensitivity");
+    CHECK(ores::ore::xml::missing_named_files(pruned.files).empty());
+    CHECK(pruned.files.at("ore.xml").find("sensitivity") == std::string::npos);
+    CHECK(pruned.files.at("ore.xml").find("npv") != std::string::npos);
+}
+
+TEST_CASE("an input whose analytics all load is handed back whole", "[ore][run_package]") {
+    std::map<std::string, std::string> pack;
+    pack["ore.xml"] = R"(<ORE>
+  <Setup>
+    <Parameter name="conventionsFile">conventions.xml</Parameter>
+  </Setup>
+  <Analytics>
+    <Analytic type="npv"><Parameter name="active">Y</Parameter></Analytic>
+  </Analytics>
+</ORE>)";
+    pack["conventions.xml"] = "<Conventions/>";
+
+    const auto pruned = ores::ore::xml::without_unloadable_analytics(pack);
+
+    CHECK(pruned.dropped.empty());
+    CHECK(pruned.files.at("ore.xml") == pack.at("ore.xml"));
+}

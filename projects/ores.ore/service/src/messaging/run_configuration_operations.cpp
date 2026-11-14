@@ -28,6 +28,7 @@
 #include "ores.ore.core/domain/todays_market_projection.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/run_document_files.hpp"
+#include "ores.ore.core/xml/run_package.hpp"
 #include "ores.ore.service/messaging/family_row_party.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
@@ -457,7 +458,19 @@ input_files export_run(nats_client& owners, const std::string& report_definition
                                                              .party_id = run.party_id})
                     .document));
     }
-    return files;
+
+    /*
+     * The definition binds the configurations it has, and an analytic may name a
+     * file no configuration supplies. The run cannot execute such an analytic — the
+     * engine stops at the first input it cannot open — so it is dropped from the
+     * document here, where both the document and the files it was given are known.
+     */
+    auto pruned = ores::ore::xml::without_unloadable_analytics(files);
+    for (const auto& analytic : pruned.dropped)
+        BOOST_LOG_SEV(run_configuration_operations_lg(), ores::logging::warn)
+            << "The export dropped the analytic '" << analytic << "' for definition "
+            << report_definition_id << ": its run document names a file the export does not carry.";
+    return pruned.files;
 }
 
 ores::marketdata::projection::ore_projection

@@ -108,6 +108,37 @@ ORES_ORE_CORE_EXPORT run_data_files declared_data_files(const input_files& files
  */
 ORES_ORE_CORE_EXPORT std::vector<std::string> missing_named_files(const input_files& files);
 
+/**
+ * @brief An input set, and the analytics its own documents could not show.
+ */
+struct pruned_analytics {
+    /// The input set, with the run document rewritten when anything was dropped.
+    input_files files;
+    /// The analytics dropped, by the type the document gave them, in document order.
+    std::vector<std::string> dropped;
+};
+
+/**
+ * @brief The input set without the analytics whose files it does not carry.
+ *
+ * An analytic may name a file of its own, such as the sensitivity analysis's
+ * scenario market, and a report binds the configurations it has. An analytic whose
+ * file no configuration supplies is one the run cannot execute: the engine stops at
+ * the first input it cannot open, so keeping it turns a run that could price into a
+ * run that states an exit code.
+ *
+ * The analytic is dropped from the document rather than disabled in place, because
+ * a block that stays states a file the package still does not hold. A document with
+ * no analytics left is not pruned further: a run that prices nothing is a decision
+ * its owner made, and the packaging step refuses a document it cannot load.
+ *
+ * @return The input set, with the run document rewritten when anything was dropped,
+ * and the types dropped.
+ * @throws std::invalid_argument if the set holds no run document, or it is not XML.
+ * @throws std::runtime_error if it is XML the model cannot read.
+ */
+ORES_ORE_CORE_EXPORT pruned_analytics without_unloadable_analytics(const input_files& files);
+
 }
 
 #endif

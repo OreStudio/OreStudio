@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: C8307585-34F4-467B-8195-DBB5827DEC64
+:END:
+#+title: Task: Implement the market data screens in ores.web
+#+description: Draw the four market-data journeys the port added - find an instrument, read a rate ladder, read the FX montage and inspect a curve's analytics - as screens in ores.web, over the reads the marketdata service now answers, through the BFF and the client the existing market-data screens use.
+#+type: task
+#+level: s1
+#+filetags: :port_the_market_data_screens:sprint_30:v0:
+#+owner: marco
+#+branch: feature/port-the-market-data-screens
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person signs in to ores.web and reaches the four market-data screens from the application, each drawing the prototype that was signed off and each reading the service rather than deriving anything in the browser.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-13                               |
+
+* Acceptance
+
+- Every screen draws its signed-off prototype: the same rows, the same columns, the same order, in the shell's chrome.
+- Each screen reads its facts from the marketdata service through the BFF; the browser derives no instrument identity, no axis order and no staleness verdict.
+- Each screen states the party it reads for and what it does when the read refuses or answers nothing.
+- Every screen is reachable from the market data part of the application, in the three languages the shell carries.
+- Each screen has tests that assert what it shows for a stated answer, in the manner of the existing market-data screens.
+
+* Plan
+
+The four reads already answer from the marketdata service, so this task is
+presentation: one BFF route per read, one client method per route, and one
+screen per prototype.
+
+The routes forward the typed request and return the answer as the server wrote
+it; a refusal travels as the server's words. The client parses each answer into
+a shape the screen can rely on, defaulting nothing the server did not send. The
+screens hold their state in the address, as the existing market-data screens
+do, so a row or a currency can be linked to.
+
+What the screens add is display arithmetic only: the ladder's best quote and
+its distance in basis points from the consensus, and the montage's ordering by
+move. Every identity, maturity date, year fraction and staleness verdict is the
+server's.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| BFF route cases | 7 | =npx vitest run packages/bff/src/market-reads.test.ts= | 4f60522c86 |
+| Screen cases | 19 across four suites | =npx vitest run packages/web/src/marketdata/*Screen.test.tsx= | 255b43d17d |
+| Web suite | 2526 tests in 205 files | =npm test= in =projects/ores.web= | 255b43d17d |
+| Live routes | 401 on all four, so each is registered and asks for a session | =curl -X POST= against =ORES_WEB_PORT= after restarting the unit | 255b43d17d |
+
+* Notes
+
+- The generated TypeScript protocol types had drifted from the org models, so
+  the four reads had no client types to call. They are regenerated rather than
+  written by hand, and the same generation wrote the surface read's new
+  metadata fields.
+- The curve selector reads =ir-curve-bootstrap-configs=, because the analytics
+  read names a bootstrap configuration and not a market instrument. The
+  catalogue's instruments are the series a person reads; the two are different
+  identities and the screen says which it is choosing.
+- The curve analytics prototype's T-1 columns are not drawn: the read carries no
+  prior close, so the screen says so instead of deriving a change.
+- The ladder holds one consensus column and a quoted-by column rather than a
+  column per provider: the providers a party has are not in the answer, so the
+  screen cannot name the ones missing from a rung, only the ones present.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

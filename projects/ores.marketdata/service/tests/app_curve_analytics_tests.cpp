@@ -99,3 +99,22 @@ TEST_CASE("the_verdict_is_the_servers_of_when_the_market_was_written", analytics
     for (const auto& pillar : resp.market_pillars)
         CHECK(pillar.as_of != std::chrono::system_clock::time_point{});
 }
+
+TEST_CASE("a_comparison_with_no_published_set_draws_no_prior_and_says_so", analytics_tags) {
+    curve_fixture f;
+
+    auto req = request_for(f);
+    // A day before the fixture's market, where the party published nothing.
+    req.compare_at = f.subject().as_of - std::chrono::hours{24};
+    const auto resp = get_curve_analytics(*f.party, req);
+
+    INFO("message: " << resp.message);
+    REQUIRE(resp.success);
+    // Nothing was current then, so there is nothing to compare against: the fields
+    // stay absent rather than carrying a zero, which a person would read as a flat day.
+    CHECK(resp.compare_at == std::chrono::system_clock::time_point{});
+    for (const auto& point : resp.bootstrapped) {
+        CHECK(point.prior_zero_rate.has_value() == false);
+        CHECK(point.change_bps.has_value() == false);
+    }
+}

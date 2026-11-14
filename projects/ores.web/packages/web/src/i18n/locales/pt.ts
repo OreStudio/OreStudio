@@ -5753,6 +5753,12 @@ const pt: SourceCatalogue = {
             title: 'Análise da curva',
             lead: 'As convenções de uma curva, os pilares cotados pelo mercado e o que o bootstrap deles faz.',
             curve: 'Curva',
+            compare: 'Comparar com',
+            priorZero: 'Taxa zero anterior (%)',
+            change: 'Variação (pb)',
+            comparedWith: 'Medido a partir do conjunto publicado em {at}.',
+            noPriorSet:
+                'Nenhum conjunto publicado estava em vigor nesse instante, por isso nenhuma variação é traçada.',
             readingFor: 'A ler para {party}',
             axes: {
                 tenor: 'Por prazo',

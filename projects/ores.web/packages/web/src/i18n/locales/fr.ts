@@ -5794,6 +5794,12 @@ const fr: SourceCatalogue = {
             title: 'Analyse de courbe',
             lead: "Les conventions d'une courbe, les piliers cotés par le marché et ce que le bootstrap en fait.",
             curve: 'Courbe',
+            compare: 'Comparer à',
+            priorZero: 'Taux zéro antérieur (%)',
+            change: 'Variation (pb)',
+            comparedWith: 'Mesuré depuis l’ensemble publié au {at}.',
+            noPriorSet:
+                'Aucun ensemble publié n’était en vigueur à cet instant ; aucune variation n’est tracée.',
             readingFor: 'Lecture pour {party}',
             axes: {
                 tenor: 'Par échéance',

@@ -542,6 +542,8 @@ export interface CurveBootstrappedPoint {
     zero_rate: number;
     implied_forward: number;
     shift_bps: number;
+    prior_zero_rate: number | null;
+    change_bps: number | null;
 }
 
 /**
@@ -555,6 +557,7 @@ export interface GetCurveAnalyticsRequest {
     party_id: string;
     instrument_id: string;
     as_of: string;
+    compare_at: string;
 }
 
 /**
@@ -569,6 +572,7 @@ export interface GetCurveAnalyticsResponse {
     instrument_id: string;
     name: string;
     as_of: string;
+    compare_at: string;
     stale: boolean;
     conventions: CurveConventions;
     market_pillars: CurveMarketPillar[];

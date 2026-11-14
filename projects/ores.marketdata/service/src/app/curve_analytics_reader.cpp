@@ -22,7 +22,10 @@
 #include "../curve_republish_resolver.hpp"
 #include "ores.analytics.quant/service/day_count_calculator.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/datum/market_datum.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
@@ -36,6 +39,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cmath>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -160,6 +164,47 @@ get_curve_analytics(const ores::database::context& ctx,
 
             previous_zero = zero;
             previous_tau = tau;
+        }
+
+        // The prior close, when one was asked for: the party's published set that
+        // was current at the instant, and the zero rate each pillar held then. A set
+        // a person could not have seen at that instant is not a prior close, so a
+        // publish stamped later does not count however old its as-of is.
+        if (request.compare_at != std::chrono::system_clock::time_point{}) {
+            const auto at = request.compare_at;
+            auto sets = repository::curve_publish_repository{}.read_applied_for_series(
+                ctx, config.output_series_id);
+            std::erase_if(sets, [&](const auto& set) {
+                if (!set.published_at || *set.published_at > at || set.as_of > at)
+                    return true;
+                return set.withdrawn_at && *set.withdrawn_at <= at;
+            });
+            if (!sets.empty()) {
+                std::ranges::sort(sets, {}, &ores::marketdata::domain::curve_publish::as_of);
+                const auto& prior = sets.back();
+                resp.compare_at = prior.as_of;
+                std::map<std::string, double> factors;
+                for (const auto& observation :
+                     repository::market_observation_repository{}.read_as_of(
+                         ctx, config.output_series_id, prior.as_of)) {
+                    const auto named = datum::oresmd_uri_codec::read(observation.oresmd_uri);
+                    const auto value = ores::platform::numeric::parse_double(observation.value);
+                    if (!named || !value)
+                        continue;
+                    const auto* term = named->get<datum::field::term>();
+                    if (term != nullptr)
+                        factors[term->text()] = *value;
+                }
+                for (auto& point : resp.bootstrapped) {
+                    const auto found = factors.find(point.tenor);
+                    if (found == factors.end() || !(found->second > 0.0) ||
+                        !(point.year_fraction > 0.0))
+                        continue;
+                    const auto prior_zero = -std::log(found->second) / point.year_fraction;
+                    point.prior_zero_rate = prior_zero;
+                    point.change_bps = (point.zero_rate - prior_zero) * 10000.0;
+                }
+            }
         }
 
         // The verdict is the server's, asked of the one policy, of when the market

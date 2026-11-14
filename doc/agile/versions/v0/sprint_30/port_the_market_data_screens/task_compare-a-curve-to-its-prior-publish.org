@@ -8,7 +8,7 @@
 #+filetags: :port_the_market_data_screens:sprint_30:v0:
 #+owner: marco
 #+branch: feature/compare-a-curve-to-its-prior-publish
-#+pr:
+#+pr: 4717
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4717][#4717]] | [marketdata] Compare a curve with the set that was current before it |
 
 * Review
 

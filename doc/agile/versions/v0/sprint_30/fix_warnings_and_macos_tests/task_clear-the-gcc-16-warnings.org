@@ -8,7 +8,7 @@
 #+filetags: :fix_warnings_and_macos_tests:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/clear-the-gcc-16-warnings
-#+pr:
+#+pr: 4730
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4730][#4730]] | [build,http,nats,trading] Clear the warnings the GCC 16 nightly reports |
 
 * Review
 

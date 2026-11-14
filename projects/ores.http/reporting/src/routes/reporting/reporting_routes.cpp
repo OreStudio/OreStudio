@@ -25,8 +25,8 @@
 #include "ores.http/routes/reporting/report_routes.hpp"
 #include "ores.http/routes/reporting/result_routes.hpp"
 #include "ores.http/routes/reporting/run_file_routes.hpp"
-#include "ores.http/routes/reporting/schedule_routes.hpp"
 #include "ores.http/routes/reporting/run_routes.hpp"
+#include "ores.http/routes/reporting/schedule_routes.hpp"
 
 namespace ores::http::routes::reporting {
 

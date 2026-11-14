@@ -81,10 +81,9 @@ public:
      * a definition somebody else changed in between is a conflict and not a
      * silent overwrite.
      */
-    std::expected<void, std::string>
-    set_expression(service::report_definition_service& svc,
-                   domain::report_definition definition,
-                   const std::string& expression) {
+    std::expected<void, std::string> set_expression(service::report_definition_service& svc,
+                                                    domain::report_definition definition,
+                                                    const std::string& expression) {
         definition.schedule_expression = expression;
         try {
             svc.save_definition(definition);
@@ -185,8 +184,8 @@ public:
                     if (!result || !*result) {
                         failed_ids.push_back(id);
                         if (first_error.empty())
-                            first_error = result ? "No job was made for this definition." :
-                                                   result.error();
+                            first_error =
+                                result ? "No job was made for this definition." : result.error();
                         /*
                          * A refusal must not leave a definition carrying a
                          * schedule nobody asked for.

@@ -42,10 +42,8 @@ const std::string another_id = "00000000-0000-0000-0000-0000000000d2";
 http_status post_of(const std::string& address, const std::string& body) {
     http_request req;
     req.body = body;
-    return ores::http::reporting::tests::answer_at<schedule_routes>(http_method::post,
-                                                                    address,
-                                                                    req,
-                                                                    address)
+    return ores::http::reporting::tests::answer_at<schedule_routes>(
+               http_method::post, address, req, address)
         .status;
 }
 
@@ -77,7 +75,8 @@ TEST_CASE("a_schedule_expression_names_one_definition", "[schedule]") {
 
     // The expression is written onto one definition, so a body that states one
     // names a single id and no other.
-    CHECK(post_of(schedule_address, a_schedule("\"" + an_id + "\",\"" + another_id + "\"", "0 17 * * *")) ==
+    CHECK(post_of(schedule_address,
+                  a_schedule("\"" + an_id + "\",\"" + another_id + "\"", "0 17 * * *")) ==
           http_status::bad_request);
     CHECK(post_of(schedule_address, a_schedule("\"" + an_id + "\"", "0 17 * * *")) ==
           http_status::bad_gateway);
@@ -98,11 +97,8 @@ TEST_CASE("a_schedule_with_no_service_is_refused_as_upstream", "[schedule]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing a schedule with no service behind it";
 
-    CHECK(post_of(schedule_address, a_schedule("\"" + an_id + "\"")) ==
-          http_status::bad_gateway);
-    CHECK(post_of(unschedule_address, a_schedule("\"" + an_id + "\"")) ==
-          http_status::bad_gateway);
-    CHECK(post_of(unschedule_address,
-                  a_schedule("\"" + an_id + "\",\"" + another_id + "\"")) ==
+    CHECK(post_of(schedule_address, a_schedule("\"" + an_id + "\"")) == http_status::bad_gateway);
+    CHECK(post_of(unschedule_address, a_schedule("\"" + an_id + "\"")) == http_status::bad_gateway);
+    CHECK(post_of(unschedule_address, a_schedule("\"" + an_id + "\",\"" + another_id + "\"")) ==
           http_status::bad_gateway);
 }

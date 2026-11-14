@@ -56,9 +56,9 @@ struct schedule_body final {
 };
 
 constexpr auto wire_fields(std::type_identity<schedule_body>) {
-    return ores::utility::codec::field_list{field{"ids", &schedule_body::ids},
-                                            field{"schedule_expression",
-                                                  &schedule_body::schedule_expression}};
+    return ores::utility::codec::field_list{
+        field{"ids", &schedule_body::ids},
+        field{"schedule_expression", &schedule_body::schedule_expression}};
 }
 
 /// The body an unschedule sends.
@@ -83,16 +83,14 @@ std::vector<std::string> checked_ids(const std::vector<std::string>& ids,
 }
 
 /// What the operation did, as the screen reads it.
-std::string outcome_json(int changed,
-                         const std::vector<std::string>& failed_ids,
-                         const std::string& message) {
+std::string
+outcome_json(int changed, const std::vector<std::string>& failed_ids, const std::string& message) {
     std::vector<std::string> written;
     written.reserve(failed_ids.size());
     for (const auto& id : failed_ids)
         written.push_back(json::write(id));
-    return "{\"changed\":" + std::to_string(changed) +
-           ",\"failedIds\":" + rr::array_of(written) + ",\"message\":" + json::write(message) +
-           "}";
+    return "{\"changed\":" + std::to_string(changed) + ",\"failedIds\":" + rr::array_of(written) +
+           ",\"message\":" + json::write(message) + "}";
 }
 
 }
@@ -145,9 +143,8 @@ void schedule_routes::register_routes(
                     const auto reply = forwarding::forward(req, session, msg);
                     // A refusal of some definitions is the operation's answer and
                     // not a failed call: the screen draws which and why.
-                    return http_response::json(outcome_json(reply.scheduled_count,
-                                                            reply.failed_ids,
-                                                            reply.message));
+                    return http_response::json(
+                        outcome_json(reply.scheduled_count, reply.failed_ids, reply.message));
                 });
             }));
 
@@ -156,22 +153,19 @@ void schedule_routes::register_routes(
             .description("The answer states how many definitions it changed, which it refused "
                          "and the operation's own words for the first refusal.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                co_return guarded<reporting_messaging::unschedule_report_definitions_request>(
-                    [&] {
-                        rr::refuse_unknown_params(req, {});
-                        const auto body = rr::body_of<unschedule_body>(
-                            req, {"ids"}, "An unschedule names the definitions.");
-                        const auto ids = checked_ids(
-                            body.ids,
-                            "An unschedule names 1 to 100 definitions by their ids.");
+                co_return guarded<reporting_messaging::unschedule_report_definitions_request>([&] {
+                    rr::refuse_unknown_params(req, {});
+                    const auto body = rr::body_of<unschedule_body>(
+                        req, {"ids"}, "An unschedule names the definitions.");
+                    const auto ids = checked_ids(
+                        body.ids, "An unschedule names 1 to 100 definitions by their ids.");
 
-                        reporting_messaging::unschedule_report_definitions_request msg;
-                        msg.ids = ids;
-                        const auto reply = forwarding::forward(req, session, msg);
-                        return http_response::json(outcome_json(reply.unscheduled_count,
-                                                                reply.failed_ids,
-                                                                reply.message));
-                    });
+                    reporting_messaging::unschedule_report_definitions_request msg;
+                    msg.ids = ids;
+                    const auto reply = forwarding::forward(req, session, msg);
+                    return http_response::json(
+                        outcome_json(reply.unscheduled_count, reply.failed_ids, reply.message));
+                });
             }));
 }
 

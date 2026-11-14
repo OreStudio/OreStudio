@@ -8,7 +8,7 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 4713
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4713][#4713]] | [doc] File the publishing pipeline architecture review |
 
 * Review
 

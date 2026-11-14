@@ -67,6 +67,33 @@ http_status documentation_status_of(http_request req) {
     return answer->status;
 }
 
+/**
+ * @brief The answer a read route gives a request at an address, on a client that
+ * is not connected, so any forward fails.
+ */
+http_status reads_status_of(http_method method,
+                            const std::string& address,
+                            http_request req,
+                            const std::string& expected_pattern) {
+    ores::nats::service::nats_client session;
+    auto table = std::make_shared<ores::http::net::router>();
+    engine_settings_routes::register_read_routes(
+        table, std::make_shared<ores::http::openapi::endpoint_registry>(), session);
+    const auto route = table->match(method, address, req.path_params);
+    REQUIRE(route.has_value());
+    REQUIRE(route->pattern == expected_pattern);
+    REQUIRE(route->requires_auth);
+    boost::asio::io_context io;
+    std::optional<ores::http::domain::http_response> answer;
+    boost::asio::co_spawn(
+        io,
+        [&]() -> boost::asio::awaitable<void> { answer = co_await route->handler(req); },
+        boost::asio::detached);
+    io.run();
+    REQUIRE(answer.has_value());
+    return answer->status;
+}
+
 }
 
 TEST_CASE("a_documentation_page_refuses_a_query_it_does_not_read", "[engine_settings]") {
@@ -83,4 +110,92 @@ TEST_CASE("a_documentation_page_with_no_service_is_refused_as_upstream", "[engin
     BOOST_LOG_SEV(lg, info) << "Testing a documentation page with no service behind it";
 
     CHECK(documentation_status_of(http_request{}) == http_status::bad_gateway);
+}
+
+TEST_CASE("a_page_of_settings_refuses_a_query_it_does_not_read", "[engine_settings]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the page of settings' query";
+
+    http_request req;
+    req.query_params["party"] = "acme";
+    CHECK(reads_status_of(http_method::get,
+                          "/api/reporting/engine-settings",
+                          req,
+                          "/api/reporting/engine-settings") == http_status::bad_request);
+}
+
+TEST_CASE("a_page_of_settings_with_no_service_is_refused_as_upstream", "[engine_settings]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a page of settings with no service behind it";
+
+    CHECK(reads_status_of(http_method::get,
+                          "/api/reporting/engine-settings",
+                          http_request{},
+                          "/api/reporting/engine-settings") == http_status::bad_gateway);
+}
+
+TEST_CASE("one_setting_refuses_an_id_that_is_not_an_id", "[engine_settings]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing one setting's id";
+
+    CHECK(reads_status_of(http_method::get,
+                          "/api/reporting/engine-settings/not-an-id",
+                          http_request{},
+                          "/api/reporting/engine-settings/{id}") == http_status::bad_request);
+}
+
+TEST_CASE("one_setting_with_no_service_is_refused_as_upstream", "[engine_settings]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing one setting with no service behind it";
+
+    CHECK(reads_status_of(http_method::get,
+                          "/api/reporting/engine-settings/00000000-0000-0000-0000-0000000000e1",
+                          http_request{},
+                          "/api/reporting/engine-settings/{id}") == http_status::bad_gateway);
+}
+
+TEST_CASE("a_history_refuses_an_id_that_is_not_an_id", "[engine_settings]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a history's id";
+
+    CHECK(reads_status_of(http_method::get,
+                          "/api/reporting/engine-settings/not-an-id/history",
+                          http_request{},
+                          "/api/reporting/engine-settings/{id}/history") ==
+          http_status::bad_request);
+}
+
+TEST_CASE("a_history_with_no_service_is_refused_as_upstream", "[engine_settings]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing a history with no service behind it";
+
+    CHECK(reads_status_of(
+              http_method::get,
+              "/api/reporting/engine-settings/00000000-0000-0000-0000-0000000000e1/history",
+              http_request{},
+              "/api/reporting/engine-settings/{id}/history") == http_status::bad_gateway);
+}
+
+TEST_CASE("the_documentation_address_is_not_read_as_a_configuration_id", "[engine_settings]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing the documentation address beside the reads";
+
+    ores::nats::service::nats_client session;
+    auto table = std::make_shared<ores::http::net::router>();
+    auto registry = std::make_shared<ores::http::openapi::endpoint_registry>();
+    engine_settings_routes::register_documentation_route(table, registry, session);
+    engine_settings_routes::register_read_routes(table, registry, session);
+
+    http_request doc_req;
+    const auto doc = table->match(http_method::get, documentation_address, doc_req.path_params);
+    REQUIRE(doc.has_value());
+    CHECK(doc->pattern == documentation_address);
+
+    http_request id_req;
+    const auto one =
+        table->match(http_method::get,
+                     "/api/reporting/engine-settings/00000000-0000-0000-0000-0000000000e1",
+                     id_req.path_params);
+    REQUIRE(one.has_value());
+    CHECK(one->pattern == "/api/reporting/engine-settings/{id}");
 }

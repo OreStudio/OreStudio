@@ -22,6 +22,11 @@
 
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.reporting.api/domain/engine_settings.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <map>
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -61,8 +66,51 @@ struct engine_group_row final {
 };
 
 /**
- * @brief The groups and the settings of the engine settings, read from the
- * service.
+ * @brief One part of one configuration: the row that holds a group's values.
+ *
+ * A part is one row of a table whose columns are the settings the data names, so
+ * a value travels beside the row's own members rather than as a field of this
+ * type. A column that is null is the engine default for that setting.
+ */
+struct engine_part_row final {
+    std::string id;
+    int version = 0;
+    std::string modified_by;
+    std::chrono::system_clock::time_point recorded_at;
+    std::string change_reason;
+    std::string change_commentary;
+
+    /**
+     * @brief Every member of the row, by name, as the JSON it renders to.
+     */
+    std::map<std::string, std::string> columns;
+};
+
+/**
+ * @brief The parts of every configuration, by group and then by the
+ * configuration each belongs to.
+ */
+using engine_parts = std::map<std::string, std::map<std::string, engine_part_row>>;
+
+/**
+ * @brief A party the caller works in, as the IAM service names it.
+ */
+struct engine_party_name final {
+    std::string name;
+    std::string short_code;
+};
+
+/**
+ * @brief One report definition that binds a configuration.
+ */
+struct engine_bound_report final {
+    std::string id;
+    std::string name;
+};
+
+/**
+ * @brief The groups and the settings of the engine settings, and the rows a
+ * screen joins onto them, read from the services.
  *
  * A group and its settings are rows, never a change: the model states them, so
  * the screens and the writes both read them here rather than restating them.
@@ -84,6 +132,59 @@ namespace engine_settings_rows {
  */
 [[nodiscard]] std::vector<engine_group_row> read_groups(const ores::http::domain::http_request& req,
                                                         ores::nats::service::nats_client& session);
+
+/**
+ * @brief The parts of the configurations named, or of every configuration when
+ * none is named.
+ */
+[[nodiscard]] engine_parts read_parts(const ores::http::domain::http_request& req,
+                                      ores::nats::service::nats_client& session,
+                                      const std::vector<boost::uuids::uuid>& ids);
+
+/**
+ * @brief Every configuration the caller's parties hold, in the service's order.
+ */
+[[nodiscard]] std::vector<ores::reporting::domain::engine_settings>
+read_engine_settings(const ores::http::domain::http_request& req,
+                     ores::nats::service::nats_client& session);
+
+/**
+ * @brief One configuration, or a 404 when the service holds none with this id.
+ */
+[[nodiscard]] ores::reporting::domain::engine_settings
+read_central(const ores::http::domain::http_request& req,
+             ores::nats::service::nats_client& session,
+             const boost::uuids::uuid& id);
+
+/**
+ * @brief The parties the caller works in, by id. A read that fails leaves the
+ * names empty, so a page still states the configuration it could read.
+ */
+[[nodiscard]] std::map<std::string, engine_party_name>
+read_party_names(const ores::http::domain::http_request& req,
+                 ores::nats::service::nats_client& session);
+
+/**
+ * @brief The report definitions that bind one configuration, or nothing when the
+ * binding cannot be read.
+ *
+ * A binding that cannot be read must not hide the settings, so a failure is
+ * stated as an unknown list and not as a refusal of the page.
+ */
+[[nodiscard]] std::optional<std::vector<engine_bound_report>>
+read_bound_reports(const ores::http::domain::http_request& req,
+                   ores::nats::service::nats_client& session,
+                   const boost::uuids::uuid& configuration_id);
+
+/**
+ * @brief Every version of one group's part row, in the order the service states
+ * them.
+ */
+[[nodiscard]] std::vector<engine_part_row>
+read_part_versions(const ores::http::domain::http_request& req,
+                   ores::nats::service::nats_client& session,
+                   std::string_view group_code,
+                   const boost::uuids::uuid& part_id);
 
 }
 

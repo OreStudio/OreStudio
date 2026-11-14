@@ -48,6 +48,18 @@ public:
     register_documentation_route(std::shared_ptr<ores::http::net::router> router,
                                  std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                  ores::nats::service::nats_client& session);
+
+    /**
+     * @brief Register the three reads: the page of settings, one setting with
+     * its groups and parts, and its history.
+     *
+     * The documentation address is registered first, because it is a word where
+     * the other reads name a configuration.
+     */
+    static void
+    register_read_routes(std::shared_ptr<ores::http::net::router> router,
+                         std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
+                         ores::nats::service::nats_client& session);
 };
 
 }

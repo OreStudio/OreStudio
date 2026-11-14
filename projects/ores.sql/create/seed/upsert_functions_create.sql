@@ -90,7 +90,7 @@ begin
     -- seed asks first and leaves an existing row exactly as it is.
     if exists (
         select 1 from ores_dq_data_domains_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and name = p_name
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -133,7 +133,7 @@ begin
     -- seed asks first and leaves an existing row exactly as it is.
     if exists (
         select 1 from ores_dq_subject_areas_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and name = p_name
           and domain_name = p_domain_name
           and valid_to = ores_utility_infinity_timestamp_fn()
@@ -178,7 +178,7 @@ begin
     -- this file's header documents is what does.
     if exists (
         select 1 from ores_dq_catalogs_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and name = p_name
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -255,7 +255,7 @@ begin
     -- seed asks first and leaves an existing row exactly as it is.
     if exists (
         select 1 from ores_dq_origin_dimensions_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and code = p_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -293,7 +293,7 @@ begin
     -- seed asks first and leaves an existing row exactly as it is.
     if exists (
         select 1 from ores_dq_nature_dimensions_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and code = p_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -331,7 +331,7 @@ begin
     -- seed asks first and leaves an existing row exactly as it is.
     if exists (
         select 1 from ores_dq_treatment_dimensions_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and code = p_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -372,7 +372,7 @@ begin
     -- seed asks first and leaves an existing row exactly as it is.
     if exists (
         select 1 from ores_dq_change_reason_categories_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and code = p_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -415,7 +415,7 @@ begin
     -- seed asks first and leaves an existing row exactly as it is.
     if exists (
         select 1 from ores_dq_change_reasons_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and code = p_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -459,7 +459,7 @@ begin
     -- seed asks first and leaves an existing row exactly as it is.
     if exists (
         select 1 from ores_dq_coding_scheme_authority_types_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and code = p_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -501,7 +501,7 @@ begin
     -- seed asks first and leaves an existing row exactly as it is.
     if exists (
         select 1 from ores_dq_coding_schemes_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and code = p_code
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -544,7 +544,7 @@ begin
     -- seed asks first and leaves an existing row exactly as it is.
     if exists (
         select 1 from ores_dq_methodologies_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and name = p_name
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -1126,7 +1126,7 @@ begin
     -- seed asks first and leaves an existing row exactly as it is.
     if exists (
         select 1 from ores_dq_dataset_bundles_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and code = p_code
           and name = p_name
           and valid_to = ores_utility_infinity_timestamp_fn()

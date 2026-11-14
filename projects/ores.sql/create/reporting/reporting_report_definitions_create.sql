@@ -134,7 +134,7 @@ begin
     if NEW.cut_kind_code is not null then
         if not exists (
             select 1 from ores_reporting_cut_kinds_tbl
-            where (tenant_id = NEW.tenant_id
+            where (tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
                or tenant_id = ores_utility_system_tenant_id_fn())
               and code = NEW.cut_kind_code
               and valid_to = ores_utility_infinity_timestamp_fn()

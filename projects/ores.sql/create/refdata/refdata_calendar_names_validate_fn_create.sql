@@ -55,7 +55,7 @@ begin
         end if;
         if not exists (
             select 1 from ores_refdata_calendar_names_tbl
-            where tenant_id = p_tenant_id
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
               and code = v_part
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then

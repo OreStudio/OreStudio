@@ -168,7 +168,7 @@ begin
     -- Allow pass-through if this tenant has no active catalogs yet.
     if not exists (
         select 1 from ores_dq_catalogs_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         return p_value;
@@ -177,7 +177,7 @@ begin
     -- Validate against this tenant's values.
     if not exists (
         select 1 from ores_dq_catalogs_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and name = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then

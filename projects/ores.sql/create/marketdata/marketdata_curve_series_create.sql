@@ -64,7 +64,7 @@ begin
 
         if exists (
             select 1 from ores_marketdata_market_series_tbl s
-            where s.tenant_id = p_tenant_id
+            where s.tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
               and s.party_id = p_party_id
               and s.oresmd_uri = v_uri
               and s.provider_code = 'ore'

@@ -53,6 +53,7 @@ A fresh database values what it books, and no test calls a publish function.
 |------+-------+---------+--------|
 | Populate scripts that call a publish function | 4: the three seeding dependencies, and the bring-up publish | `grep -rn "publish_.*_fn(" projects/ores.sql/populate/` | d47971b1c5 |
 | Rows a rolled-back bring-up wrote on a database whose three catalogues were emptied | 61 calendars, 11 equity underlyings, 160 currencies and 250 countries | `psql -f tmp/boot_proof2.sql` | d47971b1c5 |
+| Current rows in the system tenant after `compass db recreate` | 170 currencies, 61 calendars, 11 equity underlyings, 250 countries, 3,275 conventions, 213 business centres | `compass sql -- -c "select count(*) ..."` | 8d502ed029 |
 
 * Notes
 
@@ -108,8 +109,17 @@ A database leaves bring-up with its platform and world catalogues in place.
 - Proof, on the development database inside a transaction that was rolled back:
   the three catalogues were emptied in the system tenant, the renamed bundle map
   was applied, and the bring-up wrote 61 calendars, 11 equity underlyings, 160
-  currencies and 250 countries. The same run warned that three datasets have no
-  row in that database, which the tree registers and a recreate produces.
+  currencies and 250 countries.
+- The first full recreate failed, and the failure is the reason the function has
+  two parts. The conventions publish refused EUR because its validator reads the
+  currency catalogue, and no dependency edge declared it, so the conventions
+  sorted before the currencies. The graph now carries the edge, and the publisher
+  retries a dataset that fails once every other member has published, because a
+  validator may read a catalogue that no edge names. A dataset that fails twice
+  is raised with its own error.
+- A second recreate passed end to end: the system tenant holds 61 current
+  calendars, 250 countries, 170 currencies, 3,275 conventions and 213 business
+  centres, and `compass db status` reports the schema in sync.
 
 The tenant tier is untouched: a tenant's own rows are published when the tenant
 is created, which is the next task. The level on the bundle row, and the target

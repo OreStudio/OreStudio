@@ -20,3 +20,4 @@
 
 -- Drop the bring-up publisher
 drop function if exists ores_dq_bootstrap_publish_fn;
+drop function if exists ores_dq_publish_dataset_fn;

@@ -172,8 +172,8 @@ The publish function is the only mechanism that writes a published row, and it
 has two callers: the bundle publication at runtime, and the bootstrap at
 database bring-up. The function reads the dataset's artefact rows, which are
 held in the system tenant, and writes the owning tables in the target tenant.
-It is idempotent and returns the four counts — inserted, updated, skipped and
-deleted — that the caller reads.
+It returns the four counts — inserted, updated, skipped and deleted — that the
+caller reads.
 [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]] holds the function's
 contract, the artefact table, the artefact type and the steps by which one is
 added.
@@ -223,9 +223,12 @@ recreate writes every row once.
 An operator establishes the state of a catalogue with two checks. The functions
 =ores_dq_bundle_datasets_list_fn= and =ores_dq_bundle_preview_fn= report whether
 a bundle is complete: whether every member has a dataset and a subject, and
-whether any member is missing. A subsequent re-run of the bundle reports whether
-the catalogue agrees with the artefacts, and a catalogue that agrees returns
-=skipped= for every row.
+whether any member is missing. A re-run of the bundle then reports what it
+wrote, and the counts are read against the function that produced them: a
+function that compares a staged row with the row it holds returns =skipped= for
+a catalogue that agrees, and one that rewrites its rows returns =updated=. The
+tree holds both kinds, so a zero =inserted= count is the evidence and a zero
+=updated= count is not.
 
 Bring-up concludes with the system tenant. An operator continues by creating a
 tenant, publishing =tenant_defaults= into it and onboarding each party with

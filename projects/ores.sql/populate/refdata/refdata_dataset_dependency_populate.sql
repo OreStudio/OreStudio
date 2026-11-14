@@ -60,6 +60,13 @@ BEGIN
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'refdata.currency_pair_conventions', 'iso.currencies', 'base_quote_currency');
 
+    -- A convention states the currency of its legs, and the database refuses a
+    -- currency the target tenant does not hold, so the convention follows the
+    -- currency catalogue. The edge also orders the two in a bring-up, where no
+    -- provisioned tenant has published the currencies before it runs.
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'refdata.conventions', 'iso.currencies', 'currency_reference');
+
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'refdata.currency_pair_convention_calendars', 'refdata.currency_calendars',
         'calendar_reference');

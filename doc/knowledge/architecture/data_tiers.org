@@ -99,10 +99,16 @@ machinery.
 | Tier | How the rows arrive |
 |------+---------------------|
 | 1 | A populate script under =projects/ores.sql/populate/=, idempotent, written for the system tenant |
-| 2 | A DQ dataset, published into the owning service and installed as a bundle |
+| 2 | A DQ dataset, published into the owning service |
 | 3 | An =ores.seeder= dataset |
 | 4 | A DQ dataset for a curated set, a synthetic feeds dataset for generated data, or a feed |
 | 5 | Runtime alone |
+
+The mechanism a tier-2 dataset uses is the same one every other published
+dataset uses: a bundle, a publish function and a target tenant. The level and
+the bundle that carry a dataset are
+[[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][The publishing architecture]]'s
+subject, not this page's. This page decides the tier and stops there.
 
 ** The procedure
 

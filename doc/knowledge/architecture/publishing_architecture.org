@@ -1,0 +1,397 @@
+:PROPERTIES:
+:ID: 7287B58F-964C-4D42-8EC4-6C5DA53EEE2D
+:END:
+#+title: The publishing architecture
+#+description: The three levels, the bundle map, the one publish path, and how a published row is traced, reproduced and audited.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:dq:publishing:data:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+
+* Summary
+
+Every published row has one owner, and the owner fixes three things: the row's
+level, the tenant the row is written into, and the bundle that carries it.
+Three levels exist — the *installation*'s own vocabulary, the *world*'s shared
+facts, and a *tenant*'s own rows. An installation row and a world row live
+once, in the system tenant; a tenant row lives in that tenant, and a
+party-scoped row names its party. One
+SQL function per artefact type is the only writer, and two callers reach it:
+the bundle publication at runtime, and the bootstrap at database bring-up.
+This page is the single picture. It states the levels, the bundle map, the
+path, and what a published row's provenance, reproduction and audit are; the
+pages it supersedes link here instead of restating it. It states the model the
+tree must hold. Where the tree differs, the section *What the model retires*
+names the task that closes the gap.
+
+* Detail
+
+** Words
+
+| Word | Meaning |
+|------+---------|
+| /Owner class/ | Who owns a row's values: the installation, the world, or a tenant. It also names the row-level security shape. |
+| /Level/ | The owner class a dataset belongs to. Installation, world or tenant. |
+| /Bundle/ | A named list of datasets that share one level and one scope, published as one run. |
+| /Dataset/ | One named, versioned set of artefact rows, registered in =ores_dq_datasets_tbl= with its artefact type. |
+| /Artefact table/ | =ores_dq_<plural>_artefact_tbl=, which holds a dataset's staged rows in the system tenant until a publication drains them. |
+| /Artefact type/ | The row in =ores_dq_artefact_types_tbl= that names the artefact table, the target table and the publish subject. |
+| /Publish function/ | =ores_<component>_publish_<plural>_from_dq_fn=, the only thing that writes a published row. |
+| /Publication/ | One run of a bundle: one workflow step per dataset, each step one publish function. |
+| /Bootstrap/ | The publication a database runs at bring-up. It calls the same functions as a publication, without the bus. |
+
+** The owner decides the level
+
+A row's level is fixed by who owns its values. It is not fixed by the table it
+lands in, by the service that publishes it, or by the bundle that happens to
+carry it. The three levels and the three ownership classes of
+[[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] are the same three things
+seen from two sides: the level says who authors the values, and the owner
+class says which policy and which read path the row gets. Both must be stated
+together. A page that names one and not the other leaves the reader to guess
+the other, which is how the defects this page settles were possible.
+
+| Level | Owner class | The rows hold | Where the rows live | Who reads them |
+|-------+-------------+---------------+---------------------+----------------|
+| /installation/ | The installation | The platform's own vocabulary and the deployment's registers: coding schemes, template images, market data providers, adapters and suppliers, ORE parameters, the system tenant's own feeds | Once, in the system tenant | The installation's own code and, for the catalogue rows, every tenant through the shared-reference read |
+| /world/ | Shared reference | The facts every installation holds identically: ISO countries and currencies, the FpML vocabularies, GLEIF records, calendars, currency pairs and their conventions, commodities, equity underlyings | Once, in the system tenant | Every tenant, through the shared-reference read |
+| /tenant/ | A tenant | A tenant's own rows: its parties and their conventions, its CRM topology, its report definitions, its portfolios and books, its badges and its parameter values | Once, in that tenant | That tenant alone. A row of a party also carries =party_id=. |
+
+The two upper levels share a target and share a read path, and they still earn
+two names. The installation authors its own values and answers to nobody; the
+world adopts an external standard and records which source it adopted. A
+reader deciding where a new table belongs asks the first question on
+[[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]] — does the platform define these values, or does it adopt
+them — and the answer is the level. What the tier page calls a tier is a
+statement about substitutability; what this page calls a level is a statement
+about the target and the read path. The two agree, and the level is the one a
+publish request carries.
+
+** The three levels
+
+*** Installation
+
+The installation level holds what the platform needs in order to function at
+all, and what the deployment knows about itself. A coding scheme, a template
+image, a provider, an adapter, a supplier or an ORE parameter has one correct
+set, and the platform is its author. The rows live in the system tenant
+because the system tenant is where the installation keeps its own data; the
+system tenant is a constant here, not an owner that can vary. A tenant reads
+these rows where they lie. It does not get a copy, and it cannot change them
+except by a release.
+
+The deployment's own registers sit in this level too: the services roster, the
+hosts and wrapper nodes, the grid and node samples, the telemetry logs. No
+tenant reads them, and no bundle carries them. They are written by the services
+that observe them, and a reader looking for the dataset that publishes one is
+looking for something the model does not have.
+
+*** World
+
+The world level holds the facts more than one installation shares, and the
+platform has adopted one source for each. ISO 4217 currencies, ISO 3166
+countries, the FpML coding schemes and business centres, the GLEIF LEI
+records, the QuantLib calendars, the currency pairs, the commodities and the
+equity underlyings are all world rows. The choice of source is the decision;
+the values are not. Because the values are identical everywhere, the rows
+exist once, in the system tenant, and every tenant reads them there.
+
+A GLEIF import splits across two levels, and it is the one case a reader must
+not collapse. The LEI record is a world fact and lives in the system tenant.
+The party a tenant creates from that record is the tenant's own row, and it
+lives in the tenant. The dataset that carries parties is therefore a tenant
+dataset, though the record it reads is a world one.
+
+There is no second copy of a world row in any tenant. That is the choice this
+page settles, and it is what makes a fresh database usable: the world is
+published when the database comes up, so a test, a screen and a valuation see
+it without any tenant having been provisioned.
+
+The read is two halves of one mechanism, and both exist today. The table's
+policy takes the shared-reference shape, ~tenant_id = current or tenant_id =
+system~, which the model declares as =:rls_own_or_system_tenant_rows:=; and
+the entity's repository declares =:system_tenant_visible:=, whose reads admit
+the system tenant's rows beside the caller's own. A widening that lets a
+system-tenant session see every tenant is not the same shape and is not this
+mechanism; =check_rls_system_tenant_widenings.py= exists to stop it.
+
+*** Tenant
+
+The tenant level holds what one tenant owns. Two scopes exist, and they differ
+by whom the rows belong to within the tenant:
+
+- /Tenant-wide/ rows belong to the tenant and name no party: its badges, its
+  badge mappings, its code domains, its value domains, its parameter values.
+- /Party/ rows belong to one party and carry =party_id=: the party's
+  instrument conventions, its CRM topology, its report definitions, its
+  netting sets, its CSAs, its portfolios and books.
+
+The tenant level is written once per tenant, and the party scope once per
+party. A dataset that names a party in its params is party-scoped; a dataset
+that names none is tenant-wide. The publish function resolves the party from
+=p_params=, then from the tenant's root party, then from the system party.
+
+One copy of each row is what the three levels add up to, and the readers
+follow from it.
+
+#+caption: The three levels: one copy of each row, and who reads it.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/publishing_architecture_levels.png]]
+
+** The bundle map
+
+A bundle belongs to one level and one scope. A dataset is a member of one
+bundle and no more; a dataset that is no member is reached only through
+another dataset's dependency edge. The level and the scope decide the target
+tenant and the parameters, so a caller never states a target a bundle does not
+allow.
+
+| Bundle | Level | Scope | Writes into | Published | Members |
+|--------+-------+-------+-------------+-----------+---------|
+| =system_core= | Installation | Installation | The system tenant | Once per installation, at bring-up | The coding schemes, the template images, the provider, adapter and supplier catalogues, the system tenant's feeds, the ORE parameter documentation, the FX vol surface blueprints |
+| =world= | World | World | The system tenant | Once per installation, at bring-up | ISO and FpML vocabularies, calendars and their exceptions and events, currency pairs and their conventions, currencies, commodities, equity underlyings |
+| =tenant_defaults= | Tenant | Tenant-wide | The tenant | Once per tenant, at tenant creation | The badges and badge mappings, the code domains, the value domains and the parameter values a tenant starts with |
+| =party_essentials= | Tenant | Party | The party's tenant | Once per party, at party onboarding | The party's instrument conventions, the party's CRM topology |
+| =party_reporting= | Tenant | Party | The party's tenant | Once per party | The party's report definitions |
+| =ore_samples= | Tenant | Party | The party's tenant | Once per party | The ORE samples: netting agreements, netting sets, CSAs, aliases, portfolios |
+| =risk_management= | Tenant | Party | The party's tenant | Opt-in module | The party's business units, portfolios and books, and the ORE report definitions |
+| =crm_topology= | Tenant | Party | The party's tenant | Opt-in module | The CRM topology bundle on its own |
+| =lei_hierarchy= | Tenant | Tenant-wide | The tenant | Opt-in module | The GLEIF hierarchy imported as the tenant's parties, and the staging datasets it reads |
+| =crypto= | World | World | The system tenant | Opt-in module | The cryptocurrency slice, published beside the currencies |
+
+A fresh installation publishes =system_core= and then =world= into the system
+tenant. Every tenant after it gets =tenant_defaults= at creation, and every
+party gets =party_essentials=. Everything else is a module a profile turns on
+for a tenant that needs it.
+
+=world= is the bundle the tree calls =base= today. The rename carries the
+whole point of this page: =base= reads as "base system", and it publishes into
+each tenant. "Base system" names the system tenant; =base= names each tenant.
+One word cannot name both. =tenant_defaults= takes the members of =base= that
+are the tenant's own starting configuration, and the rest move to =world=. A
+dataset appears in one bundle and no other: today =iso.countries=,
+=iso.currencies= and the visual assets appear in three bundles each, and the
+copies drift.
+
+** The publish path
+
+#+caption: The publish path: from a bundle request to a published row.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/publishing_architecture_components.png]]
+
+A publication is one request and one run:
+
+1. A caller sends =dq.v1.ops.publish_bundle= with a bundle code, the caller's
+   tenant, and the run's params. The shell spells it =bundles publish <code>
+   --wait [--party-id <id>]=; tenant provisioning sends the same request as a
+   workflow step.
+2. =publish_handler= authorises =dq::datasets:write= and asks
+   =publish_service= for the bundle's publishable datasets. The service reads
+   the members, resolves the dependency closure, and drops a dataset that has
+   no target subject.
+3. The handler filters the members marked optional against the run's
+   =opted_in_datasets=, and starts one =bundle_publish_workflow= with one step
+   per dataset.
+4. The workflow engine dispatches each step's command to the dataset's target
+   subject, in dependency order. Each step waits for the one before it.
+5. The target service's =publish_from_dq_handler= derives the function name
+   from the subject, =<component>.v1.ops.<operation>= becoming
+   =ores_<component>_<operation>_fn=, and calls it with the dataset id, the
+   target tenant, the mode and the params.
+6. The function reads the dataset's artefact rows from the system tenant and
+   writes the owning tables in the target tenant. It returns one row per
+   action it took: =inserted=, =updated=, =skipped= or =deleted=, with a count.
+
+#+caption: One bundle publish: dependency order, one function per dataset.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/publishing_architecture_publish_sequence.png]]
+
+The step order is the dependency closure's order, not the display order of the
+bundle members. Two facts about the path are easy to get wrong:
+
+- A bundle publish is a sequence, not a transaction. Each step commits its own
+  function call. A step that fails stops the run, and the steps already
+  committed stay. Nothing compensates them.
+- A publication writes no audit row today. The table
+  =ores_dq_bundle_publications_tbl= exists and nothing inserts into it, and
+  the request's =atomic= flag is declared and never read. The publish
+  guarantees task makes both real.
+
+*** The two callers
+
+The publish function is the unit, and it has two callers. At runtime, the
+bundle publication above calls it through the bus. At bring-up, the database
+calls it directly, as its owner, after the schema and the artefact rows are
+loaded. The second caller is what makes a fresh database usable, and it is
+what the tree does not have today: =populate.sql= states that reference data
+is "NOT published here", so every published catalogue is empty after a
+recreate.
+
+The bootstrap publishes =system_core= and then =world=, and nothing else. It
+takes no target: the system tenant is the only tenant it writes, because a
+world row in another tenant is the second copy this page exists to prevent.
+
+** Provenance
+
+A published row carries the chain that produced it, in the audit tail every
+audited table has:
+
+| Column | What it holds for a published row |
+|--------+-----------------------------------|
+| =modified_by= | The service that ran the publish, or the database user when the bootstrap ran |
+| =performed_by= | The same value. The insert trigger overwrites what the function sends. |
+| =change_reason_code= | =system.external_data_import= |
+| =change_commentary= | =Imported from DQ dataset: <dataset name>= |
+| =valid_from=, =valid_to= | When the row became current, and the infinity timestamp while it is |
+| =version= | The row's write count: the first write is 1, and each later write is one more |
+
+The chain runs from the row back through four places:
+
+1. The row's commentary names the dataset.
+2. =ores_dq_datasets_tbl= holds that dataset's code, catalogue, subject area,
+   domain, source system, as-of date, licence and methodology.
+3. The dataset's id selects its artefact rows in
+   =ores_dq_<plural>_artefact_tbl=, which hold the staged values the function
+   read.
+4. The artefact type names the publish function, the target table and the
+   subject that carried the write.
+
+Two gaps sit in that chain, and a reader must know them:
+
+- The commentary names the dataset, and does not identify it. Two datasets can
+  share a name in different subject areas, and a renamed dataset breaks the
+  chain. The id is on the artefact row and not on the published row.
+- No publication record exists. The row says when it was written and by whom,
+  and it does not say which run wrote it, which bundle carried it, or whether
+  the run completed. The publish guarantees task closes both.
+
+** Methodology
+
+This is the canonical sequence for adding a dataset. It decides the level and
+the bundle here, and it builds the artefact per
+[[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]], which owns the mechanics and does not restate them.
+
+1. *Name the owner.* Does the platform define these values, does it adopt them
+   from an external source, or does a tenant own them? That answer is the
+   level, and nothing else decides it.
+2. *Name the scope.* A tenant-level dataset either belongs to the tenant or to
+   one party. A party-scoped dataset takes =party_id= in its params; a
+   tenant-wide one does not.
+3. *Take the bundle the level and scope name.* If no bundle fits, the dataset
+   belongs to a module, and a module states its level and scope in its name
+   and in the populate script that declares it. A dataset never joins a second
+   bundle.
+4. *Decide the writer.* A table has one mechanism that writes it. If a publish
+   function writes the table, no populate script inserts into it, and the
+   reverse. A managed catalogue — something a person previews, re-publishes or
+   versions — wants a dataset. A fixed vocabulary the platform ships wants a
+   populate script, and a tenant reads those rows through the shared-reference
+   read. One function may serve two datasets that fill one table, as the
+   FpML and ORE asset-class datasets do; each row still has one dataset. A
+   row a populate script writes is the installation's own and is never called
+   published, though every tenant reads it.
+5. *Build the artefact, the type, the function and the test* as
+   [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] states.
+6. *Record the target.* The dataset's target is the level's: the system tenant
+   for installation and world, the publishing tenant for tenant-wide, the
+   party's tenant for a party scope. A dataset that wants another target is
+   misclassified.
+
+** Reproducibility
+
+A database is reproducible when the same tree produces the same catalogue.
+What each stage produces, and what depends on the outside world:
+
+| Stage | What it produces | Depends on |
+|-------+------------------+------------|
+| Schema | Every table, policy, trigger and function | The tree alone |
+| Installation populate | The system tenant's own rows: the tenant, the system party, the business centre, the fixed vocabularies | The tree alone |
+| DQ seed | Every dataset row, its artefact type, its bundle membership, its dependency edges, and the artefact rows | The tree alone. The FpML and ISO rows come from the checked-in parser output, and the GLEIF slices from checked-in seeds |
+| Bootstrap | The published installation and world catalogues in the system tenant | The stages above, and nothing else |
+| Tenant bootstrap | A tenant's rows | The bootstrap, plus the profile that names the modules |
+
+A blank database after a recreate therefore holds the schema, the system
+tenant with its own rows, the staged artefacts, and the published installation
+and world catalogues. It holds no tenant, no party, no market data and no
+trade. That is the state a test starts from, and it is enough to value a trade
+that the world catalogue covers: the calendars, the currencies, the
+conventions, the commodities and the underlyings are all there.
+
+Three things a recreate does not reproduce, and an operator must know:
+
+- *Dataset identity.* =ores_dq_datasets_upsert_fn= mints the dataset id with
+  =gen_random_uuid()=, and the natural key is the name, the subject area and
+  the domain. A recreate produces the same datasets with different ids. A
+  provenance chain recorded by id therefore does not survive a recreate, and
+  a chain recorded by name does. Deriving the id from the natural key would
+  close this, and is not done.
+- *Publication history.* Nothing records it, so a recreate cannot reproduce
+  it.
+- *Row versions.* A row's =version= counts writes. A recreate writes each row
+  once, so every version returns to 1, whatever it was.
+
+*Proving a database matches its datasets.* Two checks exist, and they answer
+different questions.
+
+- *Is the bundle complete?* =ores_dq_bundle_datasets_list_fn(<bundle>)= names
+  every member with its dataset, its artefact type and its subject, and says
+  whether it has artefacts and whether it is publishable.
+  =ores_dq_bundle_preview_fn(<bundle>)= counts them: the total, the
+  publishable, the missing dataset and the member with no target subject. A
+  non-zero count in either of the last two is a bundle that publishes less
+  than it says.
+- *Does the catalogue match the artefacts?* Re-run the bundle. A correct
+  catalogue returns =skipped= for every row and =0= for every other count,
+  because the publish functions are idempotent. A count of =inserted= or
+  =updated= names the rows that had drifted.
+
+The second check is the proof, and the first is how an operator reads a bundle
+before trusting it. Neither replaces a per-dataset comparison of current rows
+to artefact rows, which the tree cannot run today; when it can, that
+comparison is the third check and the one a release gate should use.
+
+** What the model retires
+
+The tree reaches =ores_refdata_*= by five paths today. The model keeps two: the
+publish function, and the populate insert for a fixed vocabulary no dataset
+carries. The table states what each of the others becomes.
+
+| Today | What it is | What retires it |
+|-------+------------+-----------------|
+| A populate script inserts the row directly | 57 scripts, 14 of them writing a table a publish function also writes. Two of those write the system party and the WRLD business centre, which the installation owns directly; the table therefore has two mechanisms today, and the collapse must settle whether those two rows become a dataset or the function's scope narrows | Collapse the tables written both ways. One mechanism per table is the rule. |
+| The tenant provisioner copies 36 reference-data tables into each new tenant | A silent copy of installation rows, in 62 insert statements | Declare the tenant bootstrap and retire the silent copy. The shared-reference read replaces the copy. |
+| =base= publishes world rows into each tenant | A second copy of every world fact, per tenant | This task. =world= publishes once, into the system tenant. |
+| The in-process =publish_service::publish()= | Dead code, and it passes a NATS subject where a function name belongs | Retire the legacy patterns and align the documentation |
+| Three populate scripts publish as the DDL owner | Correct in mechanism, ad hoc in form | Publish the world at database bring-up, which gives bring-up one entry point |
+| The publication audit row and the =atomic= flag | Declared, never written and never read | Make the publish guarantees real |
+| The planning document's "what publish does today" | Describes a function that exists only in the drop script | Retire the legacy patterns and align the documentation |
+
+Two rules outlive the tasks. A table has one mechanism that writes it, and a
+published row has one owner. Neither rule has an exception, and a table that
+seems to need one is a table whose level nobody has named.
+
+** The seven questions, answered
+
+The investigation left seven questions open. Each has one answer, and the
+section that carries it.
+
+| # | Question | Answer | Section |
+|---+----------+--------+---------|
+| 1 | Which levels exist, what each is named, and what each holds? | Three: *installation*, *world* and *tenant*. The name is the owner of the values, and it agrees with the three ownership classes of the row-level security model. | The three levels |
+| 2 | Which bundle publishes which datasets, into which tenant, once or per tenant? | One bundle per level and scope: =system_core= and =world= into the system tenant, once per installation; =tenant_defaults= into a tenant, once; =party_essentials= and its siblings into a party's tenant, once per party. The modules are opt-in. | The bundle map |
+| 3 | How does a reader see world data without a second copy, given row-level security? | The row lives in the system tenant. Its policy is the shared-reference shape, ~tenant_id = current or tenant_id = system~, and the model's repository declares =:system_tenant_visible:= so its reads admit the system tenant's rows. Both mechanisms exist today; the publish path must stop copying. | World |
+| 4 | Where do the coded vocabularies and catalogues live, and who owns them? | The installation's and the world's live once in the system tenant, written by their bundle at bring-up or by a populate script, and read by every tenant. A tenant's own live in that tenant. | The three levels |
+| 5 | What is the single canonical way to add a dataset, end to end? | Name the owner, name the scope, take the bundle, decide the writer, then build the artefact per [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]]. | Methodology |
+| 6 | What is legacy, and what retires it? | Five write paths, of which three retire: the direct insert where a publish function exists, the provisioner's copy, and the per-tenant copy of world data. The dead in-process publish goes with them. | What the model retires |
+| 7 | What does a recreated database contain, and what must an operator run? | The schema, the system tenant, the staged artefacts, and the published installation and world catalogues. An operator creates a tenant, publishes =tenant_defaults=, then onboards each party with =party_essentials=; market data and trades follow. | Reproducibility |
+
+* See also
+
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] — the three ownership classes, the policy each deserves, and why a widening is not one of them
+- [[id:A5B4097A-0FF4-4855-9BBE-D7461FC096F5][One source for reference data that the system and each tenant read]] — the capture this page answers: the system tenant is the one source
+- [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]] — the building blocks of the shared-reference read, and the checklist for a new shared table
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the one way to stage an entity's rows, and the publish function's contract
+- [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]] — substitutability, and the question that decides a table's level
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note this page belongs to
+- [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]] — the dimensions every dataset carries

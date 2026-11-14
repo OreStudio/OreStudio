@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-14
 #+updated: 2026-11-14
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A reader can say which level a dataset belongs to and which bundle publishes it,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The page and its three diagrams are written. They await review and sign-off. |
+| Waiting on   | The sign-off. Task 2 must not start until it lands. |
+| Next         | Review [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][The publishing architecture]], answer its decisions, then apply the bundle rename and the bundle map. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -73,6 +73,11 @@ every question below.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Bundles that name a system-level publication | 0 (no bundle carries calendars, currencies, commodities or equity) | investigation, section 3.4 | e050a2d239 |
+| Bundles defined | 9 today, 10 in the model: =system_core=, =base= (=world=), =tenant_defaults= (new), =party_essentials=, =party_reporting=, =ore_samples=, =risk_management=, =crm_topology=, =lei_hierarchy=, =crypto= | =grep -o "upsert_fn(ores_utility_system_tenant_id_fn(), '[a-z_]*'," projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql | - |
+| Datasets in =base= | 57 | same command, =base= | - |
+| Datasets in =system_core= | 21 | same command, =system_core= | - |
+| Reference-data tables the tenant provisioner copies | 36, in 62 insert statements | =grep -o "insert into ores_refdata_[a-z_]*" projects/ores.sql/create/iam/iam_tenant_provisioner_create.sql | - |
+| Refdata publish functions | 57 | =grep -c '^create or replace function ores_refdata_publish_' projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql | - |
 
 * Notes
 
@@ -82,6 +87,23 @@ a fifth partial page would repeat the defect, so this one has to be the single
 picture the others point at.
 
 Answers requirement 4, and unblocks every task below it. Defect D3.
+
+The decisions a reviewer has to accept, because every task below depends on
+them:
+
+1. Three levels, named after the owner of the values: *installation*, *world*,
+   *tenant*. They agree with the three ownership classes the row-level security
+   model already names.
+2. One copy of an installation row and of a world row, in the system tenant. No
+   tenant holds a copy, and a tenant reads them through the shared-reference
+   policy and =:system_tenant_visible:=, both of which exist.
+3. =base= becomes =world=, and the tenant's own starting configuration in
+   =base= becomes a bundle of its own, =tenant_defaults=. That is the rename
+   that ends the "base system" ambiguity.
+4. A dataset is a member of one bundle and no more, and a table has one
+   mechanism that writes it.
+5. The bundle publication and the bring-up bootstrap are the two callers of one
+   publish function. The bring-up publish is part of database setup.
 
 See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] for the evidence behind every claim here.
 

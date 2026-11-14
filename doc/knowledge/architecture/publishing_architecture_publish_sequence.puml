@@ -1,0 +1,83 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title One bundle publish: dependency order, one function per dataset
+
+hide footbox
+skinparam sequenceMessageAlign left
+
+actor "Operator" as op
+participant "ores.shell" as sh
+queue "NATS" as n
+participant "ores.dq\npublish handler" as dq
+participant "publish\nservice" as ps
+database "DQ\nregistries" as reg
+participant "workflow\nengine" as wf
+participant "target service\npublish handler" as th
+database "PostgreSQL" as db
+
+== The request ==
+
+op -> sh : bundles publish world --wait
+sh -> n : dq.v1.ops.publish_bundle\n{bundle, tenant, params}
+n -> dq : publish_bundle
+dq -> dq : authorise dq::datasets:write
+dq -> ps : list the bundle's publishable datasets
+ps -> reg : members, artefact types,\ndependency edges
+reg --> ps : members in display order, edges
+ps -> ps : resolve the dependency closure;\ndrop a dataset with no target subject
+ps --> dq : datasets, in dependency order
+dq -> dq : drop an optional member\nthe run did not opt into
+dq -> wf : start bundle_publish_workflow,\none step per dataset
+dq --> sh : instance id
+
+== The run, one step per dataset ==
+
+loop each dataset, in dependency order
+    wf -> th : the dataset's subject
+    th -> db : ores_<c>_publish_<p>_from_dq_fn\n(dataset, target tenant, mode, params)
+    db -> db : read the artefact rows\nfrom the system tenant
+    opt the dataset is party-scoped
+        db -> db : resolve the party: params,\nthen the tenant's root party,\nthen the system party
+    end
+    db -> db : upsert the row in the target tenant,\nstating the dataset in the commentary
+    db --> th : inserted, updated, skipped, deleted
+    th --> wf : the step's counts
+    note right of wf
+        A step commits its own function call.
+        A failed step stops the run, and the
+        steps already committed stay.
+    end note
+end
+
+wf --> dq : the run is terminal
+sh -> n : workflow.v1.ops.get_workflow_steps\n(or the --wait reply)
+n --> sh : step states and counts
+sh --> op : what each dataset wrote
+
+== The same function, at bring-up ==
+
+note over db
+  The bootstrap calls the same functions,
+  as the database owner, after the schema
+  and the artefact rows are loaded.
+  No bus, no workflow, no tenant.
+end note
+
+@enduml

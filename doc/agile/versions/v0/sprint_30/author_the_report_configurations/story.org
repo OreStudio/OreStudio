@@ -46,6 +46,7 @@ Give the user guided screens to create and edit a report configuration and every
 | [[id:986E1372-9BA6-4CA5-BFC1-FBDA134F221A][Build the pricing engine configuration screens]] | DONE | 2026-10-21 | 2026-11-08 | Task for: Author the report configurations on guided screens |
 | [[id:1EA6D820-F6E4-4B60-AEC7-867D5CD5E867][Research the lifecycle of a configuration]] | BACKLOG | | | Decide how a configuration moves from an edit to a version in force. |
 | [[id:DE2B9B71-1CD1-4D53-8D24-36C06F0D02AD][Show the effect of a configuration change]] | BACKLOG | | | Run one report with two configurations and explain the difference. |
+| [[id:473878A1-3CC8-49A4-95D3-3F040DFA3080][Take each product's model and engine from the ORE code]] | BACKLOG | | | Six triples still fail although every trade type is mapped, because no ORE engine builder is registered for them: ScriptedTrade/ScriptedTrade, BlackScholesMerton/EquityVarianceSwap for all three variance swaps, BlackScholesMerton/AnalyticBarrierEngine for FxBarrierOption, and BlackScholesMerton/AnalyticDigitalAmericanEngine for FxTouchOption. The ORE code registers Generic/Generic for a ScriptedTrade and GarmanKohlhagen for the FX barrier and touch options; the guide's pair list is what disagrees. Extraction should read the model, engine and trade type triples the code registers and mark as usual a pair the code can build. |
 
 * Decisions
 

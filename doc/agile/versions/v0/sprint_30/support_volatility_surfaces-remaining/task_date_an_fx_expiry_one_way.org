@@ -86,6 +86,8 @@ task and name that file in the Command column.
 | The ladder's suite, including the service's DB cases | 1/1 ctest suites pass | =ctest -R "^ores.marketdata.service.tests$"= | =8a007e8aa4= |
 | The synthetic API suite, including the tick and the round trip | 1018 cases, 4879 assertions, 1/1 suites pass | =ctest -R "^ores.synthetic.api.tests$"= | =8a007e8aa4= |
 | The surfaces a fresh tenant publishes | 17 of 17 provisioning steps completed; 40 surfaces published, 40 converged, 0 violations, 0 pillars beyond tolerance, largest absolute error 0.000493 | =provision tenant --profile acme_demo= (code =acme_verify=) | =8a007e8aa4= |
+| The whole tree | 460 of 460 build steps, no error | =compass build= | =a5fbe40624= |
+| The fleet on that tree | 25 of 25 units running, none failed | =compass services restart= then =compass services status= | =a5fbe40624= |
 
 * Notes
 

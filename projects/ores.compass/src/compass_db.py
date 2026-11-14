@@ -112,8 +112,24 @@ def _psql(env, *args, user="postgres", password=None, database=None,
                           capture_output=capture, text=True)
 
 
+# How long a closed backend is given to let go. A service closes its
+# connections as its process goes, so a fleet of them can still be closing
+# when the next command runs. The window is a minute so that a slow host
+# converges, and it is bounded so a backend that never closes fails the
+# command instead of hanging it.
+DRAIN_SECONDS = 60
+
+# How often the drain takes the count again while it waits.
+DRAIN_POLL_SECONDS = 0.5
+
+
 def check_connections(env, db_name, kill=False) -> bool:
-    """Port of utility/check_db_connections.sh + kill_db_connections.sh."""
+    """Whether no backend is attached to @p db_name, waiting while they close.
+
+    Port of utility/check_db_connections.sh + kill_db_connections.sh. Both the
+    drop and the recreate ask before they go, so both wait: with @p kill the
+    backends are terminated and given up to DRAIN_SECONDS to let go.
+    """
     pw = env.get("PGPASSWORD", "")
 
     def active():
@@ -121,30 +137,49 @@ def check_connections(env, db_name, kill=False) -> bool:
                     f"SELECT count(*) FROM pg_stat_activity WHERE datname = "
                     f"'{db_name}' AND pid <> pg_backend_pid();",
                     password=pw, check=False, capture=True)
-        return (out.stdout or "").strip()
+        # The count is cluster-wide, so a database that does not exist answers
+        # "0" and needs no special case. An answer that did not come back at
+        # all is a different thing, and must not read as "no connections".
+        answer = (out.stdout or "").strip()
+        if out.returncode != 0 or not answer:
+            return None
+        return answer
 
     if kill:
         # Terminating only signals a backend, and one still closing counts as
         # active, so each kill waits for its backend to exit and the count is
         # taken again until it is zero or the deadline passes.
-        deadline = time.monotonic() + 10
+        deadline = time.monotonic() + DRAIN_SECONDS
+        reported = None
         while True:
             _psql(env, "-At", "-c",
                   f"SELECT pg_terminate_backend(pid, 2000) FROM pg_stat_activity "
                   f"WHERE datname = '{db_name}' AND pid <> pg_backend_pid();",
                   password=pw, check=False, capture=True)
             count = active()
-            if count in ("", "0") or time.monotonic() >= deadline:
+            if count in (None, "0") or time.monotonic() >= deadline:
                 break
-            time.sleep(0.5)
+            # The count is said when it changes, so a long wait shows the work
+            # moving and flushes when output is piped.
+            if count != reported:
+                print(f"Waiting for {count} connection(s) to {db_name} to close "
+                      f"(up to {DRAIN_SECONDS}s)...", flush=True)
+                reported = count
+            time.sleep(DRAIN_POLL_SECONDS)
     count = active()
-    if not count:
-        return True  # database may not exist — fine for recreation
+    if count is None:
+        print(f"\nERROR: could not read the connections to {db_name}.",
+              file=sys.stderr)
+        return False
     if int(count) > 0:
         print(f"\nERROR: there are {count} active connection(s) to "
               f"{db_name}.", file=sys.stderr)
-        print("Hint: pass --kill (-k) to terminate them, or stop the "
-              "services first (compass services stop).", file=sys.stderr)
+        if kill:
+            print(f"They did not close within {DRAIN_SECONDS} seconds.",
+                  file=sys.stderr)
+        else:
+            print("Hint: pass --kill (-k) to terminate them, or stop the "
+                  "services first (compass services stop).", file=sys.stderr)
         return False
     return True
 

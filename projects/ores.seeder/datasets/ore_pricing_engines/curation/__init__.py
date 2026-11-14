@@ -109,6 +109,7 @@ class Curation:
             if entry["scope"] not in ("model", "engine"):
                 raise CurationError(f"settings-code.json: {name} has an unknown scope")
         self.guide_omits = self._pairs_the_guide_omits("guide-omits.json")
+        self.pair_settings = self._pair_settings("pair-settings.json")
         self.globals = self._load("globals.json",
                                   ("domain", "label", "help", "description"))
         for name, entry in self.globals.items():
@@ -146,6 +147,29 @@ class Curation:
                         if not str(setting.get(key) or "").strip():
                             raise CurationError(
                                 f"{where}: the setting {setting.get('name', '')} has no {key}")
+        return data
+
+    def _pair_settings(self, name):
+        """The settings a pair takes whatever product type names it.
+
+        A product type's pair states what the product needs. What the engine needs of
+        every product that uses it is the pair's own, and stating it once here keeps it
+        off the twenty product types that delegate to a scripted trade.
+        """
+        data = self._load(name, ())
+        for key, entry in data.items():
+            model, _, engine = key.partition("/")
+            if not model or not engine or "/" in engine:
+                raise CurationError(f"{name}: {key} is not a model/engine key")
+            for setting in entry["settings"]:
+                if setting.get("scope") not in ("model", "engine"):
+                    raise CurationError(
+                        f"{name}: {key} states the scope {setting.get('scope')!r} for "
+                        f"{setting.get('name', '')}, which is neither model nor engine")
+                for field in ("name", "usual"):
+                    if not str(setting.get(field) or "").strip():
+                        raise CurationError(
+                            f"{name}: {key} has a setting with no {field}")
         return data
 
     def _groups(self, name):

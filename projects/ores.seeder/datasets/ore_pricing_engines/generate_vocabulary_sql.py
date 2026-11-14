@@ -151,6 +151,31 @@ def stated_setting(name, scope, vocabulary, model, engine):
     return best
 
 
+def resolved_setting(stated, vocabulary, model, engine):
+    """One curated setting, with the prose and the required flag the vocabulary states."""
+    name = stated["name"]
+    known = stated_setting(name, stated["scope"], vocabulary, model, engine)
+    required = required_by_code(name)
+    if known is None and required is None:
+        sys.exit(f"curation states the setting {name} on {model}/{engine}, and neither the "
+                 "vocabulary nor curation/settings-code.json states it")
+    text = (CURATED.setting_text(name) or
+            (CURATED.code_settings.get(name) or {}).get("description") or
+            (known or {}).get("text"))
+    if not text:
+        sys.exit(f"curation states the setting {name} on {model}/{engine}, which has no "
+                 "description anywhere")
+    return {
+        "scope": stated["scope"],
+        "name": name,
+        "kind": (known or {}).get("kind", "text"),
+        "usual": stated["usual"],
+        "options": (known or {}).get("options", []),
+        "required": known["required"] if required is None else required,
+        "text": text,
+    }
+
+
 def required_by_code(name):
     """Whether the ORE code calls the setting mandatory, as its curation states it."""
     entry = CURATED.code_settings.get(name)
@@ -172,28 +197,8 @@ def with_the_pairs_the_guide_omits(vocabulary):
         for index, pair in enumerate(entry["pairs"]):
             settings = []
             for stated in pair["settings"]:
-                name = stated["name"]
-                known = stated_setting(name, stated["scope"], vocabulary, pair["model"],
-                                       pair["engine"])
-                required = required_by_code(name)
-                if known is None and required is None:
-                    sys.exit(f"curation/guide-omits.json: {code} names the setting {name}, and "
-                             "neither the vocabulary nor curation/settings-code.json states it")
-                text = (CURATED.setting_text(name) or
-                        (CURATED.code_settings.get(name) or {}).get("description") or
-                        (known or {}).get("text"))
-                if not text:
-                    sys.exit(f"curation/guide-omits.json: {code} names the setting {name}, which "
-                             "has no description anywhere")
-                settings.append({
-                    "scope": stated["scope"],
-                    "name": name,
-                    "kind": (known or {}).get("kind", "text"),
-                    "usual": stated["usual"],
-                    "options": (known or {}).get("options", []),
-                    "required": known["required"] if required is None else required,
-                    "text": text,
-                })
+                settings.append(resolved_setting(stated, vocabulary, pair["model"],
+                                                 pair["engine"]))
             pairs.append({
                 "model": pair["model"],
                 "engine": pair["engine"],
@@ -220,6 +225,32 @@ def with_the_pairs_the_guide_omits(vocabulary):
         for index, pair in enumerate(merged):
             pair["usual"] = index < len(pairs)
         held["pairs"] = merged
+    return vocabulary
+
+
+def with_the_settings_a_pair_takes(vocabulary):
+    """A setting the engine takes of every product that uses it, stated on the pair.
+
+    A product type's pair says what the product needs. What the engine needs of all of
+    them is the pair's own, and the curation states it once rather than on each product
+    type that names the pair.
+    """
+    for key, entry in CURATED.pair_settings.items():
+        model, _, engine = key.partition("/")
+        stated = [resolved_setting(s, vocabulary, model, engine) for s in entry["settings"]]
+        matched = 0
+        for product in vocabulary.values():
+            for pair in product["pairs"]:
+                if pair["model"] != model or pair["engine"] != engine:
+                    continue
+                matched += 1
+                for setting in stated:
+                    if not any(k["scope"] == setting["scope"] and k["name"] == setting["name"]
+                               for k in pair["settings"]):
+                        pair["settings"].append(dict(setting))
+        if matched == 0:
+            sys.exit(f"curation/pair-settings.json states {key}, which no pair of the "
+                     "vocabulary names")
     return vocabulary
 
 
@@ -273,6 +304,7 @@ def main(ore):
     vocabulary = (extract.main_result(ore) if ore is not None
                   else json.load(open(VOCABULARY, encoding="utf-8")))
     vocabulary = with_the_pairs_the_guide_omits(vocabulary)
+    vocabulary = with_the_settings_a_pair_takes(vocabulary)
     with open(os.path.join(HERE, "pricing_vocabulary.json"), "w", encoding="utf-8") as handle:
         json.dump(vocabulary, handle, indent=1, ensure_ascii=False)
         handle.write("\n")

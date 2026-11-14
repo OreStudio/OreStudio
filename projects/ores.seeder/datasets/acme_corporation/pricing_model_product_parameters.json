@@ -3001,6 +3001,30 @@
   },
   {
     "company_code": "acme_group",
+    "id": "6155b843-06ee-5912-8189-ce4e589f476e",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "9138636d-654a-5c60-8165-4a17e3128788",
+    "pricing_model_product_id": "640435a5-7b2e-5633-8ed3-bd2489c325db",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "id": "837c3983-93c0-50ec-aa93-8093a9c6dc5f",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "9138636d-654a-5c60-8165-4a17e3128788",
+    "pricing_model_product_id": "640435a5-7b2e-5633-8ed3-bd2489c325db",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
     "id": "e2c08914-11bd-584c-bf06-b6ff2d6555e2",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -3538,6 +3562,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_group",
+    "id": "c05ada6a-aeda-5ae4-b26a-611abd730d67",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "9138636d-654a-5c60-8165-4a17e3128788",
+    "pricing_model_product_id": "ea55cdd1-7c48-580a-937f-5b241ba429de",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "id": "471acc0a-cf6b-5e8e-9b08-1590164a44c9",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "9138636d-654a-5c60-8165-4a17e3128788",
+    "pricing_model_product_id": "ea55cdd1-7c48-580a-937f-5b241ba429de",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_group",
@@ -6649,6 +6697,30 @@
   },
   {
     "company_code": "acme_group",
+    "id": "caeb6f41-e521-5417-8a34-954aad6bebae",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "0c2031e5-e5cd-5829-996c-35d3fb1cc3ea",
+    "pricing_model_product_id": "4eee308d-4fae-5781-8551-742cc1c86f52",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "id": "789ce38b-dfe3-50cd-90b7-b030497fe0cd",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "0c2031e5-e5cd-5829-996c-35d3fb1cc3ea",
+    "pricing_model_product_id": "4eee308d-4fae-5781-8551-742cc1c86f52",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
     "id": "c34b7856-6c5c-5da6-8a2b-ad3b9743faa3",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -7186,6 +7258,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_group",
+    "id": "9efd68b9-ac82-5950-9754-9195046e5fa4",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "0c2031e5-e5cd-5829-996c-35d3fb1cc3ea",
+    "pricing_model_product_id": "c12eb2a8-85a6-5fd8-a5f0-713b6614870a",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_group",
+    "id": "a335ab48-6a5b-521e-91bf-58854aa6e54a",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "0c2031e5-e5cd-5829-996c-35d3fb1cc3ea",
+    "pricing_model_product_id": "c12eb2a8-85a6-5fd8-a5f0-713b6614870a",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_group",
@@ -10297,6 +10393,30 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "f1330805-c7b6-5863-9a3f-66048a352b51",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "8260f3f3-004e-527a-9aac-dcfb47616800",
+    "pricing_model_product_id": "a38b2070-c4be-591d-abf9-efc3f8945346",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "ca1292d4-b2d6-5a7b-813e-19868c880519",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "8260f3f3-004e-527a-9aac-dcfb47616800",
+    "pricing_model_product_id": "a38b2070-c4be-591d-abf9-efc3f8945346",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
     "id": "32d3b77c-50d9-5828-a88b-355231b37dce",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -10834,6 +10954,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "c42cd9d1-6186-5437-b064-e5ace4013675",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "8260f3f3-004e-527a-9aac-dcfb47616800",
+    "pricing_model_product_id": "e40d227c-0b98-5c67-adf1-c2c7d8fb6fbf",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "17e8179e-d5db-5064-89b3-11b9003907a2",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "8260f3f3-004e-527a-9aac-dcfb47616800",
+    "pricing_model_product_id": "e40d227c-0b98-5c67-adf1-c2c7d8fb6fbf",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -13849,6 +13993,30 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "d45a2911-d47f-51c5-89b1-9fd83663a3aa",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "561c1184-a396-55dc-9770-40ee754ea520",
+    "pricing_model_product_id": "77493538-74eb-53f4-bb5f-0f7f9a6694cb",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "2db2bf51-82cc-5fe6-ba8b-70619adb6de1",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "561c1184-a396-55dc-9770-40ee754ea520",
+    "pricing_model_product_id": "77493538-74eb-53f4-bb5f-0f7f9a6694cb",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
     "id": "c0aa0c3c-58e5-592f-9205-464265b20614",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -14386,6 +14554,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "1582679a-ba38-5272-b050-7001f37c9155",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "561c1184-a396-55dc-9770-40ee754ea520",
+    "pricing_model_product_id": "3e1d84fb-dfec-598d-a793-96aa97e46b8a",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "3e0cf624-08d4-5f5b-a2bf-7fbd4ed82966",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "561c1184-a396-55dc-9770-40ee754ea520",
+    "pricing_model_product_id": "3e1d84fb-dfec-598d-a793-96aa97e46b8a",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -17401,6 +17593,30 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "cd871520-0828-5c68-96d6-13ee377ada73",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "eb6814d5-1d3f-5c34-9458-4f60ca5f961a",
+    "pricing_model_product_id": "4c45b220-d8d9-5a84-b6bd-b312b920ccea",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "a7ff67cd-ca8c-5e59-a4a6-8b96322f9e23",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "eb6814d5-1d3f-5c34-9458-4f60ca5f961a",
+    "pricing_model_product_id": "4c45b220-d8d9-5a84-b6bd-b312b920ccea",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
     "id": "1cad78fd-4b7c-535a-a964-127e0ec4da15",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -17938,6 +18154,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "c746a7dc-b98d-5587-9c79-0bd4e972a879",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "eb6814d5-1d3f-5c34-9458-4f60ca5f961a",
+    "pricing_model_product_id": "46f94e1c-742d-57fc-afa9-8905a676facb",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "d45ba7da-203d-575e-b41d-eac926f449a7",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "eb6814d5-1d3f-5c34-9458-4f60ca5f961a",
+    "pricing_model_product_id": "46f94e1c-742d-57fc-afa9-8905a676facb",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -20953,6 +21193,30 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "40840bd6-72b9-5b63-b57a-043b1d3b61e0",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "0a320d9d-fdfc-5f5f-989f-e86d6d7f70f9",
+    "pricing_model_product_id": "0c504e01-69b9-5e10-af3f-506adf43b486",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "0b7a017d-97d4-51ce-97f7-1ba348b14b0f",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "0a320d9d-fdfc-5f5f-989f-e86d6d7f70f9",
+    "pricing_model_product_id": "0c504e01-69b9-5e10-af3f-506adf43b486",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
     "id": "8c8b03c0-4352-5705-99f6-cb9bb19b5d6b",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -21490,6 +21754,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "2d6905bf-b1d9-5401-af39-7434d642073e",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "0a320d9d-fdfc-5f5f-989f-e86d6d7f70f9",
+    "pricing_model_product_id": "88901361-98a5-5485-b35c-4bdcd1b7c8f5",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "299e773e-62d9-568d-a5e7-88e6ba84e3f6",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "0a320d9d-fdfc-5f5f-989f-e86d6d7f70f9",
+    "pricing_model_product_id": "88901361-98a5-5485-b35c-4bdcd1b7c8f5",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -24613,6 +24901,30 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "7817a24e-8a22-5adc-be73-6688c43c995f",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "b7d8c963-32fd-5eac-a4fe-f0adadbb0267",
+    "pricing_model_product_id": "c9d60b92-d858-59c7-9d3a-eb561301868c",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "2f3e3385-34f9-52fc-b344-60e0ac3b4f70",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "b7d8c963-32fd-5eac-a4fe-f0adadbb0267",
+    "pricing_model_product_id": "c9d60b92-d858-59c7-9d3a-eb561301868c",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
     "id": "e74c1b01-f391-5171-b58b-561cd1ddc4bb",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -25150,6 +25462,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "81de899b-d523-5cc3-8712-d4a8baf65efd",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "b7d8c963-32fd-5eac-a4fe-f0adadbb0267",
+    "pricing_model_product_id": "79d93636-9075-5dad-81de-4df966eb33f2",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "2f29de61-fa68-5348-b6b0-d4f273893233",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "b7d8c963-32fd-5eac-a4fe-f0adadbb0267",
+    "pricing_model_product_id": "79d93636-9075-5dad-81de-4df966eb33f2",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -28261,6 +28597,30 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "7f672aa2-4c36-5345-9237-0b2ace8ff89d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "b8d2d31a-5219-518c-a89d-88b5d82ecf96",
+    "pricing_model_product_id": "36fd225b-8d8a-53f2-a9d9-7c82136820c4",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "02e10e67-306e-5450-9a5f-76abc5f6950c",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "b8d2d31a-5219-518c-a89d-88b5d82ecf96",
+    "pricing_model_product_id": "36fd225b-8d8a-53f2-a9d9-7c82136820c4",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
     "id": "364b024f-2504-54c0-a507-ca3b5f8d9aed",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -28798,6 +29158,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "371eeaf1-f8ba-5f53-9937-0def02d89150",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "b8d2d31a-5219-518c-a89d-88b5d82ecf96",
+    "pricing_model_product_id": "f989dc0c-e516-50ed-9965-8512b786d0af",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "fac0574e-6917-575f-82ea-db5de2050d80",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "b8d2d31a-5219-518c-a89d-88b5d82ecf96",
+    "pricing_model_product_id": "f989dc0c-e516-50ed-9965-8512b786d0af",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -31825,6 +32209,30 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "096fac6c-e73e-5eb2-bfcb-4fd5c3f2a6a6",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "ed5bb931-8c68-51a7-badf-f21787132684",
+    "pricing_model_product_id": "020dd312-c30b-5dfc-8382-fa4d8e1ef35c",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "a3122842-406b-5ab9-be2b-3e4070ab9252",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "ed5bb931-8c68-51a7-badf-f21787132684",
+    "pricing_model_product_id": "020dd312-c30b-5dfc-8382-fa4d8e1ef35c",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
     "id": "7c19b60b-9cc2-584d-ac63-f8d8d7d2e1d7",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -32362,6 +32770,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "59b417f5-681b-586f-9adb-8945ac74341d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "ed5bb931-8c68-51a7-badf-f21787132684",
+    "pricing_model_product_id": "50f10872-741e-551e-8c61-f971148d29be",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "fe4a4778-ffc1-502e-a6f3-260759c67372",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "ed5bb931-8c68-51a7-badf-f21787132684",
+    "pricing_model_product_id": "50f10872-741e-551e-8c61-f971148d29be",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -35389,6 +35821,30 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "878e5c40-a059-5b96-94d6-551f046cc0e5",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "ef348959-5b53-5688-a877-c03df9a94a6a",
+    "pricing_model_product_id": "9876364a-64c0-55a0-84ba-29ad34482184",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "13f9a4e7-44ad-55e7-93e5-089f27c84227",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "ef348959-5b53-5688-a877-c03df9a94a6a",
+    "pricing_model_product_id": "9876364a-64c0-55a0-84ba-29ad34482184",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
     "id": "072337a7-da19-5e48-a57c-43e0b614379b",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -35926,6 +36382,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "4d220941-89cc-5049-aa37-b5e6ede24ac6",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "ef348959-5b53-5688-a877-c03df9a94a6a",
+    "pricing_model_product_id": "98a1de00-c3e2-55be-86d9-27816401cb60",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "6aa4cfa7-7126-5870-9b81-cccf300a826f",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "ef348959-5b53-5688-a877-c03df9a94a6a",
+    "pricing_model_product_id": "98a1de00-c3e2-55be-86d9-27816401cb60",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -38941,6 +39421,30 @@
   },
   {
     "company_code": "acme_uk",
+    "id": "088ed6ff-3158-55c8-889f-96d5b34c1fbd",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "952507fb-5972-5c02-ae24-ebde30baa5af",
+    "pricing_model_product_id": "ab9ceb16-5ea1-5ee2-abd5-d25bbf56b860",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "3db38745-14b2-5dcc-a40e-b02078408a1d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "952507fb-5972-5c02-ae24-ebde30baa5af",
+    "pricing_model_product_id": "ab9ceb16-5ea1-5ee2-abd5-d25bbf56b860",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
     "id": "75e945fe-2292-5778-9ded-6874584b2985",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -39478,6 +39982,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "42c0e32a-6a01-5975-8845-f54cdb8b59de",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "952507fb-5972-5c02-ae24-ebde30baa5af",
+    "pricing_model_product_id": "12eb06b4-779e-51d4-89ee-c787769cdb52",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_uk",
+    "id": "45ae513f-5f6a-5fef-9f50-0d51d814bdaa",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "952507fb-5972-5c02-ae24-ebde30baa5af",
+    "pricing_model_product_id": "12eb06b4-779e-51d4-89ee-c787769cdb52",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_uk",
@@ -42589,6 +43117,30 @@
   },
   {
     "company_code": "acme_us",
+    "id": "3879cfae-6e88-5304-9a3a-045a0eb1fed3",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "13f2fc89-3689-5ebe-84c7-0a7003eb023f",
+    "pricing_model_product_id": "fdc47129-5b82-5d13-842c-e485e2f791b7",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "811c8aaf-567d-585e-96ef-0763da207d71",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "13f2fc89-3689-5ebe-84c7-0a7003eb023f",
+    "pricing_model_product_id": "fdc47129-5b82-5d13-842c-e485e2f791b7",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
     "id": "8457d1e5-687d-5791-8370-78b49a76e71b",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -43126,6 +43678,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "id": "a2d20e2a-3a13-52c4-9aa6-e6f6b96dbd26",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "13f2fc89-3689-5ebe-84c7-0a7003eb023f",
+    "pricing_model_product_id": "a28959ce-481b-53a6-86e4-71d097e569db",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "463ce9b3-f01f-56d9-8a06-0fbb8b7c6f6c",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "13f2fc89-3689-5ebe-84c7-0a7003eb023f",
+    "pricing_model_product_id": "a28959ce-481b-53a6-86e4-71d097e569db",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -46141,6 +46717,30 @@
   },
   {
     "company_code": "acme_us",
+    "id": "07b701ff-a2c8-593c-80b0-2ef1b4fdc1c3",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "5136a290-076b-51c5-81c9-2484a54914ac",
+    "pricing_model_product_id": "bffb7bc5-c43a-5127-ae86-0d1f1f72ea1f",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "2c8cff60-2317-5e90-8965-bbab3442c252",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "5136a290-076b-51c5-81c9-2484a54914ac",
+    "pricing_model_product_id": "bffb7bc5-c43a-5127-ae86-0d1f1f72ea1f",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
     "id": "ac9ba490-e38e-51c6-a1d3-0366c98eacc0",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -46678,6 +47278,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "id": "f5860b5e-89e1-5b31-8b89-d5253233d2b9",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "5136a290-076b-51c5-81c9-2484a54914ac",
+    "pricing_model_product_id": "997800e3-0a84-52b8-b95d-9f012d8acd7e",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "200fe96b-ee63-5e99-99e7-d25749d70f72",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "5136a290-076b-51c5-81c9-2484a54914ac",
+    "pricing_model_product_id": "997800e3-0a84-52b8-b95d-9f012d8acd7e",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -49693,6 +50317,30 @@
   },
   {
     "company_code": "acme_us",
+    "id": "1251a7de-35ca-537d-a750-22e864b03d88",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1d2d54d3-3580-53fb-bf91-ad0938a27222",
+    "pricing_model_product_id": "9ecd5310-14bf-5ebb-857f-dcd450f6e227",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "305629c5-950b-5e5b-a1c1-3924910d2be1",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1d2d54d3-3580-53fb-bf91-ad0938a27222",
+    "pricing_model_product_id": "9ecd5310-14bf-5ebb-857f-dcd450f6e227",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
     "id": "0b936413-46a0-5f45-bf6b-4daa6c0a6dd2",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -50230,6 +50878,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "id": "196b5a28-3620-541c-b5a2-57e63cbcd45d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1d2d54d3-3580-53fb-bf91-ad0938a27222",
+    "pricing_model_product_id": "20a7fe57-eb15-579d-84c9-41c88cc90c00",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "e2b9cd0e-a85a-54a9-83ee-b51e184a101a",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "1d2d54d3-3580-53fb-bf91-ad0938a27222",
+    "pricing_model_product_id": "20a7fe57-eb15-579d-84c9-41c88cc90c00",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -53341,6 +54013,30 @@
   },
   {
     "company_code": "acme_us",
+    "id": "39f4f90d-c4da-5954-8738-a3c7b20c523f",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "f50def04-9a3c-5468-a097-85b836f21034",
+    "pricing_model_product_id": "80267ce6-fec6-55d8-b246-57f8de8c0c33",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "266c78a1-43a5-53d6-8c73-156c60c5486f",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "f50def04-9a3c-5468-a097-85b836f21034",
+    "pricing_model_product_id": "80267ce6-fec6-55d8-b246-57f8de8c0c33",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
     "id": "6fde8376-6281-56f6-a341-4da851570405",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -53878,6 +54574,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "id": "42647988-c43e-58be-a0f5-b1c31b54a73e",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "f50def04-9a3c-5468-a097-85b836f21034",
+    "pricing_model_product_id": "36b837ee-2e83-547c-868d-c42b66828899",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "7d446ed8-a8d1-5c32-a3f2-1427eb9c4e73",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "f50def04-9a3c-5468-a097-85b836f21034",
+    "pricing_model_product_id": "36b837ee-2e83-547c-868d-c42b66828899",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -56989,6 +57709,30 @@
   },
   {
     "company_code": "acme_us",
+    "id": "9898583c-2544-5dba-a074-be5a85666f74",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "e98950cf-31bc-5f47-8e73-c1b45068206d",
+    "pricing_model_product_id": "c2e81650-b2da-5c7f-872f-ec2140117177",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "18f6ba6f-f73c-5840-ac5a-81cffd802e9c",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "e98950cf-31bc-5f47-8e73-c1b45068206d",
+    "pricing_model_product_id": "c2e81650-b2da-5c7f-872f-ec2140117177",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
     "id": "f1a166dd-50f0-5415-b589-d74b565e8c42",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -57526,6 +58270,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "id": "6f9265ed-b8a1-56b8-b86c-ebcf7703e62a",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "e98950cf-31bc-5f47-8e73-c1b45068206d",
+    "pricing_model_product_id": "3d69ff37-8756-5797-a042-0305b1e9a29d",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "14a56529-ccb6-5922-92cf-c09afec55e23",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "e98950cf-31bc-5f47-8e73-c1b45068206d",
+    "pricing_model_product_id": "3d69ff37-8756-5797-a042-0305b1e9a29d",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -60553,6 +61321,30 @@
   },
   {
     "company_code": "acme_us",
+    "id": "748b884a-d409-5ce3-94f0-0e23bd645989",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "9678e19e-e222-50ef-ae31-7a0989b40939",
+    "pricing_model_product_id": "460b7864-9e9b-5f6c-b78c-af51349f954f",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "1bba51da-80ec-5184-a727-10421e37fd15",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "9678e19e-e222-50ef-ae31-7a0989b40939",
+    "pricing_model_product_id": "460b7864-9e9b-5f6c-b78c-af51349f954f",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
     "id": "76a88659-6525-5b7f-a7cb-4b2667b397a2",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -61090,6 +61882,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_us",
+    "id": "4d5a1323-0ad7-5566-a6ee-dd11e48e4a58",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "9678e19e-e222-50ef-ae31-7a0989b40939",
+    "pricing_model_product_id": "eb0a793f-5d29-5782-8825-2dd3a4cdbe9b",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_us",
+    "id": "5c1b35c3-32a7-5ef6-b70a-2c5e8829d93e",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "9678e19e-e222-50ef-ae31-7a0989b40939",
+    "pricing_model_product_id": "eb0a793f-5d29-5782-8825-2dd3a4cdbe9b",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_us",
@@ -64105,6 +64921,30 @@
   },
   {
     "company_code": "acme_hk",
+    "id": "9f9c645e-2e78-5aae-ac6e-f441ed201d64",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "58881c79-9c2a-57ec-9f51-8c3fdfd1c46f",
+    "pricing_model_product_id": "271e2302-bb11-5b6f-befd-4958483da889",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "c95d665f-9ead-5a83-b3cc-1f122376b4a1",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "58881c79-9c2a-57ec-9f51-8c3fdfd1c46f",
+    "pricing_model_product_id": "271e2302-bb11-5b6f-befd-4958483da889",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
     "id": "52dddc51-41d4-523c-9748-d710beb40d1a",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -64642,6 +65482,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "64abe7ca-00f8-5b79-9bf9-abe06c20780a",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "58881c79-9c2a-57ec-9f51-8c3fdfd1c46f",
+    "pricing_model_product_id": "f93ec9b7-010e-54e2-a955-53a61c37324e",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "a8960cae-3e00-57b5-878d-f1dbb4921a6d",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "58881c79-9c2a-57ec-9f51-8c3fdfd1c46f",
+    "pricing_model_product_id": "f93ec9b7-010e-54e2-a955-53a61c37324e",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_hk",
@@ -67657,6 +68521,30 @@
   },
   {
     "company_code": "acme_hk",
+    "id": "6ba230e8-460a-5c36-9fb9-936c398ba190",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "3a10608a-4fce-53c7-8063-6a800bc772ea",
+    "pricing_model_product_id": "457284b7-d7a6-5968-8f02-7129f25bc4a2",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "f6d2a379-99cd-52fb-b09a-bf0af610b090",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "3a10608a-4fce-53c7-8063-6a800bc772ea",
+    "pricing_model_product_id": "457284b7-d7a6-5968-8f02-7129f25bc4a2",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
     "id": "2de981b8-7fc0-5662-9085-700783afea56",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -68194,6 +69082,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "4311ac89-fc97-5fe3-9f54-358f1647cbca",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "3a10608a-4fce-53c7-8063-6a800bc772ea",
+    "pricing_model_product_id": "27bddd0f-ff24-503b-a0b1-dc963bb3bae3",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "b969a855-4bd3-5463-bf22-4bb5b00902c7",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "3a10608a-4fce-53c7-8063-6a800bc772ea",
+    "pricing_model_product_id": "27bddd0f-ff24-503b-a0b1-dc963bb3bae3",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_hk",
@@ -71209,6 +72121,30 @@
   },
   {
     "company_code": "acme_hk",
+    "id": "564fa335-e818-58f3-9f5d-917a24dec782",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "dd5310da-d34b-5f81-9d05-b35fb8f2951a",
+    "pricing_model_product_id": "98ec2386-509c-52ba-b2c7-f56389417b0a",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "f5846395-e0a0-5486-b0bd-c3dc8c687339",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "dd5310da-d34b-5f81-9d05-b35fb8f2951a",
+    "pricing_model_product_id": "98ec2386-509c-52ba-b2c7-f56389417b0a",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
     "id": "6a3ca2e5-685f-5b4c-816b-f7cc3faa9ff5",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -71746,6 +72682,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "1f2827d4-c7e5-5143-bc51-5ca495f7af7e",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "dd5310da-d34b-5f81-9d05-b35fb8f2951a",
+    "pricing_model_product_id": "72bab7c4-51f2-5c74-9bba-4ed86c08d8a0",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "fb325cf2-1861-5cad-8601-e067cb820955",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "dd5310da-d34b-5f81-9d05-b35fb8f2951a",
+    "pricing_model_product_id": "72bab7c4-51f2-5c74-9bba-4ed86c08d8a0",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_hk",
@@ -74857,6 +75817,30 @@
   },
   {
     "company_code": "acme_hk",
+    "id": "524a3584-14b6-5d44-9feb-f186783aa6ce",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "3abe2287-d130-5a93-9a7f-1bdad30ccc66",
+    "pricing_model_product_id": "b05fbfa1-5eac-5e14-bcc4-834901b12701",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "f39b0ac2-0374-51e4-8a45-6c40615fbdad",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "3abe2287-d130-5a93-9a7f-1bdad30ccc66",
+    "pricing_model_product_id": "b05fbfa1-5eac-5e14-bcc4-834901b12701",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
     "id": "735c441c-4624-50c3-98ac-51c8871e5a64",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -75394,6 +76378,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "b49d4916-12d3-5299-a8e3-8757a8b50edd",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "3abe2287-d130-5a93-9a7f-1bdad30ccc66",
+    "pricing_model_product_id": "2dbe8318-172a-53b8-844a-ab76198e65ca",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "a512dd53-3684-525b-801b-7fc3ddd30465",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "3abe2287-d130-5a93-9a7f-1bdad30ccc66",
+    "pricing_model_product_id": "2dbe8318-172a-53b8-844a-ab76198e65ca",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_hk",
@@ -78505,6 +79513,30 @@
   },
   {
     "company_code": "acme_hk",
+    "id": "68f3de56-62d8-5f55-b8ea-750b7109071f",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "56b8f852-3d34-5b87-a4d3-bc44d03ad9fb",
+    "pricing_model_product_id": "a0233c22-2f1f-5cef-bb96-96b04e6c2932",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "4087731a-4cf4-52ea-8314-7cb1081c03e0",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "56b8f852-3d34-5b87-a4d3-bc44d03ad9fb",
+    "pricing_model_product_id": "a0233c22-2f1f-5cef-bb96-96b04e6c2932",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
     "id": "bb67054e-963f-55e2-a447-c763f9e03f03",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -79042,6 +80074,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "9d89e7ad-d345-5830-8245-183a9680c013",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "56b8f852-3d34-5b87-a4d3-bc44d03ad9fb",
+    "pricing_model_product_id": "de8a0319-93c4-5400-be7f-079b2d3fada1",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "f51f5cb2-cad2-58fa-973f-a37e37e05558",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "56b8f852-3d34-5b87-a4d3-bc44d03ad9fb",
+    "pricing_model_product_id": "de8a0319-93c4-5400-be7f-079b2d3fada1",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_hk",
@@ -82069,6 +83125,30 @@
   },
   {
     "company_code": "acme_hk",
+    "id": "b0f8af04-99be-58e4-806b-098def80f9cd",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "5f0ee6c3-f9ef-541f-8955-5339daca4e7d",
+    "pricing_model_product_id": "bed245fe-e9a5-5f7e-985a-c80e9fcb74a5",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "91833301-4595-5f18-be09-0e4d89c5998e",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "5f0ee6c3-f9ef-541f-8955-5339daca4e7d",
+    "pricing_model_product_id": "bed245fe-e9a5-5f7e-985a-c80e9fcb74a5",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
     "id": "15ce53fe-3c27-5d0b-9321-b67c18857fe5",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -82606,6 +83686,30 @@
     "parameter_name": "MaxDiscretisationPoints",
     "parameter_value": "20",
     "position": 2
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "ddba65ed-9a01-5ce6-9396-44fede8a07be",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "5f0ee6c3-f9ef-541f-8955-5339daca4e7d",
+    "pricing_model_product_id": "55080f8e-2886-5778-9b63-2d2eeb9033aa",
+    "parameter_scope": "model",
+    "parameter_name": "Model",
+    "parameter_value": "BlackScholes",
+    "position": 0
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "f472badb-70fd-5219-ab9a-26b6c852c0b9",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "pricing_model_config_id": "5f0ee6c3-f9ef-541f-8955-5339daca4e7d",
+    "pricing_model_product_id": "55080f8e-2886-5778-9b63-2d2eeb9033aa",
+    "parameter_scope": "engine",
+    "parameter_name": "Engine",
+    "parameter_value": "MC",
+    "position": 0
   },
   {
     "company_code": "acme_hk",

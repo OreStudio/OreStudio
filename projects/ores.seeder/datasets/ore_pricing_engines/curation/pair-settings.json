@@ -1,0 +1,40 @@
+{
+  "Generic/Generic": {
+    "reason": "A scripted trade reads two mandatory parameters before it can price: the model the script prices with and the engine that evaluates it. The ORE example configuration states BlackScholes and MC as the shared values and overrides them per product class where a product needs another, so the pair states the two shared values once rather than on the twenty product types that delegate to a script.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:125, and external/ore/examples/Products/Input/pricingengine.xml Product ScriptedTrade",
+    "curator": "marco",
+    "date": "2026-11-14",
+    "settings": [
+      {
+        "scope": "model",
+        "name": "Model",
+        "usual": "BlackScholes"
+      },
+      {
+        "scope": "engine",
+        "name": "Engine",
+        "usual": "MC"
+      }
+    ]
+  },
+  "ScriptedTrade/ScriptedTrade": {
+    "reason": "A scripted trade reads two mandatory parameters before it can price: the model the script prices with and the engine that evaluates it. The ORE example configuration states BlackScholes and MC as the shared values and overrides them per product class where a product needs another, so the pair states the two shared values once rather than on the twenty product types that delegate to a script.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:125",
+    "curator": "marco",
+    "date": "2026-11-14",
+    "settings": [
+      {
+        "scope": "model",
+        "name": "Model",
+        "usual": "BlackScholes"
+      },
+      {
+        "scope": "engine",
+        "name": "Engine",
+        "usual": "MC"
+      }
+    ]
+  }
+}

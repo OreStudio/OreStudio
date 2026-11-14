@@ -73,6 +73,42 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
   workers. That shortens the queue inside one service; this story removes
   the reason the queue forms in iam.
 
+- *A moved step writes as a service account, not as a person, 2026-11-14.*
+  =generate_trades= writes trades whose author is a trader of the party, and
+  the trading service takes the tenant, the party and the author from the
+  caller's claims rather than from the request. iam mints those claims in
+  process, through =internal_impersonation_service=, and that service says it is
+  deliberately not on any subject. Two facts settle the question of what a
+  moved step should be given.
+  - Trading filters =ores_trading_trades_tbl= by tenant *and*, restrictively,
+    by party: =trades_party_isolation_policy= keeps a session to the parties it
+    can see. A session scoped to the party the work belongs to therefore has
+    the reach the work needs, and impersonating a trader would narrow it no
+    further.
+  - The run's actor is already named in the step command, and the provisioning
+    service already writes other rows as its own service account.
+  So the shapes weigh up as:
+  1. *A tenant-scoped writable session for the service account.* The service
+     asks to enter a tenant it serves and acts as itself. Nothing new can be
+     impersonated, the authorship the store records is true, and the capability
+     is the one the service already has. Cost: generated trades name the
+     service, not a person.
+  2. *The step's own actor.* The request names the step being served and iam
+     mints for that step's recorded actor. Cost: a service can write history in
+     a person's name, and buys no reach the party-scoped session lacks.
+  3. *The party's own traders, or any account the caller names.* Faithful
+     authorship, and the largest surface: a compromise of the service becomes
+     the identity of any person it names, with that person's permissions and
+     visible parties, and every write it makes is theirs in the trail. This is
+     the shape to avoid.
+  Recommendation: shape 1, and it is implemented: the session is scoped to the
+  tenant's party, which is the reach the work needs, and the store keeps a
+  booking to the session's author, so a request that names a person is
+  overwritten (case =a_booking_is_stamped_with_the_sessions_actor_not_the_requests=). Authorship of generated
+  data is a simulated fact, and attributing it to real people creates a
+  capability to write in their names for no reach it lacks. Shapes 2 and 3 stay
+  recorded as the ways to get per-trader authorship if the product decides the
+  demonstration needs it, with the cost stated.
 - *A command that cannot read the state it guards on refuses, 2026-11-14.*
   A recreate asks whether anything is still connected before it drops, and an
   answer that never came back used to read as "nothing is connected". The

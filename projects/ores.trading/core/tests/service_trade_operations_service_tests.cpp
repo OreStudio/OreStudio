@@ -270,6 +270,34 @@ TEST_CASE("book_trade_writes_the_anchor_the_booking_and_the_state", "[service]")
     CHECK(states.front().trade_activity_id == *response.activity_id);
 }
 
+TEST_CASE("a_booking_is_stamped_with_the_sessions_actor_not_the_requests", "[service]") {
+    fixture f;
+    auto req = f.request();
+    // A caller may state any author. The store keeps the session's, so a
+    // service that books cannot put a person's name on the trade.
+    req.booking.modified_by = "trader.one";
+    req.anchor.modified_by = "trader.one";
+    const auto session_actor = f.ctx.actor();
+    REQUIRE_FALSE(session_actor.empty());
+    const auto id = boost::uuids::to_string(req.anchor.id);
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
+
+    REQUIRE(response.result.outcome == outcome::ok);
+    const auto trade = ores::trading::repository::trade_repository().read_latest(f.ctx, id);
+    REQUIRE(trade.size() == 1);
+    CHECK(trade.front().modified_by == session_actor);
+    const auto bookings =
+        ores::trading::repository::trade_booking_repository().read_latest(f.ctx, id);
+    REQUIRE(bookings.size() == 1);
+    CHECK(bookings.front().modified_by == session_actor);
+    REQUIRE(response.activity_id.has_value());
+    const auto activity = ores::trading::repository::trade_activity_repository{}.read_latest(
+        f.ctx, boost::uuids::to_string(*response.activity_id));
+    REQUIRE(activity.size() == 1);
+    CHECK(activity.front().actor == session_actor);
+}
+
 TEST_CASE("a_booking_into_a_book_that_is_not_open_is_refused", "[service]") {
     fixture f;
     const stated_book_rules frozen{

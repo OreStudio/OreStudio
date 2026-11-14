@@ -32,6 +32,7 @@
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/feed_selection_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
+#include "ores.synthetic.service/messaging/provisioning_step_registrar.hpp"
 #include "simulate_handler.hpp"
 
 namespace ores::synthetic::service {
@@ -46,6 +47,7 @@ inline auto& registrar_lg() {
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              ores::nats::service::nats_client& auth_nats,
+                             ores::nats::service::nats_client::token_provider service_token,
                              generator_fleet& generators,
                              std::shared_ptr<ores::synthetic::feed::fault_state> faults,
                              const ores::database::context& ctx,
@@ -277,6 +279,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ir_parameter_conversion_handler h(nats, ctx, verifier, registry);
             h.convert(std::move(msg));
         }));
+
+    // The provisioning steps the service owns, on their own stream and
+    // consumer: the engine sends them, and each one holds a session inside the
+    // tenant its command names.
+    {
+        auto step_subs = ores::synthetic::messaging::provisioning_step_registrar::register_handlers(
+            nats, std::move(service_token));
+        subs.insert(subs.end(),
+                    std::make_move_iterator(step_subs.begin()),
+                    std::make_move_iterator(step_subs.end()));
+    }
 
     BOOST_LOG_SEV(registrar_lg(), ores::logging::info)
         << "SUBSCRIBED " << subs.size() << " subject(s) in total.";

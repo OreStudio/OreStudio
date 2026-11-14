@@ -8,7 +8,7 @@
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
 #+branch: feature/run-each-step-in-the-service-that-owns-it
-#+pr: 4690
+#+pr: 4727
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
@@ -28,10 +28,10 @@ Each provisioning step is dispatched to the service that owns its work, so iam r
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Stage 1: the dispatch names an owner per kind, and refdata serves the calendar step. |
+| Now          | Stage 2 is done: ores.synthetic serves =generate_trades=, and a provisioning run passes with it. |
 | Waiting on   | Nothing.                               |
-| Next         | Stage 2: move generate_trades into ores.synthetic and drop its core link. |
-| Last touched | 2026-11-13                               |
+| Next         | Stage 3: the marketdata kinds.         |
+| Last touched | 2026-11-14                               |
 
 * Acceptance
 
@@ -63,9 +63,19 @@ The move is one kind at a time, because each kind drags its own dependencies:
 5. Then the reporting, dq and inbox kinds: =schedule_reports=,
    =publish_bundle= and the two approval-mode steps.
 
-Stage 2 has a prerequisite this stage did not: a moved step that asks another
-service as the run's tenant needs a session, and the token is minted in process
-by =internal_impersonation_service=, which lives in iam.core. The calendar step
+Stage 2's prerequisite is served: iam answers
+=iam.v1.ops.enter_tenant_as_service=, which gives a service account a session
+scoped to a tenant it serves, acting as the tenant's system party and carrying
+the service's own permissions. The story's Decisions state why the entry
+carries no person's identity.
+
+It was a prerequisite this stage did not have, and it is now stated in the
+story's Decisions: a moved step that writes as the run's tenant needs a session,
+and the token is minted in process by =internal_impersonation_service=, which
+lives in iam.core. =iam.v1.ops.enter_tenant= is the only subject that issues a
+tenant-scoped token, and it issues read permissions for the caller's own
+account; the trading service takes the tenant, the party and the author from
+the caller's claims, so a step served outside iam cannot write a trade. The calendar step
 avoided it because its work is refdata's own data and it writes as its own
 service account. =generate_trades= books trades through requests that answer a
 session, so either iam offers a request that mints a short-lived session for a
@@ -100,6 +110,12 @@ task and name that file in the Command column.
 | The calendar step, as refdata served it | completed; wrote 473,025 day(s) | =grep build_calendars build/output/linux-clang-release-ninja/publish/log/ores.refdata.service.0.log=, and the step row: =compass sql -- -c "select name, command_subject from ores_workflow_workflow_steps_tbl where name = 'build_calendars'"= | =d03a2d5890=, run =d7e883ce-e3dd-4c61-b801-d82c00a12cdc= |
 | The run | failed at step 13 of 15, on a quant refusal that is
   captured, not on a step of this change | =compass smoke ticks --fresh= | the same run |
+| Step kinds ores.synthetic serves | 1 (=generate_trades=) | =grep -c "routes.on" projects/ores.synthetic/service/src/messaging/provisioning_step_registrar.cpp= | =6115e1936f= |
+| Core libraries ores.iam still links for other services' work | 1 (=ores.refdata.core=) | =grep -nE "ores\.(refdata\|synthetic)\.core" projects/ores.iam/core/src/CMakeLists.txt= | =6115e1936f= |
+| The run with the step in synthetic | passed, 20 of 20 curves and a provisioned tenant | =./compass.sh smoke ticks --fresh= | =6115e1936f= |
+| The author a population can put on a trade | the session's, whatever the request says | =ores.trading.core.tests "a_booking_is_stamped_with_the_sessions_actor_not_the_requests"= | =40618294de= |
+| =ores.trading.core.tests= | 246 cases, 1569 assertions | =ores.trading.core.tests= | =40618294de= |
+| The three defects the first runs found | acting party wrong for a party-scoped book read, a curve series refused for the same reason, and no fallback trader | the run logs of the three smoke attempts | =6115e1936f= |
 | =ores.iam.core.tests= | passed, 27.5 s | =compass test run -- -R ores.iam.core.tests= | =d7e9d200cd= |
 
 * Notes
@@ -119,6 +135,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4727][#4727]] | [synthetic,iam] Serve the generated trades step in synthetic |
 | [[https://github.com/OreStudio/OreStudio/pull/4690][#4690]] | [iam,refdata,service] Dispatch a provisioning step to the service that owns it |
 
 * Review
@@ -146,12 +163,18 @@ ores.refdata serves the calendar step in its own process.
   =ores.marketdata.core=, which nothing it compiled had used.
 - A test states the dispatch two ways: the table's answer for a kind, and the
   subject a built definition puts on the step.
+- Stage 2 is done as well: =generate_trades= is served by ores.synthetic, iam
+  has no executor for it, and a provisioning run passes with the step in its
+  new home. The two services do work at once: the last run had iam publishing a
+  party's curves and forwards while synthetic was writing that party's
+  population, which is the acceptance line about parallel steps.
 
 What this stage does not do, and the plan's later stages cover:
 
-- 17 of the 18 kinds still run in ores.iam, and it still links
-  =ores.synthetic.core= for =generate_trades=. It also still links
-  =ores.refdata.core= for the party repository that its identity handlers read,
+- 16 of the 18 kinds still run in ores.iam. It no longer links
+  =ores.synthetic.core=: stage 2 moved =generate_trades= into ores.synthetic. It
+  still links =ores.refdata.core= for the party repository that its identity
+  handlers read,
   which is identity work and not this task's to remove.
 - That the parallel steps of a run execute in different services at once is not
   yet measured. Nothing in the definition dispatches two *parallel* kinds to two

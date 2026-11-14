@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_MESSAGING_PROVISION_STEP_ARGUMENTS_HPP
-#define ORES_IAM_MESSAGING_PROVISION_STEP_ARGUMENTS_HPP
+#ifndef ORES_IAM_API_WORKFLOW_PROVISION_STEP_ARGUMENTS_HPP
+#define ORES_IAM_API_WORKFLOW_PROVISION_STEP_ARGUMENTS_HPP
 
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -38,7 +38,7 @@
 #include <variant>
 #include <vector>
 
-namespace ores::iam::messaging {
+namespace ores::iam::workflow {
 
 /// What the step executor does with a step command's kind.
 enum class provision_step_action {
@@ -57,7 +57,6 @@ enum class provision_step_action {
     give_party_surface_blueprints,
     publish_party_forwards,
     publish_party_surfaces,
-    generate_trades,
     schedule_reports,
     complete_provisioning,
     start_tenant_setup,
@@ -69,13 +68,12 @@ enum class provision_step_action {
  *
  * The catalogue and the executed predicate both live in the workflow
  * definition, so this function only maps them onto the executor's actions: a
- * kind this build does not execute is refused, and the two steps the
- * definitions append -- the one that hands the tenant over and the one that
- * completes it -- are recognised even though no profile may order either.
+ * kind another service owns, and a kind this build does not execute, are both
+ * refused, and the two steps the definitions append -- the one that hands the
+ * tenant over and the one that completes it -- are recognised even though no
+ * profile may order either.
  */
 [[nodiscard]] inline provision_step_action classify_step_kind(std::string_view kind) {
-    using namespace ores::iam::workflow;
-
     if (kind == complete_provisioning_step_kind)
         return provision_step_action::complete_provisioning;
     if (kind == start_tenant_setup_step_kind)
@@ -112,8 +110,6 @@ enum class provision_step_action {
         return provision_step_action::publish_party_forwards;
     if (kind == publish_party_surfaces_step_kind)
         return provision_step_action::publish_party_surfaces;
-    if (kind == "generate_trades")
-        return provision_step_action::generate_trades;
     if (kind == schedule_reports_step_kind)
         return provision_step_action::schedule_reports;
     return provision_step_action::refuse;
@@ -231,8 +227,7 @@ using ores::utility::codec::json_value;
 }
 
 [[nodiscard]] inline std::string
-parameter_value(const std::vector<ores::iam::workflow::provision_tenant_parameter>& parameters,
-                std::string_view name) {
+parameter_value(const std::vector<provision_tenant_parameter>& parameters, std::string_view name) {
     for (const auto& parameter : parameters)
         if (parameter.name == name)
             return parameter.value;
@@ -268,9 +263,9 @@ parse_step_bundles(const std::string& arguments_json) {
  * place: a step that published without the member its row named would leave the
  * tenant with half the data the person asked for.
  */
-[[nodiscard]] inline std::string resolve_parameter_references(
-    std::string text,
-    const std::vector<ores::iam::workflow::provision_tenant_parameter>& parameters) {
+[[nodiscard]] inline std::string
+resolve_parameter_references(std::string text,
+                             const std::vector<provision_tenant_parameter>& parameters) {
     auto opening = text.find('{');
     while (opening != std::string::npos) {
         const auto closing = text.find('}', opening);
@@ -306,9 +301,9 @@ struct publish_bundle_step_arguments {
  * member has it published beside the rest. A code may name a run parameter in
  * braces; see @ref resolve_parameter_references.
  */
-[[nodiscard]] inline publish_bundle_step_arguments parse_publish_bundle_arguments(
-    const std::string& arguments_json,
-    const std::vector<ores::iam::workflow::provision_tenant_parameter>& parameters) {
+[[nodiscard]] inline publish_bundle_step_arguments
+parse_publish_bundle_arguments(const std::string& arguments_json,
+                               const std::vector<provision_tenant_parameter>& parameters) {
     publish_bundle_step_arguments result;
     result.bundles = parse_step_bundles(arguments_json);
 
@@ -378,9 +373,9 @@ struct lei_hierarchy_step_arguments {
  * warning, because a run that silently did nothing where it promised work is
  * worse than one that says so.
  */
-[[nodiscard]] inline lei_hierarchy_step_arguments parse_lei_hierarchy_arguments(
-    const std::string& arguments_json,
-    const std::vector<ores::iam::workflow::provision_tenant_parameter>& parameters) {
+[[nodiscard]] inline lei_hierarchy_step_arguments
+parse_lei_hierarchy_arguments(const std::string& arguments_json,
+                              const std::vector<provision_tenant_parameter>& parameters) {
     lei_hierarchy_step_arguments result;
     result.bundles = parse_step_bundles(arguments_json);
 

@@ -24,6 +24,7 @@ set(files
     "client/run_token_minter.cpp"
     "client/service_token_provider.cpp"
     "client/storage_capability_minter.cpp"
+    "client/tenant_session.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -32,6 +33,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/client/run_token_minter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/client/service_token_provider.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/client/storage_capability_minter.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/client/tenant_session.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/ores.iam.client.hpp"
 )

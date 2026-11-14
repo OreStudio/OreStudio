@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.refdata.api/domain/party_id_scheme_json_io.hpp" // IWYU pragma: keep.
@@ -249,8 +250,10 @@ void party_id_scheme_repository::write(
 std::vector<domain::party_id_scheme> party_id_scheme_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<party_id_scheme_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<party_id_scheme_entity, domain::party_id_scheme>(
@@ -266,9 +269,10 @@ party_id_scheme_repository::read_latest(const context& ctx, const std::string& c
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party ID scheme. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<party_id_scheme_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<party_id_scheme_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<party_id_scheme_entity, domain::party_id_scheme>(
         ctx,
@@ -283,9 +287,11 @@ std::vector<domain::party_id_scheme> party_id_scheme_repository::read_all(const 
                                                                           const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all party ID scheme versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<party_id_scheme_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<party_id_scheme_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<party_id_scheme_entity, domain::party_id_scheme>(
         ctx,
@@ -300,10 +306,11 @@ std::optional<domain::party_id_scheme> party_id_scheme_repository::read_at_versi
     BOOST_LOG_SEV(lg(), debug) << "Reading party ID scheme at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<party_id_scheme_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
-        query_builder::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<party_id_scheme_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities =
         query_builder::execute_read_query<party_id_scheme_entity, domain::party_id_scheme>(
@@ -362,9 +369,10 @@ std::vector<domain::party_id_scheme> party_id_scheme_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party ID schemes with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<party_id_scheme_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<party_id_scheme_entity,
                                                      domain::party_id_scheme>(
@@ -385,8 +393,9 @@ std::uint32_t party_id_scheme_repository::get_total_scheme_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party ID scheme count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<party_id_scheme_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<party_id_scheme_entity>(
         ctx,
@@ -418,9 +427,10 @@ party_id_scheme_repository::read_latest(const context& ctx, const std::vector<st
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<party_id_scheme_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<party_id_scheme_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c.in(codes) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<party_id_scheme_entity, domain::party_id_scheme>(
             ctx,

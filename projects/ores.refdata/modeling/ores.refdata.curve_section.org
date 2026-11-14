@@ -86,6 +86,7 @@ std::string(faker::lorem::sentence())
 :PROPERTIES:
 :tablename: ores_refdata_curve_sections_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * C++
@@ -101,6 +102,7 @@ std::string(faker::lorem::sentence())
 :entity_plural_short:   sections
 :entity_singular_words: curve section
 :entity_plural_words:   curve sections
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

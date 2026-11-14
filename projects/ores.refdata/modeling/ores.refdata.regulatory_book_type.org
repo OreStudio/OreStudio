@@ -99,6 +99,8 @@ faker::number::integer(1, 100)
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_regulatory_book_types_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Validation function
@@ -127,6 +129,7 @@ faker::number::integer(1, 100)
 :entity_plural_short:   types
 :entity_singular_words: regulatory book type
 :entity_plural_words:   regulatory book types
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

@@ -79,6 +79,7 @@ std::string(faker::lorem::sentence())
 :PROPERTIES:
 :tablename: ores_refdata_day_counters_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * C++
@@ -94,6 +95,7 @@ std::string(faker::lorem::sentence())
 :entity_plural_short:   day_counters
 :entity_singular_words: day counter
 :entity_plural_words:   day counters
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

@@ -28,9 +28,9 @@ A new tenant states what it is seeded with, from the bundle map, and nothing is 
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The refdata vocabulary copies are gone and tenants read the system tenant's rows. |
+| Waiting on   | Nothing. |
+| Next         | Record what the provisioner still copies: the DQ registries, IAM roles, trading types and party rows, and the runtime publish path that reads a dataset from the caller's tenant. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -50,7 +50,9 @@ A new tenant states what it is seeded with, from the bundle map, and nothing is 
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| System tables the provisioner copies into each tenant | ~36 | `iam_tenant_provisioner_create.sql:232-873` | e050a2d239 |
+| Refdata tables the provisioner copied into each tenant | 34 of 36; =parties= and =business_centres= are created for the tenant and stay | `grep -o "insert into ores_refdata_[a-z_]*" iam_tenant_provisioner_create.sql` | 5cae6e2eb1 |
+| Refdata vocabulary tables a tenant reads from the system tenant | 34, each with the shared-reference policy and `:system_tenant_visible:` | `grep -c rls_own_or_system_tenant_rows projects/ores.refdata/modeling/*.org` | 5cae6e2eb1 |
+| Other tables the provisioner copies | 24 statements: the DQ registries, IAM roles and permissions, trading activity types and structure kinds, and the marketdata series classification rules | `grep -n -B12 "Copied from system tenant" iam_tenant_provisioner_create.sql` | 5cae6e2eb1 |
 
 * Notes
 
@@ -82,3 +84,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The first half is delivered; the task is not closed.
+
+- The 34 refdata vocabulary tables the provisioner copied are no longer copied.
+  Each one's model declares `:rls_own_or_system_tenant_rows:` and
+  `:system_tenant_visible:`, so its policy admits the system tenant's rows and
+  its repository reads them beside the caller's. The generated SQL, the C++ and
+  the ER diagrams follow from the models.
+- The validators already read the system tenant, so removing the copies changes
+  no check: a tenant's party type is validated against the system catalogue
+  whether or not the tenant holds a copy.
+- =parties= and =business_centres= stay, and they are not copies: the provisioner
+  creates the tenant's own system party and business centre with its own code
+  and identifier.
+- A recreate passed end to end with the policies and the shortened provisioner,
+  and `compass db status` reports the schema in sync.
+
+What remains, and it is the larger half:
+
+- The provisioner still copies 24 more statements: the DQ registries (artefact
+  types, dataset bundles, coding schemes, dimensions, change reasons), IAM roles
+  and permissions, trading activity types and structure kinds, and the
+  marketdata series classification rules, plus =party_categories=, which has no
+  model to state a policy on.
+- The DQ registry copies cannot go until the runtime publish path reads a
+  dataset from the system tenant. =publish_service= resolves a dataset in the
+  caller's tenant today, so a tenant's publication depends on its own copy of
+  the dataset row even though the bring-up publishes from the system tenant's.
+- The tenant bootstrap itself is still unnamed: what a new tenant is seeded with
+  is stated by these insert statements and not by the bundle map.

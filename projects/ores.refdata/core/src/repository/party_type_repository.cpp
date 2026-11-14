@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/party_type.hpp"
 #include "ores.refdata.api/domain/party_type_json_io.hpp" // IWYU pragma: keep.
@@ -242,8 +243,10 @@ void party_type_repository::write(const context& ctx,
 std::vector<domain::party_type> party_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<party_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<party_type_entity, domain::party_type>(
@@ -259,9 +262,10 @@ std::vector<domain::party_type> party_type_repository::read_latest(const context
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<party_type_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<party_type_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<party_type_entity, domain::party_type>(
         ctx,
@@ -276,9 +280,11 @@ std::vector<domain::party_type> party_type_repository::read_all(const context& c
                                                                 const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all party type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<party_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<party_type_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<party_type_entity, domain::party_type>(
         ctx,
@@ -294,10 +300,11 @@ std::optional<domain::party_type> party_type_repository::read_at_version(const c
     BOOST_LOG_SEV(lg(), debug) << "Reading party type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<party_type_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
-        query_builder::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<party_type_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<party_type_entity, domain::party_type>(
         ctx,
@@ -354,9 +361,10 @@ party_type_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party types with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<party_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<party_type_entity, domain::party_type>(
         ctx,
@@ -376,8 +384,9 @@ std::uint32_t party_type_repository::get_total_type_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active party type count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<party_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<party_type_entity>(
         ctx,
@@ -409,9 +418,10 @@ party_type_repository::read_latest(const context& ctx, const std::vector<std::st
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<party_type_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<party_type_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c.in(codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<party_type_entity, domain::party_type>(
         ctx,
         query,

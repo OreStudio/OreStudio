@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/asset_class_code.hpp"
 #include "ores.refdata.api/domain/asset_class_code_json_io.hpp" // IWYU pragma: keep.
@@ -249,8 +250,10 @@ void asset_class_code_repository::write(
 std::vector<domain::asset_class_code> asset_class_code_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<asset_class_code_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<asset_class_code_entity, domain::asset_class_code>(
@@ -266,9 +269,10 @@ asset_class_code_repository::read_latest(const context& ctx, const std::string& 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset class code. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<asset_class_code_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<asset_class_code_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<asset_class_code_entity, domain::asset_class_code>(
         ctx,
@@ -283,9 +287,11 @@ std::vector<domain::asset_class_code>
 asset_class_code_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all asset class code versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<asset_class_code_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<asset_class_code_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<asset_class_code_entity, domain::asset_class_code>(
         ctx,
@@ -300,10 +306,11 @@ std::optional<domain::asset_class_code> asset_class_code_repository::read_at_ver
     BOOST_LOG_SEV(lg(), debug) << "Reading asset class code at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<asset_class_code_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
-        query_builder::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<asset_class_code_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities =
         query_builder::execute_read_query<asset_class_code_entity, domain::asset_class_code>(
@@ -362,9 +369,10 @@ std::vector<domain::asset_class_code> asset_class_code_repository::read_latest(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset class codes with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<asset_class_code_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<asset_class_code_entity,
                                                      domain::asset_class_code>(
@@ -385,8 +393,9 @@ std::uint32_t asset_class_code_repository::get_total_asset_class_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset class code count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<asset_class_code_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<asset_class_code_entity>(
         ctx,
@@ -419,9 +428,10 @@ asset_class_code_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<asset_class_code_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<asset_class_code_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c.in(codes) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<asset_class_code_entity, domain::asset_class_code>(
             ctx,

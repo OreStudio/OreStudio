@@ -97,6 +97,8 @@ faker::number::integer(1, 100)
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_purpose_types_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -131,6 +133,7 @@ drop function if exists ores_refdata_validate_purpose_type_fn;
 :entity_plural_short:   types
 :entity_singular_words: purpose type
 :entity_plural_words:   purpose types
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

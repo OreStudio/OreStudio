@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/floating_index_type.hpp"
 #include "ores.refdata.api/domain/floating_index_type_json_io.hpp" // IWYU pragma: keep.
@@ -255,8 +256,10 @@ std::vector<domain::floating_index_type>
 floating_index_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<floating_index_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<floating_index_type_entity,
@@ -273,9 +276,10 @@ floating_index_type_repository::read_latest(const context& ctx, const std::strin
     BOOST_LOG_SEV(lg(), debug) << "Reading latest floating index type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<floating_index_type_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<floating_index_type_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<floating_index_type_entity,
                                              domain::floating_index_type>(
@@ -291,9 +295,11 @@ std::vector<domain::floating_index_type>
 floating_index_type_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all floating index type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<floating_index_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<floating_index_type_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<floating_index_type_entity,
                                              domain::floating_index_type>(
@@ -309,10 +315,11 @@ std::optional<domain::floating_index_type> floating_index_type_repository::read_
     BOOST_LOG_SEV(lg(), debug) << "Reading floating index type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<floating_index_type_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
-        query_builder::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<floating_index_type_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities =
         query_builder::execute_read_query<floating_index_type_entity, domain::floating_index_type>(
@@ -371,9 +378,10 @@ std::vector<domain::floating_index_type> floating_index_type_repository::read_la
     BOOST_LOG_SEV(lg(), debug) << "Reading latest floating index types with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<floating_index_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<floating_index_type_entity,
                                                      domain::floating_index_type>(
@@ -394,8 +402,9 @@ std::uint32_t floating_index_type_repository::get_total_type_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active floating index type count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<floating_index_type_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<floating_index_type_entity>(
         ctx,
@@ -428,9 +437,10 @@ floating_index_type_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<floating_index_type_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<floating_index_type_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c.in(codes) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<floating_index_type_entity, domain::floating_index_type>(
             ctx,

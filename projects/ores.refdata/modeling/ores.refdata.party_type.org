@@ -97,6 +97,8 @@ faker::number::integer(1, 100)
 ** Flags
 :PROPERTIES:
 :tablename: ores_refdata_party_types_tbl
+:rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -135,6 +137,7 @@ drop function if exists ores_refdata_validate_party_type_fn;
 :delete_request_id_field:  codes
 :single_delete:            false
 :history_request_id_field: code
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

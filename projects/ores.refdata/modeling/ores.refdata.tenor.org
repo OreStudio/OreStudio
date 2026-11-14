@@ -150,6 +150,7 @@ ctx.random_int(1, 30)
 :PROPERTIES:
 :tablename: ores_refdata_tenors_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 * Insert trigger
@@ -382,6 +383,7 @@ session's.
 :entity_plural_short:   tenors
 :entity_singular_words: tenor
 :entity_plural_words:   tenors
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

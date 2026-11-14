@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.refdata.api/domain/tenor_resolution_algorithm.hpp"
 #include "ores.refdata.api/domain/tenor_resolution_algorithm_json_io.hpp" // IWYU pragma: keep.
@@ -260,8 +261,10 @@ std::vector<domain::tenor_resolution_algorithm>
 tenor_resolution_algorithm_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<tenor_resolution_algorithm_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<tenor_resolution_algorithm_entity,
@@ -278,9 +281,10 @@ tenor_resolution_algorithm_repository::read_latest(const context& ctx, const std
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor resolution algorithm. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<tenor_resolution_algorithm_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<tenor_resolution_algorithm_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<tenor_resolution_algorithm_entity,
                                              domain::tenor_resolution_algorithm>(
@@ -297,9 +301,11 @@ tenor_resolution_algorithm_repository::read_all(const context& ctx, const std::s
     BOOST_LOG_SEV(lg(), debug) << "Reading all tenor resolution algorithm versions. "
                                << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<tenor_resolution_algorithm_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "code"_c == code) |
-                       query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<tenor_resolution_algorithm_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
+        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<tenor_resolution_algorithm_entity,
                                              domain::tenor_resolution_algorithm>(
@@ -317,10 +323,11 @@ tenor_resolution_algorithm_repository::read_at_version(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading tenor resolution algorithm at version. "
                                << "code: " << code << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<tenor_resolution_algorithm_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
-        query_builder::limit(1);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<tenor_resolution_algorithm_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c == code && "version"_c == version) |
+                       query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<tenor_resolution_algorithm_entity,
                                                             domain::tenor_resolution_algorithm>(
@@ -379,9 +386,10 @@ std::vector<domain::tenor_resolution_algorithm> tenor_resolution_algorithm_repos
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor resolution algorithms with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<tenor_resolution_algorithm_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<tenor_resolution_algorithm_entity,
                                                      domain::tenor_resolution_algorithm>(
@@ -402,8 +410,9 @@ std::uint32_t tenor_resolution_algorithm_repository::get_total_algorithm_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor resolution algorithm count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<tenor_resolution_algorithm_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<tenor_resolution_algorithm_entity>(
         ctx,
@@ -436,9 +445,10 @@ tenor_resolution_algorithm_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<tenor_resolution_algorithm_entity>> |
-        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<tenor_resolution_algorithm_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "code"_c.in(codes) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<tenor_resolution_algorithm_entity,
                                                     domain::tenor_resolution_algorithm>(
         ctx,

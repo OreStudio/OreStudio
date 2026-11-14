@@ -203,6 +203,8 @@ do instead
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Tenor Convention Resolution
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
 -- =============================================================================
 alter table "ores_refdata_tenor_convention_resolutions_tbl" enable row level security;
 
@@ -213,6 +215,7 @@ create policy tenor_convention_resolutions_tbl_tenant_isolation_policy
 on "ores_refdata_tenor_convention_resolutions_tbl"
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()

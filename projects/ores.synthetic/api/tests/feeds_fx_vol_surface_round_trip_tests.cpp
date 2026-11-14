@@ -40,9 +40,7 @@ using namespace ores::synthetic::feed;
 /*
  * The round trip, through the run's own values: curves and a spot are published to a board as
  * three feeds publish them, the surface reads its markets off that board, and a party calibrating
- * the quotes the surface emitted against those same markets lands on the same surface. No market
- * is built by hand here, because a test that hands both sides its own market proves only that the
- * fit recovers the quotes -- which is a claim about the fit, not about the run.
+ * the quotes the surface emitted against those same markets lands on the same surface.
  */
 
 namespace {
@@ -266,10 +264,11 @@ TEST_CASE("the surface a run publishes is the surface a calibration recovers",
             worst_wing = std::max(worst_wing, std::abs(fit.error));
     }
     INFO("worst ATM error " << worst_atm << ", worst wing error " << worst_wing);
-    // Measured on this fixture: 2.55e-09 at ATM and 6.56e-09 at the wings, so the margin is an
-    // order of magnitude above what the fit costs and far below a tenth of a volatility point.
-    CHECK(worst_atm < 1e-7);
-    CHECK(worst_wing < 1e-7);
+    // Measured on this fixture: 2.55e-09 at ATM and 6.56e-09 at the wings. The margins sit just
+    // above that, at four times and three times the measurement, so a regression that doubled the
+    // fit's cost would fail rather than hide under a tenth of a volatility point.
+    CHECK(worst_atm < 1e-8);
+    CHECK(worst_wing < 2e-8);
 
     // The strike half of the same claim, and it is exact: the calibration solves the ATM strike
     // with the same function the emitter uses, against the same expiry's market. A margin here

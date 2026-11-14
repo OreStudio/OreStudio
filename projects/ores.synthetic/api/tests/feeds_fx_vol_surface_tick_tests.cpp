@@ -168,59 +168,102 @@ TEST_CASE("a surface names the member the run has not published", "[fx_vol_surfa
     tick_board board;
     const auto at = std::chrono::system_clock::time_point{};
 
+    const auto base = tick_curve(tick_eur_rate, periods);
+    const auto quote = tick_curve(tick_usd_rate, periods);
+
     // Nothing has ticked yet: the base currency is the first thing a reader of the run looks for.
     auto inputs = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);
     REQUIRE_FALSE(inputs);
     CHECK(inputs.error() == "curve:EUR");
 
-    board.values.publish_curve(board.eur, tick_spot_date, tick_curve(tick_eur_rate, periods), at);
+    board.values.publish_curve(board.eur, tick_spot_date, base, at);
     inputs = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);
     REQUIRE_FALSE(inputs);
     CHECK(inputs.error() == "curve:USD");
 
-    board.values.publish_curve(board.usd, tick_spot_date, tick_curve(tick_usd_rate, periods), at);
+    board.values.publish_curve(board.usd, tick_spot_date, quote, at);
     inputs = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);
     REQUIRE_FALSE(inputs);
     CHECK(inputs.error() == "spot:EUR/USD");
 
-    // With all three published the surface reads them, under the name the spot feed writes.
+    // With all three published the surface reads them back, under the name the spot feed writes,
+    // and what it reads is what was published rather than merely the right number of points.
     board.values.publish_spot(board.spot, tick_spot, at);
     inputs = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);
     REQUIRE(inputs);
     CHECK(inputs->spot.spot == tick_spot);
     CHECK(inputs->spot_date == tick_spot_date);
-    CHECK(inputs->base.size() == periods.size() + 1);
-    CHECK(inputs->quote.size() == periods.size() + 1);
+    const auto same_points = [](std::span<const fx_curve_point> read,
+                                const std::vector<curve_point>& published) {
+        if (read.size() != published.size())
+            return false;
+        for (std::size_t i = 0; i < read.size(); ++i)
+            if (read[i].date != published[i].date ||
+                read[i].discount_factor != published[i].discount_factor)
+                return false;
+        return true;
+    };
+    CHECK(same_points(inputs->base, base));
+    CHECK(same_points(inputs->quote, quote));
 }
 
 TEST_CASE("a surface resolves each expiry at the date its period gives", "[fx_vol_surface_tick]") {
+    // The three value dates the periods name, and the discounts and forward that a flat curve and
+    // a spot give there. Every number here is stated rather than recomputed: if the fixture and
+    // the code shared one expression, a wrong date or a wrong interpolation would agree with
+    // itself. One month from 16 November is 16 December, a year is 365 days, and the forward is
+    // the spot times the pair's foreign discount over its domestic one.
+    struct expected_expiry final {
+        std::chrono::year_month_day value_date;
+        int days;
+        double domestic_discount;
+        double foreign_discount;
+        double forward;
+    };
+    const std::vector<expected_expiry> expected{
+        {{std::chrono::year{2026}, std::chrono::December, std::chrono::day{16}},
+         30,
+         0.9991784198737006,
+         0.997537284048252,
+         1.0824192174825231},
+        {{std::chrono::year{2027}, std::chrono::February, std::chrono::day{16}},
+         92,
+         0.9974826259685393,
+         0.9924668734686284,
+         1.0787481969120785},
+        {{std::chrono::year{2027}, std::chrono::May, std::chrono::day{16}},
+         181,
+         0.9950533709567208,
+         0.9852333992470845,
+         1.0735002590229397}};
+
     const auto periods = tick_periods();
+    REQUIRE(periods.size() == expected.size());
+    for (std::size_t i = 0; i < periods.size(); ++i) {
+        INFO("expiry " << i << " resolves at " << tick_days_to(expected[i].value_date) << " days");
+        CHECK(calendar_arithmetic::add_period(tick_spot_date, periods[i]) ==
+              expected[i].value_date);
+        CHECK(tick_days_to(expected[i].value_date) == expected[i].days);
+    }
+
     tick_board board;
     tick_publish(board, periods, std::chrono::system_clock::time_point{});
-
     const auto inputs = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);
     REQUIRE(inputs);
     std::vector<fx_market> markets;
     REQUIRE(fx_vol_expiry_markets(*inputs, periods, markets));
-    REQUIRE(markets.size() == periods.size());
+    REQUIRE(markets.size() == expected.size());
 
     std::vector<double> forwards;
-    for (std::size_t i = 0; i < periods.size(); ++i) {
-        const auto value_date = calendar_arithmetic::add_period(tick_spot_date, periods[i]);
-        const double years = tick_days_to(value_date) * tick_day;
-        INFO("expiry " << i << " discounts over " << years << " years");
-        // The two curves are read at the value date and at neither of the other expiries'
-        // dates, so the period addition is observable and both sides are used.
+    for (std::size_t i = 0; i < markets.size(); ++i) {
+        // Both curves are read, at this expiry's date and at no other, so a period that did not
+        // reach the curve and a curve that was assumed flat both fail here.
         CHECK(markets[i].domestic_discount ==
-              Catch::Approx(std::exp(-tick_usd_rate * years)).epsilon(1e-12));
+              Catch::Approx(expected[i].domestic_discount).epsilon(1e-12));
         CHECK(markets[i].foreign_discount ==
-              Catch::Approx(std::exp(-tick_eur_rate * years)).epsilon(1e-12));
+              Catch::Approx(expected[i].foreign_discount).epsilon(1e-12));
         forwards.push_back(markets[i].forward());
-        INFO("expiry " << i << " discounts over " << years << " years to a forward of "
-                       << forwards.back());
-        CHECK(forwards.back() ==
-              Catch::Approx(tick_spot * std::exp(-(tick_eur_rate - tick_usd_rate) * years))
-                  .epsilon(1e-12));
+        CHECK(forwards.back() == Catch::Approx(expected[i].forward).epsilon(1e-12));
     }
     // Three expiries and three horizons: a market that repeated across them would pass the checks
     // above only if the two curves were flat across the whole six months, which they are not.
@@ -244,6 +287,9 @@ TEST_CASE("two ticks against an unchanged board quote the same surface", "[fx_vo
         REQUIRE(point.value);
         first.push_back(*point.value);
     }
+    // Stated rather than compared with the next tick's own output: the row's 7% less the
+    // delta-neutral adjustment its skew makes, measured on this fixture.
+    CHECK(first.front() == Catch::Approx(0.0699722922466306).epsilon(1e-9));
 
     // A tick later the same three values are published again, as a curve's feed does when the
     // market has not moved. Nothing between the board and the quote may have drifted.

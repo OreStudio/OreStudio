@@ -17,9 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.analytics.quant/domain/market_board.hpp"
+#include "ores.analytics.quant/service/run_clock.hpp"
+#include "ores.analytics.quant/service/run_market.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
+#include "ores.testing/nats_options_helper.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <cstddef>
 #include <string>
 #include <vector>
@@ -204,4 +210,59 @@ TEST_CASE("each contributor of a surface is its own stream", "[fx_vol_surface_fe
             moved = true;
     }
     CHECK(moved);
+}
+
+TEST_CASE("a tick whose run has not published what the surface reads says which and sends nothing",
+          "[fx_vol_surface_feed]") {
+    // The gates are the sentences an operator greps for, so they are asserted through the tick
+    // that logs them rather than through the function underneath it. Every one of them answers
+    // before the publish, so this test needs no broker.
+    ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
+    ores::analytics::quant::service::run_market market(clock, {}, 7);
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    fx_vol_surface_feed feed(
+        nats,
+        "synthetic.fx_vol.eurusd",
+        "synthetic.fx_vol.eurusd.market",
+        feed_input(),
+        7,
+        market,
+        1.0,
+        ores::analytics::quant::domain::arrival_spec{.mode = "periodic", .ticks_per_hour = 1.0});
+    // Three forward variances and the skew and the curvature: the count the run drives it with.
+    const std::vector<double> drivers(5, 0.0);
+    const auto at = std::chrono::system_clock::time_point{};
+    const auto tick = [&] {
+        return feed.tick({.elapsed_seconds = 1.0, .observed_at = at, .drivers = drivers});
+    };
+
+    CHECK(tick() == "no market: curve:EUR");
+    CHECK(feed.publish_count() == 0);
+
+    // The gate refuses before it reads a curve, so two stated points are all these need.
+    const auto flat = [](double factor) {
+        return std::vector<ores::analytics::quant::domain::curve_point>{
+            {.date = std::chrono::year_month_day{}, .discount_factor = 1.0},
+            {.date = std::chrono::year_month_day{}, .discount_factor = factor}};
+    };
+    const auto eur =
+        market.values().member_of(ores::analytics::quant::domain::market_member_kind::curve, "EUR");
+    market.values().publish_curve(eur, std::chrono::year_month_day{}, flat(0.97), at);
+    CHECK(tick() == "no market: curve:USD");
+    CHECK(feed.publish_count() == 0);
+
+    const auto usd_id =
+        market.values().member_of(ores::analytics::quant::domain::market_member_kind::curve, "USD");
+    market.values().publish_curve(usd_id, std::chrono::year_month_day{}, flat(0.99), at);
+    CHECK(tick() == "no market: spot:EUR/USD");
+    CHECK(feed.publish_count() == 0);
+
+    // With all three published the gate stops refusing, so the next thing a tick would do is
+    // send; the board read is what a test can follow without a broker, and the round trip does.
+    const auto spot = market.values().member_of(
+        ores::analytics::quant::domain::market_member_kind::spot, "EUR/USD");
+    market.values().publish_spot(spot, 1.0842, at);
+    const auto inputs = fx_vol_board_inputs(market.values(), eur, usd_id, spot);
+    REQUIRE(inputs);
+    CHECK(inputs->spot.spot == 1.0842);
 }

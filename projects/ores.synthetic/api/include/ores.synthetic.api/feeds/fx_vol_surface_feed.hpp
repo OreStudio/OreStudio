@@ -97,8 +97,12 @@ struct fx_vol_market_inputs final {
  * =spot:EUR/USD= -- and the caller decides what to do about it. The names are the members' own,
  * because that is what a reader of the run's board looks for.
  *
+ * @param values The run's board.
  * @param base_curve The member of the pair's base currency, which is the foreign side.
  * @param quote_curve The member of the pair's quote currency, which is the domestic side.
+ * @param spot The member of the pair's spot.
+ * @return The three values, whose spans are valid until the member they point into is published
+ *         again, or the name of the first member the run has not published.
  */
 [[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::expected<fx_vol_market_inputs, std::string>
 fx_vol_board_inputs(const ores::analytics::quant::domain::market_board& values,

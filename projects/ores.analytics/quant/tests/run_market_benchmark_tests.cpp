@@ -109,15 +109,17 @@ TEST_CASE("a run's lookups are measured against the work a tick does", "[.benchm
                 sink += run.driver_count_of(ids[static_cast<std::size_t>(i) % ids.size()]);
         }));
     }
-    // A tick's own body builds one sentence, which is the other thing the loop pays for.
+    // A tick's own body builds one sentence, which is the other thing the loop pays for. The
+    // body lives in the feed that ticks, so this is the same shape built here rather than the
+    // body itself: it is a reference to read the lookup against, not a regression guard.
     std::vector<double> sentences;
     for (int pass = 0; pass < benchmark_runs; ++pass)
         sentences.push_back(nanos_per_call(benchmark_calls, [&] {
             for (int i = 0; i < benchmark_calls; ++i)
                 sink += std::format("{} point(s)", i).size();
         }));
-    report("one driver lookup, a thousand series", samples);
-    report("one sentence for the tick's body, a thousand series", sentences);
+    report("one driver lookup, a run of a thousand series (250 series keys)", samples);
+    report("one sentence of the tick body's shape", sentences);
     // The sums keep the compiler from removing the work; they are not a claim about the numbers.
     REQUIRE(sink > 0);
 }

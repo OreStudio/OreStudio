@@ -13,6 +13,11 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
+The derivation's cost is fixed: one pass over the returns fills the whole grid, and the feed keeps
+a five-day tail instead of a history. Measured after that change, a full 39-pair pass takes two to
+three seconds in the service log, where it took hours. What remains is the step that waits on it,
+and two pairs that no source quotes.
+
 =give_party_surface_blueprints= gives each party a copy of the system's surface blueprints and
 waits for the quotes each one reads. The wait is a few minutes -- it asked again every ten seconds
 and gave up about nineteen tries in. With ten pairs and one year of fixings the derived source
@@ -49,6 +54,31 @@ and the run fails at step 11 of 14.
   throughput. Either the wait becomes a function of the work, or the derived source is asked to
   warm itself before the blueprints need it, or the history the store keeps is bounded to what a
   consumer asks for.
+
+* What it looks like now
+
+After the one-pass derivation, the first run of the step still fails for one party and names two
+pairs that cannot be quoted at all:
+
+#+begin_src text
+  progress: ACME Corporation US Inc: surface blueprints with their quotes 37 of 39
+  progress: ACME Corporation HK Ltd: surface blueprints with their quotes 37 of 39
+  [11/14] give_party_surface_blueprints: failed — 45 surface blueprint(s) were not given.
+          Acme Corporation Plc: ... 39 blueprint(s) ...
+          ... USDCLP_SSVI, USDCOP_SSVI for the other three parties
+#+end_src
+
+Two distinct things, and only the first is new:
+
+- The first party is given nothing while the other three are given 37 of 39 each, although all
+  four read the same per-tenant series and all 39 series exist by the time the run ends. The step
+  asks a party again every ten seconds and gave up eighteen times. So its retry does not see what
+  the derived source published for that same tenant -- a served-order or caching question in the
+  step, not a throughput question.
+- USD/CLP and USD/COP have no volatility quotes and never will from this source: the ECB publishes
+  no CLP or COP fixing, so the derivation says so by name -- =not_found: The fixing item
+  oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=CLP does not exist=. Their blueprints should
+  not be in the catalogue, or the pair needs a source that quotes it.
 
 * See also
 

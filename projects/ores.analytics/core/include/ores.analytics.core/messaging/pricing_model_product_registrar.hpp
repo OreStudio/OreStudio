@@ -25,7 +25,7 @@
 #ifndef ORES_ANALYTICS_CORE_MESSAGING_PRICING_MODEL_PRODUCT_REGISTRAR_HPP
 #define ORES_ANALYTICS_CORE_MESSAGING_PRICING_MODEL_PRODUCT_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"

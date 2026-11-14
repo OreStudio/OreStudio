@@ -30,7 +30,7 @@ The full template source. Edit here and re-tangle with
 #ifndef ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
 #define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -52,7 +52,7 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
 #ifndef ORES_{{component_core_upper}}_MESSAGING_{{name_singular_upper}}_REGISTRAR_HPP
 #define ORES_{{component_core_upper}}_MESSAGING_{{name_singular_upper}}_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -74,7 +74,7 @@ register_{{name_singular}}_handlers(ores::nats::service::client& nats,
 #ifndef ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
 #define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -96,7 +96,7 @@ register_{{entity_singular}}_handlers(ores::nats::service::client& nats,
 #ifndef ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
 #define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"

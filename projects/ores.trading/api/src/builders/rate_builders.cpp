@@ -139,7 +139,11 @@ swap_result cross_currency_swap_builder::build() const {
         return std::unexpected(within("foreign", foreign.error()));
 
     // The fixed leg is the domestic swap's and the floating leg the foreign one's.
-    domain::swap_instrument_data out{};
+    // The value is built inside the result: gcc 16 misreads the strings of a
+    // value-initialised local once it is copied into the expected, and warns that
+    // they are uninitialised.
+    swap_result result(std::in_place);
+    auto& out = *result;
     out.header = domestic->header;
     out.facts = domain::vanilla_swap_instrument{};
     take_leg(out, *domestic, 1, 1);
@@ -148,7 +152,7 @@ swap_result cross_currency_swap_builder::build() const {
         leg.notional_initial_exchange = true;
         leg.notional_final_exchange = true;
     }
-    return out;
+    return result;
 }
 
 forward_rate_agreement_builder::forward_rate_agreement_builder(conventions_ref conventions,
@@ -189,7 +193,8 @@ swap_result cap_floor_builder::build() const {
         return std::unexpected(swap.error());
 
     // A cap or a floor pays on the floating leg alone.
-    domain::swap_instrument_data out{};
+    swap_result result(std::in_place);
+    auto& out = *result;
     out.header = swap->header;
     domain::cap_floor_instrument fact{};
     fact.long_short = long_short_of(terms_.position.get());
@@ -203,7 +208,7 @@ swap_result cap_floor_builder::build() const {
     strike.bare_value = terms_.swap.fixed_rate.get();
     strike.bare_currency = terms_.swap.currency.get();
     out.strikes.push_back(std::move(strike));
-    return out;
+    return result;
 }
 
 swaption_builder::swaption_builder(conventions_ref conventions, swaption_terms terms)
@@ -389,7 +394,8 @@ swap_result inflation_swap_builder::build() const {
         return row;
     };
 
-    domain::swap_instrument_data out{};
+    swap_result result(std::in_place);
+    auto& out = *result;
     out.header.start_date = start;
     out.header.maturity_date = maturity;
     domain::inflation_swap_instrument fact{};
@@ -432,7 +438,7 @@ swap_result inflation_swap_builder::build() const {
     payment.sequence_number = 1;
     payment.schedule_date = maturity;
     out.schedule_dates.push_back(std::move(payment));
-    return out;
+    return result;
 }
 
 }

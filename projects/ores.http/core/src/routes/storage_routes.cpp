@@ -43,7 +43,27 @@ using iam::domain::permissions::objects_write;
 using storage::filesystem::object_not_found;
 namespace asio = boost::asio;
 
+/*
+ * Named, and outside the anonymous namespace, because handle_get() is a
+ * coroutine and its frame holds the range it parsed: a type with no linkage in
+ * the frame is what gcc refuses under -Wsubobject-linkage.
+ */
+namespace storage_range {
+
+/**
+ * @brief The part of a body a caller asked for, in its own bytes.
+ */
+struct byte_range final {
+    std::uint64_t offset = 0;
+    /// How many bytes were asked for, or =to_end= for the rest.
+    std::uint64_t length = ~std::uint64_t{0};
+};
+
+} // namespace storage_range
+
 namespace {
+
+using storage_range::byte_range;
 
 /**
  * @brief The largest page a listing will return, whatever the caller asks for.
@@ -101,15 +121,6 @@ std::string json_escape(std::string_view text) {
     }
     return out;
 }
-
-/**
- * @brief The part of a body a caller asked for, in its own bytes.
- */
-struct byte_range final {
-    std::uint64_t offset = 0;
-    /// How many bytes were asked for, or =to_end= for the rest.
-    std::uint64_t length = ~std::uint64_t{0};
-};
 
 /**
  * @brief Reads a single =bytes= range, or nothing when none was asked for.

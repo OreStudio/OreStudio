@@ -62,6 +62,14 @@ add_compile_options(
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wextra>
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wno-missing-field-initializers>
     $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-designated-field-initializers>
+    # gcc 16 reports -Warray-bounds for code this tree does not own: the control
+    # block libstdc++'s make_shared builds, and boost 1.92's exception and beast
+    # internals (make_shared_object.hpp, shared_count.hpp). Every array-bounds
+    # diagnostic the gcc 16 build reports is one of those, so the warning stays
+    # off until the compiler or boost stops reporting it. The cost, stated for
+    # the day this changes: a genuine out-of-bounds read in our own code no
+    # longer reaches the build log.
+    $<$<CXX_COMPILER_ID:GNU>:-Wno-array-bounds>
     $<$<AND:$<BOOL:${ORES_WARNINGS_AS_ERRORS}>,$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>>:-Werror>
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
     $<$<AND:$<BOOL:${ORES_WARNINGS_AS_ERRORS}>,$<CXX_COMPILER_ID:MSVC>>:/WX>

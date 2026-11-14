@@ -28,12 +28,12 @@
 #include "ores.nats/service/nats_connect_error.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include <boost/asio/any_io_executor.hpp>
-#include <boost/asio/as_tuple.hpp>
 #include <boost/asio/experimental/channel.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/circular_buffer.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
 #include <algorithm>
 #include <atomic>
 #include <chrono>
@@ -851,13 +851,14 @@ client::request(std::string_view subject,
         }
     }).detach();
 
-    auto [ec, msg] =
-        co_await chan->async_receive(boost::asio::as_tuple(boost::asio::use_awaitable));
-
-    if (ec)
-        throw std::runtime_error("NATS async request failed: " + ec.message());
-
-    co_return std::move(msg);
+    // use_awaitable throws on failure and returns the message alone. The as_tuple
+    // adapter it replaces made gcc 16 warn about an uninitialised temporary in
+    // the coroutine's frame, which was a false positive.
+    try {
+        co_return co_await chan->async_receive(boost::asio::use_awaitable);
+    } catch (const boost::system::system_error& e) {
+        throw std::runtime_error("NATS async request failed: " + e.code().message());
+    }
 }
 
 subscription client::subscribe(std::string_view subject, message_handler handler) {

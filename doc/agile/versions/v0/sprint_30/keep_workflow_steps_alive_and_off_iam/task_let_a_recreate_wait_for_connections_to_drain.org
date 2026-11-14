@@ -69,8 +69,8 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | The drain window before the change | 10 seconds | read =projects/ores.compass/src/compass_db.py= | d38ed21c8c |
 | The drain window after the change | =DRAIN_SECONDS = 60= | read =projects/ores.compass/src/compass_db.py= | 86dd1539d2 |
-| The suite that pins the wait | 5 cases pass in 0.05s, from 3 | =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests/test_compass_db_connections.py -q= | e632532bd4 |
-| The compass suite | passes | =python3 build/scripts/local_checks.py --only compass-tests= | e632532bd4 |
+| The suite that pins the wait | 7 cases pass in 0.03s, from 3 | =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests/test_compass_db_connections.py -q= | 0f56e13894 |
+| The compass suite | passes | =python3 build/scripts/local_checks.py --only compass-tests= | 0f56e13894 |
 | Stop the services, then recreate, back to back | succeed, 1m 33s, and no wait was needed | =./compass.sh services stop=, then =time ./compass.sh db recreate -y -k= | 86dd1539d2 |
 
 * Notes
@@ -103,12 +103,12 @@ task and name that file in the Command column.
   out; it now reads that the connections did not close in time, and the hint
   is for the caller without it. The deadline case states how long the wait
   spends instead of counting rounds, so a change to the loop does not fail it.
-- Two effects the acceptance does not name, recorded so a reader is not
-  surprised: =compass db drop -k= runs the same check, so it also waits up to
-  a minute; and an unreadable count (empty =psql= output) still reads as "the
-  database may not exist", which lets a recreate proceed to the drop. The
-  second is older than this change and is left alone, because telling an absent
-  database from an unreadable count means a separate query.
+- Two effects the acceptance does not name. =compass db drop -k= runs the same
+  check, so it also waits up to a minute, and the docstring says so. And an
+  answer that never came back used to read as "the database may not exist, so
+  nothing is connected", which let a recreate go on to the drop: the count is
+  cluster-wide, so an absent database answers zero, and an unreadable answer is
+  now a refusal that says what it could not read.
 - The shell path is unchanged and different: =projects/ores.sql/utility/
   check_db_connections.sh= does not wait at all, it counts and points at
   =kill_db_connections.sh=. =recreate_env.sh= sources it, and the backlog's
@@ -142,8 +142,8 @@ via its "Verifies task" field.
 | 4 | The deadline case pins rounds, so a correct reshuffle fails it | tests | Fixed | It states how long the wait spends. |
 | 5 | The progress line does not flush, so a piped wait stays silent | compass_db.py | Fixed | It flushes, and names the window. |
 | 6 | A caller who passed =-k= is told to pass =-k= | compass_db.py | Fixed | The hint answers the caller that has no =-k=; the other is told the window ran out. |
-| 7 | =compass db drop -k= now waits a minute too | compass_db.py | Kept | The same check guards the drop, and the Notes name it. |
-| 8 | An unreadable count reads as an absent database and lets the drop run | compass_db.py | Kept | Older than this change, and telling the two apart needs a query of its own. |
+| 7 | =compass db drop -k= now waits a minute too | compass_db.py | Fixed | The docstring states that both commands ask this check, and both wait. |
+| 8 | An unreadable count reads as an absent database and lets the drop run | compass_db.py | Fixed | The count is cluster-wide, so an absent database answers zero; an answer that did not come back is a refusal. |
 | 9 | The acceptance run did not exercise the wait | task | Fixed | The Notes state it: systemd's stop drains first, so the unit tests hold the wait. |
 
 * Result

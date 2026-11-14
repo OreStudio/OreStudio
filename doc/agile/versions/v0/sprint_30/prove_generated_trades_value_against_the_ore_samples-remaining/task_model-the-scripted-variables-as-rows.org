@@ -8,7 +8,7 @@
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/model-the-scripted-variables-as-rows
-#+pr:
+#+pr: 4734
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -133,7 +133,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4734][#4734]] | [trading,ore,synthetic,seeder] Model scripted trades as rows and state what their engine reads |
 
 * Review
 

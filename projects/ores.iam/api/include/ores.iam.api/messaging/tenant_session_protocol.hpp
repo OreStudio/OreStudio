@@ -94,6 +94,62 @@ struct enter_tenant_response {
 };
 
 /**
+ * @brief Enter one tenant as a service account, to work inside it.
+ *
+ * A service that serves a tenant's work needs a session scoped to that tenant,
+ * because every write names the tenant and the party from the caller's claims.
+ * The session acts as the tenant's system party and carries the service's own
+ * permissions, so it writes where the service's role writes and nowhere else.
+ *
+ * Refused to a caller that is not a service account, to a caller without
+ * iam::tenants:enter_as_service, and for the system tenant, an unknown tenant,
+ * or a tenant with no system party yet.
+ */
+struct enter_tenant_as_service_request {
+    using response_type = struct enter_tenant_as_service_response;
+    static constexpr std::string_view nats_subject = "iam.v1.ops.enter_tenant_as_service";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The id of the tenant to work inside.
+     */
+    std::string tenant_id;
+
+    friend bool operator==(const enter_tenant_as_service_request&,
+                           const enter_tenant_as_service_request&) = default;
+};
+
+struct enter_tenant_as_service_response {
+    bool success = false;
+    /**
+     * @brief Why the entry was refused, or empty.
+     */
+    std::string message;
+    /**
+     * @brief The session token scoped to the tenant.
+     */
+    std::string token;
+    std::string tenant_id;
+    std::string tenant_code;
+    /**
+     * @brief The tenant's system party, which the session acts as.
+     */
+    std::string party_id;
+    /**
+     * @brief How long the session lasts. It is not refreshed.
+     */
+    int access_lifetime_s = 1800;
+
+    friend bool operator==(const enter_tenant_as_service_response&,
+                           const enter_tenant_as_service_response&) = default;
+};
+
+/**
  * @brief Leave the tenant the caller's session acts in.
  *
  * The tenant comes from the caller's token, so the request carries nothing.
@@ -158,6 +214,42 @@ struct leave_tenant_response {
 }
 
 /**
+ * @brief The members of enter_tenant_as_service_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<enter_tenant_as_service_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"tenant_id", &enter_tenant_as_service_request::tenant_id},
+    };
+}
+
+/**
+ * @brief The members of enter_tenant_as_service_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<enter_tenant_as_service_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &enter_tenant_as_service_response::success},
+        ::ores::utility::codec::field{"message", &enter_tenant_as_service_response::message},
+        ::ores::utility::codec::field{"token", &enter_tenant_as_service_response::token},
+        ::ores::utility::codec::field{"tenant_id", &enter_tenant_as_service_response::tenant_id},
+        ::ores::utility::codec::field{"tenant_code",
+                                      &enter_tenant_as_service_response::tenant_code},
+        ::ores::utility::codec::field{"party_id", &enter_tenant_as_service_response::party_id},
+        ::ores::utility::codec::field{"access_lifetime_s",
+                                      &enter_tenant_as_service_response::access_lifetime_s},
+    };
+}
+
+/**
  * @brief The members of leave_tenant_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -204,6 +296,28 @@ struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::enter_tenant_respon
     static ores::iam::messaging::enter_tenant_response read_json(std::string_view text);
     static std::string write_msgpack(const ores::iam::messaging::enter_tenant_response& v);
     static ores::iam::messaging::enter_tenant_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::enter_tenant_as_service_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::enter_tenant_as_service_request& v);
+    static ores::iam::messaging::enter_tenant_as_service_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::enter_tenant_as_service_request& v);
+    static ores::iam::messaging::enter_tenant_as_service_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_IAM_API_EXPORT wire_traits<ores::iam::messaging::enter_tenant_as_service_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::iam::messaging::enter_tenant_as_service_response& v);
+    static ores::iam::messaging::enter_tenant_as_service_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::iam::messaging::enter_tenant_as_service_response& v);
+    static ores::iam::messaging::enter_tenant_as_service_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

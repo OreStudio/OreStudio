@@ -67,6 +67,10 @@ std::string_view describe(tenant_session_refusal refusal) {
             return "The tenant has no system party yet, so there is nothing to act as.";
         case tenant_session_refusal::no_read_permissions:
             return "The caller holds no read permission to carry into the tenant.";
+        case tenant_session_refusal::not_a_service_account:
+            return "Only a service account enters a tenant to work inside it.";
+        case tenant_session_refusal::no_permissions:
+            return "The caller holds no permission to carry into the tenant.";
         case tenant_session_refusal::not_inside_a_tenant:
             return "The session is not inside a tenant.";
     }
@@ -169,6 +173,80 @@ tenant_session_service::enter(const tenant_session_caller& caller,
             .tenant_name = tenant.name,
             .party_id = party_id,
             .party_name = party_name,
+            .access_lifetime_s = static_cast<int>(lifetime_.count())};
+}
+
+messaging::enter_tenant_as_service_response tenant_session_service::enter_as_service(
+    const tenant_session_caller& caller,
+    const messaging::enter_tenant_as_service_request& request) {
+    const auto refused = [](tenant_session_refusal refusal) {
+        return messaging::enter_tenant_as_service_response{
+            .success = false, .message = std::string(describe(refusal))};
+    };
+
+    if (caller.account_type != service_account_type)
+        return refused(tenant_session_refusal::not_a_service_account);
+    if (caller.acting_from_tenant_id)
+        return refused(tenant_session_refusal::already_inside_a_tenant);
+    if (!authorization_service::check_permission(caller.permissions, enter_as_service_permission))
+        return refused(tenant_session_refusal::not_permitted);
+
+    const auto target = utility::uuid::tenant_id::from_string(request.tenant_id);
+    if (!target)
+        return refused(tenant_session_refusal::unreadable_tenant_id);
+    if (target->is_system())
+        return refused(tenant_session_refusal::system_tenant);
+
+    const auto system_ctx = database::service::tenant_context::with_system_tenant(ctx_);
+    const auto tenants = repository::read_active_tenant_by_id(system_ctx, target->to_uuid());
+    if (tenants.empty())
+        return refused(tenant_session_refusal::unknown_tenant);
+    const auto& tenant = tenants.front();
+    if (caller.permissions.empty())
+        return refused(tenant_session_refusal::no_permissions);
+
+    const auto target_id = target->to_string();
+    const auto target_ctx = ctx_.with_tenant(*target, caller.username);
+    const auto inside = party_inside(*target, caller.username);
+    if (!inside)
+        return refused(tenant_session_refusal::no_system_party);
+
+    const auto now = std::chrono::system_clock::now();
+    security::jwt::jwt_claims claims;
+    claims.subject = boost::uuids::to_string(caller.account_id);
+    claims.username = caller.username;
+    claims.tenant_id = target_id;
+    claims.party_id = inside->party_id;
+    claims.visible_party_ids = inside->visible;
+    claims.roles = caller.permissions;
+    claims.session_id = caller.session_id;
+    claims.session_start_time = now;
+    claims.acting_from_tenant_id = caller.tenant_id.to_string();
+    claims.issued_at = now;
+    claims.expires_at = now + lifetime_;
+    const auto token = signer_.create_token(claims);
+    if (!token) {
+        BOOST_LOG_SEV(tenant_session_service_lg(), error)
+            << "Failed to sign the service session for tenant " << target_id;
+        return {.success = false, .message = "The session could not be issued."};
+    }
+
+    repository::auth_event_log(target_ctx)
+        .record_tenant_entered(now,
+                               target_id,
+                               boost::uuids::to_string(caller.account_id),
+                               caller.username,
+                               caller.session_id,
+                               inside->party_id);
+
+    BOOST_LOG_SEV(tenant_session_service_lg(), info)
+        << "Service account " << caller.username << " entered tenant " << tenant.code
+        << " to serve its work";
+    return {.success = true,
+            .token = *token,
+            .tenant_id = target_id,
+            .tenant_code = tenant.code,
+            .party_id = inside->party_id,
             .access_lifetime_s = static_cast<int>(lifetime_.count())};
 }
 

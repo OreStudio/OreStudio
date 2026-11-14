@@ -284,6 +284,8 @@ TEST_CASE("every iam operation message's default has its wire form", codec_tags)
         ores::iam::messaging::provision_party_command_response,
         ores::iam::messaging::enter_tenant_request,
         ores::iam::messaging::enter_tenant_response,
+        ores::iam::messaging::enter_tenant_as_service_request,
+        ores::iam::messaging::enter_tenant_as_service_response,
         ores::iam::messaging::leave_tenant_request,
         ores::iam::messaging::leave_tenant_response>();
 }

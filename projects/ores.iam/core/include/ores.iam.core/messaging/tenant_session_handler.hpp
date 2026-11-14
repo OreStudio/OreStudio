@@ -98,6 +98,32 @@ public:
         }
     }
 
+    void enter_as_service(ores::nats::message msg) {
+        using ores::service::messaging::decode;
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::reply;
+        const auto caller = read_caller(msg);
+        if (!caller) {
+            error_reply(nats_, msg, ores::service::error_code::unauthorized);
+            return;
+        }
+        const auto req = decode<enter_tenant_as_service_request>(msg);
+        if (!req) {
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        try {
+            reply(nats_, msg, service().enter_as_service(*caller, *req));
+        } catch (const std::exception& e) {
+            using namespace ores::logging;
+            BOOST_LOG_SEV(lg(), error) << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  enter_tenant_as_service_response{.success = false,
+                                                   .message = "The tenant was not entered."});
+        }
+    }
+
     void leave(ores::nats::message msg) {
         using ores::service::messaging::error_reply;
         using ores::service::messaging::reply;
@@ -147,14 +173,18 @@ private:
         } catch (const boost::bad_lexical_cast&) {
             return std::nullopt;
         }
-        service::tenant_session_caller caller{.account_id = account_id,
-                                              .username = claims->username.value_or(""),
-                                              .session_id = claims->session_id.value_or(""),
-                                              .tenant_id = *tenant,
-                                              .party_id = claims->party_id,
-                                              .acting_from_tenant_id =
-                                                  claims->acting_from_tenant_id,
-                                              .permissions = {}};
+        const auto accounts = repository::account_repository{}.read_latest(
+            ctx_.with_tenant(*tenant, claims->username.value_or("")),
+            boost::uuids::to_string(account_id));
+        service::tenant_session_caller caller{
+            .account_id = account_id,
+            .account_type = accounts.empty() ? std::string{} : accounts.front().account_type,
+            .username = claims->username.value_or(""),
+            .session_id = claims->session_id.value_or(""),
+            .tenant_id = *tenant,
+            .party_id = claims->party_id,
+            .acting_from_tenant_id = claims->acting_from_tenant_id,
+            .permissions = {}};
         // A session already inside a tenant carries no permissions here: the
         // service refuses its entry as already inside before it reads them,
         // and leaving needs none.

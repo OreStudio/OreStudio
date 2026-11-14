@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 
+using ores::iam::messaging::enter_tenant_as_service_request;
 using ores::iam::messaging::enter_tenant_request;
 using ores::iam::service::describe;
 using ores::iam::service::tenant_session_caller;
@@ -45,6 +46,17 @@ tenant_session_caller administrator(std::vector<std::string> permissions = {"*"}
     return {.account_id = boost::uuids::random_generator()(),
             .username = "admin",
             .session_id = "session-1",
+            .tenant_id = tenant_id::system(),
+            .party_id = std::nullopt,
+            .acting_from_tenant_id = std::nullopt,
+            .permissions = std::move(permissions)};
+}
+
+tenant_session_caller service_account(std::vector<std::string> permissions = {"*"}) {
+    return {.account_id = boost::uuids::random_generator()(),
+            .account_type = "service",
+            .username = "ores_synthetic_service",
+            .session_id = "session-2",
             .tenant_id = tenant_id::system(),
             .party_id = std::nullopt,
             .acting_from_tenant_id = std::nullopt,
@@ -93,6 +105,68 @@ TEST_CASE("an_administrator_enters_a_tenant_reading_only_as_its_system_party",
     CHECK(std::ranges::all_of(claims->roles, [](const auto& r) { return r.ends_with(":read"); }));
     CHECK(entered.access_lifetime_s == 600);
     CHECK(events_for(h, caller.account_id) == std::vector<std::string>{"tenant_entered"});
+}
+
+TEST_CASE("a_service_account_enters_a_tenant_and_keeps_the_permissions_it_holds",
+          "[service][tenant_session]") {
+    scoped_database_helper h;
+    auto sign = signer();
+    tenant_session_service svc(h.context(), sign, std::chrono::seconds{600});
+    const auto caller = service_account({"iam::tenants:enter_as_service", "trading::trades:write"});
+
+    const auto entered = svc.enter_as_service(
+        caller, enter_tenant_as_service_request{.tenant_id = h.tenant_id().to_string()});
+
+    REQUIRE(entered.success);
+    const auto claims = sign.validate(entered.token);
+    REQUIRE(claims.has_value());
+    CHECK(claims->tenant_id == h.tenant_id().to_string());
+    CHECK(claims->acting_from_tenant_id == tenant_id::system().to_string());
+    CHECK(claims->subject == boost::uuids::to_string(caller.account_id));
+    CHECK(claims->party_id == entered.party_id);
+    // The session is for work, so it carries what the service holds rather
+    // than the reads an administrator's entry is cut down to.
+    CHECK(std::ranges::find(claims->roles, std::string("trading::trades:write")) !=
+          claims->roles.end());
+    CHECK(entered.access_lifetime_s == 600);
+    CHECK(events_for(h, caller.account_id) == std::vector<std::string>{"tenant_entered"});
+}
+
+TEST_CASE("a_service_entry_is_refused_for_each_rule_it_breaks", "[service][tenant_session]") {
+    scoped_database_helper h;
+    tenant_session_service svc(h.context(), signer(), std::chrono::seconds{600});
+    const auto target = enter_tenant_as_service_request{.tenant_id = h.tenant_id().to_string()};
+    const auto refused_with = [](const auto& response, tenant_session_refusal refusal) {
+        return !response.success && response.token.empty() && response.message == describe(refusal);
+    };
+
+    auto person = service_account({"iam::tenants:enter_as_service"});
+    person.account_type = "user";
+    CHECK(refused_with(svc.enter_as_service(person, target),
+                       tenant_session_refusal::not_a_service_account));
+
+    auto inside = service_account({"iam::tenants:enter_as_service"});
+    inside.acting_from_tenant_id = tenant_id::system().to_string();
+    CHECK(refused_with(svc.enter_as_service(inside, target),
+                       tenant_session_refusal::already_inside_a_tenant));
+
+    CHECK(refused_with(svc.enter_as_service(service_account({"iam::tenants:read"}), target),
+                       tenant_session_refusal::not_permitted));
+
+    CHECK(refused_with(
+        svc.enter_as_service(service_account({"iam::tenants:enter_as_service"}),
+                             enter_tenant_as_service_request{.tenant_id = "not-a-tenant"}),
+        tenant_session_refusal::unreadable_tenant_id));
+
+    CHECK(refused_with(svc.enter_as_service(service_account({"iam::tenants:enter_as_service"}),
+                                            enter_tenant_as_service_request{
+                                                .tenant_id = tenant_id::system().to_string()}),
+                       tenant_session_refusal::system_tenant));
+
+    const auto nobody = boost::uuids::to_string(boost::uuids::random_generator()());
+    CHECK(refused_with(svc.enter_as_service(service_account({"iam::tenants:enter_as_service"}),
+                                            enter_tenant_as_service_request{.tenant_id = nobody}),
+                       tenant_session_refusal::unknown_tenant));
 }
 
 TEST_CASE("the_tenant_session_carries_only_the_reads_the_administrator_holds",

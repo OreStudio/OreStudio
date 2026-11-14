@@ -67,6 +67,47 @@ export interface EnterTenantResponse {
 }
 
 /**
+ * @brief Enter one tenant as a service account, to work inside it.
+ *
+ * A service that serves a tenant's work needs a session scoped to that tenant,
+ * because every write names the tenant and the party from the caller's claims.
+ * The session acts as the tenant's system party and carries the service's own
+ * permissions, so it writes where the service's role writes and nowhere else.
+ *
+ * Refused to a caller that is not a service account, to a caller without
+ * iam::tenants:enter_as_service, and for the system tenant, an unknown tenant,
+ * or a tenant with no system party yet.
+ */
+export interface EnterTenantAsServiceRequest {
+    /**
+     * @brief The id of the tenant to work inside.
+     */
+    tenant_id: string;
+}
+
+export interface EnterTenantAsServiceResponse {
+    success: boolean;
+    /**
+     * @brief Why the entry was refused, or empty.
+     */
+    message: string;
+    /**
+     * @brief The session token scoped to the tenant.
+     */
+    token: string;
+    tenant_id: string;
+    tenant_code: string;
+    /**
+     * @brief The tenant's system party, which the session acts as.
+     */
+    party_id: string;
+    /**
+     * @brief How long the session lasts. It is not refreshed.
+     */
+    access_lifetime_s: number;
+}
+
+/**
  * @brief Leave the tenant the caller's session acts in.
  *
  * The tenant comes from the caller's token, so the request carries nothing.
@@ -81,6 +122,7 @@ export interface LeaveTenantResponse {
 
 export const subjects = {
     enter_tenant_request: 'iam.v1.ops.enter_tenant',
+    enter_tenant_as_service_request: 'iam.v1.ops.enter_tenant_as_service',
     leave_tenant_request: 'iam.v1.ops.leave_tenant',
 } as const;
 /**
@@ -90,5 +132,6 @@ export const subjects = {
  */
 export const requiresSession = {
     enter_tenant_request: true,
+    enter_tenant_as_service_request: true,
     leave_tenant_request: true,
 } as const;

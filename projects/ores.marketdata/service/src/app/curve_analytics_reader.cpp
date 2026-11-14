@@ -174,13 +174,19 @@ get_curve_analytics(const ores::database::context& ctx,
             const auto at = request.compare_at;
             auto sets = repository::curve_publish_repository{}.read_applied_for_series(
                 ctx, config.output_series_id);
+            // A set is current only if it is the party's, was published by the
+            // instant, never withdrew -- a withdrawal that came later ends the set
+            // for every instant, as the canonical selector has it -- and its as-of is
+            // at or before the instant. Two sets at one as-of are a correction, and
+            // the later publish is the one a person had.
             std::erase_if(sets, [&](const auto& set) {
-                if (!set.published_at || *set.published_at > at || set.as_of > at)
-                    return true;
-                return set.withdrawn_at && *set.withdrawn_at <= at;
+                return set.party_id != config.party_id || !set.published_at ||
+                       *set.published_at > at || set.as_of > at || set.withdrawn_at.has_value();
             });
             if (!sets.empty()) {
-                std::ranges::sort(sets, {}, &ores::marketdata::domain::curve_publish::as_of);
+                std::ranges::sort(sets, [](const auto& a, const auto& b) {
+                    return a.as_of == b.as_of ? a.published_at < b.published_at : a.as_of < b.as_of;
+                });
                 const auto& prior = sets.back();
                 resp.compare_at = prior.as_of;
                 std::map<std::string, double> factors;
@@ -195,12 +201,21 @@ get_curve_analytics(const ores::database::context& ctx,
                     if (term != nullptr)
                         factors[term->text()] = *value;
                 }
+                // The prior zero is the prior set's own arithmetic: its reference date
+                // to the pillar's maturity, under the same day count. Borrowing the
+                // current point's year fraction would compare two different clocks.
+                const auto prior_start =
+                    std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(prior.as_of)};
                 for (auto& point : resp.bootstrapped) {
                     const auto found = factors.find(point.tenor);
-                    if (found == factors.end() || !(found->second > 0.0) ||
-                        !(point.year_fraction > 0.0))
+                    if (found == factors.end() || !(found->second > 0.0))
                         continue;
-                    const auto prior_zero = -std::log(found->second) / point.year_fraction;
+                    const auto prior_tau =
+                        ores::analytics::quant::service::day_count_calculator::year_fraction(
+                            prior_start, point.maturity_date, day_count);
+                    if (!(prior_tau > 0.0))
+                        continue;
+                    const auto prior_zero = -std::log(found->second) / prior_tau;
                     point.prior_zero_rate = prior_zero;
                     point.change_bps = (point.zero_rate - prior_zero) * 10000.0;
                 }

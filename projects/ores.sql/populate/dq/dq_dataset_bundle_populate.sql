@@ -34,16 +34,27 @@ BEGIN
 
     -- --- Dataset Bundles ---
 
+    -- The world catalogue: the facts every installation holds identically,
+    -- adopted from an outside standard. Published once, into the system tenant,
+    -- at database bring-up.
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'base',
-        'Base System',
-        'Industry-standard reference data (ISO + FpML) for production use. Includes country codes, currency codes, and financial market standards.'
+        'world',
+        'World',
+        'Reference data adopted from an outside standard: ISO countries and currencies, the FpML vocabularies, calendars, currency pairs, commodities and equity underlyings.'
+    );
+
+    -- A new tenant's own starting configuration: the rows it may change, and
+    -- nothing else. Published once when the tenant is created.
+    PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'tenant_defaults',
+        'Tenant Defaults',
+        'The configuration a tenant starts with and may change: its badges, its badge mappings and its code domains.'
     );
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'crypto',
         'Crypto',
-        'Base System plus cryptocurrency reference data. Extends the production dataset with cryptocurrency symbols and icons.'
+        'The world catalogue plus the cryptocurrency slice: the symbols and the icons a tenant quotes beside its currencies.'
     );
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),

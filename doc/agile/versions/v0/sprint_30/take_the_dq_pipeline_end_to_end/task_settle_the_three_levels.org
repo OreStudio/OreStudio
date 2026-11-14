@@ -26,11 +26,11 @@ A reader can say which level a dataset belongs to and which bundle publishes it,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | The page is signed off, with six settled decisions. The bundle rename and the bundle map are next. |
-| Waiting on   | Nothing. Task 2 starts once the rename lands. |
-| Next         | Apply the bundle rename and the bundle map: =base= to =world=, =tenant_defaults=, one membership per dataset, and the level on the bundle row. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. Task 2 may start. |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -157,3 +157,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The page is signed off and the names it settled are in the tree.
+
+- =dq_artefacts.org= became
+  [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]],
+  =data_tiers.org= became
+  [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][Data classification by substitutability]],
+  =bundle_catalogue.org= became
+  [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Data classification by owner count]],
+  and the new page is
+  [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]].
+  Every inbound =id:= label follows the new titles, and the stale HTML for the
+  old names is gone from the site output.
+- The bundle =base= is now =world=, in the bundle row, in the 53 memberships
+  and in the five seed profiles that named it.
+- =tenant_defaults= carries what a tenant may change: the badges, the badge
+  mappings, the code domains and nothing else. The ORE parameter datasets stay
+  in the world bundle until the reads admit the system tenant's rows, which is
+  task 3's work; the memberships state that.
+- =dq_dataset_bundle_retire_base_cleanup.sql= removes the retired bundle and
+  its members from a database that predates the rename, so a second populate
+  leaves one bundle where the model has one.
+- The cleanup, the two populate scripts and the memberships were run against
+  the development database inside a transaction that was rolled back: no =base=
+  bundle, no =base= member, 53 =world= members and 4 =tenant_defaults= members.
+- The two models carry the level rule in their documentation and the generated
+  SQL, C++ and ER diagrams follow from them.
+
+Three items the page settles are other tasks', and each task states them:
+the level on the bundle row and the target it derives is
+[[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]];
+the per-tenant copy of the world catalogue and the reads that replace it are
+[[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]];
+and the GLEIF datasets, which publish a tenant's parties from a world record,
+move to the tenant level with the tenant bootstrap.

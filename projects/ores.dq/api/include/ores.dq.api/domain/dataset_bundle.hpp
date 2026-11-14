@@ -40,10 +40,16 @@ namespace ores::dq::domain {
  * of reference data. Bundles provide a way to group related datasets that
  * should be installed together.
  *
+ * A bundle carries one level and one scope, and the two decide the tenant it
+ * writes into: a platform or world bundle publishes into the system tenant once,
+ * a tenant-wide bundle into a tenant, and a party bundle into the tenant that
+ * holds the party.
+ *
  * Examples:
- * - "base": Industry-standard reference data (ISO + FpML) for production
- * - "crypto": Base system plus cryptocurrency reference data
- * - "risk_management": Sample organisational and risk-reporting data
+ * - "system_core": the platform's own vocabulary, published at bring-up
+ * - "world": reference data adopted from an outside standard, published at bring-up
+ * - "tenant_defaults": the configuration a tenant starts with
+ * - "crypto": the world catalogue plus the cryptocurrency slice
  */
 struct dataset_bundle final {
     /**
@@ -66,7 +72,7 @@ struct dataset_bundle final {
     /**
      * @brief Unique code for stable referencing.
      *
-     * Examples: "base", "crypto", "risk_management".
+     * Examples: "world", "tenant_defaults", "risk_management".
      */
     std::string code;
 

@@ -30,7 +30,7 @@
  *
  * Examples:
  * - Bundle "crypto" contains "iso.currencies", "crypto.small", etc.
- * - Bundle "base" contains "iso.countries", "iso.currencies", all FpML datasets
+ * - Bundle "world" contains "iso.countries", "iso.currencies", all FpML datasets
  */
 
 create table if not exists "ores_dq_dataset_bundle_members_tbl" (

@@ -38,7 +38,7 @@ with the task that retires each.
 | /Owning model/ | The model of the entity the artefact stages, in the component that owns the published rows, such as =ores.refdata.book= |
 | /Dataset/ | One named, versioned set of artefact rows, registered in =ores_dq_datasets_tbl= with its artefact type |
 | /Artefact type/ | The row in =ores_dq_artefact_types_tbl= that names the artefact table, the target table and the publish subject |
-| /Bundle/ | A named list of datasets published together, such as =base= or =system_core= |
+| /Bundle/ | A named list of datasets published together, such as =world= or =system_core= |
 | /Publication/ | A workflow that publishes a bundle's datasets in dependency order, one step per dataset |
 
 ** The one way

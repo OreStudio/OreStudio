@@ -93,42 +93,42 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'refdata.fx_vol_surface_blueprints', 22);
 
     -- =============================================================================
-    -- Base System Bundle Members
+    -- World Bundle Members
     -- =============================================================================
 
 
-    -- --- Base System Bundle Members ---
+    -- --- World Bundle Members ---
 
     -- Visual assets
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'assets.country_flags', 1);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'assets.country_flags', 1);
     -- Default administrator pictures; the attach step binds them by code.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'assets.system_avatars', 3);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'assets.system_avatars', 3);
 
     -- Geolocation
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'geo.ip2country', 2);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'geo.ip2country', 2);
 
     -- ISO Standards
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'iso.countries', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'iso.currencies', 11);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'iso.countries', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'iso.currencies', 11);
     -- The equity underlyings a population draws. A trade that named one no
     -- catalogue holds is refused when it is written, so the catalogue has to
     -- publish before the population runs.
     -- The commodity vocabulary the same population draws on, with the same
     -- reason for publishing it before a population runs.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.commodities', 12);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.equity_underlyings', 12);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_pairs', 12);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_pair_conventions', 13);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.calendar_types', 14);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.calendars', 15);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_calendars', 16);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_pair_convention_calendars', 17);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_countries', 18);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.tenor_schedules', 19);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.calendar_exceptions', 19);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.calendar_events', 20);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_groups', 21);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'refdata.currency_currency_groups', 22);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.commodities', 12);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.equity_underlyings', 12);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.currency_pairs', 12);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.currency_pair_conventions', 13);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.calendar_types', 14);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.calendars', 15);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.currency_calendars', 16);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.currency_pair_convention_calendars', 17);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.currency_countries', 18);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.tenor_schedules', 19);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.calendar_exceptions', 19);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.calendar_events', 20);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.currency_groups', 21);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'refdata.currency_currency_groups', 22);
 
     -- FpML Standards
     -- NOTE: iso.coding_schemes/fpml.coding_schemes are deliberately NOT members
@@ -138,56 +138,68 @@ BEGIN
     -- here as well produced dead, RLS-visible duplicate rows (every code
     -- appearing twice in tenant-scoped combos) with no validator ever
     -- consulting the tenant-owned copy.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.account_type', 101);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.asset_class', 102);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.asset_measure', 103);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.benchmark_rate', 104);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.business_center', 105);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.business_process', 106);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.cashflow_type', 107);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.cftc_entity_classification', 108);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.cftc_organization_type', 109);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.entity_type', 110);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.hkma_rewrite_party_relationship_type', 111);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.hkma_rewrite_regulatory_corporate_sector', 112);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.local_jurisdiction', 113);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.non_iso_currency', 114);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.party_relationship_type', 115);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.party_role', 116);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.party_role_type', 117);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.person_role', 118);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.regulatory_corporate_sector', 119);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.reporting_regime', 120);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'fpml.supervisory_body', 121);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.account_type', 101);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.asset_class', 102);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.asset_measure', 103);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.benchmark_rate', 104);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.business_center', 105);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.business_process', 106);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.cashflow_type', 107);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.cftc_entity_classification', 108);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.cftc_organization_type', 109);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.entity_type', 110);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.hkma_rewrite_party_relationship_type', 111);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.hkma_rewrite_regulatory_corporate_sector', 112);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.local_jurisdiction', 113);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.non_iso_currency', 114);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.party_relationship_type', 115);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.party_role', 116);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.party_role_type', 117);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.person_role', 118);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.regulatory_corporate_sector', 119);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.reporting_regime', 120);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'fpml.supervisory_body', 121);
 
     -- GLEIF LEI. Every rung is opt-in: a tenant asks for the slice it needs.
     -- Publishing base must not force a thirteen-thousand-entity corpus on a
     -- tenant that wants a handful, which is what the two mandatory members
     -- here used to do. Tiny covers every region and is what the demo tenants
     -- want; small and large are for work where the volume is the point.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_entities.tiny', 210, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_relationships.tiny', 211, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_counterparties.tiny', 212, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_parties.tiny', 213, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_entities.small', 200, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_relationships.small', 201, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_counterparties.small', 202, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_parties.small', 203, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_counterparties.large', 204, true);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'gleif.lei_parties.large', 205, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_entities.tiny', 210, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_relationships.tiny', 211, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_counterparties.tiny', 212, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_parties.tiny', 213, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_entities.small', 200, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_relationships.small', 201, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_counterparties.small', 202, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_parties.small', 203, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_counterparties.large', 204, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'gleif.lei_parties.large', 205, true);
     -- The ORE samples' counterparty names, as aliases of GLEIF counterparties.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.counterparty_aliases', 206, true);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'ore.counterparty_aliases', 206, true);
 
-    -- Badge system (self-published, DQ -> DQ; unlike coding_schemes, badge
-    -- severities genuinely need a per-tenant copy, since BadgeCache/admin
-    -- CRUD windows read tenant-scoped -- see the badge-colour-scheme-support
-    -- story's tenant-scoping migration task for the full rationale)
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.badge_severities', 300);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.badge_definitions', 301);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.code_domains', 302);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.badge_mappings', 303);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.parameter_value_domains', 304);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'base', 'ore.parameters', 305);
+    -- The ORE parameter documentation. The system tenant's rows are what the
+    -- validators of the configuration parameters read, and the tenant's rows
+    -- are what its own screens read. The copy is transitional: the platform
+    -- level already publishes this dataset into the system tenant at bring-up,
+    -- and the tenant's copy leaves once its readers admit the system tenant's
+    -- rows. See the knowledge page Reference data classification by
+    -- publication level.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'ore.parameter_value_domains', 304);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'world', 'ore.parameters', 305);
+
+    -- =============================================================================
+    -- Tenant Defaults Bundle Members
+    -- =============================================================================
+
+    -- The configuration a tenant starts with and may change. It is tenant-level
+    -- and tenant-wide: it names no party, and no other tenant reads it. Every
+    -- one of these has a live tenant write path, which is what distinguishes
+    -- them from the world catalogue.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'tenant_defaults', 'ore.badge_severities', 10);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'tenant_defaults', 'ore.badge_definitions', 20);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'tenant_defaults', 'ore.code_domains', 30);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'tenant_defaults', 'ore.badge_mappings', 40);
 
     -- =============================================================================
     -- Crypto Bundle Members

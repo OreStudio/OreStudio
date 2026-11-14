@@ -37,6 +37,9 @@ A bundle publish either reports the audit row it claims or no longer claims one.
 
 - A bundle publish writes the audit row it claims, or no longer claims one.
 - =atomic= either behaves, or leaves the request.
+- The bundle carries its level, the level decides the target tenant, and the
+  handler refuses a caller the level does not admit. Without it a tenant
+  administrator can publish a world bundle into their own tenant.
 - The calendars dependency no longer republishes coding schemes into every tenant.
 - =payment_frequencies= and =legal_entities= have a dataset, or are deleted.
 - The catalogue checks read the caller's tenant, not any tenant's row.

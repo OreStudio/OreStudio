@@ -81,7 +81,7 @@ default marker is the one gap that blocks more than one journey.
 | Route | Kinds | Subject | Bundle and scope |
 |-------+-------+---------+------------------|
 | the 24-kind array | 24 | =refdata.v1.ops.publish_conventions_from_dq= | =party_essentials=, once per party |
-| currency pair | 1 | =refdata.v1.ops.publish_currency_pair_conventions_from_dq= | =base=, once per tenant |
+| currency pair | 1 | =refdata.v1.ops.publish_currency_pair_conventions_from_dq= | =world=, once per tenant |
 | none | 1 (=tenor=) | — | copied by =ores_iam_provision_tenant_fn= |
 
 Four kinds carry no =party_id= column and are held once for the tenant:

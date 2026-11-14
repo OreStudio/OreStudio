@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 7CD0F14C-CDFD-4F40-B92B-3E80E01F3050
+:END:
+#+title: The derived source cannot warm a tenant inside the blueprint step's wait
+#+description: A surface blueprint waits for the volatility quotes its derived source owes it, and gives up after a few minutes. At ten pairs and a year of fixings the wait was met; at 39 pairs and ten years it is not, because the derived source materialises daily quotes over the whole fixing history, per tenant. 156 blueprints waited and none was given while the derived source was still deriving. The cost is the backfill times the pair count, so the wait and the history are the same knob.
+#+type: capture
+#+level: cross
+#+filetags: :volatility:surfaces:derived:provisioning:tenors:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=give_party_surface_blueprints= gives each party a copy of the system's surface blueprints and
+waits for the quotes each one reads. The wait is a few minutes -- it asked again every ten seconds
+and gave up about nineteen tries in. With ten pairs and one year of fixings the derived source
+answered inside it. With 39 pairs and ten years of fixings it does not:
+
+#+begin_src text
+  [11/14] give_party_surface_blueprints: failed — 156 surface blueprint(s) were not given.
+          ... no series of derived oresmd://fx/NZD?type=series&instrument=fx_option&quote=rate_lnvol&ccy=JPY
+#+end_src
+
+Every one of the 39 pairs' series exists, for the tenant that asked first: after the run aborted,
+all 39 were there. The series are created per tenant, and the derivation walks the whole fixing
+history for each pair, so the work a new tenant owes the derived source grows with the backfill's
+length and the pair count together.
+
+* Why
+
+The ten-year grid is not what fails; the *materialisation* is. The derived source builds each
+expiry from a window of daily returns as long as the expiry itself, so a ten-year quote needs ten
+years of fixings, and it derives every day of that history rather than the current day alone. Ten
+times the history is ten times the derivation, per tenant, inside a wait that was sized for one
+year of it.
+
+Measured on this branch: at 400 days of backfill and 10 pairs, a fresh tenant provisions in about
+three minutes and publishes 40 surfaces. At 3650 days and 39 pairs, the same step exceeds its wait
+and the run fails at step 11 of 14.
+
+* What to read next
+
+- =projects/ores.synthetic/api/src/feeds/derived_fx_vol_feed.cpp=: the derivation loop, and its
+  own comment that it publishes the current day only because a past day can be computed again.
+  The store is what makes the first tenant expensive.
+- The step's wait: a workflow step's timeout and its own retry count, versus the derivation's
+  throughput. Either the wait becomes a function of the work, or the derived source is asked to
+  warm itself before the blueprints need it, or the history the store keeps is bounded to what a
+  consumer asks for.
+
+* See also
+
+- [[id:13EA0CF7-5C33-4A0E-A218-5EBB1BC51CB8][Surface every pair the ladder carries, out to ten
+  years]] -- the task this blocked.

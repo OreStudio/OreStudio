@@ -70,6 +70,30 @@ rest): the blueprint states one delta type for its output strikes while the cali
 the pair's convention per expiry. A grid that reaches past the switch states a strike type the
 long expiry does not use. To be settled while implementing.
 
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | The catalogue, the ladder and the derived inventory reach 39 pairs and 10Y; a provisioning run fails at the blueprint step because the derived source cannot warm a tenant that fast. |
+| Waiting on   | A decision on how the derived source warms: a longer wait, a pre-warm step, or a bounded store. |
+| Next         | [[id:002F8F0F-2429-4838-864D-5B29DB571CBF][the captured blocker]] decides it. |
+| Last touched | 2026-11-14                               |
+
+* What is done
+
+- The ladder publishes 3Y, 5Y, 7Y and 10Y through the same rule, and a test states those dates.
+- The blueprint catalogue carries 39 pairs over thirteen expiries from 1W to 10Y; the derived
+  source's own expiry list and inventory say the same.
+- The two pairs the ladder carried and reference data did not have an FX option convention for --
+  CAD/JPY and GBP/CAD -- now have one.
+- The official adapter's backfill is 3650 days, which is the parser's own maximum and what a
+  ten-year expiry's return window needs.
+
+What does not work yet: the provisioning step that gives the blueprints their quotes. See the
+capture above.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it

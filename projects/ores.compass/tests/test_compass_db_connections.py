@@ -30,12 +30,27 @@ def test_a_backend_still_closing_after_the_kill_does_not_fail_the_recreate(monke
 
 def test_a_backend_that_never_closes_fails_after_the_deadline(monkeypatch):
     killed = []
-    clock = iter(range(0, 1000, 3))
+    step = 3
+    clock = iter(range(0, 100_000, step))
     monkeypatch.setattr(compass_db, "_psql", serve(["1"], killed))
     monkeypatch.setattr(compass_db.time, "sleep", lambda _: None)
     monkeypatch.setattr(compass_db.time, "monotonic", lambda: next(clock))
     assert not compass_db.check_connections({}, "db", kill=True)
-    assert 1 < len(killed) < 10
+    # One round per three seconds of the stand-in clock, and the rounds stop
+    # when the window is spent: the deadline is the window, not a lucky number.
+    assert len(killed) == compass_db.DRAIN_SECONDS // step
+
+
+def test_the_wait_reports_the_connections_it_is_waiting_for(monkeypatch, capsys):
+    killed = []
+    monkeypatch.setattr(compass_db, "_psql", serve(["2", "1", "0"], killed))
+    monkeypatch.setattr(compass_db.time, "sleep", lambda _: None)
+    assert compass_db.check_connections({}, "db", kill=True)
+    said = capsys.readouterr().out
+    assert "Waiting for 2 connection(s) to db to close" in said
+    assert "Waiting for 1 connection(s) to db to close" in said
+    # A count that has not moved is not said again.
+    assert said.count("Waiting for") == 2
 
 
 def test_without_kill_an_active_connection_fails_at_once(monkeypatch):

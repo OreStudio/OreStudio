@@ -112,6 +112,18 @@ def _psql(env, *args, user="postgres", password=None, database=None,
                           capture_output=capture, text=True)
 
 
+# How long the backends of a stopped service are given to close. A service
+# closes its connections as its process goes, and a fleet of them takes longer
+# than a few seconds: the story recorded 25 stopped services draining for about
+# 15 seconds while a recreate was already refusing. The window is a minute so
+# that a slow host still converges, and it stays bounded so that a backend that
+# never closes fails the recreate rather than hanging it.
+DRAIN_SECONDS = 60
+
+# How often the drain takes the count again while it waits.
+DRAIN_POLL_SECONDS = 0.5
+
+
 def check_connections(env, db_name, kill=False) -> bool:
     """Port of utility/check_db_connections.sh + kill_db_connections.sh."""
     pw = env.get("PGPASSWORD", "")
@@ -127,7 +139,8 @@ def check_connections(env, db_name, kill=False) -> bool:
         # Terminating only signals a backend, and one still closing counts as
         # active, so each kill waits for its backend to exit and the count is
         # taken again until it is zero or the deadline passes.
-        deadline = time.monotonic() + 10
+        deadline = time.monotonic() + DRAIN_SECONDS
+        reported = None
         while True:
             _psql(env, "-At", "-c",
                   f"SELECT pg_terminate_backend(pid, 2000) FROM pg_stat_activity "
@@ -136,7 +149,12 @@ def check_connections(env, db_name, kill=False) -> bool:
             count = active()
             if count in ("", "0") or time.monotonic() >= deadline:
                 break
-            time.sleep(0.5)
+            # A wait that says nothing reads as a hang, so the count is said
+            # once per change rather than once per poll.
+            if count != reported:
+                print(f"Waiting for {count} connection(s) to {db_name} to close...")
+                reported = count
+            time.sleep(DRAIN_POLL_SECONDS)
     count = active()
     if not count:
         return True  # database may not exist — fine for recreation

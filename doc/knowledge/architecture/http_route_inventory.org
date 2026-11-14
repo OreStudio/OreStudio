@@ -76,7 +76,7 @@ an API publishes no area, so it is counted under =(none)=.
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 301 | composed view 2, resource 299 |
-| reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 71 | composed view 19, resource 52 |
+| reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 74 | composed view 19, resource 55 |
 | simulation | calibration, market-regime, synthetic | 62 | composed view 6, resource 56 |
 | tenancy | iam, refdata, server | 83 | composed view 4, resource 79 |
 | trading | blotter, book-changes, booking, books, structures, trades, trading | 48 | composed view 4, resource 44 |
@@ -154,13 +154,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 25 | 5 |
-| reporting | 44 | 27 | 17 |
+| reporting | 44 | 30 | 14 |
 | simulation | 28 | 28 | 0 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 24 | 0 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 27 | 8 |
-| total | 328 | 234 | 94 |
+| total | 328 | 237 | 91 |
 
 * The pairing
 
@@ -358,13 +358,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/reporting/cuts/:id= | GET /api/reporting/cuts/{id} |
 | GET =/api/reporting/cuts/:id/runs= | GET /api/reporting/cuts/{id}/runs |
 | POST =/api/reporting/cuts/take= | POST /api/reporting/cuts/take |
-| GET =/api/reporting/engine-settings= | none |
+| GET =/api/reporting/engine-settings= | GET /api/reporting/engine-settings |
 | POST =/api/reporting/engine-settings= | none |
 | DELETE =/api/reporting/engine-settings/:id= | none |
-| GET =/api/reporting/engine-settings/:id= | none |
+| GET =/api/reporting/engine-settings/:id= | GET /api/reporting/engine-settings/{id} |
 | PUT =/api/reporting/engine-settings/:id= | none |
 | PUT =/api/reporting/engine-settings/:id/groups/:group= | none |
-| GET =/api/reporting/engine-settings/:id/history= | none |
+| GET =/api/reporting/engine-settings/:id/history= | GET /api/reporting/engine-settings/{id}/history |
 | GET =/api/reporting/engine-settings/documentation= | GET /api/reporting/engine-settings/documentation |
 | GET =/api/reporting/ore-files/:code/schema= | none |
 | GET =/api/reporting/pricing-engines= | none |
@@ -497,7 +497,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1328 routes: 328 answered by the BFF and 1000 by ores.http.
+1331 routes: 328 answered by the BFF and 1003 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -834,10 +834,10 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | auth | get | =/api/login-info= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:151 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | resource | auth | get | =/api/login-info/:accountId= | bff | projects/ores.web/packages/bff/src/server.ts:1794 | The tenant's login records, one page or one account's record, the reads the audit screen uses to explain a locked account. |
 | resource | auth | get | =/api/login-info/{accountId}= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:170 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
-| resource | market-data | post | =/api/market/curve-analytics= | bff | projects/ores.web/packages/bff/src/market-reads.ts:338 | The four reads the desk screens ask: the session party's instrument catalogue, one currency's rate ladder, one base currency's FX montage and one curve's analytics, each a service read that stores nothing and names what it refused. |
-| resource | market-data | post | =/api/market/fx-montage= | bff | projects/ores.web/packages/bff/src/market-reads.ts:319 | The four reads the desk screens ask: the session party's instrument catalogue, one currency's rate ladder, one base currency's FX montage and one curve's analytics, each a service read that stores nothing and names what it refused. |
-| resource | market-data | post | =/api/market/instruments= | bff | projects/ores.web/packages/bff/src/market-reads.ts:272 | The four reads the desk screens ask: the session party's instrument catalogue, one currency's rate ladder, one base currency's FX montage and one curve's analytics, each a service read that stores nothing and names what it refused. |
-| resource | market-data | post | =/api/market/rate-ladder= | bff | projects/ores.web/packages/bff/src/market-reads.ts:297 | The four reads the desk screens ask: the session party's instrument catalogue, one currency's rate ladder, one base currency's FX montage and one curve's analytics, each a service read that stores nothing and names what it refused. |
+| resource | market-data | post | =/api/market/curve-analytics= | bff | projects/ores.web/packages/bff/src/market-reads.ts:342 | The four reads the desk screens ask: the session party's instrument catalogue, one currency's rate ladder, one base currency's FX montage and one curve's analytics, each a service read that stores nothing and names what it refused. |
+| resource | market-data | post | =/api/market/fx-montage= | bff | projects/ores.web/packages/bff/src/market-reads.ts:323 | The four reads the desk screens ask: the session party's instrument catalogue, one currency's rate ladder, one base currency's FX montage and one curve's analytics, each a service read that stores nothing and names what it refused. |
+| resource | market-data | post | =/api/market/instruments= | bff | projects/ores.web/packages/bff/src/market-reads.ts:276 | The four reads the desk screens ask: the session party's instrument catalogue, one currency's rate ladder, one base currency's FX montage and one curve's analytics, each a service read that stores nothing and names what it refused. |
+| resource | market-data | post | =/api/market/rate-ladder= | bff | projects/ores.web/packages/bff/src/market-reads.ts:301 | The four reads the desk screens ask: the session party's instrument catalogue, one currency's rate ladder, one base currency's FX montage and one curve's analytics, each a service read that stores nothing and names what it refused. |
 | resource | market-data | get | =/api/marketdata/adapters= | bff | projects/ores.web/packages/bff/src/adapters.ts:95 | Every adapter the service tracks, with what it serves, what it was asked to serve and the counts of the last demand it answered. |
 | resource | market-data | get | =/api/marketdata/adapters= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/adapter_routes.cpp:87 | Every adapter the market data service tracks, with what it serves, what it was asked to serve, and the kind of source its feed reads, joined from the feeds and the sessions. |
 | composed view | market-data | get | =/api/marketdata/catalogue= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:179 | The providers and the feeds that serve them in one answer, two collection reads, so a subscription or a route can name a feed by id. |
@@ -1092,6 +1092,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | composed view | reporting | get | =/api/reporting/cuts/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/cut_routes.cpp:378 | The cuts a party holds and one cut's record: the body's facts, the state and the label the reporting service derives, the kind the body was taken under, the gaps the assembly could not fill, the runs that priced from it, and the hand take that assembles a body part by part and presses. |
 | composed view | reporting | get | =/api/reporting/cuts/{id}/runs= | ores.http | projects/ores.http/reporting/src/routes/reporting/cut_routes.cpp:364 | The cuts a party holds and one cut's record: the body's facts, the state and the label the reporting service derives, the kind the body was taken under, the gaps the assembly could not fill, the runs that priced from it, and the hand take that assembles a body part by part and presses. |
 | resource | reporting | get | =/api/reporting/engine-settings= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:743 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | get | =/api/reporting/engine-settings= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:443 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | post | =/api/reporting/engine-settings= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:841 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | delete | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:950 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | get | =/api/reporting/engine-settings/:id= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:787 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
@@ -1099,7 +1100,9 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reporting | put | =/api/reporting/engine-settings/:id/groups/:group= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:898 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | get | =/api/reporting/engine-settings/:id/history= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:793 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | resource | reporting | get | =/api/reporting/engine-settings/documentation= | bff | projects/ores.web/packages/bff/src/engine-settings.ts:782 | One collection, the parameter groups read from the store and returned with what each group means; the documentation screen reads it and no collection is joined onto it. |
-| resource | reporting | get | =/api/reporting/engine-settings/documentation= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:233 | One collection, the parameter groups read from the store and returned with what each group means; the documentation screen reads it and no collection is joined onto it. |
+| resource | reporting | get | =/api/reporting/engine-settings/documentation= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:410 | One collection, the parameter groups read from the store and returned with what each group means; the documentation screen reads it and no collection is joined onto it. |
+| resource | reporting | get | =/api/reporting/engine-settings/{id}= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:463 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
+| resource | reporting | get | =/api/reporting/engine-settings/{id}/history= | ores.http | projects/ores.http/reporting/src/routes/reporting/engine_settings_routes.cpp:485 | The reporting engine configuration: the collection, one configuration, its history, and one group's write or proposal. |
 | composed view | reporting | get | =/api/reporting/ore-files/:code/schema= | bff | projects/ores.web/packages/bff/src/report-run-files.ts:677 | One schema of one engine version: the file catalogue names the schema and the stored versions supply its contents, so two collections are joined to answer. |
 | resource | reporting | get | =/api/reporting/pricing-engines= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:926 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |
 | resource | reporting | post | =/api/reporting/pricing-engines= | bff | projects/ores.web/packages/bff/src/pricing-engines.ts:1026 | The pricing engine configuration: the collection and its party names, one configuration with its bound reports, its history, and its ORE document as a file. |

@@ -41,6 +41,7 @@ void reporting_routes::register_routes(
     cut_kind_routes::register_routes(router, registry, session);
     cut_routes::register_routes(router, registry, session);
     engine_settings_routes::register_documentation_route(router, registry, session);
+    engine_settings_routes::register_read_routes(router, registry, session);
     report_routes::register_routes(router, registry, session);
     result_routes::register_routes(router, registry, session);
     run_file_routes::register_routes(router, registry, session, std::move(storage_dir));

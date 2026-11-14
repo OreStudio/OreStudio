@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-engine-settings-reads
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -34,11 +34,11 @@ three reads are how they say it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:42084FE1-9A9B-49CC-9E50-F48426DFA6C3][Read the ORE value sets, and serve the documentation page]] |
-| Next         | Begin implementation.                  |
+| Now          | The three reads answer, and the rows the page joins onto them are read from the services. |
+| Waiting on   | Nothing. The value set reader is on main. |
+| Next         | Finish the gate and raise the PR.      |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -94,9 +94,41 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The reporting part's test suite | 51 cases, 481 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the engine settings reads commit |
+| The reporting area's routes the C++ server answers | 30 of the BFF's 44 paired | =python3 build/scripts/route_inventory.py --check= | the engine settings reads commit |
+| The reporting area's routes the C++ server does not yet answer | 14 | =python3 build/scripts/route_inventory.py --check= | the engine settings reads commit |
+| The gateway's routes in the inventory | 1331 routes, 1003 answered by the gateway, 237 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the engine settings reads commit |
 
 * Notes
+
+** The values come from the row's own codec
+
+A part is one row of a table whose columns are the settings the data names, so a
+value is picked by the column the setting table states. The gateway does not
+carry a table of column names: it renders the row with its own codec, which names
+its members once, and picks the columns the settings name. A column the row does
+not carry is null, which is the engine default.
+
+** The owning-party check is not restated
+
+The BFF refused a configuration another party owns before reading its history.
+The gateway does not: the service reads under the caller's own party, so a row of
+another party is not returned at all, and the gateway stating the rule again
+would be a second copy of it. The writes task decides what a write does when the
+service answers nothing.
+
+** The reports a configuration binds
+
+The BFF read the bindings and their definitions, and stated an empty list when a
+configuration bound no report. A read that failed answered null rather than
+refusing the page, because a binding that cannot be read must not hide the
+settings. The gateway keeps both answers.
+
+** The history's order
+
+The BFF sorted the entries by comparing the rendered timestamps as text. The
+gateway sorts by the timestamp itself, which states the same order without
+depending on how the service renders it.
 
 * Test Scenarios
 

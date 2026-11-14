@@ -768,7 +768,7 @@ RULES = (
          " reads so the page shows names rather than ids."),
     Rule("the engine settings",
          ("regex", r"^(GET|POST|PUT|DELETE) /api/reporting/engine-settings"),
-         BFF, RESOURCE, "reporting",
+         None, RESOURCE, "reporting",
          "The reporting engine configuration: the collection, one configuration, its"
          " history, and one group's write or proposal."),
     Rule("the pricing engines",

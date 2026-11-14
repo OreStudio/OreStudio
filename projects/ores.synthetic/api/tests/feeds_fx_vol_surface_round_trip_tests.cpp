@@ -19,6 +19,7 @@
 #include "ores.analytics.quant/domain/market_board.hpp"
 #include "ores.analytics.quant/math/fx_delta.hpp"
 #include "ores.analytics.quant/service/calendar_arithmetic.hpp"
+#include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.analytics.quant/service/ssvi_calibration_engine.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_emitter.hpp"
@@ -59,6 +60,14 @@ const fx_quote_convention round_trip_convention{.atm = fx_atm_type::delta_neutra
                                                 .delta = fx_delta_type::spot,
                                                 .favour = fx_risk_reversal_favour::call,
                                                 .butterfly = fx_butterfly_style::smile};
+
+
+/// The pair's rule, with weekends closed and no dated holidays: the calendar this fixture
+/// settles on, so an expiry the calendar closes moves the way the ladder's row does.
+fx_expiry_date_rule round_trip_rule() {
+    return fx_expiry_date_rule(
+        business_day_convention::following, false, 0, business_day_calendar_set::weekends_only());
+}
 
 int round_trip_days_to(std::chrono::year_month_day date) {
     return static_cast<int>(
@@ -106,6 +115,7 @@ fx_vol_surface_feed_build_input round_trip_input() {
     in.contributors = {"reference"};
     in.convention = round_trip_convention;
     in.deltas = {0.25, 0.10};
+    in.expiry_rule = round_trip_rule();
     return in;
 }
 
@@ -125,7 +135,7 @@ std::vector<date_period> round_trip_periods(const std::vector<ssvi_expiry_fit>& 
 std::vector<curve_point> round_trip_curve(double rate, const std::vector<date_period>& periods) {
     std::vector<curve_point> out{{.date = round_trip_spot_date, .discount_factor = 1.0}};
     for (const auto& period : periods) {
-        const auto date = calendar_arithmetic::add_period(round_trip_spot_date, period);
+        const auto date = round_trip_rule().expiry(round_trip_spot_date, period);
         out.push_back(
             {.date = date,
              .discount_factor = std::exp(-rate * round_trip_days_to(date) * round_trip_day)});
@@ -188,13 +198,13 @@ TEST_CASE("the surface a run publishes is the surface a calibration recovers",
     const auto inputs = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);
     REQUIRE(inputs);
     std::vector<fx_market> markets;
-    REQUIRE(fx_vol_expiry_markets(*inputs, periods, markets));
+    REQUIRE(fx_vol_expiry_markets(*inputs, periods, round_trip_rule(), markets));
     REQUIRE(markets.size() == shown.size());
 
     // Each expiry is struck against the forward of the pair's own curves at its own value date,
     // so the three markets are three different markets and neither curve is assumed flat.
     for (std::size_t i = 0; i < markets.size(); ++i) {
-        const auto value_date = calendar_arithmetic::add_period(round_trip_spot_date, periods[i]);
+        const auto value_date = round_trip_rule().expiry(round_trip_spot_date, periods[i]);
         const double years = round_trip_days_to(value_date) * round_trip_day;
         INFO("expiry " << shown[i].expiry_id << " discounts over " << years << " years");
         CHECK(markets[i].domestic_discount ==

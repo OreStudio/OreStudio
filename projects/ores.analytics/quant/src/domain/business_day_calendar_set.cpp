@@ -44,6 +44,10 @@ business_day_calendar_set::from_rows(std::span<const calendar_date_row> rows,
         std::move(holidays), std::move(offsets), std::move(weekend_masks)};
 }
 
+business_day_calendar_set business_day_calendar_set::weekends_only() {
+    return from_rows({}, 1, {std::bitset<7>{0b1000001}});
+}
+
 bool business_day_calendar_set::is_business_day(std::size_t calendar_index,
                                                 std::chrono::year_month_day date) const noexcept {
     if (calendar_index < weekend_masks_.size()) {

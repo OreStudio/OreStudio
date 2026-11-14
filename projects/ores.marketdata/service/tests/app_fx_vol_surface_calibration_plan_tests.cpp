@@ -34,8 +34,6 @@ using Catch::Approx;
 using ores::testing::uuid_of;
 using std::chrono::year_month_day;
 
-const auto calibration_as_of =
-    year_month_day{std::chrono::year{2026}, std::chrono::month{11}, std::chrono::day{9}};
 const auto forward_spot_date =
     year_month_day{std::chrono::year{2026}, std::chrono::month{11}, std::chrono::day{11}};
 const auto derived_quotes_series = uuid_of("00000000-0000-4000-8000-0000000000e1");
@@ -63,6 +61,7 @@ surface_forward_set eur_usd_forward_set() {
             .spot = 1.08,
             .spot_date = forward_spot_date,
             .points = {{"1M", at(2026, 12, 11), 0.998, 0.996},
+                       {"6M", at(2027, 5, 11), 0.987, 0.982},
                        {"1Y", at(2027, 11, 11), 0.975, 0.958},
                        {"2Y", at(2028, 11, 13), 0.950, 0.918}}};
 }
@@ -84,37 +83,37 @@ TEST_CASE("a recipe with a single call pillar is refused before any quote is rea
           "[app][fx_vol_surface_calibration_plan]") {
     const auto checked = check_recipe(eur_usd_recipe({"ATM", "25RR", "25BF", "10C"}));
     REQUIRE_FALSE(checked);
-    CHECK(checked.error().find("1M/10C") != std::string::npos);
+    CHECK(checked.error().contains("1M/10C"));
 }
 
 TEST_CASE("an expiry without a butterfly is refused, naming the expiry",
           "[app][fx_vol_surface_calibration_plan]") {
     const auto checked = check_recipe(eur_usd_recipe({"ATM", "25RR"}));
     REQUIRE_FALSE(checked);
-    CHECK(checked.error().find("expiry 1M lacks") != std::string::npos);
+    CHECK(checked.error().contains("expiry 1M lacks"));
 }
 
 TEST_CASE("a recipe the calibration cannot honour is refused by what it lacks",
           "[app][fx_vol_surface_calibration_plan]") {
     auto sabr = eur_usd_recipe();
     sabr.blueprint.smile_model = "sabr";
-    CHECK(check_recipe(sabr).error().find("sabr") != std::string::npos);
+    CHECK(check_recipe(sabr).error().contains("sabr"));
 
     auto no_style = eur_usd_recipe();
     no_style.convention->butterfly_style.reset();
-    CHECK(check_recipe(no_style).error().find("no butterfly style") != std::string::npos);
+    CHECK(check_recipe(no_style).error().contains("no butterfly style"));
 
     auto no_convention = eur_usd_recipe();
     no_convention.convention.reset();
-    CHECK(check_recipe(no_convention).error().find("EUR-USD-FXOPTION") != std::string::npos);
+    CHECK(check_recipe(no_convention).error().contains("EUR-USD-FXOPTION"));
 
     auto wide = eur_usd_recipe();
     wide.blueprint.output_expiries = "1W,1Y";
-    CHECK(check_recipe(wide).error().find("output expiry 1W") != std::string::npos);
+    CHECK(check_recipe(wide).error().contains("output expiry 1W"));
 
     auto moneyness = eur_usd_recipe();
     moneyness.blueprint.output_strikes = "MNY/Fwd/1.1";
-    CHECK(check_recipe(moneyness).error().find("MNY/Fwd/1.1") != std::string::npos);
+    CHECK(check_recipe(moneyness).error().contains("MNY/Fwd/1.1"));
 }
 
 TEST_CASE("a checked recipe orders its expiries and reads its grid",
@@ -138,18 +137,18 @@ TEST_CASE("a checked recipe orders its expiries and reads its grid",
 TEST_CASE("each expiry reads its market from the forward set and its convention from the switch",
           "[app][fx_vol_surface_calibration_plan]") {
     const auto recipe = eur_usd_recipe();
-    const auto prepared = prepare_calibration(recipe,
-                                              *check_recipe(recipe),
-                                              eur_usd_forward_set(),
-                                              flat_smile_quotes(),
-                                              calibration_as_of,
-                                              0.001);
+    const auto prepared = prepare_calibration(
+        recipe, *check_recipe(recipe), eur_usd_forward_set(), flat_smile_quotes(), 0.001);
     REQUIRE(prepared);
     const auto& expiries = prepared->request.expiries;
     REQUIRE(expiries.size() == 3);
     CHECK(expiries[1].market.foreign_discount == Approx(0.975));
     CHECK(expiries[1].market.domestic_discount == Approx(0.958));
-    CHECK(expiries[1].years == Approx(365.0 / 365.0));
+    // The time axis is the tenor grid, not the calendar: 1M is one twelfth of a year whatever
+    // the month does, and a days-over-365 walk would make it 30/365 and shift every vol.
+    CHECK(expiries[0].years == Approx(1.0 / 12.0));
+    CHECK(expiries[1].years == Approx(1.0));
+    CHECK(expiries[2].years == Approx(2.0));
     CHECK(expiries[1].convention.delta == qm::fx_delta_type::spot);
     CHECK(expiries[2].convention.delta == qm::fx_delta_type::forward);
 
@@ -158,6 +157,73 @@ TEST_CASE("each expiry reads its market from the forward set and its convention 
     CHECK(grid[1].expiry_id == "6M");
     CHECK(grid[1].market.foreign_discount < 0.998);
     CHECK(grid[1].market.foreign_discount > 0.975);
+}
+
+TEST_CASE("a ladder's settlement run-up does not reach the pair's market",
+          "[app][fx_vol_surface_calibration_plan]") {
+    // An FX forward ladder carries an overnight and a tom-next row, and both value before spot.
+    // Those are instruments, not discounts from spot: the pair's market is anchored at the spot
+    // date, and a point before it is refused rather than interpolated.
+    auto forwards = eur_usd_forward_set();
+    const std::chrono::year_month_day before_spot{
+        std::chrono::year{2026}, std::chrono::November, std::chrono::day{10}};
+    forwards.points.insert(forwards.points.begin(),
+                           {.tenor = "ON",
+                            .value_date = before_spot,
+                            .base_discount = 0.9999,
+                            .quote_discount = 0.9999});
+
+    const auto recipe = eur_usd_recipe();
+    const auto prepared =
+        prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), 0.001);
+    REQUIRE(prepared);
+    // The discounts come from the ladder's own points at and after spot, unchanged.
+    const auto& expiries = prepared->request.expiries;
+    REQUIRE(expiries.size() == 3);
+    CHECK(expiries[0].market.foreign_discount == Approx(0.998));
+    CHECK(expiries[0].market.domestic_discount == Approx(0.996));
+}
+
+TEST_CASE("an expiry discounts to the ladder's value date, not to one of its own",
+          "[app][fx_vol_surface_calibration_plan]") {
+    // Spot is a Friday and one month later is a Sunday, which the ladder rolls to the Monday
+    // and publishes with the row. A surface that added the period here would discount to the
+    // Sunday, interpolating between two rows instead of reading the one written for the tenor
+    // it quotes.
+    auto forwards = eur_usd_forward_set();
+    const auto friday =
+        year_month_day{std::chrono::year{2026}, std::chrono::month{11}, std::chrono::day{13}};
+    const auto monday =
+        year_month_day{std::chrono::year{2026}, std::chrono::month{12}, std::chrono::day{14}};
+    forwards.spot_date = friday;
+    for (auto& point : forwards.points)
+        if (point.tenor == "1M")
+            point.value_date = monday;
+
+    const auto recipe = eur_usd_recipe();
+    const auto prepared =
+        prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), 0.001);
+    REQUIRE(prepared);
+    const auto& expiries = prepared->request.expiries;
+    REQUIRE(expiries.size() == 3);
+    // The ladder's own row, to the last digit: the Sunday would sit just above it.
+    CHECK(expiries[0].market.foreign_discount == Approx(0.998).epsilon(1e-12));
+    CHECK(expiries[0].market.domestic_discount == Approx(0.996).epsilon(1e-12));
+}
+
+TEST_CASE("a tenor the ladder does not carry is refused, naming it",
+          "[app][fx_vol_surface_calibration_plan]") {
+    // The grid quotes 6M. A forward set without that row cannot date the expiry, and adding the
+    // period here would be a second way of computing a date: it is refused instead.
+    auto forwards = eur_usd_forward_set();
+    std::erase_if(forwards.points, [](const auto& point) { return point.tenor == "6M"; });
+
+    const auto recipe = eur_usd_recipe();
+    const auto prepared =
+        prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), 0.001);
+    REQUIRE_FALSE(prepared);
+    CHECK(prepared.error().contains("6M"));
+    CHECK(prepared.error().contains("no row"));
 }
 
 TEST_CASE("a pillar's quote is each contributor's at its weight",
@@ -175,8 +241,8 @@ TEST_CASE("a pillar's quote is each contributor's at its weight",
     auto quotes = flat_smile_quotes();
     quotes[broker.market_series_id][{"1Y", "ATM"}] = 0.12;
 
-    const auto prepared = prepare_calibration(
-        recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, calibration_as_of, 0.001);
+    const auto prepared =
+        prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001);
     REQUIRE(prepared);
     const auto& pillars = prepared->request.expiries[1].pillars;
     const auto atm = std::ranges::find(pillars, std::string("1Y/ATM"), &qs::ssvi_pillar::point_id);
@@ -192,30 +258,26 @@ TEST_CASE("an unquoted pillar is reported, and an expiry it leaves short is refu
     auto quotes = flat_smile_quotes();
     quotes[derived_quotes_series][{"1M", "10RR"}] = 0.0;
 
-    const auto prepared = prepare_calibration(
-        recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, calibration_as_of, 0.001);
+    const auto prepared =
+        prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001);
     REQUIRE(prepared);
     CHECK(prepared->missing.size() == 5);
     CHECK(prepared->missing.front().point == "1M/10BF");
     CHECK(prepared->missing.front().series_ids == std::vector{derived_quotes_series});
 
     quotes[derived_quotes_series].erase({"1Y", "25BF"});
-    const auto refused = prepare_calibration(
-        recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, calibration_as_of, 0.001);
+    const auto refused =
+        prepare_calibration(recipe, *check_recipe(recipe), eur_usd_forward_set(), quotes, 0.001);
     REQUIRE_FALSE(refused);
-    CHECK(refused.error().find("expiry 1Y") != std::string::npos);
-    CHECK(refused.error().find("1Y/25BF") != std::string::npos);
+    CHECK(refused.error().contains("expiry 1Y"));
+    CHECK(refused.error().contains("1Y/25BF"));
 }
 
 TEST_CASE("a flat market calibrates to a flat surface on the grid",
           "[app][fx_vol_surface_calibration_plan]") {
     const auto recipe = eur_usd_recipe();
-    const auto prepared = prepare_calibration(recipe,
-                                              *check_recipe(recipe),
-                                              eur_usd_forward_set(),
-                                              flat_smile_quotes(),
-                                              calibration_as_of,
-                                              0.001);
+    const auto prepared = prepare_calibration(
+        recipe, *check_recipe(recipe), eur_usd_forward_set(), flat_smile_quotes(), 0.001);
     REQUIRE(prepared);
     const auto fit = qs::calibrate_ssvi(prepared->request);
     REQUIRE(fit);
@@ -232,7 +294,7 @@ TEST_CASE("a pillar named twice is refused before any quote is read",
     recipe.pillars.push_back(recipe.pillars.front());
     const auto checked = check_recipe(recipe);
     REQUIRE_FALSE(checked);
-    CHECK(checked.error().find("1M/ATM appears twice") != std::string::npos);
+    CHECK(checked.error().contains("1M/ATM appears twice"));
 }
 
 TEST_CASE("a forward set that ends before an expiry refuses the calibration, naming it",
@@ -240,11 +302,11 @@ TEST_CASE("a forward set that ends before an expiry refuses the calibration, nam
     auto forwards = eur_usd_forward_set();
     forwards.points.pop_back();
     const auto recipe = eur_usd_recipe();
-    const auto prepared = prepare_calibration(
-        recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), calibration_as_of, 0.001);
+    const auto prepared =
+        prepare_calibration(recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), 0.001);
     REQUIRE_FALSE(prepared);
-    CHECK(prepared.error().find("expiry 2Y") != std::string::npos);
-    CHECK(prepared.error().find("ends at") != std::string::npos);
+    CHECK(prepared.error().contains("expiry 2Y"));
+    CHECK(prepared.error().contains("ends at"));
 }
 
 TEST_CASE("a_published_forward_set_is_read_from_spot_and_not_from_its_as_of",
@@ -286,6 +348,6 @@ TEST_CASE("a_forward_set_with_no_row_on_its_spot_date_is_refused_naming_it",
     const auto anchored = spot_starting(forwards);
 
     REQUIRE_FALSE(anchored);
-    CHECK(anchored.error().find("no row on its spot date") != std::string::npos);
-    CHECK(anchored.error().find("2026-12-01") != std::string::npos);
+    CHECK(anchored.error().contains("no row on its spot date"));
+    CHECK(anchored.error().contains("2026-12-01"));
 }

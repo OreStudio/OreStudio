@@ -20,14 +20,12 @@
 #include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
 #include "ores.analytics.quant/math/fx_pair_market.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
-#include "ores.analytics.quant/service/calendar_arithmetic.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include <algorithm>
-#include <charconv>
 #include <chrono>
 #include <format>
 #include <map>
@@ -43,6 +41,7 @@ using ores::analytics::quant::math::rng_stream;
 using ores::analytics::quant::math::series_key;
 using ores::analytics::quant::math::stream_key;
 using ores::analytics::quant::service::fx_vol_slice_market;
+using ores::analytics::quant::service::fx_vol_tenor_years;
 using ores::analytics::quant::service::fx_vol_surface_dynamics;
 using ores::analytics::quant::service::ssvi_expiry_fit;
 using ores::analytics::quant::service::ssvi_parameters;
@@ -52,23 +51,6 @@ using ores::analytics::quant::service::run_market;
 namespace {
 
 constexpr int days_in_a_year = 365;
-constexpr int months_in_a_year = 12;
-
-double fx_vol_year_fraction(std::string_view count, char unit) {
-    int n = 0;
-    const auto parsed = std::from_chars(count.data(), count.data() + count.size(), n);
-    static_cast<void>(parsed);
-    switch (unit) {
-        case 'D':
-            return static_cast<double>(n) / days_in_a_year;
-        case 'W':
-            return 7.0 * static_cast<double>(n) / days_in_a_year;
-        case 'M':
-            return static_cast<double>(n) / months_in_a_year;
-        default:
-            return static_cast<double>(n);
-    }
-}
 
 /// The emitter a row describes, or the exception a feed cannot start without.
 fx_vol_surface_emitter surface_or_throw(const fx_vol_surface_feed_build_input& input,
@@ -80,21 +62,6 @@ fx_vol_surface_emitter surface_or_throw(const fx_vol_surface_feed_build_input& i
     return std::move(*built);
 }
 
-}
-
-std::optional<double> fx_vol_tenor_years(std::string_view tenor) {
-    // A tenor is a count of one or two digits and one unit, as the column's check states.
-    if (tenor.size() < 2 || tenor.size() > 3)
-        return std::nullopt;
-    const char unit = tenor.back();
-    if (unit != 'D' && unit != 'W' && unit != 'M' && unit != 'Y')
-        return std::nullopt;
-    if (!std::all_of(tenor.begin(), tenor.end() - 1, [](char c) { return c >= '0' && c <= '9'; }))
-        return std::nullopt;
-    const double years = fx_vol_year_fraction(tenor.substr(0, tenor.size() - 1), unit);
-    if (!(years > 0.0))
-        return std::nullopt;
-    return years;
 }
 
 std::expected<fx_vol_surface_emitter, std::string>
@@ -219,12 +186,18 @@ fx_vol_board_inputs(const ores::analytics::quant::domain::market_board& values,
 std::expected<void, std::string>
 fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
                       std::span<const ores::analytics::quant::domain::date_period> periods,
+                      const ores::analytics::quant::service::fx_expiry_date_rule& rule,
                       std::vector<ores::analytics::quant::math::fx_market>& out) {
+    // A rule with no calendar dates nothing: the arithmetic refuses rather than treat an unread
+    // calendar as one closed only at weekends. A surface built that way is named here, because
+    // the exception's own message says more about indexes than about the pair.
+    if (rule.calendar_count() == 0)
+        return std::unexpected(std::string("the pair's expiry date rule names no calendar"));
     out.clear();
     out.reserve(periods.size());
     for (const auto& period : periods) {
-        const auto value_date = ores::analytics::quant::service::calendar_arithmetic::add_period(
-            inputs.spot_date, period);
+        // The date the ladder publishes for this tenor, because both call the same rule.
+        const auto value_date = rule.expiry(inputs.spot_date, period);
         auto resolved = ores::analytics::quant::math::pair_market_at(
             inputs.spot.spot, inputs.spot_date, inputs.base, inputs.quote, value_date, {});
         if (!resolved)
@@ -243,7 +216,8 @@ fx_vol_surface_feed::fx_vol_surface_feed(
     run_market& market,
     double sensitivity,
     const ores::analytics::quant::domain::arrival_spec& arrival)
-    : nats_(nats)
+    : expiry_rule_(input.expiry_rule)
+    , nats_(nats)
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
     , emitter_(surface_or_throw(input, run_seed, source_name_))
@@ -326,7 +300,8 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
         fx_vol_board_inputs(market_.values(), *base_curve_id_, *quote_curve_id_, *spot_id_);
     if (!inputs)
         return "no market: " + inputs.error();
-    if (const auto built = fx_vol_expiry_markets(*inputs, expiry_periods_, markets_); !built)
+    if (const auto built = fx_vol_expiry_markets(*inputs, expiry_periods_, expiry_rule_, markets_);
+        !built)
         return "no market: " + built.error();
     const auto points = emitter_.step(context.drivers, markets_);
     const auto& codec = ores::nats::default_wire_codec();

@@ -21,6 +21,7 @@
 #define ORES_SYNTHETIC_API_FEEDS_FX_VOL_SURFACE_FEED_HPP
 
 #include "ores.analytics.quant/domain/date_convention.hpp"
+#include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
@@ -44,19 +45,6 @@ namespace ores::synthetic::feed {
 inline constexpr std::string_view fx_vol_surface_feed_kind = "fx_vol_surface";
 
 /**
- * @brief The year fraction a tenor names, as a surface's expiries are counted.
- *
- * Days are counted over 365 and months over 12, which is what a quoted expiry grid
- * means before a calendar and a day count are applied. The generator task's later
- * work resolves tensors through the pair's convention; until then this is the whole
- * of the mapping and it is stated rather than assumed.
- *
- * @return The year fraction, or nothing when the tenor is not a count and a unit.
- */
-[[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::optional<double>
-fx_vol_tenor_years(std::string_view tenor);
-
-/**
  * @brief Everything a surface feed reads, gathered by the caller.
  *
  * The caller resolves the pair's market and convention because it alone holds the
@@ -74,6 +62,8 @@ struct fx_vol_surface_feed_build_input final {
     ores::analytics::quant::math::fx_quote_convention convention;
     /// The deltas, besides ATM, to quote a risk reversal and a butterfly at.
     std::vector<double> deltas;
+    /// The pair's expiry date rule: the date each expiry the surface quotes is struck at.
+    ores::analytics::quant::service::fx_expiry_date_rule expiry_rule;
 };
 
 /**
@@ -114,15 +104,18 @@ fx_vol_board_inputs(const ores::analytics::quant::domain::market_board& values,
  * @brief One market per expiry, from the run's values at one instant.
  *
  * The whole of a surface's tick that is worth testing without a wire: the value date is the
- * spot date plus the expiry's period, and the pair's market there is resolved by the same quant
- * block the calibration uses. Written into @p out so a tick allocates nothing at a stable size.
+ * date the pair's rule gives the spot date for that period, and the pair's market there is
+ * resolved by the same quant block the calibration uses. Written into @p out so a tick
+ * allocates nothing at a stable size.
  *
  * @param periods One period per expiry, in the emitter's expiry order.
+ * @param rule The pair's expiry date rule, read once when the feed was built.
  * @return Nothing, or why the run cannot price an expiry.
  */
 [[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::expected<void, std::string>
 fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
                       std::span<const ores::analytics::quant::domain::date_period> periods,
+                      const ores::analytics::quant::service::fx_expiry_date_rule& rule,
                       std::vector<ores::analytics::quant::math::fx_market>& out);
 
 /**
@@ -209,6 +202,8 @@ private:
     std::optional<ores::analytics::quant::domain::market_board::member_id> spot_id_;
     /// One period per expiry, in the emitter's own expiry order.
     std::vector<ores::analytics::quant::domain::date_period> expiry_periods_;
+    /// The pair's rule for dating those expiries, read once when the feed was built.
+    ores::analytics::quant::service::fx_expiry_date_rule expiry_rule_;
     /// One market per expiry, rebuilt every tick into the same storage.
     std::vector<ores::analytics::quant::math::fx_market> markets_;
 

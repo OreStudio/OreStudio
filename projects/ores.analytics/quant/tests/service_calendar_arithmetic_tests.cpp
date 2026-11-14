@@ -436,6 +436,23 @@ TEST_CASE("end of month turns a month counted period into the month's last busin
                                        calendars) == year{2026} / February / 27);
 }
 
+TEST_CASE("an unadjusted advance is the date calendar arithmetic gives", "[calendar_arithmetic]") {
+    // This is the claim that lets one mechanism date an FX expiry for every use: the convention
+    // is a knob, and set to Unadjusted the walk is Date::advance -- add the period, adjust
+    // nothing. A weekend target is the case that tells the two knobs apart.
+    const auto calendars = make_south_africa();
+    const auto friday = year{2014} / November / 28;
+
+    CHECK(calendar_arithmetic::add_period(friday, m(3)) == year{2015} / February / 28);
+    CHECK(calendar_arithmetic::advance(
+              friday, m(3), business_day_convention::unadjusted, false, south_africa, calendars) ==
+          year{2015} / February / 28);
+    // The same walk with a convention moves the date, which is the whole of the difference.
+    CHECK(calendar_arithmetic::advance(
+              friday, m(3), business_day_convention::following, false, south_africa, calendars) ==
+          year{2015} / March / 2);
+}
+
 TEST_CASE("the nth weekday of a month counts from one", "[calendar_arithmetic]") {
     // March 2015 begins on a Sunday, so its Wednesdays are the 4th, 11th and
     // 18th.

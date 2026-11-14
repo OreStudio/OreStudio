@@ -20,6 +20,7 @@
 #include "ores.analytics.quant/math/fx_pair_market.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.analytics.quant/service/calendar_arithmetic.hpp"
+#include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.analytics.quant/service/fx_vol_surface_generator.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_emitter.hpp"
@@ -61,6 +62,14 @@ const fx_quote_convention tick_convention{.atm = fx_atm_type::delta_neutral,
                                           .favour = fx_risk_reversal_favour::call,
                                           .butterfly = fx_butterfly_style::smile};
 
+
+/// The pair's rule, with weekends closed and no dated holidays: the calendar this fixture
+/// settles on, so an expiry the calendar closes moves the way the ladder's row does.
+fx_expiry_date_rule tick_rule() {
+    return fx_expiry_date_rule(
+        business_day_convention::following, false, 0, business_day_calendar_set::weekends_only());
+}
+
 int tick_days_to(std::chrono::year_month_day date) {
     return static_cast<int>(
         (std::chrono::sys_days(date) - std::chrono::sys_days(tick_spot_date)).count());
@@ -81,7 +90,7 @@ std::vector<date_period> tick_periods() {
 std::vector<curve_point> tick_curve(double rate, const std::vector<date_period>& periods) {
     std::vector<curve_point> out{{.date = tick_spot_date, .discount_factor = 1.0}};
     for (const auto& period : periods) {
-        const auto date = calendar_arithmetic::add_period(tick_spot_date, period);
+        const auto date = tick_rule().expiry(tick_spot_date, period);
         out.push_back(
             {.date = date, .discount_factor = std::exp(-rate * tick_days_to(date) * tick_day)});
     }
@@ -207,10 +216,12 @@ TEST_CASE("a surface names the member the run has not published", "[fx_vol_surfa
     CHECK(same_points(inputs->quote, quote));
 }
 
-TEST_CASE("a surface resolves each expiry at the date its period gives", "[fx_vol_surface_tick]") {
-    // The three value dates the periods name, and the discounts and forward a flat curve and a
-    // spot give there. One month from 16 November is 16 December, a year is 365 days, and the
-    // forward is the spot times the pair's foreign discount over its domestic one.
+TEST_CASE("a surface resolves each expiry at the date the pair's rule gives",
+          "[fx_vol_surface_tick]") {
+    // The three value dates the rule gives, and the discounts and forward a flat curve and a
+    // spot give there. One month from 16 November is 16 December, six months is the Sunday of
+    // 16 May, which the calendar moves to the Monday, and the forward is the spot times the
+    // pair's foreign discount over its domestic one.
     // Every number below is a literal, so a wrong date or a wrong interpolation cannot agree with
     // the expression that built the fixture.
     struct expected_expiry final {
@@ -231,19 +242,28 @@ TEST_CASE("a surface resolves each expiry at the date its period gives", "[fx_vo
          0.9974826259685393,
          0.9924668734686284,
          1.0787481969120785},
-        {{std::chrono::year{2027}, std::chrono::May, std::chrono::day{16}},
-         181,
-         0.9950533709567208,
-         0.9852333992470845,
-         1.0735002590229397}};
+        {{std::chrono::year{2027}, std::chrono::May, std::chrono::day{17}},
+         182,
+         0.9950261095939752,
+         0.9851524244872506,
+         1.0734414387024689}};
 
     const auto periods = tick_periods();
     REQUIRE(periods.size() == expected.size());
     for (std::size_t i = 0; i < periods.size(); ++i) {
-        INFO("expiry " << i << " resolves at " << tick_days_to(expected[i].value_date) << " days");
-        CHECK(calendar_arithmetic::add_period(tick_spot_date, periods[i]) ==
-              expected[i].value_date);
-        CHECK(tick_days_to(expected[i].value_date) == expected[i].days);
+        const auto value_date = tick_rule().expiry(tick_spot_date, periods[i]);
+        INFO("expiry " << i << " resolves at " << tick_days_to(value_date) << " days");
+        CHECK(value_date == expected[i].value_date);
+        CHECK(tick_days_to(value_date) == expected[i].days);
+    }
+    // The six-month expiry is the one that separates the two rules: its period lands on a
+    // Sunday, so calendar arithmetic would read the curves 181 days out and the rule 182.
+    {
+        const auto period = periods.back();
+        CHECK(tick_rule().expiry(tick_spot_date, period) ==
+              std::chrono::year{2027} / std::chrono::May / std::chrono::day{17});
+        CHECK(calendar_arithmetic::add_period(tick_spot_date, period) ==
+              std::chrono::year{2027} / std::chrono::May / std::chrono::day{16});
     }
 
     tick_board board;
@@ -251,7 +271,7 @@ TEST_CASE("a surface resolves each expiry at the date its period gives", "[fx_vo
     const auto inputs = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);
     REQUIRE(inputs);
     std::vector<fx_market> markets;
-    REQUIRE(fx_vol_expiry_markets(*inputs, periods, markets));
+    REQUIRE(fx_vol_expiry_markets(*inputs, periods, tick_rule(), markets));
     REQUIRE(markets.size() == expected.size());
 
     std::vector<double> forwards;
@@ -281,7 +301,7 @@ TEST_CASE("two ticks against an unchanged board quote the same surface", "[fx_vo
     const auto inputs = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);
     REQUIRE(inputs);
     std::vector<fx_market> first_markets;
-    REQUIRE(fx_vol_expiry_markets(*inputs, periods, first_markets));
+    REQUIRE(fx_vol_expiry_markets(*inputs, periods, tick_rule(), first_markets));
     std::vector<double> first;
     for (const auto& point : emitter.step(drivers, first_markets)) {
         REQUIRE(point.value);
@@ -296,7 +316,7 @@ TEST_CASE("two ticks against an unchanged board quote the same surface", "[fx_vo
     const auto again = fx_vol_board_inputs(board.values, board.eur, board.usd, board.spot);
     REQUIRE(again);
     std::vector<fx_market> second_markets;
-    REQUIRE(fx_vol_expiry_markets(*again, periods, second_markets));
+    REQUIRE(fx_vol_expiry_markets(*again, periods, tick_rule(), second_markets));
     const auto second = emitter.step(drivers, second_markets);
 
     REQUIRE(second.size() == first.size());

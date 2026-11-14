@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 002F8F0F-2429-4838-864D-5B29DB571CBF
+:END:
+#+title: A surface the checks refuse is withheld, so downstream has no numbers
+#+description: A calibration that breaks a check, or a grid tenor the ladder has no row for, ends with no published surface at all. Downstream then has no numbers and no way to tell why. Publish the surface anyway, carrying its findings -- converged, largest pillar error, pillars beyond tolerance, arbitrage violations, the pillar that was interpolated -- and let a reader refuse what it will not use, rather than the writer deciding for it. Needs a decision on where the annotation lives so it reaches every consumer, and on the per-blueprint policy for what degrades rather than blocks.
+#+type: capture
+#+level: cross
+#+filetags: :volatility:surfaces:dex:quality:publishing:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Today a surface is all or nothing. One expiry the ladder cannot date, one check the fit breaks,
+one curve that is stale, and the whole surface is withheld. Downstream then has no numbers at
+all -- and no statement of why, which is the part that hurts: the absence is indistinguishable
+from a service that did not run.
+
+The proposal is the opposite habit: publish the surface, and publish the reason it is not to be
+trusted with it. A dodgy surface that says "1Y interpolated across a missing pillar; largest
+pillar error 4.2 vol points" is worth more than no surface, because a risk run, a P&L explain and
+a screen can still produce numbers and show their caveat. Silence does not stop the numbers being
+needed; it pushes people to invent them off-system, where nothing records what they used.
+
+* Why
+
+The machinery to describe a bad surface already exists and is thrown away. The publish record
+carries the checks of the calibration it approves -- =converged=, =max_abs_error=,
+=pillars_beyond_tolerance=, =violation_count= -- but they live on the approval request, not on the
+surface the approval produces. A reader of the published surface cannot ask whether it was
+degraded, let alone how. The one place the judgement is recorded is the screen of the person who
+approved it.
+
+The refusals that cost the most are not the checks at all, they are the plan. A grid tenor the
+ladder publishes no row for refuses the whole surface rather than one pillar of it; a pair whose
+convention names no calendar does the same. Those are absent *facts*, not failed fits, and a
+surface can be built around a missing fact by saying so.
+
+* What the mechanism needs
+
+1. One finding type: an enumerated code, the pillar or expiry it concerns, a measured value and
+   its tolerance. Free text is a note, not a finding, and cannot be filtered or counted.
+2. The findings travel with the numbers, not beside them: from the calibration to the publish to
+   the set and its points, so that anyone holding a volatility can ask what is wrong with it.
+   Anything less and the annotation is only visible to whoever opens the right screen.
+3. The publisher stops withholding what it can describe. A per-blueprint policy decides, finding
+   by finding, whether it blocks the publish or degrades it -- an arbitrage violation may degrade
+   while a missing spot refuses, because a surface struck against nothing is not a surface.
+4. A reader may ask for clean only. The default read returns the degraded surface and its mark;
+   a consumer that cannot use a broken surface (a local vol build, a risk number that reports to
+   a regulator) says so at the read, where the requirement belongs.
+5. Every degraded publish writes its findings, so the state is visible in the history rather than
+   in a log line. A degraded surface nobody notices is the same failure as a withheld one.
+
+* The first case
+
+The grid tenor with no ladder row. Today the plan refuses the surface. Under this policy the
+pillar is interpolated across the nearest published expiries, the surface is published with a
+=missing_pillar= finding naming the tenor, and the map shows it degraded. That single change is
+the difference between a provisioning step that fails and a surface that is imperfect and known
+to be.
+
+* Open questions
+
+- Where the annotation lives: a state on the published set (as a curve publish has
+  published/withdrawn/superseded), a findings child table keyed by set and pillar, or both? The
+  state is cheap to read and the findings explain it, so both is the likely answer.
+- Whether degradation is a property of the set or of each point. A missing pillar degrades one
+  expiry; a stale spot degrades all of them. Naming one expiry as bad must not imply the others
+  are good if they were struck from the same stale tick.
+- How the caveat reaches ORE, which has no field for it: a refused export, a comment in the run
+  record, or a requested-but-ignored annotation. This needs a decision before the first degraded
+  surface is exported.
+
+* References
+
+- =projects/ores.sql/create/marketdata/marketdata_fx_vol_surface_publishes_create.sql=: the
+  checks a publish already carries, and the note that a request authorises one calibration.
+- =projects/ores.marketdata/service/src/app/fx_vol_surface_publish_service.cpp=: where the
+  checks are copied from the calibration onto the request.
+- =projects/ores.marketdata/service/src/app/fx_vol_surface_calibration_plan.cpp=: =terms_at= and
+  the refusals that cost a whole surface, one expiry at a time.
+
+* See also
+
+- [[id:54478DD6-5A3F-47E1-9326-7611EB32428A][The surface slices journey ends with two checks:
+  calendar ar…]] -- the arbitrage checks that would feed the findings.
+- [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining
+  work]]: where the single expiry-date rule landed, and where the refusal of a tenor with no
+  ladder row was made explicit.

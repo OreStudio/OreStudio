@@ -26,11 +26,10 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/catalogue_page.hpp"
 #include "ores.refdata.core/mapping/quant_codes.hpp"
-#include "ores.refdata.core/repository/calendar_date_repository.hpp"
-#include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
+#include "ores.refdata.core/service/pair_expiry_date_rule.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -186,23 +185,6 @@ int read_spot_days(const context& ctx, const fx_pair_codes& pair) {
     return days;
 }
 
-quant::domain::business_day_calendar_set
-read_calendar(const context& ctx, const std::string& pair_code, std::string& codes) {
-    refdata_repo::currency_pair_convention_calendar_repository links{ctx};
-    refdata_repo::calendar_date_repository dates{ctx};
-    std::vector<std::vector<ores::refdata::domain::calendar_date>> calendars;
-    for (const auto& link : links.read_latest_by_pair(pair_code)) {
-        codes += (codes.empty() ? "" : ",") + link.calendar_code;
-        calendars.push_back(dates.read_latest_by_calendar(link.calendar_code));
-        if (calendars.back().empty())
-            throw refused("Calendar " + link.calendar_code + " of " + pair_code +
-                          " has no materialised dates.");
-    }
-    if (calendars.empty())
-        throw refused("The convention of " + pair_code + " names no calendar.");
-    return joint_calendar(calendars);
-}
-
 computed_fx_forward_set answer(const context& ctx, const fx_forward_inputs& request) {
     const auto pair = parse_pair(request.pair_code);
     if (!pair)
@@ -213,10 +195,16 @@ computed_fx_forward_set answer(const context& ctx, const fx_forward_inputs& requ
     if (conventions.empty())
         throw refused("No convention is published for " + request.pair_code + ".");
     const auto& convention = conventions.front();
+    // The dates the ladder publishes are the pair's rule's, read once: the same rule a surface
+    // dates its expiries with, so the ladder and the surface cannot disagree about a tenor.
+    const auto expiry_rule =
+        ores::refdata::service::read_pair_expiry_date_rule(ctx, request.pair_code);
+    if (!expiry_rule)
+        throw refused(expiry_rule.error());
 
     computed_fx_forward_set computed;
     computed.convention_version = convention.version;
-    const auto calendar = read_calendar(ctx, request.pair_code, computed.calendar_codes);
+    computed.calendar_codes = expiry_rule->calendar_codes;
     const int spot_days = read_spot_days(ctx, *pair);
     std::optional<boost::uuids::uuid> party;
     if (!request.party_id.empty())
@@ -256,10 +244,7 @@ computed_fx_forward_set answer(const context& ctx, const fx_forward_inputs& requ
         throw refused("The funding curves of " + request.pair_code +
                       " use different interpolation methods.");
 
-    const auto roll = ores::refdata::mapping::parse_business_day_convention_code(
-        convention.business_day_convention.value_or("ModifiedFollowing"));
-    auto dates = build_ladder_dates(
-        date_of(request.as_of), spot_days, roll, convention.end_of_month.value_or(false), calendar);
+    auto dates = build_ladder_dates(date_of(request.as_of), spot_days, expiry_rule->rule);
 
     const auto spot_date = dates.spot_date;
     const auto rows = quant::service::calculate_fx_forwards({.base_currency = pair->base,

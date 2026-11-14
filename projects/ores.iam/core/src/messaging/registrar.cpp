@@ -465,6 +465,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             tsh->enter(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
+        enter_tenant_as_service_request::nats_subject, qg, [tsh](ores::nats::message msg) {
+            tsh->enter_as_service(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
         leave_tenant_request::nats_subject, qg, [tsh](ores::nats::message msg) {
             tsh->leave(std::move(msg));
         }));

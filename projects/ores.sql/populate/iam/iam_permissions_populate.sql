@@ -109,6 +109,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:suspend', 'Suspend tenants');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:terminate', 'Terminate tenants');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:impersonate', 'Access other tenants');
+    -- A service account enters a tenant it serves, so the work it does there
+    -- names that tenant and the tenant's party rather than its own.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::tenants:enter_as_service', 'Serve a tenant as a service account');
 
     -- Party provisioning: the party stage a tenant administrator runs inside the
     -- tenant they already work in, which is a narrower act than creating one.

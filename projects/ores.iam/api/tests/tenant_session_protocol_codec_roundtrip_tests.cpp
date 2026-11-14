@@ -35,6 +35,15 @@ TEST_CASE("ores::iam::messaging::enter_tenant_response", "[codec][roundtrip][pro
     ores::testing::check_wire_roundtrip<ores::iam::messaging::enter_tenant_response>();
 }
 
+TEST_CASE("ores::iam::messaging::enter_tenant_as_service_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::iam::messaging::enter_tenant_as_service_request>();
+}
+
+TEST_CASE("ores::iam::messaging::enter_tenant_as_service_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::iam::messaging::enter_tenant_as_service_response>();
+}
+
 TEST_CASE("ores::iam::messaging::leave_tenant_request", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::iam::messaging::leave_tenant_request>();
 }

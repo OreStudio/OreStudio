@@ -44,6 +44,9 @@ namespace ores::iam::service {
  */
 struct tenant_session_caller {
     boost::uuids::uuid account_id;
+    /// The account's type as the store states it, because only a service
+    /// account may enter a tenant to work inside it.
+    std::string account_type;
     std::string username;
     std::string session_id;
     utility::uuid::tenant_id tenant_id;
@@ -77,6 +80,8 @@ enum class tenant_session_refusal {
     unknown_tenant,
     no_system_party,
     no_read_permissions,
+    not_a_service_account,
+    no_permissions,
     not_inside_a_tenant
 };
 
@@ -102,6 +107,12 @@ public:
     /// The permission a caller needs to enter a tenant.
     static constexpr std::string_view impersonate_permission = "iam::tenants:impersonate";
 
+    /// The account type the store states for a service account.
+    static constexpr std::string_view service_account_type = "service";
+
+    /// The permission a service account needs to enter a tenant it serves.
+    static constexpr std::string_view enter_as_service_permission = "iam::tenants:enter_as_service";
+
     /**
      * @param ctx The service's own context; the tenant and the system tenant
      * are reached from it.
@@ -114,6 +125,23 @@ public:
 
     messaging::enter_tenant_response enter(const tenant_session_caller& caller,
                                            const messaging::enter_tenant_request& request);
+
+    /**
+     * @brief Enters @p request's tenant as a service account, to work inside it.
+     *
+     * A service account is an account of the deployment, not of the tenant it
+     * serves, so it can only reach that tenant's data with a session scoped to
+     * it. The session acts as the tenant's system party and carries the
+     * service's own permissions, so it writes where the service's role writes;
+     * the trail names the service and the tenant it entered.
+     *
+     * Refused to an account that is not a service account, to a caller without
+     * enter_as_service_permission, to a caller already inside a tenant, and for
+     * the system tenant, an unknown tenant, or a tenant with no system party.
+     */
+    messaging::enter_tenant_as_service_response
+    enter_as_service(const tenant_session_caller& caller,
+                     const messaging::enter_tenant_as_service_request& request);
 
     messaging::leave_tenant_response leave(const tenant_session_caller& caller);
 

@@ -145,6 +145,101 @@ command that printed a bearer token would hand it to the terminal.
  */
 #+end_src
 
+** enter_tenant_as_service_request
+:PROPERTIES:
+:subject: iam.v1.ops.enter_tenant_as_service
+:response: enter_tenant_as_service_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Enter one tenant as a service account, to work inside it.
+ *
+ * A service that serves a tenant's work needs a session scoped to that tenant,
+ * because every write names the tenant and the party from the caller's claims.
+ * The session acts as the tenant's system party and carries the service's own
+ * permissions, so it writes where the service's role writes and nowhere else.
+ *
+ * Refused to a caller that is not a service account, to a caller without
+ * iam::tenants:enter_as_service, and for the system tenant, an unknown tenant,
+ * or a tenant with no system party yet.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The id of the tenant to work inside.
+ */
+#+end_src
+
+** enter_tenant_as_service_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the entry was refused, or empty.
+ */
+#+end_src
+
+*** token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The session token scoped to the tenant.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The tenant's system party, which the session acts as.
+ */
+#+end_src
+
+*** access_lifetime_s
+:PROPERTIES:
+:cpp_type: int
+:default: 1800
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How long the session lasts. It is not refreshed.
+ */
+#+end_src
+
 ** leave_tenant_request
 :PROPERTIES:
 :subject: iam.v1.ops.leave_tenant

@@ -8,7 +8,7 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch: feature/settle-the-three-levels
-#+pr:
+#+pr: 4719
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -35,23 +35,38 @@ A reader can say which level a dataset belongs to and which bundle publishes it,
 
 * Acceptance
 
-- The levels are named for what they hold, and no name means two things.
-- Every dataset states its level and the bundle that publishes it, in one table.
-- The bundle map is committed, and a check fails when a dataset names no bundle.
-- =base= either becomes the per-tenant bundle name it actually is, or is retired.
+**Documentation first.** No implementation starts until these documents answer
+every question below.
 
-* Plan
-
-1. List every bundle and every dataset with its current level, from the
-   investigation's inventory.
-2. Give the levels names that cannot be confused: installation, world, tenant.
-3. State the world bundle: the one carrying calendars, currency pairs,
-   commodities and equity underlyings into the system tenant.
-4. Publish the map as a document and a check.5. Settle the reader side with the map: which level each reader looks in, and
-   how row-level security lets a tenant's session read world data without a
-   copy. The backlog already records both halves -- *World data versus party
-   configuration* and *One source for reference data that the system and each
-   tenant read* -- so this task decides, it does not rediscover.
+- One knowledge page paints the whole publishing architecture in one picture:
+  every level, every artefact table, every dataset, every bundle, and what
+  publishes what into which tenant. It replaces the four partial answers, and
+  the pages it supersedes link to it rather than restating it.
+- The page carries UML for the parts a table cannot show, as =*.puml= beside it
+  in =doc/knowledge/=:
+  - a component diagram of the publish path from request to published row;
+  - a diagram of the levels, showing which tables each level writes and which
+    readers look at each;
+  - a sequence diagram for one bundle publish, including the dependency order.
+- The page states, in their own sections:
+  - *Provenance* — for a published row, the dataset and artefact row it came
+    from, and how a person finds that chain.
+  - *Methodology* — how a dataset is staged, declared, bundled and published,
+    as the canonical sequence an author follows.
+  - *Reproducibility* — what a blank database produces, what a recreate
+    reproduces, what depends on the outside world, and how an operator proves a
+    database matches its datasets.
+- Every question the investigation left open is answered on the page:
+  1. Which levels exist, what each is named, and what each holds?
+  2. Which bundle publishes which datasets, into which tenant, once or per
+     tenant?
+  3. How does a reader see world data without a second copy, given row-level
+     security?
+  4. Where do the coded vocabularies and catalogues live, and who owns them?
+  5. What is the single canonical way to add a dataset, end to end?
+  6. What is legacy, and what retires it?
+  7. What does a recreated database contain, and what must an operator run?
+- The page is reviewed and signed off before task 2 starts.
 
 * Measurements
 
@@ -60,6 +75,11 @@ A reader can say which level a dataset belongs to and which bundle publishes it,
 | Bundles that name a system-level publication | 0 (no bundle carries calendars, currencies, commodities or equity) | investigation, section 3.4 | e050a2d239 |
 
 * Notes
+
+The page is the deliverable of this task, not a by-product. The investigation
+showed the four existing documents each answer a part and disagree at the seams;
+a fifth partial page would repeat the defect, so this one has to be the single
+picture the others point at.
 
 Answers requirement 4, and unblocks every task below it. Defect D3.
 
@@ -80,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4719][#4719]] | [agile] Make the DQ documentation the first deliverable |
 
 * Review
 

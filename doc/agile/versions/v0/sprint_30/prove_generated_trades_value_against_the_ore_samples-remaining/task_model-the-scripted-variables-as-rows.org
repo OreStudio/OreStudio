@@ -28,9 +28,9 @@ Only the script body is text. The parameters, their types and their array values
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | The model, the ORE boundary, the planner and the tests are written and the tree builds; the database and the report are next. |
+| Now          | Done but for the scripted products' own pricing, which two other tasks own. |
 | Waiting on   | Nothing.                               |
-| Next         | Recreate the database, provision the book and compare the scripted products' values. |
+| Next         | The scripted trades need the engine's BaseCcy per trade and the script library in the run, which are other tasks. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -38,7 +38,18 @@ Only the script body is text. The parameters, their types and their array values
 - scripted_instrument holds no JSON column
 - scripted_parameter and scripted_parameter_value hold every scripted trade's variables, an index one holding an oresmd URI
 - the ORE export builds the four typed lists from the rows and the import writes rows from the document
-- a report over the provisioned book prices the scripted products with the same values as before
+- every trade of ORE's example portfolios survives a read and a write through the rows, value for value
+- a report over the provisioned book exports the scripted trades whole, from their rows
+
+The acceptance this task first stated, that the scripted products price with
+the same values as before, is not met, because they did not price before either.
+The report states why, and neither reason is this task: the engine reads
+=BaseCcy= of every scripted trade, which is a setting of the trade and not of a
+pair, so it belongs to [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and
+pricing engines]]; and a generated =ScriptedTrade= states the generic form with
+variables the =AsianBasketOption= script does not read, and the run publishes no
+script library for it to load, which belongs to
+[[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]].
 
 * Plan
 

@@ -210,6 +210,7 @@ export interface GetPublishedFxVolSurfaceResponse {
     stale: boolean;
     publish_request_id: string;
     as_of: string;
+    series_id: string;
     published_at: string | null;
     published_by: string;
     superseded_at: string | null;

@@ -635,6 +635,14 @@ refusal is a reply with =success= false and a message that names what failed.
 :cpp_type: std::chrono::system_clock::time_point
 :END:
 
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The series the surface is published into: the identity a caller names to read the
+same surface again, and what a slice of it is a slice of.
+
 *** published_at
 :PROPERTIES:
 :cpp_type: std::optional<std::chrono::system_clock::time_point>

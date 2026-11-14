@@ -305,6 +305,7 @@ struct get_published_fx_vol_surface_response {
     bool stale = false;
     std::string publish_request_id;
     std::chrono::system_clock::time_point as_of;
+    std::string series_id;
     std::optional<std::chrono::system_clock::time_point> published_at;
     std::string published_by;
     std::optional<std::chrono::system_clock::time_point> superseded_at;
@@ -610,6 +611,8 @@ wire_fields(std::type_identity<get_published_fx_vol_surface_response>) {
         ::ores::utility::codec::field{"publish_request_id",
                                       &get_published_fx_vol_surface_response::publish_request_id},
         ::ores::utility::codec::field{"as_of", &get_published_fx_vol_surface_response::as_of},
+        ::ores::utility::codec::field{"series_id",
+                                      &get_published_fx_vol_surface_response::series_id},
         ::ores::utility::codec::field{"published_at",
                                       &get_published_fx_vol_surface_response::published_at},
         ::ores::utility::codec::field{"published_by",

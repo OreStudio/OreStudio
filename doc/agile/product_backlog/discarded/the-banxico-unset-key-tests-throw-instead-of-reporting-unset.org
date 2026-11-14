@@ -51,7 +51,7 @@ The fix is in the fixture, not in =resolve_secret=: the stand-in should answer
 
 * Resolution
 
-Fixed in 6b035ddc90, on the surface-tick branch: the three fixtures return
+Fixed in 219a462047, on the surface-tick branch: the three fixtures return
 =std::optional<std::string>= now, the type's documentation says a missing variable is
 =std::nullopt= rather than a pointer, and =ores.marketdata.official.tests= passes — 120
 cases, 513 assertions — where it failed two.

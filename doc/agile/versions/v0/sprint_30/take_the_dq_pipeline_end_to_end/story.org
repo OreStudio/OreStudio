@@ -50,7 +50,7 @@ driven.
 | [[id:22B17001-2467-4CE2-9E70-583420BDF74F][Scaffold story: Take the DQ pipeline end to end]] | STARTED | 2026-11-14 | | Story scaffolding rides this task. |
 | [[id:B8609EB8-C1C1-4280-A487-C76D78AC8877][Review the publishing pipeline end to end]] | STARTED | 2026-11-14 | | The analysis: documented model, implemented model, inventories, defects. |
 | [[id:E9BBFCCD-8E21-4C92-AAD1-A07941AD1C8B][Publish every seeded dataset at the level it belongs]] | BACKLOG | | | The implementation: base-system publication at recreate, ACME per tenant. |
-| [[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Port the DQ UI to ores.web]] | BACKLOG | | | The screen that shows and drives the above. |
+| [[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from the journeys]] | BACKLOG | | | Journeys first, prototypes, then screens built from the shared parts. Not a port. |
 
 * Decisions
 

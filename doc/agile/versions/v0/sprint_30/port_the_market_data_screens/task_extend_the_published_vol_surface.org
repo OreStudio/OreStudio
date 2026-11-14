@@ -8,7 +8,7 @@
 #+filetags: :port_the_market_data_screens:sprint_30:v0:
 #+owner: marco
 #+branch: feature/port-the-market-data-screens
-#+pr: 4721
+#+pr: 4722
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -28,11 +28,11 @@ instrument identity so a smile can be sliced.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | The read states the model, the delta type, the strike convention and the staleness verdict, and a fixture publishes a surface so four cases assert them. The slice case is not written yet. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Add the slice case: one expiry's numbers equal that row of the grid. Then raise the pull request and close. |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -91,6 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4722][#4722]] | [agile] Close the published surface read |
 | [[https://github.com/OreStudio/OreStudio/pull/4721][#4721]] | [marketdata] Slice the published surface, and name the series it came from |
 
 * Review
@@ -100,3 +101,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed with #4721 (merge commit 42c6871a05). The read states the model, the delta
+type, the strike convention and its staleness verdict; the grid cases pin the
+axes and their order; a slice for one expiry is checked against the numbers the
+fixture publishes, a slice for one strike against the grid's own points, and a
+slice the surface does not hold is refused in words. The answer names the series
+the surface is published into.
+
+The acceptance's "conventions" and "axes" are the shipped "expiries" and
+"strikes": the wording predates the shape the read answers with.

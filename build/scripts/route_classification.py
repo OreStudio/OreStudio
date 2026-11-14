@@ -690,6 +690,12 @@ RULES = (
          "resolves to, the page an id or an older name opens with the choices a shared name "
          "offers, the configurations it binds, and the write that rebuilds the record from the "
          "fields the form shows."),
+    Rule("a run's files",
+         ("regex", r"^GET /api/reporting/runs/\{id\}/files(/(?P<file>\{file\}))?$"),
+         CPP, COMPOSED, "reporting",
+         "One run's files: the tree the run hangs in, what each input package holds, the "
+         "output files each accepted result's manifest names, and the bytes of whichever one "
+         "the reader opened, so the screen reads one answer and not a walk of three services."),
     Rule("a report run's route",
          ("regex", r"^GET /api/reporting/runs/\{id\}(/errors)?$"),
          CPP, RESOURCE, "reporting",
@@ -1628,6 +1634,13 @@ VIEWS = {
         "the configuration, the names of its type and parties, its analytics and their "
         "names, and its market data bindings, five reads",
         "ETag on the whole view, stale after 60 s"),
+    "a run's files": (
+        "ores.reporting",
+        "the run, the packages compute says it read and wrote, the entries storage says each "
+        "input package holds, the files each accepted result's manifest names, and the ORE "
+        "catalogue, so a read that fails leaves its part of the tree out",
+        "no cache: a run's files are read when a person opens the run, and the bytes of a file "
+        "are served from the object as the socket asks for them"),
     "the report health": (
         "ores.reporting",
         "each report definition with the row the list would draw and the reads that "

@@ -215,3 +215,31 @@ They are not the feeds' work and stand in for it. Deleting them
 (=delete from ores_marketdata_market_observations_tbl where source = 'provisioning
 hack: flat quote'=) returns the environment to the feeds, after which the curves
 defer until the synthetic service serves them.
+
+** The party copies, and what provisioning needed
+
+The system tenant's thirty curves are not the whole story: a party bootstraps its own copy of
+each, from the quotes its own subscriptions deliver, and the first full provisioning run found
+two things wrong with that copy.
+
+- *Every party was on the wrong feeds.* The =acme_demo= profile subscribed each entity to
+  Bloomberg, the uniform demo collection, LSEG and the derived FX volatility source -- none of
+  them to ICE or Tradeweb, whose feeds quote the IBOR ladders. A curve reads the quotes of its
+  own party, so every party's IBOR curves waited with =no series of ice ...= and never
+  published. The profile now subscribes every entity to both.
+- *The copies were written in name order.* The store checks a projection's discount curve as
+  each row lands, and the batch named =USD-LIBOR-1M= before =USD-SOFR-FOMC=, so the party's
+  whole copy was refused with =Must reference an active FUNDING config=. The plan now sorts its
+  batch so each config follows the one it names (commit =893acad5d7=), which the schema's
+  funding-only rule makes a two-pass sort.
+
+After both, a clean =compass db recreate -y -k= and the documented bring-up published twenty
+funding curves and the ten IBOR curves for each of the four entities, plus the system tenant's
+thirty: =select curve_family_role, count(*) ...= answers 20 and 10 per party, every projection
+with a live publish.
+
+The bring-up still stops one step later, at =publish_party_surfaces=, on a defect of the
+volatility surfaces rather than of the curves: =expiry 1W: the row dated 2026-11-17 is before
+the spot date 2026-11-18=, forty surfaces across the four parties. The feed's spot and the
+calibration's spot differ by one business day, which belongs to
+[[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces -- the remaining work]].

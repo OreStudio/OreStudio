@@ -103,7 +103,7 @@ std::optional<query_builder::condition> equity_cliquet_option_instrument_filter_
 }
 
 ores::utility::domain::precondition equity_cliquet_option_instrument_repository::replace_claim(
-    context ctx, const domain::equity_cliquet_option_instrument& v) {
+    const context& ctx, const domain::equity_cliquet_option_instrument& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -112,7 +112,7 @@ ores::utility::domain::precondition equity_cliquet_option_instrument_repository:
 }
 
 domain::equity_cliquet_option_instrument equity_cliquet_option_instrument_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::equity_cliquet_option_instrument& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -140,12 +140,12 @@ domain::equity_cliquet_option_instrument equity_cliquet_option_instrument_reposi
 }
 
 void equity_cliquet_option_instrument_repository::write(
-    context ctx, const domain::equity_cliquet_option_instrument& v) {
+    const context& ctx, const domain::equity_cliquet_option_instrument& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void equity_cliquet_option_instrument_repository::write(
-    context ctx, const std::vector<domain::equity_cliquet_option_instrument>& v) {
+    const context& ctx, const std::vector<domain::equity_cliquet_option_instrument>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -154,7 +154,7 @@ void equity_cliquet_option_instrument_repository::write(
 }
 
 void equity_cliquet_option_instrument_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::equity_cliquet_option_instrument& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing equity cliquet option instrument. "
@@ -167,7 +167,7 @@ void equity_cliquet_option_instrument_repository::write(
 }
 
 void equity_cliquet_option_instrument_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::equity_cliquet_option_instrument>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing equity cliquet option instruments. Count: " << v.size();
@@ -182,7 +182,7 @@ void equity_cliquet_option_instrument_repository::write(
 }
 
 std::vector<domain::equity_cliquet_option_instrument>
-equity_cliquet_option_instrument_repository::read_latest(context ctx) {
+equity_cliquet_option_instrument_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<equity_cliquet_option_instrument_entity>> |
@@ -199,7 +199,8 @@ equity_cliquet_option_instrument_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::equity_cliquet_option_instrument>
-equity_cliquet_option_instrument_repository::read_latest(context ctx, const std::string& trade_id) {
+equity_cliquet_option_instrument_repository::read_latest(const context& ctx,
+                                                         const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest equity cliquet option instrument. "
                                << "trade_id: " << trade_id;
     static constexpr auto max = db_timestamp::max();
@@ -219,7 +220,8 @@ equity_cliquet_option_instrument_repository::read_latest(context ctx, const std:
 
 
 std::vector<domain::equity_cliquet_option_instrument>
-equity_cliquet_option_instrument_repository::read_all(context ctx, const std::string& trade_id) {
+equity_cliquet_option_instrument_repository::read_all(const context& ctx,
+                                                      const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all equity cliquet option instrument versions. "
                                << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
@@ -237,7 +239,7 @@ equity_cliquet_option_instrument_repository::read_all(context ctx, const std::st
 }
 
 std::optional<domain::equity_cliquet_option_instrument>
-equity_cliquet_option_instrument_repository::read_at_version(context ctx,
+equity_cliquet_option_instrument_repository::read_at_version(const context& ctx,
                                                              const std::string& trade_id,
                                                              std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading equity cliquet option instrument at version. "
@@ -265,7 +267,7 @@ equity_cliquet_option_instrument_repository::read_at_version(context ctx,
 }
 
 equity_cliquet_option_instrument_repository::remove_status
-equity_cliquet_option_instrument_repository::remove(context ctx,
+equity_cliquet_option_instrument_repository::remove(const context& ctx,
                                                     const std::string& trade_id,
                                                     std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing equity cliquet option instrument. "
@@ -297,13 +299,14 @@ equity_cliquet_option_instrument_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void equity_cliquet_option_instrument_repository::remove(context ctx, const std::string& trade_id) {
+void equity_cliquet_option_instrument_repository::remove(const context& ctx,
+                                                         const std::string& trade_id) {
     static_cast<void>(remove(ctx, trade_id, std::nullopt));
 }
 
 std::vector<domain::equity_cliquet_option_instrument>
 equity_cliquet_option_instrument_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -330,7 +333,7 @@ equity_cliquet_option_instrument_repository::read_latest(
 
 std::uint32_t
 equity_cliquet_option_instrument_repository::get_total_equity_cliquet_option_instrument_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::equity_cliquet_option_instruments_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active equity cliquet option instrument count";
@@ -350,7 +353,7 @@ equity_cliquet_option_instrument_repository::get_total_equity_cliquet_option_ins
 
 std::vector<domain::equity_cliquet_option_instrument>
 equity_cliquet_option_instrument_repository::read_latest(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -369,7 +372,7 @@ equity_cliquet_option_instrument_repository::read_latest(
 }
 
 void equity_cliquet_option_instrument_repository::remove(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

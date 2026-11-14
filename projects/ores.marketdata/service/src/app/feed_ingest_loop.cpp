@@ -83,14 +83,14 @@ struct feed_ingest_loop::prepared_batch {
 };
 
 feed_ingest_loop::feed_ingest_loop(ores::nats::service::client& nats,
-                                   ores::database::context ctx,
+                                   const ores::database::context& ctx,
                                    std::shared_ptr<crm_ingest_bridge> crm_bridge,
                                    std::shared_ptr<tick_writer> tick_writer,
                                    bool pipelined)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , crm_bridge_(std::move(crm_bridge))
-    , tick_writer_(std::move(tick_writer))
+    , ctx_(ctx)
+    , crm_bridge_(crm_bridge)
+    , tick_writer_(tick_writer)
     , pipelined_(pipelined)
     , handoff_(1)
     , announce_handoff_(1)

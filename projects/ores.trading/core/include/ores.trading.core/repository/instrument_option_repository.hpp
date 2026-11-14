@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::instrument_option& v);
-    void write(context ctx, const std::vector<domain::instrument_option>& v);
+    void write(const context& ctx, const domain::instrument_option& v);
+    void write(const context& ctx, const std::vector<domain::instrument_option>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::instrument_option& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of instrument options, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::instrument_option>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,9 +101,10 @@ public:
      * @brief Reads latest instrument options, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::instrument_option> read_latest(context ctx);
-    std::vector<domain::instrument_option> read_latest(context ctx, const std::string& trade_id);
-    std::vector<domain::instrument_option> read_latest(context ctx,
+    std::vector<domain::instrument_option> read_latest(const context& ctx);
+    std::vector<domain::instrument_option> read_latest(const context& ctx,
+                                                       const std::string& trade_id);
+    std::vector<domain::instrument_option> read_latest(const context& ctx,
                                                        const std::vector<std::string>& trade_ids);
     /**@}*/
 
@@ -111,7 +112,8 @@ public:
     /**
      * @brief Reads all instrument options, possibly filtered by primary key.
      */
-    std::vector<domain::instrument_option> read_all(context ctx, const std::string& trade_id);
+    std::vector<domain::instrument_option> read_all(const context& ctx,
+                                                    const std::string& trade_id);
 
     /**
      * @brief Reads a single instrument option as it stood at a specific
@@ -123,7 +125,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::instrument_option>
-    read_at_version(context ctx, const std::string& trade_id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& trade_id, std::uint32_t version);
 
 
     /**
@@ -143,7 +145,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::instrument_option>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -156,14 +158,14 @@ public:
      * @return Total number of active instrument options
      */
     std::uint32_t get_total_instrument_option_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::instrument_options_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a instrument option by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& trade_id);
+    void remove(const context& ctx, const std::string& trade_id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -186,12 +188,12 @@ public:
      * no version asked for.
      */
     remove_status
-    remove(context ctx, const std::string& trade_id, std::optional<std::uint32_t> version);
+    remove(const context& ctx, const std::string& trade_id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes instrument options by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& trade_ids);
+    void remove(const context& ctx, const std::vector<std::string>& trade_ids);
 
 
 private:
@@ -199,7 +201,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::instrument_option& v);
 
     /**
@@ -207,7 +209,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::instrument_option apply_claim(context ctx,
+    domain::instrument_option apply_claim(const context& ctx,
                                           const domain::instrument_option& v,
                                           const ores::utility::domain::precondition& claim);
 };

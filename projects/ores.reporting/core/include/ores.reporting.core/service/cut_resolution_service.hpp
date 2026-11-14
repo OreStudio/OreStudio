@@ -58,7 +58,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit cut_resolution_service(context ctx);
+    explicit cut_resolution_service(const context& ctx);
 
     /**
      * @brief Answers what a selection would resolve to right now, and writes nothing.

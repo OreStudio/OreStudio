@@ -109,7 +109,8 @@ std::optional<query_builder::condition> swap_leg_indexing_filter_condition(
 }
 
 ores::utility::domain::precondition
-swap_leg_indexing_repository::replace_claim(context ctx, const domain::swap_leg_indexing& v) {
+swap_leg_indexing_repository::replace_claim(const context& ctx,
+                                            const domain::swap_leg_indexing& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.trade_id),
                                      std::to_string(v.leg_number),
@@ -121,7 +122,7 @@ swap_leg_indexing_repository::replace_claim(context ctx, const domain::swap_leg_
 }
 
 domain::swap_leg_indexing
-swap_leg_indexing_repository::apply_claim(context ctx,
+swap_leg_indexing_repository::apply_claim(const context& ctx,
                                           const domain::swap_leg_indexing& v,
                                           const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -151,11 +152,11 @@ swap_leg_indexing_repository::apply_claim(context ctx,
     return t;
 }
 
-void swap_leg_indexing_repository::write(context ctx, const domain::swap_leg_indexing& v) {
+void swap_leg_indexing_repository::write(const context& ctx, const domain::swap_leg_indexing& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void swap_leg_indexing_repository::write(context ctx,
+void swap_leg_indexing_repository::write(const context& ctx,
                                          const std::vector<domain::swap_leg_indexing>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -164,7 +165,7 @@ void swap_leg_indexing_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void swap_leg_indexing_repository::write(context ctx,
+void swap_leg_indexing_repository::write(const context& ctx,
                                          const domain::swap_leg_indexing& v,
                                          const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing swap leg indexing. " << "trade_id: " << v.trade_id
@@ -176,7 +177,7 @@ void swap_leg_indexing_repository::write(context ctx,
 }
 
 void swap_leg_indexing_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::swap_leg_indexing>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing swap leg indexings. Count: " << v.size();
@@ -188,7 +189,8 @@ void swap_leg_indexing_repository::write(
         ctx, swap_leg_indexing_mapper::map(batch), lg(), "Writing swap leg indexings to database.");
 }
 
-std::vector<domain::swap_leg_indexing> swap_leg_indexing_repository::read_latest(context ctx) {
+std::vector<domain::swap_leg_indexing>
+swap_leg_indexing_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<swap_leg_indexing_entity>> |
@@ -204,7 +206,7 @@ std::vector<domain::swap_leg_indexing> swap_leg_indexing_repository::read_latest
 }
 
 std::vector<domain::swap_leg_indexing>
-swap_leg_indexing_repository::read_latest(context ctx,
+swap_leg_indexing_repository::read_latest(const context& ctx,
                                           const std::string& trade_id,
                                           const std::string& leg_number,
                                           const std::string& sequence_number) {
@@ -229,7 +231,7 @@ swap_leg_indexing_repository::read_latest(context ctx,
 
 
 std::vector<domain::swap_leg_indexing>
-swap_leg_indexing_repository::read_all(context ctx,
+swap_leg_indexing_repository::read_all(const context& ctx,
                                        const std::string& trade_id,
                                        const std::string& leg_number,
                                        const std::string& sequence_number) {
@@ -252,7 +254,7 @@ swap_leg_indexing_repository::read_all(context ctx,
 }
 
 std::optional<domain::swap_leg_indexing>
-swap_leg_indexing_repository::read_at_version(context ctx,
+swap_leg_indexing_repository::read_at_version(const context& ctx,
                                               const std::string& trade_id,
                                               const std::string& leg_number,
                                               const std::string& sequence_number,
@@ -283,7 +285,7 @@ swap_leg_indexing_repository::read_at_version(context ctx,
 }
 
 std::vector<domain::swap_leg_indexing> swap_leg_indexing_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -310,7 +312,7 @@ std::vector<domain::swap_leg_indexing> swap_leg_indexing_repository::read_latest
 }
 
 std::uint32_t swap_leg_indexing_repository::get_total_swap_leg_indexing_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::swap_leg_indexings_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active swap leg indexings count. trade_id: "
@@ -332,7 +334,7 @@ std::uint32_t swap_leg_indexing_repository::get_total_swap_leg_indexing_count_by
 
 
 swap_leg_indexing_repository::remove_status
-swap_leg_indexing_repository::remove(context ctx,
+swap_leg_indexing_repository::remove(const context& ctx,
                                      const std::string& trade_id,
                                      const std::string& leg_number,
                                      const std::string& sequence_number,
@@ -369,7 +371,7 @@ swap_leg_indexing_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void swap_leg_indexing_repository::remove(context ctx,
+void swap_leg_indexing_repository::remove(const context& ctx,
                                           const std::string& trade_id,
                                           const std::string& leg_number,
                                           const std::string& sequence_number) {
@@ -377,7 +379,7 @@ void swap_leg_indexing_repository::remove(context ctx,
 }
 
 std::vector<domain::swap_leg_indexing> swap_leg_indexing_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -403,7 +405,7 @@ std::vector<domain::swap_leg_indexing> swap_leg_indexing_repository::read_latest
 }
 
 std::uint32_t swap_leg_indexing_repository::get_total_swap_leg_indexing_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::swap_leg_indexings_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active swap leg indexing count";
@@ -422,7 +424,7 @@ std::uint32_t swap_leg_indexing_repository::get_total_swap_leg_indexing_count(
 }
 
 std::vector<domain::swap_leg_indexing>
-swap_leg_indexing_repository::read_latest(context ctx,
+swap_leg_indexing_repository::read_latest(const context& ctx,
                                           const std::vector<std::string>& trade_ids,
                                           const std::vector<std::string>& leg_numbers,
                                           const std::vector<std::string>& sequence_numbers) {
@@ -462,7 +464,7 @@ swap_leg_indexing_repository::read_latest(context ctx,
     return filtered;
 }
 
-void swap_leg_indexing_repository::remove(context ctx,
+void swap_leg_indexing_repository::remove(const context& ctx,
                                           const std::vector<std::string>& trade_ids,
                                           const std::vector<std::string>& leg_numbers,
                                           const std::vector<std::string>& sequence_numbers) {
@@ -478,7 +480,7 @@ void swap_leg_indexing_repository::remove(context ctx,
 
 
 std::vector<domain::swap_leg_indexing>
-swap_leg_indexing_repository::read_by_instruments_batch(context ctx,
+swap_leg_indexing_repository::read_by_instruments_batch(const context& ctx,
                                                         const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};

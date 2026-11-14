@@ -44,11 +44,10 @@ static constexpr std::string_view treatment_dimension_queue_group = "ores.dq.ser
 
 std::vector<ores::nats::service::subscription> register_treatment_dimension_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h =
-        std::make_shared<treatment_dimension_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<treatment_dimension_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_treatment_dimensions_request::nats_subject,
         treatment_dimension_queue_group,

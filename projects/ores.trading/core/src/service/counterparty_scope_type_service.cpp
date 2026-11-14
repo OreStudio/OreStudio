@@ -54,8 +54,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-counterparty_scope_type_service::counterparty_scope_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+counterparty_scope_type_service::counterparty_scope_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

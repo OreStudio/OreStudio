@@ -54,8 +54,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-payoff_type_service::payoff_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+payoff_type_service::payoff_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

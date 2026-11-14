@@ -48,10 +48,10 @@ auto& scheduler_loop_lg() {
 } // anonymous namespace
 
 scheduler_loop::scheduler_loop(ores::nats::service::client& nats,
-                               database::context system_ctx,
+                               const database::context& system_ctx,
                                std::vector<std::unique_ptr<action_handler>> handlers)
     : nats_(nats)
-    , system_ctx_(std::move(system_ctx))
+    , system_ctx_(system_ctx)
     , handlers_(std::move(handlers)) {}
 
 void scheduler_loop::reload() {

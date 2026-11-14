@@ -53,7 +53,7 @@ private:
 
 public:
     using context = ores::database::context;
-    explicit auth_event_log(context ctx);
+    explicit auth_event_log(const context& ctx);
 
     /**
      * @brief Record a login success event.

@@ -58,8 +58,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-credit_default_swap_instrument_service::credit_default_swap_instrument_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+credit_default_swap_instrument_service::credit_default_swap_instrument_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

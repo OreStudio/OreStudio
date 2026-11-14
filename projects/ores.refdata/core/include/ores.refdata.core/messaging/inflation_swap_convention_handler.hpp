@@ -59,11 +59,11 @@ class inflation_swap_convention_handler {
 public:
     inflation_swap_convention_handler(
         ores::nats::service::client& nats,
-        ores::database::context ctx,
+        const ores::database::context& ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     /**
      * @brief Serves refdata.v1.inflation_swap_conventions.list.

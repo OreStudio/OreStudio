@@ -54,8 +54,8 @@ namespace ores::iam::service {
 
 using namespace ores::logging;
 
-account_status_service::account_status_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+account_status_service::account_status_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

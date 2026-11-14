@@ -72,8 +72,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::folder& v);
-    void write(context ctx, const std::vector<domain::folder>& v);
+    void write(const context& ctx, const domain::folder& v);
+    void write(const context& ctx, const std::vector<domain::folder>& v);
     /**@}*/
 
     /**
@@ -86,14 +86,15 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void
-    write(context ctx, const domain::folder& v, const ores::utility::domain::precondition& claim);
+    void write(const context& ctx,
+               const domain::folder& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
      * @brief Writes a set of folders, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::folder>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,16 +102,17 @@ public:
      * @brief Reads latest folders, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::folder> read_latest(context ctx);
-    std::vector<domain::folder> read_latest(context ctx, const std::string& id);
-    std::vector<domain::folder> read_latest(context ctx, const std::vector<std::string>& ids);
+    std::vector<domain::folder> read_latest(const context& ctx);
+    std::vector<domain::folder> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::folder> read_latest(const context& ctx,
+                                            const std::vector<std::string>& ids);
     /**@}*/
 
 
     /**
      * @brief Reads all folders, possibly filtered by primary key.
      */
-    std::vector<domain::folder> read_all(context ctx, const std::string& id);
+    std::vector<domain::folder> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single folder as it stood at a specific
@@ -122,7 +124,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::folder>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
 
     /**
@@ -142,7 +144,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::folder>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -155,14 +157,14 @@ public:
      * @return Total number of active folders
      */
     std::uint32_t
-    get_total_folder_count(context ctx,
+    get_total_folder_count(const context& ctx,
                            const std::optional<messaging::folders_filter>& filter = std::nullopt,
                            const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a folder by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -184,12 +186,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes folders by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
     /**
      * @brief Reads the folder hierarchy as a flat set of {id,
@@ -204,7 +207,7 @@ public:
      * @return Flat hierarchy rows, ready for ores::utility::domain::build_tree.
      */
     std::vector<ores::utility::domain::hierarchy_flat_row>
-    get_hierarchy(context ctx, const boost::uuids::uuid& root_id, bool from_root);
+    get_hierarchy(const context& ctx, const boost::uuids::uuid& root_id, bool from_root);
 
 
 private:
@@ -212,14 +215,14 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::folder& v);
+    ores::utility::domain::precondition replace_claim(const context& ctx, const domain::folder& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::folder apply_claim(context ctx,
+    domain::folder apply_claim(const context& ctx,
                                const domain::folder& v,
                                const ores::utility::domain::precondition& claim);
 };

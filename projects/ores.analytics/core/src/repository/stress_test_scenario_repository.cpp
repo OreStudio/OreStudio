@@ -102,7 +102,8 @@ std::optional<query_builder::condition> stress_test_scenario_filter_condition(
 }
 
 ores::utility::domain::precondition
-stress_test_scenario_repository::replace_claim(context ctx, const domain::stress_test_scenario& v) {
+stress_test_scenario_repository::replace_claim(const context& ctx,
+                                               const domain::stress_test_scenario& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,7 +112,7 @@ stress_test_scenario_repository::replace_claim(context ctx, const domain::stress
 }
 
 domain::stress_test_scenario
-stress_test_scenario_repository::apply_claim(context ctx,
+stress_test_scenario_repository::apply_claim(const context& ctx,
                                              const domain::stress_test_scenario& v,
                                              const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,11 +139,12 @@ stress_test_scenario_repository::apply_claim(context ctx,
     return t;
 }
 
-void stress_test_scenario_repository::write(context ctx, const domain::stress_test_scenario& v) {
+void stress_test_scenario_repository::write(const context& ctx,
+                                            const domain::stress_test_scenario& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void stress_test_scenario_repository::write(context ctx,
+void stress_test_scenario_repository::write(const context& ctx,
                                             const std::vector<domain::stress_test_scenario>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -151,7 +153,7 @@ void stress_test_scenario_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void stress_test_scenario_repository::write(context ctx,
+void stress_test_scenario_repository::write(const context& ctx,
                                             const domain::stress_test_scenario& v,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing stress test scenario. " << "id: " << v.id;
@@ -163,7 +165,7 @@ void stress_test_scenario_repository::write(context ctx,
 }
 
 void stress_test_scenario_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::stress_test_scenario>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing stress test scenarios. Count: " << v.size();
@@ -178,7 +180,7 @@ void stress_test_scenario_repository::write(
 }
 
 std::vector<domain::stress_test_scenario>
-stress_test_scenario_repository::read_latest(context ctx) {
+stress_test_scenario_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<stress_test_scenario_entity>> |
@@ -195,7 +197,7 @@ stress_test_scenario_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::stress_test_scenario>
-stress_test_scenario_repository::read_latest(context ctx, const std::string& id) {
+stress_test_scenario_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest stress test scenario. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -214,7 +216,7 @@ stress_test_scenario_repository::read_latest(context ctx, const std::string& id)
 
 
 std::vector<domain::stress_test_scenario>
-stress_test_scenario_repository::read_all(context ctx, const std::string& id) {
+stress_test_scenario_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all stress test scenario versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<stress_test_scenario_entity>> |
@@ -231,7 +233,7 @@ stress_test_scenario_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::stress_test_scenario> stress_test_scenario_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading stress test scenario at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -254,7 +256,7 @@ std::optional<domain::stress_test_scenario> stress_test_scenario_repository::rea
 }
 
 stress_test_scenario_repository::remove_status stress_test_scenario_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing stress test scenario. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -283,12 +285,12 @@ stress_test_scenario_repository::remove_status stress_test_scenario_repository::
     return remove_status::removed;
 }
 
-void stress_test_scenario_repository::remove(context ctx, const std::string& id) {
+void stress_test_scenario_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::stress_test_scenario> stress_test_scenario_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -314,7 +316,7 @@ std::vector<domain::stress_test_scenario> stress_test_scenario_repository::read_
 }
 
 std::uint32_t stress_test_scenario_repository::get_total_stress_test_scenario_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::stress_test_scenarios_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active stress test scenario count";
@@ -333,7 +335,8 @@ std::uint32_t stress_test_scenario_repository::get_total_stress_test_scenario_co
 }
 
 std::vector<domain::stress_test_scenario>
-stress_test_scenario_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+stress_test_scenario_repository::read_latest(const context& ctx,
+                                             const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -351,7 +354,8 @@ stress_test_scenario_repository::read_latest(context ctx, const std::vector<std:
     return result;
 }
 
-void stress_test_scenario_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void stress_test_scenario_repository::remove(const context& ctx,
+                                             const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

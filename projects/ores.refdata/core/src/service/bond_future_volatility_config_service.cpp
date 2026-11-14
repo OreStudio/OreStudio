@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-bond_future_volatility_config_service::bond_future_volatility_config_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+bond_future_volatility_config_service::bond_future_volatility_config_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -111,7 +111,7 @@ gmm_component_filter_condition(const std::optional<messaging::gmm_components_fil
 }
 
 ores::utility::domain::precondition
-gmm_component_repository::replace_claim(context ctx, const domain::gmm_component& v) {
+gmm_component_repository::replace_claim(const context& ctx, const domain::gmm_component& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -119,8 +119,10 @@ gmm_component_repository::replace_claim(context ctx, const domain::gmm_component
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::gmm_component gmm_component_repository::apply_claim(
-    context ctx, const domain::gmm_component& v, const ores::utility::domain::precondition& claim) {
+domain::gmm_component
+gmm_component_repository::apply_claim(const context& ctx,
+                                      const domain::gmm_component& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -145,11 +147,12 @@ domain::gmm_component gmm_component_repository::apply_claim(
     return t;
 }
 
-void gmm_component_repository::write(context ctx, const domain::gmm_component& v) {
+void gmm_component_repository::write(const context& ctx, const domain::gmm_component& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void gmm_component_repository::write(context ctx, const std::vector<domain::gmm_component>& v) {
+void gmm_component_repository::write(const context& ctx,
+                                     const std::vector<domain::gmm_component>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -157,7 +160,7 @@ void gmm_component_repository::write(context ctx, const std::vector<domain::gmm_
     write(ctx, v, claims);
 }
 
-void gmm_component_repository::write(context ctx,
+void gmm_component_repository::write(const context& ctx,
                                      const domain::gmm_component& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing GMM component. " << "id: " << v.id;
@@ -167,7 +170,7 @@ void gmm_component_repository::write(context ctx,
 }
 
 void gmm_component_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::gmm_component>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing GMM components. Count: " << v.size();
@@ -179,7 +182,7 @@ void gmm_component_repository::write(
         ctx, gmm_component_mapper::map(batch), lg(), "Writing GMM components to database.");
 }
 
-std::vector<domain::gmm_component> gmm_component_repository::read_latest(context ctx) {
+std::vector<domain::gmm_component> gmm_component_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -196,7 +199,7 @@ std::vector<domain::gmm_component> gmm_component_repository::read_latest(context
         "Reading latest GMM components");
 }
 
-std::vector<domain::gmm_component> gmm_component_repository::read_latest(context ctx,
+std::vector<domain::gmm_component> gmm_component_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest GMM component. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -215,7 +218,7 @@ std::vector<domain::gmm_component> gmm_component_repository::read_latest(context
 }
 
 
-std::vector<domain::gmm_component> gmm_component_repository::read_all(context ctx,
+std::vector<domain::gmm_component> gmm_component_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all GMM component versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -234,7 +237,7 @@ std::vector<domain::gmm_component> gmm_component_repository::read_all(context ct
 }
 
 std::optional<domain::gmm_component> gmm_component_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading GMM component at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -259,7 +262,7 @@ std::optional<domain::gmm_component> gmm_component_repository::read_at_version(
 
 
 gmm_component_repository::remove_status gmm_component_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing GMM component. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -287,12 +290,12 @@ gmm_component_repository::remove_status gmm_component_repository::remove(
     return remove_status::removed;
 }
 
-void gmm_component_repository::remove(context ctx, const std::string& id) {
+void gmm_component_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::gmm_component>
-gmm_component_repository::read_latest(context ctx,
+gmm_component_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -318,7 +321,7 @@ gmm_component_repository::read_latest(context ctx,
 }
 
 std::uint32_t gmm_component_repository::get_total_gmm_component_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::gmm_components_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active GMM component count";
@@ -338,7 +341,7 @@ std::uint32_t gmm_component_repository::get_total_gmm_component_count(
 }
 
 std::vector<domain::gmm_component>
-gmm_component_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+gmm_component_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -356,7 +359,7 @@ gmm_component_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void gmm_component_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void gmm_component_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

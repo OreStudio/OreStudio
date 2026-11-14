@@ -44,11 +44,10 @@ static constexpr std::string_view subscription_interval_queue_group = "ores.mark
 
 std::vector<ores::nats::service::subscription> register_subscription_interval_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h =
-        std::make_shared<subscription_interval_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<subscription_interval_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_subscription_intervals_request::nats_subject,
         subscription_interval_queue_group,

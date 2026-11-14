@@ -104,7 +104,7 @@ image_filter_condition(const std::optional<messaging::images_filter>& filter) {
 
 }
 
-ores::utility::domain::precondition image_repository::replace_claim(context ctx,
+ores::utility::domain::precondition image_repository::replace_claim(const context& ctx,
                                                                     const domain::image& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -113,7 +113,7 @@ ores::utility::domain::precondition image_repository::replace_claim(context ctx,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::image image_repository::apply_claim(context ctx,
+domain::image image_repository::apply_claim(const context& ctx,
                                             const domain::image& v,
                                             const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -140,11 +140,11 @@ domain::image image_repository::apply_claim(context ctx,
     return t;
 }
 
-void image_repository::write(context ctx, const domain::image& v) {
+void image_repository::write(const context& ctx, const domain::image& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void image_repository::write(context ctx, const std::vector<domain::image>& v) {
+void image_repository::write(const context& ctx, const std::vector<domain::image>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -152,7 +152,7 @@ void image_repository::write(context ctx, const std::vector<domain::image>& v) {
     write(ctx, v, claims);
 }
 
-void image_repository::write(context ctx,
+void image_repository::write(const context& ctx,
                              const domain::image& v,
                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset image. " << "id: " << v.id;
@@ -161,7 +161,7 @@ void image_repository::write(context ctx,
         ctx, image_mapper::map(t), lg(), "Writing asset image to database.");
 }
 
-void image_repository::write(context ctx,
+void image_repository::write(const context& ctx,
                              const std::vector<domain::image>& v,
                              const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing asset images. Count: " << v.size();
@@ -173,7 +173,7 @@ void image_repository::write(context ctx,
         ctx, image_mapper::map(batch), lg(), "Writing asset images to database.");
 }
 
-std::vector<domain::image> image_repository::read_latest(context ctx) {
+std::vector<domain::image> image_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<image_entity>> |
@@ -188,7 +188,8 @@ std::vector<domain::image> image_repository::read_latest(context ctx) {
         "Reading latest asset images");
 }
 
-std::vector<domain::image> image_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::image> image_repository::read_latest(const context& ctx,
+                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset image. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -204,7 +205,7 @@ std::vector<domain::image> image_repository::read_latest(context ctx, const std:
         "Reading latest asset image by id.");
 }
 
-std::vector<domain::image> image_repository::read_latest_by_code(context ctx,
+std::vector<domain::image> image_repository::read_latest_by_code(const context& ctx,
                                                                  const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest asset image by code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -221,7 +222,7 @@ std::vector<domain::image> image_repository::read_latest_by_code(context ctx,
         "Reading latest asset image by code.");
 }
 
-std::vector<domain::image> image_repository::read_any_by_code(context ctx,
+std::vector<domain::image> image_repository::read_any_by_code(const context& ctx,
                                                               const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any asset image by code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -238,7 +239,7 @@ std::vector<domain::image> image_repository::read_any_by_code(context ctx,
 }
 
 
-std::vector<domain::image> image_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::image> image_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all asset image versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<image_entity>> |
@@ -253,8 +254,9 @@ std::vector<domain::image> image_repository::read_all(context ctx, const std::st
         "Reading all asset image versions by id.");
 }
 
-std::optional<domain::image>
-image_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::image> image_repository::read_at_version(const context& ctx,
+                                                               const std::string& id,
+                                                               std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading asset image at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -275,8 +277,9 @@ image_repository::read_at_version(context ctx, const std::string& id, std::uint3
     return entities.front();
 }
 
-image_repository::remove_status
-image_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+image_repository::remove_status image_repository::remove(const context& ctx,
+                                                         const std::string& id,
+                                                         std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing asset image. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -304,12 +307,12 @@ image_repository::remove(context ctx, const std::string& id, std::optional<std::
     return remove_status::removed;
 }
 
-void image_repository::remove(context ctx, const std::string& id) {
+void image_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::image>
-image_repository::read_latest(context ctx,
+image_repository::read_latest(const context& ctx,
                               std::uint32_t offset,
                               std::uint32_t limit,
                               const ores::utility::domain::order& order,
@@ -333,7 +336,7 @@ image_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-image_repository::get_total_image_count(context ctx,
+image_repository::get_total_image_count(const context& ctx,
                                         const std::optional<messaging::images_filter>& filter,
                                         const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active asset image count";
@@ -350,7 +353,7 @@ image_repository::get_total_image_count(context ctx,
         "Counting asset images");
 }
 
-std::vector<domain::image> image_repository::read_latest(context ctx,
+std::vector<domain::image> image_repository::read_latest(const context& ctx,
                                                          const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -368,7 +371,7 @@ std::vector<domain::image> image_repository::read_latest(context ctx,
     return result;
 }
 
-void image_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void image_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

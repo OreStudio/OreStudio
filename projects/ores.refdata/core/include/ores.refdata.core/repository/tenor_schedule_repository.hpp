@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::tenor_schedule& v);
-    void write(context ctx, const std::vector<domain::tenor_schedule>& v);
+    void write(const context& ctx, const domain::tenor_schedule& v);
+    void write(const context& ctx, const std::vector<domain::tenor_schedule>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::tenor_schedule& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of tenor schedules, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::tenor_schedule>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,9 +101,9 @@ public:
      * @brief Reads latest tenor schedules, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::tenor_schedule> read_latest(context ctx);
-    std::vector<domain::tenor_schedule> read_latest(context ctx, const std::string& code);
-    std::vector<domain::tenor_schedule> read_latest(context ctx,
+    std::vector<domain::tenor_schedule> read_latest(const context& ctx);
+    std::vector<domain::tenor_schedule> read_latest(const context& ctx, const std::string& code);
+    std::vector<domain::tenor_schedule> read_latest(const context& ctx,
                                                     const std::vector<std::string>& codes);
     /**@}*/
 
@@ -111,7 +111,7 @@ public:
     /**
      * @brief Reads all tenor schedules, possibly filtered by primary key.
      */
-    std::vector<domain::tenor_schedule> read_all(context ctx, const std::string& code);
+    std::vector<domain::tenor_schedule> read_all(const context& ctx, const std::string& code);
 
     /**
      * @brief Reads a single tenor schedule as it stood at a specific
@@ -123,7 +123,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::tenor_schedule>
-    read_at_version(context ctx, const std::string& code, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& code, std::uint32_t version);
 
     /**
      * @brief Reads latest tenor schedules filtered by calendar_code, with pagination.
@@ -134,7 +134,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::tenor_schedule> read_latest_by_calendar_code(
-        context ctx,
+        const context& ctx,
         const std::string& calendar_code,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -145,7 +145,7 @@ public:
      * @brief Gets the total count of active tenor schedules filtered by calendar_code.
      */
     std::uint32_t get_total_schedule_count_by_calendar_code(
-        context ctx,
+        const context& ctx,
         const std::string& calendar_code,
         const std::optional<messaging::tenor_schedules_filter>& filter = std::nullopt);
 
@@ -159,7 +159,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::tenor_schedule> read_latest_by_diary_entry_type(
-        context ctx,
+        const context& ctx,
         const std::string& diary_entry_type,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -170,7 +170,7 @@ public:
      * @brief Gets the total count of active tenor schedules filtered by diary_entry_type.
      */
     std::uint32_t get_total_schedule_count_by_diary_entry_type(
-        context ctx,
+        const context& ctx,
         const std::string& diary_entry_type,
         const std::optional<messaging::tenor_schedules_filter>& filter = std::nullopt);
 
@@ -192,7 +192,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::tenor_schedule>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -205,14 +205,14 @@ public:
      * @return Total number of active tenor schedules
      */
     std::uint32_t get_total_schedule_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::tenor_schedules_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a tenor schedule by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& code);
+    void remove(const context& ctx, const std::string& code);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -235,12 +235,12 @@ public:
      * no version asked for.
      */
     remove_status
-    remove(context ctx, const std::string& code, std::optional<std::uint32_t> version);
+    remove(const context& ctx, const std::string& code, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes tenor schedules by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& codes);
+    void remove(const context& ctx, const std::vector<std::string>& codes);
 
 
 private:
@@ -248,14 +248,15 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::tenor_schedule& v);
+    ores::utility::domain::precondition replace_claim(const context& ctx,
+                                                      const domain::tenor_schedule& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::tenor_schedule apply_claim(context ctx,
+    domain::tenor_schedule apply_claim(const context& ctx,
                                        const domain::tenor_schedule& v,
                                        const ores::utility::domain::precondition& claim);
 };

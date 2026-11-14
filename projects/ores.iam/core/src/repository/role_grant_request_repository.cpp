@@ -111,7 +111,8 @@ std::optional<query_builder::condition> role_grant_request_filter_condition(
 }
 
 ores::utility::domain::precondition
-role_grant_request_repository::replace_claim(context ctx, const domain::role_grant_request& v) {
+role_grant_request_repository::replace_claim(const context& ctx,
+                                             const domain::role_grant_request& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.request_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -120,7 +121,7 @@ role_grant_request_repository::replace_claim(context ctx, const domain::role_gra
 }
 
 domain::role_grant_request
-role_grant_request_repository::apply_claim(context ctx,
+role_grant_request_repository::apply_claim(const context& ctx,
                                            const domain::role_grant_request& v,
                                            const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -147,11 +148,11 @@ role_grant_request_repository::apply_claim(context ctx,
     return t;
 }
 
-void role_grant_request_repository::write(context ctx, const domain::role_grant_request& v) {
+void role_grant_request_repository::write(const context& ctx, const domain::role_grant_request& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void role_grant_request_repository::write(context ctx,
+void role_grant_request_repository::write(const context& ctx,
                                           const std::vector<domain::role_grant_request>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -160,7 +161,7 @@ void role_grant_request_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void role_grant_request_repository::write(context ctx,
+void role_grant_request_repository::write(const context& ctx,
                                           const domain::role_grant_request& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing role grant request. " << "request_id: " << v.request_id;
@@ -170,7 +171,7 @@ void role_grant_request_repository::write(context ctx,
 }
 
 void role_grant_request_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::role_grant_request>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing role grant requests. Count: " << v.size();
@@ -184,7 +185,8 @@ void role_grant_request_repository::write(
                                        "Writing role grant requests to database.");
 }
 
-std::vector<domain::role_grant_request> role_grant_request_repository::read_latest(context ctx) {
+std::vector<domain::role_grant_request>
+role_grant_request_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_grant_request_entity>> |
@@ -200,7 +202,7 @@ std::vector<domain::role_grant_request> role_grant_request_repository::read_late
 }
 
 std::vector<domain::role_grant_request>
-role_grant_request_repository::read_latest(context ctx, const std::string& request_id) {
+role_grant_request_repository::read_latest(const context& ctx, const std::string& request_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role grant request. "
                                << "request_id: " << request_id;
     static constexpr auto max = db_timestamp::max();
@@ -219,7 +221,7 @@ role_grant_request_repository::read_latest(context ctx, const std::string& reque
 
 
 std::vector<domain::role_grant_request>
-role_grant_request_repository::read_all(context ctx, const std::string& request_id) {
+role_grant_request_repository::read_all(const context& ctx, const std::string& request_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all role grant request versions. "
                                << "request_id: " << request_id;
     const auto tid = ctx.tenant_id().to_string();
@@ -236,7 +238,7 @@ role_grant_request_repository::read_all(context ctx, const std::string& request_
 }
 
 std::optional<domain::role_grant_request> role_grant_request_repository::read_at_version(
-    context ctx, const std::string& request_id, std::uint32_t version) {
+    const context& ctx, const std::string& request_id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading role grant request at version. "
                                << "request_id: " << request_id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -260,7 +262,7 @@ std::optional<domain::role_grant_request> role_grant_request_repository::read_at
 
 
 std::vector<domain::role_grant_request> role_grant_request_repository::read_latest_by_account_id(
-    context ctx,
+    const context& ctx,
     const std::string& account_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -287,7 +289,7 @@ std::vector<domain::role_grant_request> role_grant_request_repository::read_late
 }
 
 std::uint32_t role_grant_request_repository::get_total_role_grant_request_count_by_account_id(
-    context ctx,
+    const context& ctx,
     const std::string& account_id,
     const std::optional<messaging::role_grant_requests_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role grant requests count. account_id: "
@@ -309,7 +311,7 @@ std::uint32_t role_grant_request_repository::get_total_role_grant_request_count_
 
 
 role_grant_request_repository::remove_status role_grant_request_repository::remove(
-    context ctx, const std::string& request_id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& request_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing role grant request. " << "request_id: " << request_id;
     const auto current = read_latest(ctx, request_id);
     if (current.empty())
@@ -338,12 +340,12 @@ role_grant_request_repository::remove_status role_grant_request_repository::remo
     return remove_status::removed;
 }
 
-void role_grant_request_repository::remove(context ctx, const std::string& request_id) {
+void role_grant_request_repository::remove(const context& ctx, const std::string& request_id) {
     static_cast<void>(remove(ctx, request_id, std::nullopt));
 }
 
 std::vector<domain::role_grant_request> role_grant_request_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -369,7 +371,7 @@ std::vector<domain::role_grant_request> role_grant_request_repository::read_late
 }
 
 std::uint32_t role_grant_request_repository::get_total_role_grant_request_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::role_grant_requests_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role grant request count";
@@ -388,7 +390,7 @@ std::uint32_t role_grant_request_repository::get_total_role_grant_request_count(
 }
 
 std::vector<domain::role_grant_request>
-role_grant_request_repository::read_latest(context ctx,
+role_grant_request_repository::read_latest(const context& ctx,
                                            const std::vector<std::string>& request_ids) {
     if (request_ids.empty())
         return {};
@@ -407,7 +409,7 @@ role_grant_request_repository::read_latest(context ctx,
     return result;
 }
 
-void role_grant_request_repository::remove(context ctx,
+void role_grant_request_repository::remove(const context& ctx,
                                            const std::vector<std::string>& request_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

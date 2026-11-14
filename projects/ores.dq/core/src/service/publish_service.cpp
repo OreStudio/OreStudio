@@ -92,8 +92,8 @@ publication_order(const std::vector<std::string>& requested,
     return order;
 }
 
-publish_service::publish_service(context ctx)
-    : ctx_(std::move(ctx))
+publish_service::publish_service(const context& ctx)
+    : ctx_(ctx)
     , dependency_repo_(ctx_) {
     BOOST_LOG_SEV(lg(), debug) << "publish_service initialized";
 }

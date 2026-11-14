@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-rounding_type_service::rounding_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+rounding_type_service::rounding_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

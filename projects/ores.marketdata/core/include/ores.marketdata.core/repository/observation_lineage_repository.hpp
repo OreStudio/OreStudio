@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::observation_lineage& v);
-    void write(context ctx, const std::vector<domain::observation_lineage>& v);
+    void write(const context& ctx, const domain::observation_lineage& v);
+    void write(const context& ctx, const std::vector<domain::observation_lineage>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::observation_lineage& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of observation lineages, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::observation_lineage>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,9 +101,9 @@ public:
      * @brief Reads latest observation lineages, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::observation_lineage> read_latest(context ctx);
-    std::vector<domain::observation_lineage> read_latest(context ctx, const std::string& id);
-    std::vector<domain::observation_lineage> read_latest(context ctx,
+    std::vector<domain::observation_lineage> read_latest(const context& ctx);
+    std::vector<domain::observation_lineage> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::observation_lineage> read_latest(const context& ctx,
                                                          const std::vector<std::string>& ids);
     /**@}*/
 
@@ -111,7 +111,7 @@ public:
     /**
      * @brief Reads all observation lineages, possibly filtered by primary key.
      */
-    std::vector<domain::observation_lineage> read_all(context ctx, const std::string& id);
+    std::vector<domain::observation_lineage> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single observation lineage as it stood at a specific
@@ -123,7 +123,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::observation_lineage>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Whether a list of observation lineages can be ordered by a field.
@@ -142,7 +142,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::observation_lineage>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -155,14 +155,14 @@ public:
      * @return Total number of active observation lineages
      */
     std::uint32_t get_total_observation_lineage_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::observation_lineages_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a observation lineage by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -184,15 +184,16 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes observation lineages by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
     std::optional<domain::observation_lineage>
-    read_latest_by_observation(context ctx,
+    read_latest_by_observation(const context& ctx,
                                const boost::uuids::uuid& series_id,
                                std::chrono::system_clock::time_point observation_datetime,
                                const std::string& oresmd_uri);
@@ -215,21 +216,23 @@ public:
      * wide span can read more rows than it returns. The rows are the current ones,
      * the same generation the as-of observation read uses for its values.
      */
-    std::vector<domain::observation_lineage> read_latest_for_points(
-        context ctx, const boost::uuids::uuid& series_id, const std::vector<point_key>& points);
+    std::vector<domain::observation_lineage>
+    read_latest_for_points(const context& ctx,
+                           const boost::uuids::uuid& series_id,
+                           const std::vector<point_key>& points);
 
     /**
      * @brief The current annex rows of the series that name a manual point.
      */
     std::vector<domain::observation_lineage>
-    read_manual_for_series(context ctx, const boost::uuids::uuid& series_id);
+    read_manual_for_series(const context& ctx, const boost::uuids::uuid& series_id);
 
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::observation_lineage& v);
 
     /**
@@ -237,7 +240,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::observation_lineage apply_claim(context ctx,
+    domain::observation_lineage apply_claim(const context& ctx,
                                             const domain::observation_lineage& v,
                                             const ores::utility::domain::precondition& claim);
 };

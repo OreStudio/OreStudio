@@ -58,8 +58,8 @@ namespace ores::compute::service {
 
 using namespace ores::logging;
 
-platform_service::platform_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+platform_service::platform_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -100,7 +100,7 @@ approval_policy_filter_condition(const std::optional<messaging::approval_policie
 }
 
 ores::utility::domain::precondition
-approval_policy_repository::replace_claim(context ctx, const domain::approval_policy& v) {
+approval_policy_repository::replace_claim(const context& ctx, const domain::approval_policy& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -109,7 +109,7 @@ approval_policy_repository::replace_claim(context ctx, const domain::approval_po
 }
 
 domain::approval_policy
-approval_policy_repository::apply_claim(context ctx,
+approval_policy_repository::apply_claim(const context& ctx,
                                         const domain::approval_policy& v,
                                         const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -136,11 +136,12 @@ approval_policy_repository::apply_claim(context ctx,
     return t;
 }
 
-void approval_policy_repository::write(context ctx, const domain::approval_policy& v) {
+void approval_policy_repository::write(const context& ctx, const domain::approval_policy& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void approval_policy_repository::write(context ctx, const std::vector<domain::approval_policy>& v) {
+void approval_policy_repository::write(const context& ctx,
+                                       const std::vector<domain::approval_policy>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -148,7 +149,7 @@ void approval_policy_repository::write(context ctx, const std::vector<domain::ap
     write(ctx, v, claims);
 }
 
-void approval_policy_repository::write(context ctx,
+void approval_policy_repository::write(const context& ctx,
                                        const domain::approval_policy& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval policy. " << "code: " << v.code;
@@ -158,7 +159,7 @@ void approval_policy_repository::write(context ctx,
 }
 
 void approval_policy_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::approval_policy>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval policys. Count: " << v.size();
@@ -170,7 +171,7 @@ void approval_policy_repository::write(
         ctx, approval_policy_mapper::map(batch), lg(), "Writing approval policys to database.");
 }
 
-std::vector<domain::approval_policy> approval_policy_repository::read_latest(context ctx) {
+std::vector<domain::approval_policy> approval_policy_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_policy_entity>> |
@@ -186,7 +187,7 @@ std::vector<domain::approval_policy> approval_policy_repository::read_latest(con
 }
 
 std::vector<domain::approval_policy>
-approval_policy_repository::read_latest(context ctx, const std::string& code) {
+approval_policy_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval policy. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -203,7 +204,7 @@ approval_policy_repository::read_latest(context ctx, const std::string& code) {
 }
 
 
-std::vector<domain::approval_policy> approval_policy_repository::read_all(context ctx,
+std::vector<domain::approval_policy> approval_policy_repository::read_all(const context& ctx,
                                                                           const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all approval policy versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -220,7 +221,7 @@ std::vector<domain::approval_policy> approval_policy_repository::read_all(contex
 }
 
 std::optional<domain::approval_policy> approval_policy_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading approval policy at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -244,7 +245,7 @@ std::optional<domain::approval_policy> approval_policy_repository::read_at_versi
 
 
 approval_policy_repository::remove_status approval_policy_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing approval policy. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -273,12 +274,12 @@ approval_policy_repository::remove_status approval_policy_repository::remove(
     return remove_status::removed;
 }
 
-void approval_policy_repository::remove(context ctx, const std::string& code) {
+void approval_policy_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::approval_policy> approval_policy_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -304,7 +305,7 @@ std::vector<domain::approval_policy> approval_policy_repository::read_latest(
 }
 
 std::uint32_t approval_policy_repository::get_total_policy_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::approval_policies_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval policy count";
@@ -323,7 +324,7 @@ std::uint32_t approval_policy_repository::get_total_policy_count(
 }
 
 std::vector<domain::approval_policy>
-approval_policy_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+approval_policy_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -341,7 +342,7 @@ approval_policy_repository::read_latest(context ctx, const std::vector<std::stri
     return result;
 }
 
-void approval_policy_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void approval_policy_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

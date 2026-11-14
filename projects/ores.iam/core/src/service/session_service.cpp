@@ -56,8 +56,8 @@ namespace ores::iam::service {
 
 using namespace ores::logging;
 
-session_service::session_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+session_service::session_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

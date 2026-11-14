@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-sub_periods_coupon_type_service::sub_periods_coupon_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+sub_periods_coupon_type_service::sub_periods_coupon_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -44,10 +44,10 @@ static constexpr std::string_view fsm_transition_queue_group = "ores.dq.service"
 
 std::vector<ores::nats::service::subscription>
 register_fsm_transition_handlers(ores::nats::service::client& nats,
-                                 ores::database::context ctx,
+                                 const ores::database::context& ctx,
                                  std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<fsm_transition_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<fsm_transition_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_fsm_transitions_request::nats_subject,
         fsm_transition_queue_group,

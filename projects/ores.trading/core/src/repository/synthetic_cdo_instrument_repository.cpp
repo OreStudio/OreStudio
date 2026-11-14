@@ -102,7 +102,7 @@ std::optional<query_builder::condition> synthetic_cdo_instrument_filter_conditio
 }
 
 ores::utility::domain::precondition
-synthetic_cdo_instrument_repository::replace_claim(context ctx,
+synthetic_cdo_instrument_repository::replace_claim(const context& ctx,
                                                    const domain::synthetic_cdo_instrument& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
     if (current.empty())
@@ -112,7 +112,7 @@ synthetic_cdo_instrument_repository::replace_claim(context ctx,
 }
 
 domain::synthetic_cdo_instrument
-synthetic_cdo_instrument_repository::apply_claim(context ctx,
+synthetic_cdo_instrument_repository::apply_claim(const context& ctx,
                                                  const domain::synthetic_cdo_instrument& v,
                                                  const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,13 +139,13 @@ synthetic_cdo_instrument_repository::apply_claim(context ctx,
     return t;
 }
 
-void synthetic_cdo_instrument_repository::write(context ctx,
+void synthetic_cdo_instrument_repository::write(const context& ctx,
                                                 const domain::synthetic_cdo_instrument& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void synthetic_cdo_instrument_repository::write(
-    context ctx, const std::vector<domain::synthetic_cdo_instrument>& v) {
+    const context& ctx, const std::vector<domain::synthetic_cdo_instrument>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -153,7 +153,7 @@ void synthetic_cdo_instrument_repository::write(
     write(ctx, v, claims);
 }
 
-void synthetic_cdo_instrument_repository::write(context ctx,
+void synthetic_cdo_instrument_repository::write(const context& ctx,
                                                 const domain::synthetic_cdo_instrument& v,
                                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing synthetic CDO instrument. "
@@ -166,7 +166,7 @@ void synthetic_cdo_instrument_repository::write(context ctx,
 }
 
 void synthetic_cdo_instrument_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::synthetic_cdo_instrument>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing synthetic CDO instruments. Count: " << v.size();
@@ -181,7 +181,7 @@ void synthetic_cdo_instrument_repository::write(
 }
 
 std::vector<domain::synthetic_cdo_instrument>
-synthetic_cdo_instrument_repository::read_latest(context ctx) {
+synthetic_cdo_instrument_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<synthetic_cdo_instrument_entity>> |
@@ -198,7 +198,7 @@ synthetic_cdo_instrument_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::synthetic_cdo_instrument>
-synthetic_cdo_instrument_repository::read_latest(context ctx, const std::string& trade_id) {
+synthetic_cdo_instrument_repository::read_latest(const context& ctx, const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest synthetic CDO instrument. "
                                << "trade_id: " << trade_id;
     static constexpr auto max = db_timestamp::max();
@@ -218,7 +218,7 @@ synthetic_cdo_instrument_repository::read_latest(context ctx, const std::string&
 
 
 std::vector<domain::synthetic_cdo_instrument>
-synthetic_cdo_instrument_repository::read_all(context ctx, const std::string& trade_id) {
+synthetic_cdo_instrument_repository::read_all(const context& ctx, const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all synthetic CDO instrument versions. "
                                << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
@@ -236,7 +236,7 @@ synthetic_cdo_instrument_repository::read_all(context ctx, const std::string& tr
 }
 
 std::optional<domain::synthetic_cdo_instrument>
-synthetic_cdo_instrument_repository::read_at_version(context ctx,
+synthetic_cdo_instrument_repository::read_at_version(const context& ctx,
                                                      const std::string& trade_id,
                                                      std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading synthetic CDO instrument at version. "
@@ -262,7 +262,7 @@ synthetic_cdo_instrument_repository::read_at_version(context ctx,
 
 
 synthetic_cdo_instrument_repository::remove_status synthetic_cdo_instrument_repository::remove(
-    context ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing synthetic CDO instrument. " << "trade_id: " << trade_id;
     const auto current = read_latest(ctx, trade_id);
     if (current.empty())
@@ -291,12 +291,12 @@ synthetic_cdo_instrument_repository::remove_status synthetic_cdo_instrument_repo
     return remove_status::removed;
 }
 
-void synthetic_cdo_instrument_repository::remove(context ctx, const std::string& trade_id) {
+void synthetic_cdo_instrument_repository::remove(const context& ctx, const std::string& trade_id) {
     static_cast<void>(remove(ctx, trade_id, std::nullopt));
 }
 
 std::vector<domain::synthetic_cdo_instrument> synthetic_cdo_instrument_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -322,7 +322,7 @@ std::vector<domain::synthetic_cdo_instrument> synthetic_cdo_instrument_repositor
 }
 
 std::uint32_t synthetic_cdo_instrument_repository::get_total_synthetic_cdo_instrument_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::synthetic_cdo_instruments_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active synthetic CDO instrument count";
@@ -341,7 +341,7 @@ std::uint32_t synthetic_cdo_instrument_repository::get_total_synthetic_cdo_instr
 }
 
 std::vector<domain::synthetic_cdo_instrument>
-synthetic_cdo_instrument_repository::read_latest(context ctx,
+synthetic_cdo_instrument_repository::read_latest(const context& ctx,
                                                  const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
@@ -360,7 +360,7 @@ synthetic_cdo_instrument_repository::read_latest(context ctx,
     return result;
 }
 
-void synthetic_cdo_instrument_repository::remove(context ctx,
+void synthetic_cdo_instrument_repository::remove(const context& ctx,
                                                  const std::vector<std::string>& trade_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

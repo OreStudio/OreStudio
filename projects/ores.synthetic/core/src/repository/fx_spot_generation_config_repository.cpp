@@ -117,7 +117,7 @@ std::optional<query_builder::condition> fx_spot_generation_config_filter_conditi
 }
 
 ores::utility::domain::precondition
-fx_spot_generation_config_repository::replace_claim(context ctx,
+fx_spot_generation_config_repository::replace_claim(const context& ctx,
                                                     const domain::fx_spot_generation_config& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -127,7 +127,7 @@ fx_spot_generation_config_repository::replace_claim(context ctx,
 }
 
 domain::fx_spot_generation_config fx_spot_generation_config_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::fx_spot_generation_config& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -154,13 +154,13 @@ domain::fx_spot_generation_config fx_spot_generation_config_repository::apply_cl
     return t;
 }
 
-void fx_spot_generation_config_repository::write(context ctx,
+void fx_spot_generation_config_repository::write(const context& ctx,
                                                  const domain::fx_spot_generation_config& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void fx_spot_generation_config_repository::write(
-    context ctx, const std::vector<domain::fx_spot_generation_config>& v) {
+    const context& ctx, const std::vector<domain::fx_spot_generation_config>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -168,7 +168,7 @@ void fx_spot_generation_config_repository::write(
     write(ctx, v, claims);
 }
 
-void fx_spot_generation_config_repository::write(context ctx,
+void fx_spot_generation_config_repository::write(const context& ctx,
                                                  const domain::fx_spot_generation_config& v,
                                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX spot generation config. " << "id: " << v.id;
@@ -180,7 +180,7 @@ void fx_spot_generation_config_repository::write(context ctx,
 }
 
 void fx_spot_generation_config_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::fx_spot_generation_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX spot generation configs. Count: " << v.size();
@@ -195,7 +195,7 @@ void fx_spot_generation_config_repository::write(
 }
 
 std::vector<domain::fx_spot_generation_config>
-fx_spot_generation_config_repository::read_latest(context ctx) {
+fx_spot_generation_config_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -214,7 +214,7 @@ fx_spot_generation_config_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::fx_spot_generation_config>
-fx_spot_generation_config_repository::read_latest(context ctx, const std::string& id) {
+fx_spot_generation_config_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest FX spot generation config. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -234,7 +234,7 @@ fx_spot_generation_config_repository::read_latest(context ctx, const std::string
 
 
 std::vector<domain::fx_spot_generation_config>
-fx_spot_generation_config_repository::read_all(context ctx, const std::string& id) {
+fx_spot_generation_config_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all FX spot generation config versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -254,7 +254,7 @@ fx_spot_generation_config_repository::read_all(context ctx, const std::string& i
 }
 
 std::optional<domain::fx_spot_generation_config>
-fx_spot_generation_config_repository::read_at_version(context ctx,
+fx_spot_generation_config_repository::read_at_version(const context& ctx,
                                                       const std::string& id,
                                                       std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading FX spot generation config at version. " << "id: " << id
@@ -281,7 +281,7 @@ fx_spot_generation_config_repository::read_at_version(context ctx,
 
 
 fx_spot_generation_config_repository::remove_status fx_spot_generation_config_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing FX spot generation config. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -310,12 +310,12 @@ fx_spot_generation_config_repository::remove_status fx_spot_generation_config_re
     return remove_status::removed;
 }
 
-void fx_spot_generation_config_repository::remove(context ctx, const std::string& id) {
+void fx_spot_generation_config_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::fx_spot_generation_config> fx_spot_generation_config_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -342,7 +342,7 @@ std::vector<domain::fx_spot_generation_config> fx_spot_generation_config_reposit
 }
 
 std::uint32_t fx_spot_generation_config_repository::get_total_fx_spot_generation_config_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::fx_spot_generation_configs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active FX spot generation config count";
@@ -362,7 +362,7 @@ std::uint32_t fx_spot_generation_config_repository::get_total_fx_spot_generation
 }
 
 std::vector<domain::fx_spot_generation_config>
-fx_spot_generation_config_repository::read_latest(context ctx,
+fx_spot_generation_config_repository::read_latest(const context& ctx,
                                                   const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -382,7 +382,7 @@ fx_spot_generation_config_repository::read_latest(context ctx,
     return result;
 }
 
-void fx_spot_generation_config_repository::remove(context ctx,
+void fx_spot_generation_config_repository::remove(const context& ctx,
                                                   const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

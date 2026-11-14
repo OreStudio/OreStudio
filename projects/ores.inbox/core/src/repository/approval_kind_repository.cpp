@@ -101,7 +101,7 @@ approval_kind_filter_condition(const std::optional<messaging::approval_kinds_fil
 }
 
 ores::utility::domain::precondition
-approval_kind_repository::replace_claim(context ctx, const domain::approval_kind& v) {
+approval_kind_repository::replace_claim(const context& ctx, const domain::approval_kind& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -109,8 +109,10 @@ approval_kind_repository::replace_claim(context ctx, const domain::approval_kind
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::approval_kind approval_kind_repository::apply_claim(
-    context ctx, const domain::approval_kind& v, const ores::utility::domain::precondition& claim) {
+domain::approval_kind
+approval_kind_repository::apply_claim(const context& ctx,
+                                      const domain::approval_kind& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -135,11 +137,12 @@ domain::approval_kind approval_kind_repository::apply_claim(
     return t;
 }
 
-void approval_kind_repository::write(context ctx, const domain::approval_kind& v) {
+void approval_kind_repository::write(const context& ctx, const domain::approval_kind& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void approval_kind_repository::write(context ctx, const std::vector<domain::approval_kind>& v) {
+void approval_kind_repository::write(const context& ctx,
+                                     const std::vector<domain::approval_kind>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -147,7 +150,7 @@ void approval_kind_repository::write(context ctx, const std::vector<domain::appr
     write(ctx, v, claims);
 }
 
-void approval_kind_repository::write(context ctx,
+void approval_kind_repository::write(const context& ctx,
                                      const domain::approval_kind& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval kind. " << "code: " << v.code;
@@ -157,7 +160,7 @@ void approval_kind_repository::write(context ctx,
 }
 
 void approval_kind_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::approval_kind>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval kinds. Count: " << v.size();
@@ -169,7 +172,7 @@ void approval_kind_repository::write(
         ctx, approval_kind_mapper::map(batch), lg(), "Writing approval kinds to database.");
 }
 
-std::vector<domain::approval_kind> approval_kind_repository::read_latest(context ctx) {
+std::vector<domain::approval_kind> approval_kind_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -186,7 +189,7 @@ std::vector<domain::approval_kind> approval_kind_repository::read_latest(context
         "Reading latest approval kinds");
 }
 
-std::vector<domain::approval_kind> approval_kind_repository::read_latest(context ctx,
+std::vector<domain::approval_kind> approval_kind_repository::read_latest(const context& ctx,
                                                                          const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval kind. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -205,7 +208,7 @@ std::vector<domain::approval_kind> approval_kind_repository::read_latest(context
 }
 
 
-std::vector<domain::approval_kind> approval_kind_repository::read_all(context ctx,
+std::vector<domain::approval_kind> approval_kind_repository::read_all(const context& ctx,
                                                                       const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all approval kind versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -224,7 +227,7 @@ std::vector<domain::approval_kind> approval_kind_repository::read_all(context ct
 }
 
 std::optional<domain::approval_kind> approval_kind_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading approval kind at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -249,7 +252,7 @@ std::optional<domain::approval_kind> approval_kind_repository::read_at_version(
 
 
 approval_kind_repository::remove_status approval_kind_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing approval kind. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -277,12 +280,12 @@ approval_kind_repository::remove_status approval_kind_repository::remove(
     return remove_status::removed;
 }
 
-void approval_kind_repository::remove(context ctx, const std::string& code) {
+void approval_kind_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::approval_kind>
-approval_kind_repository::read_latest(context ctx,
+approval_kind_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -308,7 +311,7 @@ approval_kind_repository::read_latest(context ctx,
 }
 
 std::uint32_t approval_kind_repository::get_total_kind_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::approval_kinds_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval kind count";
@@ -328,7 +331,7 @@ std::uint32_t approval_kind_repository::get_total_kind_count(
 }
 
 std::vector<domain::approval_kind>
-approval_kind_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+approval_kind_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -346,7 +349,7 @@ approval_kind_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void approval_kind_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void approval_kind_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

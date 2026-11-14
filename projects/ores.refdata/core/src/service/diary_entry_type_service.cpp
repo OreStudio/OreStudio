@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-diary_entry_type_service::diary_entry_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+diary_entry_type_service::diary_entry_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

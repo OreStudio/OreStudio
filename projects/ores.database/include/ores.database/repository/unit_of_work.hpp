@@ -65,7 +65,7 @@ public:
      * @throws repository_exception when no connection can be acquired or
      * the transaction cannot begin.
      */
-    explicit unit_of_work(context ctx);
+    explicit unit_of_work(const context& ctx);
 
     /**
      * @brief Rolls the transaction back when the caller did not commit.

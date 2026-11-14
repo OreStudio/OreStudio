@@ -58,8 +58,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-fx_variance_swap_instrument_service::fx_variance_swap_instrument_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+fx_variance_swap_instrument_service::fx_variance_swap_instrument_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

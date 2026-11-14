@@ -129,7 +129,7 @@ std::optional<query_builder::condition> market_calibration_value_filter_conditio
 }
 
 ores::utility::domain::precondition
-market_calibration_value_repository::replace_claim(context ctx,
+market_calibration_value_repository::replace_claim(const context& ctx,
                                                    const domain::market_calibration_value& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -141,7 +141,7 @@ market_calibration_value_repository::replace_claim(context ctx,
 }
 
 domain::market_calibration_value
-market_calibration_value_repository::apply_claim(context ctx,
+market_calibration_value_repository::apply_claim(const context& ctx,
                                                  const domain::market_calibration_value& v,
                                                  const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -157,12 +157,12 @@ market_calibration_value_repository::apply_claim(context ctx,
     return t;
 }
 
-void market_calibration_value_repository::write(context ctx,
+void market_calibration_value_repository::write(const context& ctx,
                                                 const domain::market_calibration_value& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void market_calibration_value_repository::insert(context ctx,
+void market_calibration_value_repository::insert(const context& ctx,
                                                  const domain::market_calibration_value& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market calibration value. " << "id: " << v.id;
     query_builder::execute_write_query(ctx,
@@ -172,7 +172,7 @@ void market_calibration_value_repository::insert(context ctx,
 }
 
 void market_calibration_value_repository::insert(
-    context ctx, const std::vector<domain::market_calibration_value>& v) {
+    const context& ctx, const std::vector<domain::market_calibration_value>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market calibration values. Count: " << v.size();
     query_builder::execute_write_query(ctx,
                                        market_calibration_value_mapper::map(v),
@@ -181,7 +181,7 @@ void market_calibration_value_repository::insert(
 }
 
 void market_calibration_value_repository::write(
-    context ctx, const std::vector<domain::market_calibration_value>& v) {
+    const context& ctx, const std::vector<domain::market_calibration_value>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -189,7 +189,7 @@ void market_calibration_value_repository::write(
     write(ctx, v, claims);
 }
 
-void market_calibration_value_repository::write(context ctx,
+void market_calibration_value_repository::write(const context& ctx,
                                                 const domain::market_calibration_value& v,
                                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market calibration value. " << "id: " << v.id;
@@ -201,7 +201,7 @@ void market_calibration_value_repository::write(context ctx,
 }
 
 void market_calibration_value_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::market_calibration_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market calibration values. Count: " << v.size();
@@ -216,7 +216,7 @@ void market_calibration_value_repository::write(
 }
 
 std::vector<domain::market_calibration_value>
-market_calibration_value_repository::read_latest(context ctx) {
+market_calibration_value_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_calibration_value_entity>> |
@@ -233,7 +233,7 @@ market_calibration_value_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::market_calibration_value>
-market_calibration_value_repository::read_latest(context ctx, const std::string& id) {
+market_calibration_value_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market calibration value. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -252,7 +252,7 @@ market_calibration_value_repository::read_latest(context ctx, const std::string&
 
 
 std::vector<domain::market_calibration_value>
-market_calibration_value_repository::read_all(context ctx, const std::string& id) {
+market_calibration_value_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market calibration value versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_calibration_value_entity>> |
@@ -270,7 +270,7 @@ market_calibration_value_repository::read_all(context ctx, const std::string& id
 
 
 market_calibration_value_repository::remove_status market_calibration_value_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing market calibration value. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -290,12 +290,12 @@ market_calibration_value_repository::remove_status market_calibration_value_repo
     return remove_status::removed;
 }
 
-void market_calibration_value_repository::remove(context ctx, const std::string& id) {
+void market_calibration_value_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::market_calibration_value> market_calibration_value_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -321,7 +321,7 @@ std::vector<domain::market_calibration_value> market_calibration_value_repositor
 }
 
 std::uint32_t market_calibration_value_repository::get_total_value_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::market_calibration_values_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market calibration value count";
@@ -340,7 +340,8 @@ std::uint32_t market_calibration_value_repository::get_total_value_count(
 }
 
 std::vector<domain::market_calibration_value>
-market_calibration_value_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+market_calibration_value_repository::read_latest(const context& ctx,
+                                                 const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -358,7 +359,8 @@ market_calibration_value_repository::read_latest(context ctx, const std::vector<
     return result;
 }
 
-void market_calibration_value_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void market_calibration_value_repository::remove(const context& ctx,
+                                                 const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

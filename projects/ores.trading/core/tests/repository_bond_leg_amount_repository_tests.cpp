@@ -93,7 +93,7 @@ bond_leg_amount make_amount(database_helper& h,
  * std::string the query builder binds to the numeric column and not the decimal the
  * mapper renders from it. This is what proves the seam.
  */
-std::vector<bond_leg_amount_entity> read_entities(ores::database::context ctx,
+std::vector<bond_leg_amount_entity> read_entities(const ores::database::context& ctx,
                                                   const std::string& trade_id) {
     using namespace ores::database::repository;
     namespace query_builder = ores::database::query_builder;

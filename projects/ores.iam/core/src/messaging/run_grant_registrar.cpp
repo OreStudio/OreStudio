@@ -44,10 +44,10 @@ static constexpr std::string_view run_grant_queue_group = "ores.iam.service";
 
 std::vector<ores::nats::service::subscription>
 register_run_grant_handlers(ores::nats::service::client& nats,
-                            ores::database::context ctx,
+                            const ores::database::context& ctx,
                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<run_grant_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<run_grant_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_run_grants_request::nats_subject, run_grant_queue_group, [h](ores::nats::message msg) {
             h->list_run_grants(std::move(msg));

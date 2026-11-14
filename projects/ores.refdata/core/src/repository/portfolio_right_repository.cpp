@@ -119,7 +119,7 @@ portfolio_right_filter_condition(const std::optional<messaging::portfolio_rights
 }
 
 ores::utility::domain::precondition
-portfolio_right_repository::replace_claim(context ctx, const domain::portfolio_right& v) {
+portfolio_right_repository::replace_claim(const context& ctx, const domain::portfolio_right& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -128,7 +128,7 @@ portfolio_right_repository::replace_claim(context ctx, const domain::portfolio_r
 }
 
 domain::portfolio_right
-portfolio_right_repository::apply_claim(context ctx,
+portfolio_right_repository::apply_claim(const context& ctx,
                                         const domain::portfolio_right& v,
                                         const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -155,11 +155,12 @@ portfolio_right_repository::apply_claim(context ctx,
     return t;
 }
 
-void portfolio_right_repository::write(context ctx, const domain::portfolio_right& v) {
+void portfolio_right_repository::write(const context& ctx, const domain::portfolio_right& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void portfolio_right_repository::write(context ctx, const std::vector<domain::portfolio_right>& v) {
+void portfolio_right_repository::write(const context& ctx,
+                                       const std::vector<domain::portfolio_right>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -167,7 +168,7 @@ void portfolio_right_repository::write(context ctx, const std::vector<domain::po
     write(ctx, v, claims);
 }
 
-void portfolio_right_repository::write(context ctx,
+void portfolio_right_repository::write(const context& ctx,
                                        const domain::portfolio_right& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing portfolio right. " << "id: " << v.id;
@@ -177,7 +178,7 @@ void portfolio_right_repository::write(context ctx,
 }
 
 void portfolio_right_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::portfolio_right>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing portfolio rights. Count: " << v.size();
@@ -189,7 +190,7 @@ void portfolio_right_repository::write(
         ctx, portfolio_right_mapper::map(batch), lg(), "Writing portfolio rights to database.");
 }
 
-std::vector<domain::portfolio_right> portfolio_right_repository::read_latest(context ctx) {
+std::vector<domain::portfolio_right> portfolio_right_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<portfolio_right_entity>> |
@@ -205,7 +206,7 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest(con
 }
 
 std::vector<domain::portfolio_right>
-portfolio_right_repository::read_latest(context ctx, const std::string& id) {
+portfolio_right_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio right. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -222,7 +223,8 @@ portfolio_right_repository::read_latest(context ctx, const std::string& id) {
 }
 
 std::vector<domain::portfolio_right>
-portfolio_right_repository::read_latest_by_right_code(context ctx, const std::string& right_code) {
+portfolio_right_repository::read_latest_by_right_code(const context& ctx,
+                                                      const std::string& right_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest portfolio right by right_code: " << right_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -239,7 +241,8 @@ portfolio_right_repository::read_latest_by_right_code(context ctx, const std::st
 }
 
 std::vector<domain::portfolio_right>
-portfolio_right_repository::read_any_by_right_code(context ctx, const std::string& right_code) {
+portfolio_right_repository::read_any_by_right_code(const context& ctx,
+                                                   const std::string& right_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any portfolio right by right_code: " << right_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<portfolio_right_entity>> |
@@ -255,7 +258,7 @@ portfolio_right_repository::read_any_by_right_code(context ctx, const std::strin
 }
 
 
-std::vector<domain::portfolio_right> portfolio_right_repository::read_all(context ctx,
+std::vector<domain::portfolio_right> portfolio_right_repository::read_all(const context& ctx,
                                                                           const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all portfolio right versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -272,7 +275,7 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_all(contex
 }
 
 std::optional<domain::portfolio_right> portfolio_right_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading portfolio right at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -295,7 +298,7 @@ std::optional<domain::portfolio_right> portfolio_right_repository::read_at_versi
 }
 
 std::vector<domain::portfolio_right> portfolio_right_repository::read_latest_by_account_id(
-    context ctx,
+    const context& ctx,
     const std::string& account_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -322,7 +325,7 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest_by_
 }
 
 std::uint32_t portfolio_right_repository::get_total_portfolio_right_count_by_account_id(
-    context ctx,
+    const context& ctx,
     const std::string& account_id,
     const std::optional<messaging::portfolio_rights_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active portfolio rights count. account_id: "
@@ -344,7 +347,7 @@ std::uint32_t portfolio_right_repository::get_total_portfolio_right_count_by_acc
 
 
 std::vector<domain::portfolio_right> portfolio_right_repository::read_latest_by_portfolio_id(
-    context ctx,
+    const context& ctx,
     const std::string& portfolio_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -372,7 +375,7 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest_by_
 }
 
 std::uint32_t portfolio_right_repository::get_total_portfolio_right_count_by_portfolio_id(
-    context ctx,
+    const context& ctx,
     const std::string& portfolio_id,
     const std::optional<messaging::portfolio_rights_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active portfolio rights count. portfolio_id: "
@@ -395,7 +398,7 @@ std::uint32_t portfolio_right_repository::get_total_portfolio_right_count_by_por
 
 
 portfolio_right_repository::remove_status portfolio_right_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing portfolio right. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -424,12 +427,12 @@ portfolio_right_repository::remove_status portfolio_right_repository::remove(
     return remove_status::removed;
 }
 
-void portfolio_right_repository::remove(context ctx, const std::string& id) {
+void portfolio_right_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::portfolio_right> portfolio_right_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -455,7 +458,7 @@ std::vector<domain::portfolio_right> portfolio_right_repository::read_latest(
 }
 
 std::uint32_t portfolio_right_repository::get_total_portfolio_right_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::portfolio_rights_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active portfolio right count";
@@ -474,7 +477,7 @@ std::uint32_t portfolio_right_repository::get_total_portfolio_right_count(
 }
 
 std::vector<domain::portfolio_right>
-portfolio_right_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+portfolio_right_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -492,7 +495,7 @@ portfolio_right_repository::read_latest(context ctx, const std::vector<std::stri
     return result;
 }
 
-void portfolio_right_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void portfolio_right_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

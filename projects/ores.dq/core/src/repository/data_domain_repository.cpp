@@ -100,7 +100,7 @@ data_domain_filter_condition(const std::optional<messaging::data_domains_filter>
 }
 
 ores::utility::domain::precondition
-data_domain_repository::replace_claim(context ctx, const domain::data_domain& v) {
+data_domain_repository::replace_claim(const context& ctx, const domain::data_domain& v) {
     const auto current = read_latest(ctx, v.name);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -108,8 +108,10 @@ data_domain_repository::replace_claim(context ctx, const domain::data_domain& v)
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::data_domain data_domain_repository::apply_claim(
-    context ctx, const domain::data_domain& v, const ores::utility::domain::precondition& claim) {
+domain::data_domain
+data_domain_repository::apply_claim(const context& ctx,
+                                    const domain::data_domain& v,
+                                    const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -134,11 +136,11 @@ domain::data_domain data_domain_repository::apply_claim(
     return t;
 }
 
-void data_domain_repository::write(context ctx, const domain::data_domain& v) {
+void data_domain_repository::write(const context& ctx, const domain::data_domain& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void data_domain_repository::write(context ctx, const std::vector<domain::data_domain>& v) {
+void data_domain_repository::write(const context& ctx, const std::vector<domain::data_domain>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -146,7 +148,7 @@ void data_domain_repository::write(context ctx, const std::vector<domain::data_d
     write(ctx, v, claims);
 }
 
-void data_domain_repository::write(context ctx,
+void data_domain_repository::write(const context& ctx,
                                    const domain::data_domain& v,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing data domain. " << "name: " << v.name;
@@ -155,7 +157,7 @@ void data_domain_repository::write(context ctx,
         ctx, data_domain_mapper::map(t), lg(), "Writing data domain to database.");
 }
 
-void data_domain_repository::write(context ctx,
+void data_domain_repository::write(const context& ctx,
                                    const std::vector<domain::data_domain>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing data domains. Count: " << v.size();
@@ -167,7 +169,7 @@ void data_domain_repository::write(context ctx,
         ctx, data_domain_mapper::map(batch), lg(), "Writing data domains to database.");
 }
 
-std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx) {
+std::vector<domain::data_domain> data_domain_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<data_domain_entity>> |
                        query_builder::where("valid_to"_c == max) |
@@ -181,7 +183,7 @@ std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx
         "Reading latest data domains");
 }
 
-std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx,
+std::vector<domain::data_domain> data_domain_repository::read_latest(const context& ctx,
                                                                      const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest data domain. " << "name: " << name;
     static constexpr auto max = db_timestamp::max();
@@ -197,7 +199,7 @@ std::vector<domain::data_domain> data_domain_repository::read_latest(context ctx
 }
 
 
-std::vector<domain::data_domain> data_domain_repository::read_all(context ctx,
+std::vector<domain::data_domain> data_domain_repository::read_all(const context& ctx,
                                                                   const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all data domain versions. " << "name: " << name;
     const auto query = query_builder::read<std::vector<data_domain_entity>> |
@@ -212,7 +214,7 @@ std::vector<domain::data_domain> data_domain_repository::read_all(context ctx,
         "Reading all data domain versions by name.");
 }
 
-std::optional<domain::data_domain> data_domain_repository::read_at_version(context ctx,
+std::optional<domain::data_domain> data_domain_repository::read_at_version(const context& ctx,
                                                                            const std::string& name,
                                                                            std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading data domain at version. " << "name: " << name
@@ -235,7 +237,7 @@ std::optional<domain::data_domain> data_domain_repository::read_at_version(conte
 }
 
 data_domain_repository::remove_status data_domain_repository::remove(
-    context ctx, const std::string& name, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& name, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing data domain. " << "name: " << name;
     const auto current = read_latest(ctx, name);
     if (current.empty())
@@ -263,12 +265,12 @@ data_domain_repository::remove_status data_domain_repository::remove(
     return remove_status::removed;
 }
 
-void data_domain_repository::remove(context ctx, const std::string& name) {
+void data_domain_repository::remove(const context& ctx, const std::string& name) {
     static_cast<void>(remove(ctx, name, std::nullopt));
 }
 
 std::vector<domain::data_domain>
-data_domain_repository::read_latest(context ctx,
+data_domain_repository::read_latest(const context& ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
@@ -291,7 +293,7 @@ data_domain_repository::read_latest(context ctx,
 }
 
 std::uint32_t data_domain_repository::get_total_domain_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::data_domains_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active data domain count";
@@ -308,7 +310,7 @@ std::uint32_t data_domain_repository::get_total_domain_count(
 }
 
 std::vector<domain::data_domain>
-data_domain_repository::read_latest(context ctx, const std::vector<std::string>& names) {
+data_domain_repository::read_latest(const context& ctx, const std::vector<std::string>& names) {
     if (names.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -323,7 +325,7 @@ data_domain_repository::read_latest(context ctx, const std::vector<std::string>&
     return result;
 }
 
-void data_domain_repository::remove(context ctx, const std::vector<std::string>& names) {
+void data_domain_repository::remove(const context& ctx, const std::vector<std::string>& names) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

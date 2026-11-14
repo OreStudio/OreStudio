@@ -58,8 +58,8 @@ namespace ores::marketdata::service {
 
 using namespace ores::logging;
 
-fx_forward_publish_spot_service::fx_forward_publish_spot_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+fx_forward_publish_spot_service::fx_forward_publish_spot_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

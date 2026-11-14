@@ -73,11 +73,11 @@ std::string_view describe(tenant_session_refusal refusal) {
     return "The request was refused.";
 }
 
-tenant_session_service::tenant_session_service(context ctx,
+tenant_session_service::tenant_session_service(const context& ctx,
                                                security::jwt::jwt_authenticator signer,
                                                std::chrono::seconds lifetime)
-    : ctx_(std::move(ctx))
-    , signer_(std::move(signer))
+    : ctx_(ctx)
+    , signer_(signer)
     , lifetime_(lifetime) {}
 
 std::vector<std::string>

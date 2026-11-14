@@ -89,7 +89,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit ore_export_service(context ctx);
+    explicit ore_export_service(const context& ctx);
 
     /**
      * @brief Writes the market data and the fixings.

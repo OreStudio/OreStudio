@@ -84,7 +84,7 @@ structure_template_role_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-structure_template_role_repository::replace_claim(context ctx,
+structure_template_role_repository::replace_claim(const context& ctx,
                                                   const domain::structure_template_role& v) {
     const auto current = read_latest(ctx, v.template_code, v.role);
     if (current.empty())
@@ -94,7 +94,7 @@ structure_template_role_repository::replace_claim(context ctx,
 }
 
 domain::structure_template_role
-structure_template_role_repository::apply_claim(context ctx,
+structure_template_role_repository::apply_claim(const context& ctx,
                                                 const domain::structure_template_role& v,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -121,13 +121,13 @@ structure_template_role_repository::apply_claim(context ctx,
     return t;
 }
 
-void structure_template_role_repository::write(context ctx,
+void structure_template_role_repository::write(const context& ctx,
                                                const domain::structure_template_role& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void structure_template_role_repository::write(
-    context ctx, const std::vector<domain::structure_template_role>& v) {
+    const context& ctx, const std::vector<domain::structure_template_role>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -135,7 +135,7 @@ void structure_template_role_repository::write(
     write(ctx, v, claims);
 }
 
-void structure_template_role_repository::write(context ctx,
+void structure_template_role_repository::write(const context& ctx,
                                                const domain::structure_template_role& v,
                                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing structure template role. "
@@ -148,7 +148,7 @@ void structure_template_role_repository::write(context ctx,
 }
 
 void structure_template_role_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::structure_template_role>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing structure template roles. Count: " << v.size();
@@ -163,7 +163,7 @@ void structure_template_role_repository::write(
 }
 
 std::vector<domain::structure_template_role>
-structure_template_role_repository::read_latest(context ctx) {
+structure_template_role_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<structure_template_role_entity>> |
@@ -180,7 +180,7 @@ structure_template_role_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::structure_template_role> structure_template_role_repository::read_latest(
-    context ctx, const std::string& template_code, const std::string& role) {
+    const context& ctx, const std::string& template_code, const std::string& role) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest structure template role. "
                                << "template_code: " << template_code << " role: " << role;
     static constexpr auto max = db_timestamp::max();
@@ -201,7 +201,7 @@ std::vector<domain::structure_template_role> structure_template_role_repository:
 
 
 std::vector<domain::structure_template_role> structure_template_role_repository::read_all(
-    context ctx, const std::string& template_code, const std::string& role) {
+    const context& ctx, const std::string& template_code, const std::string& role) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all structure template role versions. "
                                << "template_code: " << template_code << " role: " << role;
     const auto tid = ctx.tenant_id().to_string();
@@ -220,8 +220,11 @@ std::vector<domain::structure_template_role> structure_template_role_repository:
         "Reading all structure template role versions by template_code.");
 }
 
-std::optional<domain::structure_template_role> structure_template_role_repository::read_at_version(
-    context ctx, const std::string& template_code, const std::string& role, std::uint32_t version) {
+std::optional<domain::structure_template_role>
+structure_template_role_repository::read_at_version(const context& ctx,
+                                                    const std::string& template_code,
+                                                    const std::string& role,
+                                                    std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading structure template role at version. "
                                << "template_code: " << template_code << " role: " << role
                                << " version: " << version;
@@ -247,7 +250,7 @@ std::optional<domain::structure_template_role> structure_template_role_repositor
 
 
 structure_template_role_repository::remove_status
-structure_template_role_repository::remove(context ctx,
+structure_template_role_repository::remove(const context& ctx,
                                            const std::string& template_code,
                                            const std::string& role,
                                            std::optional<std::uint32_t> version) {
@@ -281,14 +284,14 @@ structure_template_role_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void structure_template_role_repository::remove(context ctx,
+void structure_template_role_repository::remove(const context& ctx,
                                                 const std::string& template_code,
                                                 const std::string& role) {
     static_cast<void>(remove(ctx, template_code, role, std::nullopt));
 }
 
 std::vector<domain::structure_template_role>
-structure_template_role_repository::read_latest(context ctx,
+structure_template_role_repository::read_latest(const context& ctx,
                                                 std::uint32_t offset,
                                                 std::uint32_t limit,
                                                 const ores::utility::domain::order& order,
@@ -312,7 +315,7 @@ structure_template_role_repository::read_latest(context ctx,
 }
 
 std::uint32_t structure_template_role_repository::get_total_template_role_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active structure template role count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -328,7 +331,7 @@ std::uint32_t structure_template_role_repository::get_total_template_role_count(
 }
 
 std::vector<domain::structure_template_role>
-structure_template_role_repository::read_latest(context ctx,
+structure_template_role_repository::read_latest(const context& ctx,
                                                 const std::vector<std::string>& template_codes,
                                                 const std::vector<std::string>& roles) {
     if (template_codes.empty() || roles.empty())
@@ -364,7 +367,7 @@ structure_template_role_repository::read_latest(context ctx,
     return filtered;
 }
 
-void structure_template_role_repository::remove(context ctx,
+void structure_template_role_repository::remove(const context& ctx,
                                                 const std::vector<std::string>& template_codes,
                                                 const std::vector<std::string>& roles) {
     // Compound key: a per-column .in() DELETE would be a cross-product

@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-portfolio_service::portfolio_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+portfolio_service::portfolio_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

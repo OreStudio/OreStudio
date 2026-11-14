@@ -54,8 +54,8 @@ namespace ores::analytics::service {
 
 using namespace ores::logging;
 
-pricing_engine_type_service::pricing_engine_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+pricing_engine_type_service::pricing_engine_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

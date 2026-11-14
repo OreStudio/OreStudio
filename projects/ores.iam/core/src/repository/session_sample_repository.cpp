@@ -86,7 +86,7 @@ query_builder::order session_sample_list_order(const ores::utility::domain::orde
 }
 
 ores::utility::domain::precondition
-session_sample_repository::replace_claim(context ctx, const domain::session_sample& v) {
+session_sample_repository::replace_claim(const context& ctx, const domain::session_sample& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.session_id),
                                      ores::platform::time::datetime::to_db_string(v.sample_time));
@@ -99,7 +99,7 @@ session_sample_repository::replace_claim(context ctx, const domain::session_samp
 }
 
 domain::session_sample
-session_sample_repository::apply_claim(context ctx,
+session_sample_repository::apply_claim(const context& ctx,
                                        const domain::session_sample& v,
                                        const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -118,11 +118,12 @@ session_sample_repository::apply_claim(context ctx,
     return t;
 }
 
-void session_sample_repository::write(context ctx, const domain::session_sample& v) {
+void session_sample_repository::write(const context& ctx, const domain::session_sample& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void session_sample_repository::write(context ctx, const std::vector<domain::session_sample>& v) {
+void session_sample_repository::write(const context& ctx,
+                                      const std::vector<domain::session_sample>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -130,7 +131,7 @@ void session_sample_repository::write(context ctx, const std::vector<domain::ses
     write(ctx, v, claims);
 }
 
-void session_sample_repository::write(context ctx,
+void session_sample_repository::write(const context& ctx,
                                       const domain::session_sample& v,
                                       const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sample. " << "session_id: " << v.session_id
@@ -143,7 +144,7 @@ void session_sample_repository::write(context ctx,
 }
 
 void session_sample_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::session_sample>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing session samples. Count: " << v.size();
@@ -158,7 +159,7 @@ void session_sample_repository::write(
         "Writing session samples to database.");
 }
 
-std::vector<domain::session_sample> session_sample_repository::read_latest(context ctx) {
+std::vector<domain::session_sample> session_sample_repository::read_latest(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<session_sample_entity>> |
                        query_builder::where("tenant_id"_c == tid) |
@@ -173,7 +174,7 @@ std::vector<domain::session_sample> session_sample_repository::read_latest(conte
 }
 
 std::vector<domain::session_sample> session_sample_repository::read_latest(
-    context ctx, const std::string& session_id, const std::string& sample_time) {
+    const context& ctx, const std::string& session_id, const std::string& sample_time) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sample. " << "session_id: " << session_id
                                << " sample_time: " << sample_time;
     const auto tid = ctx.tenant_id().to_string();
@@ -191,7 +192,7 @@ std::vector<domain::session_sample> session_sample_repository::read_latest(
 
 
 std::vector<domain::session_sample> session_sample_repository::read_all(
-    context ctx, const std::string& session_id, const std::string& sample_time) {
+    const context& ctx, const std::string& session_id, const std::string& sample_time) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all sample versions. " << "session_id: " << session_id
                                << " sample_time: " << sample_time;
     const auto tid = ctx.tenant_id().to_string();
@@ -210,7 +211,7 @@ std::vector<domain::session_sample> session_sample_repository::read_all(
 
 
 session_sample_repository::remove_status
-session_sample_repository::remove(context ctx,
+session_sample_repository::remove(const context& ctx,
                                   const std::string& session_id,
                                   const std::string& sample_time,
                                   std::optional<std::uint32_t> version) {
@@ -232,14 +233,14 @@ session_sample_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void session_sample_repository::remove(context ctx,
+void session_sample_repository::remove(const context& ctx,
                                        const std::string& session_id,
                                        const std::string& sample_time) {
     static_cast<void>(remove(ctx, session_id, sample_time, std::nullopt));
 }
 
 std::vector<domain::session_sample>
-session_sample_repository::read_latest(context ctx,
+session_sample_repository::read_latest(const context& ctx,
                                        std::uint32_t offset,
                                        std::uint32_t limit,
                                        const ores::utility::domain::order& order) {
@@ -260,7 +261,7 @@ session_sample_repository::read_latest(context ctx,
         "Reading latest session samples with pagination.");
 }
 
-std::uint32_t session_sample_repository::get_total__count(context ctx) {
+std::uint32_t session_sample_repository::get_total__count(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sample count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -272,7 +273,7 @@ std::uint32_t session_sample_repository::get_total__count(context ctx) {
 }
 
 std::vector<domain::session_sample>
-session_sample_repository::read_latest(context ctx,
+session_sample_repository::read_latest(const context& ctx,
                                        const std::vector<std::string>& session_ids,
                                        const std::vector<std::string>& sample_times) {
     if (session_ids.empty() || sample_times.empty())
@@ -308,7 +309,7 @@ session_sample_repository::read_latest(context ctx,
     return filtered;
 }
 
-void session_sample_repository::remove(context ctx,
+void session_sample_repository::remove(const context& ctx,
                                        const std::vector<std::string>& session_ids,
                                        const std::vector<std::string>& sample_times) {
     // Compound key: a per-column .in() DELETE would be a cross-product

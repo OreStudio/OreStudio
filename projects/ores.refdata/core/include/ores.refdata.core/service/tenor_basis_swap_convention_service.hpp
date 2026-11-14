@@ -71,7 +71,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit tenor_basis_swap_convention_service(context ctx);
+    explicit tenor_basis_swap_convention_service(const context& ctx);
 
     /**
      * @brief The family's protocol operations, one method per subject.

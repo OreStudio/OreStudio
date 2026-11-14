@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit ascot_service(context ctx);
+    explicit ascot_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -113,7 +113,7 @@ business_unit_filter_condition(const std::optional<messaging::business_units_fil
 }
 
 ores::utility::domain::precondition
-business_unit_repository::replace_claim(context ctx, const domain::business_unit& v) {
+business_unit_repository::replace_claim(const context& ctx, const domain::business_unit& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -121,8 +121,10 @@ business_unit_repository::replace_claim(context ctx, const domain::business_unit
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::business_unit business_unit_repository::apply_claim(
-    context ctx, const domain::business_unit& v, const ores::utility::domain::precondition& claim) {
+domain::business_unit
+business_unit_repository::apply_claim(const context& ctx,
+                                      const domain::business_unit& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -147,11 +149,12 @@ domain::business_unit business_unit_repository::apply_claim(
     return t;
 }
 
-void business_unit_repository::write(context ctx, const domain::business_unit& v) {
+void business_unit_repository::write(const context& ctx, const domain::business_unit& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void business_unit_repository::write(context ctx, const std::vector<domain::business_unit>& v) {
+void business_unit_repository::write(const context& ctx,
+                                     const std::vector<domain::business_unit>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -159,7 +162,7 @@ void business_unit_repository::write(context ctx, const std::vector<domain::busi
     write(ctx, v, claims);
 }
 
-void business_unit_repository::write(context ctx,
+void business_unit_repository::write(const context& ctx,
                                      const domain::business_unit& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing business unit. " << "id: " << v.id;
@@ -169,7 +172,7 @@ void business_unit_repository::write(context ctx,
 }
 
 void business_unit_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::business_unit>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing business units. Count: " << v.size();
@@ -181,7 +184,7 @@ void business_unit_repository::write(
         ctx, business_unit_mapper::map(batch), lg(), "Writing business units to database.");
 }
 
-std::vector<domain::business_unit> business_unit_repository::read_latest(context ctx) {
+std::vector<domain::business_unit> business_unit_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<business_unit_entity>> |
@@ -196,7 +199,7 @@ std::vector<domain::business_unit> business_unit_repository::read_latest(context
         "Reading latest business units");
 }
 
-std::vector<domain::business_unit> business_unit_repository::read_latest(context ctx,
+std::vector<domain::business_unit> business_unit_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -214,7 +217,7 @@ std::vector<domain::business_unit> business_unit_repository::read_latest(context
 }
 
 std::vector<domain::business_unit> business_unit_repository::read_latest_by_code(
-    context ctx, const std::string& party_id, const std::string& unit_name) {
+    const context& ctx, const std::string& party_id, const std::string& unit_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit by party_id/unit_name: " << party_id
                                << "/" << unit_name;
     static constexpr auto max = db_timestamp::max();
@@ -231,7 +234,8 @@ std::vector<domain::business_unit> business_unit_repository::read_latest_by_code
         "Reading latest business unit by unit_name.");
 }
 std::vector<domain::business_unit>
-business_unit_repository::read_latest_by_unit_code(context ctx, const std::string& unit_code) {
+business_unit_repository::read_latest_by_unit_code(const context& ctx,
+                                                   const std::string& unit_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit by unit_code: " << unit_code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -254,7 +258,7 @@ business_unit_repository::read_latest_by_unit_code(context ctx, const std::strin
 }
 
 std::vector<domain::business_unit>
-business_unit_repository::read_any_by_unit_code(context ctx, const std::string& unit_code) {
+business_unit_repository::read_any_by_unit_code(const context& ctx, const std::string& unit_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any business unit by unit_code: " << unit_code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<business_unit_entity>> |
@@ -280,7 +284,7 @@ business_unit_repository::read_any_by_unit_code(context ctx, const std::string& 
 }
 
 
-std::vector<domain::business_unit> business_unit_repository::read_all(context ctx,
+std::vector<domain::business_unit> business_unit_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all business unit versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -297,7 +301,7 @@ std::vector<domain::business_unit> business_unit_repository::read_all(context ct
 }
 
 std::optional<domain::business_unit> business_unit_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading business unit at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -320,7 +324,7 @@ std::optional<domain::business_unit> business_unit_repository::read_at_version(
 }
 
 std::vector<domain::business_unit> business_unit_repository::read_latest_by_party_id(
-    context ctx,
+    const context& ctx,
     const std::string& party_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -346,7 +350,7 @@ std::vector<domain::business_unit> business_unit_repository::read_latest_by_part
 }
 
 std::uint32_t business_unit_repository::get_total_business_unit_count_by_party_id(
-    context ctx,
+    const context& ctx,
     const std::string& party_id,
     const std::optional<messaging::business_units_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active business units count. party_id: "
@@ -368,7 +372,7 @@ std::uint32_t business_unit_repository::get_total_business_unit_count_by_party_i
 
 
 business_unit_repository::remove_status business_unit_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing business unit. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -396,12 +400,12 @@ business_unit_repository::remove_status business_unit_repository::remove(
     return remove_status::removed;
 }
 
-void business_unit_repository::remove(context ctx, const std::string& id) {
+void business_unit_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::business_unit>
-business_unit_repository::read_latest(context ctx,
+business_unit_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -426,7 +430,7 @@ business_unit_repository::read_latest(context ctx,
 }
 
 std::uint32_t business_unit_repository::get_total_business_unit_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::business_units_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active business unit count";
@@ -445,7 +449,7 @@ std::uint32_t business_unit_repository::get_total_business_unit_count(
 }
 
 std::vector<domain::business_unit>
-business_unit_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+business_unit_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -462,7 +466,7 @@ business_unit_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void business_unit_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void business_unit_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -480,7 +484,7 @@ void business_unit_repository::remove(context ctx, const std::vector<std::string
 }
 
 std::vector<ores::utility::domain::hierarchy_flat_row> business_unit_repository::get_hierarchy(
-    context ctx, const boost::uuids::uuid& root_id, bool from_root) {
+    const context& ctx, const boost::uuids::uuid& root_id, bool from_root) {
     BOOST_LOG_SEV(lg(), debug) << "Reading business_unit hierarchy. Root: " << root_id
                                << " from_root: " << from_root;
 

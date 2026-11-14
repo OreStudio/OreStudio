@@ -101,7 +101,7 @@ system_setting_filter_condition(const std::optional<messaging::system_settings_f
 }
 
 ores::utility::domain::precondition
-system_setting_repository::replace_claim(context ctx, const domain::system_setting& v) {
+system_setting_repository::replace_claim(const context& ctx, const domain::system_setting& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +110,7 @@ system_setting_repository::replace_claim(context ctx, const domain::system_setti
 }
 
 domain::system_setting
-system_setting_repository::apply_claim(context ctx,
+system_setting_repository::apply_claim(const context& ctx,
                                        const domain::system_setting& v,
                                        const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,11 +137,12 @@ system_setting_repository::apply_claim(context ctx,
     return t;
 }
 
-void system_setting_repository::write(context ctx, const domain::system_setting& v) {
+void system_setting_repository::write(const context& ctx, const domain::system_setting& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void system_setting_repository::write(context ctx, const std::vector<domain::system_setting>& v) {
+void system_setting_repository::write(const context& ctx,
+                                      const std::vector<domain::system_setting>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -149,7 +150,7 @@ void system_setting_repository::write(context ctx, const std::vector<domain::sys
     write(ctx, v, claims);
 }
 
-void system_setting_repository::write(context ctx,
+void system_setting_repository::write(const context& ctx,
                                       const domain::system_setting& v,
                                       const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing system setting. " << "id: " << v.id;
@@ -159,7 +160,7 @@ void system_setting_repository::write(context ctx,
 }
 
 void system_setting_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::system_setting>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing system settings. Count: " << v.size();
@@ -171,7 +172,7 @@ void system_setting_repository::write(
         ctx, system_setting_mapper::map(batch), lg(), "Writing system settings to database.");
 }
 
-std::vector<domain::system_setting> system_setting_repository::read_latest(context ctx) {
+std::vector<domain::system_setting> system_setting_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<system_setting_entity>> |
@@ -186,7 +187,7 @@ std::vector<domain::system_setting> system_setting_repository::read_latest(conte
         "Reading latest system settings");
 }
 
-std::vector<domain::system_setting> system_setting_repository::read_latest(context ctx,
+std::vector<domain::system_setting> system_setting_repository::read_latest(const context& ctx,
                                                                            const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest system setting. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -204,7 +205,7 @@ std::vector<domain::system_setting> system_setting_repository::read_latest(conte
 }
 
 std::vector<domain::system_setting>
-system_setting_repository::read_latest_by_name(context ctx, const std::string& name) {
+system_setting_repository::read_latest_by_name(const context& ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest system setting by name: " << name;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -227,7 +228,7 @@ system_setting_repository::read_latest_by_name(context ctx, const std::string& n
 }
 
 std::vector<domain::system_setting>
-system_setting_repository::read_any_by_name(context ctx, const std::string& name) {
+system_setting_repository::read_any_by_name(const context& ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any system setting by name: " << name;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<system_setting_entity>> |
@@ -253,7 +254,7 @@ system_setting_repository::read_any_by_name(context ctx, const std::string& name
 }
 
 
-std::vector<domain::system_setting> system_setting_repository::read_all(context ctx,
+std::vector<domain::system_setting> system_setting_repository::read_all(const context& ctx,
                                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all system setting versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -270,7 +271,7 @@ std::vector<domain::system_setting> system_setting_repository::read_all(context 
 }
 
 std::optional<domain::system_setting> system_setting_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading system setting at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -293,7 +294,7 @@ std::optional<domain::system_setting> system_setting_repository::read_at_version
 }
 
 system_setting_repository::remove_status system_setting_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing system setting. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -321,12 +322,12 @@ system_setting_repository::remove_status system_setting_repository::remove(
     return remove_status::removed;
 }
 
-void system_setting_repository::remove(context ctx, const std::string& id) {
+void system_setting_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::system_setting> system_setting_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -351,7 +352,7 @@ std::vector<domain::system_setting> system_setting_repository::read_latest(
 }
 
 std::uint32_t system_setting_repository::get_total_setting_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::system_settings_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active system setting count";
@@ -370,7 +371,7 @@ std::uint32_t system_setting_repository::get_total_setting_count(
 }
 
 std::vector<domain::system_setting>
-system_setting_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+system_setting_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -387,7 +388,7 @@ system_setting_repository::read_latest(context ctx, const std::vector<std::strin
     return result;
 }
 
-void system_setting_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void system_setting_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

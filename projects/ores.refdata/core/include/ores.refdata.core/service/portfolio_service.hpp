@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit portfolio_service(context ctx);
+    explicit portfolio_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

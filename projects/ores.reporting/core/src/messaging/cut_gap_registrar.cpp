@@ -44,10 +44,10 @@ static constexpr std::string_view cut_gap_queue_group = "ores.reporting.service"
 
 std::vector<ores::nats::service::subscription>
 register_cut_gap_handlers(ores::nats::service::client& nats,
-                          ores::database::context ctx,
+                          const ores::database::context& ctx,
                           std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<cut_gap_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<cut_gap_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_cut_gaps_request::nats_subject, cut_gap_queue_group, [h](ores::nats::message msg) {
             h->list_cut_gaps(std::move(msg));

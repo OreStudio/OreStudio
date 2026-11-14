@@ -103,7 +103,7 @@ folder_filter_condition(const std::optional<messaging::folders_filter>& filter) 
 
 }
 
-ores::utility::domain::precondition folder_repository::replace_claim(context ctx,
+ores::utility::domain::precondition folder_repository::replace_claim(const context& ctx,
                                                                      const domain::folder& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -112,7 +112,7 @@ ores::utility::domain::precondition folder_repository::replace_claim(context ctx
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::folder folder_repository::apply_claim(context ctx,
+domain::folder folder_repository::apply_claim(const context& ctx,
                                               const domain::folder& v,
                                               const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,11 +139,11 @@ domain::folder folder_repository::apply_claim(context ctx,
     return t;
 }
 
-void folder_repository::write(context ctx, const domain::folder& v) {
+void folder_repository::write(const context& ctx, const domain::folder& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void folder_repository::write(context ctx, const std::vector<domain::folder>& v) {
+void folder_repository::write(const context& ctx, const std::vector<domain::folder>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -151,7 +151,7 @@ void folder_repository::write(context ctx, const std::vector<domain::folder>& v)
     write(ctx, v, claims);
 }
 
-void folder_repository::write(context ctx,
+void folder_repository::write(const context& ctx,
                               const domain::folder& v,
                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing folder. " << "id: " << v.id;
@@ -160,7 +160,7 @@ void folder_repository::write(context ctx,
         ctx, folder_mapper::map(t), lg(), "Writing folder to database.");
 }
 
-void folder_repository::write(context ctx,
+void folder_repository::write(const context& ctx,
                               const std::vector<domain::folder>& v,
                               const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing folders. Count: " << v.size();
@@ -172,7 +172,7 @@ void folder_repository::write(context ctx,
         ctx, folder_mapper::map(batch), lg(), "Writing folders to database.");
 }
 
-std::vector<domain::folder> folder_repository::read_latest(context ctx) {
+std::vector<domain::folder> folder_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -189,7 +189,8 @@ std::vector<domain::folder> folder_repository::read_latest(context ctx) {
         "Reading latest folders");
 }
 
-std::vector<domain::folder> folder_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::folder> folder_repository::read_latest(const context& ctx,
+                                                           const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest folder. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -207,7 +208,7 @@ std::vector<domain::folder> folder_repository::read_latest(context ctx, const st
 }
 
 
-std::vector<domain::folder> folder_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::folder> folder_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all folder versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -224,8 +225,9 @@ std::vector<domain::folder> folder_repository::read_all(context ctx, const std::
         "Reading all folder versions by id.");
 }
 
-std::optional<domain::folder>
-folder_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::folder> folder_repository::read_at_version(const context& ctx,
+                                                                 const std::string& id,
+                                                                 std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading folder at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -248,7 +250,7 @@ folder_repository::read_at_version(context ctx, const std::string& id, std::uint
 }
 
 
-folder_repository::remove_status folder_repository::remove(context ctx,
+folder_repository::remove_status folder_repository::remove(const context& ctx,
                                                            const std::string& id,
                                                            std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing folder. " << "id: " << id;
@@ -278,12 +280,12 @@ folder_repository::remove_status folder_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void folder_repository::remove(context ctx, const std::string& id) {
+void folder_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::folder>
-folder_repository::read_latest(context ctx,
+folder_repository::read_latest(const context& ctx,
                                std::uint32_t offset,
                                std::uint32_t limit,
                                const ores::utility::domain::order& order,
@@ -308,7 +310,7 @@ folder_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-folder_repository::get_total_folder_count(context ctx,
+folder_repository::get_total_folder_count(const context& ctx,
                                           const std::optional<messaging::folders_filter>& filter,
                                           const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active folder count";
@@ -326,7 +328,7 @@ folder_repository::get_total_folder_count(context ctx,
         "Counting folders");
 }
 
-std::vector<domain::folder> folder_repository::read_latest(context ctx,
+std::vector<domain::folder> folder_repository::read_latest(const context& ctx,
                                                            const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -345,7 +347,7 @@ std::vector<domain::folder> folder_repository::read_latest(context ctx,
     return result;
 }
 
-void folder_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void folder_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -362,8 +364,8 @@ void folder_repository::remove(context ctx, const std::vector<std::string>& ids)
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing folders.");
 }
 
-std::vector<ores::utility::domain::hierarchy_flat_row>
-folder_repository::get_hierarchy(context ctx, const boost::uuids::uuid& root_id, bool from_root) {
+std::vector<ores::utility::domain::hierarchy_flat_row> folder_repository::get_hierarchy(
+    const context& ctx, const boost::uuids::uuid& root_id, bool from_root) {
     BOOST_LOG_SEV(lg(), debug) << "Reading folder hierarchy. Root: " << root_id
                                << " from_root: " << from_root;
 

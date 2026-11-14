@@ -71,9 +71,9 @@ using namespace ores::logging;
  */
 class ORES_COMPUTE_CORE_EXPORT result_submit_handler {
 public:
-    result_submit_handler(ores::nats::service::client& nats, ores::database::context ctx)
+    result_submit_handler(ores::nats::service::client& nats, const ores::database::context& ctx)
         : nats_(nats)
-        , ctx_(std::move(ctx)) {}
+        , ctx_(ctx) {}
 
     void submit(ores::nats::message msg) {
         BOOST_LOG_SEV(result_submit_handler_lg(), debug) << "Handling " << msg.subject;

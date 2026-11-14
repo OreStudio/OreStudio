@@ -101,7 +101,8 @@ std::optional<query_builder::condition> entry_channel_type_filter_condition(
 }
 
 ores::utility::domain::precondition
-entry_channel_type_repository::replace_claim(context ctx, const domain::entry_channel_type& v) {
+entry_channel_type_repository::replace_claim(const context& ctx,
+                                             const domain::entry_channel_type& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +111,7 @@ entry_channel_type_repository::replace_claim(context ctx, const domain::entry_ch
 }
 
 domain::entry_channel_type
-entry_channel_type_repository::apply_claim(context ctx,
+entry_channel_type_repository::apply_claim(const context& ctx,
                                            const domain::entry_channel_type& v,
                                            const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,11 +138,11 @@ entry_channel_type_repository::apply_claim(context ctx,
     return t;
 }
 
-void entry_channel_type_repository::write(context ctx, const domain::entry_channel_type& v) {
+void entry_channel_type_repository::write(const context& ctx, const domain::entry_channel_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void entry_channel_type_repository::write(context ctx,
+void entry_channel_type_repository::write(const context& ctx,
                                           const std::vector<domain::entry_channel_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -150,7 +151,7 @@ void entry_channel_type_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void entry_channel_type_repository::write(context ctx,
+void entry_channel_type_repository::write(const context& ctx,
                                           const domain::entry_channel_type& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing entry channel type. " << "code: " << v.code;
@@ -160,7 +161,7 @@ void entry_channel_type_repository::write(context ctx,
 }
 
 void entry_channel_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::entry_channel_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing entry channel types. Count: " << v.size();
@@ -174,7 +175,8 @@ void entry_channel_type_repository::write(
                                        "Writing entry channel types to database.");
 }
 
-std::vector<domain::entry_channel_type> entry_channel_type_repository::read_latest(context ctx) {
+std::vector<domain::entry_channel_type>
+entry_channel_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<entry_channel_type_entity>> |
                        query_builder::where("valid_to"_c == max) |
@@ -189,7 +191,7 @@ std::vector<domain::entry_channel_type> entry_channel_type_repository::read_late
 }
 
 std::vector<domain::entry_channel_type>
-entry_channel_type_repository::read_latest(context ctx, const std::string& code) {
+entry_channel_type_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest entry channel type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<entry_channel_type_entity>> |
@@ -205,7 +207,7 @@ entry_channel_type_repository::read_latest(context ctx, const std::string& code)
 
 
 std::vector<domain::entry_channel_type>
-entry_channel_type_repository::read_all(context ctx, const std::string& code) {
+entry_channel_type_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all entry channel type versions. " << "code: " << code;
     const auto query = query_builder::read<std::vector<entry_channel_type_entity>> |
                        query_builder::where("code"_c == code) |
@@ -220,7 +222,7 @@ entry_channel_type_repository::read_all(context ctx, const std::string& code) {
 }
 
 std::optional<domain::entry_channel_type> entry_channel_type_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading entry channel type at version. " << "code: " << code
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<entry_channel_type_entity>> |
@@ -241,7 +243,7 @@ std::optional<domain::entry_channel_type> entry_channel_type_repository::read_at
 }
 
 entry_channel_type_repository::remove_status entry_channel_type_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing entry channel type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -269,12 +271,12 @@ entry_channel_type_repository::remove_status entry_channel_type_repository::remo
     return remove_status::removed;
 }
 
-void entry_channel_type_repository::remove(context ctx, const std::string& code) {
+void entry_channel_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::entry_channel_type> entry_channel_type_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -298,7 +300,7 @@ std::vector<domain::entry_channel_type> entry_channel_type_repository::read_late
 }
 
 std::uint32_t entry_channel_type_repository::get_total_entry_channel_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::entry_channel_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active entry channel type count";
@@ -315,7 +317,8 @@ std::uint32_t entry_channel_type_repository::get_total_entry_channel_type_count(
 }
 
 std::vector<domain::entry_channel_type>
-entry_channel_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+entry_channel_type_repository::read_latest(const context& ctx,
+                                           const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -331,7 +334,8 @@ entry_channel_type_repository::read_latest(context ctx, const std::vector<std::s
     return result;
 }
 
-void entry_channel_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void entry_channel_type_repository::remove(const context& ctx,
+                                           const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

@@ -61,7 +61,7 @@ private:
 
 public:
     workflow_query_handler(ores::nats::service::client& nats,
-                           ores::database::context ctx,
+                           const ores::database::context& ctx,
                            ores::security::jwt::jwt_authenticator signer,
                            const service::fsm_state_map& instance_states,
                            const service::fsm_state_map& step_states,

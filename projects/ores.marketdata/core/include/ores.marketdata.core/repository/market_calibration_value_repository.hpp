@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::market_calibration_value& v);
-    void write(context ctx, const std::vector<domain::market_calibration_value>& v);
+    void write(const context& ctx, const domain::market_calibration_value& v);
+    void write(const context& ctx, const std::vector<domain::market_calibration_value>& v);
     /**@}*/
 
     /**
@@ -90,7 +90,7 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::market_calibration_value& v,
                const ores::utility::domain::precondition& claim);
 
@@ -98,7 +98,7 @@ public:
      * @brief Writes a set of market calibration values, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::market_calibration_value>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -110,17 +110,18 @@ public:
      * one claim query per row.
      */
     /**@{*/
-    void insert(context ctx, const domain::market_calibration_value& v);
-    void insert(context ctx, const std::vector<domain::market_calibration_value>& v);
+    void insert(const context& ctx, const domain::market_calibration_value& v);
+    void insert(const context& ctx, const std::vector<domain::market_calibration_value>& v);
     /**@}*/
 
     /**
      * @brief Reads latest market calibration values, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::market_calibration_value> read_latest(context ctx);
-    std::vector<domain::market_calibration_value> read_latest(context ctx, const std::string& id);
-    std::vector<domain::market_calibration_value> read_latest(context ctx,
+    std::vector<domain::market_calibration_value> read_latest(const context& ctx);
+    std::vector<domain::market_calibration_value> read_latest(const context& ctx,
+                                                              const std::string& id);
+    std::vector<domain::market_calibration_value> read_latest(const context& ctx,
                                                               const std::vector<std::string>& ids);
     /**@}*/
 
@@ -128,7 +129,8 @@ public:
     /**
      * @brief Reads all market calibration values, possibly filtered by primary key.
      */
-    std::vector<domain::market_calibration_value> read_all(context ctx, const std::string& id);
+    std::vector<domain::market_calibration_value> read_all(const context& ctx,
+                                                           const std::string& id);
 
 
     /**
@@ -148,7 +150,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::market_calibration_value> read_latest(
-        context ctx,
+        const context& ctx,
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
@@ -161,14 +163,14 @@ public:
      * @return Total number of active market calibration values
      */
     std::uint32_t get_total_value_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::market_calibration_values_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a market calibration value by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -190,12 +192,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes market calibration values by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -203,7 +206,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::market_calibration_value& v);
 
     /**
@@ -211,7 +214,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::market_calibration_value apply_claim(context ctx,
+    domain::market_calibration_value apply_claim(const context& ctx,
                                                  const domain::market_calibration_value& v,
                                                  const ores::utility::domain::precondition& claim);
 };

@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-netting_agreement_service::netting_agreement_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+netting_agreement_service::netting_agreement_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

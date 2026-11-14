@@ -51,7 +51,7 @@ auto& trade_component_queries_lg() {
 }
 
 std::vector<domain::trade_additional_field>
-read_additional_fields_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_additional_fields_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -71,7 +71,7 @@ read_additional_fields_by_trade_ids(context ctx, const std::vector<std::string>&
 }
 
 std::vector<domain::trade_identifier>
-read_identifiers_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_identifiers_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -90,7 +90,7 @@ read_identifiers_by_trade_ids(context ctx, const std::vector<std::string>& trade
 }
 
 std::vector<domain::trade_portfolio>
-read_portfolios_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_portfolios_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -109,7 +109,7 @@ read_portfolios_by_trade_ids(context ctx, const std::vector<std::string>& trade_
 }
 
 std::vector<domain::trade_party_role>
-read_party_roles_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_party_roles_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -128,8 +128,9 @@ read_party_roles_by_trade_ids(context ctx, const std::vector<std::string>& trade
 }
 
 
-std::vector<std::string>
-read_instrument_digests(context ctx, const std::string& trade_id, const std::string& trade_type) {
+std::vector<std::string> read_instrument_digests(const context& ctx,
+                                                 const std::string& trade_id,
+                                                 const std::string& trade_type) {
     std::vector<std::string> digests;
     const auto append = [&digests](const auto& rows) {
         for (const auto& row : rows)

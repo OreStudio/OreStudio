@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-default_curve_transition_matrix_service::default_curve_transition_matrix_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+default_curve_transition_matrix_service::default_curve_transition_matrix_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

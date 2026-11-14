@@ -22,7 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_yield_curve_process.hpp"
 #include "ores.analytics.quant/domain/market_board.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.refdata.api/domain/instrument_code.hpp"
 #include "ores.refdata.api/domain/payment_frequency.hpp"
 #include "ores.refdata.api/domain/tenor.hpp"
@@ -178,7 +178,7 @@ append_curve_points(std::chrono::year_month_day spot_date,
  * per-request error) -- callers should treat that as fatal to the feed being started.
  */
 ORES_SYNTHETIC_API_EXPORT std::optional<ir_curve_refdata_context>
-build_ir_curve_refdata_context(ores::database::context ctx,
+build_ir_curve_refdata_context(const ores::database::context& ctx,
                                const std::string& tenor_convention_code);
 
 /**

@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit calibration_provider_order_service(context ctx);
+    explicit calibration_provider_order_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

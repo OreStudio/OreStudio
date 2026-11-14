@@ -224,7 +224,7 @@ trade_summary_filter_condition(const std::optional<messaging::trade_summaries_fi
 }
 
 ores::utility::domain::precondition
-trade_summary_repository::replace_claim(context ctx, const domain::trade_summary& v) {
+trade_summary_repository::replace_claim(const context& ctx, const domain::trade_summary& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -234,8 +234,10 @@ trade_summary_repository::replace_claim(context ctx, const domain::trade_summary
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::trade_summary trade_summary_repository::apply_claim(
-    context ctx, const domain::trade_summary& v, const ores::utility::domain::precondition& claim) {
+domain::trade_summary
+trade_summary_repository::apply_claim(const context& ctx,
+                                      const domain::trade_summary& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
@@ -249,11 +251,12 @@ domain::trade_summary trade_summary_repository::apply_claim(
     return t;
 }
 
-void trade_summary_repository::write(context ctx, const domain::trade_summary& v) {
+void trade_summary_repository::write(const context& ctx, const domain::trade_summary& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void trade_summary_repository::write(context ctx, const std::vector<domain::trade_summary>& v) {
+void trade_summary_repository::write(const context& ctx,
+                                     const std::vector<domain::trade_summary>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -261,7 +264,7 @@ void trade_summary_repository::write(context ctx, const std::vector<domain::trad
     write(ctx, v, claims);
 }
 
-void trade_summary_repository::write(context ctx,
+void trade_summary_repository::write(const context& ctx,
                                      const domain::trade_summary& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade summary. " << "id: " << v.id;
@@ -273,7 +276,7 @@ void trade_summary_repository::write(context ctx,
 }
 
 void trade_summary_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::trade_summary>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade summaries. Count: " << v.size();
@@ -288,7 +291,7 @@ void trade_summary_repository::write(
         "Writing trade summaries to database.");
 }
 
-std::vector<domain::trade_summary> trade_summary_repository::read_latest(context ctx) {
+std::vector<domain::trade_summary> trade_summary_repository::read_latest(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_summary_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::order_by("id"_c);
@@ -301,7 +304,7 @@ std::vector<domain::trade_summary> trade_summary_repository::read_latest(context
         "Reading latest trade summaries");
 }
 
-std::vector<domain::trade_summary> trade_summary_repository::read_latest(context ctx,
+std::vector<domain::trade_summary> trade_summary_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade summary. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -317,7 +320,7 @@ std::vector<domain::trade_summary> trade_summary_repository::read_latest(context
 }
 
 
-std::vector<domain::trade_summary> trade_summary_repository::read_all(context ctx,
+std::vector<domain::trade_summary> trade_summary_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade summary versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -335,7 +338,7 @@ std::vector<domain::trade_summary> trade_summary_repository::read_all(context ct
 
 
 trade_summary_repository::remove_status trade_summary_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing trade summary. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -352,12 +355,12 @@ trade_summary_repository::remove_status trade_summary_repository::remove(
     return remove_status::removed;
 }
 
-void trade_summary_repository::remove(context ctx, const std::string& id) {
+void trade_summary_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::trade_summary> trade_summary_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -380,7 +383,7 @@ std::vector<domain::trade_summary> trade_summary_repository::read_latest(
 }
 
 std::uint32_t trade_summary_repository::get_total_trade_summary_count(
-    context ctx, const std::optional<messaging::trade_summaries_filter>& filter) {
+    const context& ctx, const std::optional<messaging::trade_summaries_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade summary count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -392,7 +395,7 @@ std::uint32_t trade_summary_repository::get_total_trade_summary_count(
 }
 
 std::vector<domain::trade_summary>
-trade_summary_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+trade_summary_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     const auto tid = ctx.tenant_id().to_string();
@@ -407,7 +410,7 @@ trade_summary_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void trade_summary_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void trade_summary_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -586,7 +589,7 @@ render_trade_summary_filter(const std::optional<messaging::trade_summaries_filte
 }
 
 std::vector<std::pair<std::string, std::uint64_t>> trade_summary_repository::count_blotter_rail(
-    context ctx,
+    const context& ctx,
     const std::string& dimension,
     const std::optional<messaging::trade_summaries_filter>& filter) {
     const auto rendered = render_trade_summary_filter(filter);
@@ -704,7 +707,7 @@ std::string trade_summary_repository::blotter_page_key(const domain::trade_summa
 }
 
 std::vector<domain::trade_summary> trade_summary_repository::read_blotter_page(
-    context ctx,
+    const context& ctx,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::string& after,

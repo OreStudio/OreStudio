@@ -59,8 +59,8 @@ namespace ores::analytics::service {
 using namespace ores::logging;
 
 credit_simulation_matrix_row_config_service::credit_simulation_matrix_row_config_service(
-    context ctx)
-    : ctx_(std::move(ctx)) {}
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

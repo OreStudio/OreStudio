@@ -129,7 +129,7 @@ std::optional<query_builder::condition> subscription_interval_filter_condition(
 }
 
 ores::utility::domain::precondition
-subscription_interval_repository::replace_claim(context ctx,
+subscription_interval_repository::replace_claim(const context& ctx,
                                                 const domain::subscription_interval& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -139,7 +139,7 @@ subscription_interval_repository::replace_claim(context ctx,
 }
 
 domain::subscription_interval
-subscription_interval_repository::apply_claim(context ctx,
+subscription_interval_repository::apply_claim(const context& ctx,
                                               const domain::subscription_interval& v,
                                               const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -166,11 +166,12 @@ subscription_interval_repository::apply_claim(context ctx,
     return t;
 }
 
-void subscription_interval_repository::write(context ctx, const domain::subscription_interval& v) {
+void subscription_interval_repository::write(const context& ctx,
+                                             const domain::subscription_interval& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void subscription_interval_repository::write(context ctx,
+void subscription_interval_repository::write(const context& ctx,
                                              const std::vector<domain::subscription_interval>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -179,7 +180,7 @@ void subscription_interval_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void subscription_interval_repository::write(context ctx,
+void subscription_interval_repository::write(const context& ctx,
                                              const domain::subscription_interval& v,
                                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing subscription interval. " << "id: " << v.id;
@@ -191,7 +192,7 @@ void subscription_interval_repository::write(context ctx,
 }
 
 void subscription_interval_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::subscription_interval>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing subscription intervals. Count: " << v.size();
@@ -206,7 +207,7 @@ void subscription_interval_repository::write(
 }
 
 std::vector<domain::subscription_interval>
-subscription_interval_repository::read_latest(context ctx) {
+subscription_interval_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<subscription_interval_entity>> |
@@ -223,7 +224,7 @@ subscription_interval_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::subscription_interval>
-subscription_interval_repository::read_latest(context ctx, const std::string& id) {
+subscription_interval_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest subscription interval. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -241,7 +242,7 @@ subscription_interval_repository::read_latest(context ctx, const std::string& id
 }
 
 std::vector<domain::subscription_interval>
-subscription_interval_repository::read_latest_by_provider_code(context ctx,
+subscription_interval_repository::read_latest_by_provider_code(const context& ctx,
                                                                const std::string& provider_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest subscription interval by provider_code: "
                                << provider_code;
@@ -268,7 +269,7 @@ subscription_interval_repository::read_latest_by_provider_code(context ctx,
 }
 
 std::vector<domain::subscription_interval>
-subscription_interval_repository::read_any_by_provider_code(context ctx,
+subscription_interval_repository::read_any_by_provider_code(const context& ctx,
                                                             const std::string& provider_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any subscription interval by provider_code: "
                                << provider_code;
@@ -299,7 +300,7 @@ subscription_interval_repository::read_any_by_provider_code(context ctx,
 
 
 std::vector<domain::subscription_interval>
-subscription_interval_repository::read_all(context ctx, const std::string& id) {
+subscription_interval_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all subscription interval versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<subscription_interval_entity>> |
@@ -316,7 +317,7 @@ subscription_interval_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::subscription_interval> subscription_interval_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading subscription interval at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -339,7 +340,7 @@ std::optional<domain::subscription_interval> subscription_interval_repository::r
 }
 
 subscription_interval_repository::remove_status subscription_interval_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing subscription interval. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -368,12 +369,12 @@ subscription_interval_repository::remove_status subscription_interval_repository
     return remove_status::removed;
 }
 
-void subscription_interval_repository::remove(context ctx, const std::string& id) {
+void subscription_interval_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::subscription_interval> subscription_interval_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -399,7 +400,7 @@ std::vector<domain::subscription_interval> subscription_interval_repository::rea
 }
 
 std::uint32_t subscription_interval_repository::get_total_subscription_interval_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::subscription_intervals_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active subscription interval count";
@@ -418,7 +419,8 @@ std::uint32_t subscription_interval_repository::get_total_subscription_interval_
 }
 
 std::vector<domain::subscription_interval>
-subscription_interval_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+subscription_interval_repository::read_latest(const context& ctx,
+                                              const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -436,7 +438,8 @@ subscription_interval_repository::read_latest(context ctx, const std::vector<std
     return result;
 }
 
-void subscription_interval_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void subscription_interval_repository::remove(const context& ctx,
+                                              const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -455,7 +458,7 @@ void subscription_interval_repository::remove(context ctx, const std::vector<std
 
 
 std::vector<domain::subscription_interval>
-subscription_interval_repository::read_latest_all_tenants(context ctx) {
+subscription_interval_repository::read_latest_all_tenants(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<subscription_interval_entity>> |
                        query_builder::where("valid_to"_c == max) | query_builder::order_by("id"_c);

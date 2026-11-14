@@ -90,7 +90,7 @@ private:
     }
 
 public:
-    explicit fixing_store(ores::database::context ctx);
+    explicit fixing_store(const ores::database::context& ctx);
 
     /**
      * @brief Stores each fixing for each consumer, and returns the rows written.
@@ -145,7 +145,7 @@ public:
     /// The consumers of a source, read when its fixings are stored.
     using consumers_of = std::function<std::vector<consumer>(const std::string& source)>;
 
-    fixing_ingest(ores::database::context ctx, consumers_of consumers);
+    fixing_ingest(const ores::database::context& ctx, consumers_of consumers);
     ~fixing_ingest();
 
     fixing_ingest(const fixing_ingest&) = delete;

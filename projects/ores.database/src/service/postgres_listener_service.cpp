@@ -31,8 +31,9 @@ namespace ores::database::service {
 
 using namespace ores::logging;
 
-postgres_listener_service::postgres_listener_service(context ctx, notification_callback_t callback)
-    : ctx_(std::move(ctx))
+postgres_listener_service::postgres_listener_service(const context& ctx,
+                                                     notification_callback_t callback)
+    : ctx_(ctx)
     , notification_callback_(std::move(callback))
     , application_name_("ores.database.listener." +
                         std::to_string(ores::platform::process::current_pid()) + "." +

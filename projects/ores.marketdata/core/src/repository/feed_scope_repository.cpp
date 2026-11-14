@@ -139,7 +139,7 @@ feed_scope_filter_condition(const std::optional<messaging::feed_scopes_filter>& 
 }
 
 ores::utility::domain::precondition
-feed_scope_repository::replace_claim(context ctx, const domain::feed_scope& v) {
+feed_scope_repository::replace_claim(const context& ctx, const domain::feed_scope& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -147,8 +147,10 @@ feed_scope_repository::replace_claim(context ctx, const domain::feed_scope& v) {
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::feed_scope feed_scope_repository::apply_claim(
-    context ctx, const domain::feed_scope& v, const ores::utility::domain::precondition& claim) {
+domain::feed_scope
+feed_scope_repository::apply_claim(const context& ctx,
+                                   const domain::feed_scope& v,
+                                   const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -173,11 +175,11 @@ domain::feed_scope feed_scope_repository::apply_claim(
     return t;
 }
 
-void feed_scope_repository::write(context ctx, const domain::feed_scope& v) {
+void feed_scope_repository::write(const context& ctx, const domain::feed_scope& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void feed_scope_repository::write(context ctx, const std::vector<domain::feed_scope>& v) {
+void feed_scope_repository::write(const context& ctx, const std::vector<domain::feed_scope>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -185,7 +187,7 @@ void feed_scope_repository::write(context ctx, const std::vector<domain::feed_sc
     write(ctx, v, claims);
 }
 
-void feed_scope_repository::write(context ctx,
+void feed_scope_repository::write(const context& ctx,
                                   const domain::feed_scope& v,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing feed scope. " << "id: " << v.id;
@@ -194,7 +196,7 @@ void feed_scope_repository::write(context ctx,
         ctx, feed_scope_mapper::map(t), lg(), "Writing feed scope to database.");
 }
 
-void feed_scope_repository::write(context ctx,
+void feed_scope_repository::write(const context& ctx,
                                   const std::vector<domain::feed_scope>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing feed scopes. Count: " << v.size();
@@ -206,7 +208,7 @@ void feed_scope_repository::write(context ctx,
         ctx, feed_scope_mapper::map(batch), lg(), "Writing feed scopes to database.");
 }
 
-std::vector<domain::feed_scope> feed_scope_repository::read_latest(context ctx) {
+std::vector<domain::feed_scope> feed_scope_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -223,7 +225,7 @@ std::vector<domain::feed_scope> feed_scope_repository::read_latest(context ctx) 
         "Reading latest feed scopes");
 }
 
-std::vector<domain::feed_scope> feed_scope_repository::read_latest(context ctx,
+std::vector<domain::feed_scope> feed_scope_repository::read_latest(const context& ctx,
                                                                    const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest feed scope. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -242,7 +244,7 @@ std::vector<domain::feed_scope> feed_scope_repository::read_latest(context ctx,
 }
 
 std::vector<domain::feed_scope>
-feed_scope_repository::read_latest_by_item(context ctx, const std::string& item) {
+feed_scope_repository::read_latest_by_item(const context& ctx, const std::string& item) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest feed scope by item: " << item;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -259,7 +261,7 @@ feed_scope_repository::read_latest_by_item(context ctx, const std::string& item)
         "Reading latest feed scope by item.");
 }
 
-std::vector<domain::feed_scope> feed_scope_repository::read_any_by_item(context ctx,
+std::vector<domain::feed_scope> feed_scope_repository::read_any_by_item(const context& ctx,
                                                                         const std::string& item) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any feed scope by item: " << item;
     const auto tid = ctx.tenant_id().to_string();
@@ -278,7 +280,7 @@ std::vector<domain::feed_scope> feed_scope_repository::read_any_by_item(context 
 }
 
 
-std::vector<domain::feed_scope> feed_scope_repository::read_all(context ctx,
+std::vector<domain::feed_scope> feed_scope_repository::read_all(const context& ctx,
                                                                 const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all feed scope versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -296,8 +298,9 @@ std::vector<domain::feed_scope> feed_scope_repository::read_all(context ctx,
         "Reading all feed scope versions by id.");
 }
 
-std::optional<domain::feed_scope>
-feed_scope_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::feed_scope> feed_scope_repository::read_at_version(const context& ctx,
+                                                                         const std::string& id,
+                                                                         std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading feed scope at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -321,7 +324,7 @@ feed_scope_repository::read_at_version(context ctx, const std::string& id, std::
 
 
 feed_scope_repository::remove_status feed_scope_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing feed scope. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -349,12 +352,12 @@ feed_scope_repository::remove_status feed_scope_repository::remove(
     return remove_status::removed;
 }
 
-void feed_scope_repository::remove(context ctx, const std::string& id) {
+void feed_scope_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::feed_scope>
-feed_scope_repository::read_latest(context ctx,
+feed_scope_repository::read_latest(const context& ctx,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order,
@@ -380,7 +383,7 @@ feed_scope_repository::read_latest(context ctx,
 }
 
 std::uint32_t feed_scope_repository::get_total_scope_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::feed_scopes_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active feed scope count";
@@ -400,7 +403,7 @@ std::uint32_t feed_scope_repository::get_total_scope_count(
 }
 
 std::vector<domain::feed_scope>
-feed_scope_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+feed_scope_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -418,7 +421,7 @@ feed_scope_repository::read_latest(context ctx, const std::vector<std::string>& 
     return result;
 }
 
-void feed_scope_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void feed_scope_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

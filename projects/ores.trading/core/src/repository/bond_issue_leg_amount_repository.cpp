@@ -89,7 +89,7 @@ bond_issue_leg_amount_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-bond_issue_leg_amount_repository::replace_claim(context ctx,
+bond_issue_leg_amount_repository::replace_claim(const context& ctx,
                                                 const domain::bond_issue_leg_amount& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.issue_id),
@@ -103,7 +103,7 @@ bond_issue_leg_amount_repository::replace_claim(context ctx,
 }
 
 domain::bond_issue_leg_amount
-bond_issue_leg_amount_repository::apply_claim(context ctx,
+bond_issue_leg_amount_repository::apply_claim(const context& ctx,
                                               const domain::bond_issue_leg_amount& v,
                                               const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -134,11 +134,12 @@ bond_issue_leg_amount_repository::apply_claim(context ctx,
     return t;
 }
 
-void bond_issue_leg_amount_repository::write(context ctx, const domain::bond_issue_leg_amount& v) {
+void bond_issue_leg_amount_repository::write(const context& ctx,
+                                             const domain::bond_issue_leg_amount& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void bond_issue_leg_amount_repository::write(context ctx,
+void bond_issue_leg_amount_repository::write(const context& ctx,
                                              const std::vector<domain::bond_issue_leg_amount>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -147,7 +148,7 @@ void bond_issue_leg_amount_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void bond_issue_leg_amount_repository::write(context ctx,
+void bond_issue_leg_amount_repository::write(const context& ctx,
                                              const domain::bond_issue_leg_amount& v,
                                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond issue leg amount. " << "issue_id: " << v.issue_id
@@ -162,7 +163,7 @@ void bond_issue_leg_amount_repository::write(context ctx,
 }
 
 void bond_issue_leg_amount_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::bond_issue_leg_amount>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond issue leg amounts. Count: " << v.size();
@@ -177,7 +178,7 @@ void bond_issue_leg_amount_repository::write(
 }
 
 std::vector<domain::bond_issue_leg_amount>
-bond_issue_leg_amount_repository::read_latest(context ctx) {
+bond_issue_leg_amount_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -195,7 +196,7 @@ bond_issue_leg_amount_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::bond_issue_leg_amount>
-bond_issue_leg_amount_repository::read_latest(context ctx,
+bond_issue_leg_amount_repository::read_latest(const context& ctx,
                                               const std::string& issue_id,
                                               const std::string& leg_number,
                                               const std::string& amount_role,
@@ -223,7 +224,7 @@ bond_issue_leg_amount_repository::read_latest(context ctx,
 
 
 std::vector<domain::bond_issue_leg_amount>
-bond_issue_leg_amount_repository::read_all(context ctx,
+bond_issue_leg_amount_repository::read_all(const context& ctx,
                                            const std::string& issue_id,
                                            const std::string& leg_number,
                                            const std::string& amount_role,
@@ -250,7 +251,7 @@ bond_issue_leg_amount_repository::read_all(context ctx,
 }
 
 std::optional<domain::bond_issue_leg_amount>
-bond_issue_leg_amount_repository::read_at_version(context ctx,
+bond_issue_leg_amount_repository::read_at_version(const context& ctx,
                                                   const std::string& issue_id,
                                                   const std::string& leg_number,
                                                   const std::string& amount_role,
@@ -284,7 +285,7 @@ bond_issue_leg_amount_repository::read_at_version(context ctx,
 
 
 bond_issue_leg_amount_repository::remove_status
-bond_issue_leg_amount_repository::remove(context ctx,
+bond_issue_leg_amount_repository::remove(const context& ctx,
                                          const std::string& issue_id,
                                          const std::string& leg_number,
                                          const std::string& amount_role,
@@ -323,7 +324,7 @@ bond_issue_leg_amount_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void bond_issue_leg_amount_repository::remove(context ctx,
+void bond_issue_leg_amount_repository::remove(const context& ctx,
                                               const std::string& issue_id,
                                               const std::string& leg_number,
                                               const std::string& amount_role,
@@ -333,7 +334,7 @@ void bond_issue_leg_amount_repository::remove(context ctx,
 }
 
 std::vector<domain::bond_issue_leg_amount>
-bond_issue_leg_amount_repository::read_latest(context ctx,
+bond_issue_leg_amount_repository::read_latest(const context& ctx,
                                               std::uint32_t offset,
                                               std::uint32_t limit,
                                               const ores::utility::domain::order& order,
@@ -358,7 +359,7 @@ bond_issue_leg_amount_repository::read_latest(context ctx,
 }
 
 std::uint32_t bond_issue_leg_amount_repository::get_total_bond_issue_leg_amount_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond issue leg amount count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -374,7 +375,7 @@ std::uint32_t bond_issue_leg_amount_repository::get_total_bond_issue_leg_amount_
 }
 
 std::vector<domain::bond_issue_leg_amount>
-bond_issue_leg_amount_repository::read_latest(context ctx,
+bond_issue_leg_amount_repository::read_latest(const context& ctx,
                                               const std::vector<std::string>& issue_ids,
                                               const std::vector<std::string>& leg_numbers,
                                               const std::vector<std::string>& amount_roles,
@@ -418,7 +419,7 @@ bond_issue_leg_amount_repository::read_latest(context ctx,
     return filtered;
 }
 
-void bond_issue_leg_amount_repository::remove(context ctx,
+void bond_issue_leg_amount_repository::remove(const context& ctx,
                                               const std::vector<std::string>& issue_ids,
                                               const std::vector<std::string>& leg_numbers,
                                               const std::vector<std::string>& amount_roles,

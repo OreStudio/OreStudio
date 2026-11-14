@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit default_curve_transition_matrix_service(context ctx);
+    explicit default_curve_transition_matrix_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

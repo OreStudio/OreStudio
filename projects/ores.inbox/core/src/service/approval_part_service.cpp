@@ -54,8 +54,8 @@ namespace ores::inbox::service {
 
 using namespace ores::logging;
 
-approval_part_service::approval_part_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+approval_part_service::approval_part_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-local_jurisdiction_service::local_jurisdiction_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+local_jurisdiction_service::local_jurisdiction_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

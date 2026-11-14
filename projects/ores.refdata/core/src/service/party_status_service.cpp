@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-party_status_service::party_status_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+party_status_service::party_status_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

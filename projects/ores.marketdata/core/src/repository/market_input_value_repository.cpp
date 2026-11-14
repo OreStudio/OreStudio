@@ -128,7 +128,8 @@ std::optional<query_builder::condition> market_input_value_filter_condition(
 }
 
 ores::utility::domain::precondition
-market_input_value_repository::replace_claim(context ctx, const domain::market_input_value& v) {
+market_input_value_repository::replace_claim(const context& ctx,
+                                             const domain::market_input_value& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -139,7 +140,7 @@ market_input_value_repository::replace_claim(context ctx, const domain::market_i
 }
 
 domain::market_input_value
-market_input_value_repository::apply_claim(context ctx,
+market_input_value_repository::apply_claim(const context& ctx,
                                            const domain::market_input_value& v,
                                            const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -155,11 +156,12 @@ market_input_value_repository::apply_claim(context ctx,
     return t;
 }
 
-void market_input_value_repository::write(context ctx, const domain::market_input_value& v) {
+void market_input_value_repository::write(const context& ctx, const domain::market_input_value& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void market_input_value_repository::insert(context ctx, const domain::market_input_value& v) {
+void market_input_value_repository::insert(const context& ctx,
+                                           const domain::market_input_value& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market input value. " << "id: " << v.id;
     query_builder::execute_write_query(ctx,
                                        market_input_value_mapper::map(v),
@@ -167,7 +169,7 @@ void market_input_value_repository::insert(context ctx, const domain::market_inp
                                        "Inserting market input value into database.");
 }
 
-void market_input_value_repository::insert(context ctx,
+void market_input_value_repository::insert(const context& ctx,
                                            const std::vector<domain::market_input_value>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market input values. Count: " << v.size();
     query_builder::execute_write_query(ctx,
@@ -176,7 +178,7 @@ void market_input_value_repository::insert(context ctx,
                                        "Inserting market input values into database.");
 }
 
-void market_input_value_repository::write(context ctx,
+void market_input_value_repository::write(const context& ctx,
                                           const std::vector<domain::market_input_value>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -185,7 +187,7 @@ void market_input_value_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void market_input_value_repository::write(context ctx,
+void market_input_value_repository::write(const context& ctx,
                                           const domain::market_input_value& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market input value. " << "id: " << v.id;
@@ -195,7 +197,7 @@ void market_input_value_repository::write(context ctx,
 }
 
 void market_input_value_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::market_input_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market input values. Count: " << v.size();
@@ -209,7 +211,8 @@ void market_input_value_repository::write(
                                        "Writing market input values to database.");
 }
 
-std::vector<domain::market_input_value> market_input_value_repository::read_latest(context ctx) {
+std::vector<domain::market_input_value>
+market_input_value_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_input_value_entity>> |
@@ -225,7 +228,7 @@ std::vector<domain::market_input_value> market_input_value_repository::read_late
 }
 
 std::vector<domain::market_input_value>
-market_input_value_repository::read_latest(context ctx, const std::string& id) {
+market_input_value_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market input value. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -243,7 +246,7 @@ market_input_value_repository::read_latest(context ctx, const std::string& id) {
 
 
 std::vector<domain::market_input_value>
-market_input_value_repository::read_all(context ctx, const std::string& id) {
+market_input_value_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market input value versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_input_value_entity>> |
@@ -260,7 +263,7 @@ market_input_value_repository::read_all(context ctx, const std::string& id) {
 
 
 market_input_value_repository::remove_status market_input_value_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing market input value. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -280,12 +283,12 @@ market_input_value_repository::remove_status market_input_value_repository::remo
     return remove_status::removed;
 }
 
-void market_input_value_repository::remove(context ctx, const std::string& id) {
+void market_input_value_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::market_input_value> market_input_value_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -311,7 +314,7 @@ std::vector<domain::market_input_value> market_input_value_repository::read_late
 }
 
 std::uint32_t market_input_value_repository::get_total_value_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::market_input_values_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market input value count";
@@ -330,7 +333,8 @@ std::uint32_t market_input_value_repository::get_total_value_count(
 }
 
 std::vector<domain::market_input_value>
-market_input_value_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+market_input_value_repository::read_latest(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -348,7 +352,8 @@ market_input_value_repository::read_latest(context ctx, const std::vector<std::s
     return result;
 }
 
-void market_input_value_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void market_input_value_repository::remove(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

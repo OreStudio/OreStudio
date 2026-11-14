@@ -102,7 +102,7 @@ std::optional<query_builder::condition> curve_volatility_smile_filter_condition(
 }
 
 ores::utility::domain::precondition
-curve_volatility_smile_repository::replace_claim(context ctx,
+curve_volatility_smile_repository::replace_claim(const context& ctx,
                                                  const domain::curve_volatility_smile& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -112,7 +112,7 @@ curve_volatility_smile_repository::replace_claim(context ctx,
 }
 
 domain::curve_volatility_smile
-curve_volatility_smile_repository::apply_claim(context ctx,
+curve_volatility_smile_repository::apply_claim(const context& ctx,
                                                const domain::curve_volatility_smile& v,
                                                const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,13 +139,13 @@ curve_volatility_smile_repository::apply_claim(context ctx,
     return t;
 }
 
-void curve_volatility_smile_repository::write(context ctx,
+void curve_volatility_smile_repository::write(const context& ctx,
                                               const domain::curve_volatility_smile& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void curve_volatility_smile_repository::write(
-    context ctx, const std::vector<domain::curve_volatility_smile>& v) {
+    const context& ctx, const std::vector<domain::curve_volatility_smile>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -153,7 +153,7 @@ void curve_volatility_smile_repository::write(
     write(ctx, v, claims);
 }
 
-void curve_volatility_smile_repository::write(context ctx,
+void curve_volatility_smile_repository::write(const context& ctx,
                                               const domain::curve_volatility_smile& v,
                                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve volatility smile. " << "id: " << v.id;
@@ -165,7 +165,7 @@ void curve_volatility_smile_repository::write(context ctx,
 }
 
 void curve_volatility_smile_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::curve_volatility_smile>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve volatility smiles. Count: " << v.size();
@@ -180,7 +180,7 @@ void curve_volatility_smile_repository::write(
 }
 
 std::vector<domain::curve_volatility_smile>
-curve_volatility_smile_repository::read_latest(context ctx) {
+curve_volatility_smile_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_volatility_smile_entity>> |
@@ -197,7 +197,7 @@ curve_volatility_smile_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::curve_volatility_smile>
-curve_volatility_smile_repository::read_latest(context ctx, const std::string& id) {
+curve_volatility_smile_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest curve volatility smile. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -232,7 +232,7 @@ curve_volatility_smile_repository::read_latest(context ctx, const std::string& i
 
 
 std::vector<domain::curve_volatility_smile>
-curve_volatility_smile_repository::read_all(context ctx, const std::string& id) {
+curve_volatility_smile_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all curve volatility smile versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_volatility_smile_entity>> |
@@ -249,7 +249,7 @@ curve_volatility_smile_repository::read_all(context ctx, const std::string& id) 
 }
 
 std::optional<domain::curve_volatility_smile> curve_volatility_smile_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading curve volatility smile at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -273,7 +273,7 @@ std::optional<domain::curve_volatility_smile> curve_volatility_smile_repository:
 
 
 curve_volatility_smile_repository::remove_status curve_volatility_smile_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing curve volatility smile. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -310,12 +310,12 @@ curve_volatility_smile_repository::remove_status curve_volatility_smile_reposito
     return remove_status::removed;
 }
 
-void curve_volatility_smile_repository::remove(context ctx, const std::string& id) {
+void curve_volatility_smile_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::curve_volatility_smile> curve_volatility_smile_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -341,7 +341,7 @@ std::vector<domain::curve_volatility_smile> curve_volatility_smile_repository::r
 }
 
 std::uint32_t curve_volatility_smile_repository::get_total_curve_volatility_smile_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::curve_volatility_smiles_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active curve volatility smile count";
@@ -360,7 +360,8 @@ std::uint32_t curve_volatility_smile_repository::get_total_curve_volatility_smil
 }
 
 std::vector<domain::curve_volatility_smile>
-curve_volatility_smile_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+curve_volatility_smile_repository::read_latest(const context& ctx,
+                                               const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -378,7 +379,8 @@ curve_volatility_smile_repository::read_latest(context ctx, const std::vector<st
     return result;
 }
 
-void curve_volatility_smile_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void curve_volatility_smile_repository::remove(const context& ctx,
+                                               const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

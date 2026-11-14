@@ -72,7 +72,7 @@ auto& calibration_log() {
 }
 
 surface_calibration_recipe
-read_recipe(context ctx, const std::string& blueprint_id, const boost::uuids::uuid& party) {
+read_recipe(const context& ctx, const std::string& blueprint_id, const boost::uuids::uuid& party) {
     const auto blueprints =
         refdata_repo::fx_vol_surface_blueprint_repository{}.read_latest(ctx, blueprint_id);
     if (blueprints.empty())
@@ -111,7 +111,7 @@ read_recipe(context ctx, const std::string& blueprint_id, const boost::uuids::uu
 }
 
 surface_forward_set
-read_forwards(context ctx, const surface_calibration_recipe& recipe, time_point as_of) {
+read_forwards(const context& ctx, const surface_calibration_recipe& recipe, time_point as_of) {
     const auto pair =
         recipe.blueprint.base_currency_code + "/" + recipe.blueprint.quote_currency_code;
     const auto set = fx_forward_publish_service::read(ctx, {.pair_code = pair, .as_of = as_of});
@@ -132,7 +132,7 @@ read_forwards(context ctx, const surface_calibration_recipe& recipe, time_point 
 }
 
 surface_series_quotes
-read_quotes(context ctx, const boost::uuids::uuid& series_id, time_point as_of) {
+read_quotes(const context& ctx, const boost::uuids::uuid& series_id, time_point as_of) {
     surface_series_quotes out;
     for (const auto& obs :
          repository::market_observation_repository{}.read_as_of(ctx, series_id, as_of)) {
@@ -197,7 +197,7 @@ boost::uuids::uuid calibration_id_of(const boost::uuids::uuid& blueprint_id,
 }
 
 mm::calibrate_fx_vol_surface_response
-fx_vol_surface_calibration_service::calibrate(context ctx,
+fx_vol_surface_calibration_service::calibrate(const context& ctx,
                                               const mm::calibrate_fx_vol_surface_request& req) {
     mm::calibrate_fx_vol_surface_response out;
     try {

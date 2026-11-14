@@ -28,7 +28,7 @@ namespace ores::compute::repository {
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-void work_tenant_repository::note(context ctx, const boost::uuids::uuid& work_tenant_id) {
+void work_tenant_repository::note(const context& ctx, const boost::uuids::uuid& work_tenant_id) {
     static const std::string sql = R"(
         INSERT INTO ores_compute_work_tenants_tbl (work_tenant_id)
         VALUES ($1::uuid)
@@ -42,7 +42,7 @@ void work_tenant_repository::note(context ctx, const boost::uuids::uuid& work_te
         "noting a tenant that dispatches work");
 }
 
-std::vector<boost::uuids::uuid> work_tenant_repository::list(context ctx) {
+std::vector<boost::uuids::uuid> work_tenant_repository::list(const context& ctx) {
     static const std::string sql =
         "SELECT work_tenant_id::text FROM ores_compute_work_tenants_tbl ORDER BY first_seen_at";
     const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(

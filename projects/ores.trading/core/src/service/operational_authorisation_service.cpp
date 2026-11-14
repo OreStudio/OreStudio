@@ -34,8 +34,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-operational_authorisation_service::operational_authorisation_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+operational_authorisation_service::operational_authorisation_service(const context& ctx)
+    : ctx_(ctx) {}
 
 authorisation_policy operational_authorisation_service::prepare() {
     ores::inbox::service::approval_lifecycle lifecycle(ctx_);

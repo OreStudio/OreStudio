@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::basket_swap_period& v);
-    void write(context ctx, const std::vector<domain::basket_swap_period>& v);
+    void write(const context& ctx, const domain::basket_swap_period& v);
+    void write(const context& ctx, const std::vector<domain::basket_swap_period>& v);
     /**@}*/
 
     /**
@@ -84,7 +84,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::basket_swap_period& v,
                const ores::utility::domain::precondition& claim);
 
@@ -92,7 +92,7 @@ public:
      * @brief Writes a set of basket swap periods, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::basket_swap_period>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -100,13 +100,13 @@ public:
      * @brief Reads latest basket swap periods, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::basket_swap_period> read_latest(context ctx);
-    std::vector<domain::basket_swap_period> read_latest(context ctx,
+    std::vector<domain::basket_swap_period> read_latest(const context& ctx);
+    std::vector<domain::basket_swap_period> read_latest(const context& ctx,
                                                         const std::string& trade_id,
                                                         const std::string& trade_activity_id,
                                                         const std::string& sequence_number);
     std::vector<domain::basket_swap_period>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& trade_activity_ids,
                 const std::vector<std::string>& sequence_numbers);
@@ -116,7 +116,7 @@ public:
     /**
      * @brief Reads all basket swap periods, possibly filtered by primary key.
      */
-    std::vector<domain::basket_swap_period> read_all(context ctx,
+    std::vector<domain::basket_swap_period> read_all(const context& ctx,
                                                      const std::string& trade_id,
                                                      const std::string& trade_activity_id,
                                                      const std::string& sequence_number);
@@ -130,7 +130,7 @@ public:
      * @param ctx Repository context with database connection
      * @param version The version to fetch
      */
-    std::optional<domain::basket_swap_period> read_at_version(context ctx,
+    std::optional<domain::basket_swap_period> read_at_version(const context& ctx,
                                                               const std::string& trade_id,
                                                               const std::string& trade_activity_id,
                                                               const std::string& sequence_number,
@@ -153,7 +153,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::basket_swap_period>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -165,13 +165,13 @@ public:
      * @return Total number of active basket swap periods
      */
     std::uint32_t
-    get_total_basket_swap_period_count(context ctx,
+    get_total_basket_swap_period_count(const context& ctx,
                                        const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a basket swap period by closing its temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::string& trade_id,
                 const std::string& trade_activity_id,
                 const std::string& sequence_number);
@@ -196,7 +196,7 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& trade_id,
                          const std::string& trade_activity_id,
                          const std::string& sequence_number,
@@ -205,7 +205,7 @@ public:
     /**
      * @brief Deletes basket swap periods by closing their temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& trade_activity_ids,
                 const std::vector<std::string>& sequence_numbers);
@@ -224,7 +224,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::basket_swap_period& v);
 
     /**
@@ -232,7 +232,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::basket_swap_period apply_claim(context ctx,
+    domain::basket_swap_period apply_claim(const context& ctx,
                                            const domain::basket_swap_period& v,
                                            const ores::utility::domain::precondition& claim);
 };

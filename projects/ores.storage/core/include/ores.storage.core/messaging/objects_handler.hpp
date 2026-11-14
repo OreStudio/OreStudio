@@ -50,7 +50,7 @@ namespace ores::storage::messaging {
 class ORES_STORAGE_CORE_EXPORT objects_handler final {
 public:
     objects_handler(ores::nats::service::client& nats,
-                    ores::database::context base_ctx,
+                    const ores::database::context& base_ctx,
                     filesystem::local_store store,
                     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 

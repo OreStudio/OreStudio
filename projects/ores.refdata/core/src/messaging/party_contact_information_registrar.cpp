@@ -44,11 +44,10 @@ static constexpr std::string_view party_contact_information_queue_group = "ores.
 
 std::vector<ores::nats::service::subscription> register_party_contact_information_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<party_contact_information_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<party_contact_information_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_party_contact_informations_request::nats_subject,
         party_contact_information_queue_group,

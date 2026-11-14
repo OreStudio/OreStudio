@@ -65,7 +65,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit csa_eligible_currency_service(context ctx);
+    explicit csa_eligible_currency_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

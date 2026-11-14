@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_SERIES_TICK_READER_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_SERIES_TICK_READER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <chrono>
@@ -74,7 +74,7 @@ public:
      * @return The ticks, or an outcome that says why the span is refused.
      */
     static messaging::get_series_ticks_response
-    read(ores::database::context ctx,
+    read(const ores::database::context& ctx,
          const messaging::get_series_ticks_request& request,
          std::chrono::system_clock::time_point now = std::chrono::system_clock::now());
 };

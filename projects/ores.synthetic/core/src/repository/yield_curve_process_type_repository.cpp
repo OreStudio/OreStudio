@@ -101,7 +101,7 @@ std::optional<query_builder::condition> yield_curve_process_type_filter_conditio
 }
 
 ores::utility::domain::precondition
-yield_curve_process_type_repository::replace_claim(context ctx,
+yield_curve_process_type_repository::replace_claim(const context& ctx,
                                                    const domain::yield_curve_process_type& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
@@ -111,7 +111,7 @@ yield_curve_process_type_repository::replace_claim(context ctx,
 }
 
 domain::yield_curve_process_type
-yield_curve_process_type_repository::apply_claim(context ctx,
+yield_curve_process_type_repository::apply_claim(const context& ctx,
                                                  const domain::yield_curve_process_type& v,
                                                  const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,13 +138,13 @@ yield_curve_process_type_repository::apply_claim(context ctx,
     return t;
 }
 
-void yield_curve_process_type_repository::write(context ctx,
+void yield_curve_process_type_repository::write(const context& ctx,
                                                 const domain::yield_curve_process_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void yield_curve_process_type_repository::write(
-    context ctx, const std::vector<domain::yield_curve_process_type>& v) {
+    const context& ctx, const std::vector<domain::yield_curve_process_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -152,7 +152,7 @@ void yield_curve_process_type_repository::write(
     write(ctx, v, claims);
 }
 
-void yield_curve_process_type_repository::write(context ctx,
+void yield_curve_process_type_repository::write(const context& ctx,
                                                 const domain::yield_curve_process_type& v,
                                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing yield curve process type. " << "code: " << v.code;
@@ -164,7 +164,7 @@ void yield_curve_process_type_repository::write(context ctx,
 }
 
 void yield_curve_process_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::yield_curve_process_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing yield curve process types. Count: " << v.size();
@@ -179,7 +179,7 @@ void yield_curve_process_type_repository::write(
 }
 
 std::vector<domain::yield_curve_process_type>
-yield_curve_process_type_repository::read_latest(context ctx) {
+yield_curve_process_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<yield_curve_process_type_entity>> |
@@ -196,7 +196,7 @@ yield_curve_process_type_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::yield_curve_process_type>
-yield_curve_process_type_repository::read_latest(context ctx, const std::string& code) {
+yield_curve_process_type_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest yield curve process type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -215,7 +215,7 @@ yield_curve_process_type_repository::read_latest(context ctx, const std::string&
 
 
 std::vector<domain::yield_curve_process_type>
-yield_curve_process_type_repository::read_all(context ctx, const std::string& code) {
+yield_curve_process_type_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all yield curve process type versions. "
                                << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -233,7 +233,7 @@ yield_curve_process_type_repository::read_all(context ctx, const std::string& co
 }
 
 std::optional<domain::yield_curve_process_type>
-yield_curve_process_type_repository::read_at_version(context ctx,
+yield_curve_process_type_repository::read_at_version(const context& ctx,
                                                      const std::string& code,
                                                      std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading yield curve process type at version. "
@@ -258,7 +258,7 @@ yield_curve_process_type_repository::read_at_version(context ctx,
 }
 
 yield_curve_process_type_repository::remove_status yield_curve_process_type_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing yield curve process type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -287,12 +287,12 @@ yield_curve_process_type_repository::remove_status yield_curve_process_type_repo
     return remove_status::removed;
 }
 
-void yield_curve_process_type_repository::remove(context ctx, const std::string& code) {
+void yield_curve_process_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::yield_curve_process_type> yield_curve_process_type_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -318,7 +318,7 @@ std::vector<domain::yield_curve_process_type> yield_curve_process_type_repositor
 }
 
 std::uint32_t yield_curve_process_type_repository::get_total_process_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::yield_curve_process_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active yield curve process type count";
@@ -337,7 +337,7 @@ std::uint32_t yield_curve_process_type_repository::get_total_process_type_count(
 }
 
 std::vector<domain::yield_curve_process_type>
-yield_curve_process_type_repository::read_latest(context ctx,
+yield_curve_process_type_repository::read_latest(const context& ctx,
                                                  const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
@@ -356,7 +356,7 @@ yield_curve_process_type_repository::read_latest(context ctx,
     return result;
 }
 
-void yield_curve_process_type_repository::remove(context ctx,
+void yield_curve_process_type_repository::remove(const context& ctx,
                                                  const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

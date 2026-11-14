@@ -101,7 +101,7 @@ std::optional<query_builder::condition> delivery_outcome_type_filter_condition(
 }
 
 ores::utility::domain::precondition
-delivery_outcome_type_repository::replace_claim(context ctx,
+delivery_outcome_type_repository::replace_claim(const context& ctx,
                                                 const domain::delivery_outcome_type& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
@@ -113,7 +113,7 @@ delivery_outcome_type_repository::replace_claim(context ctx,
 }
 
 domain::delivery_outcome_type
-delivery_outcome_type_repository::apply_claim(context ctx,
+delivery_outcome_type_repository::apply_claim(const context& ctx,
                                               const domain::delivery_outcome_type& v,
                                               const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -128,11 +128,12 @@ delivery_outcome_type_repository::apply_claim(context ctx,
     return t;
 }
 
-void delivery_outcome_type_repository::write(context ctx, const domain::delivery_outcome_type& v) {
+void delivery_outcome_type_repository::write(const context& ctx,
+                                             const domain::delivery_outcome_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void delivery_outcome_type_repository::write(context ctx,
+void delivery_outcome_type_repository::write(const context& ctx,
                                              const std::vector<domain::delivery_outcome_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -141,7 +142,7 @@ void delivery_outcome_type_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void delivery_outcome_type_repository::write(context ctx,
+void delivery_outcome_type_repository::write(const context& ctx,
                                              const domain::delivery_outcome_type& v,
                                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing delivery outcome type. " << "code: " << v.code;
@@ -153,7 +154,7 @@ void delivery_outcome_type_repository::write(context ctx,
 }
 
 void delivery_outcome_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::delivery_outcome_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing delivery outcome types. Count: " << v.size();
@@ -168,7 +169,7 @@ void delivery_outcome_type_repository::write(
 }
 
 std::vector<domain::delivery_outcome_type>
-delivery_outcome_type_repository::read_latest(context ctx) {
+delivery_outcome_type_repository::read_latest(const context& ctx) {
     const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>> |
                        query_builder::order_by("code"_c);
 
@@ -182,7 +183,7 @@ delivery_outcome_type_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::delivery_outcome_type>
-delivery_outcome_type_repository::read_latest(context ctx, const std::string& code) {
+delivery_outcome_type_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest delivery outcome type. " << "code: " << code;
     const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>> |
                        query_builder::where("code"_c == code);
@@ -198,7 +199,7 @@ delivery_outcome_type_repository::read_latest(context ctx, const std::string& co
 
 
 std::vector<domain::delivery_outcome_type>
-delivery_outcome_type_repository::read_all(context ctx, const std::string& code) {
+delivery_outcome_type_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all delivery outcome type versions. "
                                << "code: " << code;
     const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>> |
@@ -215,7 +216,7 @@ delivery_outcome_type_repository::read_all(context ctx, const std::string& code)
 
 
 delivery_outcome_type_repository::remove_status delivery_outcome_type_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing delivery outcome type. " << "code: " << code;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -232,12 +233,12 @@ delivery_outcome_type_repository::remove_status delivery_outcome_type_repository
     return remove_status::removed;
 }
 
-void delivery_outcome_type_repository::remove(context ctx, const std::string& code) {
+void delivery_outcome_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::delivery_outcome_type> delivery_outcome_type_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -259,7 +260,7 @@ std::vector<domain::delivery_outcome_type> delivery_outcome_type_repository::rea
 }
 
 std::uint32_t delivery_outcome_type_repository::get_total_delivery_outcome_type_count(
-    context ctx, const std::optional<messaging::delivery_outcome_types_filter>& filter) {
+    const context& ctx, const std::optional<messaging::delivery_outcome_types_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active delivery outcome type count";
 
     const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>>;
@@ -273,7 +274,8 @@ std::uint32_t delivery_outcome_type_repository::get_total_delivery_outcome_type_
 }
 
 std::vector<domain::delivery_outcome_type>
-delivery_outcome_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+delivery_outcome_type_repository::read_latest(const context& ctx,
+                                              const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     const auto query = query_builder::read<std::vector<delivery_outcome_type_entity>> |
@@ -288,7 +290,8 @@ delivery_outcome_type_repository::read_latest(context ctx, const std::vector<std
     return result;
 }
 
-void delivery_outcome_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void delivery_outcome_type_repository::remove(const context& ctx,
+                                              const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

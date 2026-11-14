@@ -20,7 +20,7 @@
 #ifndef ORES_HISTORY_SERVICE_DISPATCH_REGISTRY_HPP
 #define ORES_HISTORY_SERVICE_DISPATCH_REGISTRY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.history.api/messaging/history_protocol.hpp"
 #include "ores.history.core/export.hpp"
 #include <functional>

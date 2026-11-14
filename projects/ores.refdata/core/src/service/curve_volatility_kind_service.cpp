@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-curve_volatility_kind_service::curve_volatility_kind_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+curve_volatility_kind_service::curve_volatility_kind_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

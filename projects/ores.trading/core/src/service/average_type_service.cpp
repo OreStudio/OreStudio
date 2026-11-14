@@ -54,8 +54,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-average_type_service::average_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+average_type_service::average_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

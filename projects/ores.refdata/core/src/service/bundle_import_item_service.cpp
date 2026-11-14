@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-bundle_import_item_service::bundle_import_item_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+bundle_import_item_service::bundle_import_item_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -54,8 +54,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-publication_service::publication_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+publication_service::publication_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

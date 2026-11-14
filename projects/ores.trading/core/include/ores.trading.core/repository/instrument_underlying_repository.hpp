@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::instrument_underlying& v);
-    void write(context ctx, const std::vector<domain::instrument_underlying>& v);
+    void write(const context& ctx, const domain::instrument_underlying& v);
+    void write(const context& ctx, const std::vector<domain::instrument_underlying>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::instrument_underlying& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of instrument underlyings, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::instrument_underlying>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,13 +101,13 @@ public:
      * @brief Reads latest instrument underlyings, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::instrument_underlying> read_latest(context ctx);
-    std::vector<domain::instrument_underlying> read_latest(context ctx,
+    std::vector<domain::instrument_underlying> read_latest(const context& ctx);
+    std::vector<domain::instrument_underlying> read_latest(const context& ctx,
                                                            const std::string& trade_id,
                                                            const std::string& underlying_role,
                                                            const std::string& sequence_number);
     std::vector<domain::instrument_underlying>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& underlying_roles,
                 const std::vector<std::string>& sequence_numbers);
@@ -117,7 +117,7 @@ public:
     /**
      * @brief Reads all instrument underlyings, possibly filtered by primary key.
      */
-    std::vector<domain::instrument_underlying> read_all(context ctx,
+    std::vector<domain::instrument_underlying> read_all(const context& ctx,
                                                         const std::string& trade_id,
                                                         const std::string& underlying_role,
                                                         const std::string& sequence_number);
@@ -131,7 +131,7 @@ public:
      * @param ctx Repository context with database connection
      * @param version The version to fetch
      */
-    std::optional<domain::instrument_underlying> read_at_version(context ctx,
+    std::optional<domain::instrument_underlying> read_at_version(const context& ctx,
                                                                  const std::string& trade_id,
                                                                  const std::string& underlying_role,
                                                                  const std::string& sequence_number,
@@ -146,7 +146,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::instrument_underlying> read_latest_by_trade_id(
-        context ctx,
+        const context& ctx,
         const std::string& trade_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -157,7 +157,7 @@ public:
      * @brief Gets the total count of active instrument underlyings filtered by trade_id.
      */
     std::uint32_t get_total_instrument_underlying_count_by_trade_id(
-        context ctx,
+        const context& ctx,
         const std::string& trade_id,
         const std::optional<messaging::instrument_underlyings_filter>& filter = std::nullopt);
 
@@ -179,7 +179,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::instrument_underlying> read_latest(
-        context ctx,
+        const context& ctx,
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
@@ -192,14 +192,14 @@ public:
      * @return Total number of active instrument underlyings
      */
     std::uint32_t get_total_instrument_underlying_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::instrument_underlyings_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a instrument underlying by closing its temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::string& trade_id,
                 const std::string& underlying_role,
                 const std::string& sequence_number);
@@ -224,7 +224,7 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& trade_id,
                          const std::string& underlying_role,
                          const std::string& sequence_number,
@@ -233,20 +233,20 @@ public:
     /**
      * @brief Deletes instrument underlyings by closing their temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& underlying_roles,
                 const std::vector<std::string>& sequence_numbers);
 
     std::vector<domain::instrument_underlying>
-    read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+    read_by_instruments_batch(const context& ctx, const std::vector<std::string>& trade_ids);
 
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::instrument_underlying& v);
 
     /**
@@ -254,7 +254,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::instrument_underlying apply_claim(context ctx,
+    domain::instrument_underlying apply_claim(const context& ctx,
                                               const domain::instrument_underlying& v,
                                               const ores::utility::domain::precondition& claim);
 };

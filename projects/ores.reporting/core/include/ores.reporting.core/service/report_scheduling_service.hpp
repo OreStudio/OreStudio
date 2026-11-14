@@ -70,7 +70,7 @@ public:
      *                    grants. Reconciliation acts for no person and omits it.
      */
     report_scheduling_service(
-        context ctx,
+        const context& ctx,
         ores::nats::service::nats_client svc_nats,
         std::optional<ores::nats::service::nats_client> person_nats = std::nullopt);
 

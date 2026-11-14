@@ -108,7 +108,7 @@ public:
      * @param signer Signs the tenant session's token.
      * @param lifetime How long a tenant session lasts.
      */
-    tenant_session_service(context ctx,
+    tenant_session_service(const context& ctx,
                            security::jwt::jwt_authenticator signer,
                            std::chrono::seconds lifetime);
 

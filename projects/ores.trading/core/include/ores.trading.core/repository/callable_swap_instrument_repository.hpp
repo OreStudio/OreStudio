@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::callable_swap_instrument& v);
-    void write(context ctx, const std::vector<domain::callable_swap_instrument>& v);
+    void write(const context& ctx, const domain::callable_swap_instrument& v);
+    void write(const context& ctx, const std::vector<domain::callable_swap_instrument>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::callable_swap_instrument& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of callable swap instruments, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::callable_swap_instrument>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,18 +101,18 @@ public:
      * @brief Reads latest callable swap instruments, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::callable_swap_instrument> read_latest(context ctx);
-    std::vector<domain::callable_swap_instrument> read_latest(context ctx,
+    std::vector<domain::callable_swap_instrument> read_latest(const context& ctx);
+    std::vector<domain::callable_swap_instrument> read_latest(const context& ctx,
                                                               const std::string& trade_id);
     std::vector<domain::callable_swap_instrument>
-    read_latest(context ctx, const std::vector<std::string>& trade_ids);
+    read_latest(const context& ctx, const std::vector<std::string>& trade_ids);
     /**@}*/
 
 
     /**
      * @brief Reads all callable swap instruments, possibly filtered by primary key.
      */
-    std::vector<domain::callable_swap_instrument> read_all(context ctx,
+    std::vector<domain::callable_swap_instrument> read_all(const context& ctx,
                                                            const std::string& trade_id);
 
     /**
@@ -125,7 +125,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::callable_swap_instrument>
-    read_at_version(context ctx, const std::string& trade_id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& trade_id, std::uint32_t version);
 
 
     /**
@@ -145,7 +145,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::callable_swap_instrument> read_latest(
-        context ctx,
+        const context& ctx,
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
@@ -158,14 +158,14 @@ public:
      * @return Total number of active callable swap instruments
      */
     std::uint32_t get_total_callable_swap_instrument_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::callable_swap_instruments_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a callable swap instrument by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& trade_id);
+    void remove(const context& ctx, const std::string& trade_id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -188,12 +188,12 @@ public:
      * no version asked for.
      */
     remove_status
-    remove(context ctx, const std::string& trade_id, std::optional<std::uint32_t> version);
+    remove(const context& ctx, const std::string& trade_id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes callable swap instruments by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& trade_ids);
+    void remove(const context& ctx, const std::vector<std::string>& trade_ids);
 
 
 private:
@@ -201,7 +201,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::callable_swap_instrument& v);
 
     /**
@@ -209,7 +209,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::callable_swap_instrument apply_claim(context ctx,
+    domain::callable_swap_instrument apply_claim(const context& ctx,
                                                  const domain::callable_swap_instrument& v,
                                                  const ores::utility::domain::precondition& claim);
 };

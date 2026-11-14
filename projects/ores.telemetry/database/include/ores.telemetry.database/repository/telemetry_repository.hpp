@@ -20,7 +20,7 @@
 #ifndef ORES_TELEMETRY_REPOSITORY_TELEMETRY_REPOSITORY_HPP
 #define ORES_TELEMETRY_REPOSITORY_TELEMETRY_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.telemetry.core/domain/telemetry_batch.hpp"
 #include "ores.telemetry.core/domain/telemetry_stats.hpp"
@@ -68,7 +68,7 @@ public:
     /**
      * @brief Creates a single log entry.
      */
-    void create(context ctx, const messaging::telemetry_log_entry& entry);
+    void create(const context& ctx, const messaging::telemetry_log_entry& entry);
 
     /**
      * @brief Creates multiple log entries in a batch.
@@ -77,12 +77,12 @@ public:
      *
      * @return Number of entries successfully inserted.
      */
-    std::size_t create_batch(context ctx, const domain::telemetry_batch& batch);
+    std::size_t create_batch(const context& ctx, const domain::telemetry_batch& batch);
 
     /**
      * @brief Queries log entries with filters.
      */
-    std::vector<messaging::telemetry_log_entry> query(context ctx,
+    std::vector<messaging::telemetry_log_entry> query(const context& ctx,
                                                       const messaging::telemetry_query& q);
 
     /**
@@ -90,7 +90,7 @@ public:
      *
      * Useful for pagination.
      */
-    std::uint64_t count(context ctx, const messaging::telemetry_query& q);
+    std::uint64_t count(const context& ctx, const messaging::telemetry_query& q);
 
     /**
      * @brief Reads logs for a specific session.
@@ -100,8 +100,8 @@ public:
      * @param limit Maximum number of logs to return
      * @return Logs ordered by timestamp descending (newest first)
      */
-    std::vector<messaging::telemetry_log_entry>
-    read_by_session(context ctx, const boost::uuids::uuid& session_id, std::uint32_t limit = 1000);
+    std::vector<messaging::telemetry_log_entry> read_by_session(
+        const context& ctx, const boost::uuids::uuid& session_id, std::uint32_t limit = 1000);
 
     /**
      * @brief Reads logs for a specific account.
@@ -113,7 +113,7 @@ public:
      * @param limit Maximum number of logs to return
      */
     std::vector<messaging::telemetry_log_entry>
-    read_by_account(context ctx,
+    read_by_account(const context& ctx,
                     const boost::uuids::uuid& account_id,
                     const std::chrono::system_clock::time_point& start,
                     const std::chrono::system_clock::time_point& end,
@@ -122,13 +122,13 @@ public:
     /**
      * @brief Reads hourly statistics.
      */
-    std::vector<domain::telemetry_stats> read_hourly_stats(context ctx,
+    std::vector<domain::telemetry_stats> read_hourly_stats(const context& ctx,
                                                            const domain::telemetry_stats_query& q);
 
     /**
      * @brief Reads daily statistics.
      */
-    std::vector<domain::telemetry_stats> read_daily_stats(context ctx,
+    std::vector<domain::telemetry_stats> read_daily_stats(const context& ctx,
                                                           const domain::telemetry_stats_query& q);
 
     /**
@@ -137,7 +137,7 @@ public:
      * @param ctx The database context
      * @param hours Number of hours to include (default: 24)
      */
-    domain::telemetry_summary get_summary(context ctx, std::uint32_t hours = 24);
+    domain::telemetry_summary get_summary(const context& ctx, std::uint32_t hours = 24);
 
     /**
      * @brief Counts error logs in the last N hours for a source.
@@ -147,7 +147,7 @@ public:
      * @param ctx The database context
      */
     std::uint64_t
-    count_errors(context ctx, const std::string& source_name, std::uint32_t hours = 1);
+    count_errors(const context& ctx, const std::string& source_name, std::uint32_t hours = 1);
 
     /**
      * @brief Deletes logs older than the specified retention period.
@@ -160,31 +160,31 @@ public:
      * @param older_than Delete logs older than this timestamp
      * @return Number of logs deleted
      */
-    std::uint64_t delete_old_logs(context ctx,
+    std::uint64_t delete_old_logs(const context& ctx,
                                   const std::chrono::system_clock::time_point& older_than);
 
     /**
      * @brief Inserts a single NATS server-level metrics sample.
      */
-    void insert_server_sample(context ctx, const messaging::nats_server_sample& sample);
+    void insert_server_sample(const context& ctx, const messaging::nats_server_sample& sample);
 
     /**
      * @brief Inserts a batch of NATS per-stream metrics samples.
      */
-    void insert_stream_samples(context ctx,
+    void insert_stream_samples(const context& ctx,
                                const std::vector<messaging::nats_stream_sample>& samples);
 
     /**
      * @brief Queries NATS server samples within a time range.
      */
     std::vector<messaging::nats_server_sample>
-    query_server_samples(context ctx, const messaging::nats_server_samples_query& q);
+    query_server_samples(const context& ctx, const messaging::nats_server_samples_query& q);
 
     /**
      * @brief Queries NATS stream samples within a time range.
      */
     std::vector<messaging::nats_stream_sample>
-    query_stream_samples(context ctx, const messaging::nats_stream_samples_query& q);
+    query_stream_samples(const context& ctx, const messaging::nats_stream_samples_query& q);
 
     /**
      * @brief Inserts a single service heartbeat sample.
@@ -192,7 +192,7 @@ public:
      * Called by the telemetry service each time it receives a heartbeat
      * publish from a domain service.
      */
-    void insert_service_sample(context ctx, const messaging::service_sample& sample);
+    void insert_service_sample(const context& ctx, const messaging::service_sample& sample);
 
     /**
      * @brief Returns the latest heartbeat per (service_name, instance_id).
@@ -200,7 +200,7 @@ public:
      * Used by the service dashboard to determine which services are
      * currently running and when they were last seen.
      */
-    std::vector<messaging::service_sample> list_service_samples(context ctx);
+    std::vector<messaging::service_sample> list_service_samples(const context& ctx);
 
     /**
      * @brief Returns the services roster: every expected instance and its
@@ -212,7 +212,7 @@ public:
      * fills is missing.
      */
     std::vector<messaging::service_roster_slot>
-    list_service_roster(context ctx, std::chrono::system_clock::time_point now);
+    list_service_roster(const context& ctx, std::chrono::system_clock::time_point now);
 };
 
 }

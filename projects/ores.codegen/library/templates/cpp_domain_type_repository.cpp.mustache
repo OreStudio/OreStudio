@@ -183,7 +183,7 @@ std::optional<query_builder::condition>
 }
 
 ores::utility::domain::precondition
-{{entity_singular}}_repository::replace_claim(context ctx,
+{{entity_singular}}_repository::replace_claim(const context& ctx,
                                              const domain::{{entity_singular}}& v) {
     const auto current = read_latest(ctx, {{{primary_key.v_args}}});
     if (current.empty())
@@ -201,7 +201,7 @@ ores::utility::domain::precondition
 }
 
 domain::{{entity_singular}} {{entity_singular}}_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::{{entity_singular}}& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -240,12 +240,12 @@ domain::{{entity_singular}} {{entity_singular}}_repository::apply_claim(
     return t;
 }
 
-void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_singular}}& v) {
+void {{entity_singular}}_repository::write(const context& ctx, const domain::{{entity_singular}}& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 {{#append_insert}}
 
-void {{entity_singular}}_repository::insert(context ctx, const domain::{{entity_singular}}& v) {
+void {{entity_singular}}_repository::insert(const context& ctx, const domain::{{entity_singular}}& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
 <<paste:A1F0C7D2-4E63-4B18-9A57-2D8E6F3B1C04>>
     query_builder::execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
@@ -253,7 +253,7 @@ void {{entity_singular}}_repository::insert(context ctx, const domain::{{entity_
 }
 
 void {{entity_singular}}_repository::insert(
-    context ctx, const std::vector<domain::{{entity_singular}}>& v) {
+    const context& ctx, const std::vector<domain::{{entity_singular}}>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting {{entity_plural_words}}. Count: " << v.size();
 <<paste:B2E1D8C3-5F74-4C29-8B68-3E9F7A4C2D15>>
     query_builder::execute_write_query(ctx, {{entity_singular}}_mapper::map(v),
@@ -262,7 +262,7 @@ void {{entity_singular}}_repository::insert(
 {{/append_insert}}
 
 void {{entity_singular}}_repository::write(
-    context ctx, const std::vector<domain::{{entity_singular}}>& v) {
+    const context& ctx, const std::vector<domain::{{entity_singular}}>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -270,7 +270,7 @@ void {{entity_singular}}_repository::write(
     write(ctx, v, claims);
 }
 
-void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_singular}}& v,
+void {{entity_singular}}_repository::write(const context& ctx, const domain::{{entity_singular}}& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
 {{#current_state}}
@@ -293,7 +293,7 @@ void {{entity_singular}}_repository::write(context ctx, const domain::{{entity_s
 }
 
 void {{entity_singular}}_repository::write(
-    context ctx, const std::vector<domain::{{entity_singular}}>& v,
+    const context& ctx, const std::vector<domain::{{entity_singular}}>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing {{entity_plural_words}}. Count: " << v.size();
     std::vector<domain::{{entity_singular}}> batch;
@@ -318,7 +318,7 @@ void {{entity_singular}}_repository::write(
 }
 
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_latest(context ctx) {
+{{entity_singular}}_repository::read_latest(const context& ctx) {
 {{^current_state}}
     static constexpr auto max = db_timestamp::max();
 {{/current_state}}
@@ -343,7 +343,7 @@ std::vector<domain::{{entity_singular}}>
 }
 
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_latest(context ctx, {{{primary_key.params}}}) {
+{{entity_singular}}_repository::read_latest(const context& ctx, {{{primary_key.params}}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
 {{^current_state}}
     static constexpr auto max = db_timestamp::max();
@@ -388,7 +388,7 @@ std::vector<domain::{{entity_singular}}>
 
 {{#key_finders}}
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_latest_by_{{suffix}}(context ctx, {{{params}}}) {
+{{entity_singular}}_repository::read_latest_by_{{suffix}}(const context& ctx, {{{params}}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest {{entity_singular_words}} by {{log_label}}: "
                                << {{{log_fields}}};
 {{^current_state}}
@@ -443,7 +443,7 @@ std::vector<domain::{{entity_singular}}>
 {{#key_resolvers}}
 
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_any_by_{{suffix}}(context ctx,
+{{entity_singular}}_repository::read_any_by_{{suffix}}(const context& ctx,
     const std::string& {{column}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any {{entity_singular_words}} by {{column}}: " << {{column}};
 {{#read_tenant_filtered}}
@@ -495,7 +495,7 @@ std::vector<domain::{{entity_singular}}>
 
 
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_all(context ctx, {{{primary_key.params}}}) {
+{{entity_singular}}_repository::read_all(const context& ctx, {{{primary_key.params}}}) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all {{entity_singular_words}} versions. " << {{{primary_key.log_fields}}};
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
@@ -537,7 +537,7 @@ std::vector<domain::{{entity_singular}}>
 
 {{#has_audit_columns}}
 std::optional<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_at_version(context ctx, {{{primary_key.params}}},
+{{entity_singular}}_repository::read_at_version(const context& ctx, {{{primary_key.params}}},
                                                 std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_singular_words}} at version. " << {{{primary_key.log_fields}}}
                                << " version: " << version;
@@ -567,7 +567,7 @@ std::optional<domain::{{entity_singular}}>
 {{#foreign_keys}}
 {{#list_by}}
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_latest_by_{{column}}(context ctx, const std::string& {{column}},
+{{entity_singular}}_repository::read_latest_by_{{column}}(const context& ctx, const std::string& {{column}},
                                                           std::uint32_t offset, std::uint32_t limit,
                                                           const ores::utility::domain::order& order{{#domain_entity.has_filter_record}},
     const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}) {
@@ -602,7 +602,7 @@ std::vector<domain::{{entity_singular}}>
 }
 
 std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}}_count_by_{{column}}(
-    context ctx, const std::string& {{column}}{{#domain_entity.has_filter_record}},
+    const context& ctx, const std::string& {{column}}{{#domain_entity.has_filter_record}},
     const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{entity_plural_words}} count. {{column}}: " << {{column}};
 {{^current_state}}
@@ -633,7 +633,7 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 {{#list_by_as_of}}
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_by_{{column}}_as_of(
-    context ctx, const std::string& {{column}},
+    const context& ctx, const std::string& {{column}},
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
     BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_plural_words}} as of window. {{column}}: " << {{column}};
@@ -663,7 +663,7 @@ std::vector<domain::{{entity_singular}}>
 
 {{/foreign_keys}}
 {{entity_singular}}_repository::remove_status
-{{entity_singular}}_repository::remove(context ctx, {{{primary_key.params}}},
+{{entity_singular}}_repository::remove(const context& ctx, {{{primary_key.params}}},
                                       std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing {{entity_singular_words}}. " << {{{primary_key.log_fields}}};
 {{^has_audit_columns}}
@@ -727,12 +727,12 @@ std::vector<domain::{{entity_singular}}>
     return remove_status::removed;
 }
 
-void {{entity_singular}}_repository::remove(context ctx, {{{primary_key.params}}}) {
+void {{entity_singular}}_repository::remove(const context& ctx, {{{primary_key.params}}}) {
     static_cast<void>(remove(ctx, {{{primary_key.args}}}, std::nullopt));
 }
 
 std::vector<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit,
+{{entity_singular}}_repository::read_latest(const context& ctx, std::uint32_t offset, std::uint32_t limit,
     const ores::utility::domain::order& order{{#domain_entity.has_filter_record}},
     const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}{{#domain_entity.has_as_of_lookup}},
     const std::optional<std::string>& as_of{{/domain_entity.has_as_of_lookup}}) {
@@ -769,7 +769,7 @@ std::vector<domain::{{entity_singular}}>
 {{#domain_entity.has_newest_read}}
 
 std::optional<domain::{{entity_singular}}>
-{{entity_singular}}_repository::read_newest(context ctx) {
+{{entity_singular}}_repository::read_newest(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading newest {{entity_singular_words}}";
 {{#read_tenant_filtered}}
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
@@ -791,7 +791,7 @@ std::optional<domain::{{entity_singular}}>
 }
 {{/domain_entity.has_newest_read}}
 
-std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}}_count(context ctx{{#domain_entity.has_filter_record}},
+std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}}_count(const context& ctx{{#domain_entity.has_filter_record}},
     const std::optional<{{domain_entity.filter_type}}>& filter{{/domain_entity.has_filter_record}}{{#domain_entity.has_as_of_lookup}},
     const std::optional<std::string>& as_of{{/domain_entity.has_as_of_lookup}}) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active {{entity_singular_words}} count";
@@ -827,7 +827,7 @@ std::uint32_t {{entity_singular}}_repository::get_total_{{entity_singular_short}
 
 std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read_latest(
-    context ctx, {{{primary_key.batch_params}}}) {
+    const context& ctx, {{{primary_key.batch_params}}}) {
     if ({{{primary_key.batch_empty_check}}}) return {};
 {{^current_state}}
     static constexpr auto max = db_timestamp::max();
@@ -870,7 +870,7 @@ std::vector<domain::{{entity_singular}}>
 }
 
 void {{entity_singular}}_repository::remove(
-    context ctx, {{{primary_key.batch_params}}}) {
+    const context& ctx, {{{primary_key.batch_params}}}) {
 {{#primary_key.is_compound}}
     // Compound key: a per-column .in() DELETE would be a cross-product
     // over-delete (rows outside the requested tuples), and a DELETE can't
@@ -908,7 +908,7 @@ void {{entity_singular}}_repository::remove(
 
 {{#has_parent_id}}
 std::vector<ores::utility::domain::hierarchy_flat_row>
-{{entity_singular}}_repository::get_hierarchy(context ctx,
+{{entity_singular}}_repository::get_hierarchy(const context& ctx,
                                        const boost::uuids::uuid& root_id,
                                        bool from_root) {
     BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_singular}} hierarchy. Root: " << root_id
@@ -1004,8 +1004,8 @@ std::string {{name_singular}}_repository::sql() {
     return query_builder::insert_statement_sql<{{name_singular}}_entity>(lg());
 }
 
-{{name_singular}}_repository::{{name_singular}}_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+{{name_singular}}_repository::{{name_singular}}_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 {{^read_only}}
 ores::utility::domain::precondition

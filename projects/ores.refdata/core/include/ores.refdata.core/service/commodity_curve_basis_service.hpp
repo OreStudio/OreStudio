@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit commodity_curve_basis_service(context ctx);
+    explicit commodity_curve_basis_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

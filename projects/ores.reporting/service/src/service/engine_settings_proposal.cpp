@@ -587,8 +587,9 @@ void lock_request(const ores::database::context& ctx, const std::string& request
 
 }
 
-engine_settings_proposal_service::engine_settings_proposal_service(ores::database::context ctx)
-    : ctx_(std::move(ctx)) {}
+engine_settings_proposal_service::engine_settings_proposal_service(
+    const ores::database::context& ctx)
+    : ctx_(ctx) {}
 
 std::vector<settings_group> engine_settings_proposal_service::groups() {
     // The groups and their settings are system-owned lookups, so they are read

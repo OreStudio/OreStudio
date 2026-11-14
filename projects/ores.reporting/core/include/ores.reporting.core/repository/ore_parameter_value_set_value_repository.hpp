@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::ore_parameter_value_set_value& v);
-    void write(context ctx, const std::vector<domain::ore_parameter_value_set_value>& v);
+    void write(const context& ctx, const domain::ore_parameter_value_set_value& v);
+    void write(const context& ctx, const std::vector<domain::ore_parameter_value_set_value>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::ore_parameter_value_set_value& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of ore parameter value set values, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::ore_parameter_value_set_value>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,18 +101,18 @@ public:
      * @brief Reads latest ore parameter value set values, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::ore_parameter_value_set_value> read_latest(context ctx);
-    std::vector<domain::ore_parameter_value_set_value> read_latest(context ctx,
+    std::vector<domain::ore_parameter_value_set_value> read_latest(const context& ctx);
+    std::vector<domain::ore_parameter_value_set_value> read_latest(const context& ctx,
                                                                    const std::string& code);
     std::vector<domain::ore_parameter_value_set_value>
-    read_latest(context ctx, const std::vector<std::string>& codes);
+    read_latest(const context& ctx, const std::vector<std::string>& codes);
     /**@}*/
 
 
     /**
      * @brief Reads all ore parameter value set values, possibly filtered by primary key.
      */
-    std::vector<domain::ore_parameter_value_set_value> read_all(context ctx,
+    std::vector<domain::ore_parameter_value_set_value> read_all(const context& ctx,
                                                                 const std::string& code);
 
     /**
@@ -125,7 +125,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::ore_parameter_value_set_value>
-    read_at_version(context ctx, const std::string& code, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& code, std::uint32_t version);
 
     /**
      * @brief Whether a list of ore parameter value set values can be ordered by a field.
@@ -144,7 +144,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::ore_parameter_value_set_value>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -158,7 +158,7 @@ public:
      * @return Total number of active ore parameter value set values
      */
     std::uint32_t get_total_value_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::ore_parameter_value_set_values_filter>& filter =
             std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
@@ -166,7 +166,7 @@ public:
     /**
      * @brief Deletes a ore parameter value set value by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& code);
+    void remove(const context& ctx, const std::string& code);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -189,12 +189,12 @@ public:
      * no version asked for.
      */
     remove_status
-    remove(context ctx, const std::string& code, std::optional<std::uint32_t> version);
+    remove(const context& ctx, const std::string& code, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes ore parameter value set values by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& codes);
+    void remove(const context& ctx, const std::vector<std::string>& codes);
 
 
 private:
@@ -203,7 +203,7 @@ private:
      * that no row exists yet.
      */
     ores::utility::domain::precondition
-    replace_claim(context ctx, const domain::ore_parameter_value_set_value& v);
+    replace_claim(const context& ctx, const domain::ore_parameter_value_set_value& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
@@ -211,7 +211,7 @@ private:
      * A claim the store cannot check is refused here rather than ignored.
      */
     domain::ore_parameter_value_set_value
-    apply_claim(context ctx,
+    apply_claim(const context& ctx,
                 const domain::ore_parameter_value_set_value& v,
                 const ores::utility::domain::precondition& claim);
 };

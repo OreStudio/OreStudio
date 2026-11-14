@@ -23,8 +23,8 @@
 
 namespace ores::geo::service {
 
-geolocation_service::geolocation_service(database::context ctx)
-    : ctx_(std::move(ctx)) {}
+geolocation_service::geolocation_service(const database::context& ctx)
+    : ctx_(ctx) {}
 
 std::expected<geolocation_result, geolocation_error>
 geolocation_service::lookup(const boost::asio::ip::address& ip) const {

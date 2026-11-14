@@ -43,7 +43,7 @@ std::string telemetry_repository::sql() {
     return query_builder::insert_statement_sql<telemetry_entity>(lg());
 }
 
-void telemetry_repository::create(context ctx, const messaging::telemetry_log_entry& entry) {
+void telemetry_repository::create(const context& ctx, const messaging::telemetry_log_entry& entry) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), trace) << "Creating telemetry log entry: "
                                << boost::uuids::to_string(entry.id);
@@ -55,7 +55,8 @@ void telemetry_repository::create(context ctx, const messaging::telemetry_log_en
         "Creating telemetry log entry");
 }
 
-std::size_t telemetry_repository::create_batch(context ctx, const domain::telemetry_batch& batch) {
+std::size_t telemetry_repository::create_batch(const context& ctx,
+                                               const domain::telemetry_batch& batch) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
     if (batch.empty()) {
@@ -170,7 +171,7 @@ std::string build_where_clause(const messaging::telemetry_query& q,
 }
 
 std::vector<messaging::telemetry_log_entry>
-telemetry_repository::query(context ctx, const messaging::telemetry_query& q) {
+telemetry_repository::query(const context& ctx, const messaging::telemetry_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying telemetry logs";
 
@@ -231,7 +232,7 @@ telemetry_repository::query(context ctx, const messaging::telemetry_query& q) {
     return entries;
 }
 
-std::uint64_t telemetry_repository::count(context ctx, const messaging::telemetry_query& q) {
+std::uint64_t telemetry_repository::count(const context& ctx, const messaging::telemetry_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Counting telemetry logs";
 
@@ -259,7 +260,7 @@ std::uint64_t telemetry_repository::count(context ctx, const messaging::telemetr
 }
 
 std::vector<messaging::telemetry_log_entry> telemetry_repository::read_by_session(
-    context ctx, const boost::uuids::uuid& session_id, std::uint32_t limit_count) {
+    const context& ctx, const boost::uuids::uuid& session_id, std::uint32_t limit_count) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
     BOOST_LOG_SEV(lg(), debug) << "Reading telemetry for session: "
@@ -290,7 +291,7 @@ std::vector<messaging::telemetry_log_entry> telemetry_repository::read_by_sessio
 }
 
 std::vector<messaging::telemetry_log_entry>
-telemetry_repository::read_by_account(context ctx,
+telemetry_repository::read_by_account(const context& ctx,
                                       const boost::uuids::uuid& account_id,
                                       const std::chrono::system_clock::time_point& start,
                                       const std::chrono::system_clock::time_point& end,
@@ -329,7 +330,8 @@ telemetry_repository::read_by_account(context ctx,
 }
 
 std::vector<domain::telemetry_stats>
-telemetry_repository::read_hourly_stats(context ctx, const domain::telemetry_stats_query& q) {
+telemetry_repository::read_hourly_stats(const context& ctx,
+                                        const domain::telemetry_stats_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading hourly telemetry stats";
 
@@ -373,7 +375,7 @@ telemetry_repository::read_hourly_stats(context ctx, const domain::telemetry_sta
 }
 
 std::vector<domain::telemetry_stats>
-telemetry_repository::read_daily_stats(context ctx, const domain::telemetry_stats_query& q) {
+telemetry_repository::read_daily_stats(const context& ctx, const domain::telemetry_stats_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading daily telemetry stats";
 
@@ -419,7 +421,8 @@ telemetry_repository::read_daily_stats(context ctx, const domain::telemetry_stat
     return result;
 }
 
-domain::telemetry_summary telemetry_repository::get_summary(context ctx, std::uint32_t hours) {
+domain::telemetry_summary telemetry_repository::get_summary(const context& ctx,
+                                                            std::uint32_t hours) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Getting telemetry summary for last " << hours << " hours";
 
@@ -470,7 +473,7 @@ domain::telemetry_summary telemetry_repository::get_summary(context ctx, std::ui
     return summary;
 }
 
-std::uint64_t telemetry_repository::count_errors(context ctx,
+std::uint64_t telemetry_repository::count_errors(const context& ctx,
                                                  const std::string& source_name,
                                                  std::uint32_t hours) {
     ores::telemetry::log::skip_telemetry_guard guard;
@@ -495,7 +498,7 @@ std::uint64_t telemetry_repository::count_errors(context ctx,
 }
 
 std::uint64_t
-telemetry_repository::delete_old_logs(context ctx,
+telemetry_repository::delete_old_logs(const context& ctx,
                                       const std::chrono::system_clock::time_point& older_than) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
@@ -512,7 +515,7 @@ telemetry_repository::delete_old_logs(context ctx,
     return 0;
 }
 
-void telemetry_repository::insert_server_sample(context ctx,
+void telemetry_repository::insert_server_sample(const context& ctx,
                                                 const messaging::nats_server_sample& sample) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), trace) << "Inserting NATS server sample";
@@ -525,7 +528,7 @@ void telemetry_repository::insert_server_sample(context ctx,
 }
 
 void telemetry_repository::insert_stream_samples(
-    context ctx, const std::vector<messaging::nats_stream_sample>& samples) {
+    const context& ctx, const std::vector<messaging::nats_stream_sample>& samples) {
     ores::telemetry::log::skip_telemetry_guard guard;
 
     if (samples.empty()) {
@@ -545,7 +548,7 @@ void telemetry_repository::insert_stream_samples(
 }
 
 std::vector<messaging::nats_server_sample>
-telemetry_repository::query_server_samples(context ctx,
+telemetry_repository::query_server_samples(const context& ctx,
                                            const messaging::nats_server_samples_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying NATS server samples";
@@ -576,7 +579,7 @@ telemetry_repository::query_server_samples(context ctx,
 }
 
 std::vector<messaging::nats_stream_sample>
-telemetry_repository::query_stream_samples(context ctx,
+telemetry_repository::query_stream_samples(const context& ctx,
                                            const messaging::nats_stream_samples_query& q) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Querying NATS stream samples for: " << q.stream_name;
@@ -607,7 +610,7 @@ telemetry_repository::query_stream_samples(context ctx,
     return result;
 }
 
-void telemetry_repository::insert_service_sample(context ctx,
+void telemetry_repository::insert_service_sample(const context& ctx,
                                                  const messaging::service_sample& sample) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), trace) << "Inserting service heartbeat: " << sample.service_name
@@ -617,7 +620,8 @@ void telemetry_repository::insert_service_sample(context ctx,
         ctx, telemetry_mapper::to_entity(sample), lg(), "Inserting service heartbeat");
 }
 
-std::vector<messaging::service_sample> telemetry_repository::list_service_samples(context ctx) {
+std::vector<messaging::service_sample>
+telemetry_repository::list_service_samples(const context& ctx) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Listing latest service heartbeat samples";
 
@@ -656,7 +660,8 @@ std::vector<messaging::service_sample> telemetry_repository::list_service_sample
 }
 
 std::vector<messaging::service_roster_slot>
-telemetry_repository::list_service_roster(context ctx, std::chrono::system_clock::time_point now) {
+telemetry_repository::list_service_roster(const context& ctx,
+                                          std::chrono::system_clock::time_point now) {
     ores::telemetry::log::skip_telemetry_guard guard;
     BOOST_LOG_SEV(lg(), debug) << "Reading the services roster";
 

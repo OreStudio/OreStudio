@@ -120,7 +120,7 @@ std::optional<query_builder::condition> instrument_schedule_date_filter_conditio
 }
 
 ores::utility::domain::precondition
-instrument_schedule_date_repository::replace_claim(context ctx,
+instrument_schedule_date_repository::replace_claim(const context& ctx,
                                                    const domain::instrument_schedule_date& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.trade_id),
@@ -136,7 +136,7 @@ instrument_schedule_date_repository::replace_claim(context ctx,
 }
 
 domain::instrument_schedule_date
-instrument_schedule_date_repository::apply_claim(context ctx,
+instrument_schedule_date_repository::apply_claim(const context& ctx,
                                                  const domain::instrument_schedule_date& v,
                                                  const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -169,13 +169,13 @@ instrument_schedule_date_repository::apply_claim(context ctx,
     return t;
 }
 
-void instrument_schedule_date_repository::write(context ctx,
+void instrument_schedule_date_repository::write(const context& ctx,
                                                 const domain::instrument_schedule_date& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void instrument_schedule_date_repository::write(
-    context ctx, const std::vector<domain::instrument_schedule_date>& v) {
+    const context& ctx, const std::vector<domain::instrument_schedule_date>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -183,7 +183,7 @@ void instrument_schedule_date_repository::write(
     write(ctx, v, claims);
 }
 
-void instrument_schedule_date_repository::write(context ctx,
+void instrument_schedule_date_repository::write(const context& ctx,
                                                 const domain::instrument_schedule_date& v,
                                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument schedule date. " << "trade_id: " << v.trade_id
@@ -200,7 +200,7 @@ void instrument_schedule_date_repository::write(context ctx,
 }
 
 void instrument_schedule_date_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::instrument_schedule_date>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument schedule dates. Count: " << v.size();
@@ -215,7 +215,7 @@ void instrument_schedule_date_repository::write(
 }
 
 std::vector<domain::instrument_schedule_date>
-instrument_schedule_date_repository::read_latest(context ctx) {
+instrument_schedule_date_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<instrument_schedule_date_entity>> |
@@ -237,7 +237,7 @@ instrument_schedule_date_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::instrument_schedule_date>
-instrument_schedule_date_repository::read_latest(context ctx,
+instrument_schedule_date_repository::read_latest(const context& ctx,
                                                  const std::string& trade_id,
                                                  const std::string& owner_role,
                                                  const std::string& owner_number,
@@ -271,7 +271,7 @@ instrument_schedule_date_repository::read_latest(context ctx,
 
 
 std::vector<domain::instrument_schedule_date>
-instrument_schedule_date_repository::read_all(context ctx,
+instrument_schedule_date_repository::read_all(const context& ctx,
                                               const std::string& trade_id,
                                               const std::string& owner_role,
                                               const std::string& owner_number,
@@ -304,7 +304,7 @@ instrument_schedule_date_repository::read_all(context ctx,
 }
 
 std::optional<domain::instrument_schedule_date>
-instrument_schedule_date_repository::read_at_version(context ctx,
+instrument_schedule_date_repository::read_at_version(const context& ctx,
                                                      const std::string& trade_id,
                                                      const std::string& owner_role,
                                                      const std::string& owner_number,
@@ -344,7 +344,7 @@ instrument_schedule_date_repository::read_at_version(context ctx,
 
 std::vector<domain::instrument_schedule_date>
 instrument_schedule_date_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -379,7 +379,7 @@ instrument_schedule_date_repository::read_latest_by_trade_id(
 
 std::uint32_t
 instrument_schedule_date_repository::get_total_instrument_schedule_date_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::instrument_schedule_dates_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -401,7 +401,7 @@ instrument_schedule_date_repository::get_total_instrument_schedule_date_count_by
 
 
 instrument_schedule_date_repository::remove_status
-instrument_schedule_date_repository::remove(context ctx,
+instrument_schedule_date_repository::remove(const context& ctx,
                                             const std::string& trade_id,
                                             const std::string& owner_role,
                                             const std::string& owner_number,
@@ -459,7 +459,7 @@ instrument_schedule_date_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void instrument_schedule_date_repository::remove(context ctx,
+void instrument_schedule_date_repository::remove(const context& ctx,
                                                  const std::string& trade_id,
                                                  const std::string& owner_role,
                                                  const std::string& owner_number,
@@ -477,7 +477,7 @@ void instrument_schedule_date_repository::remove(context ctx,
 }
 
 std::vector<domain::instrument_schedule_date> instrument_schedule_date_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -510,7 +510,7 @@ std::vector<domain::instrument_schedule_date> instrument_schedule_date_repositor
 }
 
 std::uint32_t instrument_schedule_date_repository::get_total_instrument_schedule_date_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::instrument_schedule_dates_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument schedule date count";
@@ -529,7 +529,7 @@ std::uint32_t instrument_schedule_date_repository::get_total_instrument_schedule
 }
 
 std::vector<domain::instrument_schedule_date> instrument_schedule_date_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& owner_roles,
     const std::vector<std::string>& owner_numbers,
@@ -589,7 +589,7 @@ std::vector<domain::instrument_schedule_date> instrument_schedule_date_repositor
 }
 
 void instrument_schedule_date_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& owner_roles,
     const std::vector<std::string>& owner_numbers,

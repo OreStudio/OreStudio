@@ -128,7 +128,7 @@ demand_interval_filter_condition(const std::optional<messaging::demand_intervals
 }
 
 ores::utility::domain::precondition
-demand_interval_repository::replace_claim(context ctx, const domain::demand_interval& v) {
+demand_interval_repository::replace_claim(const context& ctx, const domain::demand_interval& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -137,7 +137,7 @@ demand_interval_repository::replace_claim(context ctx, const domain::demand_inte
 }
 
 domain::demand_interval
-demand_interval_repository::apply_claim(context ctx,
+demand_interval_repository::apply_claim(const context& ctx,
                                         const domain::demand_interval& v,
                                         const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -164,11 +164,12 @@ demand_interval_repository::apply_claim(context ctx,
     return t;
 }
 
-void demand_interval_repository::write(context ctx, const domain::demand_interval& v) {
+void demand_interval_repository::write(const context& ctx, const domain::demand_interval& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void demand_interval_repository::write(context ctx, const std::vector<domain::demand_interval>& v) {
+void demand_interval_repository::write(const context& ctx,
+                                       const std::vector<domain::demand_interval>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -176,7 +177,7 @@ void demand_interval_repository::write(context ctx, const std::vector<domain::de
     write(ctx, v, claims);
 }
 
-void demand_interval_repository::write(context ctx,
+void demand_interval_repository::write(const context& ctx,
                                        const domain::demand_interval& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing demand interval. " << "id: " << v.id;
@@ -186,7 +187,7 @@ void demand_interval_repository::write(context ctx,
 }
 
 void demand_interval_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::demand_interval>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing demand intervals. Count: " << v.size();
@@ -198,7 +199,7 @@ void demand_interval_repository::write(
         ctx, demand_interval_mapper::map(batch), lg(), "Writing demand intervals to database.");
 }
 
-std::vector<domain::demand_interval> demand_interval_repository::read_latest(context ctx) {
+std::vector<domain::demand_interval> demand_interval_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<demand_interval_entity>> |
@@ -214,7 +215,7 @@ std::vector<domain::demand_interval> demand_interval_repository::read_latest(con
 }
 
 std::vector<domain::demand_interval>
-demand_interval_repository::read_latest(context ctx, const std::string& id) {
+demand_interval_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest demand interval. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -231,7 +232,8 @@ demand_interval_repository::read_latest(context ctx, const std::string& id) {
 }
 
 std::vector<domain::demand_interval>
-demand_interval_repository::read_latest_by_oresmd_uri(context ctx, const std::string& oresmd_uri) {
+demand_interval_repository::read_latest_by_oresmd_uri(const context& ctx,
+                                                      const std::string& oresmd_uri) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest demand interval by oresmd_uri: " << oresmd_uri;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -254,7 +256,8 @@ demand_interval_repository::read_latest_by_oresmd_uri(context ctx, const std::st
 }
 
 std::vector<domain::demand_interval>
-demand_interval_repository::read_any_by_oresmd_uri(context ctx, const std::string& oresmd_uri) {
+demand_interval_repository::read_any_by_oresmd_uri(const context& ctx,
+                                                   const std::string& oresmd_uri) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any demand interval by oresmd_uri: " << oresmd_uri;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<demand_interval_entity>> |
@@ -280,7 +283,7 @@ demand_interval_repository::read_any_by_oresmd_uri(context ctx, const std::strin
 }
 
 
-std::vector<domain::demand_interval> demand_interval_repository::read_all(context ctx,
+std::vector<domain::demand_interval> demand_interval_repository::read_all(const context& ctx,
                                                                           const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all demand interval versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -297,7 +300,7 @@ std::vector<domain::demand_interval> demand_interval_repository::read_all(contex
 }
 
 std::optional<domain::demand_interval> demand_interval_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading demand interval at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -320,7 +323,7 @@ std::optional<domain::demand_interval> demand_interval_repository::read_at_versi
 }
 
 demand_interval_repository::remove_status demand_interval_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing demand interval. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -349,12 +352,12 @@ demand_interval_repository::remove_status demand_interval_repository::remove(
     return remove_status::removed;
 }
 
-void demand_interval_repository::remove(context ctx, const std::string& id) {
+void demand_interval_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::demand_interval> demand_interval_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -380,7 +383,7 @@ std::vector<domain::demand_interval> demand_interval_repository::read_latest(
 }
 
 std::uint32_t demand_interval_repository::get_total_demand_interval_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::demand_intervals_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active demand interval count";
@@ -399,7 +402,7 @@ std::uint32_t demand_interval_repository::get_total_demand_interval_count(
 }
 
 std::vector<domain::demand_interval>
-demand_interval_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+demand_interval_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -417,7 +420,7 @@ demand_interval_repository::read_latest(context ctx, const std::vector<std::stri
     return result;
 }
 
-void demand_interval_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void demand_interval_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -436,7 +439,7 @@ void demand_interval_repository::remove(context ctx, const std::vector<std::stri
 
 
 std::vector<domain::demand_interval>
-demand_interval_repository::read_latest_all_tenants(context ctx) {
+demand_interval_repository::read_latest_all_tenants(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<demand_interval_entity>> |
                        query_builder::where("valid_to"_c == max) | query_builder::order_by("id"_c);

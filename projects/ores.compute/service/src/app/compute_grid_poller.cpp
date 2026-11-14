@@ -38,9 +38,9 @@ namespace ores::compute::service::app {
 using namespace ores::logging;
 
 compute_grid_poller::compute_grid_poller(std::uint32_t interval_seconds,
-                                         ores::database::context ctx)
+                                         const ores::database::context& ctx)
     : interval_seconds_(interval_seconds)
-    , ctx_(std::move(ctx)) {}
+    , ctx_(ctx) {}
 
 void compute_grid_poller::poll_once() {
     repository::compute_telemetry_repository telemetry_repo;

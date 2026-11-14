@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit instrument_option_exercise_price_service(context ctx);
+    explicit instrument_option_exercise_price_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

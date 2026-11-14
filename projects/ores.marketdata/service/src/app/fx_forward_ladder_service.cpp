@@ -72,7 +72,7 @@ std::chrono::year_month_day date_of(time_point t) {
 }
 
 /// The latest spot of a pair at or before the as-of, or nothing when no series holds one.
-std::optional<spot_reading> find_spot(context ctx,
+std::optional<spot_reading> find_spot(const context& ctx,
                                       const fx_pair_codes& pair,
                                       time_point as_of,
                                       const std::optional<boost::uuids::uuid>& party_id) {
@@ -96,7 +96,7 @@ std::optional<spot_reading> find_spot(context ctx,
                         boost::uuids::to_string(latest->series_id)};
 }
 
-spot_reading read_spot(context ctx,
+spot_reading read_spot(const context& ctx,
                        const fx_pair_codes& pair,
                        time_point as_of,
                        const std::optional<boost::uuids::uuid>& party_id) {
@@ -109,7 +109,7 @@ spot_reading read_spot(context ctx,
 
 /// A currency's spot against USD, in whichever direction the market quotes it. The market quotes
 /// one direction per currency, so CCY/USD is tried first and USD/CCY only when it is absent.
-std::pair<usd_leg, spot_reading> read_usd_leg(context ctx,
+std::pair<usd_leg, spot_reading> read_usd_leg(const context& ctx,
                                               const std::string& currency,
                                               time_point as_of,
                                               const std::optional<boost::uuids::uuid>& party_id) {
@@ -123,7 +123,7 @@ std::pair<usd_leg, spot_reading> read_usd_leg(context ctx,
                   currency + ".");
 }
 
-funding_curve read_funding_curve(context ctx,
+funding_curve read_funding_curve(const context& ctx,
                                  const std::string& currency,
                                  const std::string& party_id,
                                  time_point as_of) {
@@ -172,7 +172,7 @@ funding_curve read_funding_curve(context ctx,
     return out;
 }
 
-int read_spot_days(context ctx, const fx_pair_codes& pair) {
+int read_spot_days(const context& ctx, const fx_pair_codes& pair) {
     refdata_repo::currency_repository repo;
     int days = 0;
     for (const auto& code : {pair.base, pair.quote}) {
@@ -187,7 +187,7 @@ int read_spot_days(context ctx, const fx_pair_codes& pair) {
 }
 
 quant::domain::business_day_calendar_set
-read_calendar(context ctx, const std::string& pair_code, std::string& codes) {
+read_calendar(const context& ctx, const std::string& pair_code, std::string& codes) {
     refdata_repo::currency_pair_convention_calendar_repository links{ctx};
     refdata_repo::calendar_date_repository dates{ctx};
     std::vector<std::vector<ores::refdata::domain::calendar_date>> calendars;
@@ -203,7 +203,7 @@ read_calendar(context ctx, const std::string& pair_code, std::string& codes) {
     return joint_calendar(calendars);
 }
 
-computed_fx_forward_set answer(context ctx, const fx_forward_inputs& request) {
+computed_fx_forward_set answer(const context& ctx, const fx_forward_inputs& request) {
     const auto pair = parse_pair(request.pair_code);
     if (!pair)
         throw refused(pair.error());
@@ -300,7 +300,7 @@ computed_fx_forward_set answer(context ctx, const fx_forward_inputs& request) {
 
 }
 
-computed_fx_forward_set fx_forward_ladder_service::compute(context ctx,
+computed_fx_forward_set fx_forward_ladder_service::compute(const context& ctx,
                                                            const fx_forward_inputs& inputs) {
     return answer(ctx, inputs);
 }

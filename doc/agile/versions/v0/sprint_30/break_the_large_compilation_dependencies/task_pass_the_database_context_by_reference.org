@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build:compilation:headers:database:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/pass-the-database-context-by-reference
+#+pr: 4691
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
-#+updated: 2026-11-11
-#+environment: bright_faraday
+#+updated: 2026-11-13
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                   |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Not yet started.                       |
+| Now          | Closed. Merged on this branch.          |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-11                               |
+| Next         | None.                                  |
+| Last touched | 2026-11-13                             |
 
 * Acceptance
 
@@ -50,9 +50,69 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The analysis that re-scoped this task is =Investigation: The headers that
+couple the build=, which lives on branch
+=feature/find-the-headers-that-couple-the-build= and lands in its own PR. It
+settles two things this task must respect.
+
+- The rebuild saving is inside =context.hpp= and not in its users. Cutting the
+  include from all 1738 repository headers saves one object; cutting every
+  header in the tree still leaves 179 of 365 objects reading the header.
+- The =const context&= change is worth doing for run time (21874 copies) and not
+  for rebuilds. The one lifetime-sensitive capture in the tree is synchronous
+  (=ores.synthetic/service/src/feed_kind_registry.cpp:492=), so the change is
+  safe today, and it must stay checked.
+
+The work runs in a series of commits, each one verifiable on its own:
+
+1. *Split the options out and hide the slot.* Add =pq/options.hpp= holding
+   =connection_options=, =open_policy= and =backoff=, add =domain/context_fwd.hpp=,
+   forward-declare =pq::pool=, =pq::transaction= and =pq::session_context= in
+   =context.hpp=, and move =pq_slot= and the constructors into the =.cpp=. No
+   signature changes, so no call site changes. This is the commit that moves the
+   =pq= family's blast radius.
+2. *Emit the new form from the templates.* Change the =repository= archetype to
+   take =const context&=-, and regenerate. The service keeps a by-value
+   constructor because it stores a copy.
+3. *Move the hand-written call sites* with a codemod kept with this task, so it
+   reruns.
+4. *Add the check* that fails when a header includes the definition of a type it
+   only names, with the type list the analysis produced.
+
+Commit 1 is the only one that changes which headers are parsed. Commits 2 and 3
+change copies into borrows, and their evidence is the run-time side plus the
+pattern table from the analysis.
+
+*The member keeps its copy.* This was settled by measurement rather than by
+taste. Commit 1 on its own took =context.hpp= from 6.60 s to 2.85 s: the pool,
+libpq, the codec chain and =<mutex>= left the header, so what remains is the
+options, =tenant_id= (and the clock and format headers behind it) and the
+standard containers. A pointer member would only stop the service headers
+parsing those 2.85 s, and it would cost 103 use sites that become dereferences
+plus a change in who owns the context: a =shared_ptr= shares the caller's
+identity object and adds nullability, a reference member dangles, a pimpl needs
+a declared destructor and moves every inline accessor. The same 2.85 s is
+better attacked at =tenant_id.hpp=, which needs no ownership change at all.
+
+So the templates take the context by =const context&=, and the =ctx_= member
+stays a value. The copies that remain are one per service construction, which is
+the ownership the services already had.
+
+*The one place that must keep its copy.* The service runners are coroutines
+(=boost::asio::awaitable=), and a coroutine keeps its parameters across every
+suspension point. Taking their context by =const&= bound a reference to the
+temporary at the call site, which died at the end of that statement while the
+coroutine carried on. The IAM service then read a freed context and aborted with
+=cannot allocate / corrupted double-linked list= in the pool construction path.
+
+The compiler could not see it, the eleven test suites could not reach it, and
+the build was green. Valgrind named it: the first invalid access was
+=pthread_mutex_lock= inside =context::pq_pool()=, reached from
+=auth_handler= via =run_signing_service=. The fix is to keep =context= by value
+in =run_signing=, =run_signing_service=, =run_domain_service= and the two runner
+front ends, and =context_by_reference.py= now refuses to convert them so a rerun
+cannot reintroduce it. This is the case the acceptance criteria names: a
+reference that outlives its call, which a compile never finds.
 
 * Measurements
 
@@ -66,11 +126,57 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files that include =context.hpp= directly | 4497 | analysis instrument, =header_blast_radius.py= | =27cad5a0c6= |
+| Objects that rebuild when =context.hpp= changes | 365 of 883 | analysis instrument | =27cad5a0c6= |
+| Blast radius of =pq/pool.hpp= and =pq/transaction.hpp= | 365 objects from 4 and 6 direct includers | analysis instrument | =27cad5a0c6= |
+| Objects saved by cutting =context.hpp= → =pq/pool.hpp= | 147 of 321 | analysis instrument, =--cut= | =27cad5a0c6= |
+| The same, for =pq/transaction.hpp= | 147 of 321 | analysis instrument, =--cut= | =27cad5a0c6= |
+| By-value =context= parameters across the tree | 21874, of which 11141 generated | =grep -rn "context ctx[,)]"= | =27cad5a0c6= |
+| Lifetime-sensitive captures of a context | 1, synchronous | =grep= | =27cad5a0c6= |
+| =context.hpp= parse cost, after the split | 2.85 s, from 6.60 s | header probe, clang =-ftime-trace= | working tree after commit 1 |
+| Parameter declarations taken by reference | 946: 72 in the templates, 874 by the codemod | =context_by_reference.py= | working tree |
+| Files regenerated | 4349, across five addresses | =codegen.sh regenerate --all= | working tree |
+| Non-const =context&= parameters before the sweep | 22: 14 read-only, 8 that mutate | scan by hand | working tree |
+| Headers that include a definition they only name, before the include swap | 93: 88 hand-written headers and 5 archetypes covering 1099 generated files | =python3 build/scripts/check_forward_declarable_includes.py= | =bb32f2dbb3=, before the swap |
+| Hand-written headers that take the declaration instead of the definition | 87 | =context_by_reference.py --includes= | =fd855969d8= |
+| Headers that include a definition they only name, after the swap | 6: the 5 archetypes and one header that cannot drop the include | the same check | =688d3963c6= |
+| Model snippets that took the parameter by reference | 187, in 53 model files | =context_by_reference.py --models= | =fd855969d8= |
+| Hand-written parameters that took the reference | 683, in 413 files | =context_by_reference.py --sources= | =fd855969d8= |
+| Generated files the five addresses rewrote | 4349 | =codegen.sh regenerate --all=, one address at a time | =fd855969d8= |
+| Hand-written headers that take the declaration instead of the definition | 87 | =context_by_reference.py --includes= | =641407c6be= |
+| Headers that reach =context.hpp= through the fwd include instead | 0 before the swap, 87 after | =git grep context_fwd.hpp= | =641407c6be= |
 
 * Notes
 
 Found during the publish lifecycle work: a change to =context.hpp= rebuilt most of the tree. A copy of a context costs a few small allocations and one atomic increment on the shared pool slot, which is small beside a database round trip, so the main gain expected is compile time, not run time. The task may measure the run-time cost too, but it does not need to.
+
+*The declaration is used, not just declared.* The first cut of this task added
+=context_fwd.hpp= and left every header including the definition, so the forward
+declaration that makes the saving possible had no users. The check that now
+guards the rule found 88 hand-written headers in that state and 87 of them now
+take the declaration.
+
+Two header families still include the definition and are recorded in the
+baseline. The =repository= archetype emits it in 539 headers, and its
+implementation does not include it itself, so the swap is two lines in the
+archetype and a rebuild of five hundred files. That is the header-family work of
+[[id:DEA440DD-F4B6-4D37-9083-5F3BB33F1018][Forward-declare what the analysis finds]], whose PR has to state the measured
+effect. =cpp_convention_family_units= is one file and goes with it.
+
+*The sweep must reach the models and the templates.* A =#+begin_src cpp=
+block in a =modeling/*.org= file is pasted into a generated file, so a parameter
+written there is a real parameter; editing the generated output instead puts the
+tree out of step with its models, and the drift gate says so. A template is code
+in the same way: a change to it is verified by regenerating and building, not by
+reading the diff, and nothing compiles a =.mustache= file until a regeneration
+puts it into the tree. =context_by_reference.py= has a mode for each layer
+(=--templates=, =--models=, =--sources=, =--includes=) and each is run before the
+code is regenerated, so the rerun after a rebase reproduces the whole change.
+
+The check reads =build/scripts/forward_declarable_types.list=, which the analysis
+feeds, and errs towards silence: a use it does not recognise counts as needing
+the definition. That is the safe direction. A false offender would ask for an
+include that does not compile; a missed one only leaves the debt where it was.
 
 Do this after [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]], so the forward-declaration header and the split follow the conventions the analysis sets.
 
@@ -78,7 +184,7 @@ Do this after [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that c
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4691][#4691]] | [database] Pass the database context by reference behind a forward declaration |
 
 * Review
 
@@ -87,3 +193,29 @@ Do this after [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that c
 |   |                 |      |          |       |
 
 * Result
+
+The context is passed by reference behind its own declaration, and the header
+that names it is no longer the header that defines it.
+
+- =context.hpp= includes neither libpq nor the pool: =pq/options.hpp= holds the
+  connection options, the pool slot is a pointer to an incomplete type defined
+  in the =.cpp=, and the pool, the transaction and the session context are
+  forward-declared. The header falls from 6.60 s to 2.85 s of parse time on its
+  own, and the =pq= family's blast radius moves with it.
+- =domain/context_fwd.hpp= declares the class, and the codemod puts it in the 87
+  hand-written headers that only name it.
+- 683 hand-written parameters and 187 model snippets take =const context&=, and
+  the code is regenerated from the models, so a rerun reproduces the change.
+- The stored member keeps its value and the service runners keep theirs. A
+  coroutine holds a parameter across every suspension point, and the IAM service
+  proved it: the compiler and eleven suites were green and the process aborted
+  with heap corruption. Valgrind named the borrowed context.
+- The check that guards the rule runs in the gate and records the header
+  families that still include the definition: the =repository= archetype, 539
+  files, and one header that cannot drop the include.
+
+Measured, at the commits the measurements name: the build is clean (720 steps,
+50 minutes) and the eleven suites this change reaches pass (11 of 11, 604 s).
+The gate passes every check that passes on =main=; the two that fail,
+=conventions-dataset= and =xml-benchmark-recorded=, fail identically on =main=
+at this commit and are not caused by this change.

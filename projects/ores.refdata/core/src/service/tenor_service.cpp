@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-tenor_service::tenor_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+tenor_service::tenor_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

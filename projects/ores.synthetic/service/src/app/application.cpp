@@ -126,14 +126,14 @@ private:
 public:
     adapter_fleet(ores::nats::service::client& nats,
                   ores::nats::service::nats_client& svc_nats,
-                  ores::database::context db_ctx,
+                  const ores::database::context& db_ctx,
                   generator_fleet& generators,
                   const feed_kind_registry& registry,
                   const ores::synthetic::feed::feed_build_context& build,
                   std::shared_ptr<ores::synthetic::feed::fault_state> faults)
         : nats_(nats)
         , svc_nats_(svc_nats)
-        , db_ctx_(std::move(db_ctx))
+        , db_ctx_(db_ctx)
         , generators_(generators)
         , registry_(registry)
         , build_(build)
@@ -430,7 +430,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto service_run = ores::service::service::run(
         io_ctx,
         nats,
-        std::move(db_ctx),
+        db_ctx,
         "ores.synthetic.service",
         [&generators, faults, &svc_nats, &registry, &run_market_of_the_run](
             auto& n, auto c, auto v) {

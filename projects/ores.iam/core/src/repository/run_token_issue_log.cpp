@@ -41,8 +41,8 @@ constexpr std::string_view issued = "issued";
 
 }
 
-run_token_issue_log::run_token_issue_log(context ctx)
-    : ctx_(std::move(ctx)) {}
+run_token_issue_log::run_token_issue_log(const context& ctx)
+    : ctx_(ctx) {}
 
 void run_token_issue_log::record(const run_token_issue& issue) {
     record(issue.issued_at,

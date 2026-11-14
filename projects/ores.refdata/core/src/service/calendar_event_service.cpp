@@ -59,8 +59,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-calendar_event_service::calendar_event_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+calendar_event_service::calendar_event_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

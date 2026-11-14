@@ -181,8 +181,8 @@ key_from_long_short(const domain::tenor_basis_swap_long_short& v) {
 
 }
 
-tenor_basis_swap_convention_service::tenor_basis_swap_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+tenor_basis_swap_convention_service::tenor_basis_swap_convention_service(const context& ctx)
+    : ctx_(ctx) {}
 
 messaging::get_tenor_basis_swap_convention_response
 tenor_basis_swap_convention_service::get_tenor_basis_swap_convention(

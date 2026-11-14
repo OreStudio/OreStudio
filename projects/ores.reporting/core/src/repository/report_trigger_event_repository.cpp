@@ -82,7 +82,8 @@ report_trigger_event_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-report_trigger_event_repository::replace_claim(context ctx, const domain::report_trigger_event& v) {
+report_trigger_event_repository::replace_claim(const context& ctx,
+                                               const domain::report_trigger_event& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -93,7 +94,7 @@ report_trigger_event_repository::replace_claim(context ctx, const domain::report
 }
 
 domain::report_trigger_event
-report_trigger_event_repository::apply_claim(context ctx,
+report_trigger_event_repository::apply_claim(const context& ctx,
                                              const domain::report_trigger_event& v,
                                              const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -109,11 +110,12 @@ report_trigger_event_repository::apply_claim(context ctx,
     return t;
 }
 
-void report_trigger_event_repository::write(context ctx, const domain::report_trigger_event& v) {
+void report_trigger_event_repository::write(const context& ctx,
+                                            const domain::report_trigger_event& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void report_trigger_event_repository::write(context ctx,
+void report_trigger_event_repository::write(const context& ctx,
                                             const std::vector<domain::report_trigger_event>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -122,7 +124,7 @@ void report_trigger_event_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void report_trigger_event_repository::write(context ctx,
+void report_trigger_event_repository::write(const context& ctx,
                                             const domain::report_trigger_event& v,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report trigger event. " << "id: " << v.id;
@@ -134,7 +136,7 @@ void report_trigger_event_repository::write(context ctx,
 }
 
 void report_trigger_event_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::report_trigger_event>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report trigger events. Count: " << v.size();
@@ -149,7 +151,7 @@ void report_trigger_event_repository::write(
 }
 
 std::vector<domain::report_trigger_event>
-report_trigger_event_repository::read_latest(context ctx) {
+report_trigger_event_repository::read_latest(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_trigger_event_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::order_by("id"_c);
@@ -164,7 +166,7 @@ report_trigger_event_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::report_trigger_event>
-report_trigger_event_repository::read_latest(context ctx, const std::string& id) {
+report_trigger_event_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report trigger event. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_trigger_event_entity>> |
@@ -181,7 +183,7 @@ report_trigger_event_repository::read_latest(context ctx, const std::string& id)
 
 
 std::vector<domain::report_trigger_event>
-report_trigger_event_repository::read_all(context ctx, const std::string& id) {
+report_trigger_event_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all report trigger event versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_trigger_event_entity>> |
@@ -199,7 +201,7 @@ report_trigger_event_repository::read_all(context ctx, const std::string& id) {
 
 
 report_trigger_event_repository::remove_status report_trigger_event_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing report trigger event. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -217,12 +219,12 @@ report_trigger_event_repository::remove_status report_trigger_event_repository::
     return remove_status::removed;
 }
 
-void report_trigger_event_repository::remove(context ctx, const std::string& id) {
+void report_trigger_event_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::report_trigger_event>
-report_trigger_event_repository::read_latest(context ctx,
+report_trigger_event_repository::read_latest(const context& ctx,
                                              std::uint32_t offset,
                                              std::uint32_t limit,
                                              const ores::utility::domain::order& order) {
@@ -244,7 +246,7 @@ report_trigger_event_repository::read_latest(context ctx,
         "Reading latest report trigger events with pagination.");
 }
 
-std::uint32_t report_trigger_event_repository::get_total_trigger_count(context ctx) {
+std::uint32_t report_trigger_event_repository::get_total_trigger_count(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report trigger event count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -256,7 +258,8 @@ std::uint32_t report_trigger_event_repository::get_total_trigger_count(context c
 }
 
 std::vector<domain::report_trigger_event>
-report_trigger_event_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+report_trigger_event_repository::read_latest(const context& ctx,
+                                             const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     const auto tid = ctx.tenant_id().to_string();
@@ -272,7 +275,8 @@ report_trigger_event_repository::read_latest(context ctx, const std::vector<std:
     return result;
 }
 
-void report_trigger_event_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void report_trigger_event_repository::remove(const context& ctx,
+                                             const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

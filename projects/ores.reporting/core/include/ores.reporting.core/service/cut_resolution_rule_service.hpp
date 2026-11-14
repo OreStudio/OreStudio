@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit cut_resolution_rule_service(context ctx);
+    explicit cut_resolution_rule_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

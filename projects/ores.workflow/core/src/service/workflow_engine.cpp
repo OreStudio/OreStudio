@@ -272,17 +272,17 @@ std::string state_name(const fsm_state_map& states, const boost::uuids::uuid& st
 using namespace ores::logging;
 
 workflow_engine::workflow_engine(ores::nats::service::client& nats,
-                                 ores::database::context ctx,
+                                 const ores::database::context& ctx,
                                  std::shared_ptr<const workflow_registry> registry,
                                  fsm_state_map instance_states,
                                  fsm_state_map step_states,
                                  std::optional<ores::security::jwt::jwt_authenticator> verifier)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , registry_(std::move(registry))
-    , instance_states_(std::move(instance_states))
-    , step_states_(std::move(step_states))
-    , verifier_(std::move(verifier)) {}
+    , ctx_(ctx)
+    , registry_(registry)
+    , instance_states_(instance_states)
+    , step_states_(step_states)
+    , verifier_(verifier) {}
 
 void workflow_engine::publish_command(const domain::workflow_step& step,
                                       const boost::uuids::uuid& instance_id,

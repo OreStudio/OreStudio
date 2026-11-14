@@ -58,8 +58,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-cap_floor_instrument_service::cap_floor_instrument_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+cap_floor_instrument_service::cap_floor_instrument_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -110,7 +110,7 @@ workflow_step_filter_condition(const std::optional<messaging::workflow_steps_fil
 }
 
 ores::utility::domain::precondition
-workflow_step_repository::replace_claim(context ctx, const domain::workflow_step& v) {
+workflow_step_repository::replace_claim(const context& ctx, const domain::workflow_step& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -118,8 +118,10 @@ workflow_step_repository::replace_claim(context ctx, const domain::workflow_step
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::workflow_step workflow_step_repository::apply_claim(
-    context ctx, const domain::workflow_step& v, const ores::utility::domain::precondition& claim) {
+domain::workflow_step
+workflow_step_repository::apply_claim(const context& ctx,
+                                      const domain::workflow_step& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -144,11 +146,12 @@ domain::workflow_step workflow_step_repository::apply_claim(
     return t;
 }
 
-void workflow_step_repository::write(context ctx, const domain::workflow_step& v) {
+void workflow_step_repository::write(const context& ctx, const domain::workflow_step& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void workflow_step_repository::write(context ctx, const std::vector<domain::workflow_step>& v) {
+void workflow_step_repository::write(const context& ctx,
+                                     const std::vector<domain::workflow_step>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -156,7 +159,7 @@ void workflow_step_repository::write(context ctx, const std::vector<domain::work
     write(ctx, v, claims);
 }
 
-void workflow_step_repository::write(context ctx,
+void workflow_step_repository::write(const context& ctx,
                                      const domain::workflow_step& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workflow step. " << "id: " << v.id;
@@ -166,7 +169,7 @@ void workflow_step_repository::write(context ctx,
 }
 
 void workflow_step_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::workflow_step>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workflow steps. Count: " << v.size();
@@ -178,7 +181,7 @@ void workflow_step_repository::write(
         ctx, workflow_step_mapper::map(batch), lg(), "Writing workflow steps to database.");
 }
 
-std::vector<domain::workflow_step> workflow_step_repository::read_latest(context ctx) {
+std::vector<domain::workflow_step> workflow_step_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<workflow_step_entity>> |
                        query_builder::where("valid_to"_c == max) | query_builder::order_by("id"_c);
@@ -191,7 +194,7 @@ std::vector<domain::workflow_step> workflow_step_repository::read_latest(context
         "Reading latest workflow steps");
 }
 
-std::vector<domain::workflow_step> workflow_step_repository::read_latest(context ctx,
+std::vector<domain::workflow_step> workflow_step_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow step. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -207,7 +210,7 @@ std::vector<domain::workflow_step> workflow_step_repository::read_latest(context
 }
 
 
-std::vector<domain::workflow_step> workflow_step_repository::read_all(context ctx,
+std::vector<domain::workflow_step> workflow_step_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all workflow step versions. " << "id: " << id;
     const auto query = query_builder::read<std::vector<workflow_step_entity>> |
@@ -223,7 +226,7 @@ std::vector<domain::workflow_step> workflow_step_repository::read_all(context ct
 }
 
 std::optional<domain::workflow_step> workflow_step_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading workflow step at version. " << "id: " << id
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<workflow_step_entity>> |
@@ -244,7 +247,7 @@ std::optional<domain::workflow_step> workflow_step_repository::read_at_version(
 }
 
 std::vector<domain::workflow_step> workflow_step_repository::read_latest_by_workflow_id(
-    context ctx,
+    const context& ctx,
     const std::string& workflow_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -268,7 +271,7 @@ std::vector<domain::workflow_step> workflow_step_repository::read_latest_by_work
 }
 
 std::uint32_t workflow_step_repository::get_total_step_count_by_workflow_id(
-    context ctx,
+    const context& ctx,
     const std::string& workflow_id,
     const std::optional<messaging::workflow_steps_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workflow steps count. workflow_id: "
@@ -288,7 +291,7 @@ std::uint32_t workflow_step_repository::get_total_step_count_by_workflow_id(
 
 
 workflow_step_repository::remove_status workflow_step_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing workflow step. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -316,12 +319,12 @@ workflow_step_repository::remove_status workflow_step_repository::remove(
     return remove_status::removed;
 }
 
-void workflow_step_repository::remove(context ctx, const std::string& id) {
+void workflow_step_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::workflow_step>
-workflow_step_repository::read_latest(context ctx,
+workflow_step_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -344,7 +347,7 @@ workflow_step_repository::read_latest(context ctx,
 }
 
 std::uint32_t workflow_step_repository::get_total_step_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::workflow_steps_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workflow step count";
@@ -361,7 +364,7 @@ std::uint32_t workflow_step_repository::get_total_step_count(
 }
 
 std::vector<domain::workflow_step>
-workflow_step_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+workflow_step_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -376,7 +379,7 @@ workflow_step_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void workflow_step_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void workflow_step_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

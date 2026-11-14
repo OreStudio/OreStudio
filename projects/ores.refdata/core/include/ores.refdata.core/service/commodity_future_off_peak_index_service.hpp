@@ -65,7 +65,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit commodity_future_off_peak_index_service(context ctx);
+    explicit commodity_future_off_peak_index_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -65,7 +65,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit party_product_type_deal_class_service(context ctx);
+    explicit party_product_type_deal_class_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

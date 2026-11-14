@@ -74,7 +74,7 @@ private:
 public:
     adapter_supervisor(
         ores::nats::service::client& nats,
-        ores::database::context ctx,
+        const ores::database::context& ctx,
         std::chrono::milliseconds heartbeat_timeout = adapter_registry::default_heartbeat_timeout);
     ~adapter_supervisor();
 

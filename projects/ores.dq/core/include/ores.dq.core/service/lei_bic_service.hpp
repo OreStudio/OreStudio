@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit lei_bic_service(context ctx);
+    explicit lei_bic_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

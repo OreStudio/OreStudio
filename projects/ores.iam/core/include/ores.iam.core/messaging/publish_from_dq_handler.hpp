@@ -39,7 +39,7 @@ namespace ores::iam::messaging {
  */
 class ORES_IAM_CORE_EXPORT publish_from_dq_handler {
 public:
-    publish_from_dq_handler(ores::nats::service::client& nats, ores::database::context ctx);
+    publish_from_dq_handler(ores::nats::service::client& nats, const ores::database::context& ctx);
 
     void handle(ores::nats::delivery delivery);
 

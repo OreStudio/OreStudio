@@ -56,7 +56,7 @@ using declared_shapes = std::map<std::string, std::map<std::string, std::set<std
  * present, and so declares a shape; a series with none is absent, and so
  * declares nothing.
  */
-declared_shapes read_shapes(ores::database::context ctx,
+declared_shapes read_shapes(const ores::database::context& ctx,
                             const std::vector<std::string>& series_ids) {
     declared_shapes shapes;
     for (const auto& axis : series_axis_repository{}.read_latest_for_series(ctx, series_ids))
@@ -72,7 +72,7 @@ declared_shapes read_shapes(ores::database::context ctx,
 
 }
 
-void series_shape_check::check(ores::database::context ctx,
+void series_shape_check::check(const ores::database::context& ctx,
                                const std::vector<domain::market_observation>& observations) {
     if (observations.empty())
         return;

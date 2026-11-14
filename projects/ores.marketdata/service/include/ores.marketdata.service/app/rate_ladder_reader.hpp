@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_RATE_LADDER_READER_HPP
 #define ORES_MARKETDATA_SERVICE_APP_RATE_LADDER_READER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
 

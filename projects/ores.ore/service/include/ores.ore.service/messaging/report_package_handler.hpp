@@ -68,7 +68,7 @@ public:
      *                       user who started the workflow.
      */
     report_package_handler(ores::nats::service::client& nats,
-                           ores::database::context ctx,
+                           const ores::database::context& ctx,
                            std::string http_base_url,
                            ores::nats::service::nats_client service_nats);
 

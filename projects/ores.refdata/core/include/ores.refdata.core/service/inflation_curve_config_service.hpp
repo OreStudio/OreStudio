@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit inflation_curve_config_service(context ctx);
+    explicit inflation_curve_config_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_LIVE_TENANT_REPOSITORY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_LIVE_TENANT_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -50,7 +50,7 @@ private:
 public:
     using context = ores::database::context;
 
-    [[nodiscard]] std::set<boost::uuids::uuid> read(context ctx);
+    [[nodiscard]] std::set<boost::uuids::uuid> read(const context& ctx);
 };
 
 }

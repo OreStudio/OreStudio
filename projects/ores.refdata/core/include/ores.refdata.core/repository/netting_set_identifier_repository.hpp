@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::netting_set_identifier& v);
-    void write(context ctx, const std::vector<domain::netting_set_identifier>& v);
+    void write(const context& ctx, const domain::netting_set_identifier& v);
+    void write(const context& ctx, const std::vector<domain::netting_set_identifier>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::netting_set_identifier& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of netting set identifiers, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::netting_set_identifier>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,9 +101,10 @@ public:
      * @brief Reads latest netting set identifiers, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::netting_set_identifier> read_latest(context ctx);
-    std::vector<domain::netting_set_identifier> read_latest(context ctx, const std::string& id);
-    std::vector<domain::netting_set_identifier> read_latest(context ctx,
+    std::vector<domain::netting_set_identifier> read_latest(const context& ctx);
+    std::vector<domain::netting_set_identifier> read_latest(const context& ctx,
+                                                            const std::string& id);
+    std::vector<domain::netting_set_identifier> read_latest(const context& ctx,
                                                             const std::vector<std::string>& ids);
     /**@}*/
 
@@ -111,13 +112,13 @@ public:
      * @brief Reads latest netting set identifiers filtered by netting_set_id and id_scheme.
      */
     std::vector<domain::netting_set_identifier> read_latest_by_code(
-        context ctx, const std::string& netting_set_id, const std::string& id_scheme);
+        const context& ctx, const std::string& netting_set_id, const std::string& id_scheme);
 
     /**
      * @brief Reads latest netting set identifiers filtered by id_value.
      */
     std::vector<domain::netting_set_identifier>
-    read_latest_by_id_value(context ctx, const std::string& id_value);
+    read_latest_by_id_value(const context& ctx, const std::string& id_value);
 
     /**
      * @brief Reads the newest netting set identifiers filtered by id_value, current or not.
@@ -132,14 +133,14 @@ public:
      * column means the row belongs to the whole tenant and is kept for every
      * party.
      */
-    std::vector<domain::netting_set_identifier> read_any_by_id_value(context ctx,
+    std::vector<domain::netting_set_identifier> read_any_by_id_value(const context& ctx,
                                                                      const std::string& id_value);
 
 
     /**
      * @brief Reads all netting set identifiers, possibly filtered by primary key.
      */
-    std::vector<domain::netting_set_identifier> read_all(context ctx, const std::string& id);
+    std::vector<domain::netting_set_identifier> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single netting set identifier as it stood at a specific
@@ -151,7 +152,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::netting_set_identifier>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
 
     /**
@@ -163,7 +164,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::netting_set_identifier> read_latest_by_netting_set_id(
-        context ctx,
+        const context& ctx,
         const std::string& netting_set_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -174,7 +175,7 @@ public:
      * @brief Gets the total count of active netting set identifiers filtered by netting_set_id.
      */
     std::uint32_t get_total_netting_set_identifier_count_by_netting_set_id(
-        context ctx,
+        const context& ctx,
         const std::string& netting_set_id,
         const std::optional<messaging::netting_set_identifiers_filter>& filter = std::nullopt);
 
@@ -196,7 +197,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::netting_set_identifier> read_latest(
-        context ctx,
+        const context& ctx,
         std::uint32_t offset,
         std::uint32_t limit,
         const ores::utility::domain::order& order = {},
@@ -209,14 +210,14 @@ public:
      * @return Total number of active netting set identifiers
      */
     std::uint32_t get_total_netting_set_identifier_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::netting_set_identifiers_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a netting set identifier by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -238,12 +239,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes netting set identifiers by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -251,7 +253,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::netting_set_identifier& v);
 
     /**
@@ -259,7 +261,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::netting_set_identifier apply_claim(context ctx,
+    domain::netting_set_identifier apply_claim(const context& ctx,
                                                const domain::netting_set_identifier& v,
                                                const ores::utility::domain::precondition& claim);
 };

@@ -27,9 +27,9 @@ namespace ores::iam::service {
 
 using namespace ores::logging;
 
-role_grant_applier::role_grant_applier(ores::database::context ctx,
+role_grant_applier::role_grant_applier(const ores::database::context& ctx,
                                        ores::eventing::service::event_bus* event_bus)
-    : ctx_(std::move(ctx))
+    : ctx_(ctx)
     , event_bus_(event_bus) {}
 
 int role_grant_applier::apply() {

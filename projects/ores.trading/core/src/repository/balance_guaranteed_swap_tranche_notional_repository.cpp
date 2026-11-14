@@ -112,7 +112,7 @@ std::optional<query_builder::condition> balance_guaranteed_swap_tranche_notional
 
 ores::utility::domain::precondition
 balance_guaranteed_swap_tranche_notional_repository::replace_claim(
-    context ctx, const domain::balance_guaranteed_swap_tranche_notional& v) {
+    const context& ctx, const domain::balance_guaranteed_swap_tranche_notional& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.trade_id),
                                      std::to_string(v.tranche_number),
@@ -125,7 +125,7 @@ balance_guaranteed_swap_tranche_notional_repository::replace_claim(
 
 domain::balance_guaranteed_swap_tranche_notional
 balance_guaranteed_swap_tranche_notional_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::balance_guaranteed_swap_tranche_notional& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -156,12 +156,12 @@ balance_guaranteed_swap_tranche_notional_repository::apply_claim(
 }
 
 void balance_guaranteed_swap_tranche_notional_repository::write(
-    context ctx, const domain::balance_guaranteed_swap_tranche_notional& v) {
+    const context& ctx, const domain::balance_guaranteed_swap_tranche_notional& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void balance_guaranteed_swap_tranche_notional_repository::write(
-    context ctx, const std::vector<domain::balance_guaranteed_swap_tranche_notional>& v) {
+    const context& ctx, const std::vector<domain::balance_guaranteed_swap_tranche_notional>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -170,7 +170,7 @@ void balance_guaranteed_swap_tranche_notional_repository::write(
 }
 
 void balance_guaranteed_swap_tranche_notional_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::balance_guaranteed_swap_tranche_notional& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing balance guaranteed swap tranche notional. "
@@ -186,7 +186,7 @@ void balance_guaranteed_swap_tranche_notional_repository::write(
 }
 
 void balance_guaranteed_swap_tranche_notional_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::balance_guaranteed_swap_tranche_notional>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing balance guaranteed swap tranche notionals. Count: "
@@ -203,7 +203,7 @@ void balance_guaranteed_swap_tranche_notional_repository::write(
 }
 
 std::vector<domain::balance_guaranteed_swap_tranche_notional>
-balance_guaranteed_swap_tranche_notional_repository::read_latest(context ctx) {
+balance_guaranteed_swap_tranche_notional_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -224,7 +224,7 @@ balance_guaranteed_swap_tranche_notional_repository::read_latest(context ctx) {
 
 std::vector<domain::balance_guaranteed_swap_tranche_notional>
 balance_guaranteed_swap_tranche_notional_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::string& tranche_number,
     const std::string& sequence_number) {
@@ -252,7 +252,7 @@ balance_guaranteed_swap_tranche_notional_repository::read_latest(
 
 
 std::vector<domain::balance_guaranteed_swap_tranche_notional>
-balance_guaranteed_swap_tranche_notional_repository::read_all(context ctx,
+balance_guaranteed_swap_tranche_notional_repository::read_all(const context& ctx,
                                                               const std::string& trade_id,
                                                               const std::string& tranche_number,
                                                               const std::string& sequence_number) {
@@ -280,7 +280,7 @@ balance_guaranteed_swap_tranche_notional_repository::read_all(context ctx,
 
 std::optional<domain::balance_guaranteed_swap_tranche_notional>
 balance_guaranteed_swap_tranche_notional_repository::read_at_version(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::string& tranche_number,
     const std::string& sequence_number,
@@ -315,7 +315,7 @@ balance_guaranteed_swap_tranche_notional_repository::read_at_version(
 
 std::vector<domain::balance_guaranteed_swap_tranche_notional>
 balance_guaranteed_swap_tranche_notional_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -349,7 +349,7 @@ balance_guaranteed_swap_tranche_notional_repository::read_latest_by_trade_id(
 
 std::uint32_t balance_guaranteed_swap_tranche_notional_repository::
     get_total_balance_guaranteed_swap_tranche_notional_count_by_trade_id(
-        context ctx,
+        const context& ctx,
         const std::string& trade_id,
         const std::optional<messaging::balance_guaranteed_swap_tranche_notionals_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -373,7 +373,7 @@ std::uint32_t balance_guaranteed_swap_tranche_notional_repository::
 
 
 balance_guaranteed_swap_tranche_notional_repository::remove_status
-balance_guaranteed_swap_tranche_notional_repository::remove(context ctx,
+balance_guaranteed_swap_tranche_notional_repository::remove(const context& ctx,
                                                             const std::string& trade_id,
                                                             const std::string& tranche_number,
                                                             const std::string& sequence_number,
@@ -411,7 +411,7 @@ balance_guaranteed_swap_tranche_notional_repository::remove(context ctx,
 }
 
 void balance_guaranteed_swap_tranche_notional_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::string& tranche_number,
     const std::string& sequence_number) {
@@ -420,7 +420,7 @@ void balance_guaranteed_swap_tranche_notional_repository::remove(
 
 std::vector<domain::balance_guaranteed_swap_tranche_notional>
 balance_guaranteed_swap_tranche_notional_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -453,7 +453,7 @@ balance_guaranteed_swap_tranche_notional_repository::read_latest(
 
 std::uint32_t balance_guaranteed_swap_tranche_notional_repository::
     get_total_balance_guaranteed_swap_tranche_notional_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::balance_guaranteed_swap_tranche_notionals_filter>& filter,
         const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug)
@@ -475,7 +475,7 @@ std::uint32_t balance_guaranteed_swap_tranche_notional_repository::
 
 std::vector<domain::balance_guaranteed_swap_tranche_notional>
 balance_guaranteed_swap_tranche_notional_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& tranche_numbers,
     const std::vector<std::string>& sequence_numbers) {
@@ -519,7 +519,7 @@ balance_guaranteed_swap_tranche_notional_repository::read_latest(
 }
 
 void balance_guaranteed_swap_tranche_notional_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& tranche_numbers,
     const std::vector<std::string>& sequence_numbers) {
@@ -536,7 +536,7 @@ void balance_guaranteed_swap_tranche_notional_repository::remove(
 
 std::vector<domain::balance_guaranteed_swap_tranche_notional>
 balance_guaranteed_swap_tranche_notional_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();

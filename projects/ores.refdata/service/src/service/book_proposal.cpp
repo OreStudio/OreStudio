@@ -128,8 +128,8 @@ bool book_preview::refused() const {
     return std::ranges::any_of(lines, [](const auto& l) { return !l.refusal.empty(); });
 }
 
-book_proposal_service::book_proposal_service(ores::database::context ctx)
-    : ctx_(std::move(ctx)) {}
+book_proposal_service::book_proposal_service(const ores::database::context& ctx)
+    : ctx_(ctx) {}
 
 book_preview book_proposal_service::preview(const std::vector<domain::book_change>& lines) {
     // The transaction is never committed. Its destructor rolls back every

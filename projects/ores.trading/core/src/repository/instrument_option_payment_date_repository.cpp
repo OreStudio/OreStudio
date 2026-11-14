@@ -109,7 +109,7 @@ std::optional<query_builder::condition> instrument_option_payment_date_filter_co
 }
 
 ores::utility::domain::precondition instrument_option_payment_date_repository::replace_claim(
-    context ctx, const domain::instrument_option_payment_date& v) {
+    const context& ctx, const domain::instrument_option_payment_date& v) {
     const auto current =
         read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
     if (current.empty())
@@ -119,7 +119,7 @@ ores::utility::domain::precondition instrument_option_payment_date_repository::r
 }
 
 domain::instrument_option_payment_date instrument_option_payment_date_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::instrument_option_payment_date& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -148,12 +148,12 @@ domain::instrument_option_payment_date instrument_option_payment_date_repository
 }
 
 void instrument_option_payment_date_repository::write(
-    context ctx, const domain::instrument_option_payment_date& v) {
+    const context& ctx, const domain::instrument_option_payment_date& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void instrument_option_payment_date_repository::write(
-    context ctx, const std::vector<domain::instrument_option_payment_date>& v) {
+    const context& ctx, const std::vector<domain::instrument_option_payment_date>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -162,7 +162,7 @@ void instrument_option_payment_date_repository::write(
 }
 
 void instrument_option_payment_date_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::instrument_option_payment_date& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument option payment date. "
@@ -176,7 +176,7 @@ void instrument_option_payment_date_repository::write(
 }
 
 void instrument_option_payment_date_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::instrument_option_payment_date>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument option payment dates. Count: " << v.size();
@@ -191,7 +191,7 @@ void instrument_option_payment_date_repository::write(
 }
 
 std::vector<domain::instrument_option_payment_date>
-instrument_option_payment_date_repository::read_latest(context ctx) {
+instrument_option_payment_date_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<instrument_option_payment_date_entity>> |
@@ -208,7 +208,7 @@ instrument_option_payment_date_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::instrument_option_payment_date>
-instrument_option_payment_date_repository::read_latest(context ctx,
+instrument_option_payment_date_repository::read_latest(const context& ctx,
                                                        const std::string& trade_id,
                                                        const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument option payment date. "
@@ -232,7 +232,7 @@ instrument_option_payment_date_repository::read_latest(context ctx,
 
 
 std::vector<domain::instrument_option_payment_date>
-instrument_option_payment_date_repository::read_all(context ctx,
+instrument_option_payment_date_repository::read_all(const context& ctx,
                                                     const std::string& trade_id,
                                                     const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all instrument option payment date versions. "
@@ -254,7 +254,7 @@ instrument_option_payment_date_repository::read_all(context ctx,
 }
 
 std::optional<domain::instrument_option_payment_date>
-instrument_option_payment_date_repository::read_at_version(context ctx,
+instrument_option_payment_date_repository::read_at_version(const context& ctx,
                                                            const std::string& trade_id,
                                                            const std::string& sequence_number,
                                                            std::uint32_t version) {
@@ -284,7 +284,7 @@ instrument_option_payment_date_repository::read_at_version(context ctx,
 
 std::vector<domain::instrument_option_payment_date>
 instrument_option_payment_date_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -312,7 +312,7 @@ instrument_option_payment_date_repository::read_latest_by_trade_id(
 
 std::uint32_t
 instrument_option_payment_date_repository::get_total_option_payment_date_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::instrument_option_payment_dates_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -334,7 +334,7 @@ instrument_option_payment_date_repository::get_total_option_payment_date_count_b
 
 
 instrument_option_payment_date_repository::remove_status
-instrument_option_payment_date_repository::remove(context ctx,
+instrument_option_payment_date_repository::remove(const context& ctx,
                                                   const std::string& trade_id,
                                                   const std::string& sequence_number,
                                                   std::optional<std::uint32_t> version) {
@@ -369,7 +369,7 @@ instrument_option_payment_date_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void instrument_option_payment_date_repository::remove(context ctx,
+void instrument_option_payment_date_repository::remove(const context& ctx,
                                                        const std::string& trade_id,
                                                        const std::string& sequence_number) {
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
@@ -377,7 +377,7 @@ void instrument_option_payment_date_repository::remove(context ctx,
 
 std::vector<domain::instrument_option_payment_date>
 instrument_option_payment_date_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -403,7 +403,7 @@ instrument_option_payment_date_repository::read_latest(
 }
 
 std::uint32_t instrument_option_payment_date_repository::get_total_option_payment_date_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::instrument_option_payment_dates_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument option payment date count";
@@ -423,7 +423,7 @@ std::uint32_t instrument_option_payment_date_repository::get_total_option_paymen
 
 std::vector<domain::instrument_option_payment_date>
 instrument_option_payment_date_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
@@ -461,7 +461,7 @@ instrument_option_payment_date_repository::read_latest(
 }
 
 void instrument_option_payment_date_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product

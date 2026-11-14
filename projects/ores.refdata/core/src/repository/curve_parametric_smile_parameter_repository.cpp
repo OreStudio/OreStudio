@@ -103,7 +103,7 @@ std::optional<query_builder::condition> curve_parametric_smile_parameter_filter_
 }
 
 ores::utility::domain::precondition curve_parametric_smile_parameter_repository::replace_claim(
-    context ctx, const domain::curve_parametric_smile_parameter& v) {
+    const context& ctx, const domain::curve_parametric_smile_parameter& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -112,7 +112,7 @@ ores::utility::domain::precondition curve_parametric_smile_parameter_repository:
 }
 
 domain::curve_parametric_smile_parameter curve_parametric_smile_parameter_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::curve_parametric_smile_parameter& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -140,12 +140,12 @@ domain::curve_parametric_smile_parameter curve_parametric_smile_parameter_reposi
 }
 
 void curve_parametric_smile_parameter_repository::write(
-    context ctx, const domain::curve_parametric_smile_parameter& v) {
+    const context& ctx, const domain::curve_parametric_smile_parameter& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void curve_parametric_smile_parameter_repository::write(
-    context ctx, const std::vector<domain::curve_parametric_smile_parameter>& v) {
+    const context& ctx, const std::vector<domain::curve_parametric_smile_parameter>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -154,7 +154,7 @@ void curve_parametric_smile_parameter_repository::write(
 }
 
 void curve_parametric_smile_parameter_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::curve_parametric_smile_parameter& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve parametric smile parameter. " << "id: " << v.id;
@@ -166,7 +166,7 @@ void curve_parametric_smile_parameter_repository::write(
 }
 
 void curve_parametric_smile_parameter_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::curve_parametric_smile_parameter>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve parametric smile parameters. Count: " << v.size();
@@ -181,7 +181,7 @@ void curve_parametric_smile_parameter_repository::write(
 }
 
 std::vector<domain::curve_parametric_smile_parameter>
-curve_parametric_smile_parameter_repository::read_latest(context ctx) {
+curve_parametric_smile_parameter_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_parametric_smile_parameter_entity>> |
@@ -198,7 +198,8 @@ curve_parametric_smile_parameter_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::curve_parametric_smile_parameter>
-curve_parametric_smile_parameter_repository::read_latest(context ctx, const std::string& id) {
+curve_parametric_smile_parameter_repository::read_latest(const context& ctx,
+                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest curve parametric smile parameter. "
                                << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -218,7 +219,7 @@ curve_parametric_smile_parameter_repository::read_latest(context ctx, const std:
 
 
 std::vector<domain::curve_parametric_smile_parameter>
-curve_parametric_smile_parameter_repository::read_all(context ctx, const std::string& id) {
+curve_parametric_smile_parameter_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all curve parametric smile parameter versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -236,7 +237,7 @@ curve_parametric_smile_parameter_repository::read_all(context ctx, const std::st
 }
 
 std::optional<domain::curve_parametric_smile_parameter>
-curve_parametric_smile_parameter_repository::read_at_version(context ctx,
+curve_parametric_smile_parameter_repository::read_at_version(const context& ctx,
                                                              const std::string& id,
                                                              std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading curve parametric smile parameter at version. "
@@ -265,7 +266,7 @@ curve_parametric_smile_parameter_repository::read_at_version(context ctx,
 
 
 curve_parametric_smile_parameter_repository::remove_status
-curve_parametric_smile_parameter_repository::remove(context ctx,
+curve_parametric_smile_parameter_repository::remove(const context& ctx,
                                                     const std::string& id,
                                                     std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing curve parametric smile parameter. " << "id: " << id;
@@ -296,13 +297,14 @@ curve_parametric_smile_parameter_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void curve_parametric_smile_parameter_repository::remove(context ctx, const std::string& id) {
+void curve_parametric_smile_parameter_repository::remove(const context& ctx,
+                                                         const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::curve_parametric_smile_parameter>
 curve_parametric_smile_parameter_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -328,7 +330,7 @@ curve_parametric_smile_parameter_repository::read_latest(
 }
 
 std::uint32_t curve_parametric_smile_parameter_repository::get_total_smile_parameter_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::curve_parametric_smile_parameters_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active curve parametric smile parameter count";
@@ -347,7 +349,7 @@ std::uint32_t curve_parametric_smile_parameter_repository::get_total_smile_param
 }
 
 std::vector<domain::curve_parametric_smile_parameter>
-curve_parametric_smile_parameter_repository::read_latest(context ctx,
+curve_parametric_smile_parameter_repository::read_latest(const context& ctx,
                                                          const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -366,7 +368,7 @@ curve_parametric_smile_parameter_repository::read_latest(context ctx,
     return result;
 }
 
-void curve_parametric_smile_parameter_repository::remove(context ctx,
+void curve_parametric_smile_parameter_repository::remove(const context& ctx,
                                                          const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

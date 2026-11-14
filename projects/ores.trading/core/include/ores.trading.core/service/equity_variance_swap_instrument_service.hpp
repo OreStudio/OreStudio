@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit equity_variance_swap_instrument_service(context ctx);
+    explicit equity_variance_swap_instrument_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -82,7 +82,7 @@ to_fixings(const std::vector<std::vector<std::optional<std::string>>>& rows) {
 
 }
 
-std::vector<fixing_series> fixing_read_repository::series_of(context ctx,
+std::vector<fixing_series> fixing_read_repository::series_of(const context& ctx,
                                                              const std::string& item,
                                                              const std::string& provider_code) {
     std::vector<std::string> parties;
@@ -108,7 +108,7 @@ std::vector<fixing_series> fixing_read_repository::series_of(context ctx,
     return out;
 }
 
-std::vector<stored_fixing> fixing_read_repository::on_or_before(context ctx,
+std::vector<stored_fixing> fixing_read_repository::on_or_before(const context& ctx,
                                                                 const boost::uuids::uuid& series_id,
                                                                 std::chrono::year_month_day date,
                                                                 std::size_t limit) {
@@ -142,7 +142,7 @@ std::vector<stored_fixing> fixing_read_repository::on_or_before(context ctx,
     return found;
 }
 
-std::vector<stored_fixing> fixing_read_repository::between(context ctx,
+std::vector<stored_fixing> fixing_read_repository::between(const context& ctx,
                                                            const boost::uuids::uuid& series_id,
                                                            std::chrono::year_month_day from,
                                                            std::chrono::year_month_day to,
@@ -159,7 +159,7 @@ std::vector<stored_fixing> fixing_read_repository::between(context ctx,
         "reading the fixings of a series in a window"));
 }
 
-std::optional<vendor_key> fixing_read_repository::vendor_of(context ctx,
+std::optional<vendor_key> fixing_read_repository::vendor_of(const context& ctx,
                                                             const std::string& item,
                                                             const std::string& provider_code) {
     const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(

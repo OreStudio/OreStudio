@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::country& v);
-    void write(context ctx, const std::vector<domain::country>& v);
+    void write(const context& ctx, const domain::country& v);
+    void write(const context& ctx, const std::vector<domain::country>& v);
     /**@}*/
 
     /**
@@ -84,14 +84,15 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void
-    write(context ctx, const domain::country& v, const ores::utility::domain::precondition& claim);
+    void write(const context& ctx,
+               const domain::country& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
      * @brief Writes a set of countries, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::country>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -99,9 +100,9 @@ public:
      * @brief Reads latest countries, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::country> read_latest(context ctx);
-    std::vector<domain::country> read_latest(context ctx, const std::string& alpha2_code);
-    std::vector<domain::country> read_latest(context ctx,
+    std::vector<domain::country> read_latest(const context& ctx);
+    std::vector<domain::country> read_latest(const context& ctx, const std::string& alpha2_code);
+    std::vector<domain::country> read_latest(const context& ctx,
                                              const std::vector<std::string>& alpha2_codes);
     /**@}*/
 
@@ -109,7 +110,7 @@ public:
     /**
      * @brief Reads all countries, possibly filtered by primary key.
      */
-    std::vector<domain::country> read_all(context ctx, const std::string& alpha2_code);
+    std::vector<domain::country> read_all(const context& ctx, const std::string& alpha2_code);
 
     /**
      * @brief Reads a single country as it stood at a specific
@@ -121,7 +122,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::country>
-    read_at_version(context ctx, const std::string& alpha2_code, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& alpha2_code, std::uint32_t version);
 
     /**
      * @brief Whether a list of countries can be ordered by a field.
@@ -140,7 +141,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::country>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -153,14 +154,14 @@ public:
      * @return Total number of active countries
      */
     std::uint32_t
-    get_total_country_count(context ctx,
+    get_total_country_count(const context& ctx,
                             const std::optional<messaging::countries_filter>& filter = std::nullopt,
                             const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a country by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& alpha2_code);
+    void remove(const context& ctx, const std::string& alpha2_code);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -182,32 +183,33 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status
-    remove(context ctx, const std::string& alpha2_code, std::optional<std::uint32_t> version);
+    remove_status remove(const context& ctx,
+                         const std::string& alpha2_code,
+                         std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes countries by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& alpha2_codes);
+    void remove(const context& ctx, const std::vector<std::string>& alpha2_codes);
 
     /**
      * @brief Reads all versions of all countries (no key filter), newest first.
      */
-    std::vector<domain::country> read_all(context ctx);
+    std::vector<domain::country> read_all(const context& ctx);
 
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::country& v);
+    ores::utility::domain::precondition replace_claim(const context& ctx, const domain::country& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::country apply_claim(context ctx,
+    domain::country apply_claim(const context& ctx,
                                 const domain::country& v,
                                 const ores::utility::domain::precondition& claim);
 };

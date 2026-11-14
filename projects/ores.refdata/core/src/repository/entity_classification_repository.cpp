@@ -86,7 +86,7 @@ entity_classification_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-entity_classification_repository::replace_claim(context ctx,
+entity_classification_repository::replace_claim(const context& ctx,
                                                 const domain::entity_classification& v) {
     const auto current = read_latest(ctx, v.code, v.coding_scheme_code);
     if (current.empty())
@@ -96,7 +96,7 @@ entity_classification_repository::replace_claim(context ctx,
 }
 
 domain::entity_classification
-entity_classification_repository::apply_claim(context ctx,
+entity_classification_repository::apply_claim(const context& ctx,
                                               const domain::entity_classification& v,
                                               const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -123,11 +123,12 @@ entity_classification_repository::apply_claim(context ctx,
     return t;
 }
 
-void entity_classification_repository::write(context ctx, const domain::entity_classification& v) {
+void entity_classification_repository::write(const context& ctx,
+                                             const domain::entity_classification& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void entity_classification_repository::write(context ctx,
+void entity_classification_repository::write(const context& ctx,
                                              const std::vector<domain::entity_classification>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -136,7 +137,7 @@ void entity_classification_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void entity_classification_repository::write(context ctx,
+void entity_classification_repository::write(const context& ctx,
                                              const domain::entity_classification& v,
                                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing entity classification. " << "code: " << v.code
@@ -149,7 +150,7 @@ void entity_classification_repository::write(context ctx,
 }
 
 void entity_classification_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::entity_classification>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing entity classifications. Count: " << v.size();
@@ -164,7 +165,7 @@ void entity_classification_repository::write(
 }
 
 std::vector<domain::entity_classification>
-entity_classification_repository::read_latest(context ctx) {
+entity_classification_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<entity_classification_entity>> |
@@ -181,7 +182,7 @@ entity_classification_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::entity_classification> entity_classification_repository::read_latest(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest entity classification. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
@@ -202,7 +203,7 @@ std::vector<domain::entity_classification> entity_classification_repository::rea
 
 
 std::vector<domain::entity_classification> entity_classification_repository::read_all(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all entity classification versions. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -221,7 +222,7 @@ std::vector<domain::entity_classification> entity_classification_repository::rea
 }
 
 std::optional<domain::entity_classification>
-entity_classification_repository::read_at_version(context ctx,
+entity_classification_repository::read_at_version(const context& ctx,
                                                   const std::string& code,
                                                   const std::string& coding_scheme_code,
                                                   std::uint32_t version) {
@@ -249,7 +250,7 @@ entity_classification_repository::read_at_version(context ctx,
 }
 
 entity_classification_repository::remove_status
-entity_classification_repository::remove(context ctx,
+entity_classification_repository::remove(const context& ctx,
                                          const std::string& code,
                                          const std::string& coding_scheme_code,
                                          std::optional<std::uint32_t> version) {
@@ -283,14 +284,14 @@ entity_classification_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void entity_classification_repository::remove(context ctx,
+void entity_classification_repository::remove(const context& ctx,
                                               const std::string& code,
                                               const std::string& coding_scheme_code) {
     static_cast<void>(remove(ctx, code, coding_scheme_code, std::nullopt));
 }
 
 std::vector<domain::entity_classification>
-entity_classification_repository::read_latest(context ctx,
+entity_classification_repository::read_latest(const context& ctx,
                                               std::uint32_t offset,
                                               std::uint32_t limit,
                                               const ores::utility::domain::order& order,
@@ -314,7 +315,7 @@ entity_classification_repository::read_latest(context ctx,
 }
 
 std::uint32_t entity_classification_repository::get_total_classification_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active entity classification count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -330,7 +331,7 @@ std::uint32_t entity_classification_repository::get_total_classification_count(
 }
 
 std::vector<domain::entity_classification>
-entity_classification_repository::read_latest(context ctx,
+entity_classification_repository::read_latest(const context& ctx,
                                               const std::vector<std::string>& codes,
                                               const std::vector<std::string>& coding_scheme_codes) {
     if (codes.empty() || coding_scheme_codes.empty())
@@ -366,7 +367,7 @@ entity_classification_repository::read_latest(context ctx,
     return filtered;
 }
 
-void entity_classification_repository::remove(context ctx,
+void entity_classification_repository::remove(const context& ctx,
                                               const std::vector<std::string>& codes,
                                               const std::vector<std::string>& coding_scheme_codes) {
     // Compound key: a per-column .in() DELETE would be a cross-product

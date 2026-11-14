@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-party_counterparty_change_service::party_counterparty_change_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+party_counterparty_change_service::party_counterparty_change_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

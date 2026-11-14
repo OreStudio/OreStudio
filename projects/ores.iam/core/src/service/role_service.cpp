@@ -58,8 +58,8 @@ namespace ores::iam::service {
 
 using namespace ores::logging;
 
-role_service::role_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+role_service::role_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

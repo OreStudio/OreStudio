@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit synthetic_cdo_instrument_service(context ctx);
+    explicit synthetic_cdo_instrument_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

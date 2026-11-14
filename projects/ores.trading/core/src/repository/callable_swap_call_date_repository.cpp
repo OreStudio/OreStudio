@@ -109,7 +109,7 @@ std::optional<query_builder::condition> callable_swap_call_date_filter_condition
 }
 
 ores::utility::domain::precondition
-callable_swap_call_date_repository::replace_claim(context ctx,
+callable_swap_call_date_repository::replace_claim(const context& ctx,
                                                   const domain::callable_swap_call_date& v) {
     const auto current =
         read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
@@ -120,7 +120,7 @@ callable_swap_call_date_repository::replace_claim(context ctx,
 }
 
 domain::callable_swap_call_date
-callable_swap_call_date_repository::apply_claim(context ctx,
+callable_swap_call_date_repository::apply_claim(const context& ctx,
                                                 const domain::callable_swap_call_date& v,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -148,13 +148,13 @@ callable_swap_call_date_repository::apply_claim(context ctx,
     return t;
 }
 
-void callable_swap_call_date_repository::write(context ctx,
+void callable_swap_call_date_repository::write(const context& ctx,
                                                const domain::callable_swap_call_date& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void callable_swap_call_date_repository::write(
-    context ctx, const std::vector<domain::callable_swap_call_date>& v) {
+    const context& ctx, const std::vector<domain::callable_swap_call_date>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -162,7 +162,7 @@ void callable_swap_call_date_repository::write(
     write(ctx, v, claims);
 }
 
-void callable_swap_call_date_repository::write(context ctx,
+void callable_swap_call_date_repository::write(const context& ctx,
                                                const domain::callable_swap_call_date& v,
                                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing callable swap call date. " << "trade_id: " << v.trade_id
@@ -175,7 +175,7 @@ void callable_swap_call_date_repository::write(context ctx,
 }
 
 void callable_swap_call_date_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::callable_swap_call_date>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing callable swap call dates. Count: " << v.size();
@@ -190,7 +190,7 @@ void callable_swap_call_date_repository::write(
 }
 
 std::vector<domain::callable_swap_call_date>
-callable_swap_call_date_repository::read_latest(context ctx) {
+callable_swap_call_date_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<callable_swap_call_date_entity>> |
@@ -207,7 +207,7 @@ callable_swap_call_date_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::callable_swap_call_date> callable_swap_call_date_repository::read_latest(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest callable swap call date. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -229,7 +229,7 @@ std::vector<domain::callable_swap_call_date> callable_swap_call_date_repository:
 
 
 std::vector<domain::callable_swap_call_date> callable_swap_call_date_repository::read_all(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all callable swap call date versions. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -249,7 +249,7 @@ std::vector<domain::callable_swap_call_date> callable_swap_call_date_repository:
 }
 
 std::optional<domain::callable_swap_call_date>
-callable_swap_call_date_repository::read_at_version(context ctx,
+callable_swap_call_date_repository::read_at_version(const context& ctx,
                                                     const std::string& trade_id,
                                                     const std::string& sequence_number,
                                                     std::uint32_t version) {
@@ -279,7 +279,7 @@ callable_swap_call_date_repository::read_at_version(context ctx,
 
 std::vector<domain::callable_swap_call_date>
 callable_swap_call_date_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -307,7 +307,7 @@ callable_swap_call_date_repository::read_latest_by_trade_id(
 
 std::uint32_t
 callable_swap_call_date_repository::get_total_callable_swap_call_date_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::callable_swap_call_dates_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -329,7 +329,7 @@ callable_swap_call_date_repository::get_total_callable_swap_call_date_count_by_t
 
 
 callable_swap_call_date_repository::remove_status
-callable_swap_call_date_repository::remove(context ctx,
+callable_swap_call_date_repository::remove(const context& ctx,
                                            const std::string& trade_id,
                                            const std::string& sequence_number,
                                            std::optional<std::uint32_t> version) {
@@ -363,14 +363,14 @@ callable_swap_call_date_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void callable_swap_call_date_repository::remove(context ctx,
+void callable_swap_call_date_repository::remove(const context& ctx,
                                                 const std::string& trade_id,
                                                 const std::string& sequence_number) {
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
 }
 
 std::vector<domain::callable_swap_call_date> callable_swap_call_date_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -396,7 +396,7 @@ std::vector<domain::callable_swap_call_date> callable_swap_call_date_repository:
 }
 
 std::uint32_t callable_swap_call_date_repository::get_total_callable_swap_call_date_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::callable_swap_call_dates_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active callable swap call date count";
@@ -415,7 +415,7 @@ std::uint32_t callable_swap_call_date_repository::get_total_callable_swap_call_d
 }
 
 std::vector<domain::callable_swap_call_date>
-callable_swap_call_date_repository::read_latest(context ctx,
+callable_swap_call_date_repository::read_latest(const context& ctx,
                                                 const std::vector<std::string>& trade_ids,
                                                 const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
@@ -452,7 +452,7 @@ callable_swap_call_date_repository::read_latest(context ctx,
     return filtered;
 }
 
-void callable_swap_call_date_repository::remove(context ctx,
+void callable_swap_call_date_repository::remove(const context& ctx,
                                                 const std::vector<std::string>& trade_ids,
                                                 const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product
@@ -468,7 +468,7 @@ void callable_swap_call_date_repository::remove(context ctx,
 
 std::vector<domain::callable_swap_call_date>
 callable_swap_call_date_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();

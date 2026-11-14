@@ -58,8 +58,8 @@ namespace ores::synthetic::service {
 
 using namespace ores::logging;
 
-fx_spot_fixing_item_service::fx_spot_fixing_item_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+fx_spot_fixing_item_service::fx_spot_fixing_item_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

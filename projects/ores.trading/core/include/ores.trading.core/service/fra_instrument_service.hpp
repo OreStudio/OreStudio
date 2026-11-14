@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit fra_instrument_service(context ctx);
+    explicit fra_instrument_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

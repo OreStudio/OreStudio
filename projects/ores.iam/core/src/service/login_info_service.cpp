@@ -54,8 +54,8 @@ namespace ores::iam::service {
 
 using namespace ores::logging;
 
-login_info_service::login_info_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+login_info_service::login_info_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

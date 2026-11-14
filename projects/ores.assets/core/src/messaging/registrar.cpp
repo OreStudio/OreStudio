@@ -33,7 +33,7 @@ namespace ores::assets::messaging {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-                             ores::database::context ctx,
+                             const ores::database::context& ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
@@ -73,7 +73,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Publish-from-DQ workflow step handler
     // ----------------------------------------------------------------
     {
-        auto pdq = std::make_shared<publish_from_dq_handler>(nats, std::move(ctx));
+        auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
         ores::service::messaging::step_routes routes;
         routes.on(publish_images_from_dq_request::nats_subject,
                   [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });

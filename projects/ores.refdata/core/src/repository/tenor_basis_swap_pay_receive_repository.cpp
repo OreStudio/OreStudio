@@ -113,7 +113,7 @@ std::optional<query_builder::condition> tenor_basis_swap_pay_receive_filter_cond
 }
 
 ores::utility::domain::precondition tenor_basis_swap_pay_receive_repository::replace_claim(
-    context ctx, const domain::tenor_basis_swap_pay_receive& v) {
+    const context& ctx, const domain::tenor_basis_swap_pay_receive& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -122,7 +122,7 @@ ores::utility::domain::precondition tenor_basis_swap_pay_receive_repository::rep
 }
 
 domain::tenor_basis_swap_pay_receive tenor_basis_swap_pay_receive_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::tenor_basis_swap_pay_receive& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -149,13 +149,13 @@ domain::tenor_basis_swap_pay_receive tenor_basis_swap_pay_receive_repository::ap
     return t;
 }
 
-void tenor_basis_swap_pay_receive_repository::write(context ctx,
+void tenor_basis_swap_pay_receive_repository::write(const context& ctx,
                                                     const domain::tenor_basis_swap_pay_receive& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void tenor_basis_swap_pay_receive_repository::write(
-    context ctx, const std::vector<domain::tenor_basis_swap_pay_receive>& v) {
+    const context& ctx, const std::vector<domain::tenor_basis_swap_pay_receive>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -164,7 +164,7 @@ void tenor_basis_swap_pay_receive_repository::write(
 }
 
 void tenor_basis_swap_pay_receive_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::tenor_basis_swap_pay_receive& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor basis swap pay receive. "
@@ -177,7 +177,7 @@ void tenor_basis_swap_pay_receive_repository::write(
 }
 
 void tenor_basis_swap_pay_receive_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::tenor_basis_swap_pay_receive>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor basis swap pay receives. Count: " << v.size();
@@ -192,7 +192,7 @@ void tenor_basis_swap_pay_receive_repository::write(
 }
 
 std::vector<domain::tenor_basis_swap_pay_receive>
-tenor_basis_swap_pay_receive_repository::read_latest(context ctx) {
+tenor_basis_swap_pay_receive_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_basis_swap_pay_receive_entity>> |
@@ -209,7 +209,7 @@ tenor_basis_swap_pay_receive_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::tenor_basis_swap_pay_receive>
-tenor_basis_swap_pay_receive_repository::read_latest(context ctx, const std::string& id) {
+tenor_basis_swap_pay_receive_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor basis swap pay receive. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -244,7 +244,7 @@ tenor_basis_swap_pay_receive_repository::read_latest(context ctx, const std::str
 
 
 std::vector<domain::tenor_basis_swap_pay_receive>
-tenor_basis_swap_pay_receive_repository::read_all(context ctx, const std::string& id) {
+tenor_basis_swap_pay_receive_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all tenor basis swap pay receive versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -262,7 +262,7 @@ tenor_basis_swap_pay_receive_repository::read_all(context ctx, const std::string
 }
 
 std::optional<domain::tenor_basis_swap_pay_receive>
-tenor_basis_swap_pay_receive_repository::read_at_version(context ctx,
+tenor_basis_swap_pay_receive_repository::read_at_version(const context& ctx,
                                                          const std::string& id,
                                                          std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading tenor basis swap pay receive at version. "
@@ -288,7 +288,7 @@ tenor_basis_swap_pay_receive_repository::read_at_version(context ctx,
 
 std::vector<domain::tenor_basis_swap_pay_receive>
 tenor_basis_swap_pay_receive_repository::read_latest_by_convention_id(
-    context ctx,
+    const context& ctx,
     const std::string& convention_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -317,7 +317,7 @@ tenor_basis_swap_pay_receive_repository::read_latest_by_convention_id(
 
 std::uint32_t tenor_basis_swap_pay_receive_repository::
     get_total_tenor_basis_swap_pay_receive_count_by_convention_id(
-        context ctx,
+        const context& ctx,
         const std::string& convention_id,
         const std::optional<messaging::tenor_basis_swap_pay_receives_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -342,7 +342,7 @@ std::uint32_t tenor_basis_swap_pay_receive_repository::
 
 std::vector<domain::tenor_basis_swap_pay_receive>
 tenor_basis_swap_pay_receive_repository::read_by_convention_id_as_of(
-    context ctx,
+    const context& ctx,
     const std::string& convention_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
@@ -368,7 +368,7 @@ tenor_basis_swap_pay_receive_repository::read_by_convention_id_as_of(
 }
 
 tenor_basis_swap_pay_receive_repository::remove_status
-tenor_basis_swap_pay_receive_repository::remove(context ctx,
+tenor_basis_swap_pay_receive_repository::remove(const context& ctx,
                                                 const std::string& id,
                                                 std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenor basis swap pay receive. " << "id: " << id;
@@ -408,13 +408,13 @@ tenor_basis_swap_pay_receive_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void tenor_basis_swap_pay_receive_repository::remove(context ctx, const std::string& id) {
+void tenor_basis_swap_pay_receive_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::tenor_basis_swap_pay_receive>
 tenor_basis_swap_pay_receive_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -440,7 +440,7 @@ tenor_basis_swap_pay_receive_repository::read_latest(
 }
 
 std::uint32_t tenor_basis_swap_pay_receive_repository::get_total_tenor_basis_swap_pay_receive_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::tenor_basis_swap_pay_receives_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor basis swap pay receive count";
@@ -459,7 +459,7 @@ std::uint32_t tenor_basis_swap_pay_receive_repository::get_total_tenor_basis_swa
 }
 
 std::vector<domain::tenor_basis_swap_pay_receive>
-tenor_basis_swap_pay_receive_repository::read_latest(context ctx,
+tenor_basis_swap_pay_receive_repository::read_latest(const context& ctx,
                                                      const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -478,7 +478,7 @@ tenor_basis_swap_pay_receive_repository::read_latest(context ctx,
     return result;
 }
 
-void tenor_basis_swap_pay_receive_repository::remove(context ctx,
+void tenor_basis_swap_pay_receive_repository::remove(const context& ctx,
                                                      const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

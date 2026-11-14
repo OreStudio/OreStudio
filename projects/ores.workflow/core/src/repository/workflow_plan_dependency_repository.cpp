@@ -111,7 +111,7 @@ std::optional<query_builder::condition> workflow_plan_dependency_filter_conditio
 }
 
 ores::utility::domain::precondition
-workflow_plan_dependency_repository::replace_claim(context ctx,
+workflow_plan_dependency_repository::replace_claim(const context& ctx,
                                                    const domain::workflow_plan_dependency& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -121,7 +121,7 @@ workflow_plan_dependency_repository::replace_claim(context ctx,
 }
 
 domain::workflow_plan_dependency
-workflow_plan_dependency_repository::apply_claim(context ctx,
+workflow_plan_dependency_repository::apply_claim(const context& ctx,
                                                  const domain::workflow_plan_dependency& v,
                                                  const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -148,13 +148,13 @@ workflow_plan_dependency_repository::apply_claim(context ctx,
     return t;
 }
 
-void workflow_plan_dependency_repository::write(context ctx,
+void workflow_plan_dependency_repository::write(const context& ctx,
                                                 const domain::workflow_plan_dependency& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void workflow_plan_dependency_repository::write(
-    context ctx, const std::vector<domain::workflow_plan_dependency>& v) {
+    const context& ctx, const std::vector<domain::workflow_plan_dependency>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -162,7 +162,7 @@ void workflow_plan_dependency_repository::write(
     write(ctx, v, claims);
 }
 
-void workflow_plan_dependency_repository::write(context ctx,
+void workflow_plan_dependency_repository::write(const context& ctx,
                                                 const domain::workflow_plan_dependency& v,
                                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workflow plan dependency. " << "id: " << v.id;
@@ -174,7 +174,7 @@ void workflow_plan_dependency_repository::write(context ctx,
 }
 
 void workflow_plan_dependency_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::workflow_plan_dependency>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workflow plan dependencies. Count: " << v.size();
@@ -189,7 +189,7 @@ void workflow_plan_dependency_repository::write(
 }
 
 std::vector<domain::workflow_plan_dependency>
-workflow_plan_dependency_repository::read_latest(context ctx) {
+workflow_plan_dependency_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<workflow_plan_dependency_entity>> |
                        query_builder::where("valid_to"_c == max) | query_builder::order_by("id"_c);
@@ -204,7 +204,7 @@ workflow_plan_dependency_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::workflow_plan_dependency>
-workflow_plan_dependency_repository::read_latest(context ctx, const std::string& id) {
+workflow_plan_dependency_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest workflow plan dependency. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<workflow_plan_dependency_entity>> |
@@ -221,7 +221,7 @@ workflow_plan_dependency_repository::read_latest(context ctx, const std::string&
 
 
 std::vector<domain::workflow_plan_dependency>
-workflow_plan_dependency_repository::read_all(context ctx, const std::string& id) {
+workflow_plan_dependency_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all workflow plan dependency versions. " << "id: " << id;
     const auto query = query_builder::read<std::vector<workflow_plan_dependency_entity>> |
                        query_builder::where("id"_c == id) |
@@ -237,7 +237,7 @@ workflow_plan_dependency_repository::read_all(context ctx, const std::string& id
 }
 
 std::optional<domain::workflow_plan_dependency>
-workflow_plan_dependency_repository::read_at_version(context ctx,
+workflow_plan_dependency_repository::read_at_version(const context& ctx,
                                                      const std::string& id,
                                                      std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading workflow plan dependency at version. " << "id: " << id
@@ -261,7 +261,7 @@ workflow_plan_dependency_repository::read_at_version(context ctx,
 
 std::vector<domain::workflow_plan_dependency>
 workflow_plan_dependency_repository::read_latest_by_workflow_id(
-    context ctx,
+    const context& ctx,
     const std::string& workflow_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -286,7 +286,7 @@ workflow_plan_dependency_repository::read_latest_by_workflow_id(
 }
 
 std::uint32_t workflow_plan_dependency_repository::get_total_plan_dependency_count_by_workflow_id(
-    context ctx,
+    const context& ctx,
     const std::string& workflow_id,
     const std::optional<messaging::workflow_plan_dependencies_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -306,7 +306,7 @@ std::uint32_t workflow_plan_dependency_repository::get_total_plan_dependency_cou
 
 
 workflow_plan_dependency_repository::remove_status workflow_plan_dependency_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing workflow plan dependency. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -335,12 +335,12 @@ workflow_plan_dependency_repository::remove_status workflow_plan_dependency_repo
     return remove_status::removed;
 }
 
-void workflow_plan_dependency_repository::remove(context ctx, const std::string& id) {
+void workflow_plan_dependency_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::workflow_plan_dependency> workflow_plan_dependency_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -364,7 +364,7 @@ std::vector<domain::workflow_plan_dependency> workflow_plan_dependency_repositor
 }
 
 std::uint32_t workflow_plan_dependency_repository::get_total_plan_dependency_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::workflow_plan_dependencies_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active workflow plan dependency count";
@@ -381,7 +381,8 @@ std::uint32_t workflow_plan_dependency_repository::get_total_plan_dependency_cou
 }
 
 std::vector<domain::workflow_plan_dependency>
-workflow_plan_dependency_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+workflow_plan_dependency_repository::read_latest(const context& ctx,
+                                                 const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -397,7 +398,8 @@ workflow_plan_dependency_repository::read_latest(context ctx, const std::vector<
     return result;
 }
 
-void workflow_plan_dependency_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void workflow_plan_dependency_repository::remove(const context& ctx,
+                                                 const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

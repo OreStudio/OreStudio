@@ -65,7 +65,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit country_service(context ctx);
+    explicit country_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

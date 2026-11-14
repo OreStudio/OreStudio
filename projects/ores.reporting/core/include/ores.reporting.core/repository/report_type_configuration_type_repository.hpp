@@ -54,7 +54,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit report_type_configuration_type_repository(context ctx);
+    explicit report_type_configuration_type_repository(const context& ctx);
 
     std::string sql();
 

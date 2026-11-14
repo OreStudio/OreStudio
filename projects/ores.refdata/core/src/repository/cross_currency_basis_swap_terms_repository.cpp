@@ -113,7 +113,7 @@ std::optional<query_builder::condition> cross_currency_basis_swap_terms_filter_c
 }
 
 ores::utility::domain::precondition cross_currency_basis_swap_terms_repository::replace_claim(
-    context ctx, const domain::cross_currency_basis_swap_terms& v) {
+    const context& ctx, const domain::cross_currency_basis_swap_terms& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -122,7 +122,7 @@ ores::utility::domain::precondition cross_currency_basis_swap_terms_repository::
 }
 
 domain::cross_currency_basis_swap_terms cross_currency_basis_swap_terms_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::cross_currency_basis_swap_terms& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -150,12 +150,12 @@ domain::cross_currency_basis_swap_terms cross_currency_basis_swap_terms_reposito
 }
 
 void cross_currency_basis_swap_terms_repository::write(
-    context ctx, const domain::cross_currency_basis_swap_terms& v) {
+    const context& ctx, const domain::cross_currency_basis_swap_terms& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void cross_currency_basis_swap_terms_repository::write(
-    context ctx, const std::vector<domain::cross_currency_basis_swap_terms>& v) {
+    const context& ctx, const std::vector<domain::cross_currency_basis_swap_terms>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -164,7 +164,7 @@ void cross_currency_basis_swap_terms_repository::write(
 }
 
 void cross_currency_basis_swap_terms_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::cross_currency_basis_swap_terms& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cross currency basis swap terms. " << "id: " << v.id;
@@ -176,7 +176,7 @@ void cross_currency_basis_swap_terms_repository::write(
 }
 
 void cross_currency_basis_swap_terms_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::cross_currency_basis_swap_terms>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cross currency basis swap terms. Count: " << v.size();
@@ -191,7 +191,7 @@ void cross_currency_basis_swap_terms_repository::write(
 }
 
 std::vector<domain::cross_currency_basis_swap_terms>
-cross_currency_basis_swap_terms_repository::read_latest(context ctx) {
+cross_currency_basis_swap_terms_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cross_currency_basis_swap_terms_entity>> |
@@ -208,7 +208,7 @@ cross_currency_basis_swap_terms_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::cross_currency_basis_swap_terms>
-cross_currency_basis_swap_terms_repository::read_latest(context ctx, const std::string& id) {
+cross_currency_basis_swap_terms_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest cross currency basis swap terms. "
                                << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -244,7 +244,7 @@ cross_currency_basis_swap_terms_repository::read_latest(context ctx, const std::
 
 
 std::vector<domain::cross_currency_basis_swap_terms>
-cross_currency_basis_swap_terms_repository::read_all(context ctx, const std::string& id) {
+cross_currency_basis_swap_terms_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all cross currency basis swap terms versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -262,7 +262,7 @@ cross_currency_basis_swap_terms_repository::read_all(context ctx, const std::str
 }
 
 std::optional<domain::cross_currency_basis_swap_terms>
-cross_currency_basis_swap_terms_repository::read_at_version(context ctx,
+cross_currency_basis_swap_terms_repository::read_at_version(const context& ctx,
                                                             const std::string& id,
                                                             std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading cross currency basis swap terms at version. "
@@ -291,7 +291,7 @@ cross_currency_basis_swap_terms_repository::read_at_version(context ctx,
 
 std::vector<domain::cross_currency_basis_swap_terms>
 cross_currency_basis_swap_terms_repository::read_latest_by_convention_id(
-    context ctx,
+    const context& ctx,
     const std::string& convention_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -320,7 +320,7 @@ cross_currency_basis_swap_terms_repository::read_latest_by_convention_id(
 
 std::uint32_t cross_currency_basis_swap_terms_repository::
     get_total_cross_currency_basis_swap_terms_count_by_convention_id(
-        context ctx,
+        const context& ctx,
         const std::string& convention_id,
         const std::optional<messaging::cross_currency_basis_swap_terms_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -345,7 +345,7 @@ std::uint32_t cross_currency_basis_swap_terms_repository::
 
 std::vector<domain::cross_currency_basis_swap_terms>
 cross_currency_basis_swap_terms_repository::read_by_convention_id_as_of(
-    context ctx,
+    const context& ctx,
     const std::string& convention_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
@@ -371,7 +371,7 @@ cross_currency_basis_swap_terms_repository::read_by_convention_id_as_of(
 }
 
 cross_currency_basis_swap_terms_repository::remove_status
-cross_currency_basis_swap_terms_repository::remove(context ctx,
+cross_currency_basis_swap_terms_repository::remove(const context& ctx,
                                                    const std::string& id,
                                                    std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing cross currency basis swap terms. " << "id: " << id;
@@ -410,13 +410,13 @@ cross_currency_basis_swap_terms_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void cross_currency_basis_swap_terms_repository::remove(context ctx, const std::string& id) {
+void cross_currency_basis_swap_terms_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::cross_currency_basis_swap_terms>
 cross_currency_basis_swap_terms_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -443,7 +443,7 @@ cross_currency_basis_swap_terms_repository::read_latest(
 
 std::uint32_t
 cross_currency_basis_swap_terms_repository::get_total_cross_currency_basis_swap_terms_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::cross_currency_basis_swap_terms_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active cross currency basis swap terms count";
@@ -462,7 +462,7 @@ cross_currency_basis_swap_terms_repository::get_total_cross_currency_basis_swap_
 }
 
 std::vector<domain::cross_currency_basis_swap_terms>
-cross_currency_basis_swap_terms_repository::read_latest(context ctx,
+cross_currency_basis_swap_terms_repository::read_latest(const context& ctx,
                                                         const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -481,7 +481,7 @@ cross_currency_basis_swap_terms_repository::read_latest(context ctx,
     return result;
 }
 
-void cross_currency_basis_swap_terms_repository::remove(context ctx,
+void cross_currency_basis_swap_terms_repository::remove(const context& ctx,
                                                         const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

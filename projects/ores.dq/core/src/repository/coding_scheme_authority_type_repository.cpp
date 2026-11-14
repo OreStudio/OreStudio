@@ -101,7 +101,7 @@ std::optional<query_builder::condition> coding_scheme_authority_type_filter_cond
 }
 
 ores::utility::domain::precondition coding_scheme_authority_type_repository::replace_claim(
-    context ctx, const domain::coding_scheme_authority_type& v) {
+    const context& ctx, const domain::coding_scheme_authority_type& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +110,7 @@ ores::utility::domain::precondition coding_scheme_authority_type_repository::rep
 }
 
 domain::coding_scheme_authority_type coding_scheme_authority_type_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::coding_scheme_authority_type& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,13 +137,13 @@ domain::coding_scheme_authority_type coding_scheme_authority_type_repository::ap
     return t;
 }
 
-void coding_scheme_authority_type_repository::write(context ctx,
+void coding_scheme_authority_type_repository::write(const context& ctx,
                                                     const domain::coding_scheme_authority_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void coding_scheme_authority_type_repository::write(
-    context ctx, const std::vector<domain::coding_scheme_authority_type>& v) {
+    const context& ctx, const std::vector<domain::coding_scheme_authority_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -152,7 +152,7 @@ void coding_scheme_authority_type_repository::write(
 }
 
 void coding_scheme_authority_type_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::coding_scheme_authority_type& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing coding scheme authority type. " << "code: " << v.code;
@@ -164,7 +164,7 @@ void coding_scheme_authority_type_repository::write(
 }
 
 void coding_scheme_authority_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::coding_scheme_authority_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing coding scheme authority types. Count: " << v.size();
@@ -179,7 +179,7 @@ void coding_scheme_authority_type_repository::write(
 }
 
 std::vector<domain::coding_scheme_authority_type>
-coding_scheme_authority_type_repository::read_latest(context ctx) {
+coding_scheme_authority_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<coding_scheme_authority_type_entity>> |
                        query_builder::where("valid_to"_c == max) |
@@ -195,7 +195,7 @@ coding_scheme_authority_type_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::coding_scheme_authority_type>
-coding_scheme_authority_type_repository::read_latest(context ctx, const std::string& code) {
+coding_scheme_authority_type_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest coding scheme authority type. "
                                << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -213,7 +213,7 @@ coding_scheme_authority_type_repository::read_latest(context ctx, const std::str
 
 
 std::vector<domain::coding_scheme_authority_type>
-coding_scheme_authority_type_repository::read_all(context ctx, const std::string& code) {
+coding_scheme_authority_type_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all coding scheme authority type versions. "
                                << "code: " << code;
     const auto query = query_builder::read<std::vector<coding_scheme_authority_type_entity>> |
@@ -230,7 +230,7 @@ coding_scheme_authority_type_repository::read_all(context ctx, const std::string
 }
 
 std::optional<domain::coding_scheme_authority_type>
-coding_scheme_authority_type_repository::read_at_version(context ctx,
+coding_scheme_authority_type_repository::read_at_version(const context& ctx,
                                                          const std::string& code,
                                                          std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading coding scheme authority type at version. "
@@ -253,7 +253,7 @@ coding_scheme_authority_type_repository::read_at_version(context ctx,
 }
 
 coding_scheme_authority_type_repository::remove_status
-coding_scheme_authority_type_repository::remove(context ctx,
+coding_scheme_authority_type_repository::remove(const context& ctx,
                                                 const std::string& code,
                                                 std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing coding scheme authority type. " << "code: " << code;
@@ -284,13 +284,13 @@ coding_scheme_authority_type_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void coding_scheme_authority_type_repository::remove(context ctx, const std::string& code) {
+void coding_scheme_authority_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::coding_scheme_authority_type>
 coding_scheme_authority_type_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -314,7 +314,7 @@ coding_scheme_authority_type_repository::read_latest(
 }
 
 std::uint32_t coding_scheme_authority_type_repository::get_total_authority_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::coding_scheme_authority_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active coding scheme authority type count";
@@ -331,7 +331,7 @@ std::uint32_t coding_scheme_authority_type_repository::get_total_authority_type_
 }
 
 std::vector<domain::coding_scheme_authority_type>
-coding_scheme_authority_type_repository::read_latest(context ctx,
+coding_scheme_authority_type_repository::read_latest(const context& ctx,
                                                      const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
@@ -348,7 +348,7 @@ coding_scheme_authority_type_repository::read_latest(context ctx,
     return result;
 }
 
-void coding_scheme_authority_type_repository::remove(context ctx,
+void coding_scheme_authority_type_repository::remove(const context& ctx,
                                                      const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

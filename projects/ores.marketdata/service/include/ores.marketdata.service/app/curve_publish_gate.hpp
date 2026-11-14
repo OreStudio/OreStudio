@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_CURVE_PUBLISH_GATE_HPP
 #define ORES_MARKETDATA_SERVICE_APP_CURVE_PUBLISH_GATE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.marketdata.api/domain/curve_publish.hpp"
 #include "ores.marketdata.service/export.hpp"

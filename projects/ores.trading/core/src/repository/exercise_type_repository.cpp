@@ -100,7 +100,7 @@ exercise_type_filter_condition(const std::optional<messaging::exercise_types_fil
 }
 
 ores::utility::domain::precondition
-exercise_type_repository::replace_claim(context ctx, const domain::exercise_type& v) {
+exercise_type_repository::replace_claim(const context& ctx, const domain::exercise_type& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -108,8 +108,10 @@ exercise_type_repository::replace_claim(context ctx, const domain::exercise_type
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::exercise_type exercise_type_repository::apply_claim(
-    context ctx, const domain::exercise_type& v, const ores::utility::domain::precondition& claim) {
+domain::exercise_type
+exercise_type_repository::apply_claim(const context& ctx,
+                                      const domain::exercise_type& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -134,11 +136,12 @@ domain::exercise_type exercise_type_repository::apply_claim(
     return t;
 }
 
-void exercise_type_repository::write(context ctx, const domain::exercise_type& v) {
+void exercise_type_repository::write(const context& ctx, const domain::exercise_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void exercise_type_repository::write(context ctx, const std::vector<domain::exercise_type>& v) {
+void exercise_type_repository::write(const context& ctx,
+                                     const std::vector<domain::exercise_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -146,7 +149,7 @@ void exercise_type_repository::write(context ctx, const std::vector<domain::exer
     write(ctx, v, claims);
 }
 
-void exercise_type_repository::write(context ctx,
+void exercise_type_repository::write(const context& ctx,
                                      const domain::exercise_type& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing exercise type. " << "code: " << v.code;
@@ -156,7 +159,7 @@ void exercise_type_repository::write(context ctx,
 }
 
 void exercise_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::exercise_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing exercise types. Count: " << v.size();
@@ -168,7 +171,7 @@ void exercise_type_repository::write(
         ctx, exercise_type_mapper::map(batch), lg(), "Writing exercise types to database.");
 }
 
-std::vector<domain::exercise_type> exercise_type_repository::read_latest(context ctx) {
+std::vector<domain::exercise_type> exercise_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<exercise_type_entity>> |
@@ -183,7 +186,7 @@ std::vector<domain::exercise_type> exercise_type_repository::read_latest(context
         "Reading latest exercise types");
 }
 
-std::vector<domain::exercise_type> exercise_type_repository::read_latest(context ctx,
+std::vector<domain::exercise_type> exercise_type_repository::read_latest(const context& ctx,
                                                                          const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest exercise type. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -201,7 +204,7 @@ std::vector<domain::exercise_type> exercise_type_repository::read_latest(context
 }
 
 
-std::vector<domain::exercise_type> exercise_type_repository::read_all(context ctx,
+std::vector<domain::exercise_type> exercise_type_repository::read_all(const context& ctx,
                                                                       const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all exercise type versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -218,7 +221,7 @@ std::vector<domain::exercise_type> exercise_type_repository::read_all(context ct
 }
 
 std::optional<domain::exercise_type> exercise_type_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading exercise type at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -241,7 +244,7 @@ std::optional<domain::exercise_type> exercise_type_repository::read_at_version(
 }
 
 exercise_type_repository::remove_status exercise_type_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing exercise type. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -269,12 +272,12 @@ exercise_type_repository::remove_status exercise_type_repository::remove(
     return remove_status::removed;
 }
 
-void exercise_type_repository::remove(context ctx, const std::string& code) {
+void exercise_type_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::exercise_type>
-exercise_type_repository::read_latest(context ctx,
+exercise_type_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -299,7 +302,7 @@ exercise_type_repository::read_latest(context ctx,
 }
 
 std::uint32_t exercise_type_repository::get_total_exercise_type_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::exercise_types_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active exercise type count";
@@ -318,7 +321,7 @@ std::uint32_t exercise_type_repository::get_total_exercise_type_count(
 }
 
 std::vector<domain::exercise_type>
-exercise_type_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+exercise_type_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -335,7 +338,7 @@ exercise_type_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void exercise_type_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void exercise_type_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

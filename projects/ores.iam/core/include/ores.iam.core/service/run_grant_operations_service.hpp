@@ -225,7 +225,7 @@ public:
      * test passes its own to reach a rate-limit refusal.
      */
     explicit run_grant_operations_service(
-        ores::database::context ctx,
+        const ores::database::context& ctx,
         std::optional<security::jwt::jwt_authenticator> signer = std::nullopt,
         std::optional<exchange_limits> limits = std::nullopt);
 

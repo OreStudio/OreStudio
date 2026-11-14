@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit approval_request_part_service(context ctx);
+    explicit approval_request_part_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

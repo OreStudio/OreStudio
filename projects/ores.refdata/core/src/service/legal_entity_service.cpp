@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-legal_entity_service::legal_entity_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+legal_entity_service::legal_entity_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

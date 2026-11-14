@@ -54,8 +54,8 @@ namespace ores::analytics::service {
 
 using namespace ores::logging;
 
-pricing_pair_setting_service::pricing_pair_setting_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+pricing_pair_setting_service::pricing_pair_setting_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -71,7 +71,7 @@ private:
 
 public:
     using context = ores::database::context;
-    explicit run_token_issue_log(context ctx);
+    explicit run_token_issue_log(const context& ctx);
 
     /**
      * @brief Appends one issue-log row.

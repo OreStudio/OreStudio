@@ -24,7 +24,7 @@
 #include "generator_fleet.hpp"
 #include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/subscription.hpp"
@@ -55,7 +55,7 @@ public:
                       ores::nats::service::nats_client& auth_nats,
                       generator_fleet& generators,
                       std::shared_ptr<ores::synthetic::feed::fault_state> faults,
-                      ores::database::context ctx,
+                      const ores::database::context& ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier,
                       const feed_kind_registry& registry,
                       ores::analytics::quant::service::run_market& market);

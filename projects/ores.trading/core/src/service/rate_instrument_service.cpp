@@ -58,8 +58,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-rate_instrument_service::rate_instrument_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+rate_instrument_service::rate_instrument_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

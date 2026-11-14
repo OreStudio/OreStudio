@@ -59,8 +59,8 @@ namespace ores::refdata::service {
 using namespace ores::logging;
 
 inflation_cap_floor_volatility_config_service::inflation_cap_floor_volatility_config_service(
-    context ctx)
-    : ctx_(std::move(ctx)) {}
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -65,7 +65,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit business_unit_service(context ctx);
+    explicit business_unit_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

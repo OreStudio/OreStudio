@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit regulatory_corporate_sector_service(context ctx);
+    explicit regulatory_corporate_sector_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

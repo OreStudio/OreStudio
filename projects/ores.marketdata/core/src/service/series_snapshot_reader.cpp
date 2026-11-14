@@ -61,7 +61,7 @@ messaging::get_curve_snapshot_response series_snapshot_reader_refuse(std::string
 /// Where each placed value came from, index for index with the grid. A point with
 /// no annex row is quoted, and a node no point stands at is a hole.
 std::vector<messaging::point_provenance>
-read_provenance(ores::database::context ctx,
+read_provenance(const ores::database::context& ctx,
                 const boost::uuids::uuid& series_id,
                 const std::vector<repository::observation_record>& placed,
                 const std::vector<std::size_t>& placed_nodes,
@@ -106,7 +106,7 @@ read_provenance(ores::database::context ctx,
 }
 
 messaging::get_curve_snapshot_response
-series_snapshot_reader::read(ores::database::context ctx,
+series_snapshot_reader::read(const ores::database::context& ctx,
                              const messaging::get_curve_snapshot_request& request,
                              std::chrono::system_clock::time_point as_of) {
     using ores::marketdata::datum::name_of;

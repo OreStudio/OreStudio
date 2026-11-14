@@ -102,7 +102,8 @@ std::optional<query_builder::condition> calibration_fallback_filter_condition(
 }
 
 ores::utility::domain::precondition
-calibration_fallback_repository::replace_claim(context ctx, const domain::calibration_fallback& v) {
+calibration_fallback_repository::replace_claim(const context& ctx,
+                                               const domain::calibration_fallback& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,7 +112,7 @@ calibration_fallback_repository::replace_claim(context ctx, const domain::calibr
 }
 
 domain::calibration_fallback
-calibration_fallback_repository::apply_claim(context ctx,
+calibration_fallback_repository::apply_claim(const context& ctx,
                                              const domain::calibration_fallback& v,
                                              const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,11 +139,12 @@ calibration_fallback_repository::apply_claim(context ctx,
     return t;
 }
 
-void calibration_fallback_repository::write(context ctx, const domain::calibration_fallback& v) {
+void calibration_fallback_repository::write(const context& ctx,
+                                            const domain::calibration_fallback& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void calibration_fallback_repository::write(context ctx,
+void calibration_fallback_repository::write(const context& ctx,
                                             const std::vector<domain::calibration_fallback>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -151,7 +153,7 @@ void calibration_fallback_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void calibration_fallback_repository::write(context ctx,
+void calibration_fallback_repository::write(const context& ctx,
                                             const domain::calibration_fallback& v,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing calibration fallback. " << "code: " << v.code;
@@ -163,7 +165,7 @@ void calibration_fallback_repository::write(context ctx,
 }
 
 void calibration_fallback_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::calibration_fallback>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing calibration fallbacks. Count: " << v.size();
@@ -178,7 +180,7 @@ void calibration_fallback_repository::write(
 }
 
 std::vector<domain::calibration_fallback>
-calibration_fallback_repository::read_latest(context ctx) {
+calibration_fallback_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -197,7 +199,7 @@ calibration_fallback_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::calibration_fallback>
-calibration_fallback_repository::read_latest(context ctx, const std::string& code) {
+calibration_fallback_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calibration fallback. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -217,7 +219,7 @@ calibration_fallback_repository::read_latest(context ctx, const std::string& cod
 
 
 std::vector<domain::calibration_fallback>
-calibration_fallback_repository::read_all(context ctx, const std::string& code) {
+calibration_fallback_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all calibration fallback versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -236,7 +238,7 @@ calibration_fallback_repository::read_all(context ctx, const std::string& code) 
 }
 
 std::optional<domain::calibration_fallback> calibration_fallback_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading calibration fallback at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -260,7 +262,7 @@ std::optional<domain::calibration_fallback> calibration_fallback_repository::rea
 }
 
 calibration_fallback_repository::remove_status calibration_fallback_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing calibration fallback. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -289,12 +291,12 @@ calibration_fallback_repository::remove_status calibration_fallback_repository::
     return remove_status::removed;
 }
 
-void calibration_fallback_repository::remove(context ctx, const std::string& code) {
+void calibration_fallback_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::calibration_fallback> calibration_fallback_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -321,7 +323,7 @@ std::vector<domain::calibration_fallback> calibration_fallback_repository::read_
 }
 
 std::uint32_t calibration_fallback_repository::get_total_fallback_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::calibration_fallbacks_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calibration fallback count";
@@ -341,7 +343,8 @@ std::uint32_t calibration_fallback_repository::get_total_fallback_count(
 }
 
 std::vector<domain::calibration_fallback>
-calibration_fallback_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+calibration_fallback_repository::read_latest(const context& ctx,
+                                             const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -360,7 +363,8 @@ calibration_fallback_repository::read_latest(context ctx, const std::vector<std:
     return result;
 }
 
-void calibration_fallback_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void calibration_fallback_repository::remove(const context& ctx,
+                                             const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

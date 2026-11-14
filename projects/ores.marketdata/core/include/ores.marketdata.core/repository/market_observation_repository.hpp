@@ -83,8 +83,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::market_observation& v);
-    void write(context ctx, const std::vector<domain::market_observation>& v);
+    void write(const context& ctx, const domain::market_observation& v);
+    void write(const context& ctx, const std::vector<domain::market_observation>& v);
     /**@}*/
 
     /**
@@ -102,7 +102,7 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::market_observation& v,
                const ores::utility::domain::precondition& claim);
 
@@ -110,7 +110,7 @@ public:
      * @brief Writes a set of market observations, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::market_observation>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -122,17 +122,17 @@ public:
      * one claim query per row.
      */
     /**@{*/
-    void insert(context ctx, const domain::market_observation& v);
-    void insert(context ctx, const std::vector<domain::market_observation>& v);
+    void insert(const context& ctx, const domain::market_observation& v);
+    void insert(const context& ctx, const std::vector<domain::market_observation>& v);
     /**@}*/
 
     /**
      * @brief Reads latest market observations, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::market_observation> read_latest(context ctx);
-    std::vector<domain::market_observation> read_latest(context ctx, const std::string& id);
-    std::vector<domain::market_observation> read_latest(context ctx,
+    std::vector<domain::market_observation> read_latest(const context& ctx);
+    std::vector<domain::market_observation> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::market_observation> read_latest(const context& ctx,
                                                         const std::vector<std::string>& ids);
     /**@}*/
 
@@ -140,7 +140,7 @@ public:
     /**
      * @brief Reads all market observations, possibly filtered by primary key.
      */
-    std::vector<domain::market_observation> read_all(context ctx, const std::string& id);
+    std::vector<domain::market_observation> read_all(const context& ctx, const std::string& id);
 
 
     /**
@@ -152,7 +152,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::market_observation> read_latest_by_series_id(
-        context ctx,
+        const context& ctx,
         const std::string& series_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -163,7 +163,7 @@ public:
      * @brief Gets the total count of active market observations filtered by series_id.
      */
     std::uint32_t get_total_market_observation_count_by_series_id(
-        context ctx,
+        const context& ctx,
         const std::string& series_id,
         const std::optional<messaging::market_observations_filter>& filter = std::nullopt);
 
@@ -185,7 +185,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::market_observation>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -198,14 +198,14 @@ public:
      * @return Total number of active market observations
      */
     std::uint32_t get_total_market_observation_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::market_observations_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a market observation by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -227,15 +227,16 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes market observations by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
     std::vector<domain::market_observation>
-    read_latest_for_series(context ctx, const boost::uuids::uuid& series_id);
+    read_latest_for_series(const context& ctx, const boost::uuids::uuid& series_id);
 
     /**
      * @brief Every current observation of the tenant, ordered by series and time.
@@ -245,15 +246,15 @@ public:
      * every chunk of the hypertable. The rows are held in memory together, so the size
      * of the answer grows with the history the tenant keeps.
      */
-    std::vector<domain::market_observation> read_latest_all(context ctx);
+    std::vector<domain::market_observation> read_latest_all(const context& ctx);
 
     std::vector<observation_record>
-    read_as_of_records(context ctx,
+    read_as_of_records(const context& ctx,
                        const boost::uuids::uuid& series_id,
                        const std::chrono::system_clock::time_point& as_of_datetime);
 
     std::vector<domain::market_observation>
-    read_as_of(context ctx,
+    read_as_of(const context& ctx,
                const boost::uuids::uuid& series_id,
                const std::chrono::system_clock::time_point& as_of_datetime);
 
@@ -267,24 +268,24 @@ public:
      * is a change to the other.
      */
     std::vector<domain::market_observation>
-    read_as_of_all(context ctx, const std::chrono::system_clock::time_point& as_of_datetime);
+    read_as_of_all(const context& ctx, const std::chrono::system_clock::time_point& as_of_datetime);
 
     std::vector<std::vector<domain::market_observation>>
-    read_as_of_buckets(context ctx,
+    read_as_of_buckets(const context& ctx,
                        const boost::uuids::uuid& series_id,
                        const std::chrono::system_clock::time_point& latest_boundary,
                        const std::chrono::seconds& bucket_size,
                        unsigned int bucket_count);
 
     std::vector<series_instant>
-    read_instants(context ctx,
+    read_instants(const context& ctx,
                   const boost::uuids::uuid& series_id,
                   const std::chrono::system_clock::time_point& from_datetime,
                   const std::chrono::system_clock::time_point& to_datetime,
                   const std::vector<std::chrono::system_clock::time_point>& instants,
                   unsigned int max_instants);
 
-    void write_manual_point(context ctx,
+    void write_manual_point(const context& ctx,
                             const boost::uuids::uuid& series_id,
                             const std::string& oresmd_uri,
                             std::chrono::system_clock::time_point observation_datetime,
@@ -292,12 +293,12 @@ public:
                             const std::string& change_reason_code,
                             const std::string& change_commentary);
 
-    void clear_manual_point(context ctx,
+    void clear_manual_point(const context& ctx,
                             const boost::uuids::uuid& series_id,
                             const std::string& oresmd_uri,
                             std::chrono::system_clock::time_point observation_datetime);
 
-    std::size_t clear_manual_points(context ctx,
+    std::size_t clear_manual_points(const context& ctx,
                                     const boost::uuids::uuid& series_id,
                                     const std::string& oresmd_uri);
 
@@ -306,7 +307,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::market_observation& v);
 
     /**
@@ -314,7 +315,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::market_observation apply_claim(context ctx,
+    domain::market_observation apply_claim(const context& ctx,
                                            const domain::market_observation& v,
                                            const ores::utility::domain::precondition& claim);
 };

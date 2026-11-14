@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit intraday_power_load_convention_service(context ctx);
+    explicit intraday_power_load_convention_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

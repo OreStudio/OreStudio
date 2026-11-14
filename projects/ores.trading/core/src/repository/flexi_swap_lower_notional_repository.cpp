@@ -109,7 +109,7 @@ std::optional<query_builder::condition> flexi_swap_lower_notional_filter_conditi
 }
 
 ores::utility::domain::precondition
-flexi_swap_lower_notional_repository::replace_claim(context ctx,
+flexi_swap_lower_notional_repository::replace_claim(const context& ctx,
                                                     const domain::flexi_swap_lower_notional& v) {
     const auto current =
         read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
@@ -120,7 +120,7 @@ flexi_swap_lower_notional_repository::replace_claim(context ctx,
 }
 
 domain::flexi_swap_lower_notional flexi_swap_lower_notional_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::flexi_swap_lower_notional& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -148,13 +148,13 @@ domain::flexi_swap_lower_notional flexi_swap_lower_notional_repository::apply_cl
     return t;
 }
 
-void flexi_swap_lower_notional_repository::write(context ctx,
+void flexi_swap_lower_notional_repository::write(const context& ctx,
                                                  const domain::flexi_swap_lower_notional& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void flexi_swap_lower_notional_repository::write(
-    context ctx, const std::vector<domain::flexi_swap_lower_notional>& v) {
+    const context& ctx, const std::vector<domain::flexi_swap_lower_notional>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -162,7 +162,7 @@ void flexi_swap_lower_notional_repository::write(
     write(ctx, v, claims);
 }
 
-void flexi_swap_lower_notional_repository::write(context ctx,
+void flexi_swap_lower_notional_repository::write(const context& ctx,
                                                  const domain::flexi_swap_lower_notional& v,
                                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing flexi swap lower notional. "
@@ -176,7 +176,7 @@ void flexi_swap_lower_notional_repository::write(context ctx,
 }
 
 void flexi_swap_lower_notional_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::flexi_swap_lower_notional>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing flexi swap lower notionals. Count: " << v.size();
@@ -191,7 +191,7 @@ void flexi_swap_lower_notional_repository::write(
 }
 
 std::vector<domain::flexi_swap_lower_notional>
-flexi_swap_lower_notional_repository::read_latest(context ctx) {
+flexi_swap_lower_notional_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<flexi_swap_lower_notional_entity>> |
@@ -208,7 +208,7 @@ flexi_swap_lower_notional_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::flexi_swap_lower_notional> flexi_swap_lower_notional_repository::read_latest(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest flexi swap lower notional. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -230,7 +230,7 @@ std::vector<domain::flexi_swap_lower_notional> flexi_swap_lower_notional_reposit
 
 
 std::vector<domain::flexi_swap_lower_notional> flexi_swap_lower_notional_repository::read_all(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all flexi swap lower notional versions. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -250,7 +250,7 @@ std::vector<domain::flexi_swap_lower_notional> flexi_swap_lower_notional_reposit
 }
 
 std::optional<domain::flexi_swap_lower_notional>
-flexi_swap_lower_notional_repository::read_at_version(context ctx,
+flexi_swap_lower_notional_repository::read_at_version(const context& ctx,
                                                       const std::string& trade_id,
                                                       const std::string& sequence_number,
                                                       std::uint32_t version) {
@@ -280,7 +280,7 @@ flexi_swap_lower_notional_repository::read_at_version(context ctx,
 
 std::vector<domain::flexi_swap_lower_notional>
 flexi_swap_lower_notional_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -308,7 +308,7 @@ flexi_swap_lower_notional_repository::read_latest_by_trade_id(
 
 std::uint32_t
 flexi_swap_lower_notional_repository::get_total_flexi_swap_lower_notional_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::flexi_swap_lower_notionals_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -330,7 +330,7 @@ flexi_swap_lower_notional_repository::get_total_flexi_swap_lower_notional_count_
 
 
 flexi_swap_lower_notional_repository::remove_status
-flexi_swap_lower_notional_repository::remove(context ctx,
+flexi_swap_lower_notional_repository::remove(const context& ctx,
                                              const std::string& trade_id,
                                              const std::string& sequence_number,
                                              std::optional<std::uint32_t> version) {
@@ -364,14 +364,14 @@ flexi_swap_lower_notional_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void flexi_swap_lower_notional_repository::remove(context ctx,
+void flexi_swap_lower_notional_repository::remove(const context& ctx,
                                                   const std::string& trade_id,
                                                   const std::string& sequence_number) {
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
 }
 
 std::vector<domain::flexi_swap_lower_notional> flexi_swap_lower_notional_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -397,7 +397,7 @@ std::vector<domain::flexi_swap_lower_notional> flexi_swap_lower_notional_reposit
 }
 
 std::uint32_t flexi_swap_lower_notional_repository::get_total_flexi_swap_lower_notional_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::flexi_swap_lower_notionals_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active flexi swap lower notional count";
@@ -416,7 +416,7 @@ std::uint32_t flexi_swap_lower_notional_repository::get_total_flexi_swap_lower_n
 }
 
 std::vector<domain::flexi_swap_lower_notional> flexi_swap_lower_notional_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
@@ -454,7 +454,7 @@ std::vector<domain::flexi_swap_lower_notional> flexi_swap_lower_notional_reposit
 }
 
 void flexi_swap_lower_notional_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& trade_ids,
     const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product
@@ -470,7 +470,7 @@ void flexi_swap_lower_notional_repository::remove(
 
 std::vector<domain::flexi_swap_lower_notional>
 flexi_swap_lower_notional_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();

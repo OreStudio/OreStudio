@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-ibor_index_convention_service::ibor_index_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+ibor_index_convention_service::ibor_index_convention_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

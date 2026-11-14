@@ -68,7 +68,7 @@ public:
      * @param tenant_id The tenant identifier for multi-tenancy isolation
      * @param auth_service The authorization service for RBAC checks
      */
-    bootstrap_mode_service(database::context ctx,
+    bootstrap_mode_service(const database::context& ctx,
                            std::string tenant_id,
                            std::shared_ptr<authorization_service> auth_service);
 

@@ -112,7 +112,7 @@ market_series_filter_condition(const std::optional<messaging::market_series_filt
 }
 
 ores::utility::domain::precondition
-market_series_repository::replace_claim(context ctx, const domain::market_series& v) {
+market_series_repository::replace_claim(const context& ctx, const domain::market_series& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -120,8 +120,10 @@ market_series_repository::replace_claim(context ctx, const domain::market_series
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::market_series market_series_repository::apply_claim(
-    context ctx, const domain::market_series& v, const ores::utility::domain::precondition& claim) {
+domain::market_series
+market_series_repository::apply_claim(const context& ctx,
+                                      const domain::market_series& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -146,11 +148,12 @@ domain::market_series market_series_repository::apply_claim(
     return t;
 }
 
-void market_series_repository::write(context ctx, const domain::market_series& v) {
+void market_series_repository::write(const context& ctx, const domain::market_series& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void market_series_repository::write(context ctx, const std::vector<domain::market_series>& v) {
+void market_series_repository::write(const context& ctx,
+                                     const std::vector<domain::market_series>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -158,7 +161,7 @@ void market_series_repository::write(context ctx, const std::vector<domain::mark
     write(ctx, v, claims);
 }
 
-void market_series_repository::write(context ctx,
+void market_series_repository::write(const context& ctx,
                                      const domain::market_series& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market series. " << "id: " << v.id;
@@ -169,7 +172,7 @@ void market_series_repository::write(context ctx,
 }
 
 void market_series_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::market_series>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market series. Count: " << v.size();
@@ -182,7 +185,7 @@ void market_series_repository::write(
     market_series_identity_projector::project(ctx, batch);
 }
 
-std::vector<domain::market_series> market_series_repository::read_latest(context ctx) {
+std::vector<domain::market_series> market_series_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -199,7 +202,7 @@ std::vector<domain::market_series> market_series_repository::read_latest(context
         "Reading latest market series");
 }
 
-std::vector<domain::market_series> market_series_repository::read_latest(context ctx,
+std::vector<domain::market_series> market_series_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market series. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -218,7 +221,7 @@ std::vector<domain::market_series> market_series_repository::read_latest(context
 }
 
 
-std::vector<domain::market_series> market_series_repository::read_all(context ctx,
+std::vector<domain::market_series> market_series_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market series versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -237,7 +240,7 @@ std::vector<domain::market_series> market_series_repository::read_all(context ct
 }
 
 std::optional<domain::market_series> market_series_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading market series at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -261,7 +264,7 @@ std::optional<domain::market_series> market_series_repository::read_at_version(
 }
 
 market_series_repository::remove_status market_series_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing market series. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -289,12 +292,12 @@ market_series_repository::remove_status market_series_repository::remove(
     return remove_status::removed;
 }
 
-void market_series_repository::remove(context ctx, const std::string& id) {
+void market_series_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::market_series>
-market_series_repository::read_latest(context ctx,
+market_series_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -320,7 +323,7 @@ market_series_repository::read_latest(context ctx,
 }
 
 std::uint32_t market_series_repository::get_total_market_series_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::market_series_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market series count";
@@ -340,7 +343,7 @@ std::uint32_t market_series_repository::get_total_market_series_count(
 }
 
 std::vector<domain::market_series>
-market_series_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+market_series_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -358,7 +361,7 @@ market_series_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void market_series_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void market_series_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -377,7 +380,7 @@ void market_series_repository::remove(context ctx, const std::vector<std::string
 
 
 std::vector<domain::market_series>
-market_series_repository::read_latest_by_key(context ctx,
+market_series_repository::read_latest_by_key(const context& ctx,
                                              const std::string& oresmd_uri,
                                              const std::string& provider_code,
                                              const std::string& party_id) {
@@ -413,7 +416,7 @@ market_series_repository::read_latest_by_key(context ctx,
 }
 
 std::vector<domain::market_series>
-market_series_repository::read_latest_by_uri(context ctx, const std::string& oresmd_uri) {
+market_series_repository::read_latest_by_uri(const context& ctx, const std::string& oresmd_uri) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<market_series_entity>> |

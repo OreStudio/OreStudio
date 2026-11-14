@@ -110,7 +110,7 @@ credit_limit_filter_condition(const std::optional<messaging::credit_limits_filte
 }
 
 ores::utility::domain::precondition
-credit_limit_repository::replace_claim(context ctx, const domain::credit_limit& v) {
+credit_limit_repository::replace_claim(const context& ctx, const domain::credit_limit& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -118,8 +118,10 @@ credit_limit_repository::replace_claim(context ctx, const domain::credit_limit& 
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::credit_limit credit_limit_repository::apply_claim(
-    context ctx, const domain::credit_limit& v, const ores::utility::domain::precondition& claim) {
+domain::credit_limit
+credit_limit_repository::apply_claim(const context& ctx,
+                                     const domain::credit_limit& v,
+                                     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -144,11 +146,12 @@ domain::credit_limit credit_limit_repository::apply_claim(
     return t;
 }
 
-void credit_limit_repository::write(context ctx, const domain::credit_limit& v) {
+void credit_limit_repository::write(const context& ctx, const domain::credit_limit& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void credit_limit_repository::write(context ctx, const std::vector<domain::credit_limit>& v) {
+void credit_limit_repository::write(const context& ctx,
+                                    const std::vector<domain::credit_limit>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -156,7 +159,7 @@ void credit_limit_repository::write(context ctx, const std::vector<domain::credi
     write(ctx, v, claims);
 }
 
-void credit_limit_repository::write(context ctx,
+void credit_limit_repository::write(const context& ctx,
                                     const domain::credit_limit& v,
                                     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing credit limit. " << "id: " << v.id;
@@ -166,7 +169,7 @@ void credit_limit_repository::write(context ctx,
 }
 
 void credit_limit_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::credit_limit>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing credit limits. Count: " << v.size();
@@ -178,7 +181,7 @@ void credit_limit_repository::write(
         ctx, credit_limit_mapper::map(batch), lg(), "Writing credit limits to database.");
 }
 
-std::vector<domain::credit_limit> credit_limit_repository::read_latest(context ctx) {
+std::vector<domain::credit_limit> credit_limit_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<credit_limit_entity>> |
@@ -193,7 +196,7 @@ std::vector<domain::credit_limit> credit_limit_repository::read_latest(context c
         "Reading latest credit limits");
 }
 
-std::vector<domain::credit_limit> credit_limit_repository::read_latest(context ctx,
+std::vector<domain::credit_limit> credit_limit_repository::read_latest(const context& ctx,
                                                                        const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest credit limit. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -211,7 +214,7 @@ std::vector<domain::credit_limit> credit_limit_repository::read_latest(context c
 }
 
 std::vector<domain::credit_limit>
-credit_limit_repository::read_latest_by_code(context ctx, const std::string& code) {
+credit_limit_repository::read_latest_by_code(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest credit limit by code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -234,7 +237,7 @@ credit_limit_repository::read_latest_by_code(context ctx, const std::string& cod
 }
 
 std::vector<domain::credit_limit>
-credit_limit_repository::read_any_by_code(context ctx, const std::string& code) {
+credit_limit_repository::read_any_by_code(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any credit limit by code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<credit_limit_entity>> |
@@ -260,7 +263,7 @@ credit_limit_repository::read_any_by_code(context ctx, const std::string& code) 
 }
 
 
-std::vector<domain::credit_limit> credit_limit_repository::read_all(context ctx,
+std::vector<domain::credit_limit> credit_limit_repository::read_all(const context& ctx,
                                                                     const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all credit limit versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -277,7 +280,7 @@ std::vector<domain::credit_limit> credit_limit_repository::read_all(context ctx,
 }
 
 std::optional<domain::credit_limit> credit_limit_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading credit limit at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -301,7 +304,7 @@ std::optional<domain::credit_limit> credit_limit_repository::read_at_version(
 
 
 std::vector<domain::credit_limit> credit_limit_repository::read_latest_by_counterparty_id(
-    context ctx,
+    const context& ctx,
     const std::string& counterparty_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -328,7 +331,7 @@ std::vector<domain::credit_limit> credit_limit_repository::read_latest_by_counte
 }
 
 std::uint32_t credit_limit_repository::get_total_credit_limit_count_by_counterparty_id(
-    context ctx,
+    const context& ctx,
     const std::string& counterparty_id,
     const std::optional<messaging::credit_limits_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active credit limits count. counterparty_id: "
@@ -351,7 +354,7 @@ std::uint32_t credit_limit_repository::get_total_credit_limit_count_by_counterpa
 
 
 credit_limit_repository::remove_status credit_limit_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing credit limit. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -379,12 +382,12 @@ credit_limit_repository::remove_status credit_limit_repository::remove(
     return remove_status::removed;
 }
 
-void credit_limit_repository::remove(context ctx, const std::string& id) {
+void credit_limit_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::credit_limit>
-credit_limit_repository::read_latest(context ctx,
+credit_limit_repository::read_latest(const context& ctx,
                                      std::uint32_t offset,
                                      std::uint32_t limit,
                                      const ores::utility::domain::order& order,
@@ -409,7 +412,7 @@ credit_limit_repository::read_latest(context ctx,
 }
 
 std::uint32_t credit_limit_repository::get_total_credit_limit_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::credit_limits_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active credit limit count";
@@ -428,7 +431,7 @@ std::uint32_t credit_limit_repository::get_total_credit_limit_count(
 }
 
 std::vector<domain::credit_limit>
-credit_limit_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+credit_limit_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -445,7 +448,7 @@ credit_limit_repository::read_latest(context ctx, const std::vector<std::string>
     return result;
 }
 
-void credit_limit_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void credit_limit_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

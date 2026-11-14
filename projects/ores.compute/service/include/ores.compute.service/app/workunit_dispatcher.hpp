@@ -55,7 +55,7 @@ private:
     }
 
 public:
-    workunit_dispatcher(ores::nats::service::client& nats, ores::database::context ctx);
+    workunit_dispatcher(ores::nats::service::client& nats, const ores::database::context& ctx);
 
     /**
      * @brief Dispatches every workunit named in the event.

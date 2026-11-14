@@ -103,7 +103,8 @@ std::optional<query_builder::condition> credit_instrument_filter_condition(
 }
 
 ores::utility::domain::precondition
-credit_instrument_repository::replace_claim(context ctx, const domain::credit_instrument& v) {
+credit_instrument_repository::replace_claim(const context& ctx,
+                                            const domain::credit_instrument& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.trade_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -112,7 +113,7 @@ credit_instrument_repository::replace_claim(context ctx, const domain::credit_in
 }
 
 domain::credit_instrument
-credit_instrument_repository::apply_claim(context ctx,
+credit_instrument_repository::apply_claim(const context& ctx,
                                           const domain::credit_instrument& v,
                                           const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,11 +140,11 @@ credit_instrument_repository::apply_claim(context ctx,
     return t;
 }
 
-void credit_instrument_repository::write(context ctx, const domain::credit_instrument& v) {
+void credit_instrument_repository::write(const context& ctx, const domain::credit_instrument& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void credit_instrument_repository::write(context ctx,
+void credit_instrument_repository::write(const context& ctx,
                                          const std::vector<domain::credit_instrument>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -152,7 +153,7 @@ void credit_instrument_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void credit_instrument_repository::write(context ctx,
+void credit_instrument_repository::write(const context& ctx,
                                          const domain::credit_instrument& v,
                                          const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing credit instrument. "
@@ -163,7 +164,7 @@ void credit_instrument_repository::write(context ctx,
 }
 
 void credit_instrument_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::credit_instrument>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing credit instruments. Count: " << v.size();
@@ -175,7 +176,8 @@ void credit_instrument_repository::write(
         ctx, credit_instrument_mapper::map(batch), lg(), "Writing credit instruments to database.");
 }
 
-std::vector<domain::credit_instrument> credit_instrument_repository::read_latest(context ctx) {
+std::vector<domain::credit_instrument>
+credit_instrument_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<credit_instrument_entity>> |
@@ -191,7 +193,7 @@ std::vector<domain::credit_instrument> credit_instrument_repository::read_latest
 }
 
 std::vector<domain::credit_instrument>
-credit_instrument_repository::read_latest(context ctx, const std::string& trade_id) {
+credit_instrument_repository::read_latest(const context& ctx, const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest credit instrument. " << "trade_id: " << trade_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -209,7 +211,7 @@ credit_instrument_repository::read_latest(context ctx, const std::string& trade_
 
 
 std::vector<domain::credit_instrument>
-credit_instrument_repository::read_all(context ctx, const std::string& trade_id) {
+credit_instrument_repository::read_all(const context& ctx, const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all credit instrument versions. "
                                << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
@@ -226,7 +228,7 @@ credit_instrument_repository::read_all(context ctx, const std::string& trade_id)
 }
 
 std::optional<domain::credit_instrument> credit_instrument_repository::read_at_version(
-    context ctx, const std::string& trade_id, std::uint32_t version) {
+    const context& ctx, const std::string& trade_id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading credit instrument at version. "
                                << "trade_id: " << trade_id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -250,7 +252,7 @@ std::optional<domain::credit_instrument> credit_instrument_repository::read_at_v
 
 
 credit_instrument_repository::remove_status credit_instrument_repository::remove(
-    context ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing credit instrument. " << "trade_id: " << trade_id;
     const auto current = read_latest(ctx, trade_id);
     if (current.empty())
@@ -279,12 +281,12 @@ credit_instrument_repository::remove_status credit_instrument_repository::remove
     return remove_status::removed;
 }
 
-void credit_instrument_repository::remove(context ctx, const std::string& trade_id) {
+void credit_instrument_repository::remove(const context& ctx, const std::string& trade_id) {
     static_cast<void>(remove(ctx, trade_id, std::nullopt));
 }
 
 std::vector<domain::credit_instrument> credit_instrument_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -310,7 +312,7 @@ std::vector<domain::credit_instrument> credit_instrument_repository::read_latest
 }
 
 std::uint32_t credit_instrument_repository::get_total_credit_instrument_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::credit_instruments_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active credit instrument count";
@@ -329,7 +331,8 @@ std::uint32_t credit_instrument_repository::get_total_credit_instrument_count(
 }
 
 std::vector<domain::credit_instrument>
-credit_instrument_repository::read_latest(context ctx, const std::vector<std::string>& trade_ids) {
+credit_instrument_repository::read_latest(const context& ctx,
+                                          const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -347,7 +350,8 @@ credit_instrument_repository::read_latest(context ctx, const std::vector<std::st
     return result;
 }
 
-void credit_instrument_repository::remove(context ctx, const std::vector<std::string>& trade_ids) {
+void credit_instrument_repository::remove(const context& ctx,
+                                          const std::vector<std::string>& trade_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

@@ -58,11 +58,11 @@ using namespace ores::logging;
 class ORES_COMPUTE_CORE_EXPORT telemetry_handler {
 public:
     telemetry_handler(ores::nats::service::client& nats,
-                      ores::database::context ctx,
+                      const ores::database::context& ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     /**
      * @brief Handle compute.v1.ops.get_grid_stats (request/reply).

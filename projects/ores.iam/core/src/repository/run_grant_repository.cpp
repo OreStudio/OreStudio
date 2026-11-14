@@ -110,7 +110,7 @@ run_grant_filter_condition(const std::optional<messaging::run_grants_filter>& fi
 }
 
 ores::utility::domain::precondition
-run_grant_repository::replace_claim(context ctx, const domain::run_grant& v) {
+run_grant_repository::replace_claim(const context& ctx, const domain::run_grant& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -118,8 +118,10 @@ run_grant_repository::replace_claim(context ctx, const domain::run_grant& v) {
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::run_grant run_grant_repository::apply_claim(
-    context ctx, const domain::run_grant& v, const ores::utility::domain::precondition& claim) {
+domain::run_grant
+run_grant_repository::apply_claim(const context& ctx,
+                                  const domain::run_grant& v,
+                                  const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -144,11 +146,11 @@ domain::run_grant run_grant_repository::apply_claim(
     return t;
 }
 
-void run_grant_repository::write(context ctx, const domain::run_grant& v) {
+void run_grant_repository::write(const context& ctx, const domain::run_grant& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void run_grant_repository::write(context ctx, const std::vector<domain::run_grant>& v) {
+void run_grant_repository::write(const context& ctx, const std::vector<domain::run_grant>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -156,7 +158,7 @@ void run_grant_repository::write(context ctx, const std::vector<domain::run_gran
     write(ctx, v, claims);
 }
 
-void run_grant_repository::write(context ctx,
+void run_grant_repository::write(const context& ctx,
                                  const domain::run_grant& v,
                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing run grant. " << "id: " << v.id;
@@ -165,7 +167,7 @@ void run_grant_repository::write(context ctx,
         ctx, run_grant_mapper::map(t), lg(), "Writing run grant to database.");
 }
 
-void run_grant_repository::write(context ctx,
+void run_grant_repository::write(const context& ctx,
                                  const std::vector<domain::run_grant>& v,
                                  const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing run grants. Count: " << v.size();
@@ -177,7 +179,7 @@ void run_grant_repository::write(context ctx,
         ctx, run_grant_mapper::map(batch), lg(), "Writing run grants to database.");
 }
 
-std::vector<domain::run_grant> run_grant_repository::read_latest(context ctx) {
+std::vector<domain::run_grant> run_grant_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_grant_entity>> |
@@ -192,7 +194,7 @@ std::vector<domain::run_grant> run_grant_repository::read_latest(context ctx) {
         "Reading latest run grants");
 }
 
-std::vector<domain::run_grant> run_grant_repository::read_latest(context ctx,
+std::vector<domain::run_grant> run_grant_repository::read_latest(const context& ctx,
                                                                  const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest run grant. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -210,7 +212,7 @@ std::vector<domain::run_grant> run_grant_repository::read_latest(context ctx,
 }
 
 std::vector<domain::run_grant>
-run_grant_repository::read_latest_by_resource(context ctx, const std::string& resource) {
+run_grant_repository::read_latest_by_resource(const context& ctx, const std::string& resource) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest run grant by resource: " << resource;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -233,7 +235,7 @@ run_grant_repository::read_latest_by_resource(context ctx, const std::string& re
 }
 
 std::vector<domain::run_grant>
-run_grant_repository::read_any_by_resource(context ctx, const std::string& resource) {
+run_grant_repository::read_any_by_resource(const context& ctx, const std::string& resource) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any run grant by resource: " << resource;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_grant_entity>> |
@@ -259,7 +261,8 @@ run_grant_repository::read_any_by_resource(context ctx, const std::string& resou
 }
 
 
-std::vector<domain::run_grant> run_grant_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::run_grant> run_grant_repository::read_all(const context& ctx,
+                                                              const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all run grant versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<run_grant_entity>> |
@@ -274,8 +277,9 @@ std::vector<domain::run_grant> run_grant_repository::read_all(context ctx, const
         "Reading all run grant versions by id.");
 }
 
-std::optional<domain::run_grant>
-run_grant_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::run_grant> run_grant_repository::read_at_version(const context& ctx,
+                                                                       const std::string& id,
+                                                                       std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading run grant at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -297,7 +301,7 @@ run_grant_repository::read_at_version(context ctx, const std::string& id, std::u
 }
 
 std::vector<domain::run_grant> run_grant_repository::read_latest_by_grantor_account_id(
-    context ctx,
+    const context& ctx,
     const std::string& grantor_account_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -325,7 +329,7 @@ std::vector<domain::run_grant> run_grant_repository::read_latest_by_grantor_acco
 }
 
 std::uint32_t run_grant_repository::get_total_grant_count_by_grantor_account_id(
-    context ctx,
+    const context& ctx,
     const std::string& grantor_account_id,
     const std::optional<messaging::run_grants_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active run grants count. grantor_account_id: "
@@ -348,7 +352,7 @@ std::uint32_t run_grant_repository::get_total_grant_count_by_grantor_account_id(
 
 
 run_grant_repository::remove_status run_grant_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing run grant. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -376,12 +380,12 @@ run_grant_repository::remove_status run_grant_repository::remove(
     return remove_status::removed;
 }
 
-void run_grant_repository::remove(context ctx, const std::string& id) {
+void run_grant_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::run_grant>
-run_grant_repository::read_latest(context ctx,
+run_grant_repository::read_latest(const context& ctx,
                                   std::uint32_t offset,
                                   std::uint32_t limit,
                                   const ores::utility::domain::order& order,
@@ -405,7 +409,7 @@ run_grant_repository::read_latest(context ctx,
 }
 
 std::uint32_t run_grant_repository::get_total_grant_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::run_grants_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active run grant count";
@@ -423,7 +427,7 @@ std::uint32_t run_grant_repository::get_total_grant_count(
 }
 
 std::vector<domain::run_grant>
-run_grant_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+run_grant_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -440,7 +444,7 @@ run_grant_repository::read_latest(context ctx, const std::vector<std::string>& i
     return result;
 }
 
-void run_grant_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void run_grant_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

@@ -65,7 +65,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit ir_curve_generation_config_process_parameter_value_service(context ctx);
+    explicit ir_curve_generation_config_process_parameter_value_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

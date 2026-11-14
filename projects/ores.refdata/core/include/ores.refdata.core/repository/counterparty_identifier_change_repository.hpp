@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::counterparty_identifier_change& v);
-    void write(context ctx, const std::vector<domain::counterparty_identifier_change>& v);
+    void write(const context& ctx, const domain::counterparty_identifier_change& v);
+    void write(const context& ctx, const std::vector<domain::counterparty_identifier_change>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::counterparty_identifier_change& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of counterparty_identifier changes, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::counterparty_identifier_change>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,18 +101,18 @@ public:
      * @brief Reads latest counterparty_identifier changes, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::counterparty_identifier_change> read_latest(context ctx);
-    std::vector<domain::counterparty_identifier_change> read_latest(context ctx,
+    std::vector<domain::counterparty_identifier_change> read_latest(const context& ctx);
+    std::vector<domain::counterparty_identifier_change> read_latest(const context& ctx,
                                                                     const std::string& id);
     std::vector<domain::counterparty_identifier_change>
-    read_latest(context ctx, const std::vector<std::string>& ids);
+    read_latest(const context& ctx, const std::vector<std::string>& ids);
     /**@}*/
 
 
     /**
      * @brief Reads all counterparty_identifier changes, possibly filtered by primary key.
      */
-    std::vector<domain::counterparty_identifier_change> read_all(context ctx,
+    std::vector<domain::counterparty_identifier_change> read_all(const context& ctx,
                                                                  const std::string& id);
 
     /**
@@ -125,7 +125,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::counterparty_identifier_change>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest counterparty_identifier changes filtered by request_id, with pagination.
@@ -136,7 +136,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::counterparty_identifier_change> read_latest_by_request_id(
-        context ctx,
+        const context& ctx,
         const std::string& request_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -148,7 +148,7 @@ public:
      * @brief Gets the total count of active counterparty_identifier changes filtered by request_id.
      */
     std::uint32_t get_total_counterparty_identifier_change_count_by_request_id(
-        context ctx,
+        const context& ctx,
         const std::string& request_id,
         const std::optional<messaging::counterparty_identifier_changes_filter>& filter =
             std::nullopt);
@@ -171,7 +171,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::counterparty_identifier_change>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -185,7 +185,7 @@ public:
      * @return Total number of active counterparty_identifier changes
      */
     std::uint32_t get_total_counterparty_identifier_change_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::counterparty_identifier_changes_filter>& filter =
             std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
@@ -193,7 +193,7 @@ public:
     /**
      * @brief Deletes a counterparty_identifier change by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -215,12 +215,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes counterparty_identifier changes by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -229,7 +230,7 @@ private:
      * that no row exists yet.
      */
     ores::utility::domain::precondition
-    replace_claim(context ctx, const domain::counterparty_identifier_change& v);
+    replace_claim(const context& ctx, const domain::counterparty_identifier_change& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
@@ -237,7 +238,7 @@ private:
      * A claim the store cannot check is refused here rather than ignored.
      */
     domain::counterparty_identifier_change
-    apply_claim(context ctx,
+    apply_claim(const context& ctx,
                 const domain::counterparty_identifier_change& v,
                 const ores::utility::domain::precondition& claim);
 };

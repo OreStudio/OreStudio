@@ -75,7 +75,7 @@ public:
 
     static constexpr auto kind_code = "trading.operational_authorisation";
 
-    explicit operational_authorisation_service(context ctx);
+    explicit operational_authorisation_service(const context& ctx);
 
     /**
      * @brief Reads the kind and the raise's policy.

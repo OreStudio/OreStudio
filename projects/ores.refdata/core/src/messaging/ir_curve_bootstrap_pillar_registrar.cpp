@@ -44,11 +44,10 @@ static constexpr std::string_view ir_curve_bootstrap_pillar_queue_group = "ores.
 
 std::vector<ores::nats::service::subscription> register_ir_curve_bootstrap_pillar_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<ir_curve_bootstrap_pillar_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<ir_curve_bootstrap_pillar_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_ir_curve_bootstrap_pillars_request::nats_subject,
         ir_curve_bootstrap_pillar_queue_group,

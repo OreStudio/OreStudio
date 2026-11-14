@@ -45,8 +45,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-product_type_asset_class_service::product_type_asset_class_service(context ctx)
-    : ctx_(std::move(ctx))
+product_type_asset_class_service::product_type_asset_class_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

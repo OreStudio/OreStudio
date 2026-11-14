@@ -45,8 +45,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-currency_calendar_service::currency_calendar_service(context ctx)
-    : ctx_(std::move(ctx))
+currency_calendar_service::currency_calendar_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

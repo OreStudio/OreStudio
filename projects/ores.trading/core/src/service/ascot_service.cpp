@@ -58,8 +58,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-ascot_service::ascot_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+ascot_service::ascot_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

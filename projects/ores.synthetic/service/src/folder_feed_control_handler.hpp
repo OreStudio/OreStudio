@@ -77,15 +77,15 @@ public:
     folder_feed_control_handler(ores::nats::service::client& nats,
                                 generator_fleet& generators,
                                 ores::nats::service::nats_client& auth_nats,
-                                ores::database::context ctx,
+                                const ores::database::context& ctx,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier,
                                 const feed_kind_registry& registry,
                                 ores::analytics::quant::service::run_market& market)
         : nats_(nats)
         , generators_(generators)
         , auth_nats_(auth_nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
+        , ctx_(ctx)
+        , verifier_(verifier)
         , registry_(registry)
         , market_(market) {}
 

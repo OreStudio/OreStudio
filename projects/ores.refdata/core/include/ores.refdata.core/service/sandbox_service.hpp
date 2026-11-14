@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit sandbox_service(context ctx);
+    explicit sandbox_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

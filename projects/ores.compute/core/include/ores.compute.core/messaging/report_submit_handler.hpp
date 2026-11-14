@@ -55,7 +55,7 @@ private:
 
 public:
     report_submit_handler(ores::nats::service::client& nats,
-                          ores::database::context ctx,
+                          const ores::database::context& ctx,
                           ores::nats::service::nats_client service_nats);
 
     void submit(ores::nats::delivery delivery);

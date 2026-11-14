@@ -102,7 +102,7 @@ std::optional<query_builder::condition> default_curve_benchmark_filter_condition
 }
 
 ores::utility::domain::precondition
-default_curve_benchmark_repository::replace_claim(context ctx,
+default_curve_benchmark_repository::replace_claim(const context& ctx,
                                                   const domain::default_curve_benchmark& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -112,7 +112,7 @@ default_curve_benchmark_repository::replace_claim(context ctx,
 }
 
 domain::default_curve_benchmark
-default_curve_benchmark_repository::apply_claim(context ctx,
+default_curve_benchmark_repository::apply_claim(const context& ctx,
                                                 const domain::default_curve_benchmark& v,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,13 +139,13 @@ default_curve_benchmark_repository::apply_claim(context ctx,
     return t;
 }
 
-void default_curve_benchmark_repository::write(context ctx,
+void default_curve_benchmark_repository::write(const context& ctx,
                                                const domain::default_curve_benchmark& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void default_curve_benchmark_repository::write(
-    context ctx, const std::vector<domain::default_curve_benchmark>& v) {
+    const context& ctx, const std::vector<domain::default_curve_benchmark>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -153,7 +153,7 @@ void default_curve_benchmark_repository::write(
     write(ctx, v, claims);
 }
 
-void default_curve_benchmark_repository::write(context ctx,
+void default_curve_benchmark_repository::write(const context& ctx,
                                                const domain::default_curve_benchmark& v,
                                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing default curve benchmark. " << "id: " << v.id;
@@ -165,7 +165,7 @@ void default_curve_benchmark_repository::write(context ctx,
 }
 
 void default_curve_benchmark_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::default_curve_benchmark>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing default curve benchmarks. Count: " << v.size();
@@ -180,7 +180,7 @@ void default_curve_benchmark_repository::write(
 }
 
 std::vector<domain::default_curve_benchmark>
-default_curve_benchmark_repository::read_latest(context ctx) {
+default_curve_benchmark_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<default_curve_benchmark_entity>> |
@@ -197,7 +197,7 @@ default_curve_benchmark_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::default_curve_benchmark>
-default_curve_benchmark_repository::read_latest(context ctx, const std::string& id) {
+default_curve_benchmark_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest default curve benchmark. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +216,7 @@ default_curve_benchmark_repository::read_latest(context ctx, const std::string& 
 
 
 std::vector<domain::default_curve_benchmark>
-default_curve_benchmark_repository::read_all(context ctx, const std::string& id) {
+default_curve_benchmark_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all default curve benchmark versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<default_curve_benchmark_entity>> |
@@ -233,7 +233,7 @@ default_curve_benchmark_repository::read_all(context ctx, const std::string& id)
 }
 
 std::optional<domain::default_curve_benchmark> default_curve_benchmark_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading default curve benchmark at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -257,7 +257,7 @@ std::optional<domain::default_curve_benchmark> default_curve_benchmark_repositor
 
 
 default_curve_benchmark_repository::remove_status default_curve_benchmark_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing default curve benchmark. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -286,12 +286,12 @@ default_curve_benchmark_repository::remove_status default_curve_benchmark_reposi
     return remove_status::removed;
 }
 
-void default_curve_benchmark_repository::remove(context ctx, const std::string& id) {
+void default_curve_benchmark_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::default_curve_benchmark> default_curve_benchmark_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -317,7 +317,7 @@ std::vector<domain::default_curve_benchmark> default_curve_benchmark_repository:
 }
 
 std::uint32_t default_curve_benchmark_repository::get_total_benchmark_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::default_curve_benchmarks_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active default curve benchmark count";
@@ -336,7 +336,8 @@ std::uint32_t default_curve_benchmark_repository::get_total_benchmark_count(
 }
 
 std::vector<domain::default_curve_benchmark>
-default_curve_benchmark_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+default_curve_benchmark_repository::read_latest(const context& ctx,
+                                                const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -354,7 +355,8 @@ default_curve_benchmark_repository::read_latest(context ctx, const std::vector<s
     return result;
 }
 
-void default_curve_benchmark_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void default_curve_benchmark_repository::remove(const context& ctx,
+                                                const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

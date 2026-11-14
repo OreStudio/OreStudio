@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit vanilla_swap_instrument_service(context ctx);
+    explicit vanilla_swap_instrument_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

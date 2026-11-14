@@ -49,7 +49,7 @@ using namespace ores::logging;
 
 nats_poller::nats_poller(const std::string& monitor_url,
                          std::uint32_t interval_seconds,
-                         ores::database::context ctx)
+                         const ores::database::context& ctx)
     : interval_seconds_(interval_seconds)
     , ctx_(ctx.with_tenant(ores::utility::uuid::tenant_id::system(), "nats_poller")) {
 

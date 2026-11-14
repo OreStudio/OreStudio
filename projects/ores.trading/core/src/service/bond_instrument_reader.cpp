@@ -152,7 +152,7 @@ struct leg_amounts final {
 };
 
 std::unordered_map<std::string, bond_trade_rows>
-read_family_rows(ores::database::context ctx, const std::vector<std::string>& trade_ids) {
+read_family_rows(const ores::database::context& ctx, const std::vector<std::string>& trade_ids) {
     std::unordered_map<std::string, bond_trade_rows> rows;
 
     for (auto& row : repository::read_legs_by_trade_ids(ctx, trade_ids))
@@ -205,7 +205,8 @@ read_family_rows(ores::database::context ctx, const std::vector<std::string>& tr
  * them into each instrument's container rather than moving them.
  */
 std::unordered_map<std::string, issue_leg_rows>
-read_issue_family_rows(ores::database::context ctx, const std::vector<std::string>& issue_ids) {
+read_issue_family_rows(const ores::database::context& ctx,
+                       const std::vector<std::string>& issue_ids) {
     std::unordered_map<std::string, issue_leg_rows> rows;
     if (issue_ids.empty())
         return rows;
@@ -708,8 +709,8 @@ std::vector<domain::bond_leg_data> bond_legs_of(const issue_leg_rows& rows) {
     return legs;
 }
 
-bond_instrument_reader::bond_instrument_reader(context ctx)
-    : ctx_(std::move(ctx)) {}
+bond_instrument_reader::bond_instrument_reader(const context& ctx)
+    : ctx_(ctx) {}
 
 std::unordered_map<std::string, domain::bond_instrument_data>
 bond_instrument_reader::read_instruments(const std::vector<std::string>& trade_ids) const {

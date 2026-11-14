@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit bond_issue_conversion_target_service(context ctx);
+    explicit bond_issue_conversion_target_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

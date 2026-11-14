@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::report_configuration& v);
-    void write(context ctx, const std::vector<domain::report_configuration>& v);
+    void write(const context& ctx, const domain::report_configuration& v);
+    void write(const context& ctx, const std::vector<domain::report_configuration>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::report_configuration& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of report configurations, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::report_configuration>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,9 +101,10 @@ public:
      * @brief Reads latest report configurations, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::report_configuration> read_latest(context ctx);
-    std::vector<domain::report_configuration> read_latest(context ctx, const std::string& id);
-    std::vector<domain::report_configuration> read_latest(context ctx,
+    std::vector<domain::report_configuration> read_latest(const context& ctx);
+    std::vector<domain::report_configuration> read_latest(const context& ctx,
+                                                          const std::string& id);
+    std::vector<domain::report_configuration> read_latest(const context& ctx,
                                                           const std::vector<std::string>& ids);
     /**@}*/
 
@@ -111,7 +112,8 @@ public:
      * @brief Reads latest report configurations filtered by configuration_type_code.
      */
     std::vector<domain::report_configuration>
-    read_latest_by_configuration_type_code(context ctx, const std::string& configuration_type_code);
+    read_latest_by_configuration_type_code(const context& ctx,
+                                           const std::string& configuration_type_code);
 
     /**
      * @brief Reads the newest report configurations filtered by configuration_type_code, current or
@@ -128,13 +130,14 @@ public:
      * party.
      */
     std::vector<domain::report_configuration>
-    read_any_by_configuration_type_code(context ctx, const std::string& configuration_type_code);
+    read_any_by_configuration_type_code(const context& ctx,
+                                        const std::string& configuration_type_code);
 
 
     /**
      * @brief Reads all report configurations, possibly filtered by primary key.
      */
-    std::vector<domain::report_configuration> read_all(context ctx, const std::string& id);
+    std::vector<domain::report_configuration> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single report configuration as it stood at a specific
@@ -146,7 +149,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::report_configuration>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest report configurations filtered by report_definition_id, with pagination.
@@ -157,7 +160,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::report_configuration> read_latest_by_report_definition_id(
-        context ctx,
+        const context& ctx,
         const std::string& report_definition_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -168,7 +171,7 @@ public:
      * @brief Gets the total count of active report configurations filtered by report_definition_id.
      */
     std::uint32_t get_total_report_configuration_count_by_report_definition_id(
-        context ctx,
+        const context& ctx,
         const std::string& report_definition_id,
         const std::optional<messaging::report_configurations_filter>& filter = std::nullopt);
 
@@ -183,7 +186,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::report_configuration> read_latest_by_configuration_type_code(
-        context ctx,
+        const context& ctx,
         const std::string& configuration_type_code,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -195,7 +198,7 @@ public:
      * configuration_type_code.
      */
     std::uint32_t get_total_report_configuration_count_by_configuration_type_code(
-        context ctx,
+        const context& ctx,
         const std::string& configuration_type_code,
         const std::optional<messaging::report_configurations_filter>& filter = std::nullopt);
 
@@ -209,7 +212,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::report_configuration> read_latest_by_configuration_id(
-        context ctx,
+        const context& ctx,
         const std::string& configuration_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -220,7 +223,7 @@ public:
      * @brief Gets the total count of active report configurations filtered by configuration_id.
      */
     std::uint32_t get_total_report_configuration_count_by_configuration_id(
-        context ctx,
+        const context& ctx,
         const std::string& configuration_id,
         const std::optional<messaging::report_configurations_filter>& filter = std::nullopt);
 
@@ -242,7 +245,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::report_configuration>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -255,14 +258,14 @@ public:
      * @return Total number of active report configurations
      */
     std::uint32_t get_total_report_configuration_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::report_configurations_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a report configuration by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -284,12 +287,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes report configurations by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -297,7 +301,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::report_configuration& v);
 
     /**
@@ -305,7 +309,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::report_configuration apply_claim(context ctx,
+    domain::report_configuration apply_claim(const context& ctx,
                                              const domain::report_configuration& v,
                                              const ores::utility::domain::precondition& claim);
 };

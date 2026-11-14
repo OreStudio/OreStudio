@@ -111,7 +111,7 @@ std::optional<query_builder::condition> credit_simulation_matrix_row_config_filt
 }
 
 ores::utility::domain::precondition credit_simulation_matrix_row_config_repository::replace_claim(
-    context ctx, const domain::credit_simulation_matrix_row_config& v) {
+    const context& ctx, const domain::credit_simulation_matrix_row_config& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -121,7 +121,7 @@ ores::utility::domain::precondition credit_simulation_matrix_row_config_reposito
 
 domain::credit_simulation_matrix_row_config
 credit_simulation_matrix_row_config_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::credit_simulation_matrix_row_config& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -149,12 +149,12 @@ credit_simulation_matrix_row_config_repository::apply_claim(
 }
 
 void credit_simulation_matrix_row_config_repository::write(
-    context ctx, const domain::credit_simulation_matrix_row_config& v) {
+    const context& ctx, const domain::credit_simulation_matrix_row_config& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void credit_simulation_matrix_row_config_repository::write(
-    context ctx, const std::vector<domain::credit_simulation_matrix_row_config>& v) {
+    const context& ctx, const std::vector<domain::credit_simulation_matrix_row_config>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -163,7 +163,7 @@ void credit_simulation_matrix_row_config_repository::write(
 }
 
 void credit_simulation_matrix_row_config_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::credit_simulation_matrix_row_config& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing matrix row. " << "id: " << v.id;
@@ -175,7 +175,7 @@ void credit_simulation_matrix_row_config_repository::write(
 }
 
 void credit_simulation_matrix_row_config_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::credit_simulation_matrix_row_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing matrix rows. Count: " << v.size();
@@ -190,7 +190,7 @@ void credit_simulation_matrix_row_config_repository::write(
 }
 
 std::vector<domain::credit_simulation_matrix_row_config>
-credit_simulation_matrix_row_config_repository::read_latest(context ctx) {
+credit_simulation_matrix_row_config_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -210,7 +210,8 @@ credit_simulation_matrix_row_config_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::credit_simulation_matrix_row_config>
-credit_simulation_matrix_row_config_repository::read_latest(context ctx, const std::string& id) {
+credit_simulation_matrix_row_config_repository::read_latest(const context& ctx,
+                                                            const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix row. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -231,7 +232,7 @@ credit_simulation_matrix_row_config_repository::read_latest(context ctx, const s
 
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_latest_by_from_rating(
-    context ctx, const std::string& from_rating) {
+    const context& ctx, const std::string& from_rating) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest matrix row by from_rating: " << from_rating;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -259,7 +260,7 @@ credit_simulation_matrix_row_config_repository::read_latest_by_from_rating(
 
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_any_by_from_rating(
-    context ctx, const std::string& from_rating) {
+    const context& ctx, const std::string& from_rating) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any matrix row by from_rating: " << from_rating;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -290,7 +291,8 @@ credit_simulation_matrix_row_config_repository::read_any_by_from_rating(
 
 
 std::vector<domain::credit_simulation_matrix_row_config>
-credit_simulation_matrix_row_config_repository::read_all(context ctx, const std::string& id) {
+credit_simulation_matrix_row_config_repository::read_all(const context& ctx,
+                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all matrix row versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -310,7 +312,7 @@ credit_simulation_matrix_row_config_repository::read_all(context ctx, const std:
 }
 
 std::optional<domain::credit_simulation_matrix_row_config>
-credit_simulation_matrix_row_config_repository::read_at_version(context ctx,
+credit_simulation_matrix_row_config_repository::read_at_version(const context& ctx,
                                                                 const std::string& id,
                                                                 std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading matrix row at version. " << "id: " << id
@@ -339,7 +341,7 @@ credit_simulation_matrix_row_config_repository::read_at_version(context ctx,
 
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_latest_by_transition_matrix_id(
-    context ctx,
+    const context& ctx,
     const std::string& transition_matrix_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -372,7 +374,7 @@ credit_simulation_matrix_row_config_repository::read_latest_by_transition_matrix
 
 std::uint32_t
 credit_simulation_matrix_row_config_repository::get_total_row_count_by_transition_matrix_id(
-    context ctx,
+    const context& ctx,
     const std::string& transition_matrix_id,
     const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -397,7 +399,7 @@ credit_simulation_matrix_row_config_repository::get_total_row_count_by_transitio
 
 
 credit_simulation_matrix_row_config_repository::remove_status
-credit_simulation_matrix_row_config_repository::remove(context ctx,
+credit_simulation_matrix_row_config_repository::remove(const context& ctx,
                                                        const std::string& id,
                                                        std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing matrix row. " << "id: " << id;
@@ -427,13 +429,14 @@ credit_simulation_matrix_row_config_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void credit_simulation_matrix_row_config_repository::remove(context ctx, const std::string& id) {
+void credit_simulation_matrix_row_config_repository::remove(const context& ctx,
+                                                            const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::credit_simulation_matrix_row_config>
 credit_simulation_matrix_row_config_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -462,7 +465,7 @@ credit_simulation_matrix_row_config_repository::read_latest(
 }
 
 std::uint32_t credit_simulation_matrix_row_config_repository::get_total_row_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::credit_simulation_matrix_row_configs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active matrix row count";
@@ -482,7 +485,7 @@ std::uint32_t credit_simulation_matrix_row_config_repository::get_total_row_coun
 }
 
 std::vector<domain::credit_simulation_matrix_row_config>
-credit_simulation_matrix_row_config_repository::read_latest(context ctx,
+credit_simulation_matrix_row_config_repository::read_latest(const context& ctx,
                                                             const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -503,7 +506,7 @@ credit_simulation_matrix_row_config_repository::read_latest(context ctx,
     return result;
 }
 
-void credit_simulation_matrix_row_config_repository::remove(context ctx,
+void credit_simulation_matrix_row_config_repository::remove(const context& ctx,
                                                             const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

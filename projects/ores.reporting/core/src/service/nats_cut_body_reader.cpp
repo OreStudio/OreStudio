@@ -120,12 +120,12 @@ std::optional<std::string> reference_data_in_force(const ores::database::context
 
 }
 
-nats_cut_body_reader::nats_cut_body_reader(ores::database::context ctx,
+nats_cut_body_reader::nats_cut_body_reader(const ores::database::context& ctx,
                                            ores::nats::service::client& nats,
                                            std::string authorization)
-    : ctx_(std::move(ctx))
+    : ctx_(ctx)
     , nats_(nats)
-    , authorization_(std::move(authorization)) {}
+    , authorization_(authorization) {}
 
 cut_body_facts nats_cut_body_reader::read(const cut_body_query& query) {
     cut_body_facts facts;

@@ -83,7 +83,7 @@ auto& lg() {
 }
 
 std::vector<domain::bond_issue_call_date>
-read_call_dates_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids) {
+read_call_dates_by_issue_ids(const context& ctx, const std::vector<std::string>& issue_ids) {
     if (issue_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -103,7 +103,8 @@ read_call_dates_by_issue_ids(context ctx, const std::vector<std::string>& issue_
 }
 
 std::vector<domain::bond_issue_conversion_target>
-read_conversion_targets_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids) {
+read_conversion_targets_by_issue_ids(const context& ctx,
+                                     const std::vector<std::string>& issue_ids) {
     if (issue_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -122,7 +123,7 @@ read_conversion_targets_by_issue_ids(context ctx, const std::vector<std::string>
         "Reading bond issue conversion targets by issue ids.");
 }
 
-std::vector<domain::bond_leg> read_legs_by_trade_ids(context ctx,
+std::vector<domain::bond_leg> read_legs_by_trade_ids(const context& ctx,
                                                      const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
@@ -142,7 +143,7 @@ std::vector<domain::bond_leg> read_legs_by_trade_ids(context ctx,
 }
 
 std::vector<domain::bond_leg_amount>
-read_leg_amounts_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_leg_amounts_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -163,7 +164,7 @@ read_leg_amounts_by_trade_ids(context ctx, const std::vector<std::string>& trade
 }
 
 std::vector<domain::bond_leg_rate>
-read_leg_rates_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_leg_rates_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -182,7 +183,7 @@ read_leg_rates_by_trade_ids(context ctx, const std::vector<std::string>& trade_i
 }
 
 std::vector<domain::bond_leg_amortization>
-read_leg_amortizations_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_leg_amortizations_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -203,7 +204,7 @@ read_leg_amortizations_by_trade_ids(context ctx, const std::vector<std::string>&
 }
 
 std::vector<domain::bond_issue_leg>
-read_issue_legs_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids) {
+read_issue_legs_by_issue_ids(const context& ctx, const std::vector<std::string>& issue_ids) {
     if (issue_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -222,7 +223,7 @@ read_issue_legs_by_issue_ids(context ctx, const std::vector<std::string>& issue_
 }
 
 std::vector<domain::bond_issue_leg_amount>
-read_issue_leg_amounts_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids) {
+read_issue_leg_amounts_by_issue_ids(const context& ctx, const std::vector<std::string>& issue_ids) {
     if (issue_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -243,7 +244,7 @@ read_issue_leg_amounts_by_issue_ids(context ctx, const std::vector<std::string>&
 }
 
 std::vector<domain::bond_issue_leg_rate>
-read_issue_leg_rates_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids) {
+read_issue_leg_rates_by_issue_ids(const context& ctx, const std::vector<std::string>& issue_ids) {
     if (issue_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -263,7 +264,8 @@ read_issue_leg_rates_by_issue_ids(context ctx, const std::vector<std::string>& i
 }
 
 std::vector<domain::bond_issue_leg_amortization>
-read_issue_leg_amortizations_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids) {
+read_issue_leg_amortizations_by_issue_ids(const context& ctx,
+                                          const std::vector<std::string>& issue_ids) {
     if (issue_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -283,7 +285,7 @@ read_issue_leg_amortizations_by_issue_ids(context ctx, const std::vector<std::st
 }
 
 std::vector<domain::bond_issue_leg_schedule>
-read_issue_schedules_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids) {
+read_issue_schedules_by_issue_ids(const context& ctx, const std::vector<std::string>& issue_ids) {
     if (issue_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -304,7 +306,8 @@ read_issue_schedules_by_issue_ids(context ctx, const std::vector<std::string>& i
 }
 
 std::vector<domain::bond_issue_leg_schedule_date>
-read_issue_schedule_dates_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids) {
+read_issue_schedule_dates_by_issue_ids(const context& ctx,
+                                       const std::vector<std::string>& issue_ids) {
     if (issue_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -328,7 +331,7 @@ read_issue_schedule_dates_by_issue_ids(context ctx, const std::vector<std::strin
 }
 
 std::vector<domain::instrument_schedule>
-read_schedules_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_schedules_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -350,7 +353,7 @@ read_schedules_by_trade_ids(context ctx, const std::vector<std::string>& trade_i
 }
 
 std::vector<domain::instrument_schedule_date>
-read_schedule_dates_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_schedule_dates_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -375,7 +378,7 @@ read_schedule_dates_by_trade_ids(context ctx, const std::vector<std::string>& tr
 }
 
 std::vector<domain::instrument_option>
-read_options_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_options_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -394,7 +397,7 @@ read_options_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids
 }
 
 std::vector<domain::instrument_option_premium>
-read_option_premiums_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_option_premiums_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -414,7 +417,8 @@ read_option_premiums_by_trade_ids(context ctx, const std::vector<std::string>& t
 }
 
 std::vector<domain::instrument_option_exercise_fee>
-read_option_exercise_fees_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_option_exercise_fees_by_trade_ids(const context& ctx,
+                                       const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -434,7 +438,8 @@ read_option_exercise_fees_by_trade_ids(context ctx, const std::vector<std::strin
 }
 
 std::vector<domain::instrument_option_payment_date>
-read_option_payment_dates_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_option_payment_dates_by_trade_ids(const context& ctx,
+                                       const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -454,7 +459,8 @@ read_option_payment_dates_by_trade_ids(context ctx, const std::vector<std::strin
 }
 
 std::vector<domain::instrument_option_exercise_price>
-read_option_exercise_prices_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_option_exercise_prices_by_trade_ids(const context& ctx,
+                                         const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -474,7 +480,7 @@ read_option_exercise_prices_by_trade_ids(context ctx, const std::vector<std::str
 }
 
 std::vector<domain::range_bound>
-read_range_bounds_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_range_bounds_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -493,7 +499,7 @@ read_range_bounds_by_trade_ids(context ctx, const std::vector<std::string>& trad
 }
 
 std::vector<domain::instrument_strike>
-read_strikes_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_strikes_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -512,7 +518,7 @@ read_strikes_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids
 }
 
 std::vector<domain::bond_forward>
-read_forwards_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+read_forwards_by_trade_ids(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();

@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit market_fixing_service(context ctx);
+    explicit market_fixing_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

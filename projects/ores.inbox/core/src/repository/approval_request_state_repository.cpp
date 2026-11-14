@@ -101,7 +101,7 @@ std::optional<query_builder::condition> approval_request_state_filter_condition(
 }
 
 ores::utility::domain::precondition
-approval_request_state_repository::replace_claim(context ctx,
+approval_request_state_repository::replace_claim(const context& ctx,
                                                  const domain::approval_request_state& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
@@ -111,7 +111,7 @@ approval_request_state_repository::replace_claim(context ctx,
 }
 
 domain::approval_request_state
-approval_request_state_repository::apply_claim(context ctx,
+approval_request_state_repository::apply_claim(const context& ctx,
                                                const domain::approval_request_state& v,
                                                const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,13 +138,13 @@ approval_request_state_repository::apply_claim(context ctx,
     return t;
 }
 
-void approval_request_state_repository::write(context ctx,
+void approval_request_state_repository::write(const context& ctx,
                                               const domain::approval_request_state& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void approval_request_state_repository::write(
-    context ctx, const std::vector<domain::approval_request_state>& v) {
+    const context& ctx, const std::vector<domain::approval_request_state>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -152,7 +152,7 @@ void approval_request_state_repository::write(
     write(ctx, v, claims);
 }
 
-void approval_request_state_repository::write(context ctx,
+void approval_request_state_repository::write(const context& ctx,
                                               const domain::approval_request_state& v,
                                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval request state. " << "code: " << v.code;
@@ -164,7 +164,7 @@ void approval_request_state_repository::write(context ctx,
 }
 
 void approval_request_state_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::approval_request_state>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing approval request states. Count: " << v.size();
@@ -179,7 +179,7 @@ void approval_request_state_repository::write(
 }
 
 std::vector<domain::approval_request_state>
-approval_request_state_repository::read_latest(context ctx) {
+approval_request_state_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<approval_request_state_entity>> |
@@ -196,7 +196,7 @@ approval_request_state_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::approval_request_state>
-approval_request_state_repository::read_latest(context ctx, const std::string& code) {
+approval_request_state_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest approval request state. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -215,7 +215,7 @@ approval_request_state_repository::read_latest(context ctx, const std::string& c
 
 
 std::vector<domain::approval_request_state>
-approval_request_state_repository::read_all(context ctx, const std::string& code) {
+approval_request_state_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all approval request state versions. "
                                << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -233,7 +233,7 @@ approval_request_state_repository::read_all(context ctx, const std::string& code
 }
 
 std::optional<domain::approval_request_state> approval_request_state_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading approval request state at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -256,7 +256,7 @@ std::optional<domain::approval_request_state> approval_request_state_repository:
 }
 
 approval_request_state_repository::remove_status approval_request_state_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing approval request state. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -285,12 +285,12 @@ approval_request_state_repository::remove_status approval_request_state_reposito
     return remove_status::removed;
 }
 
-void approval_request_state_repository::remove(context ctx, const std::string& code) {
+void approval_request_state_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::approval_request_state> approval_request_state_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -316,7 +316,7 @@ std::vector<domain::approval_request_state> approval_request_state_repository::r
 }
 
 std::uint32_t approval_request_state_repository::get_total_state_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::approval_request_states_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active approval request state count";
@@ -335,7 +335,8 @@ std::uint32_t approval_request_state_repository::get_total_state_count(
 }
 
 std::vector<domain::approval_request_state>
-approval_request_state_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+approval_request_state_repository::read_latest(const context& ctx,
+                                               const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -353,7 +354,8 @@ approval_request_state_repository::read_latest(context ctx, const std::vector<st
     return result;
 }
 
-void approval_request_state_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void approval_request_state_repository::remove(const context& ctx,
+                                               const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

@@ -76,7 +76,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit notification_argument_repository(context ctx);
+    explicit notification_argument_repository(const context& ctx);
 
     std::string sql();
 

@@ -57,8 +57,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-swap_leg_indexing_service::swap_leg_indexing_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+swap_leg_indexing_service::swap_leg_indexing_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

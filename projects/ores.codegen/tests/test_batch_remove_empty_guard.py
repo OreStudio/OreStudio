@@ -37,9 +37,9 @@ TEMPLATES_DIR = CODEGEN_DIR / "library" / "templates"
 # is the shape that rendered the empty IN ().
 BASE_ENTITY = REPO_ROOT / "projects/ores.refdata/modeling/ores.refdata.book.org"
 
-BATCH_REMOVE = ("book_repository::remove( context ctx, "
+BATCH_REMOVE = ("book_repository::remove( const context& ctx, "
                 "const std::vector<std::string>& ids) {")
-BATCH_READ = ("book_repository::read_latest( context ctx, "
+BATCH_READ = ("book_repository::read_latest( const context& ctx, "
               "const std::vector<std::string>& ids) {")
 
 # Enough of the body to hold the guard and the statement it protects, and not

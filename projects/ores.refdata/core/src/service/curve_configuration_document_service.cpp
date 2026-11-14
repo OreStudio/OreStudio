@@ -101,8 +101,8 @@ using ores::database::repository::write_amendment;
 using ores::database::repository::read_one;
 using ores::database::repository::read_where;
 
-curve_configuration_document_service::curve_configuration_document_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+curve_configuration_document_service::curve_configuration_document_service(const context& ctx)
+    : ctx_(ctx) {}
 
 void curve_configuration_document_service::save(messaging::curve_configuration_document v,
                                                 std::string reason_code,

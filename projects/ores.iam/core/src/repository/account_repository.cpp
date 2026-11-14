@@ -106,7 +106,7 @@ account_filter_condition(const std::optional<messaging::accounts_filter>& filter
 
 }
 
-ores::utility::domain::precondition account_repository::replace_claim(context ctx,
+ores::utility::domain::precondition account_repository::replace_claim(const context& ctx,
                                                                       const domain::account& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -115,7 +115,7 @@ ores::utility::domain::precondition account_repository::replace_claim(context ct
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::account account_repository::apply_claim(context ctx,
+domain::account account_repository::apply_claim(const context& ctx,
                                                 const domain::account& v,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -142,11 +142,11 @@ domain::account account_repository::apply_claim(context ctx,
     return t;
 }
 
-void account_repository::write(context ctx, const domain::account& v) {
+void account_repository::write(const context& ctx, const domain::account& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void account_repository::write(context ctx, const std::vector<domain::account>& v) {
+void account_repository::write(const context& ctx, const std::vector<domain::account>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -154,7 +154,7 @@ void account_repository::write(context ctx, const std::vector<domain::account>& 
     write(ctx, v, claims);
 }
 
-void account_repository::write(context ctx,
+void account_repository::write(const context& ctx,
                                const domain::account& v,
                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account. " << "id: " << v.id;
@@ -163,7 +163,7 @@ void account_repository::write(context ctx,
         ctx, account_mapper::map(t), lg(), "Writing account to database.");
 }
 
-void account_repository::write(context ctx,
+void account_repository::write(const context& ctx,
                                const std::vector<domain::account>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing accounts. Count: " << v.size();
@@ -175,7 +175,7 @@ void account_repository::write(context ctx,
         ctx, account_mapper::map(batch), lg(), "Writing accounts to database.");
 }
 
-std::vector<domain::account> account_repository::read_latest(context ctx) {
+std::vector<domain::account> account_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -192,7 +192,8 @@ std::vector<domain::account> account_repository::read_latest(context ctx) {
         "Reading latest accounts");
 }
 
-std::vector<domain::account> account_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::account> account_repository::read_latest(const context& ctx,
+                                                             const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -210,7 +211,7 @@ std::vector<domain::account> account_repository::read_latest(context ctx, const 
 }
 
 
-std::vector<domain::account> account_repository::read_any_by_username(context ctx,
+std::vector<domain::account> account_repository::read_any_by_username(const context& ctx,
                                                                       const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any account by username: " << username;
     const auto tid = ctx.tenant_id().to_string();
@@ -229,7 +230,8 @@ std::vector<domain::account> account_repository::read_any_by_username(context ct
 }
 
 
-std::vector<domain::account> account_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::account> account_repository::read_all(const context& ctx,
+                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all account versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -246,8 +248,9 @@ std::vector<domain::account> account_repository::read_all(context ctx, const std
         "Reading all account versions by id.");
 }
 
-std::optional<domain::account>
-account_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::account> account_repository::read_at_version(const context& ctx,
+                                                                   const std::string& id,
+                                                                   std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading account at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -270,7 +273,7 @@ account_repository::read_at_version(context ctx, const std::string& id, std::uin
 }
 
 
-account_repository::remove_status account_repository::remove(context ctx,
+account_repository::remove_status account_repository::remove(const context& ctx,
                                                              const std::string& id,
                                                              std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing account. " << "id: " << id;
@@ -300,12 +303,12 @@ account_repository::remove_status account_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void account_repository::remove(context ctx, const std::string& id) {
+void account_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::account>
-account_repository::read_latest(context ctx,
+account_repository::read_latest(const context& ctx,
                                 std::uint32_t offset,
                                 std::uint32_t limit,
                                 const ores::utility::domain::order& order,
@@ -330,7 +333,7 @@ account_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-account_repository::get_total_account_count(context ctx,
+account_repository::get_total_account_count(const context& ctx,
                                             const std::optional<messaging::accounts_filter>& filter,
                                             const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count";
@@ -348,7 +351,7 @@ account_repository::get_total_account_count(context ctx,
         "Counting accounts");
 }
 
-std::vector<domain::account> account_repository::read_latest(context ctx,
+std::vector<domain::account> account_repository::read_latest(const context& ctx,
                                                              const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -367,7 +370,7 @@ std::vector<domain::account> account_repository::read_latest(context ctx,
     return result;
 }
 
-void account_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void account_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -385,7 +388,7 @@ void account_repository::remove(context ctx, const std::vector<std::string>& ids
 }
 
 
-std::vector<domain::account> account_repository::read_all(context ctx) {
+std::vector<domain::account> account_repository::read_all(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_entity>> |
                        query_builder::where("tenant_id"_c == tid) |
@@ -400,7 +403,7 @@ std::vector<domain::account> account_repository::read_all(context ctx) {
 }
 
 std::vector<domain::account>
-account_repository::read_latest_by_username(context ctx, const std::string& username) {
+account_repository::read_latest_by_username(const context& ctx, const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
     static constexpr auto max = db_timestamp::max();
@@ -418,7 +421,7 @@ account_repository::read_latest_by_username(context ctx, const std::string& user
         "Reading latest account by username");
 }
 
-std::vector<domain::account> account_repository::read_latest_by_email(context ctx,
+std::vector<domain::account> account_repository::read_latest_by_email(const context& ctx,
                                                                       const std::string& email) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
 

@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit convention_kind_term_service(context ctx);
+    explicit convention_kind_term_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

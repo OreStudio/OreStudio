@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-csa_service::csa_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+csa_service::csa_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

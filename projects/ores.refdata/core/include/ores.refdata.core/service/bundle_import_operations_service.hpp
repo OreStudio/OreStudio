@@ -44,7 +44,7 @@ class ORES_REFDATA_CORE_EXPORT bundle_import_operations_service {
 public:
     using context = ores::database::context;
 
-    explicit bundle_import_operations_service(context ctx);
+    explicit bundle_import_operations_service(const context& ctx);
 
     /**
      * @brief Opens a staging session, or answers the one the id already names.

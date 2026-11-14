@@ -103,7 +103,7 @@ std::optional<query_builder::condition> market_data_generation_config_filter_con
 }
 
 ores::utility::domain::precondition market_data_generation_config_repository::replace_claim(
-    context ctx, const domain::market_data_generation_config& v) {
+    const context& ctx, const domain::market_data_generation_config& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -112,7 +112,7 @@ ores::utility::domain::precondition market_data_generation_config_repository::re
 }
 
 domain::market_data_generation_config market_data_generation_config_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::market_data_generation_config& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -140,12 +140,12 @@ domain::market_data_generation_config market_data_generation_config_repository::
 }
 
 void market_data_generation_config_repository::write(
-    context ctx, const domain::market_data_generation_config& v) {
+    const context& ctx, const domain::market_data_generation_config& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void market_data_generation_config_repository::write(
-    context ctx, const std::vector<domain::market_data_generation_config>& v) {
+    const context& ctx, const std::vector<domain::market_data_generation_config>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -154,7 +154,7 @@ void market_data_generation_config_repository::write(
 }
 
 void market_data_generation_config_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::market_data_generation_config& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market data generation config. " << "id: " << v.id;
@@ -166,7 +166,7 @@ void market_data_generation_config_repository::write(
 }
 
 void market_data_generation_config_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::market_data_generation_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market data generation configs. Count: " << v.size();
@@ -181,7 +181,7 @@ void market_data_generation_config_repository::write(
 }
 
 std::vector<domain::market_data_generation_config>
-market_data_generation_config_repository::read_latest(context ctx) {
+market_data_generation_config_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -200,7 +200,7 @@ market_data_generation_config_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::market_data_generation_config>
-market_data_generation_config_repository::read_latest(context ctx, const std::string& id) {
+market_data_generation_config_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market data generation config. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -220,7 +220,7 @@ market_data_generation_config_repository::read_latest(context ctx, const std::st
 
 
 std::vector<domain::market_data_generation_config>
-market_data_generation_config_repository::read_all(context ctx, const std::string& id) {
+market_data_generation_config_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market data generation config versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -240,7 +240,7 @@ market_data_generation_config_repository::read_all(context ctx, const std::strin
 }
 
 std::optional<domain::market_data_generation_config>
-market_data_generation_config_repository::read_at_version(context ctx,
+market_data_generation_config_repository::read_at_version(const context& ctx,
                                                           const std::string& id,
                                                           std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading market data generation config at version. "
@@ -266,7 +266,7 @@ market_data_generation_config_repository::read_at_version(context ctx,
 }
 
 market_data_generation_config_repository::remove_status
-market_data_generation_config_repository::remove(context ctx,
+market_data_generation_config_repository::remove(const context& ctx,
                                                  const std::string& id,
                                                  std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing market data generation config. " << "id: " << id;
@@ -297,13 +297,13 @@ market_data_generation_config_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void market_data_generation_config_repository::remove(context ctx, const std::string& id) {
+void market_data_generation_config_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::market_data_generation_config>
 market_data_generation_config_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -331,7 +331,7 @@ market_data_generation_config_repository::read_latest(
 
 std::uint32_t
 market_data_generation_config_repository::get_total_market_data_generation_config_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::market_data_generation_configs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market data generation config count";
@@ -351,7 +351,7 @@ market_data_generation_config_repository::get_total_market_data_generation_confi
 }
 
 std::vector<domain::market_data_generation_config>
-market_data_generation_config_repository::read_latest(context ctx,
+market_data_generation_config_repository::read_latest(const context& ctx,
                                                       const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -371,7 +371,7 @@ market_data_generation_config_repository::read_latest(context ctx,
     return result;
 }
 
-void market_data_generation_config_repository::remove(context ctx,
+void market_data_generation_config_repository::remove(const context& ctx,
                                                       const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

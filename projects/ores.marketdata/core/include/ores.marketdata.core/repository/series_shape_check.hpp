@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_SERIES_SHAPE_CHECK_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_SERIES_SHAPE_CHECK_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <vector>
@@ -55,7 +55,7 @@ public:
      * carries and the axis field that does not declare it, when the value is
      * not one the axis declares.
      */
-    static void check(ores::database::context ctx,
+    static void check(const ores::database::context& ctx,
                       const std::vector<domain::market_observation>& observations);
 };
 

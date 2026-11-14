@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-inflation_seasonality_factor_service::inflation_seasonality_factor_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+inflation_seasonality_factor_service::inflation_seasonality_factor_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

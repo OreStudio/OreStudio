@@ -101,7 +101,7 @@ fsm_state_filter_condition(const std::optional<messaging::fsm_states_filter>& fi
 }
 
 ores::utility::domain::precondition
-fsm_state_repository::replace_claim(context ctx, const domain::fsm_state& v) {
+fsm_state_repository::replace_claim(const context& ctx, const domain::fsm_state& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -109,8 +109,10 @@ fsm_state_repository::replace_claim(context ctx, const domain::fsm_state& v) {
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::fsm_state fsm_state_repository::apply_claim(
-    context ctx, const domain::fsm_state& v, const ores::utility::domain::precondition& claim) {
+domain::fsm_state
+fsm_state_repository::apply_claim(const context& ctx,
+                                  const domain::fsm_state& v,
+                                  const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -135,11 +137,11 @@ domain::fsm_state fsm_state_repository::apply_claim(
     return t;
 }
 
-void fsm_state_repository::write(context ctx, const domain::fsm_state& v) {
+void fsm_state_repository::write(const context& ctx, const domain::fsm_state& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void fsm_state_repository::write(context ctx, const std::vector<domain::fsm_state>& v) {
+void fsm_state_repository::write(const context& ctx, const std::vector<domain::fsm_state>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -147,7 +149,7 @@ void fsm_state_repository::write(context ctx, const std::vector<domain::fsm_stat
     write(ctx, v, claims);
 }
 
-void fsm_state_repository::write(context ctx,
+void fsm_state_repository::write(const context& ctx,
                                  const domain::fsm_state& v,
                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing fsm state. " << "id: " << v.id;
@@ -156,7 +158,7 @@ void fsm_state_repository::write(context ctx,
         ctx, fsm_state_mapper::map(t), lg(), "Writing fsm state to database.");
 }
 
-void fsm_state_repository::write(context ctx,
+void fsm_state_repository::write(const context& ctx,
                                  const std::vector<domain::fsm_state>& v,
                                  const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing fsm states. Count: " << v.size();
@@ -168,7 +170,7 @@ void fsm_state_repository::write(context ctx,
         ctx, fsm_state_mapper::map(batch), lg(), "Writing fsm states to database.");
 }
 
-std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx) {
+std::vector<domain::fsm_state> fsm_state_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
                        query_builder::where("valid_to"_c == max) | query_builder::order_by("id"_c);
@@ -181,7 +183,7 @@ std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx) {
         "Reading latest fsm states");
 }
 
-std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx,
+std::vector<domain::fsm_state> fsm_state_repository::read_latest(const context& ctx,
                                                                  const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm state. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -196,7 +198,7 @@ std::vector<domain::fsm_state> fsm_state_repository::read_latest(context ctx,
         "Reading latest fsm state by id.");
 }
 
-std::vector<domain::fsm_state> fsm_state_repository::read_latest_by_name(context ctx,
+std::vector<domain::fsm_state> fsm_state_repository::read_latest_by_name(const context& ctx,
                                                                          const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm state by name: " << name;
     static constexpr auto max = db_timestamp::max();
@@ -211,7 +213,7 @@ std::vector<domain::fsm_state> fsm_state_repository::read_latest_by_name(context
         "Reading latest fsm state by name.");
 }
 
-std::vector<domain::fsm_state> fsm_state_repository::read_any_by_name(context ctx,
+std::vector<domain::fsm_state> fsm_state_repository::read_any_by_name(const context& ctx,
                                                                       const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any fsm state by name: " << name;
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
@@ -227,7 +229,8 @@ std::vector<domain::fsm_state> fsm_state_repository::read_any_by_name(context ct
 }
 
 
-std::vector<domain::fsm_state> fsm_state_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::fsm_state> fsm_state_repository::read_all(const context& ctx,
+                                                              const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all fsm state versions. " << "id: " << id;
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
                        query_builder::where("id"_c == id) |
@@ -241,8 +244,9 @@ std::vector<domain::fsm_state> fsm_state_repository::read_all(context ctx, const
         "Reading all fsm state versions by id.");
 }
 
-std::optional<domain::fsm_state>
-fsm_state_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::fsm_state> fsm_state_repository::read_at_version(const context& ctx,
+                                                                       const std::string& id,
+                                                                       std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading fsm state at version. " << "id: " << id
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<fsm_state_entity>> |
@@ -262,7 +266,7 @@ fsm_state_repository::read_at_version(context ctx, const std::string& id, std::u
 }
 
 fsm_state_repository::remove_status fsm_state_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing fsm state. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -290,12 +294,12 @@ fsm_state_repository::remove_status fsm_state_repository::remove(
     return remove_status::removed;
 }
 
-void fsm_state_repository::remove(context ctx, const std::string& id) {
+void fsm_state_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::fsm_state>
-fsm_state_repository::read_latest(context ctx,
+fsm_state_repository::read_latest(const context& ctx,
                                   std::uint32_t offset,
                                   std::uint32_t limit,
                                   const ores::utility::domain::order& order,
@@ -317,7 +321,7 @@ fsm_state_repository::read_latest(context ctx,
 }
 
 std::uint32_t fsm_state_repository::get_total_state_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::fsm_states_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active fsm state count";
@@ -333,7 +337,7 @@ std::uint32_t fsm_state_repository::get_total_state_count(
 }
 
 std::vector<domain::fsm_state>
-fsm_state_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+fsm_state_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -348,7 +352,7 @@ fsm_state_repository::read_latest(context ctx, const std::vector<std::string>& i
     return result;
 }
 
-void fsm_state_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void fsm_state_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -367,7 +371,8 @@ void fsm_state_repository::remove(context ctx, const std::vector<std::string>& i
 
 
 std::vector<domain::fsm_state>
-fsm_state_repository::read_latest_by_machine_name(context ctx, const std::string& machine_name) {
+fsm_state_repository::read_latest_by_machine_name(const context& ctx,
+                                                  const std::string& machine_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fsm states for machine: " << machine_name;
     static constexpr auto max = db_timestamp::max();
 

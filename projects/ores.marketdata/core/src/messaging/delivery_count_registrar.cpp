@@ -44,10 +44,10 @@ static constexpr std::string_view delivery_count_queue_group = "ores.marketdata.
 
 std::vector<ores::nats::service::subscription>
 register_delivery_count_handlers(ores::nats::service::client& nats,
-                                 ores::database::context ctx,
+                                 const ores::database::context& ctx,
                                  std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<delivery_count_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<delivery_count_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_delivery_counts_request::nats_subject,
         delivery_count_queue_group,

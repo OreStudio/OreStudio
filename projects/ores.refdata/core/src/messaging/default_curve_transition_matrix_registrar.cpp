@@ -45,11 +45,11 @@ static constexpr std::string_view default_curve_transition_matrix_queue_group =
 
 std::vector<ores::nats::service::subscription> register_default_curve_transition_matrix_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<default_curve_transition_matrix_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h =
+        std::make_shared<default_curve_transition_matrix_handler>(nats, ctx, std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_default_curve_transition_matrices_request::nats_subject,
                              default_curve_transition_matrix_queue_group,

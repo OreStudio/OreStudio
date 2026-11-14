@@ -101,7 +101,7 @@ std::optional<query_builder::condition> ore_parameter_setting_value_set_filter_c
 }
 
 ores::utility::domain::precondition ore_parameter_setting_value_set_repository::replace_claim(
-    context ctx, const domain::ore_parameter_setting_value_set& v) {
+    const context& ctx, const domain::ore_parameter_setting_value_set& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +110,7 @@ ores::utility::domain::precondition ore_parameter_setting_value_set_repository::
 }
 
 domain::ore_parameter_setting_value_set ore_parameter_setting_value_set_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::ore_parameter_setting_value_set& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,12 +138,12 @@ domain::ore_parameter_setting_value_set ore_parameter_setting_value_set_reposito
 }
 
 void ore_parameter_setting_value_set_repository::write(
-    context ctx, const domain::ore_parameter_setting_value_set& v) {
+    const context& ctx, const domain::ore_parameter_setting_value_set& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void ore_parameter_setting_value_set_repository::write(
-    context ctx, const std::vector<domain::ore_parameter_setting_value_set>& v) {
+    const context& ctx, const std::vector<domain::ore_parameter_setting_value_set>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -152,7 +152,7 @@ void ore_parameter_setting_value_set_repository::write(
 }
 
 void ore_parameter_setting_value_set_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::ore_parameter_setting_value_set& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing ore parameter setting value set. " << "code: " << v.code;
@@ -164,7 +164,7 @@ void ore_parameter_setting_value_set_repository::write(
 }
 
 void ore_parameter_setting_value_set_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::ore_parameter_setting_value_set>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing ore parameter setting value sets. Count: " << v.size();
@@ -179,7 +179,7 @@ void ore_parameter_setting_value_set_repository::write(
 }
 
 std::vector<domain::ore_parameter_setting_value_set>
-ore_parameter_setting_value_set_repository::read_latest(context ctx) {
+ore_parameter_setting_value_set_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ore_parameter_setting_value_set_entity>> |
@@ -196,7 +196,8 @@ ore_parameter_setting_value_set_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::ore_parameter_setting_value_set>
-ore_parameter_setting_value_set_repository::read_latest(context ctx, const std::string& code) {
+ore_parameter_setting_value_set_repository::read_latest(const context& ctx,
+                                                        const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest ore parameter setting value set. "
                                << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -216,7 +217,7 @@ ore_parameter_setting_value_set_repository::read_latest(context ctx, const std::
 
 
 std::vector<domain::ore_parameter_setting_value_set>
-ore_parameter_setting_value_set_repository::read_all(context ctx, const std::string& code) {
+ore_parameter_setting_value_set_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all ore parameter setting value set versions. "
                                << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -234,7 +235,7 @@ ore_parameter_setting_value_set_repository::read_all(context ctx, const std::str
 }
 
 std::optional<domain::ore_parameter_setting_value_set>
-ore_parameter_setting_value_set_repository::read_at_version(context ctx,
+ore_parameter_setting_value_set_repository::read_at_version(const context& ctx,
                                                             const std::string& code,
                                                             std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading ore parameter setting value set at version. "
@@ -262,7 +263,7 @@ ore_parameter_setting_value_set_repository::read_at_version(context ctx,
 }
 
 ore_parameter_setting_value_set_repository::remove_status
-ore_parameter_setting_value_set_repository::remove(context ctx,
+ore_parameter_setting_value_set_repository::remove(const context& ctx,
                                                    const std::string& code,
                                                    std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing ore parameter setting value set. " << "code: " << code;
@@ -293,13 +294,14 @@ ore_parameter_setting_value_set_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void ore_parameter_setting_value_set_repository::remove(context ctx, const std::string& code) {
+void ore_parameter_setting_value_set_repository::remove(const context& ctx,
+                                                        const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::ore_parameter_setting_value_set>
 ore_parameter_setting_value_set_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -325,7 +327,7 @@ ore_parameter_setting_value_set_repository::read_latest(
 }
 
 std::uint32_t ore_parameter_setting_value_set_repository::get_total_setting_value_set_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::ore_parameter_setting_value_sets_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active ore parameter setting value set count";
@@ -344,7 +346,7 @@ std::uint32_t ore_parameter_setting_value_set_repository::get_total_setting_valu
 }
 
 std::vector<domain::ore_parameter_setting_value_set>
-ore_parameter_setting_value_set_repository::read_latest(context ctx,
+ore_parameter_setting_value_set_repository::read_latest(const context& ctx,
                                                         const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
@@ -363,7 +365,7 @@ ore_parameter_setting_value_set_repository::read_latest(context ctx,
     return result;
 }
 
-void ore_parameter_setting_value_set_repository::remove(context ctx,
+void ore_parameter_setting_value_set_repository::remove(const context& ctx,
                                                         const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

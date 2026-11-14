@@ -45,8 +45,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-approval_kind_part_service::approval_kind_part_service(context ctx)
-    : ctx_(std::move(ctx))
+approval_kind_part_service::approval_kind_part_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

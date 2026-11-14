@@ -101,7 +101,7 @@ ois_convention_filter_condition(const std::optional<messaging::ois_conventions_f
 }
 
 ores::utility::domain::precondition
-ois_convention_repository::replace_claim(context ctx, const domain::ois_convention& v) {
+ois_convention_repository::replace_claim(const context& ctx, const domain::ois_convention& v) {
     const auto current = read_latest(ctx, v.id);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +110,7 @@ ois_convention_repository::replace_claim(context ctx, const domain::ois_conventi
 }
 
 domain::ois_convention
-ois_convention_repository::apply_claim(context ctx,
+ois_convention_repository::apply_claim(const context& ctx,
                                        const domain::ois_convention& v,
                                        const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,11 +137,12 @@ ois_convention_repository::apply_claim(context ctx,
     return t;
 }
 
-void ois_convention_repository::write(context ctx, const domain::ois_convention& v) {
+void ois_convention_repository::write(const context& ctx, const domain::ois_convention& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void ois_convention_repository::write(context ctx, const std::vector<domain::ois_convention>& v) {
+void ois_convention_repository::write(const context& ctx,
+                                      const std::vector<domain::ois_convention>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -149,7 +150,7 @@ void ois_convention_repository::write(context ctx, const std::vector<domain::ois
     write(ctx, v, claims);
 }
 
-void ois_convention_repository::write(context ctx,
+void ois_convention_repository::write(const context& ctx,
                                       const domain::ois_convention& v,
                                       const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing OIS convention. " << "id: " << v.id;
@@ -159,7 +160,7 @@ void ois_convention_repository::write(context ctx,
 }
 
 void ois_convention_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::ois_convention>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing OIS conventions. Count: " << v.size();
@@ -171,7 +172,7 @@ void ois_convention_repository::write(
         ctx, ois_convention_mapper::map(batch), lg(), "Writing OIS conventions to database.");
 }
 
-std::vector<domain::ois_convention> ois_convention_repository::read_latest(context ctx) {
+std::vector<domain::ois_convention> ois_convention_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<ois_convention_entity>> |
@@ -186,7 +187,7 @@ std::vector<domain::ois_convention> ois_convention_repository::read_latest(conte
         "Reading latest OIS conventions");
 }
 
-std::vector<domain::ois_convention> ois_convention_repository::read_latest(context ctx,
+std::vector<domain::ois_convention> ois_convention_repository::read_latest(const context& ctx,
                                                                            const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest OIS convention. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -220,7 +221,7 @@ std::vector<domain::ois_convention> ois_convention_repository::read_latest(conte
 }
 
 
-std::vector<domain::ois_convention> ois_convention_repository::read_all(context ctx,
+std::vector<domain::ois_convention> ois_convention_repository::read_all(const context& ctx,
                                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all OIS convention versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -237,7 +238,7 @@ std::vector<domain::ois_convention> ois_convention_repository::read_all(context 
 }
 
 std::optional<domain::ois_convention> ois_convention_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading OIS convention at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -260,7 +261,7 @@ std::optional<domain::ois_convention> ois_convention_repository::read_at_version
 }
 
 ois_convention_repository::remove_status ois_convention_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing OIS convention. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -296,12 +297,12 @@ ois_convention_repository::remove_status ois_convention_repository::remove(
     return remove_status::removed;
 }
 
-void ois_convention_repository::remove(context ctx, const std::string& id) {
+void ois_convention_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::ois_convention> ois_convention_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -326,7 +327,7 @@ std::vector<domain::ois_convention> ois_convention_repository::read_latest(
 }
 
 std::uint32_t ois_convention_repository::get_total_ois_convention_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::ois_conventions_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active OIS convention count";
@@ -345,7 +346,7 @@ std::uint32_t ois_convention_repository::get_total_ois_convention_count(
 }
 
 std::vector<domain::ois_convention>
-ois_convention_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+ois_convention_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -362,7 +363,7 @@ ois_convention_repository::read_latest(context ctx, const std::vector<std::strin
     return result;
 }
 
-void ois_convention_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void ois_convention_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

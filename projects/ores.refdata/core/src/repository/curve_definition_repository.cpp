@@ -101,7 +101,7 @@ std::optional<query_builder::condition> curve_definition_filter_condition(
 }
 
 ores::utility::domain::precondition
-curve_definition_repository::replace_claim(context ctx, const domain::curve_definition& v) {
+curve_definition_repository::replace_claim(const context& ctx, const domain::curve_definition& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +110,7 @@ curve_definition_repository::replace_claim(context ctx, const domain::curve_defi
 }
 
 domain::curve_definition
-curve_definition_repository::apply_claim(context ctx,
+curve_definition_repository::apply_claim(const context& ctx,
                                          const domain::curve_definition& v,
                                          const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,11 +137,11 @@ curve_definition_repository::apply_claim(context ctx,
     return t;
 }
 
-void curve_definition_repository::write(context ctx, const domain::curve_definition& v) {
+void curve_definition_repository::write(const context& ctx, const domain::curve_definition& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void curve_definition_repository::write(context ctx,
+void curve_definition_repository::write(const context& ctx,
                                         const std::vector<domain::curve_definition>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -150,7 +150,7 @@ void curve_definition_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void curve_definition_repository::write(context ctx,
+void curve_definition_repository::write(const context& ctx,
                                         const domain::curve_definition& v,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve definition. " << "id: " << v.id;
@@ -160,7 +160,7 @@ void curve_definition_repository::write(context ctx,
 }
 
 void curve_definition_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::curve_definition>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing curve definitions. Count: " << v.size();
@@ -172,7 +172,7 @@ void curve_definition_repository::write(
         ctx, curve_definition_mapper::map(batch), lg(), "Writing curve definitions to database.");
 }
 
-std::vector<domain::curve_definition> curve_definition_repository::read_latest(context ctx) {
+std::vector<domain::curve_definition> curve_definition_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_definition_entity>> |
@@ -188,7 +188,7 @@ std::vector<domain::curve_definition> curve_definition_repository::read_latest(c
 }
 
 std::vector<domain::curve_definition>
-curve_definition_repository::read_latest(context ctx, const std::string& id) {
+curve_definition_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest curve definition. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -205,7 +205,8 @@ curve_definition_repository::read_latest(context ctx, const std::string& id) {
 }
 
 std::vector<domain::curve_definition>
-curve_definition_repository::read_latest_by_curve_id(context ctx, const std::string& curve_id) {
+curve_definition_repository::read_latest_by_curve_id(const context& ctx,
+                                                     const std::string& curve_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest curve definition by curve_id: " << curve_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -229,7 +230,7 @@ curve_definition_repository::read_latest_by_curve_id(context ctx, const std::str
 }
 
 std::vector<domain::curve_definition>
-curve_definition_repository::read_any_by_curve_id(context ctx, const std::string& curve_id) {
+curve_definition_repository::read_any_by_curve_id(const context& ctx, const std::string& curve_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any curve definition by curve_id: " << curve_id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<curve_definition_entity>> |
@@ -256,7 +257,7 @@ curve_definition_repository::read_any_by_curve_id(context ctx, const std::string
 }
 
 
-std::vector<domain::curve_definition> curve_definition_repository::read_all(context ctx,
+std::vector<domain::curve_definition> curve_definition_repository::read_all(const context& ctx,
                                                                             const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all curve definition versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -273,7 +274,7 @@ std::vector<domain::curve_definition> curve_definition_repository::read_all(cont
 }
 
 std::optional<domain::curve_definition> curve_definition_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading curve definition at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -297,7 +298,7 @@ std::optional<domain::curve_definition> curve_definition_repository::read_at_ver
 
 
 curve_definition_repository::remove_status curve_definition_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing curve definition. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -326,12 +327,12 @@ curve_definition_repository::remove_status curve_definition_repository::remove(
     return remove_status::removed;
 }
 
-void curve_definition_repository::remove(context ctx, const std::string& id) {
+void curve_definition_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::curve_definition> curve_definition_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -357,7 +358,7 @@ std::vector<domain::curve_definition> curve_definition_repository::read_latest(
 }
 
 std::uint32_t curve_definition_repository::get_total_curve_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::curve_definitions_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active curve definition count";
@@ -376,7 +377,7 @@ std::uint32_t curve_definition_repository::get_total_curve_count(
 }
 
 std::vector<domain::curve_definition>
-curve_definition_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+curve_definition_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -394,7 +395,7 @@ curve_definition_repository::read_latest(context ctx, const std::vector<std::str
     return result;
 }
 
-void curve_definition_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void curve_definition_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

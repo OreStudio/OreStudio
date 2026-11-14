@@ -58,8 +58,8 @@ namespace ores::inbox::service {
 
 using namespace ores::logging;
 
-notification_delivery_service::notification_delivery_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+notification_delivery_service::notification_delivery_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

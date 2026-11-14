@@ -54,8 +54,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-artefact_type_service::artefact_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+artefact_type_service::artefact_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -211,7 +211,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit cut_read_service(context ctx);
+    explicit cut_read_service(const context& ctx);
 
     /**
      * @brief Reads the cuts a query names, newest instant first.

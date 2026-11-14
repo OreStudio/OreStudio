@@ -75,8 +75,8 @@ void stamp_party_country(domain::party_country& row, const ores::database::conte
 
 }
 
-party_country_service::party_country_service(context ctx)
-    : ctx_(std::move(ctx))
+party_country_service::party_country_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

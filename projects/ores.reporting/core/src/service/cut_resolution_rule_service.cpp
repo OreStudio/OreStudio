@@ -54,8 +54,8 @@ namespace ores::reporting::service {
 
 using namespace ores::logging;
 
-cut_resolution_rule_service::cut_resolution_rule_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+cut_resolution_rule_service::cut_resolution_rule_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

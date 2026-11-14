@@ -52,8 +52,8 @@ std::string currency_calendar_repository::sql() {
     return query_builder::insert_statement_sql<currency_calendar_entity>(lg());
 }
 
-currency_calendar_repository::currency_calendar_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+currency_calendar_repository::currency_calendar_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 currency_calendar_repository::replace_claim(const domain::currency_calendar& v) {

@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::lei_relationship& v);
-    void write(context ctx, const std::vector<domain::lei_relationship>& v);
+    void write(const context& ctx, const domain::lei_relationship& v);
+    void write(const context& ctx, const std::vector<domain::lei_relationship>& v);
     /**@}*/
 
     /**
@@ -89,7 +89,7 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::lei_relationship& v,
                const ores::utility::domain::precondition& claim);
 
@@ -97,7 +97,7 @@ public:
      * @brief Writes a set of LEI relationships, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::lei_relationship>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -105,11 +105,12 @@ public:
      * @brief Reads latest LEI relationships, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::lei_relationship> read_latest(context ctx);
+    std::vector<domain::lei_relationship> read_latest(const context& ctx);
     std::vector<domain::lei_relationship>
-    read_latest(context ctx, const std::string& relationship_start_node_node_id);
+    read_latest(const context& ctx, const std::string& relationship_start_node_node_id);
     std::vector<domain::lei_relationship>
-    read_latest(context ctx, const std::vector<std::string>& relationship_start_node_node_ids);
+    read_latest(const context& ctx,
+                const std::vector<std::string>& relationship_start_node_node_ids);
     /**@}*/
 
 
@@ -120,7 +121,7 @@ public:
      * current row, not a version history.
      */
     std::vector<domain::lei_relationship>
-    read_all(context ctx, const std::string& relationship_start_node_node_id);
+    read_all(const context& ctx, const std::string& relationship_start_node_node_id);
 
 
     /**
@@ -140,7 +141,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::lei_relationship>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -152,7 +153,7 @@ public:
      * @return Total number of active LEI relationships
      */
     std::uint32_t get_total_relationship_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::lei_relationships_filter>& filter = std::nullopt);
 
     /**
@@ -161,7 +162,7 @@ public:
      * A current-state table has no history, so the row is removed, not
      * soft-closed.
      */
-    void remove(context ctx, const std::string& relationship_start_node_node_id);
+    void remove(const context& ctx, const std::string& relationship_start_node_node_id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -183,14 +184,15 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& relationship_start_node_node_id,
                          std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes LEI relationships permanently.
      */
-    void remove(context ctx, const std::vector<std::string>& relationship_start_node_node_ids);
+    void remove(const context& ctx,
+                const std::vector<std::string>& relationship_start_node_node_ids);
 
 
 private:
@@ -198,7 +200,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::lei_relationship& v);
 
     /**
@@ -206,7 +208,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::lei_relationship apply_claim(context ctx,
+    domain::lei_relationship apply_claim(const context& ctx,
                                          const domain::lei_relationship& v,
                                          const ores::utility::domain::precondition& claim);
 };

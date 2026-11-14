@@ -54,8 +54,9 @@ namespace ores::reporting::service {
 
 using namespace ores::logging;
 
-ore_parameter_value_set_catalogue_service::ore_parameter_value_set_catalogue_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+ore_parameter_value_set_catalogue_service::ore_parameter_value_set_catalogue_service(
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

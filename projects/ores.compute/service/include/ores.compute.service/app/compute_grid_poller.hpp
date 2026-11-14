@@ -47,7 +47,7 @@ private:
     }
 
 public:
-    compute_grid_poller(std::uint32_t interval_seconds, ores::database::context ctx);
+    compute_grid_poller(std::uint32_t interval_seconds, const ores::database::context& ctx);
 
     /**
      * @brief Async coroutine entry point.

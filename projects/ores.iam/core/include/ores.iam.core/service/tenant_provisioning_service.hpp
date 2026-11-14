@@ -88,8 +88,8 @@ public:
         std::string account_id;
     };
 
-    explicit tenant_provisioning_service(context ctx)
-        : ctx_(std::move(ctx)) {}
+    explicit tenant_provisioning_service(const context& ctx)
+        : ctx_(ctx) {}
 
     /**
      * @brief Creates the tenant and its administrator.

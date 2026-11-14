@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-benchmark_rate_service::benchmark_rate_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+benchmark_rate_service::benchmark_rate_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

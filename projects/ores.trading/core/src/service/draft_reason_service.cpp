@@ -54,8 +54,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-draft_reason_service::draft_reason_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+draft_reason_service::draft_reason_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

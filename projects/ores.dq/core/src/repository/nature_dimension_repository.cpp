@@ -100,7 +100,7 @@ std::optional<query_builder::condition> nature_dimension_filter_condition(
 }
 
 ores::utility::domain::precondition
-nature_dimension_repository::replace_claim(context ctx, const domain::nature_dimension& v) {
+nature_dimension_repository::replace_claim(const context& ctx, const domain::nature_dimension& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -109,7 +109,7 @@ nature_dimension_repository::replace_claim(context ctx, const domain::nature_dim
 }
 
 domain::nature_dimension
-nature_dimension_repository::apply_claim(context ctx,
+nature_dimension_repository::apply_claim(const context& ctx,
                                          const domain::nature_dimension& v,
                                          const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -136,11 +136,11 @@ nature_dimension_repository::apply_claim(context ctx,
     return t;
 }
 
-void nature_dimension_repository::write(context ctx, const domain::nature_dimension& v) {
+void nature_dimension_repository::write(const context& ctx, const domain::nature_dimension& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void nature_dimension_repository::write(context ctx,
+void nature_dimension_repository::write(const context& ctx,
                                         const std::vector<domain::nature_dimension>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -149,7 +149,7 @@ void nature_dimension_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void nature_dimension_repository::write(context ctx,
+void nature_dimension_repository::write(const context& ctx,
                                         const domain::nature_dimension& v,
                                         const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing nature dimension. " << "code: " << v.code;
@@ -159,7 +159,7 @@ void nature_dimension_repository::write(context ctx,
 }
 
 void nature_dimension_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::nature_dimension>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing nature dimensions. Count: " << v.size();
@@ -171,7 +171,7 @@ void nature_dimension_repository::write(
         ctx, nature_dimension_mapper::map(batch), lg(), "Writing nature dimensions to database.");
 }
 
-std::vector<domain::nature_dimension> nature_dimension_repository::read_latest(context ctx) {
+std::vector<domain::nature_dimension> nature_dimension_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<nature_dimension_entity>> |
                        query_builder::where("valid_to"_c == max) |
@@ -186,7 +186,7 @@ std::vector<domain::nature_dimension> nature_dimension_repository::read_latest(c
 }
 
 std::vector<domain::nature_dimension>
-nature_dimension_repository::read_latest(context ctx, const std::string& code) {
+nature_dimension_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest nature dimension. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<nature_dimension_entity>> |
@@ -202,7 +202,7 @@ nature_dimension_repository::read_latest(context ctx, const std::string& code) {
 
 
 std::vector<domain::nature_dimension>
-nature_dimension_repository::read_all(context ctx, const std::string& code) {
+nature_dimension_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all nature dimension versions. " << "code: " << code;
     const auto query = query_builder::read<std::vector<nature_dimension_entity>> |
                        query_builder::where("code"_c == code) |
@@ -217,7 +217,7 @@ nature_dimension_repository::read_all(context ctx, const std::string& code) {
 }
 
 std::optional<domain::nature_dimension> nature_dimension_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading nature dimension at version. " << "code: " << code
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<nature_dimension_entity>> |
@@ -238,7 +238,7 @@ std::optional<domain::nature_dimension> nature_dimension_repository::read_at_ver
 }
 
 nature_dimension_repository::remove_status nature_dimension_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing nature dimension. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -267,12 +267,12 @@ nature_dimension_repository::remove_status nature_dimension_repository::remove(
     return remove_status::removed;
 }
 
-void nature_dimension_repository::remove(context ctx, const std::string& code) {
+void nature_dimension_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::nature_dimension> nature_dimension_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -296,7 +296,7 @@ std::vector<domain::nature_dimension> nature_dimension_repository::read_latest(
 }
 
 std::uint32_t nature_dimension_repository::get_total_dimension_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::nature_dimensions_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active nature dimension count";
@@ -313,7 +313,8 @@ std::uint32_t nature_dimension_repository::get_total_dimension_count(
 }
 
 std::vector<domain::nature_dimension>
-nature_dimension_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+nature_dimension_repository::read_latest(const context& ctx,
+                                         const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -329,7 +330,8 @@ nature_dimension_repository::read_latest(context ctx, const std::vector<std::str
     return result;
 }
 
-void nature_dimension_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void nature_dimension_repository::remove(const context& ctx,
+                                         const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

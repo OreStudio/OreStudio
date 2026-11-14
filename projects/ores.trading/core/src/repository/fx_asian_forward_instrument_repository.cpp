@@ -103,7 +103,7 @@ std::optional<query_builder::condition> fx_asian_forward_instrument_filter_condi
 }
 
 ores::utility::domain::precondition fx_asian_forward_instrument_repository::replace_claim(
-    context ctx, const domain::fx_asian_forward_instrument& v) {
+    const context& ctx, const domain::fx_asian_forward_instrument& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.identity.trade_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -112,7 +112,7 @@ ores::utility::domain::precondition fx_asian_forward_instrument_repository::repl
 }
 
 domain::fx_asian_forward_instrument fx_asian_forward_instrument_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::fx_asian_forward_instrument& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,13 +139,13 @@ domain::fx_asian_forward_instrument fx_asian_forward_instrument_repository::appl
     return t;
 }
 
-void fx_asian_forward_instrument_repository::write(context ctx,
+void fx_asian_forward_instrument_repository::write(const context& ctx,
                                                    const domain::fx_asian_forward_instrument& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void fx_asian_forward_instrument_repository::write(
-    context ctx, const std::vector<domain::fx_asian_forward_instrument>& v) {
+    const context& ctx, const std::vector<domain::fx_asian_forward_instrument>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -154,7 +154,7 @@ void fx_asian_forward_instrument_repository::write(
 }
 
 void fx_asian_forward_instrument_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::fx_asian_forward_instrument& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX Asian Forward instrument. "
@@ -167,7 +167,7 @@ void fx_asian_forward_instrument_repository::write(
 }
 
 void fx_asian_forward_instrument_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::fx_asian_forward_instrument>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX Asian Forward instruments. Count: " << v.size();
@@ -182,7 +182,7 @@ void fx_asian_forward_instrument_repository::write(
 }
 
 std::vector<domain::fx_asian_forward_instrument>
-fx_asian_forward_instrument_repository::read_latest(context ctx) {
+fx_asian_forward_instrument_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_asian_forward_instrument_entity>> |
@@ -199,7 +199,8 @@ fx_asian_forward_instrument_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::fx_asian_forward_instrument>
-fx_asian_forward_instrument_repository::read_latest(context ctx, const std::string& trade_id) {
+fx_asian_forward_instrument_repository::read_latest(const context& ctx,
+                                                    const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest FX Asian Forward instrument. "
                                << "trade_id: " << trade_id;
     static constexpr auto max = db_timestamp::max();
@@ -219,7 +220,7 @@ fx_asian_forward_instrument_repository::read_latest(context ctx, const std::stri
 
 
 std::vector<domain::fx_asian_forward_instrument>
-fx_asian_forward_instrument_repository::read_all(context ctx, const std::string& trade_id) {
+fx_asian_forward_instrument_repository::read_all(const context& ctx, const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all FX Asian Forward instrument versions. "
                                << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
@@ -237,7 +238,7 @@ fx_asian_forward_instrument_repository::read_all(context ctx, const std::string&
 }
 
 std::optional<domain::fx_asian_forward_instrument>
-fx_asian_forward_instrument_repository::read_at_version(context ctx,
+fx_asian_forward_instrument_repository::read_at_version(const context& ctx,
                                                         const std::string& trade_id,
                                                         std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading FX Asian Forward instrument at version. "
@@ -263,7 +264,7 @@ fx_asian_forward_instrument_repository::read_at_version(context ctx,
 
 
 fx_asian_forward_instrument_repository::remove_status
-fx_asian_forward_instrument_repository::remove(context ctx,
+fx_asian_forward_instrument_repository::remove(const context& ctx,
                                                const std::string& trade_id,
                                                std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing FX Asian Forward instrument. "
@@ -295,13 +296,14 @@ fx_asian_forward_instrument_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void fx_asian_forward_instrument_repository::remove(context ctx, const std::string& trade_id) {
+void fx_asian_forward_instrument_repository::remove(const context& ctx,
+                                                    const std::string& trade_id) {
     static_cast<void>(remove(ctx, trade_id, std::nullopt));
 }
 
 std::vector<domain::fx_asian_forward_instrument>
 fx_asian_forward_instrument_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -327,7 +329,7 @@ fx_asian_forward_instrument_repository::read_latest(
 }
 
 std::uint32_t fx_asian_forward_instrument_repository::get_total_fx_asian_forward_instrument_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::fx_asian_forward_instruments_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active FX Asian Forward instrument count";
@@ -346,7 +348,7 @@ std::uint32_t fx_asian_forward_instrument_repository::get_total_fx_asian_forward
 }
 
 std::vector<domain::fx_asian_forward_instrument>
-fx_asian_forward_instrument_repository::read_latest(context ctx,
+fx_asian_forward_instrument_repository::read_latest(const context& ctx,
                                                     const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
@@ -365,7 +367,7 @@ fx_asian_forward_instrument_repository::read_latest(context ctx,
     return result;
 }
 
-void fx_asian_forward_instrument_repository::remove(context ctx,
+void fx_asian_forward_instrument_repository::remove(const context& ctx,
                                                     const std::vector<std::string>& trade_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

@@ -112,7 +112,7 @@ notification_filter_condition(const std::optional<messaging::notifications_filte
 }
 
 ores::utility::domain::precondition
-notification_repository::replace_claim(context ctx, const domain::notification& v) {
+notification_repository::replace_claim(const context& ctx, const domain::notification& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -120,8 +120,10 @@ notification_repository::replace_claim(context ctx, const domain::notification& 
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::notification notification_repository::apply_claim(
-    context ctx, const domain::notification& v, const ores::utility::domain::precondition& claim) {
+domain::notification
+notification_repository::apply_claim(const context& ctx,
+                                     const domain::notification& v,
+                                     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -146,11 +148,12 @@ domain::notification notification_repository::apply_claim(
     return t;
 }
 
-void notification_repository::write(context ctx, const domain::notification& v) {
+void notification_repository::write(const context& ctx, const domain::notification& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void notification_repository::write(context ctx, const std::vector<domain::notification>& v) {
+void notification_repository::write(const context& ctx,
+                                    const std::vector<domain::notification>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -158,7 +161,7 @@ void notification_repository::write(context ctx, const std::vector<domain::notif
     write(ctx, v, claims);
 }
 
-void notification_repository::write(context ctx,
+void notification_repository::write(const context& ctx,
                                     const domain::notification& v,
                                     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing notification. " << "id: " << v.id;
@@ -168,7 +171,7 @@ void notification_repository::write(context ctx,
 }
 
 void notification_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::notification>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing notifications. Count: " << v.size();
@@ -180,7 +183,7 @@ void notification_repository::write(
         ctx, notification_mapper::map(batch), lg(), "Writing notifications to database.");
 }
 
-std::vector<domain::notification> notification_repository::read_latest(context ctx) {
+std::vector<domain::notification> notification_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<notification_entity>> |
@@ -195,7 +198,7 @@ std::vector<domain::notification> notification_repository::read_latest(context c
         "Reading latest notifications");
 }
 
-std::vector<domain::notification> notification_repository::read_latest(context ctx,
+std::vector<domain::notification> notification_repository::read_latest(const context& ctx,
                                                                        const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest notification. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -213,7 +216,7 @@ std::vector<domain::notification> notification_repository::read_latest(context c
 }
 
 
-std::vector<domain::notification> notification_repository::read_all(context ctx,
+std::vector<domain::notification> notification_repository::read_all(const context& ctx,
                                                                     const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all notification versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -230,7 +233,7 @@ std::vector<domain::notification> notification_repository::read_all(context ctx,
 }
 
 std::optional<domain::notification> notification_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading notification at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -253,7 +256,7 @@ std::optional<domain::notification> notification_repository::read_at_version(
 }
 
 std::vector<domain::notification> notification_repository::read_latest_by_kind_code(
-    context ctx,
+    const context& ctx,
     const std::string& kind_code,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -279,7 +282,7 @@ std::vector<domain::notification> notification_repository::read_latest_by_kind_c
 }
 
 std::uint32_t notification_repository::get_total_notification_count_by_kind_code(
-    context ctx,
+    const context& ctx,
     const std::string& kind_code,
     const std::optional<messaging::notifications_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notifications count. kind_code: "
@@ -301,7 +304,7 @@ std::uint32_t notification_repository::get_total_notification_count_by_kind_code
 
 
 notification_repository::remove_status notification_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing notification. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -329,12 +332,12 @@ notification_repository::remove_status notification_repository::remove(
     return remove_status::removed;
 }
 
-void notification_repository::remove(context ctx, const std::string& id) {
+void notification_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::notification>
-notification_repository::read_latest(context ctx,
+notification_repository::read_latest(const context& ctx,
                                      std::uint32_t offset,
                                      std::uint32_t limit,
                                      const ores::utility::domain::order& order,
@@ -359,7 +362,7 @@ notification_repository::read_latest(context ctx,
 }
 
 std::uint32_t notification_repository::get_total_notification_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::notifications_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active notification count";
@@ -378,7 +381,7 @@ std::uint32_t notification_repository::get_total_notification_count(
 }
 
 std::vector<domain::notification>
-notification_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+notification_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -395,7 +398,7 @@ notification_repository::read_latest(context ctx, const std::vector<std::string>
     return result;
 }
 
-void notification_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void notification_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit calendar_exception_service(context ctx);
+    explicit calendar_exception_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -73,7 +73,7 @@ private:
 public:
     derived_fx_vol_adapter(ores::nats::service::client& nats,
                            ores::nats::service::nats_client& svc_nats,
-                           ores::database::context db_ctx,
+                           const ores::database::context& db_ctx,
                            std::string source_name,
                            std::string provider_code,
                            boost::uuids::uuid feed_id,

@@ -133,7 +133,7 @@ cut_filter_condition(const std::optional<messaging::cuts_filter>& filter) {
 
 }
 
-ores::utility::domain::precondition cut_repository::replace_claim(context ctx,
+ores::utility::domain::precondition cut_repository::replace_claim(const context& ctx,
                                                                   const domain::cut& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -142,7 +142,7 @@ ores::utility::domain::precondition cut_repository::replace_claim(context ctx,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::cut cut_repository::apply_claim(context ctx,
+domain::cut cut_repository::apply_claim(const context& ctx,
                                         const domain::cut& v,
                                         const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -169,11 +169,11 @@ domain::cut cut_repository::apply_claim(context ctx,
     return t;
 }
 
-void cut_repository::write(context ctx, const domain::cut& v) {
+void cut_repository::write(const context& ctx, const domain::cut& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void cut_repository::write(context ctx, const std::vector<domain::cut>& v) {
+void cut_repository::write(const context& ctx, const std::vector<domain::cut>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -181,7 +181,7 @@ void cut_repository::write(context ctx, const std::vector<domain::cut>& v) {
     write(ctx, v, claims);
 }
 
-void cut_repository::write(context ctx,
+void cut_repository::write(const context& ctx,
                            const domain::cut& v,
                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cut. " << "id: " << v.id;
@@ -189,7 +189,7 @@ void cut_repository::write(context ctx,
     query_builder::execute_write_query(ctx, cut_mapper::map(t), lg(), "Writing cut to database.");
 }
 
-void cut_repository::write(context ctx,
+void cut_repository::write(const context& ctx,
                            const std::vector<domain::cut>& v,
                            const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cuts. Count: " << v.size();
@@ -201,7 +201,7 @@ void cut_repository::write(context ctx,
         ctx, cut_mapper::map(batch), lg(), "Writing cuts to database.");
 }
 
-std::vector<domain::cut> cut_repository::read_latest(context ctx) {
+std::vector<domain::cut> cut_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cut_entity>> |
@@ -216,7 +216,7 @@ std::vector<domain::cut> cut_repository::read_latest(context ctx) {
         "Reading latest cuts");
 }
 
-std::vector<domain::cut> cut_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::cut> cut_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest cut. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -233,7 +233,7 @@ std::vector<domain::cut> cut_repository::read_latest(context ctx, const std::str
 }
 
 
-std::vector<domain::cut> cut_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::cut> cut_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all cut versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cut_entity>> |
@@ -249,7 +249,7 @@ std::vector<domain::cut> cut_repository::read_all(context ctx, const std::string
 }
 
 std::optional<domain::cut>
-cut_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+cut_repository::read_at_version(const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading cut at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -271,7 +271,7 @@ cut_repository::read_at_version(context ctx, const std::string& id, std::uint32_
 }
 
 std::vector<domain::cut>
-cut_repository::read_latest_by_kind_code(context ctx,
+cut_repository::read_latest_by_kind_code(const context& ctx,
                                          const std::string& kind_code,
                                          std::uint32_t offset,
                                          std::uint32_t limit,
@@ -297,7 +297,7 @@ cut_repository::read_latest_by_kind_code(context ctx,
 }
 
 std::uint32_t cut_repository::get_total_cut_count_by_kind_code(
-    context ctx,
+    const context& ctx,
     const std::string& kind_code,
     const std::optional<messaging::cuts_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active cuts count. kind_code: " << kind_code;
@@ -313,8 +313,9 @@ std::uint32_t cut_repository::get_total_cut_count_by_kind_code(
 }
 
 
-cut_repository::remove_status
-cut_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+cut_repository::remove_status cut_repository::remove(const context& ctx,
+                                                     const std::string& id,
+                                                     std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing cut. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -342,12 +343,12 @@ cut_repository::remove(context ctx, const std::string& id, std::optional<std::ui
     return remove_status::removed;
 }
 
-void cut_repository::remove(context ctx, const std::string& id) {
+void cut_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::cut>
-cut_repository::read_latest(context ctx,
+cut_repository::read_latest(const context& ctx,
                             std::uint32_t offset,
                             std::uint32_t limit,
                             const ores::utility::domain::order& order,
@@ -371,7 +372,7 @@ cut_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-cut_repository::get_total_cut_count(context ctx,
+cut_repository::get_total_cut_count(const context& ctx,
                                     const std::optional<messaging::cuts_filter>& filter,
                                     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active cut count";
@@ -388,7 +389,7 @@ cut_repository::get_total_cut_count(context ctx,
         "Counting cuts");
 }
 
-std::vector<domain::cut> cut_repository::read_latest(context ctx,
+std::vector<domain::cut> cut_repository::read_latest(const context& ctx,
                                                      const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -406,7 +407,7 @@ std::vector<domain::cut> cut_repository::read_latest(context ctx,
     return result;
 }
 
-void cut_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void cut_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -425,7 +426,7 @@ void cut_repository::remove(context ctx, const std::vector<std::string>& ids) {
 
 
 std::vector<domain::cut>
-cut_repository::read_for_party_in_window(context ctx,
+cut_repository::read_for_party_in_window(const context& ctx,
                                          const boost::uuids::uuid& party_id,
                                          const std::string& kind_code,
                                          std::chrono::system_clock::time_point from,
@@ -464,7 +465,7 @@ cut_repository::read_for_party_in_window(context ctx,
 }
 
 std::vector<domain::cut>
-cut_repository::read_for_occasion_in_window(context ctx,
+cut_repository::read_for_occasion_in_window(const context& ctx,
                                             const boost::uuids::uuid& party_id,
                                             const std::string& kind_code,
                                             const std::string& scope_code,
@@ -493,7 +494,7 @@ cut_repository::read_for_occasion_in_window(context ctx,
 }
 
 std::vector<domain::cut>
-cut_repository::read_for_scope_in_window(context ctx,
+cut_repository::read_for_scope_in_window(const context& ctx,
                                          const std::string& scope_code,
                                          const std::string& business_centre_code,
                                          std::chrono::system_clock::time_point from,
@@ -516,7 +517,7 @@ cut_repository::read_for_scope_in_window(context ctx,
         "Reading the cuts of a scope in a window.");
 }
 
-std::optional<domain::cut> cut_repository::read_latest_by_request(context ctx,
+std::optional<domain::cut> cut_repository::read_latest_by_request(const context& ctx,
                                                                   const std::string& request_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the cut of request: " << request_id;
     static constexpr auto max = db_timestamp::max();

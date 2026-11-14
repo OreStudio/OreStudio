@@ -44,11 +44,10 @@ static constexpr std::string_view variance_calibration_queue_group = "ores.synth
 
 std::vector<ores::nats::service::subscription> register_variance_calibration_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h =
-        std::make_shared<variance_calibration_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<variance_calibration_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_variance_calibrations_request::nats_subject,
         variance_calibration_queue_group,

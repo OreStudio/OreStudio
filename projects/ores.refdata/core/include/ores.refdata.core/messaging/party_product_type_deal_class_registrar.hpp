@@ -36,7 +36,7 @@ namespace ores::refdata::messaging {
 
 std::vector<ores::nats::service::subscription> register_party_product_type_deal_class_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }

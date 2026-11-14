@@ -160,11 +160,11 @@ run_grant_operations_service::shared_limiters() {
 }
 
 run_grant_operations_service::run_grant_operations_service(
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<security::jwt::jwt_authenticator> signer,
     std::optional<exchange_limits> limits)
-    : ctx_(std::move(ctx))
-    , signer_(std::move(signer))
+    : ctx_(ctx)
+    , signer_(signer)
     , limiters_(limits ? std::make_shared<exchange_limiters>(*limits) : shared_limiters()) {}
 
 messaging::create_run_grant_response

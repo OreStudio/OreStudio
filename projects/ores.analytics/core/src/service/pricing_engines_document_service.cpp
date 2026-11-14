@@ -34,8 +34,8 @@ using ores::database::repository::ids_of;
 using ores::database::repository::read_one;
 using ores::database::repository::read_where;
 
-pricing_engines_document_service::pricing_engines_document_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+pricing_engines_document_service::pricing_engines_document_service(const context& ctx)
+    : ctx_(ctx) {}
 
 void pricing_engines_document_service::save(messaging::pricing_engines_document v) {
     ores::service::messaging::stamp_document(v, ctx_);

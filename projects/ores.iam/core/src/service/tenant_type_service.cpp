@@ -54,8 +54,8 @@ namespace ores::iam::service {
 
 using namespace ores::logging;
 
-tenant_type_service::tenant_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+tenant_type_service::tenant_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

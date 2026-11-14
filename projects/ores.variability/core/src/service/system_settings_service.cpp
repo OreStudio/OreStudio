@@ -65,12 +65,12 @@ domain::system_setting row_to_setting(const std::vector<std::optional<std::strin
 
 } // namespace
 
-system_settings_service::system_settings_service(database::context ctx,
+system_settings_service::system_settings_service(const database::context& ctx,
                                                  std::string tenant_id,
                                                  std::string party_id)
-    : ctx_(std::move(ctx))
-    , tenant_id_(std::move(tenant_id))
-    , party_id_(std::move(party_id)) {}
+    : ctx_(ctx)
+    , tenant_id_(tenant_id)
+    , party_id_(party_id) {}
 
 std::vector<domain::system_setting> system_settings_service::get_all() {
     if (tenant_id_.empty()) {

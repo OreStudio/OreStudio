@@ -101,7 +101,8 @@ std::optional<query_builder::condition> stress_shift_family_filter_condition(
 }
 
 ores::utility::domain::precondition
-stress_shift_family_repository::replace_claim(context ctx, const domain::stress_shift_family& v) {
+stress_shift_family_repository::replace_claim(const context& ctx,
+                                              const domain::stress_shift_family& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +111,7 @@ stress_shift_family_repository::replace_claim(context ctx, const domain::stress_
 }
 
 domain::stress_shift_family
-stress_shift_family_repository::apply_claim(context ctx,
+stress_shift_family_repository::apply_claim(const context& ctx,
                                             const domain::stress_shift_family& v,
                                             const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,11 +138,12 @@ stress_shift_family_repository::apply_claim(context ctx,
     return t;
 }
 
-void stress_shift_family_repository::write(context ctx, const domain::stress_shift_family& v) {
+void stress_shift_family_repository::write(const context& ctx,
+                                           const domain::stress_shift_family& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void stress_shift_family_repository::write(context ctx,
+void stress_shift_family_repository::write(const context& ctx,
                                            const std::vector<domain::stress_shift_family>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -150,7 +152,7 @@ void stress_shift_family_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void stress_shift_family_repository::write(context ctx,
+void stress_shift_family_repository::write(const context& ctx,
                                            const domain::stress_shift_family& v,
                                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing stress shift family. " << "code: " << v.code;
@@ -160,7 +162,7 @@ void stress_shift_family_repository::write(context ctx,
 }
 
 void stress_shift_family_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::stress_shift_family>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing stress shift families. Count: " << v.size();
@@ -174,7 +176,8 @@ void stress_shift_family_repository::write(
                                        "Writing stress shift families to database.");
 }
 
-std::vector<domain::stress_shift_family> stress_shift_family_repository::read_latest(context ctx) {
+std::vector<domain::stress_shift_family>
+stress_shift_family_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<stress_shift_family_entity>> |
@@ -191,7 +194,7 @@ std::vector<domain::stress_shift_family> stress_shift_family_repository::read_la
 }
 
 std::vector<domain::stress_shift_family>
-stress_shift_family_repository::read_latest(context ctx, const std::string& code) {
+stress_shift_family_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest stress shift family. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -210,7 +213,7 @@ stress_shift_family_repository::read_latest(context ctx, const std::string& code
 
 
 std::vector<domain::stress_shift_family>
-stress_shift_family_repository::read_all(context ctx, const std::string& code) {
+stress_shift_family_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all stress shift family versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<stress_shift_family_entity>> |
@@ -227,7 +230,7 @@ stress_shift_family_repository::read_all(context ctx, const std::string& code) {
 }
 
 std::optional<domain::stress_shift_family> stress_shift_family_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading stress shift family at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -250,7 +253,7 @@ std::optional<domain::stress_shift_family> stress_shift_family_repository::read_
 }
 
 stress_shift_family_repository::remove_status stress_shift_family_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing stress shift family. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -279,12 +282,12 @@ stress_shift_family_repository::remove_status stress_shift_family_repository::re
     return remove_status::removed;
 }
 
-void stress_shift_family_repository::remove(context ctx, const std::string& code) {
+void stress_shift_family_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::stress_shift_family> stress_shift_family_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -310,7 +313,7 @@ std::vector<domain::stress_shift_family> stress_shift_family_repository::read_la
 }
 
 std::uint32_t stress_shift_family_repository::get_total_family_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::stress_shift_families_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active stress shift family count";
@@ -329,7 +332,8 @@ std::uint32_t stress_shift_family_repository::get_total_family_count(
 }
 
 std::vector<domain::stress_shift_family>
-stress_shift_family_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+stress_shift_family_repository::read_latest(const context& ctx,
+                                            const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -347,7 +351,8 @@ stress_shift_family_repository::read_latest(context ctx, const std::vector<std::
     return result;
 }
 
-void stress_shift_family_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void stress_shift_family_repository::remove(const context& ctx,
+                                            const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

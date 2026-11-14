@@ -100,7 +100,7 @@ day_counter_filter_condition(const std::optional<messaging::day_counters_filter>
 }
 
 ores::utility::domain::precondition
-day_counter_repository::replace_claim(context ctx, const domain::day_counter& v) {
+day_counter_repository::replace_claim(const context& ctx, const domain::day_counter& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -108,8 +108,10 @@ day_counter_repository::replace_claim(context ctx, const domain::day_counter& v)
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::day_counter day_counter_repository::apply_claim(
-    context ctx, const domain::day_counter& v, const ores::utility::domain::precondition& claim) {
+domain::day_counter
+day_counter_repository::apply_claim(const context& ctx,
+                                    const domain::day_counter& v,
+                                    const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -134,11 +136,11 @@ domain::day_counter day_counter_repository::apply_claim(
     return t;
 }
 
-void day_counter_repository::write(context ctx, const domain::day_counter& v) {
+void day_counter_repository::write(const context& ctx, const domain::day_counter& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void day_counter_repository::write(context ctx, const std::vector<domain::day_counter>& v) {
+void day_counter_repository::write(const context& ctx, const std::vector<domain::day_counter>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -146,7 +148,7 @@ void day_counter_repository::write(context ctx, const std::vector<domain::day_co
     write(ctx, v, claims);
 }
 
-void day_counter_repository::write(context ctx,
+void day_counter_repository::write(const context& ctx,
                                    const domain::day_counter& v,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing day counter. " << "code: " << v.code;
@@ -155,7 +157,7 @@ void day_counter_repository::write(context ctx,
         ctx, day_counter_mapper::map(t), lg(), "Writing day counter to database.");
 }
 
-void day_counter_repository::write(context ctx,
+void day_counter_repository::write(const context& ctx,
                                    const std::vector<domain::day_counter>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing day counters. Count: " << v.size();
@@ -167,7 +169,7 @@ void day_counter_repository::write(context ctx,
         ctx, day_counter_mapper::map(batch), lg(), "Writing day counters to database.");
 }
 
-std::vector<domain::day_counter> day_counter_repository::read_latest(context ctx) {
+std::vector<domain::day_counter> day_counter_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<day_counter_entity>> |
@@ -182,7 +184,7 @@ std::vector<domain::day_counter> day_counter_repository::read_latest(context ctx
         "Reading latest day counters");
 }
 
-std::vector<domain::day_counter> day_counter_repository::read_latest(context ctx,
+std::vector<domain::day_counter> day_counter_repository::read_latest(const context& ctx,
                                                                      const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest day counter. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -200,7 +202,7 @@ std::vector<domain::day_counter> day_counter_repository::read_latest(context ctx
 }
 
 
-std::vector<domain::day_counter> day_counter_repository::read_all(context ctx,
+std::vector<domain::day_counter> day_counter_repository::read_all(const context& ctx,
                                                                   const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all day counter versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +218,7 @@ std::vector<domain::day_counter> day_counter_repository::read_all(context ctx,
         "Reading all day counter versions by code.");
 }
 
-std::optional<domain::day_counter> day_counter_repository::read_at_version(context ctx,
+std::optional<domain::day_counter> day_counter_repository::read_at_version(const context& ctx,
                                                                            const std::string& code,
                                                                            std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading day counter at version. " << "code: " << code
@@ -241,7 +243,7 @@ std::optional<domain::day_counter> day_counter_repository::read_at_version(conte
 }
 
 day_counter_repository::remove_status day_counter_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing day counter. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -269,12 +271,12 @@ day_counter_repository::remove_status day_counter_repository::remove(
     return remove_status::removed;
 }
 
-void day_counter_repository::remove(context ctx, const std::string& code) {
+void day_counter_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::day_counter>
-day_counter_repository::read_latest(context ctx,
+day_counter_repository::read_latest(const context& ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
@@ -299,7 +301,7 @@ day_counter_repository::read_latest(context ctx,
 }
 
 std::uint32_t day_counter_repository::get_total_day_counter_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::day_counters_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active day counter count";
@@ -318,7 +320,7 @@ std::uint32_t day_counter_repository::get_total_day_counter_count(
 }
 
 std::vector<domain::day_counter>
-day_counter_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+day_counter_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -335,7 +337,7 @@ day_counter_repository::read_latest(context ctx, const std::vector<std::string>&
     return result;
 }
 
-void day_counter_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void day_counter_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

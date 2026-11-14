@@ -188,6 +188,26 @@ export interface GetPublishedFxVolSurfaceResponse {
     success: boolean;
     message: string;
     blueprint_name: string;
+    /**
+     * @brief The smile model the surface was calibrated with, such as ssvi.
+     */
+    model: string;
+    /**
+     * @brief What a strike column means: `delta` when the strikes are delta codes,
+     * `absolute` when they are levels.
+     */
+    strike_convention: string;
+    /**
+     * @brief The delta convention the strikes were quoted under, such as spot or
+     * forward, and whether they are premium-adjusted. Empty when the strikes are
+     * levels.
+     */
+    delta_type: string;
+    /**
+     * @brief The server's verdict on the publish's age, not a threshold for a
+     * client to apply.
+     */
+    stale: boolean;
     publish_request_id: string;
     as_of: string;
     published_at: string | null;

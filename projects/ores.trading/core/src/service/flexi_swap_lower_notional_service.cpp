@@ -57,8 +57,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-flexi_swap_lower_notional_service::flexi_swap_lower_notional_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+flexi_swap_lower_notional_service::flexi_swap_lower_notional_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

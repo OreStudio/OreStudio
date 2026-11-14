@@ -59,11 +59,11 @@ class fx_vol_surface_feed_expiry_handler {
 public:
     fx_vol_surface_feed_expiry_handler(
         ores::nats::service::client& nats,
-        ores::database::context ctx,
+        const ores::database::context& ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     /**
      * @brief Serves synthetic.v1.fx_vol_surface_feed_expiries.list.

@@ -100,7 +100,7 @@ tenor_unit_filter_condition(const std::optional<messaging::tenor_units_filter>& 
 }
 
 ores::utility::domain::precondition
-tenor_unit_repository::replace_claim(context ctx, const domain::tenor_unit& v) {
+tenor_unit_repository::replace_claim(const context& ctx, const domain::tenor_unit& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -108,8 +108,10 @@ tenor_unit_repository::replace_claim(context ctx, const domain::tenor_unit& v) {
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::tenor_unit tenor_unit_repository::apply_claim(
-    context ctx, const domain::tenor_unit& v, const ores::utility::domain::precondition& claim) {
+domain::tenor_unit
+tenor_unit_repository::apply_claim(const context& ctx,
+                                   const domain::tenor_unit& v,
+                                   const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -134,11 +136,11 @@ domain::tenor_unit tenor_unit_repository::apply_claim(
     return t;
 }
 
-void tenor_unit_repository::write(context ctx, const domain::tenor_unit& v) {
+void tenor_unit_repository::write(const context& ctx, const domain::tenor_unit& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void tenor_unit_repository::write(context ctx, const std::vector<domain::tenor_unit>& v) {
+void tenor_unit_repository::write(const context& ctx, const std::vector<domain::tenor_unit>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -146,7 +148,7 @@ void tenor_unit_repository::write(context ctx, const std::vector<domain::tenor_u
     write(ctx, v, claims);
 }
 
-void tenor_unit_repository::write(context ctx,
+void tenor_unit_repository::write(const context& ctx,
                                   const domain::tenor_unit& v,
                                   const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor unit. " << "code: " << v.code;
@@ -155,7 +157,7 @@ void tenor_unit_repository::write(context ctx,
         ctx, tenor_unit_mapper::map(t), lg(), "Writing tenor unit to database.");
 }
 
-void tenor_unit_repository::write(context ctx,
+void tenor_unit_repository::write(const context& ctx,
                                   const std::vector<domain::tenor_unit>& v,
                                   const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing tenor units. Count: " << v.size();
@@ -167,7 +169,7 @@ void tenor_unit_repository::write(context ctx,
         ctx, tenor_unit_mapper::map(batch), lg(), "Writing tenor units to database.");
 }
 
-std::vector<domain::tenor_unit> tenor_unit_repository::read_latest(context ctx) {
+std::vector<domain::tenor_unit> tenor_unit_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<tenor_unit_entity>> |
@@ -182,7 +184,7 @@ std::vector<domain::tenor_unit> tenor_unit_repository::read_latest(context ctx) 
         "Reading latest tenor units");
 }
 
-std::vector<domain::tenor_unit> tenor_unit_repository::read_latest(context ctx,
+std::vector<domain::tenor_unit> tenor_unit_repository::read_latest(const context& ctx,
                                                                    const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenor unit. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -200,7 +202,7 @@ std::vector<domain::tenor_unit> tenor_unit_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::tenor_unit> tenor_unit_repository::read_all(context ctx,
+std::vector<domain::tenor_unit> tenor_unit_repository::read_all(const context& ctx,
                                                                 const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all tenor unit versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +218,7 @@ std::vector<domain::tenor_unit> tenor_unit_repository::read_all(context ctx,
         "Reading all tenor unit versions by code.");
 }
 
-std::optional<domain::tenor_unit> tenor_unit_repository::read_at_version(context ctx,
+std::optional<domain::tenor_unit> tenor_unit_repository::read_at_version(const context& ctx,
                                                                          const std::string& code,
                                                                          std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading tenor unit at version. " << "code: " << code
@@ -240,7 +242,7 @@ std::optional<domain::tenor_unit> tenor_unit_repository::read_at_version(context
 }
 
 tenor_unit_repository::remove_status tenor_unit_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenor unit. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -268,12 +270,12 @@ tenor_unit_repository::remove_status tenor_unit_repository::remove(
     return remove_status::removed;
 }
 
-void tenor_unit_repository::remove(context ctx, const std::string& code) {
+void tenor_unit_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::tenor_unit>
-tenor_unit_repository::read_latest(context ctx,
+tenor_unit_repository::read_latest(const context& ctx,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
                                    const ores::utility::domain::order& order,
@@ -298,7 +300,7 @@ tenor_unit_repository::read_latest(context ctx,
 }
 
 std::uint32_t tenor_unit_repository::get_total_unit_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::tenor_units_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenor unit count";
@@ -317,7 +319,7 @@ std::uint32_t tenor_unit_repository::get_total_unit_count(
 }
 
 std::vector<domain::tenor_unit>
-tenor_unit_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+tenor_unit_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -334,7 +336,7 @@ tenor_unit_repository::read_latest(context ctx, const std::vector<std::string>& 
     return result;
 }
 
-void tenor_unit_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void tenor_unit_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

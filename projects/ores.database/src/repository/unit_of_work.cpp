@@ -24,8 +24,8 @@
 
 namespace ores::database::repository {
 
-unit_of_work::unit_of_work(context ctx)
-    : base_(std::move(ctx))
+unit_of_work::unit_of_work(const context& ctx)
+    : base_(ctx)
     , lease_(base_.pq_pool().acquire())
     , transaction_(std::make_unique<pq::transaction>(lease_->get(), base_.pq_session()))
     , ctx_(base_.with_transaction(*transaction_)) {}

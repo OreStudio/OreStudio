@@ -109,7 +109,8 @@ std::optional<query_builder::condition> instrument_barrier_filter_condition(
 }
 
 ores::utility::domain::precondition
-instrument_barrier_repository::replace_claim(context ctx, const domain::instrument_barrier& v) {
+instrument_barrier_repository::replace_claim(const context& ctx,
+                                             const domain::instrument_barrier& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.trade_id),
                                      v.barrier_role,
@@ -121,7 +122,7 @@ instrument_barrier_repository::replace_claim(context ctx, const domain::instrume
 }
 
 domain::instrument_barrier
-instrument_barrier_repository::apply_claim(context ctx,
+instrument_barrier_repository::apply_claim(const context& ctx,
                                            const domain::instrument_barrier& v,
                                            const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -151,11 +152,11 @@ instrument_barrier_repository::apply_claim(context ctx,
     return t;
 }
 
-void instrument_barrier_repository::write(context ctx, const domain::instrument_barrier& v) {
+void instrument_barrier_repository::write(const context& ctx, const domain::instrument_barrier& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void instrument_barrier_repository::write(context ctx,
+void instrument_barrier_repository::write(const context& ctx,
                                           const std::vector<domain::instrument_barrier>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -164,7 +165,7 @@ void instrument_barrier_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void instrument_barrier_repository::write(context ctx,
+void instrument_barrier_repository::write(const context& ctx,
                                           const domain::instrument_barrier& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument barrier. " << "trade_id: " << v.trade_id
@@ -176,7 +177,7 @@ void instrument_barrier_repository::write(context ctx,
 }
 
 void instrument_barrier_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::instrument_barrier>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument barriers. Count: " << v.size();
@@ -190,7 +191,8 @@ void instrument_barrier_repository::write(
                                        "Writing instrument barriers to database.");
 }
 
-std::vector<domain::instrument_barrier> instrument_barrier_repository::read_latest(context ctx) {
+std::vector<domain::instrument_barrier>
+instrument_barrier_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<instrument_barrier_entity>> |
@@ -206,7 +208,7 @@ std::vector<domain::instrument_barrier> instrument_barrier_repository::read_late
 }
 
 std::vector<domain::instrument_barrier>
-instrument_barrier_repository::read_latest(context ctx,
+instrument_barrier_repository::read_latest(const context& ctx,
                                            const std::string& trade_id,
                                            const std::string& barrier_role,
                                            const std::string& sequence_number) {
@@ -231,7 +233,7 @@ instrument_barrier_repository::read_latest(context ctx,
 
 
 std::vector<domain::instrument_barrier>
-instrument_barrier_repository::read_all(context ctx,
+instrument_barrier_repository::read_all(const context& ctx,
                                         const std::string& trade_id,
                                         const std::string& barrier_role,
                                         const std::string& sequence_number) {
@@ -254,7 +256,7 @@ instrument_barrier_repository::read_all(context ctx,
 }
 
 std::optional<domain::instrument_barrier>
-instrument_barrier_repository::read_at_version(context ctx,
+instrument_barrier_repository::read_at_version(const context& ctx,
                                                const std::string& trade_id,
                                                const std::string& barrier_role,
                                                const std::string& sequence_number,
@@ -285,7 +287,7 @@ instrument_barrier_repository::read_at_version(context ctx,
 }
 
 std::vector<domain::instrument_barrier> instrument_barrier_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -313,7 +315,7 @@ std::vector<domain::instrument_barrier> instrument_barrier_repository::read_late
 }
 
 std::uint32_t instrument_barrier_repository::get_total_instrument_barrier_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::instrument_barriers_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument barriers count. trade_id: "
@@ -335,7 +337,7 @@ std::uint32_t instrument_barrier_repository::get_total_instrument_barrier_count_
 
 
 instrument_barrier_repository::remove_status
-instrument_barrier_repository::remove(context ctx,
+instrument_barrier_repository::remove(const context& ctx,
                                       const std::string& trade_id,
                                       const std::string& barrier_role,
                                       const std::string& sequence_number,
@@ -372,7 +374,7 @@ instrument_barrier_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void instrument_barrier_repository::remove(context ctx,
+void instrument_barrier_repository::remove(const context& ctx,
                                            const std::string& trade_id,
                                            const std::string& barrier_role,
                                            const std::string& sequence_number) {
@@ -380,7 +382,7 @@ void instrument_barrier_repository::remove(context ctx,
 }
 
 std::vector<domain::instrument_barrier> instrument_barrier_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -407,7 +409,7 @@ std::vector<domain::instrument_barrier> instrument_barrier_repository::read_late
 }
 
 std::uint32_t instrument_barrier_repository::get_total_instrument_barrier_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::instrument_barriers_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument barrier count";
@@ -426,7 +428,7 @@ std::uint32_t instrument_barrier_repository::get_total_instrument_barrier_count(
 }
 
 std::vector<domain::instrument_barrier>
-instrument_barrier_repository::read_latest(context ctx,
+instrument_barrier_repository::read_latest(const context& ctx,
                                            const std::vector<std::string>& trade_ids,
                                            const std::vector<std::string>& barrier_roles,
                                            const std::vector<std::string>& sequence_numbers) {
@@ -466,7 +468,7 @@ instrument_barrier_repository::read_latest(context ctx,
     return filtered;
 }
 
-void instrument_barrier_repository::remove(context ctx,
+void instrument_barrier_repository::remove(const context& ctx,
                                            const std::vector<std::string>& trade_ids,
                                            const std::vector<std::string>& barrier_roles,
                                            const std::vector<std::string>& sequence_numbers) {
@@ -482,7 +484,7 @@ void instrument_barrier_repository::remove(context ctx,
 
 
 std::vector<domain::instrument_barrier> instrument_barrier_repository::read_by_instruments_batch(
-    context ctx, const std::vector<std::string>& trade_ids) {
+    const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();

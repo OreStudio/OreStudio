@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::equity_position_option_underlying& v);
-    void write(context ctx, const std::vector<domain::equity_position_option_underlying>& v);
+    void write(const context& ctx, const domain::equity_position_option_underlying& v);
+    void write(const context& ctx, const std::vector<domain::equity_position_option_underlying>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::equity_position_option_underlying& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of equity position option underlyings, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::equity_position_option_underlying>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,11 +101,11 @@ public:
      * @brief Reads latest equity position option underlyings, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::equity_position_option_underlying> read_latest(context ctx);
+    std::vector<domain::equity_position_option_underlying> read_latest(const context& ctx);
+    std::vector<domain::equity_position_option_underlying> read_latest(
+        const context& ctx, const std::string& trade_id, const std::string& sequence_number);
     std::vector<domain::equity_position_option_underlying>
-    read_latest(context ctx, const std::string& trade_id, const std::string& sequence_number);
-    std::vector<domain::equity_position_option_underlying>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& sequence_numbers);
     /**@}*/
@@ -115,7 +115,7 @@ public:
      * @brief Reads all equity position option underlyings, possibly filtered by primary key.
      */
     std::vector<domain::equity_position_option_underlying>
-    read_all(context ctx, const std::string& trade_id, const std::string& sequence_number);
+    read_all(const context& ctx, const std::string& trade_id, const std::string& sequence_number);
 
     /**
      * @brief Reads a single equity position option underlying as it stood at a specific
@@ -127,7 +127,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::equity_position_option_underlying>
-    read_at_version(context ctx,
+    read_at_version(const context& ctx,
                     const std::string& trade_id,
                     const std::string& sequence_number,
                     std::uint32_t version);
@@ -141,7 +141,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::equity_position_option_underlying> read_latest_by_trade_id(
-        context ctx,
+        const context& ctx,
         const std::string& trade_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -154,7 +154,7 @@ public:
      * trade_id.
      */
     std::uint32_t get_total_equity_position_option_underlying_count_by_trade_id(
-        context ctx,
+        const context& ctx,
         const std::string& trade_id,
         const std::optional<messaging::equity_position_option_underlyings_filter>& filter =
             std::nullopt);
@@ -177,7 +177,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::equity_position_option_underlying>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -191,7 +191,7 @@ public:
      * @return Total number of active equity position option underlyings
      */
     std::uint32_t get_total_equity_position_option_underlying_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::equity_position_option_underlyings_filter>& filter =
             std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
@@ -199,7 +199,8 @@ public:
     /**
      * @brief Deletes a equity position option underlying by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& trade_id, const std::string& sequence_number);
+    void
+    remove(const context& ctx, const std::string& trade_id, const std::string& sequence_number);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -221,7 +222,7 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& trade_id,
                          const std::string& sequence_number,
                          std::optional<std::uint32_t> version);
@@ -229,12 +230,12 @@ public:
     /**
      * @brief Deletes equity position option underlyings by closing their temporal validity.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::vector<std::string>& trade_ids,
                 const std::vector<std::string>& sequence_numbers);
 
     std::vector<domain::equity_position_option_underlying>
-    read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+    read_by_instruments_batch(const context& ctx, const std::vector<std::string>& trade_ids);
 
 private:
     /**
@@ -242,7 +243,7 @@ private:
      * that no row exists yet.
      */
     ores::utility::domain::precondition
-    replace_claim(context ctx, const domain::equity_position_option_underlying& v);
+    replace_claim(const context& ctx, const domain::equity_position_option_underlying& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
@@ -250,7 +251,7 @@ private:
      * A claim the store cannot check is refused here rather than ignored.
      */
     domain::equity_position_option_underlying
-    apply_claim(context ctx,
+    apply_claim(const context& ctx,
                 const domain::equity_position_option_underlying& v,
                 const ores::utility::domain::precondition& claim);
 };

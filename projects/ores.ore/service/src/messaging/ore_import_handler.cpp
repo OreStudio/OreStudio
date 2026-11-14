@@ -38,11 +38,11 @@ using namespace ores::logging;
 using namespace ores::service::messaging;
 
 ore_import_handler::ore_import_handler(ores::nats::service::client& nats,
-                                       ores::database::context ctx,
+                                       const ores::database::context& ctx,
                                        ores::security::jwt::jwt_authenticator signer)
     : nats_(nats)
-    , ctx_(std::move(ctx))
-    , signer_(std::move(signer)) {}
+    , ctx_(ctx)
+    , signer_(signer) {}
 
 void ore_import_handler::ore_import(ores::nats::message msg) {
     using ores::ore::messaging::ore_import_request;

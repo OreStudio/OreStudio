@@ -58,8 +58,8 @@ namespace ores::iam::service {
 
 using namespace ores::logging;
 
-run_grant_service::run_grant_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+run_grant_service::run_grant_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

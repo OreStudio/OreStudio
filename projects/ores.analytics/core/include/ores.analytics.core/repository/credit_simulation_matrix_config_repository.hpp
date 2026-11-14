@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::credit_simulation_matrix_config& v);
-    void write(context ctx, const std::vector<domain::credit_simulation_matrix_config>& v);
+    void write(const context& ctx, const domain::credit_simulation_matrix_config& v);
+    void write(const context& ctx, const std::vector<domain::credit_simulation_matrix_config>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::credit_simulation_matrix_config& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of transition matrices, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::credit_simulation_matrix_config>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,18 +101,18 @@ public:
      * @brief Reads latest transition matrices, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::credit_simulation_matrix_config> read_latest(context ctx);
-    std::vector<domain::credit_simulation_matrix_config> read_latest(context ctx,
+    std::vector<domain::credit_simulation_matrix_config> read_latest(const context& ctx);
+    std::vector<domain::credit_simulation_matrix_config> read_latest(const context& ctx,
                                                                      const std::string& id);
     std::vector<domain::credit_simulation_matrix_config>
-    read_latest(context ctx, const std::vector<std::string>& ids);
+    read_latest(const context& ctx, const std::vector<std::string>& ids);
     /**@}*/
 
     /**
      * @brief Reads latest transition matrices filtered by name.
      */
     std::vector<domain::credit_simulation_matrix_config>
-    read_latest_by_name(context ctx, const std::string& name);
+    read_latest_by_name(const context& ctx, const std::string& name);
 
     /**
      * @brief Reads the newest transition matrices filtered by name, current or not.
@@ -127,14 +127,14 @@ public:
      * column means the row belongs to the whole tenant and is kept for every
      * party.
      */
-    std::vector<domain::credit_simulation_matrix_config> read_any_by_name(context ctx,
+    std::vector<domain::credit_simulation_matrix_config> read_any_by_name(const context& ctx,
                                                                           const std::string& name);
 
 
     /**
      * @brief Reads all transition matrices, possibly filtered by primary key.
      */
-    std::vector<domain::credit_simulation_matrix_config> read_all(context ctx,
+    std::vector<domain::credit_simulation_matrix_config> read_all(const context& ctx,
                                                                   const std::string& id);
 
     /**
@@ -147,7 +147,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::credit_simulation_matrix_config>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Whether a list of transition matrices can be ordered by a field.
@@ -166,7 +166,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::credit_simulation_matrix_config>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -180,7 +180,7 @@ public:
      * @return Total number of active transition matrices
      */
     std::uint32_t get_total_matrix_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::credit_simulation_matrix_configs_filter>& filter =
             std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
@@ -188,7 +188,7 @@ public:
     /**
      * @brief Deletes a transition matrix by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -210,12 +210,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes transition matrices by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -224,7 +225,7 @@ private:
      * that no row exists yet.
      */
     ores::utility::domain::precondition
-    replace_claim(context ctx, const domain::credit_simulation_matrix_config& v);
+    replace_claim(const context& ctx, const domain::credit_simulation_matrix_config& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
@@ -232,7 +233,7 @@ private:
      * A claim the store cannot check is refused here rather than ignored.
      */
     domain::credit_simulation_matrix_config
-    apply_claim(context ctx,
+    apply_claim(const context& ctx,
                 const domain::credit_simulation_matrix_config& v,
                 const ores::utility::domain::precondition& claim);
 };

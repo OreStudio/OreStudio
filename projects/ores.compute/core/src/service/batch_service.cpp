@@ -58,8 +58,8 @@ namespace ores::compute::service {
 
 using namespace ores::logging;
 
-batch_service::batch_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+batch_service::batch_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::report_error_event& v);
-    void write(context ctx, const std::vector<domain::report_error_event>& v);
+    void write(const context& ctx, const domain::report_error_event& v);
+    void write(const context& ctx, const std::vector<domain::report_error_event>& v);
     /**@}*/
 
     /**
@@ -90,7 +90,7 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::report_error_event& v,
                const ores::utility::domain::precondition& claim);
 
@@ -98,7 +98,7 @@ public:
      * @brief Writes a set of report error events, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::report_error_event>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -106,9 +106,9 @@ public:
      * @brief Reads latest report error events, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::report_error_event> read_latest(context ctx);
-    std::vector<domain::report_error_event> read_latest(context ctx, const std::string& id);
-    std::vector<domain::report_error_event> read_latest(context ctx,
+    std::vector<domain::report_error_event> read_latest(const context& ctx);
+    std::vector<domain::report_error_event> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::report_error_event> read_latest(const context& ctx,
                                                         const std::vector<std::string>& ids);
     /**@}*/
 
@@ -119,7 +119,7 @@ public:
      * A current-state table holds one row per key, so this is the single
      * current row, not a version history.
      */
-    std::vector<domain::report_error_event> read_all(context ctx, const std::string& id);
+    std::vector<domain::report_error_event> read_all(const context& ctx, const std::string& id);
 
 
     /**
@@ -131,7 +131,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::report_error_event> read_latest_by_report_instance_id(
-        context ctx,
+        const context& ctx,
         const std::string& report_instance_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -142,7 +142,7 @@ public:
      * @brief Gets the total count of active report error events filtered by report_instance_id.
      */
     std::uint32_t get_total_error_count_by_report_instance_id(
-        context ctx,
+        const context& ctx,
         const std::string& report_instance_id,
         const std::optional<messaging::report_error_events_filter>& filter = std::nullopt);
 
@@ -164,7 +164,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::report_error_event>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -176,7 +176,7 @@ public:
      * @return Total number of active report error events
      */
     std::uint32_t get_total_error_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::report_error_events_filter>& filter = std::nullopt);
 
     /**
@@ -185,7 +185,7 @@ public:
      * A current-state table has no history, so the row is removed, not
      * soft-closed.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -207,12 +207,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes report error events permanently.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
     /**
      * @brief Counts the errors and the warnings of each run named.
@@ -222,7 +223,7 @@ public:
      * this method.
      */
     std::vector<messaging::report_error_count>
-    read_counts_by_report_instance_ids(context ctx,
+    read_counts_by_report_instance_ids(const context& ctx,
                                        const std::vector<boost::uuids::uuid>& report_instance_ids);
 
 private:
@@ -230,7 +231,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::report_error_event& v);
 
     /**
@@ -238,7 +239,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::report_error_event apply_claim(context ctx,
+    domain::report_error_event apply_claim(const context& ctx,
                                            const domain::report_error_event& v,
                                            const ores::utility::domain::precondition& claim);
 };

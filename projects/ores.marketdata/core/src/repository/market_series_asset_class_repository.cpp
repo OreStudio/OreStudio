@@ -54,8 +54,8 @@ std::string market_series_asset_class_repository::sql() {
     return query_builder::insert_statement_sql<market_series_asset_class_entity>(lg());
 }
 
-market_series_asset_class_repository::market_series_asset_class_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+market_series_asset_class_repository::market_series_asset_class_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition
 market_series_asset_class_repository::replace_claim(const domain::market_series_asset_class& v) {

@@ -110,14 +110,14 @@ using namespace ores::logging;
 class report_instance_trigger_handler {
 public:
     report_instance_trigger_handler(ores::nats::service::client& nats,
-                                    ores::database::context ctx,
+                                    const ores::database::context& ctx,
                                     std::optional<ores::security::jwt::jwt_authenticator> verifier,
                                     ores::workflow::service::fsm_state_map instance_states,
                                     ores::nats::service::nats_client& svc_nats)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
-        , instance_states_(std::move(instance_states))
+        , ctx_(ctx)
+        , verifier_(verifier)
+        , instance_states_(instance_states)
         , svc_nats_(svc_nats) {}
 
     void trigger(ores::nats::message msg) {

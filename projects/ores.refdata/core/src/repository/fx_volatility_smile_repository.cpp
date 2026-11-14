@@ -102,7 +102,8 @@ std::optional<query_builder::condition> fx_volatility_smile_filter_condition(
 }
 
 ores::utility::domain::precondition
-fx_volatility_smile_repository::replace_claim(context ctx, const domain::fx_volatility_smile& v) {
+fx_volatility_smile_repository::replace_claim(const context& ctx,
+                                              const domain::fx_volatility_smile& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -111,7 +112,7 @@ fx_volatility_smile_repository::replace_claim(context ctx, const domain::fx_vola
 }
 
 domain::fx_volatility_smile
-fx_volatility_smile_repository::apply_claim(context ctx,
+fx_volatility_smile_repository::apply_claim(const context& ctx,
                                             const domain::fx_volatility_smile& v,
                                             const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,11 +139,12 @@ fx_volatility_smile_repository::apply_claim(context ctx,
     return t;
 }
 
-void fx_volatility_smile_repository::write(context ctx, const domain::fx_volatility_smile& v) {
+void fx_volatility_smile_repository::write(const context& ctx,
+                                           const domain::fx_volatility_smile& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void fx_volatility_smile_repository::write(context ctx,
+void fx_volatility_smile_repository::write(const context& ctx,
                                            const std::vector<domain::fx_volatility_smile>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -151,7 +153,7 @@ void fx_volatility_smile_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void fx_volatility_smile_repository::write(context ctx,
+void fx_volatility_smile_repository::write(const context& ctx,
                                            const domain::fx_volatility_smile& v,
                                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX volatility smile. " << "id: " << v.id;
@@ -161,7 +163,7 @@ void fx_volatility_smile_repository::write(context ctx,
 }
 
 void fx_volatility_smile_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::fx_volatility_smile>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing FX volatility smiles. Count: " << v.size();
@@ -175,7 +177,8 @@ void fx_volatility_smile_repository::write(
                                        "Writing FX volatility smiles to database.");
 }
 
-std::vector<domain::fx_volatility_smile> fx_volatility_smile_repository::read_latest(context ctx) {
+std::vector<domain::fx_volatility_smile>
+fx_volatility_smile_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_volatility_smile_entity>> |
@@ -192,7 +195,7 @@ std::vector<domain::fx_volatility_smile> fx_volatility_smile_repository::read_la
 }
 
 std::vector<domain::fx_volatility_smile>
-fx_volatility_smile_repository::read_latest(context ctx, const std::string& id) {
+fx_volatility_smile_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest FX volatility smile. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -227,7 +230,7 @@ fx_volatility_smile_repository::read_latest(context ctx, const std::string& id) 
 
 
 std::vector<domain::fx_volatility_smile>
-fx_volatility_smile_repository::read_all(context ctx, const std::string& id) {
+fx_volatility_smile_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all FX volatility smile versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_volatility_smile_entity>> |
@@ -244,7 +247,7 @@ fx_volatility_smile_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::fx_volatility_smile> fx_volatility_smile_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading FX volatility smile at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -268,7 +271,7 @@ std::optional<domain::fx_volatility_smile> fx_volatility_smile_repository::read_
 
 
 fx_volatility_smile_repository::remove_status fx_volatility_smile_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing FX volatility smile. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -305,12 +308,12 @@ fx_volatility_smile_repository::remove_status fx_volatility_smile_repository::re
     return remove_status::removed;
 }
 
-void fx_volatility_smile_repository::remove(context ctx, const std::string& id) {
+void fx_volatility_smile_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::fx_volatility_smile> fx_volatility_smile_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -336,7 +339,7 @@ std::vector<domain::fx_volatility_smile> fx_volatility_smile_repository::read_la
 }
 
 std::uint32_t fx_volatility_smile_repository::get_total_fx_volatility_smile_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::fx_volatility_smiles_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active FX volatility smile count";
@@ -355,7 +358,8 @@ std::uint32_t fx_volatility_smile_repository::get_total_fx_volatility_smile_coun
 }
 
 std::vector<domain::fx_volatility_smile>
-fx_volatility_smile_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+fx_volatility_smile_repository::read_latest(const context& ctx,
+                                            const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -373,7 +377,8 @@ fx_volatility_smile_repository::read_latest(context ctx, const std::vector<std::
     return result;
 }
 
-void fx_volatility_smile_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void fx_volatility_smile_repository::remove(const context& ctx,
+                                            const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

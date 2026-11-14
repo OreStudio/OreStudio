@@ -87,7 +87,8 @@ basket_swap_period_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-basket_swap_period_repository::replace_claim(context ctx, const domain::basket_swap_period& v) {
+basket_swap_period_repository::replace_claim(const context& ctx,
+                                             const domain::basket_swap_period& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.trade_id),
                                      boost::uuids::to_string(v.trade_activity_id),
@@ -99,7 +100,7 @@ basket_swap_period_repository::replace_claim(context ctx, const domain::basket_s
 }
 
 domain::basket_swap_period
-basket_swap_period_repository::apply_claim(context ctx,
+basket_swap_period_repository::apply_claim(const context& ctx,
                                            const domain::basket_swap_period& v,
                                            const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -129,11 +130,11 @@ basket_swap_period_repository::apply_claim(context ctx,
     return t;
 }
 
-void basket_swap_period_repository::write(context ctx, const domain::basket_swap_period& v) {
+void basket_swap_period_repository::write(const context& ctx, const domain::basket_swap_period& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void basket_swap_period_repository::write(context ctx,
+void basket_swap_period_repository::write(const context& ctx,
                                           const std::vector<domain::basket_swap_period>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -142,7 +143,7 @@ void basket_swap_period_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void basket_swap_period_repository::write(context ctx,
+void basket_swap_period_repository::write(const context& ctx,
                                           const domain::basket_swap_period& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing basket swap period. " << "trade_id: " << v.trade_id
@@ -154,7 +155,7 @@ void basket_swap_period_repository::write(context ctx,
 }
 
 void basket_swap_period_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::basket_swap_period>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing basket swap periods. Count: " << v.size();
@@ -168,7 +169,8 @@ void basket_swap_period_repository::write(
                                        "Writing basket swap periods to database.");
 }
 
-std::vector<domain::basket_swap_period> basket_swap_period_repository::read_latest(context ctx) {
+std::vector<domain::basket_swap_period>
+basket_swap_period_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -185,7 +187,7 @@ std::vector<domain::basket_swap_period> basket_swap_period_repository::read_late
 }
 
 std::vector<domain::basket_swap_period>
-basket_swap_period_repository::read_latest(context ctx,
+basket_swap_period_repository::read_latest(const context& ctx,
                                            const std::string& trade_id,
                                            const std::string& trade_activity_id,
                                            const std::string& sequence_number) {
@@ -210,7 +212,7 @@ basket_swap_period_repository::read_latest(context ctx,
 
 
 std::vector<domain::basket_swap_period>
-basket_swap_period_repository::read_all(context ctx,
+basket_swap_period_repository::read_all(const context& ctx,
                                         const std::string& trade_id,
                                         const std::string& trade_activity_id,
                                         const std::string& sequence_number) {
@@ -234,7 +236,7 @@ basket_swap_period_repository::read_all(context ctx,
 }
 
 std::optional<domain::basket_swap_period>
-basket_swap_period_repository::read_at_version(context ctx,
+basket_swap_period_repository::read_at_version(const context& ctx,
                                                const std::string& trade_id,
                                                const std::string& trade_activity_id,
                                                const std::string& sequence_number,
@@ -266,7 +268,7 @@ basket_swap_period_repository::read_at_version(context ctx,
 }
 
 basket_swap_period_repository::remove_status
-basket_swap_period_repository::remove(context ctx,
+basket_swap_period_repository::remove(const context& ctx,
                                       const std::string& trade_id,
                                       const std::string& trade_activity_id,
                                       const std::string& sequence_number,
@@ -303,7 +305,7 @@ basket_swap_period_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void basket_swap_period_repository::remove(context ctx,
+void basket_swap_period_repository::remove(const context& ctx,
                                            const std::string& trade_id,
                                            const std::string& trade_activity_id,
                                            const std::string& sequence_number) {
@@ -311,7 +313,7 @@ void basket_swap_period_repository::remove(context ctx,
 }
 
 std::vector<domain::basket_swap_period>
-basket_swap_period_repository::read_latest(context ctx,
+basket_swap_period_repository::read_latest(const context& ctx,
                                            std::uint32_t offset,
                                            std::uint32_t limit,
                                            const ores::utility::domain::order& order,
@@ -336,7 +338,7 @@ basket_swap_period_repository::read_latest(context ctx,
 }
 
 std::uint32_t basket_swap_period_repository::get_total_basket_swap_period_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active basket swap period count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -352,7 +354,7 @@ std::uint32_t basket_swap_period_repository::get_total_basket_swap_period_count(
 }
 
 std::vector<domain::basket_swap_period>
-basket_swap_period_repository::read_latest(context ctx,
+basket_swap_period_repository::read_latest(const context& ctx,
                                            const std::vector<std::string>& trade_ids,
                                            const std::vector<std::string>& trade_activity_ids,
                                            const std::vector<std::string>& sequence_numbers) {
@@ -393,7 +395,7 @@ basket_swap_period_repository::read_latest(context ctx,
     return filtered;
 }
 
-void basket_swap_period_repository::remove(context ctx,
+void basket_swap_period_repository::remove(const context& ctx,
                                            const std::vector<std::string>& trade_ids,
                                            const std::vector<std::string>& trade_activity_ids,
                                            const std::vector<std::string>& sequence_numbers) {

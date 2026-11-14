@@ -57,8 +57,9 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-equity_position_option_underlying_service::equity_position_option_underlying_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+equity_position_option_underlying_service::equity_position_option_underlying_service(
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

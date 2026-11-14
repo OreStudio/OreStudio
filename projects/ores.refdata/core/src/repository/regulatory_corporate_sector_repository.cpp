@@ -86,7 +86,7 @@ regulatory_corporate_sector_list_order(const ores::utility::domain::order& order
 }
 
 ores::utility::domain::precondition regulatory_corporate_sector_repository::replace_claim(
-    context ctx, const domain::regulatory_corporate_sector& v) {
+    const context& ctx, const domain::regulatory_corporate_sector& v) {
     const auto current = read_latest(ctx, v.code, v.coding_scheme_code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -95,7 +95,7 @@ ores::utility::domain::precondition regulatory_corporate_sector_repository::repl
 }
 
 domain::regulatory_corporate_sector regulatory_corporate_sector_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::regulatory_corporate_sector& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -122,13 +122,13 @@ domain::regulatory_corporate_sector regulatory_corporate_sector_repository::appl
     return t;
 }
 
-void regulatory_corporate_sector_repository::write(context ctx,
+void regulatory_corporate_sector_repository::write(const context& ctx,
                                                    const domain::regulatory_corporate_sector& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void regulatory_corporate_sector_repository::write(
-    context ctx, const std::vector<domain::regulatory_corporate_sector>& v) {
+    const context& ctx, const std::vector<domain::regulatory_corporate_sector>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -137,7 +137,7 @@ void regulatory_corporate_sector_repository::write(
 }
 
 void regulatory_corporate_sector_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::regulatory_corporate_sector& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing regulatory corporate sector. " << "code: " << v.code
@@ -150,7 +150,7 @@ void regulatory_corporate_sector_repository::write(
 }
 
 void regulatory_corporate_sector_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::regulatory_corporate_sector>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing regulatory corporate sectors. Count: " << v.size();
@@ -165,7 +165,7 @@ void regulatory_corporate_sector_repository::write(
 }
 
 std::vector<domain::regulatory_corporate_sector>
-regulatory_corporate_sector_repository::read_latest(context ctx) {
+regulatory_corporate_sector_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<regulatory_corporate_sector_entity>> |
@@ -182,7 +182,7 @@ regulatory_corporate_sector_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::regulatory_corporate_sector>
-regulatory_corporate_sector_repository::read_latest(context ctx,
+regulatory_corporate_sector_repository::read_latest(const context& ctx,
                                                     const std::string& code,
                                                     const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest regulatory corporate sector. " << "code: " << code
@@ -205,7 +205,7 @@ regulatory_corporate_sector_repository::read_latest(context ctx,
 
 
 std::vector<domain::regulatory_corporate_sector> regulatory_corporate_sector_repository::read_all(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all regulatory corporate sector versions. "
                                << "code: " << code << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -224,7 +224,7 @@ std::vector<domain::regulatory_corporate_sector> regulatory_corporate_sector_rep
 }
 
 std::optional<domain::regulatory_corporate_sector>
-regulatory_corporate_sector_repository::read_at_version(context ctx,
+regulatory_corporate_sector_repository::read_at_version(const context& ctx,
                                                         const std::string& code,
                                                         const std::string& coding_scheme_code,
                                                         std::uint32_t version) {
@@ -252,7 +252,7 @@ regulatory_corporate_sector_repository::read_at_version(context ctx,
 }
 
 regulatory_corporate_sector_repository::remove_status
-regulatory_corporate_sector_repository::remove(context ctx,
+regulatory_corporate_sector_repository::remove(const context& ctx,
                                                const std::string& code,
                                                const std::string& coding_scheme_code,
                                                std::optional<std::uint32_t> version) {
@@ -286,14 +286,14 @@ regulatory_corporate_sector_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void regulatory_corporate_sector_repository::remove(context ctx,
+void regulatory_corporate_sector_repository::remove(const context& ctx,
                                                     const std::string& code,
                                                     const std::string& coding_scheme_code) {
     static_cast<void>(remove(ctx, code, coding_scheme_code, std::nullopt));
 }
 
 std::vector<domain::regulatory_corporate_sector>
-regulatory_corporate_sector_repository::read_latest(context ctx,
+regulatory_corporate_sector_repository::read_latest(const context& ctx,
                                                     std::uint32_t offset,
                                                     std::uint32_t limit,
                                                     const ores::utility::domain::order& order,
@@ -317,7 +317,7 @@ regulatory_corporate_sector_repository::read_latest(context ctx,
 }
 
 std::uint32_t regulatory_corporate_sector_repository::get_total_sector_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active regulatory corporate sector count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -334,7 +334,7 @@ std::uint32_t regulatory_corporate_sector_repository::get_total_sector_count(
 
 std::vector<domain::regulatory_corporate_sector>
 regulatory_corporate_sector_repository::read_latest(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& codes,
     const std::vector<std::string>& coding_scheme_codes) {
     if (codes.empty() || coding_scheme_codes.empty())
@@ -371,7 +371,7 @@ regulatory_corporate_sector_repository::read_latest(
 }
 
 void regulatory_corporate_sector_repository::remove(
-    context ctx,
+    const context& ctx,
     const std::vector<std::string>& codes,
     const std::vector<std::string>& coding_scheme_codes) {
     // Compound key: a per-column .in() DELETE would be a cross-product

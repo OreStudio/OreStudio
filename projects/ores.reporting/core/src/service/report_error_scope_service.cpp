@@ -54,8 +54,8 @@ namespace ores::reporting::service {
 
 using namespace ores::logging;
 
-report_error_scope_service::report_error_scope_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+report_error_scope_service::report_error_scope_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

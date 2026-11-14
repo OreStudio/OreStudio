@@ -1741,7 +1741,7 @@ TEST_CASE("workflow repositories list one tenant's runs for a tenant and all for
  * sleeping through it: the alternative is a case that takes a minute to assert
  * a rule about a minute.
  */
-void backdate_dispatch(ores::database::context ctx,
+void backdate_dispatch(const ores::database::context& ctx,
                        workflow_step_repository& steps,
                        const std::string& instance_id,
                        std::chrono::seconds by) {

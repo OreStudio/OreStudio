@@ -85,7 +85,7 @@ query_builder::order node_sample_list_order(const ores::utility::domain::order& 
 }
 
 ores::utility::domain::precondition
-node_sample_repository::replace_claim(context ctx, const domain::node_sample& v) {
+node_sample_repository::replace_claim(const context& ctx, const domain::node_sample& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.id),
                                      ores::platform::time::datetime::to_db_string(v.sampled_at));
@@ -97,8 +97,10 @@ node_sample_repository::replace_claim(context ctx, const domain::node_sample& v)
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::node_sample node_sample_repository::apply_claim(
-    context ctx, const domain::node_sample& v, const ores::utility::domain::precondition& claim) {
+domain::node_sample
+node_sample_repository::apply_claim(const context& ctx,
+                                    const domain::node_sample& v,
+                                    const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
@@ -114,11 +116,11 @@ domain::node_sample node_sample_repository::apply_claim(
     return t;
 }
 
-void node_sample_repository::write(context ctx, const domain::node_sample& v) {
+void node_sample_repository::write(const context& ctx, const domain::node_sample& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void node_sample_repository::write(context ctx, const std::vector<domain::node_sample>& v) {
+void node_sample_repository::write(const context& ctx, const std::vector<domain::node_sample>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -126,7 +128,7 @@ void node_sample_repository::write(context ctx, const std::vector<domain::node_s
     write(ctx, v, claims);
 }
 
-void node_sample_repository::write(context ctx,
+void node_sample_repository::write(const context& ctx,
                                    const domain::node_sample& v,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing sample. " << "id: " << v.id
@@ -138,7 +140,7 @@ void node_sample_repository::write(context ctx,
                                     "Writing sample to database.");
 }
 
-void node_sample_repository::write(context ctx,
+void node_sample_repository::write(const context& ctx,
                                    const std::vector<domain::node_sample>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing node samples. Count: " << v.size();
@@ -153,7 +155,7 @@ void node_sample_repository::write(context ctx,
         "Writing node samples to database.");
 }
 
-std::vector<domain::node_sample> node_sample_repository::read_latest(context ctx) {
+std::vector<domain::node_sample> node_sample_repository::read_latest(const context& ctx) {
     const auto query = query_builder::read<std::vector<node_sample_entity>> |
                        query_builder::order_by("id"_c, "sampled_at"_c);
 
@@ -166,7 +168,7 @@ std::vector<domain::node_sample> node_sample_repository::read_latest(context ctx
 }
 
 std::vector<domain::node_sample> node_sample_repository::read_latest(
-    context ctx, const std::string& id, const std::string& sampled_at) {
+    const context& ctx, const std::string& id, const std::string& sampled_at) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest sample. " << "id: " << id
                                << " sampled_at: " << sampled_at;
     const auto query = query_builder::read<std::vector<node_sample_entity>> |
@@ -181,7 +183,7 @@ std::vector<domain::node_sample> node_sample_repository::read_latest(
 }
 
 
-std::vector<domain::node_sample> node_sample_repository::read_all(context ctx,
+std::vector<domain::node_sample> node_sample_repository::read_all(const context& ctx,
                                                                   const std::string& id,
                                                                   const std::string& sampled_at) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all sample versions. " << "id: " << id
@@ -200,7 +202,7 @@ std::vector<domain::node_sample> node_sample_repository::read_all(context ctx,
 
 
 node_sample_repository::remove_status
-node_sample_repository::remove(context ctx,
+node_sample_repository::remove(const context& ctx,
                                const std::string& id,
                                const std::string& sampled_at,
                                std::optional<std::uint32_t> version) {
@@ -222,14 +224,14 @@ node_sample_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void node_sample_repository::remove(context ctx,
+void node_sample_repository::remove(const context& ctx,
                                     const std::string& id,
                                     const std::string& sampled_at) {
     static_cast<void>(remove(ctx, id, sampled_at, std::nullopt));
 }
 
 std::vector<domain::node_sample>
-node_sample_repository::read_latest(context ctx,
+node_sample_repository::read_latest(const context& ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order) {
@@ -248,7 +250,7 @@ node_sample_repository::read_latest(context ctx,
         "Reading latest node samples with pagination.");
 }
 
-std::uint32_t node_sample_repository::get_total__count(context ctx) {
+std::uint32_t node_sample_repository::get_total__count(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active sample count";
 
     const auto query = query_builder::read<std::vector<node_sample_entity>>;
@@ -257,8 +259,10 @@ std::uint32_t node_sample_repository::get_total__count(context ctx) {
         ctx, query, std::nullopt, lg(), "Counting node samples");
 }
 
-std::vector<domain::node_sample> node_sample_repository::read_latest(
-    context ctx, const std::vector<std::string>& ids, const std::vector<std::string>& sampled_ats) {
+std::vector<domain::node_sample>
+node_sample_repository::read_latest(const context& ctx,
+                                    const std::vector<std::string>& ids,
+                                    const std::vector<std::string>& sampled_ats) {
     if (ids.empty() || sampled_ats.empty())
         return {};
     const auto query = query_builder::read<std::vector<node_sample_entity>> |
@@ -289,7 +293,7 @@ std::vector<domain::node_sample> node_sample_repository::read_latest(
     return filtered;
 }
 
-void node_sample_repository::remove(context ctx,
+void node_sample_repository::remove(const context& ctx,
                                     const std::vector<std::string>& ids,
                                     const std::vector<std::string>& sampled_ats) {
     // Compound key: a per-column .in() DELETE would be a cross-product

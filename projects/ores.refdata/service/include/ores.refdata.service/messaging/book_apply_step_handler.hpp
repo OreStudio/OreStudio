@@ -64,9 +64,9 @@ private:
     }
 
 public:
-    book_apply_step_handler(ores::nats::service::client& nats, ores::database::context ctx)
+    book_apply_step_handler(ores::nats::service::client& nats, const ores::database::context& ctx)
         : nats_(nats)
-        , ctx_(std::move(ctx)) {}
+        , ctx_(ctx) {}
 
     /**
      * @brief Serves refdata.v1.steps.recheck_book_changes.

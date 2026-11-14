@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit local_jurisdiction_service(context ctx);
+    explicit local_jurisdiction_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

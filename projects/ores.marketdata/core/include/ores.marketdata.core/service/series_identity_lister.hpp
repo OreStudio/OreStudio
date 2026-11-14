@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_SERVICE_SERIES_IDENTITY_LISTER_HPP
 #define ORES_MARKETDATA_CORE_SERVICE_SERIES_IDENTITY_LISTER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <cstddef>
@@ -62,7 +62,8 @@ public:
      * @throws std::invalid_argument if the request names a party that is not a UUID.
      */
     static messaging::list_series_identities_response
-    list(ores::database::context ctx, const messaging::list_series_identities_request& request);
+    list(const ores::database::context& ctx,
+         const messaging::list_series_identities_request& request);
 };
 
 }

@@ -57,8 +57,8 @@ namespace ores::inbox::service {
 
 using namespace ores::logging;
 
-notification_preference_service::notification_preference_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+notification_preference_service::notification_preference_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

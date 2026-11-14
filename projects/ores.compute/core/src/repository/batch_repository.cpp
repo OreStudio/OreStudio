@@ -138,7 +138,7 @@ batch_filter_condition(const std::optional<messaging::batches_filter>& filter) {
 
 }
 
-ores::utility::domain::precondition batch_repository::replace_claim(context ctx,
+ores::utility::domain::precondition batch_repository::replace_claim(const context& ctx,
                                                                     const domain::batch& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -147,7 +147,7 @@ ores::utility::domain::precondition batch_repository::replace_claim(context ctx,
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::batch batch_repository::apply_claim(context ctx,
+domain::batch batch_repository::apply_claim(const context& ctx,
                                             const domain::batch& v,
                                             const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -174,11 +174,11 @@ domain::batch batch_repository::apply_claim(context ctx,
     return t;
 }
 
-void batch_repository::write(context ctx, const domain::batch& v) {
+void batch_repository::write(const context& ctx, const domain::batch& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void batch_repository::write(context ctx, const std::vector<domain::batch>& v) {
+void batch_repository::write(const context& ctx, const std::vector<domain::batch>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -186,7 +186,7 @@ void batch_repository::write(context ctx, const std::vector<domain::batch>& v) {
     write(ctx, v, claims);
 }
 
-void batch_repository::write(context ctx,
+void batch_repository::write(const context& ctx,
                              const domain::batch& v,
                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute batch. " << "id: " << v.id;
@@ -195,7 +195,7 @@ void batch_repository::write(context ctx,
         ctx, batch_mapper::map(t), lg(), "Writing compute batch to database.");
 }
 
-void batch_repository::write(context ctx,
+void batch_repository::write(const context& ctx,
                              const std::vector<domain::batch>& v,
                              const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute batches. Count: " << v.size();
@@ -207,7 +207,7 @@ void batch_repository::write(context ctx,
         ctx, batch_mapper::map(batch), lg(), "Writing compute batches to database.");
 }
 
-std::vector<domain::batch> batch_repository::read_latest(context ctx) {
+std::vector<domain::batch> batch_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<batch_entity>> |
@@ -222,7 +222,8 @@ std::vector<domain::batch> batch_repository::read_latest(context ctx) {
         "Reading latest compute batches");
 }
 
-std::vector<domain::batch> batch_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::batch> batch_repository::read_latest(const context& ctx,
+                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute batch. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -239,7 +240,7 @@ std::vector<domain::batch> batch_repository::read_latest(context ctx, const std:
 }
 
 std::vector<domain::batch>
-batch_repository::read_latest_by_external_ref(context ctx, const std::string& external_ref) {
+batch_repository::read_latest_by_external_ref(const context& ctx, const std::string& external_ref) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute batch by external_ref: " << external_ref;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -265,7 +266,7 @@ batch_repository::read_latest_by_external_ref(context ctx, const std::string& ex
 }
 
 std::vector<domain::batch>
-batch_repository::read_any_by_external_ref(context ctx, const std::string& external_ref) {
+batch_repository::read_any_by_external_ref(const context& ctx, const std::string& external_ref) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any compute batch by external_ref: " << external_ref;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -294,7 +295,7 @@ batch_repository::read_any_by_external_ref(context ctx, const std::string& exter
 }
 
 
-std::vector<domain::batch> batch_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::batch> batch_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all compute batch versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<batch_entity>> |
@@ -309,8 +310,9 @@ std::vector<domain::batch> batch_repository::read_all(context ctx, const std::st
         "Reading all compute batch versions by id.");
 }
 
-std::optional<domain::batch>
-batch_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::batch> batch_repository::read_at_version(const context& ctx,
+                                                               const std::string& id,
+                                                               std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading compute batch at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -331,8 +333,9 @@ batch_repository::read_at_version(context ctx, const std::string& id, std::uint3
     return entities.front();
 }
 
-batch_repository::remove_status
-batch_repository::remove(context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+batch_repository::remove_status batch_repository::remove(const context& ctx,
+                                                         const std::string& id,
+                                                         std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing compute batch. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -360,12 +363,12 @@ batch_repository::remove(context ctx, const std::string& id, std::optional<std::
     return remove_status::removed;
 }
 
-void batch_repository::remove(context ctx, const std::string& id) {
+void batch_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::batch>
-batch_repository::read_latest(context ctx,
+batch_repository::read_latest(const context& ctx,
                               std::uint32_t offset,
                               std::uint32_t limit,
                               const ores::utility::domain::order& order,
@@ -389,7 +392,7 @@ batch_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-batch_repository::get_total_batch_count(context ctx,
+batch_repository::get_total_batch_count(const context& ctx,
                                         const std::optional<messaging::batches_filter>& filter,
                                         const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active compute batch count";
@@ -406,7 +409,7 @@ batch_repository::get_total_batch_count(context ctx,
         "Counting compute batches");
 }
 
-std::vector<domain::batch> batch_repository::read_latest(context ctx,
+std::vector<domain::batch> batch_repository::read_latest(const context& ctx,
                                                          const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -424,7 +427,7 @@ std::vector<domain::batch> batch_repository::read_latest(context ctx,
     return result;
 }
 
-void batch_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void batch_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

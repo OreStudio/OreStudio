@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-book_status_service::book_status_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+book_status_service::book_status_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

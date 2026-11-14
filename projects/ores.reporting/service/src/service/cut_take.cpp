@@ -132,8 +132,8 @@ std::expected<boost::uuids::uuid, std::string> party_of(const ores::database::co
 
 }
 
-cut_take_service::cut_take_service(context ctx, cut_body_reader& reader)
-    : ctx_(std::move(ctx))
+cut_take_service::cut_take_service(const context& ctx, cut_body_reader& reader)
+    : ctx_(ctx)
     , reader_(reader) {}
 
 ores::reporting::messaging::take_cut_response

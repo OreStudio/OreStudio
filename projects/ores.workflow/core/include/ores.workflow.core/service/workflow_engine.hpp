@@ -110,7 +110,7 @@ public:
      *                        record is attributed to the service account.
      */
     workflow_engine(ores::nats::service::client& nats,
-                    ores::database::context ctx,
+                    const ores::database::context& ctx,
                     std::shared_ptr<const workflow_registry> registry,
                     fsm_state_map instance_states,
                     fsm_state_map step_states,

@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::cut_approval_detail& v);
-    void write(context ctx, const std::vector<domain::cut_approval_detail>& v);
+    void write(const context& ctx, const domain::cut_approval_detail& v);
+    void write(const context& ctx, const std::vector<domain::cut_approval_detail>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::cut_approval_detail& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of cut approval details, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::cut_approval_detail>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,9 +101,9 @@ public:
      * @brief Reads latest cut approval details, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::cut_approval_detail> read_latest(context ctx);
-    std::vector<domain::cut_approval_detail> read_latest(context ctx, const std::string& id);
-    std::vector<domain::cut_approval_detail> read_latest(context ctx,
+    std::vector<domain::cut_approval_detail> read_latest(const context& ctx);
+    std::vector<domain::cut_approval_detail> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::cut_approval_detail> read_latest(const context& ctx,
                                                          const std::vector<std::string>& ids);
     /**@}*/
 
@@ -111,7 +111,7 @@ public:
     /**
      * @brief Reads all cut approval details, possibly filtered by primary key.
      */
-    std::vector<domain::cut_approval_detail> read_all(context ctx, const std::string& id);
+    std::vector<domain::cut_approval_detail> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single cut approval detail as it stood at a specific
@@ -123,7 +123,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::cut_approval_detail>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest cut approval details filtered by request_id, with pagination.
@@ -134,7 +134,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::cut_approval_detail> read_latest_by_request_id(
-        context ctx,
+        const context& ctx,
         const std::string& request_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -145,7 +145,7 @@ public:
      * @brief Gets the total count of active cut approval details filtered by request_id.
      */
     std::uint32_t get_total_detail_count_by_request_id(
-        context ctx,
+        const context& ctx,
         const std::string& request_id,
         const std::optional<messaging::cut_approval_details_filter>& filter = std::nullopt);
 
@@ -159,7 +159,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::cut_approval_detail> read_latest_by_cut_id(
-        context ctx,
+        const context& ctx,
         const std::string& cut_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -170,7 +170,7 @@ public:
      * @brief Gets the total count of active cut approval details filtered by cut_id.
      */
     std::uint32_t get_total_detail_count_by_cut_id(
-        context ctx,
+        const context& ctx,
         const std::string& cut_id,
         const std::optional<messaging::cut_approval_details_filter>& filter = std::nullopt);
 
@@ -192,7 +192,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::cut_approval_detail>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -205,14 +205,14 @@ public:
      * @return Total number of active cut approval details
      */
     std::uint32_t get_total_detail_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::cut_approval_details_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a cut approval detail by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -234,17 +234,18 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes cut approval details by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
     std::optional<domain::cut_approval_detail>
-    read_latest_by_request(context ctx, const std::string& request_id);
+    read_latest_by_request(const context& ctx, const std::string& request_id);
 
-    std::optional<domain::cut_approval_detail> read_latest_by_cut(context ctx,
+    std::optional<domain::cut_approval_detail> read_latest_by_cut(const context& ctx,
                                                                   const std::string& cut_id);
 
 private:
@@ -252,7 +253,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::cut_approval_detail& v);
 
     /**
@@ -260,7 +261,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::cut_approval_detail apply_claim(context ctx,
+    domain::cut_approval_detail apply_claim(const context& ctx,
                                             const domain::cut_approval_detail& v,
                                             const ores::utility::domain::precondition& claim);
 };

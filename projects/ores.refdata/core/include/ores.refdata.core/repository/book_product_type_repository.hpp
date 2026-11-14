@@ -76,7 +76,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit book_product_type_repository(context ctx);
+    explicit book_product_type_repository(const context& ctx);
 
     std::string sql();
 

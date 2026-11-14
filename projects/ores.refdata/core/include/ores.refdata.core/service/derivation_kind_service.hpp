@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit derivation_kind_service(context ctx);
+    explicit derivation_kind_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

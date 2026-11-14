@@ -54,8 +54,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-badge_severity_service::badge_severity_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+badge_severity_service::badge_severity_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

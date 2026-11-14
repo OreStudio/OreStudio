@@ -55,7 +55,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit {{entity_singular}}_service(context ctx);
+    explicit {{entity_singular}}_service(const context& ctx);
 
 {{#protocol_derived}}
     /**
@@ -486,7 +486,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit {{name_singular}}_service(context ctx);
+    explicit {{name_singular}}_service(const context& ctx);
 
 {{#protocol_derived}}
     /**
@@ -642,7 +642,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit {{entity_singular}}_service(context ctx);
+    explicit {{entity_singular}}_service(const context& ctx);
 
     /**
      * @brief The family's protocol operations, one method per subject.

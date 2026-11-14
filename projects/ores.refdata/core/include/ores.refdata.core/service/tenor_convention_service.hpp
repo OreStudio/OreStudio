@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit tenor_convention_service(context ctx);
+    explicit tenor_convention_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

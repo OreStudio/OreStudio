@@ -58,8 +58,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-dataset_service::dataset_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+dataset_service::dataset_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

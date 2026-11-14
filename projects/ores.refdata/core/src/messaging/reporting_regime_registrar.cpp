@@ -44,10 +44,10 @@ static constexpr std::string_view reporting_regime_queue_group = "ores.refdata.s
 
 std::vector<ores::nats::service::subscription>
 register_reporting_regime_handlers(ores::nats::service::client& nats,
-                                   ores::database::context ctx,
+                                   const ores::database::context& ctx,
                                    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<reporting_regime_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<reporting_regime_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_reporting_regimes_request::nats_subject,
         reporting_regime_queue_group,

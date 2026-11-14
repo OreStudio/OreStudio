@@ -52,8 +52,8 @@ std::string tenor_convention_resolution_repository::sql() {
     return query_builder::insert_statement_sql<tenor_convention_resolution_entity>(lg());
 }
 
-tenor_convention_resolution_repository::tenor_convention_resolution_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+tenor_convention_resolution_repository::tenor_convention_resolution_repository(const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition tenor_convention_resolution_repository::replace_claim(
     const domain::tenor_convention_resolution& v) {

@@ -20,7 +20,7 @@
 #define ORES_DATABASE_PQ_CONNECTION_HPP
 
 #include "ores.database/export.hpp"
-#include <chrono>
+#include "ores.database/pq/options.hpp"
 #include <cstdint>
 #include <libpq-fe.h>
 #include <memory>
@@ -30,24 +30,6 @@
 #include <unordered_set>
 
 namespace ores::database::pq {
-
-/**
- * @brief Where and as whom a connection logs in.
- */
-struct connection_options final {
-    std::string host;
-    std::uint16_t port = 5432;
-    std::string dbname;
-    std::string user;
-    std::string password;
-    std::string application_name;
-    std::chrono::seconds connect_timeout{10};
-
-    /**
-     * @brief The keyword/value connection string, each value quoted.
-     */
-    [[nodiscard]] ORES_DATABASE_EXPORT std::string conninfo() const;
-};
 
 /**
  * @brief One result of a statement, cleared when it goes out of scope.

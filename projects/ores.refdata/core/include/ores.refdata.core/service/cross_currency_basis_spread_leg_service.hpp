@@ -65,7 +65,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit cross_currency_basis_spread_leg_service(context ctx);
+    explicit cross_currency_basis_spread_leg_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

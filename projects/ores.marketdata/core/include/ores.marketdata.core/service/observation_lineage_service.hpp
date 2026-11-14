@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit observation_lineage_service(context ctx);
+    explicit observation_lineage_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -130,8 +130,8 @@ ores::ore::market::fixing to_fixing(const std::string& index_name, const domain:
 
 }
 
-ore_export_service::ore_export_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+ore_export_service::ore_export_service(const context& ctx)
+    : ctx_(ctx) {}
 
 ore_export_result ore_export_service::write_all(const std::optional<std::string>& valuation_date,
                                                 const std::optional<int>& max_age_days) const {

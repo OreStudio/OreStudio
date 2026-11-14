@@ -63,8 +63,8 @@ int first_int(const std::vector<std::string>& rows) {
 
 }
 
-notification_center::notification_center(ores::database::context ctx)
-    : ctx_(std::move(ctx)) {}
+notification_center::notification_center(const ores::database::context& ctx)
+    : ctx_(ctx) {}
 
 std::optional<boost::uuids::uuid> notification_center::actor_account_id() {
     ores::iam::repository::account_repository accounts;

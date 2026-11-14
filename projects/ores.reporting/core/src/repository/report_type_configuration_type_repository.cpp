@@ -51,8 +51,9 @@ std::string report_type_configuration_type_repository::sql() {
     return query_builder::insert_statement_sql<report_type_configuration_type_entity>(lg());
 }
 
-report_type_configuration_type_repository::report_type_configuration_type_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
+report_type_configuration_type_repository::report_type_configuration_type_repository(
+    const context& ctx)
+    : ctx_(ctx) {}
 
 ores::utility::domain::precondition report_type_configuration_type_repository::replace_claim(
     const domain::report_type_configuration_type& v) {

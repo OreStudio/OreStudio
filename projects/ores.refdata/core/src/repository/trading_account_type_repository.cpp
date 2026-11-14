@@ -86,7 +86,8 @@ trading_account_type_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-trading_account_type_repository::replace_claim(context ctx, const domain::trading_account_type& v) {
+trading_account_type_repository::replace_claim(const context& ctx,
+                                               const domain::trading_account_type& v) {
     const auto current = read_latest(ctx, v.code, v.coding_scheme_code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -95,7 +96,7 @@ trading_account_type_repository::replace_claim(context ctx, const domain::tradin
 }
 
 domain::trading_account_type
-trading_account_type_repository::apply_claim(context ctx,
+trading_account_type_repository::apply_claim(const context& ctx,
                                              const domain::trading_account_type& v,
                                              const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -122,11 +123,12 @@ trading_account_type_repository::apply_claim(context ctx,
     return t;
 }
 
-void trading_account_type_repository::write(context ctx, const domain::trading_account_type& v) {
+void trading_account_type_repository::write(const context& ctx,
+                                            const domain::trading_account_type& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void trading_account_type_repository::write(context ctx,
+void trading_account_type_repository::write(const context& ctx,
                                             const std::vector<domain::trading_account_type>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -135,7 +137,7 @@ void trading_account_type_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void trading_account_type_repository::write(context ctx,
+void trading_account_type_repository::write(const context& ctx,
                                             const domain::trading_account_type& v,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trading account type. " << "code: " << v.code
@@ -148,7 +150,7 @@ void trading_account_type_repository::write(context ctx,
 }
 
 void trading_account_type_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::trading_account_type>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trading account types. Count: " << v.size();
@@ -163,7 +165,7 @@ void trading_account_type_repository::write(
 }
 
 std::vector<domain::trading_account_type>
-trading_account_type_repository::read_latest(context ctx) {
+trading_account_type_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trading_account_type_entity>> |
@@ -180,7 +182,7 @@ trading_account_type_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::trading_account_type> trading_account_type_repository::read_latest(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trading account type. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
@@ -201,7 +203,7 @@ std::vector<domain::trading_account_type> trading_account_type_repository::read_
 
 
 std::vector<domain::trading_account_type> trading_account_type_repository::read_all(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trading account type versions. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -220,7 +222,7 @@ std::vector<domain::trading_account_type> trading_account_type_repository::read_
 }
 
 std::optional<domain::trading_account_type>
-trading_account_type_repository::read_at_version(context ctx,
+trading_account_type_repository::read_at_version(const context& ctx,
                                                  const std::string& code,
                                                  const std::string& coding_scheme_code,
                                                  std::uint32_t version) {
@@ -248,7 +250,7 @@ trading_account_type_repository::read_at_version(context ctx,
 }
 
 trading_account_type_repository::remove_status
-trading_account_type_repository::remove(context ctx,
+trading_account_type_repository::remove(const context& ctx,
                                         const std::string& code,
                                         const std::string& coding_scheme_code,
                                         std::optional<std::uint32_t> version) {
@@ -282,14 +284,14 @@ trading_account_type_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void trading_account_type_repository::remove(context ctx,
+void trading_account_type_repository::remove(const context& ctx,
                                              const std::string& code,
                                              const std::string& coding_scheme_code) {
     static_cast<void>(remove(ctx, code, coding_scheme_code, std::nullopt));
 }
 
 std::vector<domain::trading_account_type>
-trading_account_type_repository::read_latest(context ctx,
+trading_account_type_repository::read_latest(const context& ctx,
                                              std::uint32_t offset,
                                              std::uint32_t limit,
                                              const ores::utility::domain::order& order,
@@ -313,7 +315,7 @@ trading_account_type_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-trading_account_type_repository::get_total_type_count(context ctx,
+trading_account_type_repository::get_total_type_count(const context& ctx,
                                                       const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trading account type count";
 
@@ -330,7 +332,7 @@ trading_account_type_repository::get_total_type_count(context ctx,
 }
 
 std::vector<domain::trading_account_type>
-trading_account_type_repository::read_latest(context ctx,
+trading_account_type_repository::read_latest(const context& ctx,
                                              const std::vector<std::string>& codes,
                                              const std::vector<std::string>& coding_scheme_codes) {
     if (codes.empty() || coding_scheme_codes.empty())
@@ -366,7 +368,7 @@ trading_account_type_repository::read_latest(context ctx,
     return filtered;
 }
 
-void trading_account_type_repository::remove(context ctx,
+void trading_account_type_repository::remove(const context& ctx,
                                              const std::vector<std::string>& codes,
                                              const std::vector<std::string>& coding_scheme_codes) {
     // Compound key: a per-column .in() DELETE would be a cross-product

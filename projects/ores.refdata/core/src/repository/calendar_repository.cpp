@@ -106,7 +106,7 @@ calendar_filter_condition(const std::optional<messaging::calendars_filter>& filt
 
 }
 
-ores::utility::domain::precondition calendar_repository::replace_claim(context ctx,
+ores::utility::domain::precondition calendar_repository::replace_claim(const context& ctx,
                                                                        const domain::calendar& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
@@ -115,8 +115,10 @@ ores::utility::domain::precondition calendar_repository::replace_claim(context c
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::calendar calendar_repository::apply_claim(
-    context ctx, const domain::calendar& v, const ores::utility::domain::precondition& claim) {
+domain::calendar
+calendar_repository::apply_claim(const context& ctx,
+                                 const domain::calendar& v,
+                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -141,11 +143,11 @@ domain::calendar calendar_repository::apply_claim(
     return t;
 }
 
-void calendar_repository::write(context ctx, const domain::calendar& v) {
+void calendar_repository::write(const context& ctx, const domain::calendar& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void calendar_repository::write(context ctx, const std::vector<domain::calendar>& v) {
+void calendar_repository::write(const context& ctx, const std::vector<domain::calendar>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -153,7 +155,7 @@ void calendar_repository::write(context ctx, const std::vector<domain::calendar>
     write(ctx, v, claims);
 }
 
-void calendar_repository::write(context ctx,
+void calendar_repository::write(const context& ctx,
                                 const domain::calendar& v,
                                 const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing calendar. " << "code: " << v.code;
@@ -162,7 +164,7 @@ void calendar_repository::write(context ctx,
         ctx, calendar_mapper::map(t), lg(), "Writing calendar to database.");
 }
 
-void calendar_repository::write(context ctx,
+void calendar_repository::write(const context& ctx,
                                 const std::vector<domain::calendar>& v,
                                 const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing calendars. Count: " << v.size();
@@ -174,7 +176,7 @@ void calendar_repository::write(context ctx,
         ctx, calendar_mapper::map(batch), lg(), "Writing calendars to database.");
 }
 
-std::vector<domain::calendar> calendar_repository::read_latest(context ctx) {
+std::vector<domain::calendar> calendar_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<calendar_entity>> |
@@ -189,7 +191,7 @@ std::vector<domain::calendar> calendar_repository::read_latest(context ctx) {
         "Reading latest calendars");
 }
 
-std::vector<domain::calendar> calendar_repository::read_latest(context ctx,
+std::vector<domain::calendar> calendar_repository::read_latest(const context& ctx,
                                                                const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest calendar. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -207,7 +209,8 @@ std::vector<domain::calendar> calendar_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::calendar> calendar_repository::read_all(context ctx, const std::string& code) {
+std::vector<domain::calendar> calendar_repository::read_all(const context& ctx,
+                                                            const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all calendar versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<calendar_entity>> |
@@ -222,8 +225,9 @@ std::vector<domain::calendar> calendar_repository::read_all(context ctx, const s
         "Reading all calendar versions by code.");
 }
 
-std::optional<domain::calendar>
-calendar_repository::read_at_version(context ctx, const std::string& code, std::uint32_t version) {
+std::optional<domain::calendar> calendar_repository::read_at_version(const context& ctx,
+                                                                     const std::string& code,
+                                                                     std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading calendar at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -245,7 +249,7 @@ calendar_repository::read_at_version(context ctx, const std::string& code, std::
 }
 
 calendar_repository::remove_status calendar_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing calendar. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -273,12 +277,12 @@ calendar_repository::remove_status calendar_repository::remove(
     return remove_status::removed;
 }
 
-void calendar_repository::remove(context ctx, const std::string& code) {
+void calendar_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::calendar>
-calendar_repository::read_latest(context ctx,
+calendar_repository::read_latest(const context& ctx,
                                  std::uint32_t offset,
                                  std::uint32_t limit,
                                  const ores::utility::domain::order& order,
@@ -302,7 +306,7 @@ calendar_repository::read_latest(context ctx,
 }
 
 std::uint32_t calendar_repository::get_total_calendar_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::calendars_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active calendar count";
@@ -320,7 +324,7 @@ std::uint32_t calendar_repository::get_total_calendar_count(
 }
 
 std::vector<domain::calendar>
-calendar_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+calendar_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -337,7 +341,7 @@ calendar_repository::read_latest(context ctx, const std::vector<std::string>& co
     return result;
 }
 
-void calendar_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void calendar_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

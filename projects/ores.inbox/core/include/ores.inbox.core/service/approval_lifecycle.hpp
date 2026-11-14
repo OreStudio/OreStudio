@@ -197,7 +197,7 @@ private:
     }
 
 public:
-    explicit approval_lifecycle(ores::database::context ctx);
+    explicit approval_lifecycle(const ores::database::context& ctx);
 
     /**
      * @brief The account the context's actor signs in as, if any.

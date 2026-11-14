@@ -58,8 +58,8 @@ namespace ores::synthetic::service {
 
 using namespace ores::logging;
 
-ir_curve_template_entry_service::ir_curve_template_entry_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+ir_curve_template_entry_service::ir_curve_template_entry_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

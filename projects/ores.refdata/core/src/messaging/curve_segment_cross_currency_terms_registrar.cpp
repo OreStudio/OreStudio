@@ -45,11 +45,11 @@ static constexpr std::string_view curve_segment_cross_currency_terms_queue_group
 
 std::vector<ores::nats::service::subscription> register_curve_segment_cross_currency_terms_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<curve_segment_cross_currency_terms_handler>(
-        nats, std::move(ctx), std::move(verifier));
+        nats, ctx, std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_curve_segment_cross_currency_terms_request::nats_subject,
                              curve_segment_cross_currency_terms_queue_group,

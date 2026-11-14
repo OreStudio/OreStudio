@@ -50,8 +50,8 @@ namespace ores::dq::service {
 
 using namespace ores::logging;
 
-lei_relationship_service::lei_relationship_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+lei_relationship_service::lei_relationship_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

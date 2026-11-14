@@ -326,5 +326,5 @@ proves the fit recovers the quotes, not that the feed's period addition and two-
 agree with the calibration's. The feed's tick, both gates' messages and the no-drift line are
 unproven for the same reason -- none of them is reachable without a wire, which is why
 =fx_vol_expiry_markets= was extracted. That work is
-[[id:9E6B1C42-6B38-4C2B-9C1E-9A7C1B6F4D21][Test the surface's tick through the values, and the board's own invariants]].
+[[id:CB3AAFB0-532C-413B-B522-C9B00908CAC6][Test the surface's tick through the values, and the board's own invariants]].
 

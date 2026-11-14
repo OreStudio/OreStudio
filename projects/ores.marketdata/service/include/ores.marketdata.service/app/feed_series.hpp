@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_FEED_SERIES_HPP
 #define ORES_MARKETDATA_SERVICE_APP_FEED_SERIES_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.marketdata.service/app/tick_plan.hpp"

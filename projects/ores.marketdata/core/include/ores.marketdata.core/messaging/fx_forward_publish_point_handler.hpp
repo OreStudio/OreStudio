@@ -58,11 +58,11 @@ using namespace ores::logging;
 class fx_forward_publish_point_handler {
 public:
     fx_forward_publish_point_handler(ores::nats::service::client& nats,
-                                     ores::database::context ctx,
+                                     const ores::database::context& ctx,
                                      std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     /**
      * @brief Serves marketdata.v1.fx_forward_publish_points.list.

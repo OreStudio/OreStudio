@@ -113,7 +113,7 @@ std::optional<query_builder::condition> todays_market_configuration_binding_filt
 }
 
 ores::utility::domain::precondition todays_market_configuration_binding_repository::replace_claim(
-    context ctx, const domain::todays_market_configuration_binding& v) {
+    const context& ctx, const domain::todays_market_configuration_binding& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -123,7 +123,7 @@ ores::utility::domain::precondition todays_market_configuration_binding_reposito
 
 domain::todays_market_configuration_binding
 todays_market_configuration_binding_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::todays_market_configuration_binding& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -151,12 +151,12 @@ todays_market_configuration_binding_repository::apply_claim(
 }
 
 void todays_market_configuration_binding_repository::write(
-    context ctx, const domain::todays_market_configuration_binding& v) {
+    const context& ctx, const domain::todays_market_configuration_binding& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void todays_market_configuration_binding_repository::write(
-    context ctx, const std::vector<domain::todays_market_configuration_binding>& v) {
+    const context& ctx, const std::vector<domain::todays_market_configuration_binding>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -165,7 +165,7 @@ void todays_market_configuration_binding_repository::write(
 }
 
 void todays_market_configuration_binding_repository::write(
-    context ctx,
+    const context& ctx,
     const domain::todays_market_configuration_binding& v,
     const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing today's market configuration binding. "
@@ -178,7 +178,7 @@ void todays_market_configuration_binding_repository::write(
 }
 
 void todays_market_configuration_binding_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::todays_market_configuration_binding>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing today's market configuration bindings. Count: "
@@ -195,7 +195,7 @@ void todays_market_configuration_binding_repository::write(
 }
 
 std::vector<domain::todays_market_configuration_binding>
-todays_market_configuration_binding_repository::read_latest(context ctx) {
+todays_market_configuration_binding_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -215,7 +215,8 @@ todays_market_configuration_binding_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::todays_market_configuration_binding>
-todays_market_configuration_binding_repository::read_latest(context ctx, const std::string& id) {
+todays_market_configuration_binding_repository::read_latest(const context& ctx,
+                                                            const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest today's market configuration binding. "
                                << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -237,7 +238,7 @@ todays_market_configuration_binding_repository::read_latest(context ctx, const s
 
 std::vector<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_repository::read_latest_by_reference(
-    context ctx, const std::string& reference) {
+    const context& ctx, const std::string& reference) {
     BOOST_LOG_SEV(lg(), debug)
         << "Reading latest today's market configuration binding by reference: " << reference;
     static constexpr auto max = db_timestamp::max();
@@ -266,7 +267,7 @@ todays_market_configuration_binding_repository::read_latest_by_reference(
 
 std::vector<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_repository::read_any_by_reference(
-    context ctx, const std::string& reference) {
+    const context& ctx, const std::string& reference) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any today's market configuration binding by reference: "
                                << reference;
     const auto tid = ctx.tenant_id().to_string();
@@ -298,7 +299,8 @@ todays_market_configuration_binding_repository::read_any_by_reference(
 
 
 std::vector<domain::todays_market_configuration_binding>
-todays_market_configuration_binding_repository::read_all(context ctx, const std::string& id) {
+todays_market_configuration_binding_repository::read_all(const context& ctx,
+                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all today's market configuration binding versions. "
                                << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -319,7 +321,7 @@ todays_market_configuration_binding_repository::read_all(context ctx, const std:
 }
 
 std::optional<domain::todays_market_configuration_binding>
-todays_market_configuration_binding_repository::read_at_version(context ctx,
+todays_market_configuration_binding_repository::read_at_version(const context& ctx,
                                                                 const std::string& id,
                                                                 std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading today's market configuration binding at version. "
@@ -349,7 +351,7 @@ todays_market_configuration_binding_repository::read_at_version(context ctx,
 
 std::vector<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_repository::read_latest_by_todays_market_configuration_id(
-    context ctx,
+    const context& ctx,
     const std::string& todays_market_configuration_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -382,7 +384,7 @@ todays_market_configuration_binding_repository::read_latest_by_todays_market_con
 
 std::uint32_t todays_market_configuration_binding_repository::
     get_total_binding_count_by_todays_market_configuration_id(
-        context ctx,
+        const context& ctx,
         const std::string& todays_market_configuration_id,
         const std::optional<messaging::todays_market_configuration_bindings_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active today's market configuration bindings "
@@ -407,7 +409,7 @@ std::uint32_t todays_market_configuration_binding_repository::
 
 
 todays_market_configuration_binding_repository::remove_status
-todays_market_configuration_binding_repository::remove(context ctx,
+todays_market_configuration_binding_repository::remove(const context& ctx,
                                                        const std::string& id,
                                                        std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing today's market configuration binding. " << "id: " << id;
@@ -438,13 +440,14 @@ todays_market_configuration_binding_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void todays_market_configuration_binding_repository::remove(context ctx, const std::string& id) {
+void todays_market_configuration_binding_repository::remove(const context& ctx,
+                                                            const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::todays_market_configuration_binding>
 todays_market_configuration_binding_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -474,7 +477,7 @@ todays_market_configuration_binding_repository::read_latest(
 }
 
 std::uint32_t todays_market_configuration_binding_repository::get_total_binding_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::todays_market_configuration_bindings_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug)
@@ -495,7 +498,7 @@ std::uint32_t todays_market_configuration_binding_repository::get_total_binding_
 }
 
 std::vector<domain::todays_market_configuration_binding>
-todays_market_configuration_binding_repository::read_latest(context ctx,
+todays_market_configuration_binding_repository::read_latest(const context& ctx,
                                                             const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -516,7 +519,7 @@ todays_market_configuration_binding_repository::read_latest(context ctx,
     return result;
 }
 
-void todays_market_configuration_binding_repository::remove(context ctx,
+void todays_market_configuration_binding_repository::remove(const context& ctx,
                                                             const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

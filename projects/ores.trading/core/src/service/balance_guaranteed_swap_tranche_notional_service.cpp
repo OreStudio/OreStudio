@@ -58,8 +58,8 @@ namespace ores::trading::service {
 using namespace ores::logging;
 
 balance_guaranteed_swap_tranche_notional_service::balance_guaranteed_swap_tranche_notional_service(
-    context ctx)
-    : ctx_(std::move(ctx)) {}
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

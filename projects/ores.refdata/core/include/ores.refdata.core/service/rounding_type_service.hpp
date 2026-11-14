@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit rounding_type_service(context ctx);
+    explicit rounding_type_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

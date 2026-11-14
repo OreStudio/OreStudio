@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::session& v);
-    void write(context ctx, const std::vector<domain::session>& v);
+    void write(const context& ctx, const domain::session& v);
+    void write(const context& ctx, const std::vector<domain::session>& v);
     /**@}*/
 
     /**
@@ -89,14 +89,15 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void
-    write(context ctx, const domain::session& v, const ores::utility::domain::precondition& claim);
+    void write(const context& ctx,
+               const domain::session& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
      * @brief Writes a set of sessions, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::session>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -104,10 +105,10 @@ public:
      * @brief Reads latest sessions, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::session> read_latest(context ctx);
+    std::vector<domain::session> read_latest(const context& ctx);
     std::vector<domain::session>
-    read_latest(context ctx, const std::string& id, const std::string& start_time);
-    std::vector<domain::session> read_latest(context ctx,
+    read_latest(const context& ctx, const std::string& id, const std::string& start_time);
+    std::vector<domain::session> read_latest(const context& ctx,
                                              const std::vector<std::string>& ids,
                                              const std::vector<std::string>& start_times);
     /**@}*/
@@ -115,7 +116,7 @@ public:
     /**
      * @brief Reads latest sessions filtered by id.
      */
-    std::vector<domain::session> read_latest_by_id(context ctx, const std::string& id);
+    std::vector<domain::session> read_latest_by_id(const context& ctx, const std::string& id);
 
 
     /**
@@ -125,7 +126,7 @@ public:
      * current row, not a version history.
      */
     std::vector<domain::session>
-    read_all(context ctx, const std::string& id, const std::string& start_time);
+    read_all(const context& ctx, const std::string& id, const std::string& start_time);
 
 
     /**
@@ -145,7 +146,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::session>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -157,7 +158,7 @@ public:
      * @return Total number of active sessions
      */
     std::uint32_t
-    get_total_session_count(context ctx,
+    get_total_session_count(const context& ctx,
                             const std::optional<messaging::sessions_filter>& filter = std::nullopt);
 
     /**
@@ -166,7 +167,7 @@ public:
      * A current-state table has no history, so the row is removed, not
      * soft-closed.
      */
-    void remove(context ctx, const std::string& id, const std::string& start_time);
+    void remove(const context& ctx, const std::string& id, const std::string& start_time);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -188,7 +189,7 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& id,
                          const std::string& start_time,
                          std::optional<std::uint32_t> version);
@@ -196,50 +197,50 @@ public:
     /**
      * @brief Deletes sessions permanently.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::vector<std::string>& ids,
                 const std::vector<std::string>& start_times);
 
-    std::optional<domain::session> read(context ctx, const boost::uuids::uuid& session_id);
+    std::optional<domain::session> read(const context& ctx, const boost::uuids::uuid& session_id);
 
-    void update_bytes(context ctx,
+    void update_bytes(const context& ctx,
                       const boost::uuids::uuid& session_id,
                       const std::chrono::system_clock::time_point& start_time,
                       std::uint64_t bytes_sent,
                       std::uint64_t bytes_received);
 
-    void end_session(context ctx,
+    void end_session(const context& ctx,
                      const boost::uuids::uuid& session_id,
                      const std::chrono::system_clock::time_point& start_time,
                      const std::chrono::system_clock::time_point& end_time,
                      std::uint64_t bytes_sent,
                      std::uint64_t bytes_received);
 
-    std::vector<domain::session> read_by_account(context ctx,
+    std::vector<domain::session> read_by_account(const context& ctx,
                                                  const boost::uuids::uuid& account_id,
                                                  std::uint32_t limit = 0,
                                                  std::uint32_t offset = 0);
 
-    std::vector<domain::session> read_active_by_account(context ctx,
+    std::vector<domain::session> read_active_by_account(const context& ctx,
                                                         const boost::uuids::uuid& account_id);
 
-    std::uint32_t count_by_account(context ctx, const boost::uuids::uuid& account_id);
+    std::uint32_t count_by_account(const context& ctx, const boost::uuids::uuid& account_id);
 
-    std::vector<domain::session> read_all_active(context ctx);
+    std::vector<domain::session> read_all_active(const context& ctx);
 
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::session& v);
+    ores::utility::domain::precondition replace_claim(const context& ctx, const domain::session& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::session apply_claim(context ctx,
+    domain::session apply_claim(const context& ctx,
                                 const domain::session& v,
                                 const ores::utility::domain::precondition& claim);
 };

@@ -71,7 +71,7 @@ public:
      *        its own pairs is deterministic instead of racing whatever
      *        ores.refdata.service happens to answer.
      */
-    import_service(context ctx,
+    import_service(const context& ctx,
                    ores::nats::service::nats_client& auth_nats,
                    known_pairs_provider known_pairs = {});
 

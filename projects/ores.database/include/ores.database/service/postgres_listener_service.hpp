@@ -105,7 +105,7 @@ public:
      * @param callback The callback function to be invoked when a notification
      *        is received with the channel name and raw payload.
      */
-    explicit postgres_listener_service(context ctx, notification_callback_t callback);
+    explicit postgres_listener_service(const context& ctx, notification_callback_t callback);
 
     /**
      * @brief Destroys the postgres_listener_service.

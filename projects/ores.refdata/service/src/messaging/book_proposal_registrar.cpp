@@ -41,7 +41,7 @@ constexpr std::string_view queue_group = "ores.refdata.service";
 
 std::vector<ores::nats::service::subscription> book_proposal_registrar::register_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     // The apply workflow's commands come from the engine, which has proved
@@ -85,7 +85,7 @@ std::vector<ores::nats::service::subscription> book_proposal_registrar::register
                              queue_group,
                              [cp](ores::nats::message msg) { cp->recheck(std::move(msg)); }));
 
-    auto h = std::make_shared<book_proposal_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<book_proposal_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         preview_book_changes_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->preview(std::move(msg));

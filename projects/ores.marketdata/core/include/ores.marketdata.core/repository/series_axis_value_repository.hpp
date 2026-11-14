@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::series_axis_value& v);
-    void write(context ctx, const std::vector<domain::series_axis_value>& v);
+    void write(const context& ctx, const domain::series_axis_value& v);
+    void write(const context& ctx, const std::vector<domain::series_axis_value>& v);
     /**@}*/
 
     /**
@@ -89,7 +89,7 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::series_axis_value& v,
                const ores::utility::domain::precondition& claim);
 
@@ -97,7 +97,7 @@ public:
      * @brief Writes a set of series axis values, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::series_axis_value>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -105,12 +105,12 @@ public:
      * @brief Reads latest series axis values, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::series_axis_value> read_latest(context ctx);
-    std::vector<domain::series_axis_value> read_latest(context ctx,
+    std::vector<domain::series_axis_value> read_latest(const context& ctx);
+    std::vector<domain::series_axis_value> read_latest(const context& ctx,
                                                        const std::string& series_id,
                                                        const std::string& axis_field,
                                                        const std::string& value);
-    std::vector<domain::series_axis_value> read_latest(context ctx,
+    std::vector<domain::series_axis_value> read_latest(const context& ctx,
                                                        const std::vector<std::string>& series_ids,
                                                        const std::vector<std::string>& axis_fields,
                                                        const std::vector<std::string>& values);
@@ -123,7 +123,7 @@ public:
      * A current-state table holds one row per key, so this is the single
      * current row, not a version history.
      */
-    std::vector<domain::series_axis_value> read_all(context ctx,
+    std::vector<domain::series_axis_value> read_all(const context& ctx,
                                                     const std::string& series_id,
                                                     const std::string& axis_field,
                                                     const std::string& value);
@@ -146,7 +146,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::series_axis_value>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {});
@@ -156,7 +156,7 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active series axis values
      */
-    std::uint32_t get_total_series_axis_value_count(context ctx);
+    std::uint32_t get_total_series_axis_value_count(const context& ctx);
 
     /**
      * @brief Deletes a series axis value permanently.
@@ -164,7 +164,7 @@ public:
      * A current-state table has no history, so the row is removed, not
      * soft-closed.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::string& series_id,
                 const std::string& axis_field,
                 const std::string& value);
@@ -189,7 +189,7 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx,
+    remove_status remove(const context& ctx,
                          const std::string& series_id,
                          const std::string& axis_field,
                          const std::string& value,
@@ -198,20 +198,20 @@ public:
     /**
      * @brief Deletes series axis values permanently.
      */
-    void remove(context ctx,
+    void remove(const context& ctx,
                 const std::vector<std::string>& series_ids,
                 const std::vector<std::string>& axis_fields,
                 const std::vector<std::string>& values);
 
     std::vector<domain::series_axis_value>
-    read_latest_for_series(context ctx, const std::vector<std::string>& series_ids);
+    read_latest_for_series(const context& ctx, const std::vector<std::string>& series_ids);
 
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::series_axis_value& v);
 
     /**
@@ -219,7 +219,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::series_axis_value apply_claim(context ctx,
+    domain::series_axis_value apply_claim(const context& ctx,
                                           const domain::series_axis_value& v,
                                           const ores::utility::domain::precondition& claim);
 };

@@ -60,7 +60,7 @@ void account_operations_service::throw_if_empty(const std::string& name, const s
     }
 }
 
-account_operations_service::account_operations_service(database::context ctx)
+account_operations_service::account_operations_service(const database::context& ctx)
     : ctx_(ctx) {
 
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();

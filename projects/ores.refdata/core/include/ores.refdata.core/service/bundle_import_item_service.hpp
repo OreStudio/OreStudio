@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit bundle_import_item_service(context ctx);
+    explicit bundle_import_item_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -135,7 +135,7 @@ result_filter_condition(const std::optional<messaging::results_filter>& filter) 
 
 }
 
-ores::utility::domain::precondition result_repository::replace_claim(context ctx,
+ores::utility::domain::precondition result_repository::replace_claim(const context& ctx,
                                                                      const domain::result& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -144,7 +144,7 @@ ores::utility::domain::precondition result_repository::replace_claim(context ctx
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::result result_repository::apply_claim(context ctx,
+domain::result result_repository::apply_claim(const context& ctx,
                                               const domain::result& v,
                                               const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -171,11 +171,11 @@ domain::result result_repository::apply_claim(context ctx,
     return t;
 }
 
-void result_repository::write(context ctx, const domain::result& v) {
+void result_repository::write(const context& ctx, const domain::result& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void result_repository::write(context ctx, const std::vector<domain::result>& v) {
+void result_repository::write(const context& ctx, const std::vector<domain::result>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -183,7 +183,7 @@ void result_repository::write(context ctx, const std::vector<domain::result>& v)
     write(ctx, v, claims);
 }
 
-void result_repository::write(context ctx,
+void result_repository::write(const context& ctx,
                               const domain::result& v,
                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute result. " << "id: " << v.id;
@@ -192,7 +192,7 @@ void result_repository::write(context ctx,
         ctx, result_mapper::map(t), lg(), "Writing compute result to database.");
 }
 
-void result_repository::write(context ctx,
+void result_repository::write(const context& ctx,
                               const std::vector<domain::result>& v,
                               const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing compute results. Count: " << v.size();
@@ -204,7 +204,7 @@ void result_repository::write(context ctx,
         ctx, result_mapper::map(batch), lg(), "Writing compute results to database.");
 }
 
-std::vector<domain::result> result_repository::read_latest(context ctx) {
+std::vector<domain::result> result_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<result_entity>> |
@@ -219,7 +219,8 @@ std::vector<domain::result> result_repository::read_latest(context ctx) {
         "Reading latest compute results");
 }
 
-std::vector<domain::result> result_repository::read_latest(context ctx, const std::string& id) {
+std::vector<domain::result> result_repository::read_latest(const context& ctx,
+                                                           const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute result. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -236,7 +237,7 @@ std::vector<domain::result> result_repository::read_latest(context ctx, const st
 }
 
 
-std::vector<domain::result> result_repository::read_all(context ctx, const std::string& id) {
+std::vector<domain::result> result_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all compute result versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<result_entity>> |
@@ -251,8 +252,9 @@ std::vector<domain::result> result_repository::read_all(context ctx, const std::
         "Reading all compute result versions by id.");
 }
 
-std::optional<domain::result>
-result_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+std::optional<domain::result> result_repository::read_at_version(const context& ctx,
+                                                                 const std::string& id,
+                                                                 std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading compute result at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -274,7 +276,7 @@ result_repository::read_at_version(context ctx, const std::string& id, std::uint
 }
 
 std::vector<domain::result> result_repository::read_latest_by_workunit_id(
-    context ctx,
+    const context& ctx,
     const std::string& workunit_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -300,7 +302,7 @@ std::vector<domain::result> result_repository::read_latest_by_workunit_id(
 }
 
 std::uint32_t result_repository::get_total_result_count_by_workunit_id(
-    context ctx,
+    const context& ctx,
     const std::string& workunit_id,
     const std::optional<messaging::results_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active compute results count. workunit_id: "
@@ -321,7 +323,7 @@ std::uint32_t result_repository::get_total_result_count_by_workunit_id(
 }
 
 
-result_repository::remove_status result_repository::remove(context ctx,
+result_repository::remove_status result_repository::remove(const context& ctx,
                                                            const std::string& id,
                                                            std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing compute result. " << "id: " << id;
@@ -351,12 +353,12 @@ result_repository::remove_status result_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void result_repository::remove(context ctx, const std::string& id) {
+void result_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::result>
-result_repository::read_latest(context ctx,
+result_repository::read_latest(const context& ctx,
                                std::uint32_t offset,
                                std::uint32_t limit,
                                const ores::utility::domain::order& order,
@@ -380,7 +382,7 @@ result_repository::read_latest(context ctx,
 }
 
 std::uint32_t
-result_repository::get_total_result_count(context ctx,
+result_repository::get_total_result_count(const context& ctx,
                                           const std::optional<messaging::results_filter>& filter,
                                           const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active compute result count";
@@ -397,7 +399,7 @@ result_repository::get_total_result_count(context ctx,
         "Counting compute results");
 }
 
-std::vector<domain::result> result_repository::read_latest(context ctx,
+std::vector<domain::result> result_repository::read_latest(const context& ctx,
                                                            const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
@@ -415,7 +417,7 @@ std::vector<domain::result> result_repository::read_latest(context ctx,
     return result;
 }
 
-void result_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void result_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -433,7 +435,7 @@ void result_repository::remove(context ctx, const std::vector<std::string>& ids)
 }
 
 
-std::vector<domain::result> result_repository::read_by_state(context ctx, int server_state) {
+std::vector<domain::result> result_repository::read_by_state(const context& ctx, int server_state) {
     BOOST_LOG_SEV(lg(), debug) << "Reading results by state: " << server_state;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();

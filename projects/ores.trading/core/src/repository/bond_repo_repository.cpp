@@ -101,7 +101,7 @@ bond_repo_filter_condition(const std::optional<messaging::bond_repos_filter>& fi
 }
 
 ores::utility::domain::precondition
-bond_repo_repository::replace_claim(context ctx, const domain::bond_repo& v) {
+bond_repo_repository::replace_claim(const context& ctx, const domain::bond_repo& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -109,8 +109,10 @@ bond_repo_repository::replace_claim(context ctx, const domain::bond_repo& v) {
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::bond_repo bond_repo_repository::apply_claim(
-    context ctx, const domain::bond_repo& v, const ores::utility::domain::precondition& claim) {
+domain::bond_repo
+bond_repo_repository::apply_claim(const context& ctx,
+                                  const domain::bond_repo& v,
+                                  const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -135,11 +137,11 @@ domain::bond_repo bond_repo_repository::apply_claim(
     return t;
 }
 
-void bond_repo_repository::write(context ctx, const domain::bond_repo& v) {
+void bond_repo_repository::write(const context& ctx, const domain::bond_repo& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void bond_repo_repository::write(context ctx, const std::vector<domain::bond_repo>& v) {
+void bond_repo_repository::write(const context& ctx, const std::vector<domain::bond_repo>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -147,7 +149,7 @@ void bond_repo_repository::write(context ctx, const std::vector<domain::bond_rep
     write(ctx, v, claims);
 }
 
-void bond_repo_repository::write(context ctx,
+void bond_repo_repository::write(const context& ctx,
                                  const domain::bond_repo& v,
                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond repo. " << "trade_id: " << v.trade_id;
@@ -156,7 +158,7 @@ void bond_repo_repository::write(context ctx,
         ctx, bond_repo_mapper::map(t), lg(), "Writing bond repo to database.");
 }
 
-void bond_repo_repository::write(context ctx,
+void bond_repo_repository::write(const context& ctx,
                                  const std::vector<domain::bond_repo>& v,
                                  const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond repos. Count: " << v.size();
@@ -168,7 +170,7 @@ void bond_repo_repository::write(context ctx,
         ctx, bond_repo_mapper::map(batch), lg(), "Writing bond repos to database.");
 }
 
-std::vector<domain::bond_repo> bond_repo_repository::read_latest(context ctx) {
+std::vector<domain::bond_repo> bond_repo_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<bond_repo_entity>> |
@@ -183,7 +185,7 @@ std::vector<domain::bond_repo> bond_repo_repository::read_latest(context ctx) {
         "Reading latest bond repos");
 }
 
-std::vector<domain::bond_repo> bond_repo_repository::read_latest(context ctx,
+std::vector<domain::bond_repo> bond_repo_repository::read_latest(const context& ctx,
                                                                  const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest bond repo. " << "trade_id: " << trade_id;
     static constexpr auto max = db_timestamp::max();
@@ -201,7 +203,7 @@ std::vector<domain::bond_repo> bond_repo_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::bond_repo> bond_repo_repository::read_all(context ctx,
+std::vector<domain::bond_repo> bond_repo_repository::read_all(const context& ctx,
                                                               const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all bond repo versions. " << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
@@ -217,7 +219,7 @@ std::vector<domain::bond_repo> bond_repo_repository::read_all(context ctx,
         "Reading all bond repo versions by trade_id.");
 }
 
-std::optional<domain::bond_repo> bond_repo_repository::read_at_version(context ctx,
+std::optional<domain::bond_repo> bond_repo_repository::read_at_version(const context& ctx,
                                                                        const std::string& trade_id,
                                                                        std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading bond repo at version. " << "trade_id: " << trade_id
@@ -242,7 +244,7 @@ std::optional<domain::bond_repo> bond_repo_repository::read_at_version(context c
 
 
 bond_repo_repository::remove_status bond_repo_repository::remove(
-    context ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing bond repo. " << "trade_id: " << trade_id;
     const auto current = read_latest(ctx, trade_id);
     if (current.empty())
@@ -270,12 +272,12 @@ bond_repo_repository::remove_status bond_repo_repository::remove(
     return remove_status::removed;
 }
 
-void bond_repo_repository::remove(context ctx, const std::string& trade_id) {
+void bond_repo_repository::remove(const context& ctx, const std::string& trade_id) {
     static_cast<void>(remove(ctx, trade_id, std::nullopt));
 }
 
 std::vector<domain::bond_repo>
-bond_repo_repository::read_latest(context ctx,
+bond_repo_repository::read_latest(const context& ctx,
                                   std::uint32_t offset,
                                   std::uint32_t limit,
                                   const ores::utility::domain::order& order,
@@ -299,7 +301,7 @@ bond_repo_repository::read_latest(context ctx,
 }
 
 std::uint32_t bond_repo_repository::get_total_repo_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::bond_repos_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond repo count";
@@ -317,7 +319,7 @@ std::uint32_t bond_repo_repository::get_total_repo_count(
 }
 
 std::vector<domain::bond_repo>
-bond_repo_repository::read_latest(context ctx, const std::vector<std::string>& trade_ids) {
+bond_repo_repository::read_latest(const context& ctx, const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -334,7 +336,7 @@ bond_repo_repository::read_latest(context ctx, const std::vector<std::string>& t
     return result;
 }
 
-void bond_repo_repository::remove(context ctx, const std::vector<std::string>& trade_ids) {
+void bond_repo_repository::remove(const context& ctx, const std::vector<std::string>& trade_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

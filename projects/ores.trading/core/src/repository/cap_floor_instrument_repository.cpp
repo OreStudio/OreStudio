@@ -103,7 +103,8 @@ std::optional<query_builder::condition> cap_floor_instrument_filter_condition(
 }
 
 ores::utility::domain::precondition
-cap_floor_instrument_repository::replace_claim(context ctx, const domain::cap_floor_instrument& v) {
+cap_floor_instrument_repository::replace_claim(const context& ctx,
+                                               const domain::cap_floor_instrument& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -112,7 +113,7 @@ cap_floor_instrument_repository::replace_claim(context ctx, const domain::cap_fl
 }
 
 domain::cap_floor_instrument
-cap_floor_instrument_repository::apply_claim(context ctx,
+cap_floor_instrument_repository::apply_claim(const context& ctx,
                                              const domain::cap_floor_instrument& v,
                                              const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,11 +140,12 @@ cap_floor_instrument_repository::apply_claim(context ctx,
     return t;
 }
 
-void cap_floor_instrument_repository::write(context ctx, const domain::cap_floor_instrument& v) {
+void cap_floor_instrument_repository::write(const context& ctx,
+                                            const domain::cap_floor_instrument& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void cap_floor_instrument_repository::write(context ctx,
+void cap_floor_instrument_repository::write(const context& ctx,
                                             const std::vector<domain::cap_floor_instrument>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -152,7 +154,7 @@ void cap_floor_instrument_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void cap_floor_instrument_repository::write(context ctx,
+void cap_floor_instrument_repository::write(const context& ctx,
                                             const domain::cap_floor_instrument& v,
                                             const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cap/floor instrument. " << "trade_id: " << v.trade_id;
@@ -164,7 +166,7 @@ void cap_floor_instrument_repository::write(context ctx,
 }
 
 void cap_floor_instrument_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::cap_floor_instrument>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cap/floor instruments. Count: " << v.size();
@@ -179,7 +181,7 @@ void cap_floor_instrument_repository::write(
 }
 
 std::vector<domain::cap_floor_instrument>
-cap_floor_instrument_repository::read_latest(context ctx) {
+cap_floor_instrument_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cap_floor_instrument_entity>> |
@@ -196,7 +198,7 @@ cap_floor_instrument_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::cap_floor_instrument>
-cap_floor_instrument_repository::read_latest(context ctx, const std::string& trade_id) {
+cap_floor_instrument_repository::read_latest(const context& ctx, const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest cap/floor instrument. "
                                << "trade_id: " << trade_id;
     static constexpr auto max = db_timestamp::max();
@@ -216,7 +218,7 @@ cap_floor_instrument_repository::read_latest(context ctx, const std::string& tra
 
 
 std::vector<domain::cap_floor_instrument>
-cap_floor_instrument_repository::read_all(context ctx, const std::string& trade_id) {
+cap_floor_instrument_repository::read_all(const context& ctx, const std::string& trade_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all cap/floor instrument versions. "
                                << "trade_id: " << trade_id;
     const auto tid = ctx.tenant_id().to_string();
@@ -234,7 +236,7 @@ cap_floor_instrument_repository::read_all(context ctx, const std::string& trade_
 }
 
 std::optional<domain::cap_floor_instrument> cap_floor_instrument_repository::read_at_version(
-    context ctx, const std::string& trade_id, std::uint32_t version) {
+    const context& ctx, const std::string& trade_id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading cap/floor instrument at version. "
                                << "trade_id: " << trade_id << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -258,7 +260,7 @@ std::optional<domain::cap_floor_instrument> cap_floor_instrument_repository::rea
 
 
 cap_floor_instrument_repository::remove_status cap_floor_instrument_repository::remove(
-    context ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing cap/floor instrument. " << "trade_id: " << trade_id;
     const auto current = read_latest(ctx, trade_id);
     if (current.empty())
@@ -287,12 +289,12 @@ cap_floor_instrument_repository::remove_status cap_floor_instrument_repository::
     return remove_status::removed;
 }
 
-void cap_floor_instrument_repository::remove(context ctx, const std::string& trade_id) {
+void cap_floor_instrument_repository::remove(const context& ctx, const std::string& trade_id) {
     static_cast<void>(remove(ctx, trade_id, std::nullopt));
 }
 
 std::vector<domain::cap_floor_instrument> cap_floor_instrument_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -318,7 +320,7 @@ std::vector<domain::cap_floor_instrument> cap_floor_instrument_repository::read_
 }
 
 std::uint32_t cap_floor_instrument_repository::get_total_cap_floor_instrument_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::cap_floor_instruments_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active cap/floor instrument count";
@@ -337,7 +339,7 @@ std::uint32_t cap_floor_instrument_repository::get_total_cap_floor_instrument_co
 }
 
 std::vector<domain::cap_floor_instrument>
-cap_floor_instrument_repository::read_latest(context ctx,
+cap_floor_instrument_repository::read_latest(const context& ctx,
                                              const std::vector<std::string>& trade_ids) {
     if (trade_ids.empty())
         return {};
@@ -356,7 +358,7 @@ cap_floor_instrument_repository::read_latest(context ctx,
     return result;
 }
 
-void cap_floor_instrument_repository::remove(context ctx,
+void cap_floor_instrument_repository::remove(const context& ctx,
                                              const std::vector<std::string>& trade_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

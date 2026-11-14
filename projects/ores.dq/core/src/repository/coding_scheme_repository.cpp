@@ -100,7 +100,7 @@ coding_scheme_filter_condition(const std::optional<messaging::coding_schemes_fil
 }
 
 ores::utility::domain::precondition
-coding_scheme_repository::replace_claim(context ctx, const domain::coding_scheme& v) {
+coding_scheme_repository::replace_claim(const context& ctx, const domain::coding_scheme& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -108,8 +108,10 @@ coding_scheme_repository::replace_claim(context ctx, const domain::coding_scheme
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::coding_scheme coding_scheme_repository::apply_claim(
-    context ctx, const domain::coding_scheme& v, const ores::utility::domain::precondition& claim) {
+domain::coding_scheme
+coding_scheme_repository::apply_claim(const context& ctx,
+                                      const domain::coding_scheme& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -134,11 +136,12 @@ domain::coding_scheme coding_scheme_repository::apply_claim(
     return t;
 }
 
-void coding_scheme_repository::write(context ctx, const domain::coding_scheme& v) {
+void coding_scheme_repository::write(const context& ctx, const domain::coding_scheme& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void coding_scheme_repository::write(context ctx, const std::vector<domain::coding_scheme>& v) {
+void coding_scheme_repository::write(const context& ctx,
+                                     const std::vector<domain::coding_scheme>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -146,7 +149,7 @@ void coding_scheme_repository::write(context ctx, const std::vector<domain::codi
     write(ctx, v, claims);
 }
 
-void coding_scheme_repository::write(context ctx,
+void coding_scheme_repository::write(const context& ctx,
                                      const domain::coding_scheme& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing coding scheme. " << "code: " << v.code;
@@ -156,7 +159,7 @@ void coding_scheme_repository::write(context ctx,
 }
 
 void coding_scheme_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::coding_scheme>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing coding schemes. Count: " << v.size();
@@ -168,7 +171,7 @@ void coding_scheme_repository::write(
         ctx, coding_scheme_mapper::map(batch), lg(), "Writing coding schemes to database.");
 }
 
-std::vector<domain::coding_scheme> coding_scheme_repository::read_latest(context ctx) {
+std::vector<domain::coding_scheme> coding_scheme_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<coding_scheme_entity>> |
                        query_builder::where("valid_to"_c == max) |
@@ -182,7 +185,7 @@ std::vector<domain::coding_scheme> coding_scheme_repository::read_latest(context
         "Reading latest coding schemes");
 }
 
-std::vector<domain::coding_scheme> coding_scheme_repository::read_latest(context ctx,
+std::vector<domain::coding_scheme> coding_scheme_repository::read_latest(const context& ctx,
                                                                          const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest coding scheme. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -198,7 +201,7 @@ std::vector<domain::coding_scheme> coding_scheme_repository::read_latest(context
 }
 
 
-std::vector<domain::coding_scheme> coding_scheme_repository::read_all(context ctx,
+std::vector<domain::coding_scheme> coding_scheme_repository::read_all(const context& ctx,
                                                                       const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all coding scheme versions. " << "code: " << code;
     const auto query = query_builder::read<std::vector<coding_scheme_entity>> |
@@ -214,7 +217,7 @@ std::vector<domain::coding_scheme> coding_scheme_repository::read_all(context ct
 }
 
 std::optional<domain::coding_scheme> coding_scheme_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading coding scheme at version. " << "code: " << code
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<coding_scheme_entity>> |
@@ -235,7 +238,7 @@ std::optional<domain::coding_scheme> coding_scheme_repository::read_at_version(
 }
 
 coding_scheme_repository::remove_status coding_scheme_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing coding scheme. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -263,12 +266,12 @@ coding_scheme_repository::remove_status coding_scheme_repository::remove(
     return remove_status::removed;
 }
 
-void coding_scheme_repository::remove(context ctx, const std::string& code) {
+void coding_scheme_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::coding_scheme>
-coding_scheme_repository::read_latest(context ctx,
+coding_scheme_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -291,7 +294,7 @@ coding_scheme_repository::read_latest(context ctx,
 }
 
 std::uint32_t coding_scheme_repository::get_total_scheme_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::coding_schemes_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active coding scheme count";
@@ -308,7 +311,7 @@ std::uint32_t coding_scheme_repository::get_total_scheme_count(
 }
 
 std::vector<domain::coding_scheme>
-coding_scheme_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+coding_scheme_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -323,7 +326,7 @@ coding_scheme_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void coding_scheme_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void coding_scheme_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

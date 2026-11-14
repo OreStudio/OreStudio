@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-supervisory_body_service::supervisory_body_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+supervisory_body_service::supervisory_body_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

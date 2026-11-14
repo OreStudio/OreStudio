@@ -100,7 +100,7 @@ derivation_kind_filter_condition(const std::optional<messaging::derivation_kinds
 }
 
 ores::utility::domain::precondition
-derivation_kind_repository::replace_claim(context ctx, const domain::derivation_kind& v) {
+derivation_kind_repository::replace_claim(const context& ctx, const domain::derivation_kind& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -109,7 +109,7 @@ derivation_kind_repository::replace_claim(context ctx, const domain::derivation_
 }
 
 domain::derivation_kind
-derivation_kind_repository::apply_claim(context ctx,
+derivation_kind_repository::apply_claim(const context& ctx,
                                         const domain::derivation_kind& v,
                                         const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -136,11 +136,12 @@ derivation_kind_repository::apply_claim(context ctx,
     return t;
 }
 
-void derivation_kind_repository::write(context ctx, const domain::derivation_kind& v) {
+void derivation_kind_repository::write(const context& ctx, const domain::derivation_kind& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void derivation_kind_repository::write(context ctx, const std::vector<domain::derivation_kind>& v) {
+void derivation_kind_repository::write(const context& ctx,
+                                       const std::vector<domain::derivation_kind>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -148,7 +149,7 @@ void derivation_kind_repository::write(context ctx, const std::vector<domain::de
     write(ctx, v, claims);
 }
 
-void derivation_kind_repository::write(context ctx,
+void derivation_kind_repository::write(const context& ctx,
                                        const domain::derivation_kind& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing derivation kind. " << "code: " << v.code;
@@ -158,7 +159,7 @@ void derivation_kind_repository::write(context ctx,
 }
 
 void derivation_kind_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::derivation_kind>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing derivation kinds. Count: " << v.size();
@@ -170,7 +171,7 @@ void derivation_kind_repository::write(
         ctx, derivation_kind_mapper::map(batch), lg(), "Writing derivation kinds to database.");
 }
 
-std::vector<domain::derivation_kind> derivation_kind_repository::read_latest(context ctx) {
+std::vector<domain::derivation_kind> derivation_kind_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<derivation_kind_entity>> |
@@ -186,7 +187,7 @@ std::vector<domain::derivation_kind> derivation_kind_repository::read_latest(con
 }
 
 std::vector<domain::derivation_kind>
-derivation_kind_repository::read_latest(context ctx, const std::string& code) {
+derivation_kind_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest derivation kind. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -203,7 +204,7 @@ derivation_kind_repository::read_latest(context ctx, const std::string& code) {
 }
 
 
-std::vector<domain::derivation_kind> derivation_kind_repository::read_all(context ctx,
+std::vector<domain::derivation_kind> derivation_kind_repository::read_all(const context& ctx,
                                                                           const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all derivation kind versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -220,7 +221,7 @@ std::vector<domain::derivation_kind> derivation_kind_repository::read_all(contex
 }
 
 std::optional<domain::derivation_kind> derivation_kind_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading derivation kind at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -243,7 +244,7 @@ std::optional<domain::derivation_kind> derivation_kind_repository::read_at_versi
 }
 
 derivation_kind_repository::remove_status derivation_kind_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing derivation kind. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -272,12 +273,12 @@ derivation_kind_repository::remove_status derivation_kind_repository::remove(
     return remove_status::removed;
 }
 
-void derivation_kind_repository::remove(context ctx, const std::string& code) {
+void derivation_kind_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::derivation_kind> derivation_kind_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -303,7 +304,7 @@ std::vector<domain::derivation_kind> derivation_kind_repository::read_latest(
 }
 
 std::uint32_t derivation_kind_repository::get_total_kind_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::derivation_kinds_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active derivation kind count";
@@ -322,7 +323,7 @@ std::uint32_t derivation_kind_repository::get_total_kind_count(
 }
 
 std::vector<domain::derivation_kind>
-derivation_kind_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+derivation_kind_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -340,7 +341,7 @@ derivation_kind_repository::read_latest(context ctx, const std::vector<std::stri
     return result;
 }
 
-void derivation_kind_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void derivation_kind_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

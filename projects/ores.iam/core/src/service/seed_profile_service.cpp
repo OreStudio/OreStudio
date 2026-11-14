@@ -58,8 +58,8 @@ namespace ores::iam::service {
 
 using namespace ores::logging;
 
-seed_profile_service::seed_profile_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+seed_profile_service::seed_profile_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

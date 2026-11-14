@@ -58,8 +58,9 @@ namespace ores::synthetic::service {
 
 using namespace ores::logging;
 
-variance_calibration_input_point_service::variance_calibration_input_point_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+variance_calibration_input_point_service::variance_calibration_input_point_service(
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

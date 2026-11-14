@@ -104,7 +104,7 @@ private:
     }
 
 public:
-    approval_apply_retry(ores::database::context ctx, apply_engine& engine);
+    approval_apply_retry(const ores::database::context& ctx, apply_engine& engine);
 
     /**
      * @brief Runs one pass over every tenant's stalled applies.

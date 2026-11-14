@@ -101,7 +101,7 @@ std::optional<query_builder::condition> pricing_model_engine_pair_filter_conditi
 }
 
 ores::utility::domain::precondition
-pricing_model_engine_pair_repository::replace_claim(context ctx,
+pricing_model_engine_pair_repository::replace_claim(const context& ctx,
                                                     const domain::pricing_model_engine_pair& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
@@ -111,7 +111,7 @@ pricing_model_engine_pair_repository::replace_claim(context ctx,
 }
 
 domain::pricing_model_engine_pair pricing_model_engine_pair_repository::apply_claim(
-    context ctx,
+    const context& ctx,
     const domain::pricing_model_engine_pair& v,
     const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -138,13 +138,13 @@ domain::pricing_model_engine_pair pricing_model_engine_pair_repository::apply_cl
     return t;
 }
 
-void pricing_model_engine_pair_repository::write(context ctx,
+void pricing_model_engine_pair_repository::write(const context& ctx,
                                                  const domain::pricing_model_engine_pair& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void pricing_model_engine_pair_repository::write(
-    context ctx, const std::vector<domain::pricing_model_engine_pair>& v) {
+    const context& ctx, const std::vector<domain::pricing_model_engine_pair>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -152,7 +152,7 @@ void pricing_model_engine_pair_repository::write(
     write(ctx, v, claims);
 }
 
-void pricing_model_engine_pair_repository::write(context ctx,
+void pricing_model_engine_pair_repository::write(const context& ctx,
                                                  const domain::pricing_model_engine_pair& v,
                                                  const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing pricing model engine pair. " << "code: " << v.code;
@@ -164,7 +164,7 @@ void pricing_model_engine_pair_repository::write(context ctx,
 }
 
 void pricing_model_engine_pair_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::pricing_model_engine_pair>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing pricing model engine pairs. Count: " << v.size();
@@ -179,7 +179,7 @@ void pricing_model_engine_pair_repository::write(
 }
 
 std::vector<domain::pricing_model_engine_pair>
-pricing_model_engine_pair_repository::read_latest(context ctx) {
+pricing_model_engine_pair_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<pricing_model_engine_pair_entity>> |
@@ -196,7 +196,7 @@ pricing_model_engine_pair_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::pricing_model_engine_pair>
-pricing_model_engine_pair_repository::read_latest(context ctx, const std::string& code) {
+pricing_model_engine_pair_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest pricing model engine pair. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -215,7 +215,7 @@ pricing_model_engine_pair_repository::read_latest(context ctx, const std::string
 
 
 std::vector<domain::pricing_model_engine_pair>
-pricing_model_engine_pair_repository::read_all(context ctx, const std::string& code) {
+pricing_model_engine_pair_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all pricing model engine pair versions. "
                                << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -233,7 +233,7 @@ pricing_model_engine_pair_repository::read_all(context ctx, const std::string& c
 }
 
 std::optional<domain::pricing_model_engine_pair>
-pricing_model_engine_pair_repository::read_at_version(context ctx,
+pricing_model_engine_pair_repository::read_at_version(const context& ctx,
                                                       const std::string& code,
                                                       std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading pricing model engine pair at version. "
@@ -258,7 +258,7 @@ pricing_model_engine_pair_repository::read_at_version(context ctx,
 }
 
 pricing_model_engine_pair_repository::remove_status pricing_model_engine_pair_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing pricing model engine pair. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -287,12 +287,12 @@ pricing_model_engine_pair_repository::remove_status pricing_model_engine_pair_re
     return remove_status::removed;
 }
 
-void pricing_model_engine_pair_repository::remove(context ctx, const std::string& code) {
+void pricing_model_engine_pair_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::pricing_model_engine_pair> pricing_model_engine_pair_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -318,7 +318,7 @@ std::vector<domain::pricing_model_engine_pair> pricing_model_engine_pair_reposit
 }
 
 std::uint32_t pricing_model_engine_pair_repository::get_total_pair_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::pricing_model_engine_pairs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active pricing model engine pair count";
@@ -337,7 +337,7 @@ std::uint32_t pricing_model_engine_pair_repository::get_total_pair_count(
 }
 
 std::vector<domain::pricing_model_engine_pair>
-pricing_model_engine_pair_repository::read_latest(context ctx,
+pricing_model_engine_pair_repository::read_latest(const context& ctx,
                                                   const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
@@ -356,7 +356,7 @@ pricing_model_engine_pair_repository::read_latest(context ctx,
     return result;
 }
 
-void pricing_model_engine_pair_repository::remove(context ctx,
+void pricing_model_engine_pair_repository::remove(const context& ctx,
                                                   const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

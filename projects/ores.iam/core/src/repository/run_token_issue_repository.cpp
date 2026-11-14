@@ -84,7 +84,7 @@ query_builder::order run_token_issue_list_order(const ores::utility::domain::ord
 }
 
 ores::utility::domain::precondition
-run_token_issue_repository::replace_claim(context ctx, const domain::run_token_issue& v) {
+run_token_issue_repository::replace_claim(const context& ctx, const domain::run_token_issue& v) {
     const auto current =
         read_latest(ctx, v.id, ores::platform::time::datetime::to_db_string(v.issued_at));
     if (current.empty())
@@ -96,7 +96,7 @@ run_token_issue_repository::replace_claim(context ctx, const domain::run_token_i
 }
 
 domain::run_token_issue
-run_token_issue_repository::apply_claim(context ctx,
+run_token_issue_repository::apply_claim(const context& ctx,
                                         const domain::run_token_issue& v,
                                         const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -112,11 +112,12 @@ run_token_issue_repository::apply_claim(context ctx,
     return t;
 }
 
-void run_token_issue_repository::write(context ctx, const domain::run_token_issue& v) {
+void run_token_issue_repository::write(const context& ctx, const domain::run_token_issue& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void run_token_issue_repository::write(context ctx, const std::vector<domain::run_token_issue>& v) {
+void run_token_issue_repository::write(const context& ctx,
+                                       const std::vector<domain::run_token_issue>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -124,7 +125,7 @@ void run_token_issue_repository::write(context ctx, const std::vector<domain::ru
     write(ctx, v, claims);
 }
 
-void run_token_issue_repository::write(context ctx,
+void run_token_issue_repository::write(const context& ctx,
                                        const domain::run_token_issue& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing issue. " << "id: " << v.id
@@ -138,7 +139,7 @@ void run_token_issue_repository::write(context ctx,
 }
 
 void run_token_issue_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::run_token_issue>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing run token issues. Count: " << v.size();
@@ -153,7 +154,7 @@ void run_token_issue_repository::write(
         "Writing run token issues to database.");
 }
 
-std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(context ctx) {
+std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(const context& ctx) {
     const auto query = query_builder::read<std::vector<run_token_issue_entity>> |
                        query_builder::order_by("id"_c, "issued_at"_c);
 
@@ -166,7 +167,7 @@ std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(con
 }
 
 std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(
-    context ctx, const std::string& id, const std::string& issued_at) {
+    const context& ctx, const std::string& id, const std::string& issued_at) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest issue. " << "id: " << id
                                << " issued_at: " << issued_at;
     const auto query = query_builder::read<std::vector<run_token_issue_entity>> |
@@ -182,7 +183,7 @@ std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(
 
 
 std::vector<domain::run_token_issue> run_token_issue_repository::read_all(
-    context ctx, const std::string& id, const std::string& issued_at) {
+    const context& ctx, const std::string& id, const std::string& issued_at) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all issue versions. " << "id: " << id
                                << " issued_at: " << issued_at;
     const auto query = query_builder::read<std::vector<run_token_issue_entity>> |
@@ -199,7 +200,7 @@ std::vector<domain::run_token_issue> run_token_issue_repository::read_all(
 
 
 run_token_issue_repository::remove_status
-run_token_issue_repository::remove(context ctx,
+run_token_issue_repository::remove(const context& ctx,
                                    const std::string& id,
                                    const std::string& issued_at,
                                    std::optional<std::uint32_t> version) {
@@ -218,14 +219,14 @@ run_token_issue_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void run_token_issue_repository::remove(context ctx,
+void run_token_issue_repository::remove(const context& ctx,
                                         const std::string& id,
                                         const std::string& issued_at) {
     static_cast<void>(remove(ctx, id, issued_at, std::nullopt));
 }
 
 std::vector<domain::run_token_issue>
-run_token_issue_repository::read_latest(context ctx,
+run_token_issue_repository::read_latest(const context& ctx,
                                         std::uint32_t offset,
                                         std::uint32_t limit,
                                         const ores::utility::domain::order& order) {
@@ -245,7 +246,7 @@ run_token_issue_repository::read_latest(context ctx,
         "Reading latest run token issues with pagination.");
 }
 
-std::uint32_t run_token_issue_repository::get_total__count(context ctx) {
+std::uint32_t run_token_issue_repository::get_total__count(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active issue count";
 
     const auto query = query_builder::read<std::vector<run_token_issue_entity>>;
@@ -254,8 +255,10 @@ std::uint32_t run_token_issue_repository::get_total__count(context ctx) {
         ctx, query, std::nullopt, lg(), "Counting run token issues");
 }
 
-std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(
-    context ctx, const std::vector<std::string>& ids, const std::vector<std::string>& issued_ats) {
+std::vector<domain::run_token_issue>
+run_token_issue_repository::read_latest(const context& ctx,
+                                        const std::vector<std::string>& ids,
+                                        const std::vector<std::string>& issued_ats) {
     if (ids.empty() || issued_ats.empty())
         return {};
     const auto query = query_builder::read<std::vector<run_token_issue_entity>> |
@@ -286,7 +289,7 @@ std::vector<domain::run_token_issue> run_token_issue_repository::read_latest(
     return filtered;
 }
 
-void run_token_issue_repository::remove(context ctx,
+void run_token_issue_repository::remove(const context& ctx,
                                         const std::vector<std::string>& ids,
                                         const std::vector<std::string>& issued_ats) {
     // Compound key: a per-column .in() DELETE would be a cross-product

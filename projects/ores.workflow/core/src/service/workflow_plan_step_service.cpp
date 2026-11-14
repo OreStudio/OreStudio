@@ -58,8 +58,8 @@ namespace ores::workflow::service {
 
 using namespace ores::logging;
 
-workflow_plan_step_service::workflow_plan_step_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+workflow_plan_step_service::workflow_plan_step_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

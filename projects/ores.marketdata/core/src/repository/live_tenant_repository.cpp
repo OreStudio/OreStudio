@@ -24,7 +24,7 @@
 namespace ores::marketdata::repository {
 
 
-std::set<boost::uuids::uuid> live_tenant_repository::read(context ctx) {
+std::set<boost::uuids::uuid> live_tenant_repository::read(const context& ctx) {
     std::set<boost::uuids::uuid> live;
     const boost::uuids::string_generator parse;
     for (const auto& row : ores::database::query_builder::execute_parameterized_multi_column_query(

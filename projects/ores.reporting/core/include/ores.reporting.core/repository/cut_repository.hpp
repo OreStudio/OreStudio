@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::cut& v);
-    void write(context ctx, const std::vector<domain::cut>& v);
+    void write(const context& ctx, const domain::cut& v);
+    void write(const context& ctx, const std::vector<domain::cut>& v);
     /**@}*/
 
     /**
@@ -84,13 +84,15 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx, const domain::cut& v, const ores::utility::domain::precondition& claim);
+    void write(const context& ctx,
+               const domain::cut& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
      * @brief Writes a set of cuts, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::cut>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -98,16 +100,16 @@ public:
      * @brief Reads latest cuts, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::cut> read_latest(context ctx);
-    std::vector<domain::cut> read_latest(context ctx, const std::string& id);
-    std::vector<domain::cut> read_latest(context ctx, const std::vector<std::string>& ids);
+    std::vector<domain::cut> read_latest(const context& ctx);
+    std::vector<domain::cut> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::cut> read_latest(const context& ctx, const std::vector<std::string>& ids);
     /**@}*/
 
 
     /**
      * @brief Reads all cuts, possibly filtered by primary key.
      */
-    std::vector<domain::cut> read_all(context ctx, const std::string& id);
+    std::vector<domain::cut> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single cut as it stood at a specific
@@ -119,7 +121,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::cut>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest cuts filtered by kind_code, with pagination.
@@ -130,7 +132,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::cut>
-    read_latest_by_kind_code(context ctx,
+    read_latest_by_kind_code(const context& ctx,
                              const std::string& kind_code,
                              std::uint32_t offset,
                              std::uint32_t limit,
@@ -141,7 +143,7 @@ public:
      * @brief Gets the total count of active cuts filtered by kind_code.
      */
     std::uint32_t get_total_cut_count_by_kind_code(
-        context ctx,
+        const context& ctx,
         const std::string& kind_code,
         const std::optional<messaging::cuts_filter>& filter = std::nullopt);
 
@@ -163,7 +165,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::cut>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -176,14 +178,14 @@ public:
      * @return Total number of active cuts
      */
     std::uint32_t
-    get_total_cut_count(context ctx,
+    get_total_cut_count(const context& ctx,
                         const std::optional<messaging::cuts_filter>& filter = std::nullopt,
                         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a cut by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -205,20 +207,21 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes cuts by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
-    std::vector<domain::cut> read_for_party_in_window(context ctx,
+    std::vector<domain::cut> read_for_party_in_window(const context& ctx,
                                                       const boost::uuids::uuid& party_id,
                                                       const std::string& kind_code,
                                                       std::chrono::system_clock::time_point from,
                                                       std::chrono::system_clock::time_point to);
 
-    std::vector<domain::cut> read_for_occasion_in_window(context ctx,
+    std::vector<domain::cut> read_for_occasion_in_window(const context& ctx,
                                                          const boost::uuids::uuid& party_id,
                                                          const std::string& kind_code,
                                                          const std::string& scope_code,
@@ -226,27 +229,28 @@ public:
                                                          std::chrono::system_clock::time_point from,
                                                          std::chrono::system_clock::time_point to);
 
-    std::vector<domain::cut> read_for_scope_in_window(context ctx,
+    std::vector<domain::cut> read_for_scope_in_window(const context& ctx,
                                                       const std::string& scope_code,
                                                       const std::string& business_centre_code,
                                                       std::chrono::system_clock::time_point from,
                                                       std::chrono::system_clock::time_point to);
 
-    std::optional<domain::cut> read_latest_by_request(context ctx, const std::string& request_id);
+    std::optional<domain::cut> read_latest_by_request(const context& ctx,
+                                                      const std::string& request_id);
 
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::cut& v);
+    ores::utility::domain::precondition replace_claim(const context& ctx, const domain::cut& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::cut apply_claim(context ctx,
+    domain::cut apply_claim(const context& ctx,
                             const domain::cut& v,
                             const ores::utility::domain::precondition& claim);
 };

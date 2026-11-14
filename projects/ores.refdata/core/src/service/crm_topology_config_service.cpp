@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-crm_topology_config_service::crm_topology_config_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+crm_topology_config_service::crm_topology_config_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

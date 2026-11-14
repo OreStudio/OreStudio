@@ -102,7 +102,7 @@ std::optional<query_builder::condition> cap_floor_proxy_config_filter_condition(
 }
 
 ores::utility::domain::precondition
-cap_floor_proxy_config_repository::replace_claim(context ctx,
+cap_floor_proxy_config_repository::replace_claim(const context& ctx,
                                                  const domain::cap_floor_proxy_config& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -112,7 +112,7 @@ cap_floor_proxy_config_repository::replace_claim(context ctx,
 }
 
 domain::cap_floor_proxy_config
-cap_floor_proxy_config_repository::apply_claim(context ctx,
+cap_floor_proxy_config_repository::apply_claim(const context& ctx,
                                                const domain::cap_floor_proxy_config& v,
                                                const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -139,13 +139,13 @@ cap_floor_proxy_config_repository::apply_claim(context ctx,
     return t;
 }
 
-void cap_floor_proxy_config_repository::write(context ctx,
+void cap_floor_proxy_config_repository::write(const context& ctx,
                                               const domain::cap_floor_proxy_config& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void cap_floor_proxy_config_repository::write(
-    context ctx, const std::vector<domain::cap_floor_proxy_config>& v) {
+    const context& ctx, const std::vector<domain::cap_floor_proxy_config>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -153,7 +153,7 @@ void cap_floor_proxy_config_repository::write(
     write(ctx, v, claims);
 }
 
-void cap_floor_proxy_config_repository::write(context ctx,
+void cap_floor_proxy_config_repository::write(const context& ctx,
                                               const domain::cap_floor_proxy_config& v,
                                               const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cap floor proxy config. " << "id: " << v.id;
@@ -165,7 +165,7 @@ void cap_floor_proxy_config_repository::write(context ctx,
 }
 
 void cap_floor_proxy_config_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::cap_floor_proxy_config>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing cap floor proxy configs. Count: " << v.size();
@@ -180,7 +180,7 @@ void cap_floor_proxy_config_repository::write(
 }
 
 std::vector<domain::cap_floor_proxy_config>
-cap_floor_proxy_config_repository::read_latest(context ctx) {
+cap_floor_proxy_config_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cap_floor_proxy_config_entity>> |
@@ -197,7 +197,7 @@ cap_floor_proxy_config_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::cap_floor_proxy_config>
-cap_floor_proxy_config_repository::read_latest(context ctx, const std::string& id) {
+cap_floor_proxy_config_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest cap floor proxy config. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -232,7 +232,7 @@ cap_floor_proxy_config_repository::read_latest(context ctx, const std::string& i
 
 
 std::vector<domain::cap_floor_proxy_config>
-cap_floor_proxy_config_repository::read_all(context ctx, const std::string& id) {
+cap_floor_proxy_config_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all cap floor proxy config versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<cap_floor_proxy_config_entity>> |
@@ -249,7 +249,7 @@ cap_floor_proxy_config_repository::read_all(context ctx, const std::string& id) 
 }
 
 std::optional<domain::cap_floor_proxy_config> cap_floor_proxy_config_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading cap floor proxy config at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -273,7 +273,7 @@ std::optional<domain::cap_floor_proxy_config> cap_floor_proxy_config_repository:
 
 
 cap_floor_proxy_config_repository::remove_status cap_floor_proxy_config_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing cap floor proxy config. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -310,12 +310,12 @@ cap_floor_proxy_config_repository::remove_status cap_floor_proxy_config_reposito
     return remove_status::removed;
 }
 
-void cap_floor_proxy_config_repository::remove(context ctx, const std::string& id) {
+void cap_floor_proxy_config_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::cap_floor_proxy_config> cap_floor_proxy_config_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -341,7 +341,7 @@ std::vector<domain::cap_floor_proxy_config> cap_floor_proxy_config_repository::r
 }
 
 std::uint32_t cap_floor_proxy_config_repository::get_total_cap_floor_proxy_config_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::cap_floor_proxy_configs_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active cap floor proxy config count";
@@ -360,7 +360,8 @@ std::uint32_t cap_floor_proxy_config_repository::get_total_cap_floor_proxy_confi
 }
 
 std::vector<domain::cap_floor_proxy_config>
-cap_floor_proxy_config_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+cap_floor_proxy_config_repository::read_latest(const context& ctx,
+                                               const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -378,7 +379,8 @@ cap_floor_proxy_config_repository::read_latest(context ctx, const std::vector<st
     return result;
 }
 
-void cap_floor_proxy_config_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void cap_floor_proxy_config_repository::remove(const context& ctx,
+                                               const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

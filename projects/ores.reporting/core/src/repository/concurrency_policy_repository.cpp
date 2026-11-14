@@ -101,7 +101,8 @@ std::optional<query_builder::condition> concurrency_policy_filter_condition(
 }
 
 ores::utility::domain::precondition
-concurrency_policy_repository::replace_claim(context ctx, const domain::concurrency_policy& v) {
+concurrency_policy_repository::replace_claim(const context& ctx,
+                                             const domain::concurrency_policy& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +111,7 @@ concurrency_policy_repository::replace_claim(context ctx, const domain::concurre
 }
 
 domain::concurrency_policy
-concurrency_policy_repository::apply_claim(context ctx,
+concurrency_policy_repository::apply_claim(const context& ctx,
                                            const domain::concurrency_policy& v,
                                            const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,11 +138,11 @@ concurrency_policy_repository::apply_claim(context ctx,
     return t;
 }
 
-void concurrency_policy_repository::write(context ctx, const domain::concurrency_policy& v) {
+void concurrency_policy_repository::write(const context& ctx, const domain::concurrency_policy& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void concurrency_policy_repository::write(context ctx,
+void concurrency_policy_repository::write(const context& ctx,
                                           const std::vector<domain::concurrency_policy>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -150,7 +151,7 @@ void concurrency_policy_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void concurrency_policy_repository::write(context ctx,
+void concurrency_policy_repository::write(const context& ctx,
                                           const domain::concurrency_policy& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing concurrency policy. " << "code: " << v.code;
@@ -160,7 +161,7 @@ void concurrency_policy_repository::write(context ctx,
 }
 
 void concurrency_policy_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::concurrency_policy>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing concurrency policies. Count: " << v.size();
@@ -174,7 +175,8 @@ void concurrency_policy_repository::write(
                                        "Writing concurrency policies to database.");
 }
 
-std::vector<domain::concurrency_policy> concurrency_policy_repository::read_latest(context ctx) {
+std::vector<domain::concurrency_policy>
+concurrency_policy_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<concurrency_policy_entity>> |
@@ -190,7 +192,7 @@ std::vector<domain::concurrency_policy> concurrency_policy_repository::read_late
 }
 
 std::vector<domain::concurrency_policy>
-concurrency_policy_repository::read_latest(context ctx, const std::string& code) {
+concurrency_policy_repository::read_latest(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest concurrency policy. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -208,7 +210,7 @@ concurrency_policy_repository::read_latest(context ctx, const std::string& code)
 
 
 std::vector<domain::concurrency_policy>
-concurrency_policy_repository::read_all(context ctx, const std::string& code) {
+concurrency_policy_repository::read_all(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all concurrency policy versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<concurrency_policy_entity>> |
@@ -224,7 +226,7 @@ concurrency_policy_repository::read_all(context ctx, const std::string& code) {
 }
 
 std::optional<domain::concurrency_policy> concurrency_policy_repository::read_at_version(
-    context ctx, const std::string& code, std::uint32_t version) {
+    const context& ctx, const std::string& code, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading concurrency policy at version. " << "code: " << code
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -247,7 +249,7 @@ std::optional<domain::concurrency_policy> concurrency_policy_repository::read_at
 }
 
 concurrency_policy_repository::remove_status concurrency_policy_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing concurrency policy. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -276,12 +278,12 @@ concurrency_policy_repository::remove_status concurrency_policy_repository::remo
     return remove_status::removed;
 }
 
-void concurrency_policy_repository::remove(context ctx, const std::string& code) {
+void concurrency_policy_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::concurrency_policy> concurrency_policy_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -307,7 +309,7 @@ std::vector<domain::concurrency_policy> concurrency_policy_repository::read_late
 }
 
 std::uint32_t concurrency_policy_repository::get_total_policy_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::concurrency_policies_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active concurrency policy count";
@@ -326,7 +328,8 @@ std::uint32_t concurrency_policy_repository::get_total_policy_count(
 }
 
 std::vector<domain::concurrency_policy>
-concurrency_policy_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+concurrency_policy_repository::read_latest(const context& ctx,
+                                           const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -344,7 +347,8 @@ concurrency_policy_repository::read_latest(context ctx, const std::vector<std::s
     return result;
 }
 
-void concurrency_policy_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void concurrency_policy_repository::remove(const context& ctx,
+                                           const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

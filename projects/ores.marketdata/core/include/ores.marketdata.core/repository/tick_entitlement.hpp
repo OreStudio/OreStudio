@@ -20,7 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_TICK_ENTITLEMENT_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_TICK_ENTITLEMENT_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.core/export.hpp"
 #include <set>
 #include <string>

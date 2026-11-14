@@ -86,7 +86,8 @@ local_jurisdiction_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-local_jurisdiction_repository::replace_claim(context ctx, const domain::local_jurisdiction& v) {
+local_jurisdiction_repository::replace_claim(const context& ctx,
+                                             const domain::local_jurisdiction& v) {
     const auto current = read_latest(ctx, v.code, v.coding_scheme_code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -95,7 +96,7 @@ local_jurisdiction_repository::replace_claim(context ctx, const domain::local_ju
 }
 
 domain::local_jurisdiction
-local_jurisdiction_repository::apply_claim(context ctx,
+local_jurisdiction_repository::apply_claim(const context& ctx,
                                            const domain::local_jurisdiction& v,
                                            const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -122,11 +123,11 @@ local_jurisdiction_repository::apply_claim(context ctx,
     return t;
 }
 
-void local_jurisdiction_repository::write(context ctx, const domain::local_jurisdiction& v) {
+void local_jurisdiction_repository::write(const context& ctx, const domain::local_jurisdiction& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void local_jurisdiction_repository::write(context ctx,
+void local_jurisdiction_repository::write(const context& ctx,
                                           const std::vector<domain::local_jurisdiction>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -135,7 +136,7 @@ void local_jurisdiction_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void local_jurisdiction_repository::write(context ctx,
+void local_jurisdiction_repository::write(const context& ctx,
                                           const domain::local_jurisdiction& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing local jurisdiction. " << "code: " << v.code
@@ -146,7 +147,7 @@ void local_jurisdiction_repository::write(context ctx,
 }
 
 void local_jurisdiction_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::local_jurisdiction>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing local jurisdictions. Count: " << v.size();
@@ -160,7 +161,8 @@ void local_jurisdiction_repository::write(
                                        "Writing local jurisdictions to database.");
 }
 
-std::vector<domain::local_jurisdiction> local_jurisdiction_repository::read_latest(context ctx) {
+std::vector<domain::local_jurisdiction>
+local_jurisdiction_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<local_jurisdiction_entity>> |
@@ -176,7 +178,7 @@ std::vector<domain::local_jurisdiction> local_jurisdiction_repository::read_late
 }
 
 std::vector<domain::local_jurisdiction> local_jurisdiction_repository::read_latest(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest local jurisdiction. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     static constexpr auto max = db_timestamp::max();
@@ -196,7 +198,7 @@ std::vector<domain::local_jurisdiction> local_jurisdiction_repository::read_late
 
 
 std::vector<domain::local_jurisdiction> local_jurisdiction_repository::read_all(
-    context ctx, const std::string& code, const std::string& coding_scheme_code) {
+    const context& ctx, const std::string& code, const std::string& coding_scheme_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all local jurisdiction versions. " << "code: " << code
                                << " coding_scheme_code: " << coding_scheme_code;
     const auto tid = ctx.tenant_id().to_string();
@@ -214,7 +216,7 @@ std::vector<domain::local_jurisdiction> local_jurisdiction_repository::read_all(
 }
 
 std::optional<domain::local_jurisdiction>
-local_jurisdiction_repository::read_at_version(context ctx,
+local_jurisdiction_repository::read_at_version(const context& ctx,
                                                const std::string& code,
                                                const std::string& coding_scheme_code,
                                                std::uint32_t version) {
@@ -242,7 +244,7 @@ local_jurisdiction_repository::read_at_version(context ctx,
 }
 
 local_jurisdiction_repository::remove_status
-local_jurisdiction_repository::remove(context ctx,
+local_jurisdiction_repository::remove(const context& ctx,
                                       const std::string& code,
                                       const std::string& coding_scheme_code,
                                       std::optional<std::uint32_t> version) {
@@ -276,14 +278,14 @@ local_jurisdiction_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void local_jurisdiction_repository::remove(context ctx,
+void local_jurisdiction_repository::remove(const context& ctx,
                                            const std::string& code,
                                            const std::string& coding_scheme_code) {
     static_cast<void>(remove(ctx, code, coding_scheme_code, std::nullopt));
 }
 
 std::vector<domain::local_jurisdiction>
-local_jurisdiction_repository::read_latest(context ctx,
+local_jurisdiction_repository::read_latest(const context& ctx,
                                            std::uint32_t offset,
                                            std::uint32_t limit,
                                            const ores::utility::domain::order& order,
@@ -307,7 +309,7 @@ local_jurisdiction_repository::read_latest(context ctx,
 }
 
 std::uint32_t local_jurisdiction_repository::get_total_jurisdiction_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active local jurisdiction count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -323,7 +325,7 @@ std::uint32_t local_jurisdiction_repository::get_total_jurisdiction_count(
 }
 
 std::vector<domain::local_jurisdiction>
-local_jurisdiction_repository::read_latest(context ctx,
+local_jurisdiction_repository::read_latest(const context& ctx,
                                            const std::vector<std::string>& codes,
                                            const std::vector<std::string>& coding_scheme_codes) {
     if (codes.empty() || coding_scheme_codes.empty())
@@ -359,7 +361,7 @@ local_jurisdiction_repository::read_latest(context ctx,
     return filtered;
 }
 
-void local_jurisdiction_repository::remove(context ctx,
+void local_jurisdiction_repository::remove(const context& ctx,
                                            const std::vector<std::string>& codes,
                                            const std::vector<std::string>& coding_scheme_codes) {
     // Compound key: a per-column .in() DELETE would be a cross-product

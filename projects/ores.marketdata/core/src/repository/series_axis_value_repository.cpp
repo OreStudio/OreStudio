@@ -87,7 +87,8 @@ series_axis_value_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-series_axis_value_repository::replace_claim(context ctx, const domain::series_axis_value& v) {
+series_axis_value_repository::replace_claim(const context& ctx,
+                                            const domain::series_axis_value& v) {
     const auto current =
         read_latest(ctx, boost::uuids::to_string(v.series_id), v.axis_field, v.value);
     if (current.empty())
@@ -99,7 +100,7 @@ series_axis_value_repository::replace_claim(context ctx, const domain::series_ax
 }
 
 domain::series_axis_value
-series_axis_value_repository::apply_claim(context ctx,
+series_axis_value_repository::apply_claim(const context& ctx,
                                           const domain::series_axis_value& v,
                                           const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -115,11 +116,11 @@ series_axis_value_repository::apply_claim(context ctx,
     return t;
 }
 
-void series_axis_value_repository::write(context ctx, const domain::series_axis_value& v) {
+void series_axis_value_repository::write(const context& ctx, const domain::series_axis_value& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void series_axis_value_repository::write(context ctx,
+void series_axis_value_repository::write(const context& ctx,
                                          const std::vector<domain::series_axis_value>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -128,7 +129,7 @@ void series_axis_value_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void series_axis_value_repository::write(context ctx,
+void series_axis_value_repository::write(const context& ctx,
                                          const domain::series_axis_value& v,
                                          const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series axis value. " << "series_id: " << v.series_id
@@ -142,7 +143,7 @@ void series_axis_value_repository::write(context ctx,
 }
 
 void series_axis_value_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::series_axis_value>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing series axis values. Count: " << v.size();
@@ -157,7 +158,8 @@ void series_axis_value_repository::write(
         "Writing series axis values to database.");
 }
 
-std::vector<domain::series_axis_value> series_axis_value_repository::read_latest(context ctx) {
+std::vector<domain::series_axis_value>
+series_axis_value_repository::read_latest(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<series_axis_value_entity>> |
                        query_builder::where("tenant_id"_c == tid) |
@@ -172,7 +174,7 @@ std::vector<domain::series_axis_value> series_axis_value_repository::read_latest
 }
 
 std::vector<domain::series_axis_value>
-series_axis_value_repository::read_latest(context ctx,
+series_axis_value_repository::read_latest(const context& ctx,
                                           const std::string& series_id,
                                           const std::string& axis_field,
                                           const std::string& value) {
@@ -193,7 +195,7 @@ series_axis_value_repository::read_latest(context ctx,
 
 
 std::vector<domain::series_axis_value>
-series_axis_value_repository::read_all(context ctx,
+series_axis_value_repository::read_all(const context& ctx,
                                        const std::string& series_id,
                                        const std::string& axis_field,
                                        const std::string& value) {
@@ -216,7 +218,7 @@ series_axis_value_repository::read_all(context ctx,
 
 
 series_axis_value_repository::remove_status
-series_axis_value_repository::remove(context ctx,
+series_axis_value_repository::remove(const context& ctx,
                                      const std::string& series_id,
                                      const std::string& axis_field,
                                      const std::string& value,
@@ -240,7 +242,7 @@ series_axis_value_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void series_axis_value_repository::remove(context ctx,
+void series_axis_value_repository::remove(const context& ctx,
                                           const std::string& series_id,
                                           const std::string& axis_field,
                                           const std::string& value) {
@@ -248,7 +250,7 @@ void series_axis_value_repository::remove(context ctx,
 }
 
 std::vector<domain::series_axis_value>
-series_axis_value_repository::read_latest(context ctx,
+series_axis_value_repository::read_latest(const context& ctx,
                                           std::uint32_t offset,
                                           std::uint32_t limit,
                                           const ores::utility::domain::order& order) {
@@ -270,7 +272,7 @@ series_axis_value_repository::read_latest(context ctx,
         "Reading latest series axis values with pagination.");
 }
 
-std::uint32_t series_axis_value_repository::get_total_series_axis_value_count(context ctx) {
+std::uint32_t series_axis_value_repository::get_total_series_axis_value_count(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active series axis value count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -282,7 +284,7 @@ std::uint32_t series_axis_value_repository::get_total_series_axis_value_count(co
 }
 
 std::vector<domain::series_axis_value>
-series_axis_value_repository::read_latest(context ctx,
+series_axis_value_repository::read_latest(const context& ctx,
                                           const std::vector<std::string>& series_ids,
                                           const std::vector<std::string>& axis_fields,
                                           const std::vector<std::string>& values) {
@@ -318,7 +320,7 @@ series_axis_value_repository::read_latest(context ctx,
     return filtered;
 }
 
-void series_axis_value_repository::remove(context ctx,
+void series_axis_value_repository::remove(const context& ctx,
                                           const std::vector<std::string>& series_ids,
                                           const std::vector<std::string>& axis_fields,
                                           const std::vector<std::string>& values) {
@@ -334,7 +336,7 @@ void series_axis_value_repository::remove(context ctx,
 
 
 std::vector<domain::series_axis_value>
-series_axis_value_repository::read_latest_for_series(context ctx,
+series_axis_value_repository::read_latest_for_series(const context& ctx,
                                                      const std::vector<std::string>& series_ids) {
     if (series_ids.empty())
         return {};

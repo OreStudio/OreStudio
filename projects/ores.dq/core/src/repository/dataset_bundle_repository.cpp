@@ -101,7 +101,7 @@ dataset_bundle_filter_condition(const std::optional<messaging::dataset_bundles_f
 }
 
 ores::utility::domain::precondition
-dataset_bundle_repository::replace_claim(context ctx, const domain::dataset_bundle& v) {
+dataset_bundle_repository::replace_claim(const context& ctx, const domain::dataset_bundle& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -110,7 +110,7 @@ dataset_bundle_repository::replace_claim(context ctx, const domain::dataset_bund
 }
 
 domain::dataset_bundle
-dataset_bundle_repository::apply_claim(context ctx,
+dataset_bundle_repository::apply_claim(const context& ctx,
                                        const domain::dataset_bundle& v,
                                        const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -137,11 +137,12 @@ dataset_bundle_repository::apply_claim(context ctx,
     return t;
 }
 
-void dataset_bundle_repository::write(context ctx, const domain::dataset_bundle& v) {
+void dataset_bundle_repository::write(const context& ctx, const domain::dataset_bundle& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void dataset_bundle_repository::write(context ctx, const std::vector<domain::dataset_bundle>& v) {
+void dataset_bundle_repository::write(const context& ctx,
+                                      const std::vector<domain::dataset_bundle>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -149,7 +150,7 @@ void dataset_bundle_repository::write(context ctx, const std::vector<domain::dat
     write(ctx, v, claims);
 }
 
-void dataset_bundle_repository::write(context ctx,
+void dataset_bundle_repository::write(const context& ctx,
                                       const domain::dataset_bundle& v,
                                       const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing dataset bundle. " << "id: " << v.id;
@@ -159,7 +160,7 @@ void dataset_bundle_repository::write(context ctx,
 }
 
 void dataset_bundle_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::dataset_bundle>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing dataset bundles. Count: " << v.size();
@@ -171,7 +172,7 @@ void dataset_bundle_repository::write(
         ctx, dataset_bundle_mapper::map(batch), lg(), "Writing dataset bundles to database.");
 }
 
-std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest(context ctx) {
+std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<dataset_bundle_entity>> |
                        query_builder::where("valid_to"_c == max) | query_builder::order_by("id"_c);
@@ -184,7 +185,7 @@ std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest(conte
         "Reading latest dataset bundles");
 }
 
-std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest(context ctx,
+std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest(const context& ctx,
                                                                            const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -200,7 +201,7 @@ std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest(conte
 }
 
 std::vector<domain::dataset_bundle>
-dataset_bundle_repository::read_latest_by_code(context ctx, const std::string& code) {
+dataset_bundle_repository::read_latest_by_code(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle by code: " << code;
     static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<dataset_bundle_entity>> |
@@ -215,7 +216,7 @@ dataset_bundle_repository::read_latest_by_code(context ctx, const std::string& c
 }
 
 std::vector<domain::dataset_bundle>
-dataset_bundle_repository::read_any_by_code(context ctx, const std::string& code) {
+dataset_bundle_repository::read_any_by_code(const context& ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any dataset bundle by code: " << code;
     const auto query = query_builder::read<std::vector<dataset_bundle_entity>> |
                        query_builder::where("code"_c == code) |
@@ -230,7 +231,7 @@ dataset_bundle_repository::read_any_by_code(context ctx, const std::string& code
 }
 
 
-std::vector<domain::dataset_bundle> dataset_bundle_repository::read_all(context ctx,
+std::vector<domain::dataset_bundle> dataset_bundle_repository::read_all(const context& ctx,
                                                                         const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all dataset bundle versions. " << "id: " << id;
     const auto query = query_builder::read<std::vector<dataset_bundle_entity>> |
@@ -246,7 +247,7 @@ std::vector<domain::dataset_bundle> dataset_bundle_repository::read_all(context 
 }
 
 std::optional<domain::dataset_bundle> dataset_bundle_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading dataset bundle at version. " << "id: " << id
                                << " version: " << version;
     const auto query = query_builder::read<std::vector<dataset_bundle_entity>> |
@@ -267,7 +268,7 @@ std::optional<domain::dataset_bundle> dataset_bundle_repository::read_at_version
 }
 
 dataset_bundle_repository::remove_status dataset_bundle_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing dataset bundle. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -295,12 +296,12 @@ dataset_bundle_repository::remove_status dataset_bundle_repository::remove(
     return remove_status::removed;
 }
 
-void dataset_bundle_repository::remove(context ctx, const std::string& id) {
+void dataset_bundle_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -323,7 +324,7 @@ std::vector<domain::dataset_bundle> dataset_bundle_repository::read_latest(
 }
 
 std::uint32_t dataset_bundle_repository::get_total_bundle_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::dataset_bundles_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset bundle count";
@@ -340,7 +341,7 @@ std::uint32_t dataset_bundle_repository::get_total_bundle_count(
 }
 
 std::vector<domain::dataset_bundle>
-dataset_bundle_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+dataset_bundle_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -355,7 +356,7 @@ dataset_bundle_repository::read_latest(context ctx, const std::vector<std::strin
     return result;
 }
 
-void dataset_bundle_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void dataset_bundle_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

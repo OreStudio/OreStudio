@@ -64,13 +64,13 @@ public:
     using lifetime_fn = std::function<std::chrono::seconds()>;
 
     tenant_session_handler(ores::nats::service::client& nats,
-                           ores::database::context ctx,
+                           const ores::database::context& ctx,
                            ores::security::jwt::jwt_authenticator signer,
                            lifetime_fn lifetime)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , signer_(std::move(signer))
-        , lifetime_(std::move(lifetime)) {}
+        , ctx_(ctx)
+        , signer_(signer)
+        , lifetime_(lifetime) {}
 
     void enter(ores::nats::message msg) {
         using ores::service::messaging::decode;

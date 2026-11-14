@@ -148,7 +148,7 @@ private:
     }
 
 public:
-    explicit book_proposal_service(ores::database::context ctx);
+    explicit book_proposal_service(const ores::database::context& ctx);
 
     /**
      * @brief Runs every line through the real write and returns its outcome.

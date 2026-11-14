@@ -54,8 +54,8 @@ namespace ores::synthetic::service {
 
 using namespace ores::logging;
 
-calibration_fallback_service::calibration_fallback_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+calibration_fallback_service::calibration_fallback_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

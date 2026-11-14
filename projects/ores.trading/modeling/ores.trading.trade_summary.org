@@ -405,7 +405,7 @@ and the tenant is the last parameter rather than the first.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<std::pair<std::string, std::uint64_t>> count_blotter_rail(
-    context ctx,
+    const context& ctx,
     const std::string& dimension,
     const std::optional<messaging::trade_summaries_filter>& filter);
 
@@ -417,7 +417,7 @@ std::vector<std::pair<std::string, std::uint64_t>> count_blotter_rail(
  * the first costs, which an offset cannot promise.
  */
 std::vector<domain::trade_summary> read_blotter_page(
-    context ctx,
+    const context& ctx,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::string& after,
@@ -596,7 +596,7 @@ rendered_filter render_trade_summary_filter(
 }
 
 std::vector<std::pair<std::string, std::uint64_t>> trade_summary_repository::count_blotter_rail(
-    context ctx,
+    const context& ctx,
     const std::string& dimension,
     const std::optional<messaging::trade_summaries_filter>& filter) {
     const auto rendered = render_trade_summary_filter(filter);
@@ -707,7 +707,7 @@ std::string trade_summary_repository::blotter_page_key(const domain::trade_summa
 }
 
 std::vector<domain::trade_summary> trade_summary_repository::read_blotter_page(
-    context ctx,
+    const context& ctx,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
     const std::string& after,

@@ -41,7 +41,8 @@ using namespace ores::logging;
 using namespace ores::database::repository;
 using ores::platform::time::datetime;
 
-std::vector<domain::node_sample> compute_telemetry_repository::latest_node_samples(context ctx) {
+std::vector<domain::node_sample>
+compute_telemetry_repository::latest_node_samples(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute node samples";
 
     // DISTINCT ON (host_id) returns exactly one row per host, the most recent,
@@ -86,7 +87,7 @@ std::vector<domain::node_sample> compute_telemetry_repository::latest_node_sampl
 }
 
 domain::grid_sample compute_telemetry_repository::compute_grid_stats(
-    context ctx, std::optional<boost::uuids::uuid> party, bool fleet) {
+    const context& ctx, std::optional<boost::uuids::uuid> party, bool fleet) {
     BOOST_LOG_SEV(lg(), debug) << "Computing grid stats via SQL aggregations";
     const auto tid = ctx.tenant_id().to_string();
 
@@ -171,7 +172,7 @@ std::chrono::system_clock::time_point from_epoch_seconds(long long seconds) {
 } // namespace
 
 std::vector<std::optional<boost::uuids::uuid>>
-compute_telemetry_repository::parties_with_work(context ctx) {
+compute_telemetry_repository::parties_with_work(const context& ctx) {
     // Each table is read as the session sees it, so the policies decide which parties
     // are listed. A party whose work is all gone is no longer listed and gets no more rows,
     // so its counts leave the sums from then on, as they would at zero. The empty party is always
@@ -202,7 +203,7 @@ compute_telemetry_repository::parties_with_work(context ctx) {
 }
 
 grid_series
-compute_telemetry_repository::grid_series_in_range(context ctx,
+compute_telemetry_repository::grid_series_in_range(const context& ctx,
                                                    std::chrono::system_clock::time_point start,
                                                    std::chrono::system_clock::time_point end,
                                                    int bucket_seconds) {
@@ -329,7 +330,7 @@ compute_telemetry_repository::grid_series_in_range(context ctx,
     return series;
 }
 
-grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
+grid_usage compute_telemetry_repository::grid_usage_by_scope(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the grid usage by party";
 
     // The policies decide the rows: the session's own tenant, and the parties it
@@ -404,7 +405,7 @@ grid_usage compute_telemetry_repository::grid_usage_by_scope(context ctx) {
 }
 
 node_series
-compute_telemetry_repository::node_series_in_range(context ctx,
+compute_telemetry_repository::node_series_in_range(const context& ctx,
                                                    std::chrono::system_clock::time_point start,
                                                    std::chrono::system_clock::time_point end,
                                                    int bucket_seconds) {

@@ -30,7 +30,7 @@ using namespace ores::logging;
 
 
 std::vector<stored_observation>
-observation_read_repository::between(context ctx,
+observation_read_repository::between(const context& ctx,
                                      const boost::uuids::uuid& series_id,
                                      std::chrono::year_month_day from,
                                      std::chrono::year_month_day to,

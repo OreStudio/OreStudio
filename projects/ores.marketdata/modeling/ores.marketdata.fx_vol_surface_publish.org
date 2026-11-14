@@ -392,7 +392,7 @@ Reads the record of one request, if the store holds one. The gate asks here.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::optional<domain::fx_vol_surface_publish>
-read_latest_by_request(context ctx, const std::string& request_id);
+read_latest_by_request(const context& ctx, const std::string& request_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -402,7 +402,7 @@ read_latest_by_request(context ctx, const std::string& request_id);
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::fx_vol_surface_publish>
-fx_vol_surface_publish_repository::read_latest_by_request(context ctx, const std::string& request_id) {
+fx_vol_surface_publish_repository::read_latest_by_request(const context& ctx, const std::string& request_id) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
@@ -432,7 +432,7 @@ never ended, and the apply ends them all.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::fx_vol_surface_publish>
-read_live_for_series(context ctx, const boost::uuids::uuid& series_id);
+read_live_for_series(const context& ctx, const boost::uuids::uuid& series_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -444,7 +444,7 @@ read_live_for_series(context ctx, const boost::uuids::uuid& series_id);
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::fx_vol_surface_publish>
-fx_vol_surface_publish_repository::read_live_for_series(context ctx,
+fx_vol_surface_publish_repository::read_live_for_series(const context& ctx,
                                                const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the live sets of series: " << series_id;
     static constexpr auto max = db_timestamp::max();
@@ -488,7 +488,7 @@ reader at an as-of takes the first one at or before it.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::fx_vol_surface_publish>
-read_published_for_blueprint(context ctx, const boost::uuids::uuid& blueprint_id);
+read_published_for_blueprint(const context& ctx, const boost::uuids::uuid& blueprint_id);
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -500,7 +500,7 @@ read_published_for_blueprint(context ctx, const boost::uuids::uuid& blueprint_id
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::fx_vol_surface_publish>
-fx_vol_surface_publish_repository::read_published_for_blueprint(context ctx,
+fx_vol_surface_publish_repository::read_published_for_blueprint(const context& ctx,
                                                                const boost::uuids::uuid& blueprint_id) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();

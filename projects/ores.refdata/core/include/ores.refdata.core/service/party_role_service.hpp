@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit party_role_service(context ctx);
+    explicit party_role_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

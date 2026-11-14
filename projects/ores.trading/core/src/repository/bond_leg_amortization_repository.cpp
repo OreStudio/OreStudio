@@ -111,7 +111,7 @@ std::optional<query_builder::condition> bond_leg_amortization_filter_condition(
 }
 
 ores::utility::domain::precondition
-bond_leg_amortization_repository::replace_claim(context ctx,
+bond_leg_amortization_repository::replace_claim(const context& ctx,
                                                 const domain::bond_leg_amortization& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.trade_id),
@@ -125,7 +125,7 @@ bond_leg_amortization_repository::replace_claim(context ctx,
 }
 
 domain::bond_leg_amortization
-bond_leg_amortization_repository::apply_claim(context ctx,
+bond_leg_amortization_repository::apply_claim(const context& ctx,
                                               const domain::bond_leg_amortization& v,
                                               const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -156,11 +156,12 @@ bond_leg_amortization_repository::apply_claim(context ctx,
     return t;
 }
 
-void bond_leg_amortization_repository::write(context ctx, const domain::bond_leg_amortization& v) {
+void bond_leg_amortization_repository::write(const context& ctx,
+                                             const domain::bond_leg_amortization& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void bond_leg_amortization_repository::write(context ctx,
+void bond_leg_amortization_repository::write(const context& ctx,
                                              const std::vector<domain::bond_leg_amortization>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -169,7 +170,7 @@ void bond_leg_amortization_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void bond_leg_amortization_repository::write(context ctx,
+void bond_leg_amortization_repository::write(const context& ctx,
                                              const domain::bond_leg_amortization& v,
                                              const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond leg amortization. " << "trade_id: " << v.trade_id
@@ -183,7 +184,7 @@ void bond_leg_amortization_repository::write(context ctx,
 }
 
 void bond_leg_amortization_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::bond_leg_amortization>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond leg amortizations. Count: " << v.size();
@@ -198,7 +199,7 @@ void bond_leg_amortization_repository::write(
 }
 
 std::vector<domain::bond_leg_amortization>
-bond_leg_amortization_repository::read_latest(context ctx) {
+bond_leg_amortization_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -216,7 +217,7 @@ bond_leg_amortization_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::bond_leg_amortization>
-bond_leg_amortization_repository::read_latest(context ctx,
+bond_leg_amortization_repository::read_latest(const context& ctx,
                                               const std::string& trade_id,
                                               const std::string& leg_role,
                                               const std::string& leg_number,
@@ -244,7 +245,7 @@ bond_leg_amortization_repository::read_latest(context ctx,
 
 
 std::vector<domain::bond_leg_amortization>
-bond_leg_amortization_repository::read_all(context ctx,
+bond_leg_amortization_repository::read_all(const context& ctx,
                                            const std::string& trade_id,
                                            const std::string& leg_role,
                                            const std::string& leg_number,
@@ -271,7 +272,7 @@ bond_leg_amortization_repository::read_all(context ctx,
 }
 
 std::optional<domain::bond_leg_amortization>
-bond_leg_amortization_repository::read_at_version(context ctx,
+bond_leg_amortization_repository::read_at_version(const context& ctx,
                                                   const std::string& trade_id,
                                                   const std::string& leg_role,
                                                   const std::string& leg_number,
@@ -305,7 +306,7 @@ bond_leg_amortization_repository::read_at_version(context ctx,
 
 std::vector<domain::bond_leg_amortization>
 bond_leg_amortization_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -333,7 +334,7 @@ bond_leg_amortization_repository::read_latest_by_trade_id(
 }
 
 std::uint32_t bond_leg_amortization_repository::get_total_bond_leg_amortization_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::bond_leg_amortizations_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond leg amortizations count. trade_id: "
@@ -355,7 +356,7 @@ std::uint32_t bond_leg_amortization_repository::get_total_bond_leg_amortization_
 
 
 std::vector<domain::bond_leg_amortization> bond_leg_amortization_repository::read_by_trade_id_as_of(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
@@ -382,7 +383,7 @@ std::vector<domain::bond_leg_amortization> bond_leg_amortization_repository::rea
 
 
 bond_leg_amortization_repository::remove_status
-bond_leg_amortization_repository::remove(context ctx,
+bond_leg_amortization_repository::remove(const context& ctx,
                                          const std::string& trade_id,
                                          const std::string& leg_role,
                                          const std::string& leg_number,
@@ -421,7 +422,7 @@ bond_leg_amortization_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void bond_leg_amortization_repository::remove(context ctx,
+void bond_leg_amortization_repository::remove(const context& ctx,
                                               const std::string& trade_id,
                                               const std::string& leg_role,
                                               const std::string& leg_number,
@@ -430,7 +431,7 @@ void bond_leg_amortization_repository::remove(context ctx,
 }
 
 std::vector<domain::bond_leg_amortization> bond_leg_amortization_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -457,7 +458,7 @@ std::vector<domain::bond_leg_amortization> bond_leg_amortization_repository::rea
 }
 
 std::uint32_t bond_leg_amortization_repository::get_total_bond_leg_amortization_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::bond_leg_amortizations_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond leg amortization count";
@@ -476,7 +477,7 @@ std::uint32_t bond_leg_amortization_repository::get_total_bond_leg_amortization_
 }
 
 std::vector<domain::bond_leg_amortization>
-bond_leg_amortization_repository::read_latest(context ctx,
+bond_leg_amortization_repository::read_latest(const context& ctx,
                                               const std::vector<std::string>& trade_ids,
                                               const std::vector<std::string>& leg_roles,
                                               const std::vector<std::string>& leg_numbers,
@@ -519,7 +520,7 @@ bond_leg_amortization_repository::read_latest(context ctx,
     return filtered;
 }
 
-void bond_leg_amortization_repository::remove(context ctx,
+void bond_leg_amortization_repository::remove(const context& ctx,
                                               const std::vector<std::string>& trade_ids,
                                               const std::vector<std::string>& leg_roles,
                                               const std::vector<std::string>& leg_numbers,

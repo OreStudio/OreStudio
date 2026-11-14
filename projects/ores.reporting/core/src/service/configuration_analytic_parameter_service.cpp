@@ -58,8 +58,9 @@ namespace ores::reporting::service {
 
 using namespace ores::logging;
 
-configuration_analytic_parameter_service::configuration_analytic_parameter_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+configuration_analytic_parameter_service::configuration_analytic_parameter_service(
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

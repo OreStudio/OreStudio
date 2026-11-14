@@ -59,8 +59,8 @@ namespace ores::synthetic::service {
 using namespace ores::logging;
 
 yield_curve_process_parameter_definition_service::yield_curve_process_parameter_definition_service(
-    context ctx)
-    : ctx_(std::move(ctx)) {}
+    const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

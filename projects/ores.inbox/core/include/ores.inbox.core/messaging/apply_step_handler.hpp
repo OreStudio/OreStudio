@@ -65,9 +65,9 @@ private:
     }
 
 public:
-    apply_step_handler(ores::nats::service::client& nats, ores::database::context ctx)
+    apply_step_handler(ores::nats::service::client& nats, const ores::database::context& ctx)
         : nats_(nats)
-        , ctx_(std::move(ctx)) {}
+        , ctx_(ctx) {}
 
     /**
      * @brief Serves inbox.v1.steps.tell_apply_result.

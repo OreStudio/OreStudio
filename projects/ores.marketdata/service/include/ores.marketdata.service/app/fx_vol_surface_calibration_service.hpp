@@ -19,7 +19,7 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_FX_VOL_SURFACE_CALIBRATION_SERVICE_HPP
 #define ORES_MARKETDATA_SERVICE_APP_FX_VOL_SURFACE_CALIBRATION_SERVICE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -52,7 +52,7 @@ public:
     static constexpr double pillar_tolerance = 0.001;
 
     [[nodiscard]] static ores::marketdata::messaging::calibrate_fx_vol_surface_response
-    calibrate(ores::database::context ctx,
+    calibrate(const ores::database::context& ctx,
               const ores::marketdata::messaging::calibrate_fx_vol_surface_request& request);
 };
 

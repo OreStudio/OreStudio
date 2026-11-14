@@ -113,7 +113,7 @@ bond_leg_amount_filter_condition(const std::optional<messaging::bond_leg_amounts
 }
 
 ores::utility::domain::precondition
-bond_leg_amount_repository::replace_claim(context ctx, const domain::bond_leg_amount& v) {
+bond_leg_amount_repository::replace_claim(const context& ctx, const domain::bond_leg_amount& v) {
     const auto current = read_latest(ctx,
                                      boost::uuids::to_string(v.trade_id),
                                      v.leg_role,
@@ -127,7 +127,7 @@ bond_leg_amount_repository::replace_claim(context ctx, const domain::bond_leg_am
 }
 
 domain::bond_leg_amount
-bond_leg_amount_repository::apply_claim(context ctx,
+bond_leg_amount_repository::apply_claim(const context& ctx,
                                         const domain::bond_leg_amount& v,
                                         const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -159,11 +159,12 @@ bond_leg_amount_repository::apply_claim(context ctx,
     return t;
 }
 
-void bond_leg_amount_repository::write(context ctx, const domain::bond_leg_amount& v) {
+void bond_leg_amount_repository::write(const context& ctx, const domain::bond_leg_amount& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void bond_leg_amount_repository::write(context ctx, const std::vector<domain::bond_leg_amount>& v) {
+void bond_leg_amount_repository::write(const context& ctx,
+                                       const std::vector<domain::bond_leg_amount>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -171,7 +172,7 @@ void bond_leg_amount_repository::write(context ctx, const std::vector<domain::bo
     write(ctx, v, claims);
 }
 
-void bond_leg_amount_repository::write(context ctx,
+void bond_leg_amount_repository::write(const context& ctx,
                                        const domain::bond_leg_amount& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond leg amount. " << "trade_id: " << v.trade_id
@@ -184,7 +185,7 @@ void bond_leg_amount_repository::write(context ctx,
 }
 
 void bond_leg_amount_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::bond_leg_amount>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing bond leg amounts. Count: " << v.size();
@@ -196,7 +197,7 @@ void bond_leg_amount_repository::write(
         ctx, bond_leg_amount_mapper::map(batch), lg(), "Writing bond leg amounts to database.");
 }
 
-std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_latest(context ctx) {
+std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
@@ -214,7 +215,7 @@ std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_latest(con
 }
 
 std::vector<domain::bond_leg_amount>
-bond_leg_amount_repository::read_latest(context ctx,
+bond_leg_amount_repository::read_latest(const context& ctx,
                                         const std::string& trade_id,
                                         const std::string& leg_role,
                                         const std::string& leg_number,
@@ -243,7 +244,7 @@ bond_leg_amount_repository::read_latest(context ctx,
 
 
 std::vector<domain::bond_leg_amount>
-bond_leg_amount_repository::read_all(context ctx,
+bond_leg_amount_repository::read_all(const context& ctx,
                                      const std::string& trade_id,
                                      const std::string& leg_role,
                                      const std::string& leg_number,
@@ -271,7 +272,7 @@ bond_leg_amount_repository::read_all(context ctx,
 }
 
 std::optional<domain::bond_leg_amount>
-bond_leg_amount_repository::read_at_version(context ctx,
+bond_leg_amount_repository::read_at_version(const context& ctx,
                                             const std::string& trade_id,
                                             const std::string& leg_role,
                                             const std::string& leg_number,
@@ -306,7 +307,7 @@ bond_leg_amount_repository::read_at_version(context ctx,
 }
 
 std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -334,7 +335,7 @@ std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_latest_by_
 }
 
 std::uint32_t bond_leg_amount_repository::get_total_bond_leg_amount_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::bond_leg_amounts_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond leg amounts count. trade_id: "
@@ -356,7 +357,7 @@ std::uint32_t bond_leg_amount_repository::get_total_bond_leg_amount_count_by_tra
 
 
 std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_by_trade_id_as_of(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::chrono::system_clock::time_point valid_from_bound,
     std::chrono::system_clock::time_point valid_to_bound) {
@@ -382,7 +383,7 @@ std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_by_trade_i
 
 
 bond_leg_amount_repository::remove_status
-bond_leg_amount_repository::remove(context ctx,
+bond_leg_amount_repository::remove(const context& ctx,
                                    const std::string& trade_id,
                                    const std::string& leg_role,
                                    const std::string& leg_number,
@@ -425,7 +426,7 @@ bond_leg_amount_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void bond_leg_amount_repository::remove(context ctx,
+void bond_leg_amount_repository::remove(const context& ctx,
                                         const std::string& trade_id,
                                         const std::string& leg_role,
                                         const std::string& leg_number,
@@ -436,7 +437,7 @@ void bond_leg_amount_repository::remove(context ctx,
 }
 
 std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -463,7 +464,7 @@ std::vector<domain::bond_leg_amount> bond_leg_amount_repository::read_latest(
 }
 
 std::uint32_t bond_leg_amount_repository::get_total_bond_leg_amount_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::bond_leg_amounts_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active bond leg amount count";
@@ -482,7 +483,7 @@ std::uint32_t bond_leg_amount_repository::get_total_bond_leg_amount_count(
 }
 
 std::vector<domain::bond_leg_amount>
-bond_leg_amount_repository::read_latest(context ctx,
+bond_leg_amount_repository::read_latest(const context& ctx,
                                         const std::vector<std::string>& trade_ids,
                                         const std::vector<std::string>& leg_roles,
                                         const std::vector<std::string>& leg_numbers,
@@ -530,7 +531,7 @@ bond_leg_amount_repository::read_latest(context ctx,
     return filtered;
 }
 
-void bond_leg_amount_repository::remove(context ctx,
+void bond_leg_amount_repository::remove(const context& ctx,
                                         const std::vector<std::string>& trade_ids,
                                         const std::vector<std::string>& leg_roles,
                                         const std::vector<std::string>& leg_numbers,

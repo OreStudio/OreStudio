@@ -73,7 +73,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit cross_currency_basis_convention_service(context ctx);
+    explicit cross_currency_basis_convention_service(const context& ctx);
 
     /**
      * @brief The family's protocol operations, one method per subject.

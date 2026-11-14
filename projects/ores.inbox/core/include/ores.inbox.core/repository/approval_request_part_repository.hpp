@@ -76,7 +76,7 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit approval_request_part_repository(context ctx);
+    explicit approval_request_part_repository(const context& ctx);
 
     std::string sql();
 

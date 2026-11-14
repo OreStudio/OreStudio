@@ -121,7 +121,8 @@ std::optional<query_builder::condition> report_error_event_filter_condition(
 }
 
 ores::utility::domain::precondition
-report_error_event_repository::replace_claim(context ctx, const domain::report_error_event& v) {
+report_error_event_repository::replace_claim(const context& ctx,
+                                             const domain::report_error_event& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -132,7 +133,7 @@ report_error_event_repository::replace_claim(context ctx, const domain::report_e
 }
 
 domain::report_error_event
-report_error_event_repository::apply_claim(context ctx,
+report_error_event_repository::apply_claim(const context& ctx,
                                            const domain::report_error_event& v,
                                            const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -148,11 +149,11 @@ report_error_event_repository::apply_claim(context ctx,
     return t;
 }
 
-void report_error_event_repository::write(context ctx, const domain::report_error_event& v) {
+void report_error_event_repository::write(const context& ctx, const domain::report_error_event& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void report_error_event_repository::write(context ctx,
+void report_error_event_repository::write(const context& ctx,
                                           const std::vector<domain::report_error_event>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -161,7 +162,7 @@ void report_error_event_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void report_error_event_repository::write(context ctx,
+void report_error_event_repository::write(const context& ctx,
                                           const domain::report_error_event& v,
                                           const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report error event. " << "id: " << v.id;
@@ -173,7 +174,7 @@ void report_error_event_repository::write(context ctx,
 }
 
 void report_error_event_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::report_error_event>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing report error events. Count: " << v.size();
@@ -187,7 +188,8 @@ void report_error_event_repository::write(
                                     "Writing report error events to database.");
 }
 
-std::vector<domain::report_error_event> report_error_event_repository::read_latest(context ctx) {
+std::vector<domain::report_error_event>
+report_error_event_repository::read_latest(const context& ctx) {
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_error_event_entity>> |
                        query_builder::where("tenant_id"_c == tid) | query_builder::order_by("id"_c);
@@ -201,7 +203,7 @@ std::vector<domain::report_error_event> report_error_event_repository::read_late
 }
 
 std::vector<domain::report_error_event>
-report_error_event_repository::read_latest(context ctx, const std::string& id) {
+report_error_event_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest report error event. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_error_event_entity>> |
@@ -217,7 +219,7 @@ report_error_event_repository::read_latest(context ctx, const std::string& id) {
 
 
 std::vector<domain::report_error_event>
-report_error_event_repository::read_all(context ctx, const std::string& id) {
+report_error_event_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all report error event versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<report_error_event_entity>> |
@@ -235,7 +237,7 @@ report_error_event_repository::read_all(context ctx, const std::string& id) {
 
 std::vector<domain::report_error_event>
 report_error_event_repository::read_latest_by_report_instance_id(
-    context ctx,
+    const context& ctx,
     const std::string& report_instance_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -262,7 +264,7 @@ report_error_event_repository::read_latest_by_report_instance_id(
 }
 
 std::uint32_t report_error_event_repository::get_total_error_count_by_report_instance_id(
-    context ctx,
+    const context& ctx,
     const std::string& report_instance_id,
     const std::optional<messaging::report_error_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -284,7 +286,7 @@ std::uint32_t report_error_event_repository::get_total_error_count_by_report_ins
 
 
 report_error_event_repository::remove_status report_error_event_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing report error event. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -302,12 +304,12 @@ report_error_event_repository::remove_status report_error_event_repository::remo
     return remove_status::removed;
 }
 
-void report_error_event_repository::remove(context ctx, const std::string& id) {
+void report_error_event_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::report_error_event> report_error_event_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -331,7 +333,7 @@ std::vector<domain::report_error_event> report_error_event_repository::read_late
 }
 
 std::uint32_t report_error_event_repository::get_total_error_count(
-    context ctx, const std::optional<messaging::report_error_events_filter>& filter) {
+    const context& ctx, const std::optional<messaging::report_error_events_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active report error event count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -347,7 +349,8 @@ std::uint32_t report_error_event_repository::get_total_error_count(
 }
 
 std::vector<domain::report_error_event>
-report_error_event_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+report_error_event_repository::read_latest(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     const auto tid = ctx.tenant_id().to_string();
@@ -363,7 +366,8 @@ report_error_event_repository::read_latest(context ctx, const std::vector<std::s
     return result;
 }
 
-void report_error_event_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void report_error_event_repository::remove(const context& ctx,
+                                           const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -381,7 +385,7 @@ void report_error_event_repository::remove(context ctx, const std::vector<std::s
 
 std::vector<messaging::report_error_count>
 report_error_event_repository::read_counts_by_report_instance_ids(
-    context ctx, const std::vector<boost::uuids::uuid>& report_instance_ids) {
+    const context& ctx, const std::vector<boost::uuids::uuid>& report_instance_ids) {
     if (report_instance_ids.empty())
         return {};
 

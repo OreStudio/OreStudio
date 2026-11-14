@@ -65,7 +65,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit cross_currency_basis_swap_terms_service(context ctx);
+    explicit cross_currency_basis_swap_terms_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

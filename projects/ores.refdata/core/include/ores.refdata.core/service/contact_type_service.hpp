@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit contact_type_service(context ctx);
+    explicit contact_type_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

@@ -107,7 +107,7 @@ void detail::finished(logging::logger_t& lg,
 }
 
 std::vector<std::vector<std::optional<std::string>>>
-execute_parameterized_multi_column_query(context ctx,
+execute_parameterized_multi_column_query(const context& ctx,
                                          const std::string& sql,
                                          const std::vector<std::optional<std::string>>& params,
                                          logging::logger_t& lg,
@@ -141,12 +141,15 @@ execute_parameterized_multi_column_query(context ctx,
     }
 }
 
-std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
-    context ctx, const std::string& sql, logging::logger_t& lg, const std::string& operation_desc) {
+std::vector<std::vector<std::optional<std::string>>>
+execute_raw_multi_column_query(const context& ctx,
+                               const std::string& sql,
+                               logging::logger_t& lg,
+                               const std::string& operation_desc) {
     return execute_parameterized_multi_column_query(ctx, sql, {}, lg, operation_desc);
 }
 
-std::vector<std::string> execute_parameterized_string_query(context ctx,
+std::vector<std::string> execute_parameterized_string_query(const context& ctx,
                                                             const std::string& sql,
                                                             const std::vector<std::string>& params,
                                                             logging::logger_t& lg,
@@ -160,14 +163,14 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
     return out;
 }
 
-std::vector<std::string> execute_raw_string_query(context ctx,
+std::vector<std::string> execute_raw_string_query(const context& ctx,
                                                   const std::string& sql,
                                                   logging::logger_t& lg,
                                                   const std::string& operation_desc) {
     return execute_parameterized_string_query(ctx, sql, {}, lg, operation_desc);
 }
 
-void execute_parameterized_command(context ctx,
+void execute_parameterized_command(const context& ctx,
                                    const std::string& sql,
                                    const std::vector<std::string>& params,
                                    logging::logger_t& lg,
@@ -176,7 +179,7 @@ void execute_parameterized_command(context ctx,
     execute_parameterized_multi_column_query(ctx, sql, values, lg, operation_desc);
 }
 
-void execute_raw_command(context ctx,
+void execute_raw_command(const context& ctx,
                          const std::string& sql,
                          logging::logger_t& lg,
                          const std::string& operation_desc) {

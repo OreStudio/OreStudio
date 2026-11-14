@@ -40,9 +40,10 @@ constexpr auto usage_recorder_service_name = "ores.marketdata.service";
 constexpr std::size_t pending_warning_limit = 100000;
 }
 
-usage_recorder::usage_recorder(ores::database::context ctx, std::shared_ptr<delivery_meter> meter)
-    : ctx_(std::move(ctx))
-    , meter_(std::move(meter)) {}
+usage_recorder::usage_recorder(const ores::database::context& ctx,
+                               std::shared_ptr<delivery_meter> meter)
+    : ctx_(ctx)
+    , meter_(meter) {}
 
 usage_recorder::~usage_recorder() {
     stop_.store(true, std::memory_order_relaxed);

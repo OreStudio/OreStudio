@@ -55,8 +55,8 @@ namespace ores::iam::service {
 
 using namespace ores::logging;
 
-permission_service::permission_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+permission_service::permission_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

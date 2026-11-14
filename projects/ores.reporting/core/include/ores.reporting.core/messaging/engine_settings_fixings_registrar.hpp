@@ -36,7 +36,7 @@ namespace ores::reporting::messaging {
 
 std::vector<ores::nats::service::subscription> register_engine_settings_fixings_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }

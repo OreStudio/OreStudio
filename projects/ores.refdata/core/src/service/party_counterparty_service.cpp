@@ -78,8 +78,8 @@ void stamp_party_counterparty(domain::party_counterparty& row, const ores::datab
 
 }
 
-party_counterparty_service::party_counterparty_service(context ctx)
-    : ctx_(std::move(ctx))
+party_counterparty_service::party_counterparty_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

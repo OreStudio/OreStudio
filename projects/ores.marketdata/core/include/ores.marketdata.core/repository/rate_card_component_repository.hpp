@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::rate_card_component& v);
-    void write(context ctx, const std::vector<domain::rate_card_component>& v);
+    void write(const context& ctx, const domain::rate_card_component& v);
+    void write(const context& ctx, const std::vector<domain::rate_card_component>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::rate_card_component& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of rate card components, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::rate_card_component>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,16 +101,16 @@ public:
      * @brief Reads latest rate card components, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::rate_card_component> read_latest(context ctx);
-    std::vector<domain::rate_card_component> read_latest(context ctx, const std::string& id);
-    std::vector<domain::rate_card_component> read_latest(context ctx,
+    std::vector<domain::rate_card_component> read_latest(const context& ctx);
+    std::vector<domain::rate_card_component> read_latest(const context& ctx, const std::string& id);
+    std::vector<domain::rate_card_component> read_latest(const context& ctx,
                                                          const std::vector<std::string>& ids);
     /**@}*/
 
     /**
      * @brief Reads latest rate card components filtered by driver.
      */
-    std::vector<domain::rate_card_component> read_latest_by_driver(context ctx,
+    std::vector<domain::rate_card_component> read_latest_by_driver(const context& ctx,
                                                                    const std::string& driver);
 
     /**
@@ -121,14 +121,14 @@ public:
      * removing the row. A latest read cannot resolve a closed row, so this one
      * ignores the window and takes the newest match.
      */
-    std::vector<domain::rate_card_component> read_any_by_driver(context ctx,
+    std::vector<domain::rate_card_component> read_any_by_driver(const context& ctx,
                                                                 const std::string& driver);
 
 
     /**
      * @brief Reads all rate card components, possibly filtered by primary key.
      */
-    std::vector<domain::rate_card_component> read_all(context ctx, const std::string& id);
+    std::vector<domain::rate_card_component> read_all(const context& ctx, const std::string& id);
 
     /**
      * @brief Reads a single rate card component as it stood at a specific
@@ -140,7 +140,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::rate_card_component>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Whether a list of rate card components can be ordered by a field.
@@ -159,7 +159,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::rate_card_component>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -172,14 +172,14 @@ public:
      * @return Total number of active rate card components
      */
     std::uint32_t get_total_rate_card_component_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::rate_card_components_filter>& filter = std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a rate card component by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -201,12 +201,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes rate card components by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -214,7 +215,7 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx,
+    ores::utility::domain::precondition replace_claim(const context& ctx,
                                                       const domain::rate_card_component& v);
 
     /**
@@ -222,7 +223,7 @@ private:
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::rate_card_component apply_claim(context ctx,
+    domain::rate_card_component apply_claim(const context& ctx,
                                             const domain::rate_card_component& v,
                                             const ores::utility::domain::precondition& claim);
 };

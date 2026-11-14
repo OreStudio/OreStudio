@@ -20,7 +20,7 @@
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_STEP_CLAIM_REPOSITORY_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_STEP_CLAIM_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.workflow.core/export.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -105,7 +105,7 @@ public:
      * @return The attempt count, counting this claim, when this caller now owns
      *         the claim; nothing when another caller holds a live one.
      */
-    std::optional<int> claim(context ctx,
+    std::optional<int> claim(const context& ctx,
                              const boost::uuids::uuid& step_id,
                              const boost::uuids::uuid& work_tenant_id,
                              const std::string& owner,
@@ -123,7 +123,7 @@ public:
      *
      * @return True when a claim was there to remove.
      */
-    bool release(context ctx, const boost::uuids::uuid& step_id);
+    bool release(const context& ctx, const boost::uuids::uuid& step_id);
 
     /**
      * @brief Extends the lease of a claim its holder still holds, by a full lease,
@@ -135,7 +135,7 @@ public:
      * because a step that renews without advancing has not progressed. A renewal that
      * reports no progress leaves the stored one as it was.
      */
-    bool renew(context ctx,
+    bool renew(const context& ctx,
                const boost::uuids::uuid& step_id,
                const std::string& owner,
                std::chrono::seconds lease,
@@ -148,7 +148,7 @@ public:
      * busy names the process that is keeping them out. The engine also reads
      * it to tell a step a worker has taken from one still waiting in a queue.
      */
-    std::optional<std::string> holder(context ctx, const boost::uuids::uuid& step_id);
+    std::optional<std::string> holder(const context& ctx, const boost::uuids::uuid& step_id);
 
     /**
      * @brief The live state of the current claim on a step, when one holds it.
@@ -158,7 +158,8 @@ public:
      * was waiting on the service, not on the step. The progress's time is the
      * last moment the work moved.
      */
-    std::optional<step_claim_activity> activity(context ctx, const boost::uuids::uuid& step_id);
+    std::optional<step_claim_activity> activity(const context& ctx,
+                                                const boost::uuids::uuid& step_id);
 };
 
 }

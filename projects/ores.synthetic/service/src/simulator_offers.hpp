@@ -23,7 +23,7 @@
 #include "feed_adapter_targets.hpp"
 #include "feed_kind_registry.hpp"
 #include "generator_runner.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.marketdata.core/vendor/provider_notation.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"

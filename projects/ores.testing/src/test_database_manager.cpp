@@ -220,7 +220,7 @@ void test_database_manager::terminate_test_tenant(database::context& ctx,
 }
 
 void test_database_manager::close_orphaned_synthetic_rows(
-    database::context& ctx, const std::vector<std::string>& table_names) {
+    const database::context& ctx, const std::vector<std::string>& table_names) {
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     for (const auto& table_name : table_names) {

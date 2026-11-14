@@ -111,7 +111,7 @@ market_fixing_filter_condition(const std::optional<messaging::market_fixings_fil
 }
 
 ores::utility::domain::precondition
-market_fixing_repository::replace_claim(context ctx, const domain::market_fixing& v) {
+market_fixing_repository::replace_claim(const context& ctx, const domain::market_fixing& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -121,8 +121,10 @@ market_fixing_repository::replace_claim(context ctx, const domain::market_fixing
     return {ores::utility::domain::precondition_kind::any, std::nullopt};
 }
 
-domain::market_fixing market_fixing_repository::apply_claim(
-    context ctx, const domain::market_fixing& v, const ores::utility::domain::precondition& claim) {
+domain::market_fixing
+market_fixing_repository::apply_claim(const context& ctx,
+                                      const domain::market_fixing& v,
+                                      const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     // No version column to state, so the claim is honoured by the read alone.
@@ -136,23 +138,25 @@ domain::market_fixing market_fixing_repository::apply_claim(
     return t;
 }
 
-void market_fixing_repository::write(context ctx, const domain::market_fixing& v) {
+void market_fixing_repository::write(const context& ctx, const domain::market_fixing& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void market_fixing_repository::insert(context ctx, const domain::market_fixing& v) {
+void market_fixing_repository::insert(const context& ctx, const domain::market_fixing& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market fixing. " << "id: " << v.id;
     query_builder::execute_write_query(
         ctx, market_fixing_mapper::map(v), lg(), "Inserting market fixing into database.");
 }
 
-void market_fixing_repository::insert(context ctx, const std::vector<domain::market_fixing>& v) {
+void market_fixing_repository::insert(const context& ctx,
+                                      const std::vector<domain::market_fixing>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Inserting market fixings. Count: " << v.size();
     query_builder::execute_write_query(
         ctx, market_fixing_mapper::map(v), lg(), "Inserting market fixings into database.");
 }
 
-void market_fixing_repository::write(context ctx, const std::vector<domain::market_fixing>& v) {
+void market_fixing_repository::write(const context& ctx,
+                                     const std::vector<domain::market_fixing>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -160,7 +164,7 @@ void market_fixing_repository::write(context ctx, const std::vector<domain::mark
     write(ctx, v, claims);
 }
 
-void market_fixing_repository::write(context ctx,
+void market_fixing_repository::write(const context& ctx,
                                      const domain::market_fixing& v,
                                      const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market fixing. " << "id: " << v.id;
@@ -170,7 +174,7 @@ void market_fixing_repository::write(context ctx,
 }
 
 void market_fixing_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::market_fixing>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing market fixings. Count: " << v.size();
@@ -182,7 +186,7 @@ void market_fixing_repository::write(
         ctx, market_fixing_mapper::map(batch), lg(), "Writing market fixings to database.");
 }
 
-std::vector<domain::market_fixing> market_fixing_repository::read_latest(context ctx) {
+std::vector<domain::market_fixing> market_fixing_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
@@ -199,7 +203,7 @@ std::vector<domain::market_fixing> market_fixing_repository::read_latest(context
         "Reading latest market fixings");
 }
 
-std::vector<domain::market_fixing> market_fixing_repository::read_latest(context ctx,
+std::vector<domain::market_fixing> market_fixing_repository::read_latest(const context& ctx,
                                                                          const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest market fixing. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
@@ -218,7 +222,7 @@ std::vector<domain::market_fixing> market_fixing_repository::read_latest(context
 }
 
 
-std::vector<domain::market_fixing> market_fixing_repository::read_all(context ctx,
+std::vector<domain::market_fixing> market_fixing_repository::read_all(const context& ctx,
                                                                       const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all market fixing versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
@@ -238,7 +242,7 @@ std::vector<domain::market_fixing> market_fixing_repository::read_all(context ct
 
 
 market_fixing_repository::remove_status market_fixing_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing market fixing. " << "id: " << id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -257,12 +261,12 @@ market_fixing_repository::remove_status market_fixing_repository::remove(
     return remove_status::removed;
 }
 
-void market_fixing_repository::remove(context ctx, const std::string& id) {
+void market_fixing_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::market_fixing>
-market_fixing_repository::read_latest(context ctx,
+market_fixing_repository::read_latest(const context& ctx,
                                       std::uint32_t offset,
                                       std::uint32_t limit,
                                       const ores::utility::domain::order& order,
@@ -288,7 +292,7 @@ market_fixing_repository::read_latest(context ctx,
 }
 
 std::uint32_t market_fixing_repository::get_total_market_fixing_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::market_fixings_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active market fixing count";
@@ -308,7 +312,7 @@ std::uint32_t market_fixing_repository::get_total_market_fixing_count(
 }
 
 std::vector<domain::market_fixing>
-market_fixing_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+market_fixing_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -326,7 +330,7 @@ market_fixing_repository::read_latest(context ctx, const std::vector<std::string
     return result;
 }
 
-void market_fixing_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void market_fixing_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -345,7 +349,8 @@ void market_fixing_repository::remove(context ctx, const std::vector<std::string
 
 
 std::vector<domain::market_fixing>
-market_fixing_repository::read_latest_for_series(context ctx, const boost::uuids::uuid& series_id) {
+market_fixing_repository::read_latest_for_series(const context& ctx,
+                                                 const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest fixings for series: " << series_id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();

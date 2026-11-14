@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit pricing_pair_setting_service(context ctx);
+    explicit pricing_pair_setting_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

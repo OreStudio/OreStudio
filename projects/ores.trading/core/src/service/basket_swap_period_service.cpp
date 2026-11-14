@@ -57,8 +57,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-basket_swap_period_service::basket_swap_period_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+basket_swap_period_service::basket_swap_period_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -58,8 +58,8 @@ namespace ores::marketdata::service {
 
 using namespace ores::logging;
 
-fx_vol_surface_publish_service::fx_vol_surface_publish_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+fx_vol_surface_publish_service::fx_vol_surface_publish_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

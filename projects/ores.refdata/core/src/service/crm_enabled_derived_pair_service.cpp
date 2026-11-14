@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-crm_enabled_derived_pair_service::crm_enabled_derived_pair_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+crm_enabled_derived_pair_service::crm_enabled_derived_pair_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

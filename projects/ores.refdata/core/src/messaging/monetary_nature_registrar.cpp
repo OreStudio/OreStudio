@@ -44,10 +44,10 @@ static constexpr std::string_view monetary_nature_queue_group = "ores.refdata.se
 
 std::vector<ores::nats::service::subscription>
 register_monetary_nature_handlers(ores::nats::service::client& nats,
-                                  ores::database::context ctx,
+                                  const ores::database::context& ctx,
                                   std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<monetary_nature_handler>(nats, std::move(ctx), std::move(verifier));
+    auto h = std::make_shared<monetary_nature_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_monetary_natures_request::nats_subject,
         monetary_nature_queue_group,

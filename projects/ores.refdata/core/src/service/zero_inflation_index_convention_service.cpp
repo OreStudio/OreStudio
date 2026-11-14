@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-zero_inflation_index_convention_service::zero_inflation_index_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+zero_inflation_index_convention_service::zero_inflation_index_convention_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

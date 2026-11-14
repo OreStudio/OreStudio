@@ -38,7 +38,7 @@ using datum_key = std::pair<std::string, std::string>;
 }
 
 std::vector<std::int16_t>
-tick_coords_repository::resolve_all(context ctx, const std::vector<tick_datum>& wanted) {
+tick_coords_repository::resolve_all(const context& ctx, const std::vector<tick_datum>& wanted) {
     if (wanted.empty())
         return {};
 
@@ -117,10 +117,10 @@ tick_coords_repository::resolve_all(context ctx, const std::vector<tick_datum>& 
                              " datum(s) cannot be assigned");
 }
 
-std::int16_t tick_coords_repository::resolve(context ctx,
+std::int16_t tick_coords_repository::resolve(const context& ctx,
                                              const boost::uuids::uuid& stream_id,
                                              const std::string& oresmd_uri) {
-    return resolve_all(std::move(ctx), {{stream_id, oresmd_uri}}).front();
+    return resolve_all(ctx, {{stream_id, oresmd_uri}}).front();
 }
 
 }

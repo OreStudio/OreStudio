@@ -46,11 +46,11 @@ static constexpr std::string_view yield_curve_process_parameter_definition_queue
 std::vector<ores::nats::service::subscription>
 register_yield_curve_process_parameter_definition_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     auto h = std::make_shared<yield_curve_process_parameter_definition_handler>(
-        nats, std::move(ctx), std::move(verifier));
+        nats, ctx, std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(list_yield_curve_process_parameter_definitions_request::nats_subject,
                              yield_curve_process_parameter_definition_queue_group,

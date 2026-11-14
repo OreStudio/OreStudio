@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit curve_parametric_smile_parameter_service(context ctx);
+    explicit curve_parametric_smile_parameter_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

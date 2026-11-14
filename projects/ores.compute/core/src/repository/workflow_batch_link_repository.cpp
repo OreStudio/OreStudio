@@ -82,7 +82,8 @@ workflow_batch_link_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-workflow_batch_link_repository::replace_claim(context ctx, const domain::workflow_batch_link& v) {
+workflow_batch_link_repository::replace_claim(const context& ctx,
+                                              const domain::workflow_batch_link& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.batch_id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -93,7 +94,7 @@ workflow_batch_link_repository::replace_claim(context ctx, const domain::workflo
 }
 
 domain::workflow_batch_link
-workflow_batch_link_repository::apply_claim(context ctx,
+workflow_batch_link_repository::apply_claim(const context& ctx,
                                             const domain::workflow_batch_link& v,
                                             const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -109,11 +110,12 @@ workflow_batch_link_repository::apply_claim(context ctx,
     return t;
 }
 
-void workflow_batch_link_repository::write(context ctx, const domain::workflow_batch_link& v) {
+void workflow_batch_link_repository::write(const context& ctx,
+                                           const domain::workflow_batch_link& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void workflow_batch_link_repository::write(context ctx,
+void workflow_batch_link_repository::write(const context& ctx,
                                            const std::vector<domain::workflow_batch_link>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -122,7 +124,7 @@ void workflow_batch_link_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void workflow_batch_link_repository::write(context ctx,
+void workflow_batch_link_repository::write(const context& ctx,
                                            const domain::workflow_batch_link& v,
                                            const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing link. " << "batch_id: " << v.batch_id;
@@ -135,7 +137,7 @@ void workflow_batch_link_repository::write(context ctx,
 }
 
 void workflow_batch_link_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::workflow_batch_link>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing workflow batch links. Count: " << v.size();
@@ -150,7 +152,8 @@ void workflow_batch_link_repository::write(
         "Writing workflow batch links to database.");
 }
 
-std::vector<domain::workflow_batch_link> workflow_batch_link_repository::read_latest(context ctx) {
+std::vector<domain::workflow_batch_link>
+workflow_batch_link_repository::read_latest(const context& ctx) {
     const auto query = query_builder::read<std::vector<workflow_batch_link_entity>> |
                        query_builder::order_by("batch_id"_c);
 
@@ -164,7 +167,7 @@ std::vector<domain::workflow_batch_link> workflow_batch_link_repository::read_la
 }
 
 std::vector<domain::workflow_batch_link>
-workflow_batch_link_repository::read_latest(context ctx, const std::string& batch_id) {
+workflow_batch_link_repository::read_latest(const context& ctx, const std::string& batch_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest link. " << "batch_id: " << batch_id;
     const auto query = query_builder::read<std::vector<workflow_batch_link_entity>> |
                        query_builder::where("batch_id"_c == batch_id);
@@ -180,7 +183,7 @@ workflow_batch_link_repository::read_latest(context ctx, const std::string& batc
 
 
 std::vector<domain::workflow_batch_link>
-workflow_batch_link_repository::read_all(context ctx, const std::string& batch_id) {
+workflow_batch_link_repository::read_all(const context& ctx, const std::string& batch_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all link versions. " << "batch_id: " << batch_id;
     const auto query = query_builder::read<std::vector<workflow_batch_link_entity>> |
                        query_builder::where("batch_id"_c == batch_id) |
@@ -197,7 +200,7 @@ workflow_batch_link_repository::read_all(context ctx, const std::string& batch_i
 
 
 workflow_batch_link_repository::remove_status workflow_batch_link_repository::remove(
-    context ctx, const std::string& batch_id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& batch_id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing link. " << "batch_id: " << batch_id;
     // The store keeps no version column, so a caller that stated a version
     // asked a question this table cannot answer.
@@ -214,12 +217,12 @@ workflow_batch_link_repository::remove_status workflow_batch_link_repository::re
     return remove_status::removed;
 }
 
-void workflow_batch_link_repository::remove(context ctx, const std::string& batch_id) {
+void workflow_batch_link_repository::remove(const context& ctx, const std::string& batch_id) {
     static_cast<void>(remove(ctx, batch_id, std::nullopt));
 }
 
 std::vector<domain::workflow_batch_link>
-workflow_batch_link_repository::read_latest(context ctx,
+workflow_batch_link_repository::read_latest(const context& ctx,
                                             std::uint32_t offset,
                                             std::uint32_t limit,
                                             const ores::utility::domain::order& order) {
@@ -239,7 +242,7 @@ workflow_batch_link_repository::read_latest(context ctx,
         "Reading latest workflow batch links with pagination.");
 }
 
-std::uint32_t workflow_batch_link_repository::get_total__count(context ctx) {
+std::uint32_t workflow_batch_link_repository::get_total__count(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active link count";
 
     const auto query = query_builder::read<std::vector<workflow_batch_link_entity>>;
@@ -249,7 +252,7 @@ std::uint32_t workflow_batch_link_repository::get_total__count(context ctx) {
 }
 
 std::vector<domain::workflow_batch_link>
-workflow_batch_link_repository::read_latest(context ctx,
+workflow_batch_link_repository::read_latest(const context& ctx,
                                             const std::vector<std::string>& batch_ids) {
     if (batch_ids.empty())
         return {};
@@ -265,7 +268,7 @@ workflow_batch_link_repository::read_latest(context ctx,
     return result;
 }
 
-void workflow_batch_link_repository::remove(context ctx,
+void workflow_batch_link_repository::remove(const context& ctx,
                                             const std::vector<std::string>& batch_ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the

@@ -53,11 +53,11 @@ using namespace ores::logging;
 class reset_handler {
 public:
     reset_handler(ores::nats::service::client& nats,
-                  ores::database::context ctx,
+                  const ores::database::context& ctx,
                   ores::security::jwt::jwt_authenticator signer)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , signer_(std::move(signer)) {}
+        , ctx_(ctx)
+        , signer_(signer) {}
 
     void reset_tenant(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(reset_handler_lg(), msg);

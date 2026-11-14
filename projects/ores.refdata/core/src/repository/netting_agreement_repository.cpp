@@ -111,7 +111,8 @@ std::optional<query_builder::condition> netting_agreement_filter_condition(
 }
 
 ores::utility::domain::precondition
-netting_agreement_repository::replace_claim(context ctx, const domain::netting_agreement& v) {
+netting_agreement_repository::replace_claim(const context& ctx,
+                                            const domain::netting_agreement& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -120,7 +121,7 @@ netting_agreement_repository::replace_claim(context ctx, const domain::netting_a
 }
 
 domain::netting_agreement
-netting_agreement_repository::apply_claim(context ctx,
+netting_agreement_repository::apply_claim(const context& ctx,
                                           const domain::netting_agreement& v,
                                           const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -147,11 +148,11 @@ netting_agreement_repository::apply_claim(context ctx,
     return t;
 }
 
-void netting_agreement_repository::write(context ctx, const domain::netting_agreement& v) {
+void netting_agreement_repository::write(const context& ctx, const domain::netting_agreement& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void netting_agreement_repository::write(context ctx,
+void netting_agreement_repository::write(const context& ctx,
                                          const std::vector<domain::netting_agreement>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -160,7 +161,7 @@ void netting_agreement_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void netting_agreement_repository::write(context ctx,
+void netting_agreement_repository::write(const context& ctx,
                                          const domain::netting_agreement& v,
                                          const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing netting agreement. " << "id: " << v.id;
@@ -170,7 +171,7 @@ void netting_agreement_repository::write(context ctx,
 }
 
 void netting_agreement_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::netting_agreement>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing netting agreements. Count: " << v.size();
@@ -182,7 +183,8 @@ void netting_agreement_repository::write(
         ctx, netting_agreement_mapper::map(batch), lg(), "Writing netting agreements to database.");
 }
 
-std::vector<domain::netting_agreement> netting_agreement_repository::read_latest(context ctx) {
+std::vector<domain::netting_agreement>
+netting_agreement_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_agreement_entity>> |
@@ -198,7 +200,7 @@ std::vector<domain::netting_agreement> netting_agreement_repository::read_latest
 }
 
 std::vector<domain::netting_agreement>
-netting_agreement_repository::read_latest(context ctx, const std::string& id) {
+netting_agreement_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest netting agreement. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -215,7 +217,7 @@ netting_agreement_repository::read_latest(context ctx, const std::string& id) {
 }
 
 std::vector<domain::netting_agreement>
-netting_agreement_repository::read_latest_by_agreement_number(context ctx,
+netting_agreement_repository::read_latest_by_agreement_number(const context& ctx,
                                                               const std::string& agreement_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest netting agreement by agreement_number: "
                                << agreement_number;
@@ -242,7 +244,7 @@ netting_agreement_repository::read_latest_by_agreement_number(context ctx,
 }
 
 std::vector<domain::netting_agreement>
-netting_agreement_repository::read_any_by_agreement_number(context ctx,
+netting_agreement_repository::read_any_by_agreement_number(const context& ctx,
                                                            const std::string& agreement_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any netting agreement by agreement_number: "
                                << agreement_number;
@@ -273,7 +275,7 @@ netting_agreement_repository::read_any_by_agreement_number(context ctx,
 
 
 std::vector<domain::netting_agreement>
-netting_agreement_repository::read_all(context ctx, const std::string& id) {
+netting_agreement_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all netting agreement versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<netting_agreement_entity>> |
@@ -289,7 +291,7 @@ netting_agreement_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::optional<domain::netting_agreement> netting_agreement_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading netting agreement at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -313,7 +315,7 @@ std::optional<domain::netting_agreement> netting_agreement_repository::read_at_v
 
 
 std::vector<domain::netting_agreement> netting_agreement_repository::read_latest_by_counterparty_id(
-    context ctx,
+    const context& ctx,
     const std::string& counterparty_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -341,7 +343,7 @@ std::vector<domain::netting_agreement> netting_agreement_repository::read_latest
 }
 
 std::uint32_t netting_agreement_repository::get_total_netting_agreement_count_by_counterparty_id(
-    context ctx,
+    const context& ctx,
     const std::string& counterparty_id,
     const std::optional<messaging::netting_agreements_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -364,7 +366,7 @@ std::uint32_t netting_agreement_repository::get_total_netting_agreement_count_by
 
 
 netting_agreement_repository::remove_status netting_agreement_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing netting agreement. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -393,12 +395,12 @@ netting_agreement_repository::remove_status netting_agreement_repository::remove
     return remove_status::removed;
 }
 
-void netting_agreement_repository::remove(context ctx, const std::string& id) {
+void netting_agreement_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::netting_agreement> netting_agreement_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -424,7 +426,7 @@ std::vector<domain::netting_agreement> netting_agreement_repository::read_latest
 }
 
 std::uint32_t netting_agreement_repository::get_total_netting_agreement_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::netting_agreements_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active netting agreement count";
@@ -443,7 +445,7 @@ std::uint32_t netting_agreement_repository::get_total_netting_agreement_count(
 }
 
 std::vector<domain::netting_agreement>
-netting_agreement_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+netting_agreement_repository::read_latest(const context& ctx, const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -461,7 +463,7 @@ netting_agreement_repository::read_latest(context ctx, const std::vector<std::st
     return result;
 }
 
-void netting_agreement_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void netting_agreement_repository::remove(const context& ctx, const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

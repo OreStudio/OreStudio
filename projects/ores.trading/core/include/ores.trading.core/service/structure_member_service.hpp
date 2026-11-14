@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit structure_member_service(context ctx);
+    explicit structure_member_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

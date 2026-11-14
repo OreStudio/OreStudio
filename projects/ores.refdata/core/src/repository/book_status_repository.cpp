@@ -100,7 +100,7 @@ book_status_filter_condition(const std::optional<messaging::book_statuses_filter
 }
 
 ores::utility::domain::precondition
-book_status_repository::replace_claim(context ctx, const domain::book_status& v) {
+book_status_repository::replace_claim(const context& ctx, const domain::book_status& v) {
     const auto current = read_latest(ctx, v.code);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -108,8 +108,10 @@ book_status_repository::replace_claim(context ctx, const domain::book_status& v)
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::book_status book_status_repository::apply_claim(
-    context ctx, const domain::book_status& v, const ores::utility::domain::precondition& claim) {
+domain::book_status
+book_status_repository::apply_claim(const context& ctx,
+                                    const domain::book_status& v,
+                                    const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
     auto t = v;
     switch (claim.kind) {
@@ -134,11 +136,11 @@ domain::book_status book_status_repository::apply_claim(
     return t;
 }
 
-void book_status_repository::write(context ctx, const domain::book_status& v) {
+void book_status_repository::write(const context& ctx, const domain::book_status& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void book_status_repository::write(context ctx, const std::vector<domain::book_status>& v) {
+void book_status_repository::write(const context& ctx, const std::vector<domain::book_status>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -146,7 +148,7 @@ void book_status_repository::write(context ctx, const std::vector<domain::book_s
     write(ctx, v, claims);
 }
 
-void book_status_repository::write(context ctx,
+void book_status_repository::write(const context& ctx,
                                    const domain::book_status& v,
                                    const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing book status. " << "code: " << v.code;
@@ -155,7 +157,7 @@ void book_status_repository::write(context ctx,
         ctx, book_status_mapper::map(t), lg(), "Writing book status to database.");
 }
 
-void book_status_repository::write(context ctx,
+void book_status_repository::write(const context& ctx,
                                    const std::vector<domain::book_status>& v,
                                    const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing book statuses. Count: " << v.size();
@@ -167,7 +169,7 @@ void book_status_repository::write(context ctx,
         ctx, book_status_mapper::map(batch), lg(), "Writing book statuses to database.");
 }
 
-std::vector<domain::book_status> book_status_repository::read_latest(context ctx) {
+std::vector<domain::book_status> book_status_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<book_status_entity>> |
@@ -182,7 +184,7 @@ std::vector<domain::book_status> book_status_repository::read_latest(context ctx
         "Reading latest book statuses");
 }
 
-std::vector<domain::book_status> book_status_repository::read_latest(context ctx,
+std::vector<domain::book_status> book_status_repository::read_latest(const context& ctx,
                                                                      const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest book status. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
@@ -200,7 +202,7 @@ std::vector<domain::book_status> book_status_repository::read_latest(context ctx
 }
 
 
-std::vector<domain::book_status> book_status_repository::read_all(context ctx,
+std::vector<domain::book_status> book_status_repository::read_all(const context& ctx,
                                                                   const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all book status versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
@@ -216,7 +218,7 @@ std::vector<domain::book_status> book_status_repository::read_all(context ctx,
         "Reading all book status versions by code.");
 }
 
-std::optional<domain::book_status> book_status_repository::read_at_version(context ctx,
+std::optional<domain::book_status> book_status_repository::read_at_version(const context& ctx,
                                                                            const std::string& code,
                                                                            std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading book status at version. " << "code: " << code
@@ -241,7 +243,7 @@ std::optional<domain::book_status> book_status_repository::read_at_version(conte
 }
 
 book_status_repository::remove_status book_status_repository::remove(
-    context ctx, const std::string& code, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& code, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book status. " << "code: " << code;
     const auto current = read_latest(ctx, code);
     if (current.empty())
@@ -269,12 +271,12 @@ book_status_repository::remove_status book_status_repository::remove(
     return remove_status::removed;
 }
 
-void book_status_repository::remove(context ctx, const std::string& code) {
+void book_status_repository::remove(const context& ctx, const std::string& code) {
     static_cast<void>(remove(ctx, code, std::nullopt));
 }
 
 std::vector<domain::book_status>
-book_status_repository::read_latest(context ctx,
+book_status_repository::read_latest(const context& ctx,
                                     std::uint32_t offset,
                                     std::uint32_t limit,
                                     const ores::utility::domain::order& order,
@@ -299,7 +301,7 @@ book_status_repository::read_latest(context ctx,
 }
 
 std::uint32_t book_status_repository::get_total_status_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::book_statuses_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active book status count";
@@ -318,7 +320,7 @@ std::uint32_t book_status_repository::get_total_status_count(
 }
 
 std::vector<domain::book_status>
-book_status_repository::read_latest(context ctx, const std::vector<std::string>& codes) {
+book_status_repository::read_latest(const context& ctx, const std::vector<std::string>& codes) {
     if (codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -335,7 +337,7 @@ book_status_repository::read_latest(context ctx, const std::vector<std::string>&
     return result;
 }
 
-void book_status_repository::remove(context ctx, const std::vector<std::string>& codes) {
+void book_status_repository::remove(const context& ctx, const std::vector<std::string>& codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

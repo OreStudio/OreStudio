@@ -34,7 +34,7 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 messaging::get_series_ticks_response
-series_tick_reader::read(ores::database::context ctx,
+series_tick_reader::read(const ores::database::context& ctx,
                          const messaging::get_series_ticks_request& request,
                          std::chrono::system_clock::time_point now) {
     messaging::get_series_ticks_response response;

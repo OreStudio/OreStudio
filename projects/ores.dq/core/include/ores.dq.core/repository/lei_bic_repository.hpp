@@ -70,8 +70,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::lei_bic& v);
-    void write(context ctx, const std::vector<domain::lei_bic>& v);
+    void write(const context& ctx, const domain::lei_bic& v);
+    void write(const context& ctx, const std::vector<domain::lei_bic>& v);
     /**@}*/
 
     /**
@@ -89,14 +89,15 @@ public:
      * @c must_not_exist claim over a live row is refused by the read below
      * rather than by the trigger.
      */
-    void
-    write(context ctx, const domain::lei_bic& v, const ores::utility::domain::precondition& claim);
+    void write(const context& ctx,
+               const domain::lei_bic& v,
+               const ores::utility::domain::precondition& claim);
 
     /**
      * @brief Writes a set of LEI BIC, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::lei_bic>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -104,9 +105,10 @@ public:
      * @brief Reads latest LEI BIC, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::lei_bic> read_latest(context ctx);
-    std::vector<domain::lei_bic> read_latest(context ctx, const std::string& lei);
-    std::vector<domain::lei_bic> read_latest(context ctx, const std::vector<std::string>& leis);
+    std::vector<domain::lei_bic> read_latest(const context& ctx);
+    std::vector<domain::lei_bic> read_latest(const context& ctx, const std::string& lei);
+    std::vector<domain::lei_bic> read_latest(const context& ctx,
+                                             const std::vector<std::string>& leis);
     /**@}*/
 
 
@@ -116,7 +118,7 @@ public:
      * A current-state table holds one row per key, so this is the single
      * current row, not a version history.
      */
-    std::vector<domain::lei_bic> read_all(context ctx, const std::string& lei);
+    std::vector<domain::lei_bic> read_all(const context& ctx, const std::string& lei);
 
 
     /**
@@ -136,7 +138,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::lei_bic>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -148,7 +150,7 @@ public:
      * @return Total number of active LEI BIC
      */
     std::uint32_t
-    get_total_lei_bic_count(context ctx,
+    get_total_lei_bic_count(const context& ctx,
                             const std::optional<messaging::lei_bic_filter>& filter = std::nullopt);
 
     /**
@@ -157,7 +159,7 @@ public:
      * A current-state table has no history, so the row is removed, not
      * soft-closed.
      */
-    void remove(context ctx, const std::string& lei);
+    void remove(const context& ctx, const std::string& lei);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -179,12 +181,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& lei, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& lei, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes LEI BIC permanently.
      */
-    void remove(context ctx, const std::vector<std::string>& leis);
+    void remove(const context& ctx, const std::vector<std::string>& leis);
 
 
 private:
@@ -192,14 +195,14 @@ private:
      * @brief The claim a replace makes: the version the row carries now, or
      * that no row exists yet.
      */
-    ores::utility::domain::precondition replace_claim(context ctx, const domain::lei_bic& v);
+    ores::utility::domain::precondition replace_claim(const context& ctx, const domain::lei_bic& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
      *
      * A claim the store cannot check is refused here rather than ignored.
      */
-    domain::lei_bic apply_claim(context ctx,
+    domain::lei_bic apply_claim(const context& ctx,
                                 const domain::lei_bic& v,
                                 const ores::utility::domain::precondition& claim);
 };

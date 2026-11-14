@@ -194,12 +194,12 @@ std::optional<boost::uuids::uuid> find_fsm_state_id(const ores::database::contex
 } // anonymous namespace
 
 report_scheduling_service::report_scheduling_service(
-    context ctx,
+    const context& ctx,
     ores::nats::service::nats_client svc_nats,
     std::optional<ores::nats::service::nats_client> person_nats)
-    : ctx_(std::move(ctx))
-    , svc_nats_(std::move(svc_nats))
-    , person_nats_(std::move(person_nats)) {}
+    : ctx_(ctx)
+    , svc_nats_(svc_nats)
+    , person_nats_(person_nats) {}
 
 std::optional<ores::scheduler::messaging::job_definition_change>
 report_scheduling_service::build_job_change(const domain::report_definition& def,

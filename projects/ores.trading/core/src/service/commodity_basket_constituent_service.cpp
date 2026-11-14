@@ -57,8 +57,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-commodity_basket_constituent_service::commodity_basket_constituent_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+commodity_basket_constituent_service::commodity_basket_constituent_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

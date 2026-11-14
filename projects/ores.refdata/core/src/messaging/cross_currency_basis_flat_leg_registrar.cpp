@@ -45,11 +45,11 @@ static constexpr std::string_view cross_currency_basis_flat_leg_queue_group =
 
 std::vector<ores::nats::service::subscription> register_cross_currency_basis_flat_leg_handlers(
     ores::nats::service::client& nats,
-    ores::database::context ctx,
+    const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    auto h = std::make_shared<cross_currency_basis_flat_leg_handler>(
-        nats, std::move(ctx), std::move(verifier));
+    auto h =
+        std::make_shared<cross_currency_basis_flat_leg_handler>(nats, ctx, std::move(verifier));
     subs.push_back(nats.queue_subscribe(
         list_cross_currency_basis_flat_legs_request::nats_subject,
         cross_currency_basis_flat_leg_queue_group,

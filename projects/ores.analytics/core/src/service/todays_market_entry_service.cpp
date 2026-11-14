@@ -58,8 +58,8 @@ namespace ores::analytics::service {
 
 using namespace ores::logging;
 
-todays_market_entry_service::todays_market_entry_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+todays_market_entry_service::todays_market_entry_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

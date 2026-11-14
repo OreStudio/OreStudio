@@ -43,7 +43,7 @@ namespace ores::reporting::messaging {
 class ORES_REPORTING_CORE_EXPORT run_document_handler {
 public:
     run_document_handler(ores::nats::service::client& nats,
-                         ores::database::context ctx,
+                         const ores::database::context& ctx,
                          std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
     void save_run_document(ores::nats::message msg);

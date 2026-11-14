@@ -100,7 +100,7 @@ account_status_filter_condition(const std::optional<messaging::account_statuses_
 }
 
 ores::utility::domain::precondition
-account_status_repository::replace_claim(context ctx, const domain::account_status& v) {
+account_status_repository::replace_claim(const context& ctx, const domain::account_status& v) {
     const auto current = read_latest(ctx, v.status);
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
@@ -109,7 +109,7 @@ account_status_repository::replace_claim(context ctx, const domain::account_stat
 }
 
 domain::account_status
-account_status_repository::apply_claim(context ctx,
+account_status_repository::apply_claim(const context& ctx,
                                        const domain::account_status& v,
                                        const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -136,11 +136,12 @@ account_status_repository::apply_claim(context ctx,
     return t;
 }
 
-void account_status_repository::write(context ctx, const domain::account_status& v) {
+void account_status_repository::write(const context& ctx, const domain::account_status& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void account_status_repository::write(context ctx, const std::vector<domain::account_status>& v) {
+void account_status_repository::write(const context& ctx,
+                                      const std::vector<domain::account_status>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -148,7 +149,7 @@ void account_status_repository::write(context ctx, const std::vector<domain::acc
     write(ctx, v, claims);
 }
 
-void account_status_repository::write(context ctx,
+void account_status_repository::write(const context& ctx,
                                       const domain::account_status& v,
                                       const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account status. " << "status: " << v.status;
@@ -158,7 +159,7 @@ void account_status_repository::write(context ctx,
 }
 
 void account_status_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::account_status>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing account statuses. Count: " << v.size();
@@ -170,7 +171,7 @@ void account_status_repository::write(
         ctx, account_status_mapper::map(batch), lg(), "Writing account statuses to database.");
 }
 
-std::vector<domain::account_status> account_status_repository::read_latest(context ctx) {
+std::vector<domain::account_status> account_status_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<account_status_entity>> |
@@ -186,7 +187,7 @@ std::vector<domain::account_status> account_status_repository::read_latest(conte
 }
 
 std::vector<domain::account_status>
-account_status_repository::read_latest(context ctx, const std::string& status) {
+account_status_repository::read_latest(const context& ctx, const std::string& status) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account status. " << "status: " << status;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -203,7 +204,7 @@ account_status_repository::read_latest(context ctx, const std::string& status) {
 }
 
 
-std::vector<domain::account_status> account_status_repository::read_all(context ctx,
+std::vector<domain::account_status> account_status_repository::read_all(const context& ctx,
                                                                         const std::string& status) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all account status versions. " << "status: " << status;
     const auto tid = ctx.tenant_id().to_string();
@@ -220,7 +221,7 @@ std::vector<domain::account_status> account_status_repository::read_all(context 
 }
 
 std::optional<domain::account_status> account_status_repository::read_at_version(
-    context ctx, const std::string& status, std::uint32_t version) {
+    const context& ctx, const std::string& status, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading account status at version. " << "status: " << status
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -243,7 +244,7 @@ std::optional<domain::account_status> account_status_repository::read_at_version
 }
 
 account_status_repository::remove_status account_status_repository::remove(
-    context ctx, const std::string& status, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& status, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing account status. " << "status: " << status;
     const auto current = read_latest(ctx, status);
     if (current.empty())
@@ -271,12 +272,12 @@ account_status_repository::remove_status account_status_repository::remove(
     return remove_status::removed;
 }
 
-void account_status_repository::remove(context ctx, const std::string& status) {
+void account_status_repository::remove(const context& ctx, const std::string& status) {
     static_cast<void>(remove(ctx, status, std::nullopt));
 }
 
 std::vector<domain::account_status> account_status_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -301,7 +302,7 @@ std::vector<domain::account_status> account_status_repository::read_latest(
 }
 
 std::uint32_t account_status_repository::get_total_status_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::account_statuses_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account status count";
@@ -320,7 +321,8 @@ std::uint32_t account_status_repository::get_total_status_count(
 }
 
 std::vector<domain::account_status>
-account_status_repository::read_latest(context ctx, const std::vector<std::string>& statuss) {
+account_status_repository::read_latest(const context& ctx,
+                                       const std::vector<std::string>& statuss) {
     if (statuss.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -337,7 +339,8 @@ account_status_repository::read_latest(context ctx, const std::vector<std::strin
     return result;
 }
 
-void account_status_repository::remove(context ctx, const std::vector<std::string>& statuss) {
+void account_status_repository::remove(const context& ctx,
+                                       const std::vector<std::string>& statuss) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

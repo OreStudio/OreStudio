@@ -57,8 +57,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-callable_swap_call_date_service::callable_swap_call_date_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+callable_swap_call_date_service::callable_swap_call_date_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

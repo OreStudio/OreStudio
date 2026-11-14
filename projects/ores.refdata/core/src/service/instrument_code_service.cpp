@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-instrument_code_service::instrument_code_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+instrument_code_service::instrument_code_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

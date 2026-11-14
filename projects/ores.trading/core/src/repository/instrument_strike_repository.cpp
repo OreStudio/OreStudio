@@ -87,7 +87,8 @@ instrument_strike_list_order(const ores::utility::domain::order& order,
 }
 
 ores::utility::domain::precondition
-instrument_strike_repository::replace_claim(context ctx, const domain::instrument_strike& v) {
+instrument_strike_repository::replace_claim(const context& ctx,
+                                            const domain::instrument_strike& v) {
     const auto current = read_latest(
         ctx, boost::uuids::to_string(v.trade_id), v.strike_role, std::to_string(v.sequence_number));
     if (current.empty())
@@ -97,7 +98,7 @@ instrument_strike_repository::replace_claim(context ctx, const domain::instrumen
 }
 
 domain::instrument_strike
-instrument_strike_repository::apply_claim(context ctx,
+instrument_strike_repository::apply_claim(const context& ctx,
                                           const domain::instrument_strike& v,
                                           const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -127,11 +128,11 @@ instrument_strike_repository::apply_claim(context ctx,
     return t;
 }
 
-void instrument_strike_repository::write(context ctx, const domain::instrument_strike& v) {
+void instrument_strike_repository::write(const context& ctx, const domain::instrument_strike& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void instrument_strike_repository::write(context ctx,
+void instrument_strike_repository::write(const context& ctx,
                                          const std::vector<domain::instrument_strike>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
@@ -140,7 +141,7 @@ void instrument_strike_repository::write(context ctx,
     write(ctx, v, claims);
 }
 
-void instrument_strike_repository::write(context ctx,
+void instrument_strike_repository::write(const context& ctx,
                                          const domain::instrument_strike& v,
                                          const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument strike. " << "trade_id: " << v.trade_id
@@ -152,7 +153,7 @@ void instrument_strike_repository::write(context ctx,
 }
 
 void instrument_strike_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::instrument_strike>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing instrument strikes. Count: " << v.size();
@@ -164,7 +165,8 @@ void instrument_strike_repository::write(
         ctx, instrument_strike_mapper::map(batch), lg(), "Writing instrument strikes to database.");
 }
 
-std::vector<domain::instrument_strike> instrument_strike_repository::read_latest(context ctx) {
+std::vector<domain::instrument_strike>
+instrument_strike_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<instrument_strike_entity>> |
@@ -180,7 +182,7 @@ std::vector<domain::instrument_strike> instrument_strike_repository::read_latest
 }
 
 std::vector<domain::instrument_strike>
-instrument_strike_repository::read_latest(context ctx,
+instrument_strike_repository::read_latest(const context& ctx,
                                           const std::string& trade_id,
                                           const std::string& strike_role,
                                           const std::string& sequence_number) {
@@ -205,7 +207,7 @@ instrument_strike_repository::read_latest(context ctx,
 
 
 std::vector<domain::instrument_strike>
-instrument_strike_repository::read_all(context ctx,
+instrument_strike_repository::read_all(const context& ctx,
                                        const std::string& trade_id,
                                        const std::string& strike_role,
                                        const std::string& sequence_number) {
@@ -228,7 +230,7 @@ instrument_strike_repository::read_all(context ctx,
 }
 
 std::optional<domain::instrument_strike>
-instrument_strike_repository::read_at_version(context ctx,
+instrument_strike_repository::read_at_version(const context& ctx,
                                               const std::string& trade_id,
                                               const std::string& strike_role,
                                               const std::string& sequence_number,
@@ -260,7 +262,7 @@ instrument_strike_repository::read_at_version(context ctx,
 
 
 instrument_strike_repository::remove_status
-instrument_strike_repository::remove(context ctx,
+instrument_strike_repository::remove(const context& ctx,
                                      const std::string& trade_id,
                                      const std::string& strike_role,
                                      const std::string& sequence_number,
@@ -297,7 +299,7 @@ instrument_strike_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void instrument_strike_repository::remove(context ctx,
+void instrument_strike_repository::remove(const context& ctx,
                                           const std::string& trade_id,
                                           const std::string& strike_role,
                                           const std::string& sequence_number) {
@@ -305,7 +307,7 @@ void instrument_strike_repository::remove(context ctx,
 }
 
 std::vector<domain::instrument_strike>
-instrument_strike_repository::read_latest(context ctx,
+instrument_strike_repository::read_latest(const context& ctx,
                                           std::uint32_t offset,
                                           std::uint32_t limit,
                                           const ores::utility::domain::order& order,
@@ -329,7 +331,7 @@ instrument_strike_repository::read_latest(context ctx,
 }
 
 std::uint32_t instrument_strike_repository::get_total_instrument_strike_count(
-    context ctx, const std::optional<std::string>& as_of) {
+    const context& ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument strike count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -345,7 +347,7 @@ std::uint32_t instrument_strike_repository::get_total_instrument_strike_count(
 }
 
 std::vector<domain::instrument_strike>
-instrument_strike_repository::read_latest(context ctx,
+instrument_strike_repository::read_latest(const context& ctx,
                                           const std::vector<std::string>& trade_ids,
                                           const std::vector<std::string>& strike_roles,
                                           const std::vector<std::string>& sequence_numbers) {
@@ -385,7 +387,7 @@ instrument_strike_repository::read_latest(context ctx,
     return filtered;
 }
 
-void instrument_strike_repository::remove(context ctx,
+void instrument_strike_repository::remove(const context& ctx,
                                           const std::vector<std::string>& trade_ids,
                                           const std::vector<std::string>& strike_roles,
                                           const std::vector<std::string>& sequence_numbers) {

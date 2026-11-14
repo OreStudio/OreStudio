@@ -63,7 +63,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit publication_service(context ctx);
+    explicit publication_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

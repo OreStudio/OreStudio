@@ -58,8 +58,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-cap_floor_volatility_config_service::cap_floor_volatility_config_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+cap_floor_volatility_config_service::cap_floor_volatility_config_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

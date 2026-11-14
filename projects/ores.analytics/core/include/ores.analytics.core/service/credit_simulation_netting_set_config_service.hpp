@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit credit_simulation_netting_set_config_service(context ctx);
+    explicit credit_simulation_netting_set_config_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

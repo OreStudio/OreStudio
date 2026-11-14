@@ -329,8 +329,8 @@ key_from_option_expiry(const domain::commodity_future_option_expiry& v) {
 
 }
 
-commodity_future_convention_service::commodity_future_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+commodity_future_convention_service::commodity_future_convention_service(const context& ctx)
+    : ctx_(ctx) {}
 
 messaging::get_commodity_future_convention_response
 commodity_future_convention_service::get_commodity_future_convention(

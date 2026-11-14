@@ -148,7 +148,7 @@ std::string iso(std::chrono::year_month_day d) {
 }
 
 /// Rows of a query that returns one JSON array of three strings per row.
-std::vector<dated_value> triples_of(ores::database::context ctx,
+std::vector<dated_value> triples_of(const ores::database::context& ctx,
                                     const std::string& sql,
                                     const std::string& tag,
                                     const std::string& what) {
@@ -170,7 +170,8 @@ std::vector<dated_value> triples_of(ores::database::context ctx,
 ///
 /// One query, filtered on the source tag the import stamped, so the check costs
 /// the same for every file however many rows the tenant already holds.
-std::vector<dated_value> stored_observations(ores::database::context ctx, const std::string& tag) {
+std::vector<dated_value> stored_observations(const ores::database::context& ctx,
+                                             const std::string& tag) {
     using namespace ores::marketdata;
     auto rows = triples_of(ctx,
                            "SELECT json_build_array(observation_datetime::date::text, oresmd_uri,"
@@ -189,7 +190,8 @@ std::vector<dated_value> stored_observations(ores::database::context ctx, const 
 }
 
 /// The fixings stamped with @p tag, each with the index name its series names.
-std::vector<dated_value> stored_fixings(ores::database::context ctx, const std::string& tag) {
+std::vector<dated_value> stored_fixings(const ores::database::context& ctx,
+                                        const std::string& tag) {
     using namespace ores::marketdata;
     auto rows =
         triples_of(ctx,
@@ -221,7 +223,7 @@ std::vector<dated_value> stored_fixings(ores::database::context ctx, const std::
 /// carried, so a caller can total them across files.
 std::size_t import_and_verify(const std::filesystem::path& path,
                               ores::marketdata::service::import_service& svc,
-                              ores::database::context ctx) {
+                              const ores::database::context& ctx) {
     using namespace ores::marketdata;
     const auto content = ores::platform::filesystem::file::read_content(path);
     const auto tag = source_tag_for(path);
@@ -272,7 +274,7 @@ std::size_t import_and_verify(const std::filesystem::path& path,
 /// the import, so it is expected to be missing and counted as a warning.
 std::size_t import_fixings_and_verify(const std::filesystem::path& path,
                                       ores::marketdata::service::import_service& svc,
-                                      ores::database::context ctx) {
+                                      const ores::database::context& ctx) {
     using namespace ores::marketdata;
     const auto content = ores::platform::filesystem::file::read_content(path);
     const auto tag = source_tag_for(path);

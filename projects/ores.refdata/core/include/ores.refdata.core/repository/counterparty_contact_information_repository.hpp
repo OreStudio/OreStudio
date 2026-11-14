@@ -71,8 +71,8 @@ public:
      * overwrite.
      */
     /**@{*/
-    void write(context ctx, const domain::counterparty_contact_information& v);
-    void write(context ctx, const std::vector<domain::counterparty_contact_information>& v);
+    void write(const context& ctx, const domain::counterparty_contact_information& v);
+    void write(const context& ctx, const std::vector<domain::counterparty_contact_information>& v);
     /**@}*/
 
     /**
@@ -85,7 +85,7 @@ public:
      * row that moved on are refused by the store rather than by a check a
      * caller might have forgotten.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const domain::counterparty_contact_information& v,
                const ores::utility::domain::precondition& claim);
 
@@ -93,7 +93,7 @@ public:
      * @brief Writes a set of counterparty contact informations, each honouring its own
      * claim, as one statement.
      */
-    void write(context ctx,
+    void write(const context& ctx,
                const std::vector<domain::counterparty_contact_information>& v,
                const std::vector<ores::utility::domain::precondition>& claims);
 
@@ -101,11 +101,11 @@ public:
      * @brief Reads latest counterparty contact informations, possibly filtered by primary key.
      */
     /**@{*/
-    std::vector<domain::counterparty_contact_information> read_latest(context ctx);
-    std::vector<domain::counterparty_contact_information> read_latest(context ctx,
+    std::vector<domain::counterparty_contact_information> read_latest(const context& ctx);
+    std::vector<domain::counterparty_contact_information> read_latest(const context& ctx,
                                                                       const std::string& id);
     std::vector<domain::counterparty_contact_information>
-    read_latest(context ctx, const std::vector<std::string>& ids);
+    read_latest(const context& ctx, const std::vector<std::string>& ids);
     /**@}*/
 
     /**
@@ -113,13 +113,13 @@ public:
      * contact_type.
      */
     std::vector<domain::counterparty_contact_information> read_latest_by_code(
-        context ctx, const std::string& counterparty_id, const std::string& contact_type);
+        const context& ctx, const std::string& counterparty_id, const std::string& contact_type);
 
     /**
      * @brief Reads latest counterparty contact informations filtered by contact_type.
      */
     std::vector<domain::counterparty_contact_information>
-    read_latest_by_contact_type(context ctx, const std::string& contact_type);
+    read_latest_by_contact_type(const context& ctx, const std::string& contact_type);
 
     /**
      * @brief Reads the newest counterparty contact informations filtered by contact_type, current
@@ -131,13 +131,13 @@ public:
      * ignores the window and takes the newest match.
      */
     std::vector<domain::counterparty_contact_information>
-    read_any_by_contact_type(context ctx, const std::string& contact_type);
+    read_any_by_contact_type(const context& ctx, const std::string& contact_type);
 
 
     /**
      * @brief Reads all counterparty contact informations, possibly filtered by primary key.
      */
-    std::vector<domain::counterparty_contact_information> read_all(context ctx,
+    std::vector<domain::counterparty_contact_information> read_all(const context& ctx,
                                                                    const std::string& id);
 
     /**
@@ -150,7 +150,7 @@ public:
      * @param version The version to fetch
      */
     std::optional<domain::counterparty_contact_information>
-    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
 
     /**
      * @brief Reads latest counterparty contact informations filtered by counterparty_id, with
@@ -162,7 +162,7 @@ public:
      * @param order The stated order; an empty field is the default order
      */
     std::vector<domain::counterparty_contact_information> read_latest_by_counterparty_id(
-        context ctx,
+        const context& ctx,
         const std::string& counterparty_id,
         std::uint32_t offset,
         std::uint32_t limit,
@@ -175,7 +175,7 @@ public:
      * counterparty_id.
      */
     std::uint32_t get_total_counterparty_contact_information_count_by_counterparty_id(
-        context ctx,
+        const context& ctx,
         const std::string& counterparty_id,
         const std::optional<messaging::counterparty_contact_informations_filter>& filter =
             std::nullopt);
@@ -193,7 +193,7 @@ public:
      * @param valid_to_bound The parent version's own valid_to
      */
     std::vector<domain::counterparty_contact_information>
-    read_by_counterparty_id_as_of(context ctx,
+    read_by_counterparty_id_as_of(const context& ctx,
                                   const std::string& counterparty_id,
                                   std::chrono::system_clock::time_point valid_from_bound,
                                   std::chrono::system_clock::time_point valid_to_bound);
@@ -215,7 +215,7 @@ public:
      * @throws std::invalid_argument if the field is not sortable
      */
     std::vector<domain::counterparty_contact_information>
-    read_latest(context ctx,
+    read_latest(const context& ctx,
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
@@ -229,7 +229,7 @@ public:
      * @return Total number of active counterparty contact informations
      */
     std::uint32_t get_total_counterparty_contact_information_count(
-        context ctx,
+        const context& ctx,
         const std::optional<messaging::counterparty_contact_informations_filter>& filter =
             std::nullopt,
         const std::optional<std::string>& as_of = std::nullopt);
@@ -237,7 +237,7 @@ public:
     /**
      * @brief Deletes a counterparty contact information by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& id);
+    void remove(const context& ctx, const std::string& id);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -259,12 +259,13 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status remove(context ctx, const std::string& id, std::optional<std::uint32_t> version);
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes counterparty contact informations by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& ids);
+    void remove(const context& ctx, const std::vector<std::string>& ids);
 
 
 private:
@@ -273,7 +274,7 @@ private:
      * that no row exists yet.
      */
     ores::utility::domain::precondition
-    replace_claim(context ctx, const domain::counterparty_contact_information& v);
+    replace_claim(const context& ctx, const domain::counterparty_contact_information& v);
 
     /**
      * @brief The object with the claim's version stamped onto it.
@@ -281,7 +282,7 @@ private:
      * A claim the store cannot check is refused here rather than ignored.
      */
     domain::counterparty_contact_information
-    apply_claim(context ctx,
+    apply_claim(const context& ctx,
                 const domain::counterparty_contact_information& v,
                 const ores::utility::domain::precondition& claim);
 };

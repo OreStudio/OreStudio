@@ -54,8 +54,8 @@ namespace ores::marketdata::service {
 
 using namespace ores::logging;
 
-series_classification_rule_service::series_classification_rule_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+series_classification_rule_service::series_classification_rule_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

@@ -63,11 +63,11 @@ inline auto& operations_handler_lg() {
 class operations_handler {
 public:
     operations_handler(ores::nats::service::client& nats,
-                       ores::database::context ctx,
+                       const ores::database::context& ctx,
                        std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier)) {}
+        , ctx_(ctx)
+        , verifier_(verifier) {}
 
     void clear_bootstrap_mode(ores::nats::message msg) {
         using namespace ores::logging;

@@ -184,12 +184,12 @@ read this entity's consumers already use stays a declared paste block
 rather than a second, differently-named method on the repository.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::role> read_latest_by_name(context ctx, const std::string& name);
+std::vector<domain::role> read_latest_by_name(const context& ctx, const std::string& name);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::role>
-role_repository::read_latest_by_name(context ctx, const std::string& name) {
+role_repository::read_latest_by_name(const context& ctx, const std::string& name) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_entity>> |
@@ -216,12 +216,12 @@ none. The registration path grants the role this read names rather than a
 role name it hard-codes.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::optional<domain::role> read_registration_default(context ctx);
+std::optional<domain::role> read_registration_default(const context& ctx);
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::optional<domain::role>
-role_repository::read_registration_default(context ctx) {
+role_repository::read_registration_default(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<role_entity>> |

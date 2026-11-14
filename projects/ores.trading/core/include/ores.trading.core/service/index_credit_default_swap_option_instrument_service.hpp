@@ -65,7 +65,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit index_credit_default_swap_option_instrument_service(context ctx);
+    explicit index_credit_default_swap_option_instrument_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

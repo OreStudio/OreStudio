@@ -61,7 +61,7 @@ struct entity_write_observer {
 template <typename T>
 struct entity_write_observer<std::vector<T>> {
     static constexpr bool observes = entity_write_observer<T>::observes;
-    static void observe(context ctx, const std::vector<T>& v, logging::logger_t& lg) {
+    static void observe(const context& ctx, const std::vector<T>& v, logging::logger_t& lg) {
         for (const auto& entity : v)
             entity_write_observer<T>::observe(ctx, entity, lg);
     }

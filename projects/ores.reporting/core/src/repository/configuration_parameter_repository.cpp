@@ -120,7 +120,7 @@ std::optional<query_builder::condition> configuration_parameter_filter_condition
 }
 
 ores::utility::domain::precondition
-configuration_parameter_repository::replace_claim(context ctx,
+configuration_parameter_repository::replace_claim(const context& ctx,
                                                   const domain::configuration_parameter& v) {
     const auto current = read_latest(ctx, boost::uuids::to_string(v.id));
     if (current.empty())
@@ -130,7 +130,7 @@ configuration_parameter_repository::replace_claim(context ctx,
 }
 
 domain::configuration_parameter
-configuration_parameter_repository::apply_claim(context ctx,
+configuration_parameter_repository::apply_claim(const context& ctx,
                                                 const domain::configuration_parameter& v,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -157,13 +157,13 @@ configuration_parameter_repository::apply_claim(context ctx,
     return t;
 }
 
-void configuration_parameter_repository::write(context ctx,
+void configuration_parameter_repository::write(const context& ctx,
                                                const domain::configuration_parameter& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
 void configuration_parameter_repository::write(
-    context ctx, const std::vector<domain::configuration_parameter>& v) {
+    const context& ctx, const std::vector<domain::configuration_parameter>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -171,7 +171,7 @@ void configuration_parameter_repository::write(
     write(ctx, v, claims);
 }
 
-void configuration_parameter_repository::write(context ctx,
+void configuration_parameter_repository::write(const context& ctx,
                                                const domain::configuration_parameter& v,
                                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing configuration parameter. " << "id: " << v.id;
@@ -183,7 +183,7 @@ void configuration_parameter_repository::write(context ctx,
 }
 
 void configuration_parameter_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::configuration_parameter>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing configuration parameters. Count: " << v.size();
@@ -198,7 +198,7 @@ void configuration_parameter_repository::write(
 }
 
 std::vector<domain::configuration_parameter>
-configuration_parameter_repository::read_latest(context ctx) {
+configuration_parameter_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<configuration_parameter_entity>> |
@@ -215,7 +215,7 @@ configuration_parameter_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::configuration_parameter>
-configuration_parameter_repository::read_latest(context ctx, const std::string& id) {
+configuration_parameter_repository::read_latest(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration parameter. " << "id: " << id;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -233,7 +233,8 @@ configuration_parameter_repository::read_latest(context ctx, const std::string& 
 }
 
 std::vector<domain::configuration_parameter>
-configuration_parameter_repository::read_latest_by_value(context ctx, const std::string& value) {
+configuration_parameter_repository::read_latest_by_value(const context& ctx,
+                                                         const std::string& value) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest configuration parameter by value: " << value;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
@@ -257,7 +258,8 @@ configuration_parameter_repository::read_latest_by_value(context ctx, const std:
 }
 
 std::vector<domain::configuration_parameter>
-configuration_parameter_repository::read_any_by_value(context ctx, const std::string& value) {
+configuration_parameter_repository::read_any_by_value(const context& ctx,
+                                                      const std::string& value) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any configuration parameter by value: " << value;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<configuration_parameter_entity>> |
@@ -285,7 +287,7 @@ configuration_parameter_repository::read_any_by_value(context ctx, const std::st
 
 
 std::vector<domain::configuration_parameter>
-configuration_parameter_repository::read_all(context ctx, const std::string& id) {
+configuration_parameter_repository::read_all(const context& ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all configuration parameter versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<configuration_parameter_entity>> |
@@ -302,7 +304,7 @@ configuration_parameter_repository::read_all(context ctx, const std::string& id)
 }
 
 std::optional<domain::configuration_parameter> configuration_parameter_repository::read_at_version(
-    context ctx, const std::string& id, std::uint32_t version) {
+    const context& ctx, const std::string& id, std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading configuration parameter at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
@@ -326,7 +328,7 @@ std::optional<domain::configuration_parameter> configuration_parameter_repositor
 
 std::vector<domain::configuration_parameter>
 configuration_parameter_repository::read_latest_by_configuration_id(
-    context ctx,
+    const context& ctx,
     const std::string& configuration_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -355,7 +357,7 @@ configuration_parameter_repository::read_latest_by_configuration_id(
 
 std::uint32_t
 configuration_parameter_repository::get_total_parameter_value_count_by_configuration_id(
-    context ctx,
+    const context& ctx,
     const std::string& configuration_id,
     const std::optional<messaging::configuration_parameters_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -380,7 +382,7 @@ configuration_parameter_repository::get_total_parameter_value_count_by_configura
 
 std::vector<domain::configuration_parameter>
 configuration_parameter_repository::read_latest_by_ore_parameter_id(
-    context ctx,
+    const context& ctx,
     const std::string& ore_parameter_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -409,7 +411,7 @@ configuration_parameter_repository::read_latest_by_ore_parameter_id(
 
 std::uint32_t
 configuration_parameter_repository::get_total_parameter_value_count_by_ore_parameter_id(
-    context ctx,
+    const context& ctx,
     const std::string& ore_parameter_id,
     const std::optional<messaging::configuration_parameters_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug)
@@ -433,7 +435,7 @@ configuration_parameter_repository::get_total_parameter_value_count_by_ore_param
 
 
 configuration_parameter_repository::remove_status configuration_parameter_repository::remove(
-    context ctx, const std::string& id, std::optional<std::uint32_t> version) {
+    const context& ctx, const std::string& id, std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing configuration parameter. " << "id: " << id;
     const auto current = read_latest(ctx, id);
     if (current.empty())
@@ -462,12 +464,12 @@ configuration_parameter_repository::remove_status configuration_parameter_reposi
     return remove_status::removed;
 }
 
-void configuration_parameter_repository::remove(context ctx, const std::string& id) {
+void configuration_parameter_repository::remove(const context& ctx, const std::string& id) {
     static_cast<void>(remove(ctx, id, std::nullopt));
 }
 
 std::vector<domain::configuration_parameter> configuration_parameter_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -493,7 +495,7 @@ std::vector<domain::configuration_parameter> configuration_parameter_repository:
 }
 
 std::uint32_t configuration_parameter_repository::get_total_parameter_value_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::configuration_parameters_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active configuration parameter count";
@@ -512,7 +514,8 @@ std::uint32_t configuration_parameter_repository::get_total_parameter_value_coun
 }
 
 std::vector<domain::configuration_parameter>
-configuration_parameter_repository::read_latest(context ctx, const std::vector<std::string>& ids) {
+configuration_parameter_repository::read_latest(const context& ctx,
+                                                const std::vector<std::string>& ids) {
     if (ids.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -530,7 +533,8 @@ configuration_parameter_repository::read_latest(context ctx, const std::vector<s
     return result;
 }
 
-void configuration_parameter_repository::remove(context ctx, const std::vector<std::string>& ids) {
+void configuration_parameter_repository::remove(const context& ctx,
+                                                const std::vector<std::string>& ids) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty

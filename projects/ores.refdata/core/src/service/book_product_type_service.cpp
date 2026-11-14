@@ -48,8 +48,8 @@ using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
 
 
-book_product_type_service::book_product_type_service(context ctx)
-    : ctx_(std::move(ctx))
+book_product_type_service::book_product_type_service(const context& ctx)
+    : ctx_(ctx)
     , repo_(ctx_) {}
 
 namespace {

@@ -54,8 +54,8 @@ namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-bond_yield_convention_service::bond_yield_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+bond_yield_convention_service::bond_yield_convention_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

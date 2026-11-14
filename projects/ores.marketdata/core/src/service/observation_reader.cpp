@@ -31,7 +31,7 @@ using ores::database::domain::refuse;
 using ores::utility::domain::result;
 
 messaging::get_observation_window_response
-observation_reader::window(ores::database::context ctx,
+observation_reader::window(const ores::database::context& ctx,
                            const messaging::get_observation_window_request& request) {
     messaging::get_observation_window_response response;
     response.days = request.days;

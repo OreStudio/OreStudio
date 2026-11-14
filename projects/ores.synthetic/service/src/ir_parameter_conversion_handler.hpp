@@ -57,12 +57,12 @@ inline auto& ir_parameter_conversion_handler_lg() {
 class ir_parameter_conversion_handler {
 public:
     ir_parameter_conversion_handler(ores::nats::service::client& nats,
-                                    ores::database::context ctx,
+                                    const ores::database::context& ctx,
                                     std::optional<ores::security::jwt::jwt_authenticator> verifier,
                                     const feed_kind_registry& registry)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , verifier_(std::move(verifier))
+        , ctx_(ctx)
+        , verifier_(verifier)
         , registry_(registry) {}
 
     void convert(ores::nats::message msg) {

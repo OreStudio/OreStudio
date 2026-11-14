@@ -108,7 +108,7 @@ trade_portfolio_filter_condition(const std::optional<messaging::trade_portfolios
 }
 
 ores::utility::domain::precondition
-trade_portfolio_repository::replace_claim(context ctx, const domain::trade_portfolio& v) {
+trade_portfolio_repository::replace_claim(const context& ctx, const domain::trade_portfolio& v) {
     const auto current =
         read_latest(ctx, boost::uuids::to_string(v.trade_id), std::to_string(v.sequence_number));
     if (current.empty())
@@ -118,7 +118,7 @@ trade_portfolio_repository::replace_claim(context ctx, const domain::trade_portf
 }
 
 domain::trade_portfolio
-trade_portfolio_repository::apply_claim(context ctx,
+trade_portfolio_repository::apply_claim(const context& ctx,
                                         const domain::trade_portfolio& v,
                                         const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -146,11 +146,12 @@ trade_portfolio_repository::apply_claim(context ctx,
     return t;
 }
 
-void trade_portfolio_repository::write(context ctx, const domain::trade_portfolio& v) {
+void trade_portfolio_repository::write(const context& ctx, const domain::trade_portfolio& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void trade_portfolio_repository::write(context ctx, const std::vector<domain::trade_portfolio>& v) {
+void trade_portfolio_repository::write(const context& ctx,
+                                       const std::vector<domain::trade_portfolio>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -158,7 +159,7 @@ void trade_portfolio_repository::write(context ctx, const std::vector<domain::tr
     write(ctx, v, claims);
 }
 
-void trade_portfolio_repository::write(context ctx,
+void trade_portfolio_repository::write(const context& ctx,
                                        const domain::trade_portfolio& v,
                                        const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade portfolio. " << "trade_id: " << v.trade_id
@@ -169,7 +170,7 @@ void trade_portfolio_repository::write(context ctx,
 }
 
 void trade_portfolio_repository::write(
-    context ctx,
+    const context& ctx,
     const std::vector<domain::trade_portfolio>& v,
     const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing trade portfolios. Count: " << v.size();
@@ -181,7 +182,7 @@ void trade_portfolio_repository::write(
         ctx, trade_portfolio_mapper::map(batch), lg(), "Writing trade portfolios to database.");
 }
 
-std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(context ctx) {
+std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<trade_portfolio_entity>> |
@@ -197,7 +198,7 @@ std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(con
 }
 
 std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade portfolio. " << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
     static constexpr auto max = db_timestamp::max();
@@ -217,7 +218,7 @@ std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(
 
 
 std::vector<domain::trade_portfolio> trade_portfolio_repository::read_all(
-    context ctx, const std::string& trade_id, const std::string& sequence_number) {
+    const context& ctx, const std::string& trade_id, const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all trade portfolio versions. "
                                << "trade_id: " << trade_id
                                << " sequence_number: " << sequence_number;
@@ -236,7 +237,7 @@ std::vector<domain::trade_portfolio> trade_portfolio_repository::read_all(
 }
 
 std::optional<domain::trade_portfolio>
-trade_portfolio_repository::read_at_version(context ctx,
+trade_portfolio_repository::read_at_version(const context& ctx,
                                             const std::string& trade_id,
                                             const std::string& sequence_number,
                                             std::uint32_t version) {
@@ -264,7 +265,7 @@ trade_portfolio_repository::read_at_version(context ctx,
 }
 
 std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     std::uint32_t offset,
     std::uint32_t limit,
@@ -291,7 +292,7 @@ std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest_by_
 }
 
 std::uint32_t trade_portfolio_repository::get_total_trade_portfolio_count_by_trade_id(
-    context ctx,
+    const context& ctx,
     const std::string& trade_id,
     const std::optional<messaging::trade_portfolios_filter>& filter) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade portfolios count. trade_id: "
@@ -313,7 +314,7 @@ std::uint32_t trade_portfolio_repository::get_total_trade_portfolio_count_by_tra
 
 
 trade_portfolio_repository::remove_status
-trade_portfolio_repository::remove(context ctx,
+trade_portfolio_repository::remove(const context& ctx,
                                    const std::string& trade_id,
                                    const std::string& sequence_number,
                                    std::optional<std::uint32_t> version) {
@@ -347,14 +348,14 @@ trade_portfolio_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void trade_portfolio_repository::remove(context ctx,
+void trade_portfolio_repository::remove(const context& ctx,
                                         const std::string& trade_id,
                                         const std::string& sequence_number) {
     static_cast<void>(remove(ctx, trade_id, sequence_number, std::nullopt));
 }
 
 std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(
-    context ctx,
+    const context& ctx,
     std::uint32_t offset,
     std::uint32_t limit,
     const ores::utility::domain::order& order,
@@ -380,7 +381,7 @@ std::vector<domain::trade_portfolio> trade_portfolio_repository::read_latest(
 }
 
 std::uint32_t trade_portfolio_repository::get_total_trade_portfolio_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::trade_portfolios_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active trade portfolio count";
@@ -399,7 +400,7 @@ std::uint32_t trade_portfolio_repository::get_total_trade_portfolio_count(
 }
 
 std::vector<domain::trade_portfolio>
-trade_portfolio_repository::read_latest(context ctx,
+trade_portfolio_repository::read_latest(const context& ctx,
                                         const std::vector<std::string>& trade_ids,
                                         const std::vector<std::string>& sequence_numbers) {
     if (trade_ids.empty() || sequence_numbers.empty())
@@ -436,7 +437,7 @@ trade_portfolio_repository::read_latest(context ctx,
     return filtered;
 }
 
-void trade_portfolio_repository::remove(context ctx,
+void trade_portfolio_repository::remove(const context& ctx,
                                         const std::vector<std::string>& trade_ids,
                                         const std::vector<std::string>& sequence_numbers) {
     // Compound key: a per-column .in() DELETE would be a cross-product

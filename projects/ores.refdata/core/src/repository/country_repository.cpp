@@ -100,7 +100,7 @@ country_filter_condition(const std::optional<messaging::countries_filter>& filte
 
 }
 
-ores::utility::domain::precondition country_repository::replace_claim(context ctx,
+ores::utility::domain::precondition country_repository::replace_claim(const context& ctx,
                                                                       const domain::country& v) {
     const auto current = read_latest(ctx, v.alpha2_code);
     if (current.empty())
@@ -109,7 +109,7 @@ ores::utility::domain::precondition country_repository::replace_claim(context ct
             static_cast<std::uint32_t>(current.front().version)};
 }
 
-domain::country country_repository::apply_claim(context ctx,
+domain::country country_repository::apply_claim(const context& ctx,
                                                 const domain::country& v,
                                                 const ores::utility::domain::precondition& claim) {
     using ores::utility::domain::precondition_kind;
@@ -136,11 +136,11 @@ domain::country country_repository::apply_claim(context ctx,
     return t;
 }
 
-void country_repository::write(context ctx, const domain::country& v) {
+void country_repository::write(const context& ctx, const domain::country& v) {
     write(ctx, v, replace_claim(ctx, v));
 }
 
-void country_repository::write(context ctx, const std::vector<domain::country>& v) {
+void country_repository::write(const context& ctx, const std::vector<domain::country>& v) {
     std::vector<ores::utility::domain::precondition> claims;
     claims.reserve(v.size());
     for (const auto& item : v)
@@ -148,7 +148,7 @@ void country_repository::write(context ctx, const std::vector<domain::country>& 
     write(ctx, v, claims);
 }
 
-void country_repository::write(context ctx,
+void country_repository::write(const context& ctx,
                                const domain::country& v,
                                const ores::utility::domain::precondition& claim) {
     BOOST_LOG_SEV(lg(), debug) << "Writing country. " << "alpha2_code: " << v.alpha2_code;
@@ -157,7 +157,7 @@ void country_repository::write(context ctx,
         ctx, country_mapper::map(t), lg(), "Writing country to database.");
 }
 
-void country_repository::write(context ctx,
+void country_repository::write(const context& ctx,
                                const std::vector<domain::country>& v,
                                const std::vector<ores::utility::domain::precondition>& claims) {
     BOOST_LOG_SEV(lg(), debug) << "Writing countries. Count: " << v.size();
@@ -169,7 +169,7 @@ void country_repository::write(context ctx,
         ctx, country_mapper::map(batch), lg(), "Writing countries to database.");
 }
 
-std::vector<domain::country> country_repository::read_latest(context ctx) {
+std::vector<domain::country> country_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<country_entity>> |
@@ -184,7 +184,7 @@ std::vector<domain::country> country_repository::read_latest(context ctx) {
         "Reading latest countries");
 }
 
-std::vector<domain::country> country_repository::read_latest(context ctx,
+std::vector<domain::country> country_repository::read_latest(const context& ctx,
                                                              const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest country. " << "alpha2_code: " << alpha2_code;
     static constexpr auto max = db_timestamp::max();
@@ -202,7 +202,7 @@ std::vector<domain::country> country_repository::read_latest(context ctx,
 }
 
 
-std::vector<domain::country> country_repository::read_all(context ctx,
+std::vector<domain::country> country_repository::read_all(const context& ctx,
                                                           const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all country versions. "
                                << "alpha2_code: " << alpha2_code;
@@ -220,7 +220,7 @@ std::vector<domain::country> country_repository::read_all(context ctx,
         "Reading all country versions by alpha2_code.");
 }
 
-std::optional<domain::country> country_repository::read_at_version(context ctx,
+std::optional<domain::country> country_repository::read_at_version(const context& ctx,
                                                                    const std::string& alpha2_code,
                                                                    std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading country at version. " << "alpha2_code: " << alpha2_code
@@ -244,7 +244,7 @@ std::optional<domain::country> country_repository::read_at_version(context ctx,
     return entities.front();
 }
 
-country_repository::remove_status country_repository::remove(context ctx,
+country_repository::remove_status country_repository::remove(const context& ctx,
                                                              const std::string& alpha2_code,
                                                              std::optional<std::uint32_t> version) {
     BOOST_LOG_SEV(lg(), debug) << "Removing country. " << "alpha2_code: " << alpha2_code;
@@ -275,12 +275,12 @@ country_repository::remove_status country_repository::remove(context ctx,
     return remove_status::removed;
 }
 
-void country_repository::remove(context ctx, const std::string& alpha2_code) {
+void country_repository::remove(const context& ctx, const std::string& alpha2_code) {
     static_cast<void>(remove(ctx, alpha2_code, std::nullopt));
 }
 
 std::vector<domain::country>
-country_repository::read_latest(context ctx,
+country_repository::read_latest(const context& ctx,
                                 std::uint32_t offset,
                                 std::uint32_t limit,
                                 const ores::utility::domain::order& order,
@@ -304,7 +304,7 @@ country_repository::read_latest(context ctx,
 }
 
 std::uint32_t country_repository::get_total_country_count(
-    context ctx,
+    const context& ctx,
     const std::optional<messaging::countries_filter>& filter,
     const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active country count";
@@ -322,7 +322,7 @@ std::uint32_t country_repository::get_total_country_count(
 }
 
 std::vector<domain::country>
-country_repository::read_latest(context ctx, const std::vector<std::string>& alpha2_codes) {
+country_repository::read_latest(const context& ctx, const std::vector<std::string>& alpha2_codes) {
     if (alpha2_codes.empty())
         return {};
     static constexpr auto max = db_timestamp::max();
@@ -340,7 +340,7 @@ country_repository::read_latest(context ctx, const std::vector<std::string>& alp
     return result;
 }
 
-void country_repository::remove(context ctx, const std::vector<std::string>& alpha2_codes) {
+void country_repository::remove(const context& ctx, const std::vector<std::string>& alpha2_codes) {
     // A batch of nothing addresses no row, so there is nothing to delete. The
     // query builder renders an empty key list as an empty IN (), which the
     // server refuses as a syntax error; the read overloads answer the empty
@@ -359,7 +359,7 @@ void country_repository::remove(context ctx, const std::vector<std::string>& alp
 }
 
 
-std::vector<domain::country> country_repository::read_all(context ctx) {
+std::vector<domain::country> country_repository::read_all(const context& ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all country versions.";
     const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<country_entity>> |

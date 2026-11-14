@@ -114,11 +114,11 @@ inline std::optional<std::string> authorization_revoke_refusal(const boost::uuid
 class authorization_handler {
 public:
     authorization_handler(ores::nats::service::client& nats,
-                          ores::database::context ctx,
+                          const ores::database::context& ctx,
                           ores::security::jwt::jwt_authenticator signer)
         : nats_(nats)
-        , ctx_(std::move(ctx))
-        , signer_(std::move(signer)) {}
+        , ctx_(ctx)
+        , signer_(signer) {}
 
     void assign(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id =

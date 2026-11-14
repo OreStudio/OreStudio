@@ -39,7 +39,7 @@ class ORES_ANALYTICS_CORE_EXPORT todays_market_document_service {
 public:
     using context = ores::database::context;
 
-    explicit todays_market_document_service(context ctx);
+    explicit todays_market_document_service(const context& ctx);
 
     void save(messaging::todays_market_document v);
 

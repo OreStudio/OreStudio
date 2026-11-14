@@ -54,8 +54,8 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-amortization_type_service::amortization_type_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+amortization_type_service::amortization_type_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

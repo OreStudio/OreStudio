@@ -1,0 +1,29 @@
+# Types that a header may name without including the header that defines them.
+#
+# One type per line, four fields separated by whitespace:
+#
+#   qualified-name  class-key  defining-header  forward-declaration-header
+#
+# The qualified name is the type as a header spells it with no qualification
+# dropped. The class key is the one the definition uses, so a generated
+# declaration does not trip -Wmismatched-tags. The defining header is the
+# include path, not a file path, because that is what the offender has written.
+# The last field is a header that declares the type and defines nothing, or a
+# dash for a type that a header should declare in place.
+#
+# A line joins this list when the analysis in
+# doc/agile/versions/v0/sprint_30/break_the_large_compilation_dependencies/
+# records a forward declaration as that type's decision. The check reads the
+# list, so a new type needs a line here and nothing else.
+#
+# These are the types of the database context and the connection underneath it.
+# The analysis reaches them from context.hpp: each one is a header that 300 or
+# more objects reach through the context, and each is held by a reference, a
+# pointer or not at all, so a header that only names it needs the declaration.
+
+ores::database::context            class   ores.database/domain/context.hpp        ores.database/domain/context_fwd.hpp
+ores::database::pq::connection     class   ores.database/pq/connection.hpp         -
+ores::database::pq::pool           class   ores.database/pq/pool.hpp               -
+ores::database::pq::result         class   ores.database/pq/connection.hpp         -
+ores::database::pq::session_context struct  ores.database/pq/transaction.hpp        -
+ores::database::pq::transaction    class   ores.database/pq/transaction.hpp        -

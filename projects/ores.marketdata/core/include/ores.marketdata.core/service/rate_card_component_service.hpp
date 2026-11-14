@@ -64,7 +64,7 @@ public:
      *
      * @param ctx The database context for operations.
      */
-    explicit rate_card_component_service(context ctx);
+    explicit rate_card_component_service(const context& ctx);
 
     /**
      * @brief The protocol operations, one method per subject.

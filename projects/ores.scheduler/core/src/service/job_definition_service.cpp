@@ -58,8 +58,8 @@ namespace ores::scheduler::service {
 
 using namespace ores::logging;
 
-job_definition_service::job_definition_service(context ctx)
-    : ctx_(std::move(ctx)) {}
+job_definition_service::job_definition_service(const context& ctx)
+    : ctx_(ctx) {}
 namespace {
 
 /**

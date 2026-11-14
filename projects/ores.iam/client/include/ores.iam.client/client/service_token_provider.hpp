@@ -70,12 +70,15 @@ make_service_token_provider(ores::nats::service::client& nats,
  *                      @ref make_service_token_provider does.
  * @param tenant_id     The tenant to serve.
  * @param refresh_margin Enter again this far before the session expires.
+ * @param party_id      The party the work belongs to, or empty to act as the
+ *                      tenant itself.
  */
 ORES_IAM_CLIENT_EXPORT ores::nats::service::nats_client::token_provider
 make_tenant_session_provider(ores::nats::service::client& nats,
                              ores::nats::service::nats_client::token_provider service_token,
                              std::string tenant_id,
-                             std::chrono::seconds refresh_margin = std::chrono::seconds(60));
+                             std::chrono::seconds refresh_margin = std::chrono::seconds(60),
+                             std::string party_id = {});
 
 } // namespace ores::iam::client
 

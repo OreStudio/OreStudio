@@ -177,6 +177,21 @@ command that printed a bearer token would hand it to the terminal.
  */
 #+end_src
 
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The party the work belongs to, or empty to act as the tenant itself.
+ *
+ * A party states the scope of the work rather than a person: several checks
+ * read the acting party, so work that belongs to a party acts as that party.
+ * The party must be one of the tenant's.
+ */
+#+end_src
+
 ** enter_tenant_as_service_response
 
 *** success

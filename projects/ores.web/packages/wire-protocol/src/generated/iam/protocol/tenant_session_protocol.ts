@@ -83,6 +83,14 @@ export interface EnterTenantAsServiceRequest {
      * @brief The id of the tenant to work inside.
      */
     tenant_id: string;
+    /**
+     * @brief The party the work belongs to, or empty to act as the tenant itself.
+     *
+     * A party states the scope of the work rather than a person: several checks
+     * read the acting party, so work that belongs to a party acts as that party.
+     * The party must be one of the tenant's.
+     */
+    party_id: string;
 }
 
 export interface EnterTenantAsServiceResponse {

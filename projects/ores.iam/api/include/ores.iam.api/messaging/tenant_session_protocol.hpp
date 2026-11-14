@@ -119,6 +119,14 @@ struct enter_tenant_as_service_request {
      * @brief The id of the tenant to work inside.
      */
     std::string tenant_id;
+    /**
+     * @brief The party the work belongs to, or empty to act as the tenant itself.
+     *
+     * A party states the scope of the work rather than a person: several checks
+     * read the acting party, so work that belongs to a party acts as that party.
+     * The party must be one of the tenant's.
+     */
+    std::string party_id;
 
     friend bool operator==(const enter_tenant_as_service_request&,
                            const enter_tenant_as_service_request&) = default;
@@ -224,6 +232,7 @@ struct leave_tenant_response {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<enter_tenant_as_service_request>) {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"tenant_id", &enter_tenant_as_service_request::tenant_id},
+        ::ores::utility::codec::field{"party_id", &enter_tenant_as_service_request::party_id},
     };
 }
 

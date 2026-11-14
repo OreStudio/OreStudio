@@ -190,6 +190,7 @@ struct session_state {
     ores::nats::service::client& nats;
     ores::nats::service::nats_client::token_provider service_token;
     std::string tenant_id;
+    std::string party_id;
     std::chrono::seconds refresh_margin;
     std::string jwt;
     std::chrono::system_clock::time_point expires_at{};
@@ -199,8 +200,8 @@ struct session_state {
             << "Entering tenant " << tenant_id << " as the service account";
 
         const auto& codec = ores::nats::default_wire_codec();
-        const auto body = codec.encode(
-            ores::iam::messaging::enter_tenant_as_service_request{.tenant_id = tenant_id});
+        const auto body = codec.encode(ores::iam::messaging::enter_tenant_as_service_request{
+            .tenant_id = tenant_id, .party_id = party_id});
         const std::unordered_map<std::string, std::string> headers{
             {std::string(ores::nats::headers::authorization),
              std::string(ores::nats::headers::bearer_prefix) + service_token(false)}};
@@ -240,11 +241,13 @@ ores::nats::service::nats_client::token_provider
 make_tenant_session_provider(ores::nats::service::client& nats,
                              ores::nats::service::nats_client::token_provider service_token,
                              std::string tenant_id,
-                             std::chrono::seconds refresh_margin) {
+                             std::chrono::seconds refresh_margin,
+                             std::string party_id) {
     auto state =
         std::make_shared<session_state>(session_state{.nats = nats,
                                                       .service_token = std::move(service_token),
                                                       .tenant_id = std::move(tenant_id),
+                                                      .party_id = std::move(party_id),
                                                       .refresh_margin = refresh_margin});
 
     // Every handler thread of the service calls the provider, so one caller at

@@ -71,6 +71,8 @@ std::string_view describe(tenant_session_refusal refusal) {
             return "Only a service account enters a tenant to work inside it.";
         case tenant_session_refusal::no_permissions:
             return "The caller holds no permission to carry into the tenant.";
+        case tenant_session_refusal::unknown_party:
+            return "The tenant holds no such party.";
         case tenant_session_refusal::not_inside_a_tenant:
             return "The session is not inside a tenant.";
     }
@@ -205,19 +207,45 @@ messaging::enter_tenant_as_service_response tenant_session_service::enter_as_ser
     if (caller.permissions.empty())
         return refused(tenant_session_refusal::no_permissions);
 
+
     const auto target_id = target->to_string();
     const auto target_ctx = ctx_.with_tenant(*target, caller.username);
     const auto inside = party_inside(*target, caller.username);
     if (!inside)
         return refused(tenant_session_refusal::no_system_party);
 
+    /*
+     * Work that belongs to a party acts as that party, because several checks
+     * read the acting party. Work that belongs to the tenant acts as the
+     * tenant's system party and sees every party of the tenant.
+     */
+    const auto tenant_parties = ores::database::query_builder::execute_parameterized_string_query(
+        target_ctx,
+        "SELECT unnest(ores_refdata_tenant_party_ids_fn($1::uuid))::text",
+        {target_id},
+        tenant_session_service_lg(),
+        "Reading the parties of the tenant served");
+    std::string acting_party = inside->party_id;
+    std::vector<std::string> visible = tenant_parties.empty() ? inside->visible : tenant_parties;
+    if (!request.party_id.empty()) {
+        if (std::ranges::find(tenant_parties, request.party_id) == tenant_parties.end())
+            return refused(tenant_session_refusal::unknown_party);
+        acting_party = request.party_id;
+        visible = ores::database::query_builder::execute_parameterized_string_query(
+            target_ctx,
+            "SELECT unnest(ores_refdata_visible_party_ids_fn($1::uuid, $2::uuid))::text",
+            {target_id, acting_party},
+            tenant_session_service_lg(),
+            "Reading the parties the party served sees");
+    }
+
     const auto now = std::chrono::system_clock::now();
     security::jwt::jwt_claims claims;
     claims.subject = boost::uuids::to_string(caller.account_id);
     claims.username = caller.username;
     claims.tenant_id = target_id;
-    claims.party_id = inside->party_id;
-    claims.visible_party_ids = inside->visible;
+    claims.party_id = acting_party;
+    claims.visible_party_ids = std::move(visible);
     claims.roles = caller.permissions;
     claims.session_id = caller.session_id;
     claims.session_start_time = now;
@@ -246,7 +274,7 @@ messaging::enter_tenant_as_service_response tenant_session_service::enter_as_ser
             .token = *token,
             .tenant_id = target_id,
             .tenant_code = tenant.code,
-            .party_id = inside->party_id,
+            .party_id = acting_party,
             .access_lifetime_s = static_cast<int>(lifetime_.count())};
 }
 

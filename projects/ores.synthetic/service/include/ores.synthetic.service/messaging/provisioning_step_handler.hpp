@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_MESSAGING_PROVISIONING_STEP_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_MESSAGING_PROVISIONING_STEP_HANDLER_HPP
 
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/workflow/population_knobs.hpp"
 #include "ores.iam.api/workflow/provision_step_arguments.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
@@ -232,9 +233,8 @@ private:
                 return ores::synthetic::service::routed_code_count(asset_class);
             });
 
-        // One session inside the tenant serves every request of the step, the
-        // booking included. The provider enters it once and re-enters before it
-        // expires, so a long population holds one service identity throughout.
+        // The party is found by name across the tenant; everything that
+        // follows belongs to that party and runs in its own session.
         ores::nats::service::nats_client tenant_nats(
             nats_,
             ores::iam::client::make_tenant_session_provider(
@@ -271,27 +271,61 @@ private:
              * curve configuration the party published is what the resolution
              * reads, so the config names a series the party actually holds.
              */
+            /*
+             * The work belongs to this party, and several checks read the
+             * acting party, so the step enters the tenant once for it. The
+             * session names no person: it is the service, scoped to the party
+             * whose data it writes.
+             */
+            ores::nats::service::nats_client party_nats(
+                nats_,
+                ores::iam::client::make_tenant_session_provider(
+                    nats_,
+                    service_token_,
+                    command.tenant_id,
+                    std::chrono::seconds{60},
+                    boost::uuids::to_string(party->id)));
+
             phase("finding the book " + entry.book);
-            const auto book = find_party_book(tenant_nats, party->id, entry.book);
+            const auto book = find_party_book(party_nats, party->id, entry.book);
             if (!book)
                 throw std::runtime_error("The party holds no book named '" + entry.book +
                                          "', so the population has nowhere to land.");
             phase("finding the reference curve in " + book->functional_currency);
             const auto reference_curve_id =
-                find_reference_curve_id(tenant_nats, party->id, book->functional_currency);
+                find_reference_curve_id(party_nats, party->id, book->functional_currency);
 
             phase("recording the trade generation config");
             const auto config_id =
-                record_trade_generation_config(tenant_nats, party->id, entry, reference_curve_id);
+                record_trade_generation_config(party_nats, party->id, entry, reference_curve_id);
             phase("recording the config's scope");
-            record_trade_generation_scope(tenant_nats, config_id, party->id, entry);
+            record_trade_generation_scope(party_nats, config_id, party->id, entry);
 
             /*
              * The population is booked in the step's own session, so a trade
              * names the service as its author and the run holds one identity
              * throughout.
              */
-            ores::synthetic::service::trading_trade_population_writer writer(tenant_nats);
+            /*
+             * A party whose staff holds no trader is entered by the run's own
+             * principal, which is this service: the population is booked as
+             * the account the store can defend, and no person's name is used.
+             */
+            ores::nats::service::nats_client service_nats(nats_, service_token_);
+            ores::iam::messaging::get_my_account_response self;
+            try {
+                self = ask(service_nats, ores::iam::messaging::get_my_account_request{});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), ores::logging::warn)
+                    << "generate_trades: the service could not read its own account: " << e.what();
+            }
+            std::optional<ores::synthetic::domain::trade_population_trader> fallback;
+            if (self.account)
+                fallback = ores::synthetic::domain::trade_population_trader{self.account->id,
+                                                                            self.account->username};
+
+            ores::synthetic::service::trading_trade_population_writer writer(
+                party_nats, {}, fallback);
             ores::synthetic::service::trade_population_service service(writer);
             phase("writing the population of config " + boost::uuids::to_string(config_id));
             const auto population =

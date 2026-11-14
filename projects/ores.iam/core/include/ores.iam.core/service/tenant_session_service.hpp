@@ -82,6 +82,7 @@ enum class tenant_session_refusal {
     no_read_permissions,
     not_a_service_account,
     no_permissions,
+    unknown_party,
     not_inside_a_tenant
 };
 

@@ -85,7 +85,6 @@ target_link_libraries(${lib_target_name}
         ores.refdata.core.lib
         ores.synthetic.api.lib
         ores.marketdata.api.lib
-        ores.marketdata.core.lib
         faker-cxx::faker-cxx
         libfort::fort
         immer)

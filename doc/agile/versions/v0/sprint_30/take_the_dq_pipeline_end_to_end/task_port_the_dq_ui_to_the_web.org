@@ -8,7 +8,7 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch: feature/take-the-dq-pipeline-end-to-end
-#+pr:
+#+pr: 4711
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -20,51 +20,67 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A person can see every dataset, what it holds, whether it is published, and publish it from ores.web.
+Port the DQ screens of the Qt client to ores.web, so a person can see every
+dataset, what it holds, whether it is published, and run the publication.
+
+The source to port is =/home/marco/Vault/Development/OreStudio/ores.qt/dq=: 88
+translation units and 27 =*.ui= screens, of which 18 are entity detail dialogs
+and 9 are history dialogs. Publishing is not a hidden action there: the area
+carries a =DataLibrarianWindow=, a =PublishBundleWizard= and a
+=PublishDatasetsDialog=, with dataset, dataset-bundle and dataset-dependency
+models behind them.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end]] |
+| Now          | Nothing. |
+| Waiting on   | The publish model the review settles.  |
+| Next         | Port the record screens first.         |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
 
--
+- The dataset, dataset bundle and dataset dependency lists are readable in
+  ores.web.
+- Each dataset states whether it is published, and for which tenant.
+- Publishing runs from ores.web, for one dataset and for a bundle, and reports
+  what it inserted, updated and skipped.
+- The coded vocabularies the Qt area shows — code domains, coding schemes,
+  natures, origins, treatments, methodologies, change reasons, badges — have
+  their ores.web screens.
+- Nothing in the port needs a Qt client to be running.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Walk the Qt DQ area and list every screen and the model behind it.
+2. Decide which screens are records (entity page plus history) and which are
+   tools (librarian, wizards), because ores.web has a record-page standard for
+   the first and none for the second.
+3. Port the record screens first, through the screen pipeline, so the lists and
+   detail pages exist before the tools do.
+4. Port the librarian and the two publish dialogs last, against the model the
+   publish task settles.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Qt DQ translation units | 88 | =find ores.qt/dq -name "*.cpp" | wc -l= | n/a |
+| Qt DQ screens | 27 | =find ores.qt/dq -name "*.ui" | wc -l= | n/a |
+| Entities with a detail dialog | 18 | listing *=DetailDialog.ui= | n/a |
+| Entities with a history dialog | 9 | listing *=HistoryDialog.ui= | n/a |
+| DQ screens in ores.web today | 0 | listing =packages/web/src/**/*Page.tsx= | e050a2d239 |
 
 * Notes
 
-* Test Scenarios
+Publish-state is the point of the screens. The Qt area shows it because the
+Librarian is where publishing happens; ores.web has neither the screens nor the
+action today, which is why an empty catalogue after a recreate went unnoticed.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+* Test Scenarios
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -74,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4711][#4711]] | [agile] Record the Qt source and screens for the DQ port |
 
 * Review
 

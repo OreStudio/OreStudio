@@ -17,10 +17,13 @@
 # TimescaleDB that the continuous build otherwise installs at the start of every
 # job.
 #
-# Every tool comes from the Ubuntu image itself, at the version that image
+# Every build tool comes from the Ubuntu image itself, at the version that image
 # ships: no third-party repository, no compiler PPA, no downloaded archive. A
 # developer on the same Ubuntu release installs the same packages, so a warning
 # the CI reports is a warning anyone can reproduce.
+#
+# PostgreSQL is the single exception, and the reason is below: the archive build
+# of it fails this project's queries.
 #
 # The image holds no vcpkg packages. The build restores them from the actions
 # cache in about a second, and an image without them does not go stale when
@@ -70,10 +73,17 @@ RUN apt-get update -q -o Acquire::Retries=3 \
 RUN ln -sf "/usr/bin/gcc-${GCC_MAJOR}" /usr/local/bin/gcc \
  && ln -sf "/usr/bin/g++-${GCC_MAJOR}" /usr/local/bin/g++
 
-# PostgreSQL and TimescaleDB come from the Ubuntu image too. The package creates
-# the main cluster, and build/scripts/start_ci_postgres.sh starts it in the
-# build jobs.
-RUN apt-get update -q -o Acquire::Retries=3 \
+# PostgreSQL is the one package the image does not take from Ubuntu. The
+# archive carries 18.6 with TimescaleDB 2.25, and the queries this project runs
+# fail on that pair with a planner error, "variable not found in subplan target
+# list". PGDG carries 18.7 with TimescaleDB 2.31, which the CI ran green on.
+# The package creates the main cluster, and build/scripts/start_ci_postgres.sh
+# starts it in the build jobs.
+RUN curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+        | gpg --batch --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg \
+ && echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+        > /etc/apt/sources.list.d/pgdg.list \
+ && apt-get update -q -o Acquire::Retries=3 \
  && apt-get install -y -q -o Acquire::Retries=3 --no-install-recommends \
         "postgresql-${PG_MAJOR}" "postgresql-${PG_MAJOR}-timescaledb" \
         "postgresql-client-${PG_MAJOR}" libpq-dev \

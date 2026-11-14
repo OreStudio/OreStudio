@@ -176,7 +176,7 @@ public:
      * @brief The libpq pool every copy of this context shares, opened on its
      * first use under the context's open policy.
      */
-    ORES_DATABASE_EXPORT pq::pool& pq_pool() const;
+    pq::pool& pq_pool() const;
 
     /**
      * @brief The number of connections the pool opens, when it opens.
@@ -186,7 +186,7 @@ public:
     /**
      * @brief The session a transaction of this context sets.
      */
-    ORES_DATABASE_EXPORT pq::session_context pq_session() const;
+    pq::session_context pq_session() const;
 
 private:
     void refuse_change_inside_transaction(const context& to) const {

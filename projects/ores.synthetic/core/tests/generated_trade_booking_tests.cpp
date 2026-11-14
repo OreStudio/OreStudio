@@ -18,18 +18,19 @@
  *
  */
 #include "ore_example_conventions.hpp"
-#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/generators/book_generator.hpp"
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.api/generators/equity_underlying_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.api/generators/portfolio_generator.hpp"
 #include "ores.refdata.core/repository/book_repository.hpp"
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
+#include "ores.refdata.core/repository/equity_underlying_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
@@ -143,6 +144,22 @@ struct fixture final {
         book.change_reason_code = "system.test";
         repo::book_repository().write(ctx, book);
         book_id = book.id;
+
+        // The scope names the equity underlyings its trades draw on, and the
+        // store refuses a basket constituent whose code the catalogue lacks, so
+        // the fixture writes the vocabulary its own scope states.
+        std::vector<ores::refdata::domain::equity_underlying> underlyings;
+        for (const auto& reference : trade_generation_scope_recipe().equity_underlyings) {
+            auto underlying = gen_rd::generate_synthetic_equity_underlying(gen);
+            underlying.code = reference.code;
+            underlying.name = reference.code;
+            underlying.description = "The equity underlying the booking scope names.";
+            underlying.instrument_type = reference.kind;
+            underlying.currency_code = reference.currency;
+            underlying.change_reason_code = "system.test";
+            underlyings.push_back(underlying);
+        }
+        repo::equity_underlying_repository{}.write(ctx, underlyings);
     }
 };
 
@@ -197,27 +214,6 @@ void write_issue(const trade_population_slot& slot,
 TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
     auto lg(make_logger(test_suite));
     fixture f;
-
-    // A recreate seeds the DQ artefact tables and leaves the refdata catalogues
-    // empty, because the Librarian publishes them on demand. A basket
-    // constituent is refused unless its code is in the published catalogue, so
-    // the bookings below publish the three catalogues a basket reads first.
-    const auto publish = [&](const char* function, const char* dataset) {
-        const std::string sql = std::string("select * from ") + function +
-                                "((select id from ores_dq_datasets_tbl"
-                                " where code = '" +
-                                dataset +
-                                "'"
-                                " and tenant_id = ores_utility_system_tenant_id_fn()"
-                                " and valid_to = ores_utility_infinity_timestamp_fn()),"
-                                " ores_utility_system_tenant_id_fn())";
-        ores::database::query_builder::execute_raw_multi_column_query(
-            f.h.context(), sql, lg, dataset);
-    };
-    publish("ores_refdata_publish_equity_underlyings_from_dq_fn", "refdata.equity_underlyings");
-    publish("ores_refdata_publish_currency_pairs_from_dq_fn", "refdata.currency_pairs");
-    publish("ores_refdata_publish_commodities_from_dq_fn", "refdata.commodities");
-
     // The service holds a reference to the port, so the port outlives it.
     open_books open;
     trade_operations_service books(f.ctx, open);

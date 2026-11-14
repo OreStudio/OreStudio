@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 6E9B2567-FB1A-4F6B-BC0A-8E7BD3412389
+:END:
+#+title: Task: Implement Hotfix: Give the booking test its own refdata
+#+description: Initial task for: Hotfix: Give the booking test its own refdata
+#+type: task
+#+level: s1
+#+filetags: :give_the_booking_test_its_own_refdata:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:664765D8-1D00-4F55-A750-D16BBC60BEDE][Hotfix: Give the booking test its own refdata]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write the four equity underlyings the booking scope names, so the test needs no
+publish step.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:664765D8-1D00-4F55-A750-D16BBC60BEDE][Hotfix: Give the booking test its own refdata]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The fixture writes one equity underlying per code the scope names.
+- The test calls no publish function.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Equity underlyings the scope names | 4 | reading =trade_generation_scope_recipe()= | ad486ea45a |
+| Publish calls left in the test | 0 | =grep -c publish= on the test | ad486ea45a |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The fixture derives the catalogue rows from =trade_generation_scope_recipe()=,
+the same source the booking scope reads, so a code added to the scope is
+written to the catalogue without a second edit.

@@ -28,6 +28,7 @@ import { TranslationProvider } from '../i18n/Provider.js';
 import { CurveAnalyticsPage } from './CurveAnalyticsPage.js';
 
 const CONFIG_ID = 'c0000000-0000-0000-0000-000000000001';
+const PROJECTION_ID = 'c0000000-0000-0000-0000-000000000002';
 
 const analytics: CurveAnalytics = {
     instrument_id: CONFIG_ID,
@@ -90,21 +91,102 @@ const analytics: CurveAnalytics = {
     ],
 };
 
-function draw(address: string, set: CurveAnalytics = analytics): string {
+/** A term curve, drawn a little above the overnight curve it discounts off. */
+const libor: CurveAnalytics = {
+    instrument_id: PROJECTION_ID,
+    name: 'USD-LIBOR-1M',
+    as_of: '2026-11-13 23:59:59Z',
+    stale: false,
+    compare_at: '',
+    conventions: {
+        index_name: 'USD-LIBOR-1M',
+        day_count: 'A360F',
+        compounding: 'simple',
+        interpolation: 'flat_forward_then_log_linear',
+        calendar: 'UnitedKingdom.London',
+        spot_lag_days: 2,
+        pillar_count: 2,
+    },
+    market_pillars: [
+        {
+            tenor: '1M',
+            maturity_date: '2026-12-14',
+            year_fraction: 0.0833,
+            rate: 0.0462,
+            provider_code: 'ice',
+            series_id: 's-2',
+            as_of: '2026-11-13 10:00:00Z',
+        },
+        {
+            tenor: '3M',
+            maturity_date: '2027-02-13',
+            year_fraction: 0.2521,
+            rate: 0.0448,
+            provider_code: 'ice',
+            series_id: 's-2',
+            as_of: '2026-11-13 10:00:00Z',
+        },
+    ],
+    bootstrapped: [
+        {
+            tenor: '1M',
+            maturity_date: '2026-12-14',
+            year_fraction: 0.0833,
+            discount_factor: 0.9962,
+            zero_rate: 0.0462,
+            implied_forward: 0.046,
+            shift_bps: 2,
+            prior_zero_rate: null,
+            change_bps: null,
+        },
+        {
+            tenor: '3M',
+            maturity_date: '2027-02-13',
+            year_fraction: 0.2521,
+            discount_factor: 0.9887,
+            zero_rate: 0.0451,
+            implied_forward: 0.044,
+            shift_bps: 1.9,
+            prior_zero_rate: null,
+            change_bps: null,
+        },
+    ],
+};
+
+/** The funding curve the term curve above names as the one it discounts off. */
+const funding = { ...analytics, name: 'USD-SOFR-FOMC', instrument_id: CONFIG_ID };
+
+const pairOfConfigs = [
+    {
+        id: CONFIG_ID,
+        name: 'USD-SOFR-FOMC',
+        curve_family_role: 'FUNDING',
+        index_tenor: '1D',
+    },
+    {
+        id: PROJECTION_ID,
+        name: 'USD-LIBOR-1M',
+        curve_family_role: 'PROJECTION',
+        index_tenor: '1M',
+        discount_curve_config_id: CONFIG_ID,
+    },
+];
+
+function draw(
+    address: string,
+    set: CurveAnalytics = analytics,
+    configs: readonly Record<string, unknown>[] = [{ id: CONFIG_ID, name: 'USD-SOFR' }],
+    beside?: CurveAnalytics,
+): string {
     const client = new QueryClient();
-    client.setQueryData(
-        ['records', 'ir-curve-bootstrap-configs'],
-        [{ id: CONFIG_ID, name: 'USD-SOFR' }],
-    );
-    client.setQueryData(
-        [
-            'curve-analytics',
-            CONFIG_ID,
-            address.includes('asof=2026-11-13') ? '2026-11-13' : '',
-            address.includes('compare=') ? '2026-11-12' : '',
-        ],
-        set,
-    );
+    client.setQueryData(['records', 'ir-curve-bootstrap-configs'], configs);
+    const asOf = address.includes('asof=2026-11-13') ? '2026-11-13' : '';
+    const compare = address.includes('compare=') ? '2026-11-12' : '';
+    client.setQueryData(['curve-analytics', set.instrument_id, asOf, compare], set);
+    if (beside !== undefined) {
+        // The second curve is read at one instant, so it carries no prior set.
+        client.setQueryData(['curve-analytics', beside.instrument_id, asOf, ''], beside);
+    }
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -128,6 +210,69 @@ describe('the curve analytics page', () => {
         ]) {
             expect(page).toContain(text);
         }
+    });
+
+    it('names each curve by its role and index tenor, so a LIBOR tenor reads apart from its overnight', () => {
+        const page = draw(
+            `/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13`,
+            analytics,
+            [
+                {
+                    id: CONFIG_ID,
+                    name: 'USD-SOFR-FOMC',
+                    curve_family_role: 'FUNDING',
+                    index_tenor: '1D',
+                },
+                {
+                    id: PROJECTION_ID,
+                    name: 'USD-LIBOR-1M',
+                    curve_family_role: 'PROJECTION',
+                    index_tenor: '1M',
+                },
+            ],
+        );
+        expect(page).toContain('USD-SOFR-FOMC · Funding · 1D');
+        expect(page).toContain('USD-LIBOR-1M · Projection · 1M');
+    });
+
+    it('draws a projection beside the funding curve it discounts off', () => {
+        const page = draw(
+            `/market-data/curve-analytics?curve=${PROJECTION_ID}&asof=2026-11-13`,
+            libor,
+            pairOfConfigs,
+            funding,
+        );
+        // The pair is read without being asked for, because the projection names it.
+        expect(page).toContain('USD-LIBOR-1M is drawn solid and USD-SOFR-FOMC dashed beside it');
+        expect(page).toContain('Pillar by pillar');
+        // Either curve can be read alone, as the prototype offers.
+        expect(page).toContain('Both curves');
+        expect(page).toContain('USD-SOFR-FOMC alone');
+    });
+
+    it('states the gap between the two curves at each pillar, in basis points', () => {
+        const page = draw(
+            `/market-data/curve-analytics?curve=${PROJECTION_ID}&asof=2026-11-13`,
+            libor,
+            pairOfConfigs,
+            funding,
+        );
+        // The term curve opens on its forward rates: 4.60% against the overnight 4.32%.
+        expect(page).toContain('4.6000');
+        expect(page).toContain('4.3200');
+        expect(page).toContain('+28.0');
+        expect(page).toContain('+26.0');
+    });
+
+    it('draws one curve alone when the reader asks for no second curve', () => {
+        const page = draw(
+            `/market-data/curve-analytics?curve=${PROJECTION_ID}&asof=2026-11-13&against=none`,
+            libor,
+            pairOfConfigs,
+            funding,
+        );
+        expect(page).not.toContain('Pillar by pillar');
+        expect(page).toContain('The bootstrapped zero rate');
     });
 
     it('pairs the market pillar with what the bootstrap made of it', () => {

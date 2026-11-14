@@ -5723,10 +5723,17 @@ export const en: SourceCatalogue = {
             change: 'Change (bp)',
             comparedWith: 'Measured from the published set as of {at}.',
             noPriorSet: 'No published set was current at that instant, so no change is drawn.',
+            besideCurve: 'Beside',
+            compareNone: 'No second curve',
             readingFor: 'Reading for {party}',
             axes: {
                 tenor: 'By tenor',
                 maturity: 'By maturity',
+            },
+            views: {
+                both: 'Both curves',
+                curve: '{curve} alone',
+                beside: '{beside} alone',
             },
             asOf: 'As of',
             index: 'Index',
@@ -5747,6 +5754,11 @@ export const en: SourceCatalogue = {
             impliedForward: 'Implied forward (%)',
             discountFactor: 'Discount factor',
             shift: 'Shift (bp)',
+            pairTable: 'Pillar by pillar',
+            difference: 'Difference',
+            pairLegend:
+                '{curve} is drawn solid and {beside} dashed beside it. The market overlay is left out, because the chart is now about two curves.',
+            besideFailed: 'The curve {curve} could not be read: {reason}',
             shiftNote:
                 'The shift is the zero rate less the market rate at the pillar: the distance between the curve and the market, not a parallel shift applied to it.',
             noPriorClose:

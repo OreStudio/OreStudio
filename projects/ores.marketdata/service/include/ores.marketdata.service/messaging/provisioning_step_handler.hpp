@@ -118,7 +118,18 @@ public:
         : nats_(nats)
         , service_token_(std::move(service_token)) {}
 
-    /// Serves marketdata.v1.ops.provision_tenant_step.
+    /**
+     * @brief Serves marketdata.v1.ops.provision_tenant_step.
+     *
+     * The step states, for each party it names, the provider and the source
+     * that party subscribes to. A party named twice takes both; a party the
+     * step does not name takes the step's own provider and source; and a party
+     * the tenant does not hold is refused, so a profile that names a wrong one
+     * fails rather than leaving a party unsubscribed. The generators a
+     * subscription reaches belong to the system, so nothing of the party's own
+     * data is created by this step.
+     */
+
     void step(ores::nats::delivery delivery) {
         const auto& msg = delivery.msg();
 
@@ -239,20 +250,25 @@ private:
                 for (const auto& assignment : arguments.parties)
                     if (assignment.party == id_text || assignment.party == party.full_name)
                         matched.insert(assignment.party);
+                const auto feeds =
+                    ores::iam::workflow::feeds_of_party(arguments, id_text, party.full_name);
                 // A subscription and a route name the party they belong to, so
-                // they are written in a session scoped to that party.
-                ores::nats::service::nats_client party_nats(
-                    nats_,
-                    ores::iam::client::make_tenant_session_provider(
+                // they are written in a session scoped to that party. A party
+                // with no feed is given no session.
+                if (!feeds.empty()) {
+                    ores::nats::service::nats_client party_nats(
                         nats_,
-                        service_token_,
-                        command.tenant_id,
-                        std::chrono::seconds{60},
-                        boost::uuids::to_string(party.id)));
-                for (const auto& feed :
-                     ores::iam::workflow::feeds_of_party(arguments, id_text, party.full_name))
-                    subscribe_party(
-                        party_nats, party.id, feed.provider, source_of(feed.provider, feed.source));
+                        ores::iam::client::make_tenant_session_provider(nats_,
+                                                                        service_token_,
+                                                                        command.tenant_id,
+                                                                        std::chrono::seconds{60},
+                                                                        id_text));
+                    for (const auto& feed : feeds)
+                        subscribe_party(party_nats,
+                                        party.id,
+                                        feed.provider,
+                                        source_of(feed.provider, feed.source));
+                }
                 subscribed.push_back(id_text);
             }
             if (page.size() < page_size)
@@ -267,6 +283,9 @@ private:
 
         BOOST_LOG_SEV(lg(), ores::logging::info) << "subscribe_market_data: " << subscribed.size()
                                                  << " part(y/ies) subscribed; completing the step";
+        // The result states the kind and the parties subscribed: nothing else of
+        // the shared result shape is filled for this kind, and no reader of it
+        // expects more.
         wf.complete(ores::utility::codec::json::write(
             provision_step_result{.kind = command.kind, .parties = subscribed}));
     }

@@ -218,28 +218,6 @@ std::vector<cuts::kind_row> all_kinds(const http_request& req, nats_client& sess
     return rows;
 }
 
-/// One kind, or nothing when the store holds none of that code.
-std::optional<cuts::kind_row> kind_by_code(const http_request& req,
-                                           nats_client& session,
-                                           const std::string& code) {
-    const auto lookups = cuts::read_kind_lookups(req, session);
-
-    // The count of one kind's cuts is that kind's own read, so a record costs
-    // one cut read and not the party's history.
-    reporting_messaging::list_cut_rows_request ask;
-    ask.kind_code = code;
-    ask.limit = 1;
-    const auto counted = forwarding::forward(req, session, ask);
-
-    reporting_messaging::list_cut_kinds_request msg;
-    msg.limit = kinds_limit;
-    const auto reply = forwarding::forward(req, session, msg);
-    for (const auto& kind : reply.kinds)
-        if (kind.code == code)
-            return cuts::row_of(kind, lookups, counted.total);
-    return std::nullopt;
-}
-
 /// The kinds a search matched, largest of nothing and in the order asked for.
 std::vector<cuts::kind_row> kinds_matched(const std::vector<cuts::kind_row>& rows,
                                          const kind_page& asked) {
@@ -431,7 +409,7 @@ void cut_kind_routes::register_routes(
                     if (code.empty() || code.size() > 100)
                         rr::invalid("The address names no code of a kind of cut.");
 
-                    const auto kind = kinds::kind_by_code(req, session, code);
+                    const auto kind = cuts::read_one_kind(req, session, code);
                     if (!kind)
                         rr::refuse(http_status::not_found,
                                    "not-found",
@@ -492,7 +470,7 @@ void cut_kind_routes::register_routes(
                     const auto reply = forwarding::forward(req, session, msg);
                     rr::require_ok(reply.result);
 
-                    const auto written = kinds::kind_by_code(req, session, code);
+                    const auto written = cuts::read_one_kind(req, session, code);
                     if (!written)
                         rr::refuse(http_status::not_found,
                                    "not-found",

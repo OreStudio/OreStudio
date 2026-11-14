@@ -164,6 +164,27 @@ kind_row row_of(const ores::reporting::domain::cut_kind& kind,
     return row;
 }
 
+std::optional<kind_row> read_one_kind(const http_request& req,
+                                      nats_client& session,
+                                      const std::string& code) {
+    const auto lookups = read_kind_lookups(req, session);
+
+    // The count of one kind's cuts is that kind's own read, so a record costs
+    // one cut read and not the party's history.
+    reporting_messaging::list_cut_rows_request ask;
+    ask.kind_code = code;
+    ask.limit = 1;
+    const auto counted = forwarding::forward(req, session, ask);
+
+    reporting_messaging::list_cut_kinds_request msg;
+    msg.limit = lookup_limit;
+    const auto reply = forwarding::forward(req, session, msg);
+    for (const auto& kind : reply.kinds)
+        if (kind.code == code)
+            return row_of(kind, lookups, counted.total);
+    return std::nullopt;
+}
+
 kind_row row_of_a_cut(const ores::reporting::domain::cut& cut) {
     kind_row row;
     row.code = cut.kind_code;

@@ -84,6 +84,12 @@ kind_row row_of(const ores::reporting::domain::cut_kind& kind,
                 const kind_lookups& lookups,
                 int cuts_count);
 
+/// One kind, with the count of the party's cuts of it, or nothing when the
+/// store holds none of that code.
+std::optional<kind_row> read_one_kind(const ores::http::domain::http_request& req,
+                                      ores::nats::service::nats_client& session,
+                                      const std::string& code);
+
 /**
  * @brief The kind of a cut whose kind the store no longer holds.
  *

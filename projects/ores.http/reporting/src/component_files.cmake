@@ -21,8 +21,10 @@
 # To modify, update the template and regenerate.
 set(files
     "routes/reporting/choice_routes.cpp"
+    "routes/reporting/configuration_routes.cpp"
     "routes/reporting/cut_kind_routes.cpp"
     "routes/reporting/cut_kind_rows.cpp"
+    "routes/reporting/cut_routes.cpp"
     "routes/reporting/report_routes.cpp"
     "routes/reporting/reporting_routes.cpp"
     "routes/reporting/result_rollup.cpp"
@@ -36,8 +38,10 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.reporting.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/choice_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/configuration_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/cut_kind_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/cut_kind_rows.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/cut_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/report_health.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/report_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/reporting_routes.hpp"

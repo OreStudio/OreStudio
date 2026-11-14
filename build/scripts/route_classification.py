@@ -696,6 +696,13 @@ RULES = (
          "One run's files: the tree the run hangs in, what each input package holds, the "
          "output files each accepted result's manifest names, and the bytes of whichever one "
          "the reader opened, so the screen reads one answer and not a walk of three services."),
+    Rule("the cuts",
+         ("regex", r"^((GET|POST) /api/reporting/cuts.*)$"),
+         CPP, COMPOSED, "reporting",
+         "The cuts a party holds and one cut's record: the body's facts, the state and the label "
+         "the reporting service derives, the kind the body was taken under, the gaps the "
+         "assembly could not fill, the runs that priced from it, and the hand take that "
+         "assembles a body part by part and presses."),
     Rule("the kinds of cut",
          ("regex", r"^((GET|PUT|DELETE) /api/reporting/cut-kinds.*|GET /api/reporting/cut-kind-choices)$"),
          CPP, RESOURCE, "reporting",
@@ -746,8 +753,8 @@ RULES = (
          "One report run: its state, its results at the level the reader asked for, and its"
          " output archive as the run stored it."),
     Rule("a report configuration",
-         ("exact", "GET /api/reporting/configurations/:id"),
-         BFF, COMPOSED, "reporting",
+         ("regex", r"^GET /api/reporting/configurations/[^/]+$"),
+         None, COMPOSED, "reporting",
          "One configuration with what its five keys point at: the type names, the party"
          " names, its analytics, their analytic names and its market data bindings, five"
          " reads so the page shows names rather than ids."),

@@ -505,7 +505,7 @@ RULES = (
          " stored versions supply its contents, so two collections are joined to answer."),
     Rule("the engine's documented groups",
          ("exact", "GET /api/reporting/engine-settings/documentation"),
-         BFF, RESOURCE, "reporting",
+         None, RESOURCE, "reporting",
          "One collection, the parameter groups read from the store and returned with what"
          " each group means; the documentation screen reads it and no collection is joined"
          " onto it."),

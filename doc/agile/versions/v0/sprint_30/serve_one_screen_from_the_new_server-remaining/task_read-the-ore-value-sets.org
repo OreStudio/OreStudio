@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-ore-value-sets
+#+pr: 4714
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -31,11 +31,11 @@ statement of it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing. This task is first.           |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -88,9 +88,61 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The reporting part's test suite | 44 cases, 447 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the documentation page commit |
+| The gateway core's test suite | 100 cases, 100590 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.core.tests= | the documentation page commit |
+| The reporting area's routes the C++ server answers | 27 of the BFF's 44 paired | =python3 build/scripts/route_inventory.py --check= | the documentation page commit |
+| The reporting area's routes the C++ server does not yet answer | 17 | =python3 build/scripts/route_inventory.py --check= | the documentation page commit |
+| The routes the inventory pairs | 234 of the BFF's 324 | =python3 build/scripts/route_inventory.py --check= | the documentation page commit |
+| The gateway's routes in the inventory | 1324 routes, 1000 answered by the gateway | =python3 build/scripts/route_inventory.py --check= | the documentation page commit |
 
 * Notes
+
+** The reader's home
+
+The design note and this task's predecessor said the value set reader lives in
+the reporting part. It does not. The reference data part answers convention and
+curve routes and reads value sets too, and the reporting part already links
+=ores.refdata.api=, so a reader in the reporting part would close a cycle
+between two part libraries. The reader is at
+=projects/ores.http/core/include/ores.http.core/routes/ore_value_sets.hpp=.
+
+The reader takes the four tables as rows, so the shared part gains no link to
+the reporting part. The catalogue relations are the caller's: a relation names a
+view in another component, so the part that serves a screen states which
+relations it reads. The reporting part reads the three the value set data names
+(tenors, currencies and sensitivity templates) and refuses any other with a
+sentence that names it.
+
+** The routes the earlier families left unpaired
+
+The three families before this one added their routes to the inventory but never
+added them to =build/scripts/route_pairing.py=, which is the table the coverage
+is counted from. The coverage table therefore stated 9 of 44 reporting routes
+paired where 26 were served. This task adds those seventeen pairs, so the
+coverage is now counted and not claimed.
+
+** A seed this build cannot read
+
+The BFF threw from the handler, and the browser read a 500 with the sentence.
+The gateway does the same: the reader raises =value_set_error= and the route
+refuses with 500 and the reader's sentence. Every other failure keeps the
+house answer, which logs the detail and tells the browser the service could not
+answer.
+
+** The check the merge turned red
+
+=component-drift= fails after main advanced under this branch. The file it names
+is =projects/ores.refdata/api/include/ores.refdata.api/messaging/configuration_document_protocol.hpp=,
+which =ae416bfd8e= changed on main. This branch touches no reference data file.
+Regenerating the component would undo that change, so the failure is named here
+and not fixed.
+
+** The relation the page does not need
+
+The documentation page reads the =Setup= scope, whose settings name no catalogue
+relation. The reader still resolves the relations the data names, because a set
+that names one must not be drawn as an empty list; a relation is read only when
+a setting that draws on it is asked for.
 
 * Test Scenarios
 
@@ -107,7 +159,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4714][#4714]] | [http] Read the ORE value sets, and serve the documentation page |
 
 * Review
 
@@ -116,3 +168,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The gateway reads the ORE value sets and answers
+=GET /api/reporting/engine-settings/documentation= at the BFF's path, in the
+BFF's shape.
+
+- The reader is in =ores.http.core=, and the reporting and reference data parts
+  both reach it. It answers the same seven fields the BFF's does.
+- The documentation page answers the groups the data states, each setting's
+  documentation from the =ore.xsd= / =Setup= parameters, and its allowed values
+  from the value set of its ORE parameter. Nothing is derived that a service
+  states.
+- A set whose kind this build does not know is a 500 that names the set and the
+  word, as the BFF's own throw was, and not a control that checks nothing.
+- The seventeen routes the three earlier families served but never paired are
+  paired. The coverage table states 27 of 44 reporting routes where it stated 9.
+- The reader's eight cases and the route's two cases pass. The gateway core's
+  suite is 100 cases and 100590 assertions; the reporting part's is 44 cases and
+  447 assertions.
+- The gate is 45 of 45.

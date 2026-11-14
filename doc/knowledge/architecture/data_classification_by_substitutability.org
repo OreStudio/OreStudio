@@ -1,17 +1,17 @@
 :PROPERTIES:
 :ID: 78E47817-A984-4325-AA73-B8B87C56BC3B
 :END:
-#+title: The data tiers
-#+description: An installation's data divides into five tiers by substitutability, and the tier decides what the system must ship, who decides the right values, and how a developer delivers it.
+#+title: Data classification by substitutability
+#+description: An installation's data divides into five tiers by substitutability, and the tier decides what the system must ship, who decides the right values and how a developer delivers it.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:architecture:data:reference_data:dataset:dq:
 #+created: 2026-10-08
-#+updated: 2026-10-08
+#+updated: 2026-11-14
 
 * Summary
 
-The data an installation holds divides into five tiers, and the tier
+The data an installation holds classifies into five tiers, and the tier
 decides nearly everything else about it. The axis is *substitutability*:
 how many valid instances of the data exist. A vocabulary the platform
 defines has exactly one. An external standard has one because the
@@ -20,8 +20,12 @@ there are installations. Market data has one for every observation time.
 Transactional data has one for every act of use.
 
 The tier answers the two questions a developer actually has: must the
-system ship these rows, and who decides which values are right. It does
-not replace the classification the DQ model already carries. A dataset
+system ship these rows, and who decides which values are right. It is one
+of the two axes on which this documentation classifies data; the other is
+the publication level, which decides where the rows live and which bundle
+carries them, and it is the subject of
+[[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]].
+This page does not replace the classification the DQ model already carries. A dataset
 still has a domain, a subject area and a catalog, and a value still has a
 nature and an origin. Those say what the data is. This says how firmly
 the platform holds it.

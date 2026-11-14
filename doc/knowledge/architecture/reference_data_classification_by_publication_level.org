@@ -22,7 +22,7 @@ states the classification. It recognises three *levels* — *platform*, *world*
 and *tenant* — and assigns each kind of reference data to exactly one of them;
 the level then settles the rest. The mechanisms the classification depends on
 are cited rather than reproduced: the tiers are treated in
-[[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]], the ownership
+[[id:78E47817-A984-4325-AA73-B8B87C56BC3B][Data classification by substitutability]], the ownership
 classes and their policies in
 [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
 information flow]], and the artefact and the publish function in
@@ -71,7 +71,7 @@ trade, an activity or a measurement. Such data is never published, and the
 write path that produces it is its only delivery.
 
 The first two questions are those of
-[[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]], posed from the
+[[id:78E47817-A984-4325-AA73-B8B87C56BC3B][Data classification by substitutability]], posed from the
 side of publication rather than from substitutability; the third is the tenant
 ownership of
 [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
@@ -233,7 +233,7 @@ tenant, publishing =tenant_defaults= into it and onboarding each party with
 
 * See also
 
-- [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]] — completes:
+- [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][Data classification by substitutability]] — completes:
   the substitutability test behind the first two questions.
 - [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] — completes: the three
   ownership classes, the policy each deserves, and why a widening is not one.

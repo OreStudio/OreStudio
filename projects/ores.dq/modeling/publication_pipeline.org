@@ -377,7 +377,7 @@ the bundle/membership rows (one-liners) and the actual seed data.
 
 * See also
 
-- [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]] — when a
+- [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][Data classification by substitutability]] — when a
   table belongs here at all, and which of the other delivery mechanisms
   takes the tables this pipeline does not.
 - [[id:98B3572E-A9F9-45F5-A4C5-3DC23F3CFF70][DQ Publish Pattern — Architecture and Decision]] — the design

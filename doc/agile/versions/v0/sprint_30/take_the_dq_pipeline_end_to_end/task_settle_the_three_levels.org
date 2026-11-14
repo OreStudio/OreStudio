@@ -48,7 +48,7 @@ every question below.
   retired path, no task table. What the tree still has to change is the story's
   record and not the page's.
 - It does not restate what another page owns. The tiers stay in
-  [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]], the ownership
+  [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][Data classification by substitutability]], the ownership
   classes and policies in
   [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
   information flow]], the artefact and the publish function in

@@ -276,7 +276,7 @@ The gaps are of two kinds, and the two need different answers.
   B10, B11 and the absent packages would keep their parts.
 - [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — the isolation
   B9 and B18 depend on.
-- [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]] — which rows
+- [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][Data classification by substitutability]] — which rows
   a publication such as B14 carries.
 - [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] —
   the levels B14's datasets belong to, the bundle map, and the target tenant of

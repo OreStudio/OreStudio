@@ -74,6 +74,7 @@ set(files
     "run_market_tests.cpp"
     "scheduler_trace_tests.cpp"
     "service_calendar_arithmetic_tests.cpp"
+    "service_fx_expiry_dates_tests.cpp"
     "service_tenor_resolution_engine_tests.cpp"
     "ssvi_calibration_engine_tests.cpp"
     "tick_scheduler_tests.cpp"

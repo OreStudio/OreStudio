@@ -35,7 +35,10 @@ namespace ores #F2F2F2 {
                     +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
                 }
                 class reporting_routes {
-                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session, string storage_dir) : void
+                }
+                class run_file_routes {
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session, string storage_dir) : void
                 }
                 class run_routes {
                     +runs_json(vector<run_view> runs) : string

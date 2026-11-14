@@ -31,14 +31,20 @@ def test_a_backend_still_closing_after_the_kill_does_not_fail_the_recreate(monke
 def test_a_backend_that_never_closes_fails_after_the_deadline(monkeypatch):
     killed = []
     step = 3
-    clock = iter(range(0, 100_000, step))
+    reads = []
+
+    def clock():
+        reads.append(len(reads) * step)
+        return reads[-1]
+
     monkeypatch.setattr(compass_db, "_psql", serve(["1"], killed))
     monkeypatch.setattr(compass_db.time, "sleep", lambda _: None)
-    monkeypatch.setattr(compass_db.time, "monotonic", lambda: next(clock))
+    monkeypatch.setattr(compass_db.time, "monotonic", clock)
     assert not compass_db.check_connections({}, "db", kill=True)
-    # One round per three seconds of the stand-in clock, and the rounds stop
-    # when the window is spent: the deadline is the window, not a lucky number.
-    assert len(killed) == compass_db.DRAIN_SECONDS // step
+    # The wait spends the window before it gives up, and gives up soon after:
+    # what matters is how long it waited, not how many rounds it took.
+    assert max(reads) >= compass_db.DRAIN_SECONDS
+    assert max(reads) < compass_db.DRAIN_SECONDS + 2 * step
 
 
 def test_the_wait_reports_the_connections_it_is_waiting_for(monkeypatch, capsys):
@@ -47,10 +53,22 @@ def test_the_wait_reports_the_connections_it_is_waiting_for(monkeypatch, capsys)
     monkeypatch.setattr(compass_db.time, "sleep", lambda _: None)
     assert compass_db.check_connections({}, "db", kill=True)
     said = capsys.readouterr().out
-    assert "Waiting for 2 connection(s) to db to close" in said
-    assert "Waiting for 1 connection(s) to db to close" in said
-    # A count that has not moved is not said again.
+    # One line per count it saw, and no line for a count that had not moved.
     assert said.count("Waiting for") == 2
+    assert "2 connection(s)" in said
+    assert "1 connection(s)" in said
+
+
+def test_a_wait_that_gives_up_does_not_tell_a_killing_caller_to_kill(monkeypatch, capfd):
+    killed = []
+    monkeypatch.setattr(compass_db, "_psql", serve(["1", "1"], killed))
+    monkeypatch.setattr(compass_db.time, "sleep", lambda _: None)
+    # A window of nothing spends itself on the first round.
+    monkeypatch.setattr(compass_db, "DRAIN_SECONDS", 0)
+    assert not compass_db.check_connections({}, "db", kill=True)
+    err = capfd.readouterr().err
+    assert "--kill" not in err
+    assert "did not close within" in err
 
 
 def test_without_kill_an_active_connection_fails_at_once(monkeypatch):

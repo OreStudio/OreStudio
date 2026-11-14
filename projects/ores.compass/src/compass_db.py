@@ -112,12 +112,11 @@ def _psql(env, *args, user="postgres", password=None, database=None,
                           capture_output=capture, text=True)
 
 
-# How long the backends of a stopped service are given to close. A service
-# closes its connections as its process goes, and a fleet of them takes longer
-# than a few seconds: the story recorded 25 stopped services draining for about
-# 15 seconds while a recreate was already refusing. The window is a minute so
-# that a slow host still converges, and it stays bounded so that a backend that
-# never closes fails the recreate rather than hanging it.
+# How long a closed backend is given to let go. A service closes its
+# connections as its process goes, so a fleet of them can still be closing
+# when the next command runs. The window is a minute so that a slow host
+# converges, and it is bounded so a backend that never closes fails the
+# command instead of hanging it.
 DRAIN_SECONDS = 60
 
 # How often the drain takes the count again while it waits.
@@ -149,10 +148,11 @@ def check_connections(env, db_name, kill=False) -> bool:
             count = active()
             if count in ("", "0") or time.monotonic() >= deadline:
                 break
-            # A wait that says nothing reads as a hang, so the count is said
-            # once per change rather than once per poll.
+            # The count is said when it changes, so a long wait shows the work
+            # moving and flushes when output is piped.
             if count != reported:
-                print(f"Waiting for {count} connection(s) to {db_name} to close...")
+                print(f"Waiting for {count} connection(s) to {db_name} to close "
+                      f"(up to {DRAIN_SECONDS}s)...", flush=True)
                 reported = count
             time.sleep(DRAIN_POLL_SECONDS)
     count = active()
@@ -161,8 +161,12 @@ def check_connections(env, db_name, kill=False) -> bool:
     if int(count) > 0:
         print(f"\nERROR: there are {count} active connection(s) to "
               f"{db_name}.", file=sys.stderr)
-        print("Hint: pass --kill (-k) to terminate them, or stop the "
-              "services first (compass services stop).", file=sys.stderr)
+        if kill:
+            print(f"They did not close within {DRAIN_SECONDS} seconds.",
+                  file=sys.stderr)
+        else:
+            print("Hint: pass --kill (-k) to terminate them, or stop the "
+                  "services first (compass services stop).", file=sys.stderr)
         return False
     return True
 

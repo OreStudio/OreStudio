@@ -118,22 +118,3 @@ begin
     );
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;
-
--- Every party of a tenant, for a session that acts for the tenant itself.
--- A service account serving a tenant's work is not a member of any one party,
--- so the subtree the party-scoped function computes for it excludes the
--- tenant's real parties and every party-scoped read comes back empty. This is
--- the whole tenant, and it is security definer for the reason the subtree
--- function is: a reader that could only see one party could not list them.
-create or replace function ores_refdata_tenant_party_ids_fn(
-    p_tenant_id uuid
-) returns uuid[] as $$
-begin
-    return (
-        SELECT array_agg(id)
-        FROM ores_refdata_parties_tbl
-        WHERE tenant_id = p_tenant_id
-          AND valid_to = ores_utility_infinity_timestamp_fn()
-    );
-end;
-$$ language plpgsql stable security definer set search_path = public, pg_temp;

@@ -28,6 +28,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 using ores::iam::messaging::enter_tenant_as_service_request;
+using ores::refdata::repository::party_repository;
 using ores::iam::messaging::enter_tenant_request;
 using ores::iam::service::describe;
 using ores::iam::service::tenant_session_caller;
@@ -130,6 +131,30 @@ TEST_CASE("a_service_account_enters_a_tenant_and_keeps_the_permissions_it_holds"
           claims->roles.end());
     CHECK(entered.access_lifetime_s == 600);
     CHECK(events_for(h, caller.account_id) == std::vector<std::string>{"tenant_entered"});
+}
+
+TEST_CASE("a_service_entry_scoped_to_a_party_acts_as_that_party", "[service][tenant_session]") {
+    scoped_database_helper h;
+    auto sign = signer();
+    tenant_session_service svc(h.context(), sign, std::chrono::seconds{600});
+    const auto caller = service_account({"iam::tenants:enter_as_service"});
+
+    const auto parties = ores::refdata::repository::party_repository{}.read_latest(h.context());
+    REQUIRE_FALSE(parties.empty());
+    const auto& party = parties.front();
+
+    const auto entered = svc.enter_as_service(
+        caller,
+        enter_tenant_as_service_request{.tenant_id = h.tenant_id().to_string(),
+                                        .party_id = boost::uuids::to_string(party.id)});
+
+    REQUIRE(entered.success);
+    const auto claims = sign.validate(entered.token);
+    REQUIRE(claims.has_value());
+    CHECK(claims->party_id == boost::uuids::to_string(party.id));
+    CHECK(entered.party_id == boost::uuids::to_string(party.id));
+    CHECK(std::ranges::find(claims->visible_party_ids, entered.party_id) !=
+          claims->visible_party_ids.end());
 }
 
 TEST_CASE("a_service_entry_is_refused_for_each_rule_it_breaks", "[service][tenant_session]") {

@@ -271,12 +271,9 @@ private:
              * curve configuration the party published is what the resolution
              * reads, so the config names a series the party actually holds.
              */
-            /*
-             * The work belongs to this party, and several checks read the
-             * acting party, so the step enters the tenant once for it. The
-             * session names no person: it is the service, scoped to the party
-             * whose data it writes.
-             */
+            // Several checks read the acting party, so the work is done in a
+            // session scoped to the party it belongs to. The session names no
+            // person: it is the service, scoped to that party.
             ores::nats::service::nats_client party_nats(
                 nats_,
                 ores::iam::client::make_tenant_session_provider(
@@ -307,9 +304,10 @@ private:
              * throughout.
              */
             /*
-             * A party whose staff holds no trader is entered by the run's own
-             * principal, which is this service: the population is booked as
-             * the account the store can defend, and no person's name is used.
+             * The population is booked by this service, so a trade names the
+             * account the store can defend and no person's name is used. The
+             * fallback names that same account for a party whose staff holds
+             * no trader, which is the only case the planner asks for one.
              */
             ores::nats::service::nats_client service_nats(nats_, service_token_);
             ores::iam::messaging::get_my_account_response self;
@@ -653,6 +651,7 @@ private:
         ores::refdata::messaging::list_parties_request req;
         req.limit = 1000;
         const auto response = ask(client, req);
+        require_read(response.result, "the parties of the tenant");
         for (const auto& party : response.parties)
             if (party.full_name == full_name)
                 return party;

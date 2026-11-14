@@ -2311,7 +2311,12 @@ std::string parameters_of(std::string_view trade_type,
          * for is written as an element the schema does not hold.
          */
         return std::format(
-            R"({{"Type1":"Equity","Type2":"Equity","Expiry":"{}","Settlement":"{}","Position":"Long","PayCcy":"{}","BinaryPayout":"{}","BinaryLevel1":"{}","BinaryLevel2":"{}","Underlying1Type":"Equity","Underlying2Type":"Equity"}})",
+            /*
+             * Type1 and Type2 are the option types, not the asset class: ORE reads
+             * them as Call, Put or Collar, and refuses 'Equity' before it prices
+             * anything. The underlying's kind is stated by Underlying1Type.
+             */
+            R"({{"Type1":"Call","Type2":"Put","Expiry":"{}","Settlement":"{}","Position":"Long","PayCcy":"{}","BinaryPayout":"{}","BinaryLevel1":"{}","BinaryLevel2":"{}","Underlying1Type":"Equity","Underlying2Type":"Equity"}})",
             expiry,
             settlement,
             currency,

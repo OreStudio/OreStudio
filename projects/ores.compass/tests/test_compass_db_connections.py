@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 import compass_db
 
 
-def serve(counts, killed):
+def serve(counts, killed, returncode=0):
     """A stand-in for psql: each count reads the next value, each kill is recorded."""
     def fake(env, *args, **kwargs):
         sql = args[-1]
@@ -15,7 +15,8 @@ def serve(counts, killed):
             killed.append(sql)
             return subprocess.CompletedProcess(args, 0, stdout="t\n", stderr="")
         value = counts.pop(0) if len(counts) > 1 else counts[0]
-        return subprocess.CompletedProcess(args, 0, stdout=f"{value}\n", stderr="")
+        return subprocess.CompletedProcess(args, returncode,
+                                          stdout=f"{value}\n", stderr="")
     return fake
 
 
@@ -69,6 +70,21 @@ def test_a_wait_that_gives_up_does_not_tell_a_killing_caller_to_kill(monkeypatch
     err = capfd.readouterr().err
     assert "--kill" not in err
     assert "did not close within" in err
+
+
+def test_an_unreadable_count_refuses_instead_of_passing_the_drop(monkeypatch, capfd):
+    killed = []
+    monkeypatch.setattr(compass_db, "_psql", serve(["1"], killed, returncode=2))
+    assert not compass_db.check_connections({}, "db", kill=False)
+    assert "could not read the connections" in capfd.readouterr().err
+
+
+def test_a_database_with_no_connections_passes(monkeypatch, capsys):
+    killed = []
+    monkeypatch.setattr(compass_db, "_psql", serve(["0"], killed))
+    assert compass_db.check_connections({}, "db", kill=True)
+    # Nothing to wait for, so nothing is said about waiting.
+    assert "Waiting for" not in capsys.readouterr().out
 
 
 def test_without_kill_an_active_connection_fails_at_once(monkeypatch):

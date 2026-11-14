@@ -124,7 +124,12 @@ DRAIN_POLL_SECONDS = 0.5
 
 
 def check_connections(env, db_name, kill=False) -> bool:
-    """Port of utility/check_db_connections.sh + kill_db_connections.sh."""
+    """Whether no backend is attached to @p db_name, waiting while they close.
+
+    Port of utility/check_db_connections.sh + kill_db_connections.sh. Both the
+    drop and the recreate ask before they go, so both wait: with @p kill the
+    backends are terminated and given up to DRAIN_SECONDS to let go.
+    """
     pw = env.get("PGPASSWORD", "")
 
     def active():
@@ -132,7 +137,13 @@ def check_connections(env, db_name, kill=False) -> bool:
                     f"SELECT count(*) FROM pg_stat_activity WHERE datname = "
                     f"'{db_name}' AND pid <> pg_backend_pid();",
                     password=pw, check=False, capture=True)
-        return (out.stdout or "").strip()
+        # The count is cluster-wide, so a database that does not exist answers
+        # "0" and needs no special case. An answer that did not come back at
+        # all is a different thing, and must not read as "no connections".
+        answer = (out.stdout or "").strip()
+        if out.returncode != 0 or not answer:
+            return None
+        return answer
 
     if kill:
         # Terminating only signals a backend, and one still closing counts as
@@ -146,7 +157,7 @@ def check_connections(env, db_name, kill=False) -> bool:
                   f"WHERE datname = '{db_name}' AND pid <> pg_backend_pid();",
                   password=pw, check=False, capture=True)
             count = active()
-            if count in ("", "0") or time.monotonic() >= deadline:
+            if count in (None, "0") or time.monotonic() >= deadline:
                 break
             # The count is said when it changes, so a long wait shows the work
             # moving and flushes when output is piped.
@@ -156,8 +167,10 @@ def check_connections(env, db_name, kill=False) -> bool:
                 reported = count
             time.sleep(DRAIN_POLL_SECONDS)
     count = active()
-    if not count:
-        return True  # database may not exist — fine for recreation
+    if count is None:
+        print(f"\nERROR: could not read the connections to {db_name}.",
+              file=sys.stderr)
+        return False
     if int(count) > 0:
         print(f"\nERROR: there are {count} active connection(s) to "
               f"{db_name}.", file=sys.stderr)

@@ -239,6 +239,7 @@
 \ir ./dq_publications_create.sql
 \ir ./dq_publications_notify_trigger_create.sql
 \ir ./dq_bundle_publication_create.sql
+\ir ./dq_bootstrap_publish_create.sql
 \ir ./dq_publish_configuration_document_create.sql
 
 -- FSM Framework (finite state machine infrastructure, part of DQ metadata layer)

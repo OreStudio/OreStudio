@@ -329,17 +329,6 @@ select ores_utility_allow_version_replace_fn();
 \ir fpml/fpml_populate.sql
 
 -- =============================================================================
--- Reference data is NOT published here.
---
--- Publication is a runtime act. Run the ACME provisioning through ores.shell
--- (or the equivalent setup journeys in ores.web) to publish the bundles in
--- dependency order. A freshly created database holds the schema and the
--- staged DQ artefacts only, so the refdata tables are empty until that runs.
--- A test that needs reference-data rows inserts them in its own setup.
--- =============================================================================
-
-
--- =============================================================================
 -- Trading Layer
 -- =============================================================================
 
@@ -372,6 +361,20 @@ select ores_utility_allow_version_replace_fn();
 \echo ''
 \echo '--- Analytics Layer ---'
 \ir analytics/populate_analytics.sql
+
+-- =============================================================================
+-- Publication (last)
+--
+-- The reference-data catalogues every installation holds are published here,
+-- once every artefact row is staged, so the database leaves bring-up with its
+-- platform and world data in place. A tenant reads those rows where they lie;
+-- the tenants are provisioned afterwards, and a tenant's own bundles are
+-- published then.
+-- =============================================================================
+
+\echo ''
+\echo '--- Publishing the platform and world levels ---'
+\ir dq/dq_bootstrap_publish_populate.sql
 
 \echo ''
 \echo '=== System Population Complete ==='

@@ -77,7 +77,7 @@ levels, so it can only be designed once 1 and 2 have an answer.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:7F37FF2D-EDF1-4F69-AAA5-EA57B91DAF53][Settle the three levels and the bundle map]] | DONE | | 2026-11-14 | Level names and the world bundle. Blocks the rest. |
-| [[id:56FB3A5C-FDC7-4F98-A5F3-CE46DB551882][Publish the world at database bring-up]] | BACKLOG | | | Closes D1 and D12. |
+| [[id:56FB3A5C-FDC7-4F98-A5F3-CE46DB551882][Publish the world at database bring-up]] | DONE | | 2026-11-14 | Closes D1 and D12. |
 | [[id:2A720F12-FA8F-4625-A178-76E9E93444D2][Declare the tenant bootstrap and retire the silent copy]] | BACKLOG | | | Flow D, undocumented. |
 | [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]] | BACKLOG | | | Defect D5 and D14. |
 | [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] | BACKLOG | | | Defects D2, D4, D6, D7. |

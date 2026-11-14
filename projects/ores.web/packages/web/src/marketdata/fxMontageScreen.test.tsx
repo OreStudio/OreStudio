@@ -84,6 +84,14 @@ const montage: FxMontage = {
 function draw(address: string, set: FxMontage = montage): string {
     const client = new QueryClient();
     client.setQueryData(['fx-montage', 'EUR', '2026-11-13'], set);
+    client.setQueryData(
+        ['series-observations', 's-1', '2026-11-13'],
+        [
+            { at: '2026-11-13T09:00:00Z', value: '1.0820', source: 'ore' },
+            { at: '2026-11-13T12:00:00Z', value: '1.0860', source: 'ore' },
+            { at: '2026-11-13T15:00:00Z', value: '1.0850', source: 'ore' },
+        ],
+    );
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -113,6 +121,12 @@ describe('the FX montage page', () => {
     it('draws the day\u2019s range with the consensus on it', () => {
         const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13');
         expect(page).toContain('Today from 1.0802 to 1.0891, last 1.085');
+    });
+
+    it('draws the chosen pair\u2019s day from the series read', () => {
+        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13');
+        expect(page).toContain('The EUR/USD day');
+        expect(page).toContain('3 values from ore, oldest first.');
     });
 
     it('says which instant the change is measured from', () => {

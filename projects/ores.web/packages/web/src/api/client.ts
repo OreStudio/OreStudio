@@ -1444,6 +1444,20 @@ export type CurveMarketPillar = z.infer<typeof curveMarketPillarSchema>;
 export type CurveBootstrappedPoint = z.infer<typeof curveBootstrappedPointSchema>;
 export type CurveAnalytics = z.infer<typeof curveAnalyticsSchema>;
 
+/** One observed value of a series, as a chart reads it: when it was, and what it was. */
+const seriesPointSchema = z.object({
+    at: z.string().default(''),
+    value: z.string().default(''),
+    source: z.string().default(''),
+});
+
+const seriesObservationsSchema = z.object({
+    observations: z.array(seriesPointSchema).default([]),
+    total: z.number().default(0),
+});
+
+export type SeriesPoint = z.infer<typeof seriesPointSchema>;
+
 export const api = {
     /**
      * Whether the deployment still needs its first administrator.
@@ -3658,6 +3672,29 @@ export const api = {
      * One base currency's crosses at an instant, and the instant the server
      * measures their change from.
      */
+    /**
+     * One series' observations inside a window, oldest first.
+     *
+     * A screen that draws a day's path reads here: the values are the store's, in
+     * the order the chart draws them rather than the newest-first order it answers.
+     */
+    async seriesObservations(query: {
+        readonly seriesId: string;
+        readonly window?: string;
+        readonly limit?: number;
+    }): Promise<readonly SeriesPoint[]> {
+        const params = new URLSearchParams({
+            window: query.window ?? 'day',
+            limit: String(query.limit ?? 500),
+        });
+        return seriesObservationsSchema.parse(
+            await request(
+                `/api/series/${encodeURIComponent(query.seriesId)}/observations?${params.toString()}`,
+                { method: 'GET' },
+            ),
+        ).observations;
+    },
+
     async fxMontage(query: {
         readonly baseCurrency: string;
         readonly asOf: string;

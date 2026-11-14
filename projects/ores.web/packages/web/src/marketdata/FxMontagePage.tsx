@@ -25,6 +25,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { formatDateTime, relativeTime } from '../ui/Time.js';
+import { LineChart, SERIES_COLOURS } from './LineChart.js';
 import { DATA_CELL, HEAD_CELL, asOfInstant, oneOf, todayIso, useReadParty } from './readScreen.js';
 
 /**
@@ -137,6 +138,15 @@ export function FxMontagePage(): ReactNode {
     });
 
     const rows = montage.data === undefined ? [] : sorted(montage.data.pairs, sort);
+    const chosenPair = search.get('pair') ?? rows[0]?.pair_name ?? '';
+    const chosen = rows.find((pair) => pair.pair_name === chosenPair);
+    const seriesId = chosen?.spot_by_provider[0]?.series_id ?? '';
+    const day = useQuery({
+        queryKey: ['series-observations', seriesId, asOf],
+        queryFn: () => api.seriesObservations({ seriesId, window: 'day', limit: 500 }),
+        enabled: seriesId !== '',
+        retry: false,
+    });
     const places = 4;
     const head = HEAD_CELL;
     const cell = DATA_CELL;
@@ -315,6 +325,34 @@ export function FxMontagePage(): ReactNode {
                             </tbody>
                         </table>
                     </div>
+                </section>
+            )}
+            {day.data !== undefined && day.data.length >= 2 && chosen !== undefined && (
+                <section className="space-y-2 rounded-md border border-line p-4">
+                    <h2 className="text-sm font-semibold">
+                        {t('marketdata.fxMontage.chosenDay', { pair: chosen.pair_name })}
+                    </h2>
+                    <p className="text-xs text-ink-faint">
+                        {t('marketdata.fxMontage.chosenDayLead', {
+                            provider: chosen.spot_by_provider[0]?.provider_code ?? '',
+                            count: day.data.length,
+                        })}
+                    </p>
+                    <LineChart
+                        series={[
+                            {
+                                points: day.data.map((point) => Number(point.value)),
+                                colour: SERIES_COLOURS[0],
+                                fill: true,
+                                strong: true,
+                            },
+                        ]}
+                        xs={day.data.map((point) => Date.parse(point.at))}
+                        format={(value) => fixed(value, places, language)}
+                        xFormat={(value) => new Date(value).toLocaleTimeString(language)}
+                        label={t('marketdata.fxMontage.chosenDay', { pair: chosen.pair_name })}
+                        padding={0.08}
+                    />
                 </section>
             )}
         </div>

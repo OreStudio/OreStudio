@@ -21,4 +21,5 @@
 # To modify, update the template and regenerate.
 set(files
     "main.cpp"
+    "tenant_session_tests.cpp"
 )

@@ -20,6 +20,7 @@
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_session_protocol.hpp"
+#include "ores.iam.client/client/tenant_session.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -185,15 +186,12 @@ namespace {
 constexpr std::string_view enter_as_service_subject =
     ores::iam::messaging::enter_tenant_as_service_request::nats_subject;
 
-/// One tenant session a service holds, and when it must be entered again.
+/// The state a provider keeps between calls: the session and how to enter it.
 struct session_state {
     ores::nats::service::client& nats;
     ores::nats::service::nats_client::token_provider service_token;
     std::string tenant_id;
-    std::string party_id;
-    std::chrono::seconds refresh_margin;
-    std::string jwt;
-    std::chrono::system_clock::time_point expires_at{};
+    tenant_session session;
 
     void enter() {
         BOOST_LOG_SEV(service_token_provider_lg(), info)
@@ -201,7 +199,7 @@ struct session_state {
 
         const auto& codec = ores::nats::default_wire_codec();
         const auto body = codec.encode(ores::iam::messaging::enter_tenant_as_service_request{
-            .tenant_id = tenant_id, .party_id = party_id});
+            .tenant_id = tenant_id, .party_id = session.party_id()});
         const std::unordered_map<std::string, std::string> headers{
             {std::string(ores::nats::headers::authorization),
              std::string(ores::nats::headers::bearer_prefix) + service_token(false)}};
@@ -218,20 +216,9 @@ struct session_state {
             throw std::runtime_error("Entering tenant " + tenant_id + " was refused: " + why);
         }
 
-        jwt = std::move(resp->token);
-        const auto lifetime = std::chrono::seconds(resp->access_lifetime_s);
-        expires_at = std::chrono::system_clock::now() + lifetime;
-        // Enter again before the session runs out, and never later than the
-        // margin the caller asked for, which keeps a short lifetime workable.
-        if (refresh_margin > lifetime / 2)
-            refresh_margin = lifetime / 2;
-        BOOST_LOG_SEV(service_token_provider_lg(), info)
-            << "Entered tenant " << tenant_id << " (lifetime=" << lifetime.count() << "s)";
-    }
-
-    void enter_if_needed() {
-        if (jwt.empty() || std::chrono::system_clock::now() >= expires_at - refresh_margin)
-            enter();
+        session.entered(
+            std::move(resp->token), resp->access_lifetime_s, std::chrono::system_clock::now());
+        BOOST_LOG_SEV(service_token_provider_lg(), info) << "Entered tenant " << tenant_id;
     }
 };
 
@@ -243,23 +230,20 @@ make_tenant_session_provider(ores::nats::service::client& nats,
                              std::string tenant_id,
                              std::chrono::seconds refresh_margin,
                              std::string party_id) {
-    auto state =
-        std::make_shared<session_state>(session_state{.nats = nats,
-                                                      .service_token = std::move(service_token),
-                                                      .tenant_id = std::move(tenant_id),
-                                                      .party_id = std::move(party_id),
-                                                      .refresh_margin = refresh_margin});
+    auto state = std::make_shared<session_state>(
+        session_state{.nats = nats,
+                      .service_token = std::move(service_token),
+                      .tenant_id = std::move(tenant_id),
+                      .session = tenant_session(std::move(party_id), refresh_margin)});
 
     // Every handler thread of the service calls the provider, so one caller at
     // a time reads or renews the session and the others reuse what it entered.
     auto guard = std::make_shared<std::mutex>();
     return [state, guard](bool force) -> std::string {
         const std::scoped_lock lock(*guard);
-        if (force)
+        if (force || state->session.needs_entry(std::chrono::system_clock::now()))
             state->enter();
-        else
-            state->enter_if_needed();
-        return state->jwt;
+        return state->session.token();
     };
 }
 

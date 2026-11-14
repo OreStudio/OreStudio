@@ -20,7 +20,6 @@
 #define ORES_UTILITY_UUID_TENANT_ID_HPP
 
 #include "ores.utility/export.hpp"
-#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <expected>
 #include <optional>

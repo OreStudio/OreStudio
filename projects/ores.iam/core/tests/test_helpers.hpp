@@ -23,6 +23,7 @@
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "test_suite.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 
 using ores::database::context;

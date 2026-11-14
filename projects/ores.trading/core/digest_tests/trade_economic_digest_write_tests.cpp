@@ -84,6 +84,7 @@
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/vanilla_swap_instrument_repository.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <exception>

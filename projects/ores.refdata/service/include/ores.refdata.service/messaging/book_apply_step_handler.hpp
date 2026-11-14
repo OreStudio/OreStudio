@@ -34,6 +34,7 @@
 #include "ores.refdata.service/service/book_proposal.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <exception>
 #include <stdexcept>

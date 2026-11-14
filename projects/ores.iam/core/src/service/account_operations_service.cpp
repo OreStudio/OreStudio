@@ -28,6 +28,7 @@
 #include "ores.security/validation/password_validator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <queue>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>

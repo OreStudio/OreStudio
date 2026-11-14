@@ -24,6 +24,7 @@
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <algorithm>
 #include <chrono>

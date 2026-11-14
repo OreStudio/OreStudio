@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: AE2E77E7-5E09-436A-817E-66FB7064BA28
+:END:
+#+title: Task: Delete the unused includes the analysis found
+#+description: Remove the dead includes and the two inline functions that force them: the string generator in tenant_id.hpp, and the two magic_enum users in error_code.hpp.
+#+type: task
+#+level: s1
+#+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
+#+owner: marco
+#+branch: feature/delete-the-unused-includes-the-analysis-found
+#+pr: 4733
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The analysis found two headers that cost the tree more than they say: tenant_id.hpp includes a Boost generator that nothing in it uses, and error_code.hpp includes the enum-reflection library so that two inline functions can render an error code for a log. This task removes both costs, and gives each of the 38 files that were borrowing the generator the include it actually needs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- =tenant_id.hpp= includes neither the generator nor anything that pulls it in, and every file that builds a generator includes the header for it.
+- =error_code.hpp= does not include the enum-reflection library, and the two functions it used to define are declared with the export macro and defined in a =.cpp=.
+- The tree compiles and the suites that use either header pass.
+- The measurement is recorded, or the reason it is not taken is.
+
+* Plan
+
+Two changes the analysis measured separately, neither with a design question,
+so they ride together.
+
+=tenant_id.hpp= includes =<boost/uuid/string_generator.hpp>= and nothing in the
+header uses it: the =.cpp= already includes it for the two places that build a
+generator. Deleting the include is the whole change, worth 0.69 s on 837
+objects.
+
+=error_code.hpp= includes =<magic_enum/magic_enum.hpp>= for two inline
+functions, =operator<<= and =to_string=. Removing the include alone does not
+compile, which the analysis proved by A/B: the fix is to move the code, not the
+line. The two functions become declarations carrying =ORES_UTILITY_EXPORT=, and
+their definitions move to a new =src/serialization/error_code.cpp=, which the
+component's source list must carry.
+
+*The A/B is not taken, deliberately.* The analysis already measured both
+changes (0.69 s on 837 objects for the include, and the =magic_enum= pair proved
+by A/B to need the code moved rather than the line removed), and re-running the
+shadow comparison here costs an hour of compiles each time it is asked. This
+change is architectural: a header that includes what it does not use, and two
+inline functions that exist only to satisfy a display concern. It is worth doing
+whether or not the number reproduces on today's tree. What this task verifies is
+that the tree still compiles and that the suites that use =error_code= and
+=tenant_id= pass, which is the claim a mechanical move can actually make.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files that were relying on the transitive include | 38, plus the header itself: 39 files changed | =grep -rl 'uuids::string_generator' projects=, then check for the include | =267be03484= |
+| Build of the change | clean, after 1153 objects in the first pass and 282 in the second | =compass build --preset linux-clang-release-ninja= | =267be03484= |
+| Suites | 3 of 3, 73 s: utility, iam.core, reporting.core | =compass test run -- -j 4 -R ...= | =267be03484= |
+| Symbols the move exported | 2: =operator<<= and =to_string= for =error_code= | =nm -DC .../libores.utility.so= | =267be03484= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4733][#4733]] | [tooling] Drop the unused includes and the inline functions behind them |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both changes are in and the tree compiles.
+
+- =tenant_id.hpp= no longer includes =<boost/uuid/string_generator.hpp>=. The
+  include was not dead for the tree, only for the header: 38 files used
+  =boost::uuids::string_generator= and had been getting it from here. The build
+  named one of them; a scan named the rest, and each now includes what it uses.
+  That is the change the analysis described as deleting an unused include, and
+  it is really a 39-file change that deletes one include and adds 38 honest ones.
+- =error_code.hpp= no longer includes =<magic_enum/magic_enum.hpp>=. The two
+  inline functions became declarations carrying =ORES_UTILITY_EXPORT=, and their
+  definitions live in =src/serialization/error_code.cpp=. Both symbols are in the
+  library: =nm -DC= shows them exported, and the link of =ores.utility.tests=
+  resolves them. Neither is a test of the output — nothing in the suites calls
+  either function — so what the suites prove is compile and link, not that an
+  error code still renders as it did.
+
+*What went wrong on the way, twice.* The new source has to arrive through
+=regenerate_cmake_component_files.py=: =component_files.cmake= carries an
+AUTO-GENERATED banner, a hand edit there compiled nothing and the link failed
+with an undefined =operator<<=. And the first build died on a consumer that
+relied on the transitive include, which is why the scan exists in the record
+above rather than one error at a time.
+
+*What a reviewer of this change should know.* Moving =operator<<= out of line
+means a translation unit that included =error_code.hpp= alone now has to link
+=ores.utility= to use it. That is the same contract =decimal.hpp= and
+=short_code_generator.hpp= already carry, and the in-tree build is clean, but it
+is a contract this header did not have before.
+
+*The A/B is not taken.* The analysis measured this already, and the shadow
+comparison costs an hour of compiles. The change is architectural, so it stands
+on its own; what was verified is that the tree compiles and the suites pass.
+

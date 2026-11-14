@@ -99,10 +99,10 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | The part's test suite | 11 cases, 154 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the run page commit |
-| The reporting area's routes the C++ server answers | 14 of 50 paired | =python3 build/scripts/route_inventory.py --check= | the run's files and results commit |
-| The reporting part's test suite | 24 cases, 252 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the run's results commit |
-| The storage core's test suite | 30 cases, 112 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.storage.core.tests= | the run's results commit |
-| The gateway's routes in the inventory | 1310 routes, 986 of the BFF's 324 answered by the gateway | =python3 build/scripts/route_inventory.py --check= | the run's results commit |
+| The reporting area's routes the C++ server answers | 24 of 50 paired | =python3 build/scripts/route_inventory.py --check= | the cuts commit |
+| The reporting part's test suite | 35 cases, 352 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the cuts commit |
+| The storage core's test suite | 30 cases, 112 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.storage.core.tests= | the cuts commit |
+| The gateway's routes in the inventory | 1320 routes, 996 of the BFF's 324 answered by the gateway | =python3 build/scripts/route_inventory.py --check= | the cuts commit |
 | The gateway's routes before this family | 1306 routes, 982 answered by the gateway | =python3 build/scripts/route_inventory.py --check= | the run page commit |
 
 * Notes

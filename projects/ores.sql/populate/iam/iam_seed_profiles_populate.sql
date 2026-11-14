@@ -213,9 +213,11 @@ cross join (values
     -- Each synthetic feeds collection quotes the markets its own feeds serve: the group and Hong
     -- Kong read Bloomberg, London reads the uniform demo collection and New York reads LSEG. Only
     -- Bloomberg quotes the IR ladders and USD spots of all 20 funding currencies, so London and
-    -- New York take it as well, for their own funding curves and forwards. The step's own provider
-    -- is the one a party the row does not name takes, so a fifth entity lands on Bloomberg without
-    -- this row changing.
+    -- New York take it as well, for their own funding curves and forwards. ICE and Tradeweb quote
+    -- the IBOR ladders Bloomberg leaves out, and a curve reads the quotes of its own party, so
+    -- every entity takes both: without them its IBOR curves wait for series nobody delivered. The
+    -- step's own provider is the one a party the row does not name takes, so a fifth entity lands
+    -- on Bloomberg without this row changing -- and on no IBOR quotes.
     ('acme_demo', 'subscribe_market_data', 60, '{"provider": "bloomberg", "source": "bloomberg-a", "parties": [
         {"party": "Acme Corporation Plc", "provider": "bloomberg", "source": "bloomberg-a"},
         {"party": "ACME Corporation UK plc", "provider": "demo", "source": "demo-a"},
@@ -226,7 +228,15 @@ cross join (values
         {"party": "Acme Corporation Plc", "provider": "derived", "source": "derived-fx-vol"},
         {"party": "ACME Corporation UK plc", "provider": "derived", "source": "derived-fx-vol"},
         {"party": "ACME Corporation US Inc", "provider": "derived", "source": "derived-fx-vol"},
-        {"party": "ACME Corporation HK Ltd", "provider": "derived", "source": "derived-fx-vol"}
+        {"party": "ACME Corporation HK Ltd", "provider": "derived", "source": "derived-fx-vol"},
+        {"party": "Acme Corporation Plc", "provider": "ice", "source": "ice-a"},
+        {"party": "Acme Corporation Plc", "provider": "tradeweb", "source": "tradeweb-a"},
+        {"party": "ACME Corporation UK plc", "provider": "ice", "source": "ice-a"},
+        {"party": "ACME Corporation UK plc", "provider": "tradeweb", "source": "tradeweb-a"},
+        {"party": "ACME Corporation US Inc", "provider": "ice", "source": "ice-a"},
+        {"party": "ACME Corporation US Inc", "provider": "tradeweb", "source": "tradeweb-a"},
+        {"party": "ACME Corporation HK Ltd", "provider": "ice", "source": "ice-a"},
+        {"party": "ACME Corporation HK Ltd", "provider": "tradeweb", "source": "tradeweb-a"}
     ]}'::jsonb),
     -- A curve is derived data, so each legal entity bootstraps its own funding curves from the
     -- quotes its subscriptions deliver, and publishes them under the run's auto-approval. The

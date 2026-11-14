@@ -201,13 +201,15 @@ and =build=. What stayed red is not this branch's:
   reporting unset]]. The other 102 suites pass, including every suite this branch can move:
   quant 712 cases, synthetic api 1018, synthetic service 78 of 79 (the one failure is the
   adapter-announce race the inbox already carries), marketdata core 407, reporting core 303.
-- =ticks-smoke= fails at =publish_party_surfaces=, and the reason is the one another
-  environment filed the same day: =expiry 1W: the row dated 2026-11-16 is before the spot
-  date 2026-11-17=, which is
-  *The 1W FX quote is dated before the spot date, so every surface is refused*, a capture
-  another environment filed on =origin/main= the same day. That capture is not on this
-  branch, which is cut from before it, which is also why the run reaches the failure here:
-  it is not caused by what this branch changes.
+- =ticks-smoke= failed in every run it made. Two stopped at =publish_party_surfaces= with
+  all forty surfaces refused for =expiry 1W: the row dated 2026-11-17 is before the spot date
+  2026-11-18=, and a standalone =compass smoke ticks --fresh= reproduced it on 2026-11-14.
+  That is *The 1W FX quote is dated before the spot date, so every surface is refused*, a
+  capture another environment filed on =origin/main=, which this branch is cut from before.
+  The third run got past that step and stopped at =give_party_surface_blueprints= waiting for
+  derived =rate_lnvol= series, with no surface feed error in its log: the consequence of the
+  surfaces that were refused, at a later step. Not this branch's to fix, and not attributed
+  here as if it were.
 - One run also failed =build= because a =compass build= of mine held the lock at the same
   time; the gate's own log says so.
 

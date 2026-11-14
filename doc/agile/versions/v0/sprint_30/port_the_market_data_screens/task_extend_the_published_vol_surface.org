@@ -8,7 +8,7 @@
 #+filetags: :port_the_market_data_screens:sprint_30:v0:
 #+owner: marco
 #+branch: feature/port-the-market-data-screens
-#+pr: 4721
+#+pr: 4722
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -91,6 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4722][#4722]] | [agile] Close the published surface read |
 | [[https://github.com/OreStudio/OreStudio/pull/4721][#4721]] | [marketdata] Slice the published surface, and name the series it came from |
 
 * Review

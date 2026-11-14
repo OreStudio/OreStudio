@@ -118,8 +118,11 @@ The first family is done and the check that guards the rule carries the rest.
 
 *The family was not uniform, and the compile is what said so.* The first cut of
 the change swapped the include in both headers the archetype emits, and the build
-stopped at the first junction entity: 62 of them hold a =context ctx_= member and
-need the definition. The junction header, emitted under =has_uuid_left_or_right=,
+stopped at the first junction entity: 29 of the generated repository headers hold a
+=context ctx_= member and need the definition (=grep -rl
+'ores.database/domain/context.hpp' projects --include=*_repository.hpp=, and
+each of those 29 carries the member). The commit that made this change says
+62, which was a duplicated glob count; 29 is the measured figure. The junction header, emitted under =has_uuid_left_or_right=,
 keeps =context.hpp=. The check that guards this rule can see a header that
 includes too much and cannot see one that includes too little, so this is a fact
 about the archetype only a build reports. The next family should be measured the

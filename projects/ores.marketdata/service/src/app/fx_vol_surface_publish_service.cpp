@@ -444,10 +444,10 @@ msg::get_published_fx_vol_surface_response fx_vol_surface_publish_service::read_
                 out.delta_type = conventions.front().delta_type;
         }
         out.strike_convention = out.delta_type.empty() ? "absolute" : "delta";
-        // The verdict is the server's, asked of the one policy, so a surface
-        // cannot disagree with a curve about what "stale" means.
-        out.stale = staleness_policy::is_stale(out.published_at.value_or(time_point{}),
-                                               std::chrono::system_clock::now());
+        // The verdict is the server's, asked of the one policy under the FX threshold,
+        // so every surface ages by the same rule and no client applies its own.
+        out.stale = staleness_policy::is_stale(
+            "fx", out.published_at.value_or(time_point{}), std::chrono::system_clock::now());
         out.expiries = std::move(grid->expiries);
         out.strikes = std::move(grid->strikes);
         for (auto& p : grid->points)

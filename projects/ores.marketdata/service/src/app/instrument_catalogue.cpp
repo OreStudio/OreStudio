@@ -233,7 +233,7 @@ mm::list_instruments_response list_instruments(const ores::database::context& ct
         source.series_id = series_id;
         source.as_of = newest.value_or(std::chrono::system_clock::time_point{});
         source.age_seconds = staleness_policy::age_seconds(source.as_of, now);
-        source.stale = staleness_policy::is_stale(source.as_of, now);
+        source.stale = staleness_policy::is_stale(dt::name_of(row.asset), source.as_of, now);
         instrument.sources.push_back(std::move(source));
 
         if (!newest || newest > instrument.as_of)

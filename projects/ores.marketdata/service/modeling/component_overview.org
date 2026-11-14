@@ -83,6 +83,27 @@ Base URL of the storage HTTP API, e.g. "http://localhost:8080".
 The role that copies ticks to the tick table. It connects to the database of
 @c database. Empty means that ticks are not copied.
 
+** stale_seconds_ir
+:PROPERTIES:
+:cpp_type: std::int64_t
+:option: stale-seconds-ir
+:default: 0
+:help: How long a quoted IR value stays current, in seconds; 0 uses the deployment's one threshold
+:END:
+
+How long a quoted value of an IR instrument stays current, in seconds. Zero
+means the deployment's one threshold answers for the kind.
+
+** stale_seconds_fx
+:PROPERTIES:
+:cpp_type: std::int64_t
+:option: stale-seconds-fx
+:default: 0
+:help: How long a quoted FX value stays current, in seconds; 0 uses the deployment's one threshold
+:END:
+
+The same, for the FX instruments.
+
 ** tick_writer_password
 :PROPERTIES:
 :cpp_type: std::string

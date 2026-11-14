@@ -21,6 +21,9 @@
 #include <atomic>
 #include <charconv>
 #include <cstdlib>
+#include <map>
+#include <mutex>
+#include <string>
 #include <string_view>
 
 namespace ores::marketdata::service::app {
@@ -37,6 +40,17 @@ struct threshold_state final {
 
 threshold_state& state() {
     static threshold_state instance;
+    return instance;
+}
+
+/// One threshold for each instrument kind the deployment names, beside the default.
+std::map<std::string, std::int64_t, std::less<>>& per_kind() {
+    static std::map<std::string, std::int64_t, std::less<>> instance;
+    return instance;
+}
+
+std::mutex& per_kind_mutex() {
+    static std::mutex instance;
     return instance;
 }
 
@@ -88,6 +102,31 @@ bool staleness_policy::is_stale(std::chrono::system_clock::time_point as_of,
     if (as_of == std::chrono::system_clock::time_point{})
         return true;
     return age_seconds(as_of, now) > threshold_seconds();
+}
+
+std::int64_t staleness_policy::threshold_seconds(std::string_view kind) {
+    const std::lock_guard lock(per_kind_mutex());
+    const auto found = per_kind().find(kind);
+    return found == per_kind().end() ? threshold_seconds() : found->second;
+}
+
+void staleness_policy::configure(std::string_view kind, std::int64_t seconds) {
+    const std::lock_guard lock(per_kind_mutex());
+    // Zero removes the kind's own threshold, so the deployment's one number answers for
+    // it again; a test restores the state it found the same way.
+    if (seconds <= 0) {
+        per_kind().erase(std::string(kind));
+        return;
+    }
+    per_kind()[std::string(kind)] = seconds;
+}
+
+bool staleness_policy::is_stale(std::string_view kind,
+                                std::chrono::system_clock::time_point as_of,
+                                std::chrono::system_clock::time_point now) {
+    if (as_of == std::chrono::system_clock::time_point{})
+        return true;
+    return age_seconds(as_of, now) > threshold_seconds(kind);
 }
 
 }

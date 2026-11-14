@@ -35,6 +35,7 @@
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/app/delivery_meter.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
+#include "ores.marketdata.service/app/staleness_policy.hpp"
 #include "ores.marketdata.service/app/usage_recorder.hpp"
 #include "ores.marketdata.service/messaging/adapter_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/adapter_status_handler.hpp"
@@ -116,6 +117,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.marketdata.service", 0, 1);
+
+    // One threshold per instrument kind, when the deployment states one. A read
+    // asks for its kind, so a curve and a surface can age differently.
+    if (cfg.stale_seconds_ir > 0)
+        app::staleness_policy::configure("ir", cfg.stale_seconds_ir);
+    if (cfg.stale_seconds_fx > 0)
+        app::staleness_policy::configure("fx", cfg.stale_seconds_fx);
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();

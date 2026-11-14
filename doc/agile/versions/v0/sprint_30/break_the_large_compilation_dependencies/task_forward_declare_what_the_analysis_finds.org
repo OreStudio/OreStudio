@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
-#+branch: feature/forward-declare-what-the-analysis-finds
-#+pr: 4720
+#+branch: feature/take-the-declaration-in-the-trade-type-headers
+#+pr: 4723
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                   |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | One family done and merged-pending; the baseline holds three archetypes. |
+| Now          | Closed. The baseline holds only the header that cannot drop the include. |
 | Waiting on   | Nothing.                               |
-| Next         | The nats registrar and trade-type families. |
+| Next         | None.                                  |
 | Last touched | 2026-11-13                             |
 
 * Acceptance
@@ -90,6 +90,11 @@ task and name that file in the Command column.
 | Archetypes it holds after the first family | 3: =cpp_nats_registrar=, =cpp_trade_type_digest=, =cpp_trade_type_writer= | the same check | =2e1c0fcc14= |
 | Registrar headers that take the declaration | 556 | =git diff --name-only main...HEAD | grep -c '_registrar\.hpp$'= | =74f9d7d07e= |
 | Archetypes it holds after the second family | 2: =cpp_trade_type_digest= and =cpp_trade_type_writer= | the same check | =74f9d7d07e= |
+| Archetypes it holds after the third family | 0 | the same check | =2f0f0f4c8f=, working tree |
+| Headers it reports at close | 1: =pq/unit_of_work.hpp=, which cannot drop the include | the same check | working tree |
+| Consumers that had to include the definition themselves | 3: =trade_component_queries.cpp=, =trade_operations_service.cpp=, =generated_trade_export_tests.cpp= | the build named them | working tree |
+| Full build of the third family | 238 steps, 0 failures, 13 minutes | =compass build --preset linux-clang-release-ninja= | working tree |
+| Suites the third family reaches | 5 of 5, 106 s | =compass test run -- -j 4 -R ...= | working tree |
 | Full build of the second family | 343 steps, 0 failures, 19 minutes | =compass build --preset linux-clang-release-ninja= | =74f9d7d07e= |
 | Suites the second family reaches | 6 of 6 after a re-run; =ores.marketdata.service.tests= failed once on a timing assertion and passed on its own | =compass test run -- -j 4 -R ...= | =74f9d7d07e= |
 | Objects that depend on =context.hpp=, after the family | 373 objects in 68 targets — unchanged in kind, because the implementations construct a context | =header_blast_radius.py --build-dir build/output/linux-clang-release-ninja= | =cd07249042= |
@@ -105,6 +110,7 @@ A decision that turns out wrong while it is applied, such as a type that cannot 
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4723][#4723]] | [codegen] Take the declaration in the trade-type headers |
 | [[https://github.com/OreStudio/OreStudio/pull/4720][#4720]] | [codegen] Take the declaration in the registrar headers |
 | [[https://github.com/OreStudio/OreStudio/pull/4695][#4695]] | [codegen] Take the declaration in the repository headers |
 
@@ -176,8 +182,18 @@ handler they construct, and their implementations include the definition
 themselves. So the swap was the four lines the model shows, with no junction
 case, and the check's reading held.
 
-*What the next family needs.* =cpp_trade_type_digest= and
-=cpp_trade_type_writer= are one generated file each, and the baseline holds
-nothing else that is fixable. That pair is the task's closing work: after it, the
-check reports only =pq/unit_of_work.hpp=, whose body needs =pq::transaction= from
-the header that defines =pq::session_context=.
+*The third family closed the list.* =cpp_trade_type_digest= and
+=cpp_trade_type_writer= are one generated file each. Their bodies live in
+hand-written =.cpp= files that had been getting the definition from the generated
+header, so the swap broke three of them and the compiler named all three:
+=trade_component_queries.cpp=, =trade_operations_service.cpp= and the synthetic
+core export tests. Each now includes the definition itself. With that, the check
+reports one header and no archetypes: =pq/unit_of_work.hpp=, whose body needs
+=pq::transaction= from the same header that defines =pq::session_context=, and
+which cannot drop the include without splitting that header.
+
+*What the whole task measured.* Five archetypes to none, in three PRs, and no
+rebuild saving at any point: the implementations construct a context and read it,
+so the objects that depend on =context.hpp= never moved. What moved is what a
+consumer of each family parses, which is the number the next round of work should
+measure if it wants to claim more than that.

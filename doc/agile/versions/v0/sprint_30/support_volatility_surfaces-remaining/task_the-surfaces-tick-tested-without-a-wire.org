@@ -141,7 +141,7 @@ task and name that file in the Command column.
 | The marketdata core suite | 407 cases | =ores.marketdata.core.tests= | 7e29c65775 |
 | The reporting core suite | 303 cases | =ores.reporting.core.tests= | 7e29c65775 |
 | The local check gate | 29 of 31 checks pass | =compass check= | 8a1b4b1297 |
-| The marketdata official suite | 120 cases, 513 assertions | =ores.marketdata.official.tests= | 219a462047 |
+| The marketdata official suite | 120 cases, 513 assertions | =ores.marketdata.official.tests= | abc41920a2 |
 | The synthetic core suite | 139 cases, 138 passed and 1 skipped, 3230 assertions | =ores.synthetic.core.tests= | 8a1b4b1297 |
 
 The three nanosecond ranges are the honest shape of this measurement: the same code on the
@@ -202,12 +202,13 @@ gate gives.
 With the tree building, the checks the branch had only diagnosed are fixed, and each is a
 commit of its own:
 
-- =portable-stop= (5ea2bec500): the include =application.cpp= no longer used is gone.
-  =check_portable_stop_types.py= answers "no C++20 stop type is named outside ores.platform".
-- =ores.marketdata.official.tests= (219a462047): three of the file's stand-ins for a missing
-  variable answered a =std::optional<std::string>= lookup with a null =const char*>=, which
-  throws rather than reading as unset, and the two cases that took a null path failed. They
-  answer =std::nullopt=, the type's documentation says so, and the suite passes.
+- =portable-stop=: =origin/main= cleared it before this branch merged, with the same
+  removal of the include =application.cpp= no longer used. The branch had made the fix and
+  dropped its copy when it rebased; =check_portable_stop_types.py= passes on the result.
+- =ores.marketdata.official.tests=: =origin/main= cleared it at the same time and in the same
+  way -- the file's stand-ins for a missing variable answer =std::nullopt= rather than a null
+  =const char*>=. What this branch keeps of that work is the note on =environment_lookup=
+  saying why (abc41920a2), and the suite passes.
 
 The two captures those checks produced are filed as *discarded* with their resolution, since
 neither needed a task: [[id:BA660F0F-00C6-4C88-BF2D-691E30127C94][the portable-stop one]] and
@@ -280,7 +281,7 @@ spec against this page's acceptance.
 | 15 | A file comment claimed this file asserts the gate sentences, and said two where three members exist | standards | tick tests | fixed | the gate sentence is asserted in the feed tests, through the tick; this file says so |
 | 16 | The round trip's margins were credited to the commit that added the test, not the one that tightened it | spec | this page | fixed | cited to =e97cc811db= |
 | 17 | The gate's values print only with =--success=, and the benchmark rows cited two commits for one number | spec | this page | fixed | =--success= added, one commit per row |
-| 18 | The three red-fix commits carried no =Story-ID=, =Task-ID= or =Environment= trailer | standards | 219a462047, 5ea2bec500, ac74167513 | fixed | the three messages were rewritten to carry them, so their hashes and their descendants' changed |
+| 18 | The three red-fix commits carried no =Story-ID=, =Task-ID= or =Environment= trailer | standards | the red-fix commits | fixed | their messages were rewritten to carry them; two of the three were later dropped altogether, because =origin/main= had fixed the same reds |
 | 19 | Doxygen used org emphasis, and a fixture spelled nothing as an empty optional | standards | =secret.hpp=, =domain_banxico_tests.cpp= | fixed | 7876e77370 |
 | 20 | The round trip recomputes its discount with the fixture's helper, and fits over =1/12= while the market is built over =30/365= | standards | round-trip tests | accepted | the two year fractions are production's: the emitter fits on the row's tenor and the market discounts on the period's date. The recompute is what the tick test's literals pin, and the round trip is about the fit |
 | 21 | Nothing tests the spot feed's own choice of member code | spec | =fx_spot_feed.cpp= | accepted | the reader's side is tested; the writer would need the factory, its client and a config row. Recorded as a gap rather than a claim |

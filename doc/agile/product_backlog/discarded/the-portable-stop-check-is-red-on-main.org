@@ -48,6 +48,7 @@ not touch the file.
 
 * Resolution
 
-Fixed in 5ea2bec500, on the surface-tick branch, because the check fails for every branch
-and the fix is the removal of one include. =check_portable_stop_types.py= answers "no C++20
-stop type is named outside ores.platform", and =compass check= no longer reports it.
+Fixed on =origin/main= by the CI hotfix =eb04abd593=, which removed the same include. The
+surface-tick branch had made the same fix and dropped it on rebasing. The check answers "no
+C++20 stop type is named outside ores.platform" on this branch's tree, and =compass check= no
+longer reports it.

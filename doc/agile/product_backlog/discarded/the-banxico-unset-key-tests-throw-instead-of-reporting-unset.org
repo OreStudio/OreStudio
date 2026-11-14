@@ -48,10 +48,9 @@ The fix is in the fixture, not in =resolve_secret=: the stand-in should answer
 
 - [[id:BA660F0F-00C6-4C88-BF2D-691E30127C94][The portable-stop check is red on
   main]] -- the other half of the same gate run.
-
 * Resolution
 
-Fixed in 219a462047, on the surface-tick branch: the three fixtures return
-=std::optional<std::string>= now, the type's documentation says a missing variable is
-=std::nullopt= rather than a pointer, and =ores.marketdata.official.tests= passes — 120
-cases, 513 assertions — where it failed two.
+Fixed on =origin/main= by the CI hotfix =eb04abd593=: the stand-ins return
+=std::optional<std::string>= now, so =ores.marketdata.official.tests= passes. The
+surface-tick branch had made the same fix and dropped its copy on rebasing, keeping the note on
+=environment_lookup= that says why a null pointer cannot stand for "not set".

@@ -1,0 +1,286 @@
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+import { useQuery } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
+import { useSearchParams } from 'react-router';
+import { api, type CurveAnalytics } from '../api/client.js';
+import { useTranslation } from '../i18n/Provider.js';
+import { AreaTrail } from '../shell/AreaTrail.js';
+import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
+
+/**
+ * One curve's analytics, from
+ * doc/prototypes/market_data/inspect-a-curves-analytics/index.html.
+ *
+ * A market pillar and a bootstrapped point for the same tenor are a pair: the
+ * left table says what the market quoted and the right says what the bootstrap
+ * made of it. The zero rate is continuously compounded, the implied forward is
+ * the rate the segment ending at the pillar implies, and the shift is the zero
+ * rate less the market rate, not a parallel shift somebody applied.
+ */
+
+const CONFIGS = 'ir-curve-bootstrap-configs';
+
+function asOfInstant(date: string): string {
+    return `${date} 23:59:59Z`;
+}
+
+function todayIso(): string {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function percent(value: number, language: string): string {
+    return (value * 100).toLocaleString(language, {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+    });
+}
+
+function basisPoints(value: number): string {
+    return `${value >= 0 ? '+' : ''}${value.toFixed(1)}`;
+}
+
+export function CurveAnalyticsPage(): ReactNode {
+    const { t, language } = useTranslation();
+    const [search, setSearch] = useSearchParams();
+    const set = (values: Readonly<Record<string, string>>): void => {
+        const next = new URLSearchParams(search);
+        Object.entries(values).forEach(([key, value]) => {
+            next.set(key, value);
+        });
+        setSearch(next, { replace: true });
+    };
+
+    const configs = useQuery({
+        queryKey: ['records', CONFIGS],
+        queryFn: async () => api.records(CONFIGS),
+        retry: false,
+    });
+    const options = (configs.data ?? []).map((row) => ({
+        id: String(row['id']),
+        name: String(row['name']),
+    }));
+    const stated = search.get('curve') ?? '';
+    const chosen =
+        options.find((option) => option.id === stated || option.name === stated) ?? options[0];
+    const asOf = search.get('asof') ?? todayIso();
+
+    const key = ['curve-analytics', chosen?.id ?? '', asOf] as const;
+    const analytics = useQuery({
+        queryKey: key,
+        queryFn: () =>
+            api.curveAnalytics({ instrumentId: chosen?.id ?? '', asOf: asOfInstant(asOf) }),
+        enabled: chosen !== undefined,
+        retry: false,
+    });
+
+    const data: CurveAnalytics | undefined = analytics.data;
+    const market = data?.market_pillars ?? [];
+    const bootstrapped = data?.bootstrapped ?? [];
+    const head = 'px-2 py-1 text-right text-xs font-semibold text-ink-faint';
+    const cell = 'px-2 py-1 text-right font-mono whitespace-nowrap';
+
+    return (
+        <div className="space-y-4">
+            <AreaTrail area="marketdata" screen={t('marketdata.curveAnalytics.title')} />
+            <PageHeader
+                title={t('marketdata.curveAnalytics.title')}
+                description={t('marketdata.curveAnalytics.lead')}
+            />
+            <section className="flex flex-wrap items-end gap-4 rounded-md border border-line p-4">
+                <Field label={t('marketdata.curveAnalytics.curve')}>
+                    <Select
+                        value={chosen?.id ?? ''}
+                        onChange={(event) => {
+                            set({ curve: event.target.value });
+                        }}
+                    >
+                        {options.map((option) => (
+                            <option key={option.id} value={option.id}>
+                                {option.name}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
+                <Field label={t('marketdata.curveAnalytics.asOf')}>
+                    <Input
+                        type="date"
+                        value={asOf}
+                        onChange={(event) => {
+                            if (event.target.value !== '') set({ asof: event.target.value });
+                        }}
+                    />
+                </Field>
+                {data !== undefined && (
+                    <>
+                        <Fact label={t('marketdata.curveAnalytics.index')}>
+                            {data.conventions.index_name}
+                        </Fact>
+                        <Fact label={t('marketdata.curveAnalytics.dayCount')}>
+                            {data.conventions.day_count}
+                        </Fact>
+                        <Fact label={t('marketdata.curveAnalytics.compounding')}>
+                            {data.conventions.compounding}
+                        </Fact>
+                        <Fact label={t('marketdata.curveAnalytics.interpolation')}>
+                            {data.conventions.interpolation}
+                        </Fact>
+                        <Fact label={t('marketdata.curveAnalytics.calendar')}>
+                            {data.conventions.calendar}
+                        </Fact>
+                        <Fact label={t('marketdata.curveAnalytics.pillars')}>
+                            {t('marketdata.curveAnalytics.pillarCount', {
+                                count: data.conventions.pillar_count,
+                            })}
+                        </Fact>
+                    </>
+                )}
+            </section>
+            {configs.isSuccess && options.length === 0 && (
+                <Notice tone="info">{t('marketdata.curveAnalytics.noCurves')}</Notice>
+            )}
+            {analytics.isError && <Notice tone="error">{analytics.error.message}</Notice>}
+            {data !== undefined && data.stale && (
+                <Notice tone="warn">{t('marketdata.curveAnalytics.stale')}</Notice>
+            )}
+            {data !== undefined && (
+                <>
+                    <section className="space-y-2 rounded-md border border-line p-4">
+                        <h2 className="text-sm font-semibold">
+                            {t('marketdata.curveAnalytics.marketPillars')}
+                        </h2>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-line">
+                                        <th className={cx(head, 'text-left')}>
+                                            {t('marketdata.curveAnalytics.tenor')}
+                                        </th>
+                                        <th className={head}>
+                                            {t('marketdata.curveAnalytics.maturity')}
+                                        </th>
+                                        <th className={head}>
+                                            {t('marketdata.curveAnalytics.tau')}
+                                        </th>
+                                        <th className={head}>
+                                            {t('marketdata.curveAnalytics.marketRate')}
+                                        </th>
+                                        <th className={head}>
+                                            {t('marketdata.curveAnalytics.provider')}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {market.map((pillar) => (
+                                        <tr
+                                            key={`${pillar.tenor}-${pillar.maturity_date}`}
+                                            className="border-b border-line-subtle"
+                                        >
+                                            <td className="whitespace-nowrap px-2 py-1 font-semibold">
+                                                {pillar.tenor}
+                                            </td>
+                                            <td className={cell}>{pillar.maturity_date}</td>
+                                            <td className={cell}>
+                                                {pillar.year_fraction.toFixed(4)}
+                                            </td>
+                                            <td className={cell}>
+                                                {percent(pillar.rate, language)}
+                                            </td>
+                                            <td className={cell}>{pillar.provider_code}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <section className="space-y-2 rounded-md border border-line p-4">
+                        <h2 className="text-sm font-semibold">
+                            {t('marketdata.curveAnalytics.bootstrapped')}
+                        </h2>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-line">
+                                        <th className={cx(head, 'text-left')}>
+                                            {t('marketdata.curveAnalytics.tenor')}
+                                        </th>
+                                        <th className={head}>
+                                            {t('marketdata.curveAnalytics.maturity')}
+                                        </th>
+                                        <th className={head}>
+                                            {t('marketdata.curveAnalytics.tau')}
+                                        </th>
+                                        <th className={head}>
+                                            {t('marketdata.curveAnalytics.zeroRate')}
+                                        </th>
+                                        <th className={head}>
+                                            {t('marketdata.curveAnalytics.impliedForward')}
+                                        </th>
+                                        <th className={head}>
+                                            {t('marketdata.curveAnalytics.discountFactor')}
+                                        </th>
+                                        <th className={head}>
+                                            {t('marketdata.curveAnalytics.shift')}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {bootstrapped.map((point) => (
+                                        <tr
+                                            key={`${point.tenor}-${point.maturity_date}`}
+                                            className="border-b border-line-subtle"
+                                        >
+                                            <td className="whitespace-nowrap px-2 py-1 font-semibold">
+                                                {point.tenor}
+                                            </td>
+                                            <td className={cell}>{point.maturity_date}</td>
+                                            <td className={cell}>
+                                                {point.year_fraction.toFixed(4)}
+                                            </td>
+                                            <td className={cell}>
+                                                {percent(point.zero_rate, language)}
+                                            </td>
+                                            <td className={cell}>
+                                                {percent(point.implied_forward, language)}
+                                            </td>
+                                            <td className={cell}>
+                                                {point.discount_factor.toFixed(6)}
+                                            </td>
+                                            <td className={cell}>
+                                                <Tag
+                                                    tone={point.shift_bps >= 0 ? 'up' : 'down'}
+                                                    small
+                                                >
+                                                    {basisPoints(point.shift_bps)}
+                                                </Tag>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                    <Notice tone="info">{t('marketdata.curveAnalytics.shiftNote')}</Notice>
+                    <Notice tone="info">{t('marketdata.curveAnalytics.noPriorClose')}</Notice>
+                </>
+            )}
+        </div>
+    );
+}

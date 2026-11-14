@@ -8,7 +8,7 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch:
-#+pr: 4715
+#+pr: 4716
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -81,6 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4716][#4716]] | [agile] Open the DQ mop-up tasks |
 | [[https://github.com/OreStudio/OreStudio/pull/4715][#4715]] | [agile] Record the publishing review as an investigation |
 | [[https://github.com/OreStudio/OreStudio/pull/4713][#4713]] | [doc] File the publishing pipeline architecture review |
 

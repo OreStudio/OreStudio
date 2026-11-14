@@ -81,6 +81,7 @@ target_link_libraries(${lib_target_name}
         ores.service.lib
         ores.security.lib
         ores.refdata.core.lib
+        ores.iam.api.lib
         ores.inbox.api.lib
         ores.inbox.core.lib
         ores.eventing.core.lib

@@ -109,9 +109,10 @@ public:
     zero_approval_kind& operator=(const zero_approval_kind&) = delete;
 
 private:
-    static std::optional<ores::inbox::domain::approval_kind> kind_of(const ores::database::context& ctx) {
-        return ores::inbox::service::approval_lifecycle(ctx)
-            .kind(std::string(curve_publish_kind_code));
+    static std::optional<ores::inbox::domain::approval_kind>
+    kind_of(const ores::database::context& ctx) {
+        return ores::inbox::service::approval_lifecycle(ctx).kind(
+            std::string(curve_publish_kind_code));
     }
 
     std::optional<ores::inbox::domain::approval_kind> live() const {

@@ -73,6 +73,32 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
   workers. That shortens the queue inside one service; this story removes
   the reason the queue forms in iam.
 
+- *A moved step that writes must act as the tenant, and only iam mints that
+  identity, 2026-11-14.* =generate_trades= writes trades whose author is a
+  trader of the party, and the trading service takes the tenant, the party and
+  the author from the caller's claims rather than from the request. iam mints
+  those claims in process, through =internal_impersonation_service=, and
+  nothing on a subject mints them: =iam.v1.ops.enter_tenant= exists but issues
+  read-only permissions for the caller's own account. So a step served outside
+  iam has no way to write as the tenant, and stage 2 cannot move without a way
+  to get one. The shapes considered:
+  1. *The step's own actor.* The request takes the id of the step the caller
+     serves, and iam mints for that step's recorded actor, so no caller names
+     an account. Narrowest and cheapest. Cost: every generated trade is
+     authored by the run's actor, so the per-trader authorship the population
+     has today is lost.
+  2. *Any account the caller names.* The request takes tenant, account, party
+     and username. Keeps per-trader authorship. Cost: any service holding the
+     permission can become any account of any tenant, a standing impersonation
+     capability on the bus.
+  3. *The party's own traders.* The request takes a tenant and a party, and
+     answers one short-lived token for each account the party holds as a
+     trader. Keeps per-trader authorship, and the caller cannot name an
+     account, so the capability is bounded by a membership iam reads itself.
+  Recommendation: shape 3, because it keeps the data a provisioned tenant holds
+  and bounds the new capability to acting as a trader of a party the caller
+  names, which is what provisioning is. Shape 1 is the smaller change but it
+  changes that data, which a move must not do. Open for the product decision.
 - *A command that cannot read the state it guards on refuses, 2026-11-14.*
   A recreate asks whether anything is still connected before it drops, and an
   answer that never came back used to read as "nothing is connected". The

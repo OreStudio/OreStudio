@@ -26,11 +26,11 @@ Every IBOR feed of every currency has a bootstrapped curve that reads its own IB
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Implementation complete; one firing published all thirty curves. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                          |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -243,3 +243,27 @@ volatility surfaces rather than of the curves: =expiry 1W: the row dated 2026-11
 the spot date 2026-11-18=, forty surfaces across the four parties. The feed's spot and the
 calibration's spot differ by one business day, which belongs to
 [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces -- the remaining work]].
+
+** Where the branch ended
+
+Rebased onto =main= at =af771c49bd= and rebuilt, the tree is clean and the
+provisioning run is clean end to end: the seventeen steps of
+=compass shell -f
+how_do_i_provision_the_system_with_acme_corporation_holding_group.ores= all
+complete, =publish_party_surfaces= included, which was the one step that failed
+when this task last measured it. The measures, taken at =bf8a469d2e= on
+2026-11-14:
+
+| What | Value | Command |
+|------+-------+---------|
+| Provisioning steps carrying an error | 0 of 858 | =select count(*) from ores_workflow_workflow_steps_tbl where error <> ''= |
+| Error-level lines in every service log | 0 | =grep -c '\[error\]' publish/log/*.log= |
+| System curves published | 30 of 30 | the sweep's own log line |
+| Live curve publishes | 60 per Acme entity, 30 for the system tenant | =select party_id, count(*) ... where withdrawn_at is null and superseded_at is null= |
+| Projection configs naming a funding curve | 50 of 50 | =select count(*), count(discount_curve_config_id) ... where curve_family_role = 'PROJECTION'= |
+
+One read of the pair the screens draw, as =tenant_admin@acme_corporation= through
+the BFF at =2026-11-14 23:59:59Z=: =USD-LIBOR-1M= answers seven pillars with
+the first at =1M= and a zero of 4.2428%, and =USD-SOFR-FOMC= answers seven with
+the first at =3M= and a zero of 3.9545%. The projection's one month pillar is the
+case the anchor above exists for.

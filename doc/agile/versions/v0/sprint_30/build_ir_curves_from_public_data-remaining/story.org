@@ -23,10 +23,10 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The calibration, the bootstrap cadence and the coverage screen have shipped. The remaining tasks are the ceased-feed replacement and the integration-test cleanup. |
-| Waiting on    | Nothing for the calibration. |
-| Next          | [[id:37E35846-59E3-41E8-A9AF-6B9F1E167EB3][Keep the curve publishes of the integration tests out of the development database]] and [[id:4B5701D6-16C6-445B-BDD4-C60050FED95C][Replace the synthetic feeds of ceased or misnamed indices]]. |
-| Last touched  | 2026-11-13 |
+| Now           | The curves are built, the IBOR projections publish beside their funding curves, and a freshly provisioned environment publishes all thirty without a person acting. The last open task is the screens. |
+| Waiting on    | Nothing. |
+| Next          | [[id:52257743-2F40-4DFD-98B2-B08311947335][Show every IBOR curve beside its overnight curve]]: the pair view has shipped, the grouping of a currency's curves across the curves and coverage screens has not. |
+| Last touched  | 2026-11-14 |
 
 * Acceptance
 
@@ -48,7 +48,7 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 | [[id:52257743-2F40-4DFD-98B2-B08311947335][Show every IBOR curve beside its overnight curve]] | BACKLOG | | |
 | [[id:0A87FC5F-F15E-40D8-8CF6-572D24A203EE][Make the ICE and Tradeweb feeds tick]] | DONE | 2026-11-13 | 2026-11-13 | ICE and Tradeweb have no provider notation and no feed route, so their LIBOR and EURIBOR quotes are published as internal ticks and dropped before ingest. Implement both notations, seed their catalogue feeds, routes and subscriptions, and prove a LIBOR quote lands in a series. |
  A person can open a currency's overnight curve and its IBOR curve, see both on one screen, and read which one discounts and which one projects. The first slice of teaching the difference between an overnight average and a term IBOR. |
-| [[id:D37ED209-460F-458B-B84B-2D728C6E28AE][Bootstrap every IBOR curve]] | STARTED | 2026-11-13 | | Every IBOR feed gets a bootstrap config, its quote series and its bootstrapped output series, with the currency's overnight curve as its discount curve, so an IBOR curve builds from IBOR quotes and publishes like an overnight curve. |
+| [[id:D37ED209-460F-458B-B84B-2D728C6E28AE][Bootstrap every IBOR curve]] | DONE | 2026-11-13 | 2026-11-14 | Every IBOR feed gets a bootstrap config, its quote series and its bootstrapped output series, with the currency's overnight curve as its discount curve, so an IBOR curve builds from IBOR quotes and publishes like an overnight curve. |
 
 * Decisions
 

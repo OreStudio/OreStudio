@@ -691,7 +691,7 @@ RULES = (
          "offers, the configurations it binds, and the write that rebuilds the record from the "
          "fields the form shows."),
     Rule("a run's files",
-         ("regex", r"^GET /api/reporting/runs/\{id\}/files(/(?P<file>\{file\}))?$"),
+         ("regex", r"^GET /api/reporting/runs/\{id\}/files(/(?P<file>\{file\})(/info)?)?$"),
          CPP, COMPOSED, "reporting",
          "One run's files: the tree the run hangs in, what each input package holds, the "
          "output files each accepted result's manifest names, and the bytes of whichever one "

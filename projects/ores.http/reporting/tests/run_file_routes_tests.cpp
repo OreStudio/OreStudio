@@ -89,6 +89,11 @@ TEST_CASE("a_run_files_address_that_names_no_uuid_is_refused", "[run_file]") {
                     http_request{},
                     "/api/reporting/runs/{id}/files/{file}")
               .status == http_status::bad_request);
+    CHECK(answer_at(http_method::get,
+                    "/api/reporting/runs/not-an-id/files/some-file/info",
+                    http_request{},
+                    "/api/reporting/runs/{id}/files/{file}/info")
+              .status == http_status::bad_request);
 }
 
 TEST_CASE("a_run_whose_services_cannot_answer_is_refused_as_upstream", "[run_file]") {

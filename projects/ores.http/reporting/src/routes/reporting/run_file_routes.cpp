@@ -19,6 +19,8 @@
  */
 #include "ores.http/routes/reporting/run_file_routes.hpp"
 #include "ores.compute.api/messaging/run_files_protocol.hpp"
+#include "ores.compute.api/messaging/app_version_protocol.hpp"
+#include "ores.compute.api/messaging/workunit_protocol.hpp"
 #include "ores.compute.api/net/compute_storage.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
@@ -29,7 +31,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/results/output_manifest.hpp"
 #include "ores.reporting.api/messaging/ore_file_category_protocol.hpp"
+#include "ores.reporting.api/messaging/file_type_protocol.hpp"
 #include "ores.reporting.api/messaging/ore_file_protocol.hpp"
+#include "ores.reporting.api/messaging/ore_file_version_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.storage.api/messaging/objects_protocol.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
@@ -94,6 +98,7 @@ struct catalogue_file final {
     std::string format;
     std::optional<std::string> schema_ore_file_code;
     std::string typical_filename;
+    std::string filename_regex;
     std::string description;
 };
 
@@ -138,6 +143,7 @@ std::vector<catalogue_pattern> read_catalogue(const http_request& req, nats_clie
                 file.format,
                 file.schema_ore_file_code,
                 file.typical_filename,
+                file.filename_regex,
                 file.description};
             try {
                 patterns.push_back(catalogue_pattern{std::move(row),
@@ -165,6 +171,79 @@ const catalogue_file* ore_file_of(const std::string& name,
         if (std::regex_match(base, candidate.pattern))
             return &candidate.file;
     return nullptr;
+}
+
+/// The engine version the job ran on, or nothing when it cannot be read.
+std::optional<std::string> engine_version_of(const http_request& req,
+                                             nats_client& session,
+                                             const std::optional<std::string>& workunit_id) {
+    if (!workunit_id || workunit_id->empty())
+        return std::nullopt;
+    try {
+        compute_messaging::get_workunit_request ask;
+        ask.key.id = boost::uuids::string_generator()(*workunit_id);
+        const auto reply = forwarding::forward(req, session, ask);
+        if (!reply.workunit || reply.workunit->app_version_id.is_nil())
+            return std::nullopt;
+
+        compute_messaging::get_app_version_request version;
+        version.key.id = reply.workunit->app_version_id;
+        const auto answered = forwarding::forward(req, session, version);
+        if (!answered.app_version || answered.app_version->engine_version.empty())
+            return std::nullopt;
+        return answered.app_version->engine_version;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(file_lg(), ores::logging::warn)
+            << "The engine version of job " << *workunit_id << " could not be read: " << e.what();
+        return std::nullopt;
+    }
+}
+
+/// The parameters the catalogue says one ORE file is described by.
+std::vector<ores::reporting::domain::file_type>
+parameters_of(const http_request& req, nats_client& session, const std::string& ore_file_code) {
+    reporting_messaging::list_by_ore_file_code_file_types_request msg;
+    msg.ore_file_code = ore_file_code;
+    msg.limit = catalogue_limit;
+    try {
+        const auto reply = forwarding::forward(req, session, msg);
+        return reply.types;
+    } catch (const std::exception& e) {
+        // The parameters annotate the file, so a catalogue that cannot answer
+        // them must not cost the reader the file.
+        BOOST_LOG_SEV(file_lg(), ores::logging::warn)
+            << "The parameters of " << ore_file_code << " could not be read: " << e.what();
+        return {};
+    }
+}
+
+/**
+ * @brief Whether the engine version stores the schema the catalogue names.
+ *
+ * The stored schemas of one engine version are its ORE file versions, so a
+ * schema the version does not ship is one a reader would ask for and not get.
+ */
+bool schema_is_stored(const http_request& req,
+                      nats_client& session,
+                      const std::string& engine_version,
+                      const std::string& typical_filename,
+                      const std::vector<catalogue_pattern>& catalogue) {
+    try {
+        reporting_messaging::list_ore_file_versions_request msg;
+        msg.limit = catalogue_limit;
+        msg.filter.emplace();
+        msg.filter->engine_version = engine_version;
+        const auto reply = forwarding::forward(req, session, msg);
+        for (const auto& version : reply.versions)
+            for (const auto& file : catalogue)
+                if (file.file.code == version.ore_file_code &&
+                    file.file.typical_filename == typical_filename)
+                    return true;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(file_lg(), ores::logging::warn)
+            << "The stored schemas of ORE " << engine_version << " could not be read: " << e.what();
+    }
+    return false;
 }
 
 /**
@@ -500,6 +579,38 @@ std::string tree_json(const std::vector<counted_node>& nodes) {
     return body.str();
 }
 
+/// One ORE file as the screen draws it.
+std::string ore_file_json(const catalogue_file& file) {
+    std::ostringstream body;
+    body << "{\"code\":" << json::write(file.code) << ",\"name\":" << json::write(file.name)
+         << ",\"category_code\":" << json::write(file.category_code)
+         << ",\"category_name\":" << json::write(file.category_name)
+         << ",\"category_description\":" << json::write(file.category_description)
+         << ",\"configuration_type_code\":" << optional_text(file.configuration_type_code)
+         << ",\"guide_section\":" << optional_text(file.guide_section)
+         << ",\"origin\":" << json::write(file.origin)
+         << ",\"format\":" << json::write(file.format)
+         << ",\"schema_ore_file_code\":" << optional_text(file.schema_ore_file_code)
+         << ",\"typical_filename\":" << json::write(file.typical_filename)
+         << ",\"filename_regex\":" << json::write(file.filename_regex)
+         << ",\"description\":" << json::write(file.description) << '}';
+    return body.str();
+}
+
+/// One parameter of the documents that name a file.
+std::string parameter_json(const ores::reporting::domain::file_type& type) {
+    std::ostringstream body;
+    body << "{\"code\":" << json::write(type.code) << ",\"analytic_type_code\":"
+         << optional_text(type.analytic_type_code)
+         << ",\"ore_parameter\":" << json::write(type.ore_parameter)
+         << ",\"direction\":" << json::write(type.direction)
+         << ",\"kind\":" << json::write(type.kind)
+         << ",\"name_pattern\":" << json::write(type.name_pattern)
+         << ",\"is_default\":" << (type.is_default ? "true" : "false")
+         << ",\"description\":" << json::write(type.description) << '}';
+    return body.str();
+}
+
 std::string files_json(const run_files& run) {
     std::vector<std::string> written;
     written.reserve(run.files.size());
@@ -615,6 +726,75 @@ void run_file_routes::register_routes(
                     return http_response::json(
                         "{\"tree\":" + tree_json(counted(run.nodes, run.files)) +
                         ",\"files\":" + files_json(run) + "}");
+                });
+            }));
+
+    add(router->get("/api/reporting/runs/{id}/files/{file}/info")
+            .summary("What one file of a report run is, and the parameters that name it")
+            .description("The file, the ORE file the catalogue says it is, the parameters that "
+                         "describe it, the engine version the job ran on and whether that "
+                         "version stores the schema the catalogue names.")
+            .handler([&session, store](const http_request& req)
+                         -> boost::asio::awaitable<http_response> {
+                co_return guarded<compute_messaging::list_run_files_request>([&] {
+                    const auto raw = req.get_path_param("id");
+                    if (!rr::is_uuid(raw))
+                        rr::invalid("The address names an id that is not a uuid.");
+                    rr::refuse_unknown_params(req, {});
+                    if (!run_of(req, session, raw))
+                        rr::refuse(http_status::not_found,
+                                   "not-found",
+                                   "No report run has this id.");
+
+                    auto run = files_of_run(req, session, *store, raw);
+                    const auto catalogue = read_catalogue(req, session);
+                    const auto* found = file_of(run, req.get_path_param("file"));
+                    if (found == nullptr)
+                        rr::refuse(http_status::not_found,
+                                   "not-found",
+                                   "This run has no such file.");
+                    const auto* ore_file = ore_file_of(found->name, catalogue);
+
+                    std::string parameters;
+                    std::string ore_answers;
+                    if (ore_file != nullptr) {
+                        std::vector<std::string> written;
+                        for (const auto& type : parameters_of(req, session, ore_file->code))
+                            written.push_back(parameter_json(type));
+                        parameters = rr::array_of(written);
+                        ore_answers = ore_file_json(*ore_file);
+                    } else {
+                        parameters = "[]";
+                        ore_answers = "null";
+                    }
+
+                    const auto engine_version = engine_version_of(req, session, found->job);
+                    std::string schema = "null";
+                    if (ore_file != nullptr && ore_file->schema_ore_file_code) {
+                        for (const auto& candidate : catalogue) {
+                            if (candidate.file.code != *ore_file->schema_ore_file_code)
+                                continue;
+                            const auto stored =
+                                engine_version && schema_is_stored(req,
+                                                                   session,
+                                                                   *engine_version,
+                                                                   candidate.file
+                                                                       .typical_filename,
+                                                                   catalogue);
+                            schema = "{\"code\":" + json::write(candidate.file.code) +
+                                     ",\"name\":" + json::write(candidate.file.name) +
+                                     ",\"stored\":" + (stored ? "true" : "false") + "}";
+                            break;
+                        }
+                    }
+
+                    auto shown = *found;
+                    shown.ore_file = ore_file;
+                    return http_response::json(
+                        "{\"file\":" + write_file(shown) + ",\"ore_file\":" + ore_answers +
+                        ",\"parameters\":" + parameters + ",\"engine_version\":" +
+                        (engine_version ? json::write(*engine_version) : std::string("null")) +
+                        ",\"schema\":" + schema + "}");
                 });
             }));
 

@@ -150,10 +150,11 @@ TEST_CASE("a_refused_banxico_read_is_an_error_that_does_not_hold_the_token", "[d
 TEST_CASE("a_banxico_fetcher_without_a_token_reads_nothing_and_names_the_variable",
           "[domain][banxico]") {
     banxico_transport transport;
-    banxico_fetcher fetcher(transport,
-                            "https://www.banxico.org.mx",
-                            resolve_secret("env:ORES_MARKETDATA_BANXICO_API_KEY",
-                                           [](const char*) -> const char* { return nullptr; }));
+    banxico_fetcher fetcher(
+        transport,
+        "https://www.banxico.org.mx",
+        resolve_secret("env:ORES_MARKETDATA_BANXICO_API_KEY",
+                       [](const char*) -> std::optional<std::string> { return std::nullopt; }));
 
     const auto universe = fetcher.universe(fondeo_key);
 
@@ -179,8 +180,9 @@ TEST_CASE("a_banxico_key_is_a_series_id", "[domain][banxico]") {
 }
 
 TEST_CASE("an_env_ref_resolves_to_the_value_of_its_variable", "[domain][secret]") {
-    const auto lookup = [](const char* name) -> const char* {
-        return std::string_view(name) == "ORES_TEST_KEY" ? "s3cret" : nullptr;
+    const auto lookup = [](const char* name) -> std::optional<std::string> {
+        return std::string_view(name) == "ORES_TEST_KEY" ? std::optional<std::string>{"s3cret"} :
+                                                           std::nullopt;
     };
 
     const auto found = resolve_secret("env:ORES_TEST_KEY", lookup);
@@ -190,11 +192,11 @@ TEST_CASE("an_env_ref_resolves_to_the_value_of_its_variable", "[domain][secret]"
 }
 
 TEST_CASE("an_unset_empty_or_malformed_ref_is_an_error_without_a_value", "[domain][secret]") {
-    const auto empty = [](const char*) -> const char* {
-        return "";
+    const auto empty = [](const char*) -> std::optional<std::string> {
+        return std::string{};
     };
-    const auto unset = [](const char*) -> const char* {
-        return nullptr;
+    const auto unset = [](const char*) -> std::optional<std::string> {
+        return std::nullopt;
     };
 
     CHECK_FALSE(resolve_secret("env:ORES_TEST_KEY", empty).has_value());

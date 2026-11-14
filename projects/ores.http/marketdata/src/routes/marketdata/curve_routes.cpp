@@ -95,7 +95,7 @@ constexpr std::string_view backwards = "The range ends before it starts.";
 constexpr std::string_view no_range = "State the instants, or state both ends of the range.";
 
 /// The typed identity of a curve, which is what every read of one takes.
-struct identity {
+struct curve_identity {
     std::string asset;
     std::string scope;
     std::string instrument_type;
@@ -106,7 +106,7 @@ struct identity {
 };
 
 struct identity_body {
-    identity identity;
+    curve_identity identity;
 };
 
 struct series_list_body {
@@ -118,7 +118,7 @@ struct series_by_body {
 };
 
 struct key_point_body {
-    identity identity;
+    curve_identity identity;
     std::vector<std::string> coordinates;
     std::string value;
     std::string change_reason_code;
@@ -126,17 +126,17 @@ struct key_point_body {
 };
 
 struct clear_point_body {
-    identity identity;
+    curve_identity identity;
     std::vector<std::string> coordinates;
 };
 
 struct snapshot_body {
-    identity identity;
+    curve_identity identity;
     bool include_provenance{};
 };
 
 struct slice_body {
-    identity identity;
+    curve_identity identity;
     std::string component_field;
     std::string component_value;
     std::string from_instant;
@@ -144,7 +144,7 @@ struct slice_body {
 };
 
 struct evolution_body {
-    identity identity;
+    curve_identity identity;
     std::optional<std::string> from_instant;
     std::optional<std::string> to_instant;
     std::vector<std::string> instants;
@@ -183,15 +183,16 @@ struct withdraw_body {
     std::string approval_request_id;
 };
 
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<identity>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_identity>) {
     using ores::utility::codec::field;
-    return ores::utility::codec::field_list{field{"asset", &identity::asset},
-                                            field{"scope", &identity::scope},
-                                            field{"instrument_type", &identity::instrument_type},
-                                            field{"quote_type", &identity::quote_type},
-                                            field{"party_id", &identity::party_id},
-                                            field{"provider_code", &identity::provider_code},
-                                            field{"fields", &identity::fields}};
+    return ores::utility::codec::field_list{
+        field{"asset", &curve_identity::asset},
+        field{"scope", &curve_identity::scope},
+        field{"instrument_type", &curve_identity::instrument_type},
+        field{"quote_type", &curve_identity::quote_type},
+        field{"party_id", &curve_identity::party_id},
+        field{"provider_code", &curve_identity::provider_code},
+        field{"fields", &curve_identity::fields}};
 }
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<identity_body>) {
@@ -332,7 +333,7 @@ std::chrono::system_clock::time_point instant_of(const std::string& raw) {
 }
 
 /// The typed identity as the service reads it.
-marketdata_messaging::resolve_series_identity_request identity_of(const identity& in) {
+marketdata_messaging::resolve_series_identity_request identity_of(const curve_identity& in) {
     marketdata_messaging::resolve_series_identity_request out;
     out.asset = word_of(in.asset);
     out.scope = word_of(in.scope);

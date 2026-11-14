@@ -108,12 +108,45 @@ class Curation:
         for name, entry in self.code_settings.items():
             if entry["scope"] not in ("model", "engine"):
                 raise CurationError(f"settings-code.json: {name} has an unknown scope")
+        self.guide_omits = self._pairs_the_guide_omits("guide-omits.json")
         self.globals = self._load("globals.json",
                                   ("domain", "label", "help", "description"))
         for name, entry in self.globals.items():
             if "default_text" not in entry:
                 raise CurationError(f"globals.json: {name} has no default_text")
         self.engine_settings_groups = self._groups("engine-settings-groups.json")
+
+    def _pairs_the_guide_omits(self, name):
+        """The products the guide's pricing engine chapter does not document.
+
+        The guide is the source of the vocabulary, so a product it leaves out has no
+        pair, and the ORE code prices that product all the same. Each entry states the
+        pairs the code registers and the values it reads, and carries the provenance
+        every entry carries. The settings it names are stated by name and value only:
+        the prose, the scope and the required flag are the ones the vocabulary already
+        states for that setting, so a name is described once.
+        """
+        data = self._load(name, ())
+        for code, entry in data.items():
+            if not str(entry.get("used_by") or "").strip():
+                raise CurationError(f"{name}: {code} has no used_by")
+            if not entry.get("pairs"):
+                raise CurationError(f"{name}: {code} states no pair")
+            for pair in entry["pairs"]:
+                where = f"{name}: {code} on {pair.get('model', '')}/{pair.get('engine', '')}"
+                for key in ("model", "engine", "note"):
+                    if not str(pair.get(key) or "").strip():
+                        raise CurationError(f"{where} has no {key}")
+                for setting in pair.get("settings", []):
+                    if setting.get("scope") not in ("model", "engine"):
+                        raise CurationError(
+                            f"{where}: the setting {setting.get('name', '')} states the scope "
+                            f"{setting.get('scope')!r}, which is neither model nor engine")
+                    for key in ("name", "usual"):
+                        if not str(setting.get(key) or "").strip():
+                            raise CurationError(
+                                f"{where}: the setting {setting.get('name', '')} has no {key}")
+        return data
 
     def _groups(self, name):
         """The engine run settings, whose sets state the control of a setting.

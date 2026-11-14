@@ -638,6 +638,15 @@
     "curator": "marco",
     "date": "2026-10-25"
   },
+  "Replication": {
+    "description": "Prices a product as the sum of the products it contains.",
+    "detail": "The ORE replication builder builds no pricing engine of its own. It holds the decomposition of the instrument into simpler products and prices each of them on the engine its own product type states.",
+    "reason": "The ORE guide says nothing about it; the text restates the builder class the ORE code registers.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/flexiswap.hpp",
+    "curator": "marco",
+    "date": "2026-11-14"
+  },
   "ScriptedTrade": {
     "description": "Scripted trade pricing engine.",
     "detail": "Builds a ScriptedInstrumentPricingEngine, or a variant. See the ORE scripted trade documentation.",

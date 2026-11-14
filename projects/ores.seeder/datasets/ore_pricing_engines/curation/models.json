@@ -179,6 +179,15 @@
     "curator": "marco",
     "date": "2026-10-25"
   },
+  "LGM-FlexiSwap": {
+    "description": "Linear Gauss Markov model calibrated to the deal strike of a flexible swap.",
+    "detail": "The one-factor Gaussian model ORE builds for a balance guaranteed swap, calibrated to the co-terminal swaptions of the deal at its own strikes rather than at the money. It shares the parameters of the plain LGM model and adds the multipliers that bound the pre-payment rate.",
+    "reason": "The ORE guide documents the LGM model but not this calibration; the text restates the builder class the ORE code registers.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/balanceguaranteedswap.hpp",
+    "curator": "marco",
+    "date": "2026-11-14"
+  },
   "LinearTSR": {
     "description": "Linear terminal swap rate model for CMS convexity adjustments.",
     "detail": "Models the annuity mapping as a linear function of the swap rate. The policy setting bounds the rates and the strikes of the replication.",
@@ -205,6 +214,15 @@
     "source_ref": "the standard literature and QuantLib, which the ORE documents do not cover",
     "curator": "marco",
     "date": "2026-10-25"
+  },
+  "Replication": {
+    "description": "Replicates a product from the products it contains; no market model.",
+    "detail": "The ORE replication builder holds no model of its own. It builds the products the instrument decomposes into, prices each on the pair its own product type states, and adds the prices up. ORE reads one parameter from it, GlobalModel, which says whether one model serves the whole basket or each constituent gets its own.",
+    "reason": "The ORE guide says nothing about it; the text restates the builder class the ORE code registers.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/flexiswap.hpp and OREData/ored/portfolio/flexiswap.cpp",
+    "curator": "marco",
+    "date": "2026-11-14"
   },
   "ScriptedTrade": {
     "description": "Scripted trade model; the script defines the payoff.",

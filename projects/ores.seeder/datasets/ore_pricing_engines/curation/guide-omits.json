@@ -1,0 +1,132 @@
+{
+  "FlexiSwap": {
+    "used_by": "FlexiSwap",
+    "reason": "The pricing engine chapter of the guide documents no FlexiSwap product, and the ORE code registers one builder for it and no other: the trade asks for that builder before it builds the Bermudan swaption it replicates. The trade also asks for the BermudanSwaption and the Swap or CrossCurrencySwap product, so a configuration that prices a FlexiSwap names those as well; the guide documents them.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/flexiswap.hpp and OREData/ored/portfolio/flexiswap.cpp",
+    "curator": "marco",
+    "date": "2026-11-14",
+    "pairs": [
+      {
+        "model": "Replication",
+        "engine": "Replication",
+        "note": "Builds the flexible swap by replicating it from the swaptions it contains. The builder builds no engine of its own, so the only choice it takes is whether one model serves the whole basket.",
+        "settings": [
+          {
+            "scope": "model",
+            "name": "GlobalModel",
+            "usual": "true"
+          }
+        ]
+      }
+    ]
+  },
+  "BalanceGuaranteedSwap": {
+    "used_by": "BalanceGuaranteedSwap",
+    "reason": "The pricing engine chapter of the guide documents no BalanceGuaranteedSwap product, and the ORE code registers two builders for it. The discounting pair prices the tranche notionals and the caps or floors of the floating leg without a calibration, and the LGM pair simulates the pre-payment behaviour those caps or floors describe. The trade also asks for the CapFlooredIborLeg product when its floating leg carries caps or floors, and the guide documents that one.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/balanceguaranteedswap.hpp and OREData/ored/portfolio/balanceguaranteedswap.cpp",
+    "curator": "marco",
+    "date": "2026-11-14",
+    "pairs": [
+      {
+        "model": "DiscountedCashflows",
+        "engine": "DiscountingSwapEngine",
+        "note": "Discounts the tranche notionals from the currency's discount curve. The balance guaranteed feature is part of the instrument, so the engine needs no calibration.",
+        "settings": []
+      },
+      {
+        "model": "LGM-FlexiSwap",
+        "engine": "Grid",
+        "note": "Prices the balance guaranteed swap by simulating its pre-payment option on an LGM grid. The values are the ones the ORE example configuration Products/Input/pricingengine.xml sets for this product.",
+        "settings": [
+          {
+            "scope": "model",
+            "name": "MinCPRMultiplier",
+            "usual": "0.0"
+          },
+          {
+            "scope": "model",
+            "name": "MaxCPRMultiplier",
+            "usual": "2.0"
+          },
+          {
+            "scope": "model",
+            "name": "Calibration",
+            "usual": "Bootstrap"
+          },
+          {
+            "scope": "model",
+            "name": "CalibrationStrategy",
+            "usual": "CoterminalDealStrike"
+          },
+          {
+            "scope": "model",
+            "name": "ReferenceCalibrationGrid",
+            "usual": "400,3M"
+          },
+          {
+            "scope": "model",
+            "name": "Reversion",
+            "usual": "0.0"
+          },
+          {
+            "scope": "model",
+            "name": "ReversionType",
+            "usual": "HullWhite"
+          },
+          {
+            "scope": "model",
+            "name": "Volatility",
+            "usual": "0.01"
+          },
+          {
+            "scope": "model",
+            "name": "VolatilityType",
+            "usual": "HullWhite"
+          },
+          {
+            "scope": "model",
+            "name": "Tolerance",
+            "usual": "0.02"
+          },
+          {
+            "scope": "engine",
+            "name": "method",
+            "usual": "Automatic"
+          },
+          {
+            "scope": "engine",
+            "name": "singleSwaptionThreshold",
+            "usual": "20.0"
+          },
+          {
+            "scope": "engine",
+            "name": "sy",
+            "usual": "5.0"
+          },
+          {
+            "scope": "engine",
+            "name": "ny",
+            "usual": "30"
+          },
+          {
+            "scope": "engine",
+            "name": "sx",
+            "usual": "5.0"
+          },
+          {
+            "scope": "engine",
+            "name": "nx",
+            "usual": "30"
+          },
+          {
+            "scope": "engine",
+            "name": "SensitivityTemplate",
+            "usual": "IR_Semianalytical"
+          }
+        ]
+      }
+    ]
+  }
+}

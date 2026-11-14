@@ -27,6 +27,7 @@ ORE checkout.
 """
 import json
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -126,6 +127,88 @@ where valid_to = ores_utility_infinity_timestamp_fn();
     print(name, len(rows), "rows")
 
 
+def stated_setting(name, scope, vocabulary, model, engine):
+    """What the vocabulary already says about a setting name, or None.
+
+    A product the guide omits states its settings by name and value. The prose, the
+    control and the required flag are the ones another product's pair states for that
+    name, so a setting is described once and read everywhere. A model setting takes its
+    meaning from the model that reads it and an engine setting from the engine, so the
+    pair that shares that name answers first.
+    """
+    best, best_rank = None, 0
+    for entry in vocabulary.values():
+        for pair in entry["pairs"]:
+            for setting in pair["settings"]:
+                if setting["name"] != name:
+                    continue
+                shared = ((pair["model"] == model) if scope == "model"
+                          else (pair["engine"] == engine))
+                if shared:
+                    return setting
+                if best is None:
+                    best = setting
+    return best
+
+
+def required_by_code(name):
+    """Whether the ORE code calls the setting mandatory, as its curation states it."""
+    entry = CURATED.code_settings.get(name)
+    if entry is None:
+        return None
+    return re.search(r"[Rr]equired\.?\s*$", entry["description"]) is not None
+
+
+def with_the_pairs_the_guide_omits(vocabulary, strict):
+    """The products the guide's chapter omits, as the curation states them.
+
+    The guide is the source of the vocabulary, so a product its chapter leaves out
+    carries no pair and ORE refuses to price that product. The ORE code registers a
+    pair anyway, and the curation records what the code states.
+    """
+    for code, entry in CURATED.guide_omits.items():
+        if code in vocabulary:
+            if strict:
+                sys.exit(f"the ORE guide now documents {code}, which curation/guide-omits.json "
+                         "still states. Remove the entry and run the extraction again.")
+            continue
+        pairs = []
+        for index, pair in enumerate(entry["pairs"]):
+            settings = []
+            for stated in pair["settings"]:
+                name = stated["name"]
+                known = stated_setting(name, stated["scope"], vocabulary, pair["model"],
+                                       pair["engine"])
+                required = required_by_code(name)
+                if known is None and required is None:
+                    sys.exit(f"curation/guide-omits.json: {code} names the setting {name}, and "
+                             "neither the vocabulary nor curation/settings-code.json states it")
+                text = (CURATED.setting_text(name) or
+                        (CURATED.code_settings.get(name) or {}).get("description") or
+                        (known or {}).get("text"))
+                if not text:
+                    sys.exit(f"curation/guide-omits.json: {code} names the setting {name}, which "
+                             "has no description anywhere")
+                settings.append({
+                    "scope": stated["scope"],
+                    "name": name,
+                    "kind": (known or {}).get("kind", "text"),
+                    "usual": stated["usual"],
+                    "options": (known or {}).get("options", []),
+                    "required": known["required"] if required is None else required,
+                    "text": text,
+                })
+            pairs.append({
+                "model": pair["model"],
+                "engine": pair["engine"],
+                "usual": index == 0,
+                "note": pair["note"],
+                "settings": settings,
+            })
+        vocabulary[code] = {"used_by": entry["used_by"], "pairs": pairs}
+    return vocabulary
+
+
 def populated_types(vocabulary):
     """The types to write, in curation order, or a fail when the guide adds one."""
     out = {code: (entry["description"], entry["instrument"])
@@ -175,6 +258,7 @@ def write_templates():
 def main(ore):
     vocabulary = (extract.main_result(ore) if ore is not None
                   else json.load(open(VOCABULARY, encoding="utf-8")))
+    vocabulary = with_the_pairs_the_guide_omits(vocabulary, strict=ore is not None)
     with open(os.path.join(HERE, "pricing_vocabulary.json"), "w", encoding="utf-8") as handle:
         json.dump(vocabulary, handle, indent=1, ensure_ascii=False)
         handle.write("\n")

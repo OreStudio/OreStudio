@@ -111,6 +111,7 @@ Curation is data, not code. It lives in =projects/ores.seeder/datasets/ore_prici
 | =models.json= | the description, the detail and the source of a model |
 | =engines.json= | the description, the detail and the source of an engine |
 | =templates.json= | the asset class, the method and the description of a sensitivity template |
+| =guide-omits.json= | the pairs of a product type the guide's chapter does not document, as the ORE code registers them, with the values it reads |
 | =globals.json= | a global parameter: its domain, default, label, help and description |
 | =value-sets.json= | each guide value set, its values, the catalogues it draws on and the setting that names it |
 | =value-sets-code.json= | the sets the type extractor writes, one per type and enum it finds |
@@ -126,6 +127,8 @@ Curation is data, not code. It lives in =projects/ores.seeder/datasets/ore_prici
   "date": "2026-10-25"
 }
 #+end_src
+
+A product type the ORE code registers an engine for and the guide's chapter omits has no pair, so ORE refuses to price the trade and no configuration can fix that. =guide-omits.json= records the pair or pairs the code registers for such a product type, and the values the example configuration under =Examples/= or the code reads. Each setting it names carries a value and a scope only: the prose, the control and the required flag come from the vocabulary entry that already states that setting name for the engine or the model, so a setting is described once. The loader fails on an entry with no =used_by=, no pair, or a setting with no value.
 
 The =instrument= is the quality the screen groups by. It comes from the type, not from the trade, and this file is its only home. A product type the guide names but the file does not fails the generator, so the debt is visible and a person decides it.
 

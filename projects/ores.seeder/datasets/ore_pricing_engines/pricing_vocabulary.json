@@ -10832,5 +10832,215 @@
     "settings": []
    }
   ]
+ },
+ "FlexiSwap": {
+  "used_by": "FlexiSwap",
+  "pairs": [
+   {
+    "model": "Replication",
+    "engine": "Replication",
+    "usual": true,
+    "note": "Builds the flexible swap by replicating it from the swaptions it contains. The builder builds no engine of its own, so the only choice it takes is whether one model serves the whole basket.",
+    "settings": [
+     {
+      "scope": "model",
+      "name": "GlobalModel",
+      "kind": "text",
+      "usual": "true",
+      "options": [],
+      "required": true,
+      "text": "When true, a single global model is built for the whole FlexiSwap basket; otherwise a separate model is built for each constituent. Required."
+     }
+    ]
+   }
+  ]
+ },
+ "BalanceGuaranteedSwap": {
+  "used_by": "BalanceGuaranteedSwap",
+  "pairs": [
+   {
+    "model": "DiscountedCashflows",
+    "engine": "DiscountingSwapEngine",
+    "usual": true,
+    "note": "Discounts the tranche notionals from the currency's discount curve. The balance guaranteed feature is part of the instrument, so the engine needs no calibration.",
+    "settings": []
+   },
+   {
+    "model": "LGM-FlexiSwap",
+    "engine": "Grid",
+    "usual": false,
+    "note": "Prices the balance guaranteed swap by simulating its pre-payment option on an LGM grid. The values are the ones the ORE example configuration Products/Input/pricingengine.xml sets for this product.",
+    "settings": [
+     {
+      "scope": "model",
+      "name": "MinCPRMultiplier",
+      "kind": "text",
+      "usual": "0.0",
+      "options": [],
+      "required": true,
+      "text": "Lower bound for the multiplier applied to the market CPR in the balance guaranteed swap engine. Required."
+     },
+     {
+      "scope": "model",
+      "name": "MaxCPRMultiplier",
+      "kind": "text",
+      "usual": "2.0",
+      "options": [],
+      "required": true,
+      "text": "Upper bound for the multiplier applied to the market CPR in the balance guaranteed swap engine. Required."
+     },
+     {
+      "scope": "model",
+      "name": "Calibration",
+      "kind": "select",
+      "usual": "Bootstrap",
+      "options": [
+       "Bootstrap",
+       "BestFit",
+       "None"
+      ],
+      "required": true,
+      "text": "How the model is fitted to the market: Bootstrap fits one instrument at a time, BestFit fits all at once, None keeps the starting values."
+     },
+     {
+      "scope": "model",
+      "name": "CalibrationStrategy",
+      "kind": "select",
+      "usual": "CoterminalDealStrike",
+      "options": [
+       "CoterminalDealStrike",
+       "CoterminalATM",
+       "DeltaGammaAdjusted",
+       "None"
+      ],
+      "required": true,
+      "text": "Which swaptions the fit uses: those that end with the deal and start at the money, those at the strike of the deal, or the delta gamma adjusted set."
+     },
+     {
+      "scope": "model",
+      "name": "ReferenceCalibrationGrid",
+      "kind": "text",
+      "usual": "400,3M",
+      "options": [],
+      "required": true,
+      "text": "Mandatory calibration grid."
+     },
+     {
+      "scope": "model",
+      "name": "Reversion",
+      "kind": "number",
+      "usual": "0.0",
+      "options": [],
+      "required": true,
+      "text": "The mean reversion speed of the model. A calibrated model starts here."
+     },
+     {
+      "scope": "model",
+      "name": "ReversionType",
+      "kind": "select",
+      "usual": "HullWhite",
+      "options": [
+       "Hagan",
+       "HullWhite"
+      ],
+      "required": true,
+      "text": "The form of the mean reversion parameter: Hagan or Hull-White."
+     },
+     {
+      "scope": "model",
+      "name": "Volatility",
+      "kind": "number",
+      "usual": "0.01",
+      "options": [],
+      "required": true,
+      "text": "The volatility of the model. A calibrated model starts here."
+     },
+     {
+      "scope": "model",
+      "name": "VolatilityType",
+      "kind": "select",
+      "usual": "HullWhite",
+      "options": [
+       "Hagan",
+       "HullWhite"
+      ],
+      "required": true,
+      "text": "The form of the volatility parameter: Hagan or Hull-White."
+     },
+     {
+      "scope": "model",
+      "name": "Tolerance",
+      "kind": "number",
+      "usual": "0.02",
+      "options": [],
+      "required": true,
+      "text": "Error tolerance for calibration."
+     },
+     {
+      "scope": "engine",
+      "name": "method",
+      "kind": "text",
+      "usual": "Automatic",
+      "options": [],
+      "required": true,
+      "text": "Method used by the LGM grid engine for a balance guaranteed FlexiSwap. Allowed values are SingleSwaptions, SwaptionArray and Automatic; required."
+     },
+     {
+      "scope": "engine",
+      "name": "singleSwaptionThreshold",
+      "kind": "text",
+      "usual": "20.0",
+      "options": [],
+      "required": true,
+      "text": "In Automatic mode, the effective number of full swaptions below which the engine prices single swaptions; above it the swaption array method is used. Required."
+     },
+     {
+      "scope": "engine",
+      "name": "sy",
+      "kind": "number",
+      "usual": "5.0",
+      "options": [],
+      "required": true,
+      "text": "The width of the grid on the value axis, in standard deviations, in the notation of Hagan."
+     },
+     {
+      "scope": "engine",
+      "name": "ny",
+      "kind": "number",
+      "usual": "30",
+      "options": [],
+      "required": true,
+      "text": "The number of grid points on the value axis, in the notation of Hagan."
+     },
+     {
+      "scope": "engine",
+      "name": "sx",
+      "kind": "number",
+      "usual": "5.0",
+      "options": [],
+      "required": true,
+      "text": "The width of the grid on the state axis, in standard deviations, in the notation of Hagan."
+     },
+     {
+      "scope": "engine",
+      "name": "nx",
+      "kind": "number",
+      "usual": "30",
+      "options": [],
+      "required": true,
+      "text": "The number of grid points on the state axis, in the notation of Hagan."
+     },
+     {
+      "scope": "engine",
+      "name": "SensitivityTemplate",
+      "kind": "reference",
+      "usual": "IR_Semianalytical",
+      "options": [],
+      "required": false,
+      "text": "The sensitivity template of the product. The sensitivity configuration sets shift sizes and schemes for each template."
+     }
+    ]
+   }
+  ]
  }
 }

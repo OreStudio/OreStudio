@@ -8,7 +8,7 @@
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
 #+branch: feature/book-every-generated-trade-type
-#+pr: 4692
+#+pr: 4693
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
@@ -26,12 +26,12 @@ A check books one trade of every generated type through the real tables, so a re
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | PR #4692 is raised and the review round is addressed: the check is reworked and green. |
-| Waiting on   | A reviewer.                            |
-| Next         | Merge, then close the task.            |
-| Last touched | 2026-11-13                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-11-14                               |
 
 * Acceptance
 
@@ -121,6 +121,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4693][#4693]] | [agile] Close the task that books every generated trade type |
 | [[https://github.com/OreStudio/OreStudio/pull/4692][#4692]] | [synthetic,trading] Book every generated trade type through the database |
 
 * Review

@@ -102,15 +102,21 @@ select results_eq(
     'the overnight conventions take the terms the methodology states, and an OreStudio id its own address'
 );
 
+-- The bring-up publishes this dataset into the system tenant, so the absence of
+-- rows no longer distinguishes a seeded convention from a published one. What
+-- does is provenance: a published row names the dataset that produced it and a
+-- seeded row does not.
 select is_empty(
     $$select id from ores_refdata_ibor_index_conventions_tbl
       where tenant_id = ores_utility_system_tenant_id_fn()
         and valid_to = ores_utility_infinity_timestamp_fn()
+        and change_commentary not like 'Imported from DQ dataset: %'
       union all
       select id from ores_refdata_overnight_index_conventions_tbl
       where tenant_id = ores_utility_system_tenant_id_fn()
-        and valid_to = ores_utility_infinity_timestamp_fn()$$,
-    'no index convention is seeded straight into the system tenant'
+        and valid_to = ores_utility_infinity_timestamp_fn()
+        and change_commentary not like 'Imported from DQ dataset: %'$$,
+    'every index convention in the system tenant is one a dataset published'
 );
 
 select is(

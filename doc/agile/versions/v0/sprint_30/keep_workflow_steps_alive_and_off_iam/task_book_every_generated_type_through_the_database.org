@@ -26,12 +26,12 @@ A check books one trade of every generated type through the real tables, so a re
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | PR #4692 is raised and the review round is addressed: the check is reworked and green. |
-| Waiting on   | A reviewer.                            |
-| Next         | Merge, then close the task.            |
-| Last touched | 2026-11-13                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-11-14                               |
 
 * Acceptance
 

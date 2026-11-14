@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch: feature/serve-the-reporting-schedule-writes
-#+pr: 4701
+#+branch: feature/serve-the-reporting-engine-settings
+#+pr: 4704
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -99,10 +99,10 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | The part's test suite | 11 cases, 154 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the run page commit |
-| The reporting area's routes the C++ server answers | 26 of 50 paired | =python3 build/scripts/route_inventory.py --check= | the schedule writes commit |
-| The reporting part's test suite | 39 cases, 412 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the schedule writes commit |
-| The storage core's test suite | 30 cases, 112 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.storage.core.tests= | the schedule writes commit |
-| The gateway's routes in the inventory | 1322 routes, 998 of the BFF's 324 answered by the gateway | =python3 build/scripts/route_inventory.py --check= | the schedule writes commit |
+| The reporting area's routes the C++ server answers | 27 of 50 paired | =python3 build/scripts/route_inventory.py --check= | the health tally commit |
+| The reporting part's test suite | 42 cases, 437 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the health tally commit |
+| The storage core's test suite | 30 cases, 112 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.storage.core.tests= | the health tally commit |
+| The gateway's routes in the inventory | 1323 routes, 999 of the BFF's 324 answered by the gateway | =python3 build/scripts/route_inventory.py --check= | the health tally commit |
 | The gateway's routes before this family | 1306 routes, 982 answered by the gateway | =python3 build/scripts/route_inventory.py --check= | the run page commit |
 
 * Notes
@@ -124,6 +124,13 @@ task and name that file in the Command column.
   restore lives -- in the one handler that owns both the definition and the job,
   instead of in every caller that schedules.
 
+** The last family's state
+
+The design note names four units and their order. One is served here; the three
+that remain are the engine settings (7 routes), the pricing engines (10) and the
+ORE value sets with the schema's zip (5). None needs a service change, so each is
+a unit of gateway work with its own tests, and the note states what each needs.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -139,6 +146,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4704][#4704]] | [http] Design the last reporting family and serve its first unit |
 | [[https://github.com/OreStudio/OreStudio/pull/4701][#4701]] | [http,reporting] Serve the schedule writes |
 | [[https://github.com/OreStudio/OreStudio/pull/4696][#4696]] | [http] Serve the cuts and the kinds of cut |
 | [[https://github.com/OreStudio/OreStudio/pull/4694][#4694]] | [http,storage,compute] Serve a run's files and results |

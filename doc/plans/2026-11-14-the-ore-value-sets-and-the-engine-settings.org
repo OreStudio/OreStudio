@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: C7A91E24-5B6D-4F30-8D18-2E4A6C09B7F1
+:END:
+#+title: The ORE value sets and the engine settings: who owns a document's shape
+#+description: The last family is nineteen routes over four sources. Two of them translate between a screen's fields and an ORE XML document, and the question this note settles is who owns that translation, and what a screen is shown when the engine disagrees.
+#+type: plan
+#+status: AGREED
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+filetags: :plan:http:reporting:
+
+* Why this note exists
+
+Nineteen routes remain of the reporting area's fifty, and they are not one
+subject. The engine settings are a tree of named parameters a person edits; the
+pricing engines are configurations with an ORE document behind them; the ORE
+value sets are reference data the engine reads; and one route tallies the
+health of a party's report definitions. Together they are the family the task
+calls "the ORE value sets and the engine settings".
+
+Two of the four translate between a screen's fields and an ORE XML document.
+That translation is the question: it is the only place in this area where the
+estate writes a format an outside program parses, and a copy of it in the
+gateway would be a second version of the engine's own contract.
+
+* What the BFF does today
+
+** The engine settings
+
+A page of settings, one setting with its parameters grouped, the write that
+saves a group, the removal, the history of one setting, and a documentation
+page built from the parameters themselves. The parameters are a tree: a group
+is a field of the document, and a person edits the fields a group holds.
+
+** The pricing engines
+
+The same shape beside an ORE document: a page, one engine, a write, a removal,
+its history, the document it renders, and an import with a preview that parses
+an uploaded document and states what it would change. The import is the only
+write in the area that reads a document a person did not build through a screen.
+
+** The ORE value sets and the two moved reads**
+
+Five routes: the value sets the engine reads, and the reference data reads the
+task's Acceptance moved here from the reference data and pick-list tasks. One of
+them answers a schema's contents as a zip, because a schema is complete only
+with the files it includes.
+
+** The health tally**
+
+One read: the definitions of a party counted by the health word each carries.
+
+* Where the cost lands
+
+- **The gateway.** Nothing here composes across components the way a run's
+  files did. The heavy part is the document translation, and it is the engine's.
+- **The services.** The reporting service already holds the ORE documents the
+  pricing engines render and the import parses, so the translation has a home
+  that is not the gateway.
+- **The screen.** A person editing a document through a parameter tree is the
+  only reader who needs to know what the engine will object to, and the answer
+  is the parse's.
+
+* The decisions
+
+** The document stays the service's
+
+The gateway states a document as the service rendered it and hands an uploaded
+one to the service to parse. It does not read XML, build XML or validate it.
+The preview is the service's answer about what an import would change, which is
+the same answer the import acts on -- one rule, one place.
+
+** A setting's parameters are a tree the service names**
+
+The groups and fields a screen draws are the service's, read with the setting.
+The gateway groups nothing: a group that the gateway assembled would be a second
+statement of the document's shape.
+
+** The health tally is one read**
+
+No composition, no derivation: the service counts and the route states the
+counts and their total. It belongs to this family only because it was the last
+route unassigned.
+
+** The schema zip keeps its own route**
+
+=GET /api/reporting/ore-files/:code/schema= answers a zip of a schema and every
+schema it includes, at the engine version asked for. It is the one route in the
+area that answers a binary made of several stored objects, and a missing include
+is a 404 that names what is missing rather than a partial zip.
+
+* The work, and who does it
+
+The family is four units, and each is a verifiable step on its own:
+
+| Unit | Routes | What it needs |
+|------+--------+---------------|
+| The health tally | 1 | one read, no composition |
+| The engine settings | 7 | the settings model, its groups, its history and its documentation |
+| The pricing engines | 10 | the engines model, its history, its document and the import with its preview |
+| The ORE value sets and the schema's zip | 5 | the value sets and the schema's includes |
+
+Nothing here needs a service change that the first three families did not already
+make: every read exists, and the document translation is where it belongs.
+
+* What this does not change
+
+The engine keeps owning the document's shape, and the reporting service keeps
+holding it. Nothing is translated twice and no screen learns the XML.

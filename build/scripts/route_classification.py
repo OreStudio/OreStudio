@@ -494,9 +494,10 @@ RULES = (
          " its values, and the fixings written against it."),
     Rule("the report health",
          ("exact", "GET /api/reporting/report-health"),
-         BFF, COMPOSED, "reporting",
-         "Each report definition with the row the list would draw for it and the reads that"
-         " failed, so the answer says a run could not be checked rather than that it never ran."),
+         None, RESOURCE, "reporting",
+         "A party's report definitions counted by the health word each carries, one read whose"
+         " counts and total the service derives, so the answer states what it counted and"
+         " derives nothing."),
     Rule("an ORE schema's contents",
          ("exact", "GET /api/reporting/ore-files/:code/schema"),
          BFF, COMPOSED, "reporting",
@@ -1663,11 +1664,6 @@ VIEWS = {
         "catalogue, so a read that fails leaves its part of the tree out",
         "no cache: a run's files are read when a person opens the run, and the bytes of a file "
         "are served from the object as the socket asks for them"),
-    "the report health": (
-        "ores.reporting",
-        "each report definition with the row the list would draw and the reads that "
-        "failed, so a failed read is not read as never having run",
-        "ETag on the whole view, stale after 60 s"),
     "an ORE schema's contents": (
         "ores.reporting",
         "the catalogue entry that is a schema with this code, and its stored contents "

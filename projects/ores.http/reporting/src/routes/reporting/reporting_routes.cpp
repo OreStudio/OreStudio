@@ -44,6 +44,7 @@ void reporting_routes::register_routes(
     run_file_routes::register_routes(router, registry, session, std::move(storage_dir));
     run_routes::register_routes(router, registry, session);
     schedule_routes::register_routes(router, registry, session);
+    reporting_routes::register_health_routes(router, registry, session);
 }
 
 }

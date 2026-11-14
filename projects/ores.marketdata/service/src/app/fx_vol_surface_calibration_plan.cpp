@@ -156,6 +156,40 @@ std::expected<expiry_terms, std::string> terms_at(const surface_calibration_reci
 
 }
 
+std::expected<surface_forward_set, std::string> spot_starting(const surface_forward_set& forwards) {
+    const auto at_spot = [&](const surface_forward_point& point) {
+        return std::chrono::sys_days(point.value_date) == std::chrono::sys_days(forwards.spot_date);
+    };
+    const auto anchor = std::ranges::find_if(forwards.points, at_spot);
+    if (anchor == forwards.points.end())
+        return std::unexpected(
+            "the forward set " + forwards.publish_id + " has no row on its spot date " +
+            std::format("{}", forwards.spot_date) + ", so it cannot be read from spot");
+    if (!(anchor->base_discount > 0.0) || !(anchor->quote_discount > 0.0))
+        return std::unexpected("the row on the spot date " + std::format("{}", forwards.spot_date) +
+                               " of the forward set " + forwards.publish_id +
+                               " discounts to a factor that is not above zero");
+
+    surface_forward_set out{.publish_id = forwards.publish_id,
+                            .spot = forwards.spot,
+                            .spot_date = forwards.spot_date,
+                            .points = {}};
+    for (const auto& point : forwards.points) {
+        // ON and any other delivery before spot are not part of a spot-starting market.
+        if (std::chrono::sys_days(point.value_date) < std::chrono::sys_days(forwards.spot_date))
+            continue;
+        if (!(point.base_discount > 0.0) || !(point.quote_discount > 0.0))
+            return std::unexpected("the " + point.tenor + " row of the forward set " +
+                                   forwards.publish_id +
+                                   " discounts to a factor that is not above zero");
+        out.points.push_back({.tenor = point.tenor,
+                              .value_date = point.value_date,
+                              .base_discount = point.base_discount / anchor->base_discount,
+                              .quote_discount = point.quote_discount / anchor->quote_discount});
+    }
+    return out;
+}
+
 std::vector<std::string> split_blueprint_list(const std::string& text) {
     std::vector<std::string> out;
     std::size_t start = 0;

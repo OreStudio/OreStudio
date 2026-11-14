@@ -246,3 +246,46 @@ TEST_CASE("a forward set that ends before an expiry refuses the calibration, nam
     CHECK(prepared.error().find("expiry 2Y") != std::string::npos);
     CHECK(prepared.error().find("ends at") != std::string::npos);
 }
+
+TEST_CASE("a_published_forward_set_is_read_from_spot_and_not_from_its_as_of",
+          "[app][fx_vol_surface_calibration_plan]") {
+    using namespace std::chrono;
+    const auto at = [](int d) {
+        return year_month_day{
+            year{2026}, month{static_cast<unsigned>(11)}, day{static_cast<unsigned>(d)}};
+    };
+    // A published set as the ladder writes it: ON before spot, and factors that discount
+    // from the as-of rather than from spot, so the spot row is not one.
+    const surface_forward_set published{.publish_id = "fwd-2",
+                                        .spot = 1.08,
+                                        .spot_date = at(11),
+                                        .points = {{"ON", at(9), 0.9997500, 0.9996316},
+                                                   {"TN", at(11), 0.9996667, 0.9995088},
+                                                   {"1M", at(11), 0.9980000, 0.9960000}}};
+
+    const auto anchored = spot_starting(published);
+
+    INFO("error: " << (anchored ? std::string{} : anchored.error()));
+    REQUIRE(anchored);
+    REQUIRE(anchored->points.size() == 2);
+    // ON is gone, and the spot row discounts to exactly one on both sides.
+    CHECK(anchored->points.front().tenor == "TN");
+    CHECK(anchored->points.front().base_discount == Approx(1.0).epsilon(1e-12));
+    CHECK(anchored->points.front().quote_discount == Approx(1.0).epsilon(1e-12));
+    // A later row is rebased by the same anchor, so spot-relative discounting is preserved.
+    CHECK(anchored->points.back().base_discount == Approx(0.9980000 / 0.9996667).epsilon(1e-12));
+    CHECK(anchored->points.back().quote_discount == Approx(0.9960000 / 0.9995088).epsilon(1e-12));
+}
+
+TEST_CASE("a_forward_set_with_no_row_on_its_spot_date_is_refused_naming_it",
+          "[app][fx_vol_surface_calibration_plan]") {
+    auto forwards = eur_usd_forward_set();
+    forwards.spot_date = std::chrono::year_month_day{
+        std::chrono::year{2026}, std::chrono::month{12}, std::chrono::day{1}};
+
+    const auto anchored = spot_starting(forwards);
+
+    REQUIRE_FALSE(anchored);
+    CHECK(anchored.error().find("no row on its spot date") != std::string::npos);
+    CHECK(anchored.error().find("2026-12-01") != std::string::npos);
+}

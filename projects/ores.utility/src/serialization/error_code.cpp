@@ -23,8 +23,8 @@
 namespace ores::utility::serialization {
 
 std::ostream& operator<<(std::ostream& os, error_code ec) {
-    return os << magic_enum::enum_name(ec) << " (0x" << std::hex
-              << static_cast<std::uint16_t>(ec) << std::dec << ")";
+    return os << magic_enum::enum_name(ec) << " (0x" << std::hex << static_cast<std::uint16_t>(ec)
+              << std::dec << ")";
 }
 
 std::string to_string(error_code ec) {

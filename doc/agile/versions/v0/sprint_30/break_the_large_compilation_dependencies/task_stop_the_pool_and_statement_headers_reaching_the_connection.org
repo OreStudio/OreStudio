@@ -1,8 +1,8 @@
 :PROPERTIES:
-:ID: 93457275-4215-44DE-B8B5-555A2F2E6909
+:ID: F185ECD2-FFD9-416E-9179-10E96BE8F634
 :END:
-#+title: Task: Move the codec text forms out of line
-#+description: End the inline text forms the codec chain parses: text_form.hpp moves its definitions to a .cpp, and protocol_codec.hpp and json_codec.hpp stop reaching it.
+#+title: Task: Stop the pool and statement headers reaching the connection header
+#+description: Cut the second path into pq/connection.hpp so the split of the context header is not undone by the other includers.
 #+type: task
 #+level: s1
 #+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
@@ -13,14 +13,14 @@
 #+blocked_since:
 #+created: 2026-11-14
 #+updated: 2026-11-14
-#+environment: festive-dijkstra
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The context header no longer includes pq/pool.hpp or pq/transaction.hpp, but the second path into pq/connection.hpp is still open: pool.hpp and statement.hpp each reach it. This task closes that path so the cut is not undone by another includer.
 
 * Status
 
@@ -35,7 +35,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The change is made and the tree compiles.
+- The suites the change reaches pass.
+- The measured effect is recorded with the command and the commit it was taken at.
 
 * Plan
 

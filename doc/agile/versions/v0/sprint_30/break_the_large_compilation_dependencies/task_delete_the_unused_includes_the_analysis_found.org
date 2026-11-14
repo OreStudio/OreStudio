@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The analysis found two headers that cost the tree more than they say: tenant_id.hpp includes a Boost generator that nothing in it uses, and error_code.hpp includes the enum-reflection library so that two inline functions can render an error code for a log. This task removes both costs, and gives each of the 38 files that were borrowing the generator the include it actually needs.
 
 * Status
 
@@ -35,7 +35,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =tenant_id.hpp= includes neither the generator nor anything that pulls it in, and every file that builds a generator includes the header for it.
+- =error_code.hpp= does not include the enum-reflection library, and the two functions it used to define are declared with the export macro and defined in a =.cpp=.
+- The tree compiles and the suites that use either header pass.
+- The measurement is recorded, or the reason it is not taken is.
 
 * Plan
 
@@ -76,10 +79,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Files that were relying on the transitive include | 38 | =grep -rl 'uuids::string_generator' projects=, then check for the include | working tree |
-| Build of the change | clean, after 1153 objects in the first pass and 282 in the second | =compass build --preset linux-clang-release-ninja= | working tree |
-| Suites | 3 of 3, 73 s: utility, iam.core, reporting.core | =compass test run -- -j 4 -R ...= | working tree |
-| Symbols the move exported | 2: =operator<<= and =to_string= for =error_code= | =nm -DC .../libores.utility.so= | working tree |
+| Files that were relying on the transitive include | 38, plus the header itself: 39 files changed | =grep -rl 'uuids::string_generator' projects=, then check for the include | =267be03484= |
+| Build of the change | clean, after 1153 objects in the first pass and 282 in the second | =compass build --preset linux-clang-release-ninja= | =267be03484= |
+| Suites | 3 of 3, 73 s: utility, iam.core, reporting.core | =compass test run -- -j 4 -R ...= | =267be03484= |
+| Symbols the move exported | 2: =operator<<= and =to_string= for =error_code= | =nm -DC .../libores.utility.so= | =267be03484= |
 
 * Notes
 
@@ -98,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/4733][#4733]] | [tooling] Drop the unused includes and the functions behind them |
+| [[https://github.com/OreStudio/OreStudio/pull/4733][#4733]] | [tooling] Drop the unused includes and the inline functions behind them |
 
 * Review
 
@@ -119,7 +122,10 @@ Both changes are in and the tree compiles.
 - =error_code.hpp= no longer includes =<magic_enum/magic_enum.hpp>=. The two
   inline functions became declarations carrying =ORES_UTILITY_EXPORT=, and their
   definitions live in =src/serialization/error_code.cpp=. Both symbols are in the
-  library, which the link of =ores.utility.tests= proves.
+  library: =nm -DC= shows them exported, and the link of =ores.utility.tests=
+  resolves them. Neither is a test of the output — nothing in the suites calls
+  either function — so what the suites prove is compile and link, not that an
+  error code still renders as it did.
 
 *What went wrong on the way, twice.* The new source has to arrive through
 =regenerate_cmake_component_files.py=: =component_files.cmake= carries an
@@ -127,6 +133,12 @@ AUTO-GENERATED banner, a hand edit there compiled nothing and the link failed
 with an undefined =operator<<=. And the first build died on a consumer that
 relied on the transitive include, which is why the scan exists in the record
 above rather than one error at a time.
+
+*What a reviewer of this change should know.* Moving =operator<<= out of line
+means a translation unit that included =error_code.hpp= alone now has to link
+=ores.utility= to use it. That is the same contract =decimal.hpp= and
+=short_code_generator.hpp= already carry, and the in-tree build is clean, but it
+is a contract this header did not have before.
 
 *The A/B is not taken.* The analysis measured this already, and the shadow
 comparison costs an hour of compiles. The change is architectural, so it stands

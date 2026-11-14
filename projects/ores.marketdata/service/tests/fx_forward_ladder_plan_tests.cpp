@@ -184,6 +184,18 @@ TEST_CASE("later tenors run from spot with no near date of their own", "[fx_forw
     CHECK_FALSE(row(l, "1M").near_date.has_value());
 }
 
+TEST_CASE("the ladder publishes the years a surface grid reaches", "[fx_forward_ladder]") {
+    // A volatility surface's grid may name any tenor the ladder publishes, so the long ones are
+    // stated here, from the Wednesday the pair settles on. Three years lands on a Sunday, which
+    // modified following moves forward, exactly as a one-month expiry does.
+    const auto l = ladder(2);
+    CHECK(l.spot_date == 2026y / November / 11d);
+    CHECK(row(l, "3Y").value_date == 2029y / November / 12d);
+    CHECK(row(l, "5Y").value_date == 2031y / November / 11d);
+    CHECK(row(l, "7Y").value_date == 2033y / November / 11d);
+    CHECK(row(l, "10Y").value_date == 2036y / November / 11d);
+}
+
 TEST_CASE("a holiday in either calendar moves the spot date", "[fx_forward_ladder]") {
     // Tuesday closed in one calendar, Wednesday in the other.
     const std::vector calendars{calendar_closed_on({2026y / November / 10d}),

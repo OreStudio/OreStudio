@@ -131,3 +131,15 @@ have.
 * Out of scope
 
 -
+
+* Result
+
+Closed 2026-11-14, across five pull requests: #4688 for the prototypes, their
+journeys and three of the five reads; #4702 for the other two reads, the four
+ores.web screens, and the fix that let the tenant finish provisioning; #4717 for
+the curve inspector's prior close; #4721 for the surface's slices and its series
+identity; #4724 for the staleness threshold per instrument kind.
+
+What remains is another story's: the published surface has no screen yet, the
+montage's per-pair path needs an intraday read, and the wire schemas the BFF and
+the browser each declare want the contracts split.

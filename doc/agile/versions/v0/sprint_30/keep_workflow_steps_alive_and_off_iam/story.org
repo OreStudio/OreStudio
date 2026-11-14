@@ -102,7 +102,9 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
      visible parties, and every write it makes is theirs in the trail. This is
      the shape to avoid.
   Recommendation: shape 1, and it is implemented: the session is scoped to the
-  tenant's party, which is the reach the work needs. Authorship of generated
+  tenant's party, which is the reach the work needs, and the store keeps a
+  booking to the session's author, so a request that names a person is
+  overwritten (case =a_booking_is_stamped_with_the_sessions_actor_not_the_requests=). Authorship of generated
   data is a simulated fact, and attributing it to real people creates a
   capability to write in their names for no reach it lacks. Shapes 2 and 3 stay
   recorded as the ways to get per-trader authorship if the product decides the

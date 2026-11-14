@@ -113,6 +113,8 @@ task and name that file in the Command column.
 | Step kinds ores.synthetic serves | 1 (=generate_trades=) | =grep -c "routes.on" projects/ores.synthetic/service/src/messaging/provisioning_step_registrar.cpp= | =6115e1936f= |
 | Core libraries ores.iam still links for other services' work | 1 (=ores.refdata.core=) | =grep -nE "ores\.(refdata\|synthetic)\.core" projects/ores.iam/core/src/CMakeLists.txt= | =6115e1936f= |
 | The run with the step in synthetic | passed, 20 of 20 curves and a provisioned tenant | =./compass.sh smoke ticks --fresh= | =6115e1936f= |
+| The author a population can put on a trade | the session's, whatever the request says | =ores.trading.core.tests "a_booking_is_stamped_with_the_sessions_actor_not_the_requests"= | =40618294de= |
+| =ores.trading.core.tests= | 246 cases, 1569 assertions | =ores.trading.core.tests= | =40618294de= |
 | The three defects the first runs found | acting party wrong for a party-scoped book read, a curve series refused for the same reason, and no fallback trader | the run logs of the three smoke attempts | =6115e1936f= |
 | =ores.iam.core.tests= | passed, 27.5 s | =compass test run -- -R ores.iam.core.tests= | =d7e9d200cd= |
 

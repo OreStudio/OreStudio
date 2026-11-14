@@ -26,11 +26,11 @@ compass db recreate waits for the stopped services' connections to close, instea
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | The wait is a bounded minute and says what it waits for. Stopping the services then recreating succeeds, though this host's stop drains before the recreate starts, so the unit tests hold the wait. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR.                          |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -147,3 +147,18 @@ via its "Verifies task" field.
 | 9 | The acceptance run did not exercise the wait | task | Fixed | The Notes state it: systemd's stop drains first, so the unit tests hold the wait. |
 
 * Result
+
+A recreate gives a closed backend a bounded minute to let go, says which
+connections it waits for, and tells a caller that already passed =-k= what
+happened rather than asking for the flag again. An answer to the connection
+count that never came back refuses the command instead of passing it: the count
+is cluster-wide, so an absent database answers zero, and silence is not absence.
+
+The acceptance holds on this environment: stopping the 25 services and
+recreating straight after succeeded, in 1m 33s. That run did not exercise the
+wait, because a stop blocks until the backends are gone. The wait is held by
+seven cases in =test_compass_db_connections.py=, whose stand-in for =psql= keeps
+the count above zero and lets the window end it.
+
+The shell path =recreate_env.sh= sources waits not at all. The backlog's
+*Consolidate the scripts into compass* work is where it becomes this one.

@@ -310,12 +310,20 @@ prepare_calibration(const surface_calibration_recipe& recipe,
                     double pillar_tolerance) {
     if (!(forwards.spot > 0.0))
         return std::unexpected("the forward set " + forwards.publish_id + " has no spot");
+    // A forward ladder carries the settlement run-up as well as the discounts: an overnight or
+    // tom-next row values before spot, which is what those instruments are. A pair's market is
+    // anchored at its spot date -- discounting starts there, at one on both sides -- so those
+    // rows are not points of it and pair_market_at refuses them. Dropping them is not a loss:
+    // nothing a surface discounts to can fall before spot.
     std::vector<qm::fx_discount_point> by_date;
     by_date.reserve(forwards.points.size());
-    for (const auto& p : forwards.points)
+    for (const auto& p : forwards.points) {
+        if (p.value_date < forwards.spot_date)
+            continue;
         by_date.push_back({.date = p.value_date,
                            .base_discount = p.base_discount,
                            .quote_discount = p.quote_discount});
+    }
     std::ranges::sort(by_date, {}, [](const auto& p) { return std::chrono::sys_days(p.date); });
 
     prepared_surface_calibration out;

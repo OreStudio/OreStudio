@@ -160,6 +160,31 @@ TEST_CASE("each expiry reads its market from the forward set and its convention 
     CHECK(grid[1].market.foreign_discount > 0.975);
 }
 
+TEST_CASE("a ladder's settlement run-up does not reach the pair's market",
+          "[app][fx_vol_surface_calibration_plan]") {
+    // An FX forward ladder carries an overnight and a tom-next row, and both value before spot.
+    // Those are instruments, not discounts from spot: the pair's market is anchored at the spot
+    // date, and a point before it is refused rather than interpolated.
+    auto forwards = eur_usd_forward_set();
+    const std::chrono::year_month_day before_spot{
+        std::chrono::year{2026}, std::chrono::November, std::chrono::day{10}};
+    forwards.points.insert(forwards.points.begin(),
+                           {.tenor = "ON",
+                            .value_date = before_spot,
+                            .base_discount = 0.9999,
+                            .quote_discount = 0.9999});
+
+    const auto recipe = eur_usd_recipe();
+    const auto prepared = prepare_calibration(
+        recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), calibration_as_of, 0.001);
+    REQUIRE(prepared);
+    // The discounts come from the ladder's own points at and after spot, unchanged.
+    const auto& expiries = prepared->request.expiries;
+    REQUIRE(expiries.size() == 3);
+    CHECK(expiries[0].market.foreign_discount == Approx(0.998));
+    CHECK(expiries[0].market.domestic_discount == Approx(0.996));
+}
+
 TEST_CASE("a pillar's quote is each contributor's at its weight",
           "[app][fx_vol_surface_calibration_plan]") {
     auto recipe = eur_usd_recipe();

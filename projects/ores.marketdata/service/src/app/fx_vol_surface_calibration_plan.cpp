@@ -138,16 +138,29 @@ std::expected<expiry_terms, std::string> terms_at(const surface_calibration_reci
     const auto convention = mapping::to_quote_convention(*recipe.convention, period);
     if (!convention)
         return std::unexpected("expiry " + code + ": " + convention.error());
-    const auto market =
-        qm::pair_market_at(forwards.spot,
-                           forwards.spot_date,
-                           by_date,
-                           qs::calendar_arithmetic::add_period(forwards.spot_date, period),
-                           "expiry " + code);
+    // The value date is the ladder's, not one computed here. The ladder dates a tenor on the
+    // pair's calendar with its roll convention and its month-end rule, and publishes that date
+    // with the row; a date added here would land elsewhere the moment the date is not a business
+    // day, and the surface would discount between two rows instead of to the one it quotes. A
+    // tenor the ladder does not carry has no value date, and that is refused rather than guessed.
+    const auto row = std::ranges::find(forwards.points, code, &surface_forward_point::tenor);
+    if (row == forwards.points.end()) {
+        const auto last = std::ranges::max_element(
+            forwards.points, {}, [](const auto& p) { return std::chrono::sys_days(p.value_date); });
+        return std::unexpected(
+            "expiry " + code + ": the forward set " + forwards.publish_id +
+            " has no row for that tenor; the ladder ends at " +
+            (last == forwards.points.end() ?
+                 std::string("no date at all") :
+                 std::format("{}", std::chrono::sys_days(last->value_date))) +
+            ", so the expiry has no value date");
+    }
+    const auto market = qm::pair_market_at(
+        forwards.spot, forwards.spot_date, by_date, row->value_date, "expiry " + code);
     if (!market)
         return std::unexpected(market.error());
     // An FX option expires a tenor after the trade and delivers a tenor after spot, so its time
-    // runs from the as-of and its discounting from the spot date.
+    // runs from the as-of and its discounting from the value date the ladder publishes.
     return expiry_terms{
         .years = days_between(as_of, qs::calendar_arithmetic::add_period(as_of, period)) / 365.0,
         .market = *market,

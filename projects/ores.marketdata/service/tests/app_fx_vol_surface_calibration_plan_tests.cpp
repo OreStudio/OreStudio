@@ -63,6 +63,7 @@ surface_forward_set eur_usd_forward_set() {
             .spot = 1.08,
             .spot_date = forward_spot_date,
             .points = {{"1M", at(2026, 12, 11), 0.998, 0.996},
+                       {"6M", at(2027, 5, 11), 0.987, 0.982},
                        {"1Y", at(2027, 11, 11), 0.975, 0.958},
                        {"2Y", at(2028, 11, 13), 0.950, 0.918}}};
 }
@@ -183,6 +184,48 @@ TEST_CASE("a ladder's settlement run-up does not reach the pair's market",
     REQUIRE(expiries.size() == 3);
     CHECK(expiries[0].market.foreign_discount == Approx(0.998));
     CHECK(expiries[0].market.domestic_discount == Approx(0.996));
+}
+
+TEST_CASE("an expiry discounts to the ladder's value date, not to one of its own",
+          "[app][fx_vol_surface_calibration_plan]") {
+    // Spot is a Friday and one month later is a Sunday, which the ladder rolls to the Monday
+    // and publishes with the row. A surface that added the period here would discount to the
+    // Sunday, interpolating between two rows instead of reading the one written for the tenor
+    // it quotes.
+    auto forwards = eur_usd_forward_set();
+    const auto friday =
+        year_month_day{std::chrono::year{2026}, std::chrono::month{11}, std::chrono::day{13}};
+    const auto monday =
+        year_month_day{std::chrono::year{2026}, std::chrono::month{12}, std::chrono::day{14}};
+    forwards.spot_date = friday;
+    for (auto& point : forwards.points)
+        if (point.tenor == "1M")
+            point.value_date = monday;
+
+    const auto recipe = eur_usd_recipe();
+    const auto prepared = prepare_calibration(
+        recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), calibration_as_of, 0.001);
+    REQUIRE(prepared);
+    const auto& expiries = prepared->request.expiries;
+    REQUIRE(expiries.size() == 3);
+    // The ladder's own row, to the last digit: the Sunday would sit just above it.
+    CHECK(expiries[0].market.foreign_discount == Approx(0.998).epsilon(1e-12));
+    CHECK(expiries[0].market.domestic_discount == Approx(0.996).epsilon(1e-12));
+}
+
+TEST_CASE("a tenor the ladder does not carry is refused, naming it",
+          "[app][fx_vol_surface_calibration_plan]") {
+    // The grid quotes 6M. A forward set without that row cannot date the expiry, and adding the
+    // period here would be a second way of computing a date: it is refused instead.
+    auto forwards = eur_usd_forward_set();
+    std::erase_if(forwards.points, [](const auto& point) { return point.tenor == "6M"; });
+
+    const auto recipe = eur_usd_recipe();
+    const auto prepared = prepare_calibration(
+        recipe, *check_recipe(recipe), forwards, flat_smile_quotes(), calibration_as_of, 0.001);
+    REQUIRE_FALSE(prepared);
+    CHECK(prepared.error().find("6M") != std::string::npos);
+    CHECK(prepared.error().find("no row") != std::string::npos);
 }
 
 TEST_CASE("a pillar's quote is each contributor's at its weight",

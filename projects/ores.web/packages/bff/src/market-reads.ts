@@ -73,6 +73,7 @@ const uuid = z
 const curveAnalyticsBody = z.strictObject({
     instrument_id: uuid,
     as_of: instant,
+    compare_at: z.union([instant, z.literal('')]).default(''),
 });
 
 const sourceSchema = z.looseObject({
@@ -207,6 +208,8 @@ const bootstrappedSchema = z.looseObject({
     zero_rate: z.number(),
     implied_forward: z.number(),
     shift_bps: z.number(),
+    prior_zero_rate: z.number().nullable().default(null),
+    change_bps: z.number().nullable().default(null),
 });
 
 const curveAnalyticsReply = z.looseObject({
@@ -215,6 +218,7 @@ const curveAnalyticsReply = z.looseObject({
     instrument_id: z.string().default(''),
     name: z.string().default(''),
     as_of: z.string().default(''),
+    compare_at: z.string().default(''),
     stale: z.boolean().default(false),
     conventions: conventionsSchema,
     market_pillars: z.array(marketPillarSchema).default([]),
@@ -345,6 +349,7 @@ export function registerMarketReadRoutes(
                 party_id: '',
                 instrument_id: body.instrument_id,
                 as_of: body.as_of,
+                compare_at: body.compare_at,
             },
             curveAnalyticsReply,
         );

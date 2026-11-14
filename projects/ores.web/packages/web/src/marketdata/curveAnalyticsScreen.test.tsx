@@ -33,6 +33,7 @@ const analytics: CurveAnalytics = {
     instrument_id: CONFIG_ID,
     name: 'USD-SOFR',
     as_of: '2026-11-13 23:59:59Z',
+    compare_at: '',
     stale: false,
     conventions: {
         index_name: 'USD-SOFR',
@@ -72,6 +73,8 @@ const analytics: CurveAnalytics = {
             zero_rate: 0.0432,
             implied_forward: 0.0432,
             shift_bps: 1.25,
+            prior_zero_rate: null,
+            change_bps: null,
         },
         {
             tenor: '3M',
@@ -81,6 +84,8 @@ const analytics: CurveAnalytics = {
             zero_rate: 0.0419,
             implied_forward: 0.0414,
             shift_bps: 0.9,
+            prior_zero_rate: null,
+            change_bps: null,
         },
     ],
 };
@@ -92,7 +97,12 @@ function draw(address: string, set: CurveAnalytics = analytics): string {
         [{ id: CONFIG_ID, name: 'USD-SOFR' }],
     );
     client.setQueryData(
-        ['curve-analytics', CONFIG_ID, address.includes('asof=2026-11-13') ? '2026-11-13' : ''],
+        [
+            'curve-analytics',
+            CONFIG_ID,
+            address.includes('asof=2026-11-13') ? '2026-11-13' : '',
+            address.includes('compare=') ? '2026-11-12' : '',
+        ],
         set,
     );
     return renderToStaticMarkup(
@@ -144,6 +154,40 @@ describe('the curve analytics page', () => {
         );
         expect(discount).toContain('The discount factor the curve holds at each pillar.');
         expect(discount).not.toContain('The bootstrapped zero rate');
+    });
+
+    it('draws the prior close and the change when the answer carries one', () => {
+        const page = draw(
+            `/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13&compare=2026-11-12`,
+            {
+                ...analytics,
+                compare_at: '2026-11-12 23:59:59Z',
+                bootstrapped: analytics.bootstrapped.map((point, index) => ({
+                    ...point,
+                    prior_zero_rate: index === 0 ? 0.0439 : 0.0421,
+                    change_bps: index === 0 ? -0.7 : -0.2,
+                })),
+            },
+        );
+        expect(page).toContain('Prior zero (%)');
+        expect(page).toContain('Change (bp)');
+        expect(page).toContain('Measured from the published set as of 2026-11-12 23:59:59Z.');
+        expect(page).toContain('4.3900');
+        expect(page).toContain('-0.7');
+    });
+
+    it('says no set was current rather than drawing a zero', () => {
+        const page = draw(
+            `/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13&compare=2026-11-12`,
+            { ...analytics, compare_at: '' },
+        );
+        expect(page).toContain('No published set was current at that instant');
+        expect(page).not.toContain('Prior zero (%)');
+    });
+
+    it('draws no prior column when no comparison was asked for', () => {
+        const page = draw(`/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13`);
+        expect(page).not.toContain('Prior zero (%)');
     });
 
     it('warns when the newest quote behind the curve is old', () => {

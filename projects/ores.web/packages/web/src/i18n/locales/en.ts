@@ -5712,6 +5712,11 @@ export const en: SourceCatalogue = {
             title: 'Curve analytics',
             lead: "One curve's conventions, the pillars the market quoted and what the bootstrap makes of them.",
             curve: 'Curve',
+            compare: 'Compare with',
+            priorZero: 'Prior zero (%)',
+            change: 'Change (bp)',
+            comparedWith: 'Measured from the published set as of {at}.',
+            noPriorSet: 'No published set was current at that instant, so no change is drawn.',
             readingFor: 'Reading for {party}',
             axes: {
                 tenor: 'By tenor',

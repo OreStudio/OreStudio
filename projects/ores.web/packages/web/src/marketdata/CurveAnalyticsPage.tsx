@@ -87,12 +87,17 @@ export function CurveAnalyticsPage(): ReactNode {
     const asOf = search.get('asof') ?? todayIso();
     const metric = oneOf(search.get('m'), METRICS, 'zero');
     const axis = oneOf(search.get('axis'), AXES, 'tenor');
+    const compare = search.get('compare') ?? '';
 
-    const key = ['curve-analytics', chosen?.id ?? '', asOf] as const;
+    const key = ['curve-analytics', chosen?.id ?? '', asOf, compare] as const;
     const analytics = useQuery({
         queryKey: key,
         queryFn: () =>
-            api.curveAnalytics({ instrumentId: chosen?.id ?? '', asOf: asOfInstant(asOf) }),
+            api.curveAnalytics({
+                instrumentId: chosen?.id ?? '',
+                asOf: asOfInstant(asOf),
+                compareAt: compare === '' ? '' : asOfInstant(compare),
+            }),
         enabled: chosen !== undefined,
         retry: false,
     });
@@ -132,6 +137,15 @@ export function CurveAnalyticsPage(): ReactNode {
                         ))}
                     </Select>
                 </Field>
+                <Field label={t('marketdata.curveAnalytics.compare')}>
+                    <Input
+                        type="date"
+                        value={compare}
+                        onChange={(event) => {
+                            set({ compare: event.target.value });
+                        }}
+                    />
+                </Field>
                 <Field label={t('marketdata.curveAnalytics.asOf')}>
                     <Input
                         type="date"
@@ -170,6 +184,9 @@ export function CurveAnalyticsPage(): ReactNode {
                 <Notice tone="info">{t('marketdata.curveAnalytics.noCurves')}</Notice>
             )}
             {analytics.isError && <Notice tone="error">{analytics.error.message}</Notice>}
+            {data !== undefined && compare !== '' && data.compare_at === '' && (
+                <Notice tone="info">{t('marketdata.curveAnalytics.noPriorSet')}</Notice>
+            )}
             {data !== undefined && data.stale && (
                 <Notice tone="warn">{t('marketdata.curveAnalytics.stale')}</Notice>
             )}
@@ -297,6 +314,16 @@ export function CurveAnalyticsPage(): ReactNode {
                                         <th className={head}>
                                             {t('marketdata.curveAnalytics.impliedForward')}
                                         </th>
+                                        {data.compare_at !== '' && (
+                                            <>
+                                                <th className={head}>
+                                                    {t('marketdata.curveAnalytics.priorZero')}
+                                                </th>
+                                                <th className={head}>
+                                                    {t('marketdata.curveAnalytics.change')}
+                                                </th>
+                                            </>
+                                        )}
                                         <th className={head}>
                                             {t('marketdata.curveAnalytics.discountFactor')}
                                         </th>
@@ -324,6 +351,23 @@ export function CurveAnalyticsPage(): ReactNode {
                                             <td className={cell}>
                                                 {percent(point.implied_forward, language)}
                                             </td>
+                                            {data.compare_at !== '' && (
+                                                <>
+                                                    <td className={cell}>
+                                                        {point.prior_zero_rate === null
+                                                            ? '—'
+                                                            : percent(
+                                                                  point.prior_zero_rate,
+                                                                  language,
+                                                              )}
+                                                    </td>
+                                                    <td className={cell}>
+                                                        {point.change_bps === null
+                                                            ? '—'
+                                                            : basisPoints(point.change_bps)}
+                                                    </td>
+                                                </>
+                                            )}
                                             <td className={cell}>
                                                 {point.discount_factor.toFixed(6)}
                                             </td>
@@ -341,8 +385,17 @@ export function CurveAnalyticsPage(): ReactNode {
                             </table>
                         </div>
                     </section>
+                    {data.compare_at !== '' && (
+                        <p className="text-xs text-ink-faint">
+                            {t('marketdata.curveAnalytics.comparedWith', {
+                                at: data.compare_at,
+                            })}
+                        </p>
+                    )}
                     <Notice tone="info">{t('marketdata.curveAnalytics.shiftNote')}</Notice>
-                    <Notice tone="info">{t('marketdata.curveAnalytics.noPriorClose')}</Notice>
+                    {data.compare_at === '' && (
+                        <Notice tone="info">{t('marketdata.curveAnalytics.noPriorClose')}</Notice>
+                    )}
                 </>
             )}
         </div>

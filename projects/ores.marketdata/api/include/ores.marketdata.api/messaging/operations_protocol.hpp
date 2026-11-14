@@ -715,6 +715,8 @@ struct curve_bootstrapped_point {
     double zero_rate{};
     double implied_forward{};
     double shift_bps{};
+    std::optional<double> prior_zero_rate;
+    std::optional<double> change_bps;
 
     friend bool operator==(const curve_bootstrapped_point&,
                            const curve_bootstrapped_point&) = default;
@@ -740,6 +742,7 @@ struct get_curve_analytics_request {
     std::string party_id;
     std::string instrument_id;
     std::chrono::system_clock::time_point as_of;
+    std::chrono::system_clock::time_point compare_at;
 
     friend bool operator==(const get_curve_analytics_request&,
                            const get_curve_analytics_request&) = default;
@@ -757,6 +760,7 @@ struct get_curve_analytics_response {
     std::string instrument_id;
     std::string name;
     std::chrono::system_clock::time_point as_of;
+    std::chrono::system_clock::time_point compare_at;
     bool stale = false;
     curve_conventions conventions;
     std::vector<curve_market_pillar> market_pillars;
@@ -2583,6 +2587,9 @@ struct store_market_state_response {
         ::ores::utility::codec::field{"implied_forward",
                                       &curve_bootstrapped_point::implied_forward},
         ::ores::utility::codec::field{"shift_bps", &curve_bootstrapped_point::shift_bps},
+        ::ores::utility::codec::field{"prior_zero_rate",
+                                      &curve_bootstrapped_point::prior_zero_rate},
+        ::ores::utility::codec::field{"change_bps", &curve_bootstrapped_point::change_bps},
     };
 }
 
@@ -2599,6 +2606,7 @@ struct store_market_state_response {
         ::ores::utility::codec::field{"party_id", &get_curve_analytics_request::party_id},
         ::ores::utility::codec::field{"instrument_id", &get_curve_analytics_request::instrument_id},
         ::ores::utility::codec::field{"as_of", &get_curve_analytics_request::as_of},
+        ::ores::utility::codec::field{"compare_at", &get_curve_analytics_request::compare_at},
     };
 }
 
@@ -2618,6 +2626,7 @@ struct store_market_state_response {
                                       &get_curve_analytics_response::instrument_id},
         ::ores::utility::codec::field{"name", &get_curve_analytics_response::name},
         ::ores::utility::codec::field{"as_of", &get_curve_analytics_response::as_of},
+        ::ores::utility::codec::field{"compare_at", &get_curve_analytics_response::compare_at},
         ::ores::utility::codec::field{"stale", &get_curve_analytics_response::stale},
         ::ores::utility::codec::field{"conventions", &get_curve_analytics_response::conventions},
         ::ores::utility::codec::field{"market_pillars",

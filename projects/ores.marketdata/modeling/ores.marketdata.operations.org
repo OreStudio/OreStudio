@@ -1669,6 +1669,21 @@ rates a desk reads off it.
 :cpp_type: double
 :END:
 
+*** prior_zero_rate
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+The zero rate the party's published set held at this pillar, when a comparison
+was asked for and a set was current at that instant. Absent otherwise.
+
+*** change_bps
+:PROPERTIES:
+:cpp_type: std::optional<double>
+:END:
+
+The zero rate less the prior one, in basis points. Absent when there is no prior.
+
 ** get_curve_analytics_request
 :PROPERTIES:
 :subject: marketdata.v1.ops.get_curve_analytics
@@ -1709,6 +1724,14 @@ The bootstrap configuration that produces the curve.
 
 Empty means now, resolved server-side.
 
+*** compare_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+Optional; empty asks for no comparison. When stated, the answer carries the
+party's published set that was current at that instant and the change from it.
+
 ** get_curve_analytics_response
 
 The curve's facts, its market pillars and its bootstrapped points, in pillar
@@ -1748,6 +1771,14 @@ order.
 :PROPERTIES:
 :cpp_type: std::chrono::system_clock::time_point
 :END:
+
+*** compare_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+The as-of of the published set the change is measured from. Empty when no
+comparison was asked for, or when no set was current at the instant asked.
 
 *** stale
 :PROPERTIES:

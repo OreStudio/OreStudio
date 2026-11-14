@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: A155248C-1586-4554-B4D6-D24471CDE336
+:END:
+#+title: Task: Compare a curve to its prior publish
+#+description: Let the curve analytics read answer at a second instant: the party's published set at or before it, and the change from that set to the curve as it stands now, so the inspector draws the prior close the prototype carries.
+#+type: task
+#+level: s1
+#+filetags: :port_the_market_data_screens:sprint_30:v0:
+#+owner: marco
+#+branch: feature/compare-a-curve-to-its-prior-publish
+#+pr: 4717
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person inspecting a curve reads what the market quoted at the previous close and how far the curve has moved, from the server, without a second screen and without the browser deciding which set was current.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The analytics request states an optional compare-at instant; empty means no comparison and the answer states none.
+- The answer states, for each pillar, the prior zero rate and the change in basis points, read from the party's published set at or before the compare-at instant.
+- A compare-at instant with no published set leaves the prior fields absent and says so, rather than showing a zero.
+- The curve inspector draws the prior and the change when the answer carries them, and the columns are absent when it does not.
+- Both sides are tested: the read against a published fixture, and the screen against an answer.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4717][#4717]] | [marketdata] Compare a curve with the set that was current before it |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The read compares: a request states an instant, and the answer carries the party's
+published set that was current then — published by then, its as-of at or before it,
+not withdrawn — with each pillar's prior zero rate and the change in basis points.
+
+The screen draws the prior and the change columns when the answer carries them, and
+says no set was current when the instant found none, rather than drawing a zero. The
+query is keyed by the comparison so changing the date refetches.
+
+Five cases hold the read (29 assertions across the analytics suite, including the
+absent branch), and nine hold the screen. The live probe of the route was refused
+upstream ("bad_request") and is not yet explained: the request names a bootstrap
+configuration and an as-of later than the server's clock, so the refusal is likely
+one of those two rather than the comparison.

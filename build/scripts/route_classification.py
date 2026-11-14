@@ -696,6 +696,13 @@ RULES = (
          "One run's files: the tree the run hangs in, what each input package holds, the "
          "output files each accepted result's manifest names, and the bytes of whichever one "
          "the reader opened, so the screen reads one answer and not a walk of three services."),
+    Rule("a run's results",
+         ("regex", r"^GET /api/reporting/runs/\{id\}/results$"),
+         CPP, RESOURCE, "reporting",
+         "One run's figures at the level the reader asks for: the result rows of the run, the "
+         "bookings of its trades, and the counterparties, books and portfolios those ids name, "
+         "rolled up to the trade, book or counterparty and stated against an earlier run when "
+         "one is named."),
     Rule("a report run's route",
          ("regex", r"^GET /api/reporting/runs/\{id\}(/errors)?$"),
          CPP, RESOURCE, "reporting",

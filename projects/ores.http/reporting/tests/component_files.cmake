@@ -23,6 +23,7 @@ set(files
     "choice_routes_tests.cpp"
     "main.cpp"
     "report_routes_tests.cpp"
+    "result_rollup_tests.cpp"
     "run_file_routes_tests.cpp"
     "run_routes_tests.cpp"
 )

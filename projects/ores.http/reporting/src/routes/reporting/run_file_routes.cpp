@@ -18,6 +18,7 @@
  *
  */
 #include "ores.http/routes/reporting/run_file_routes.hpp"
+#include "ores.http/routes/reporting/run_lookup.hpp"
 #include "ores.compute.api/messaging/run_files_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.api/messaging/workunit_protocol.hpp"
@@ -343,20 +344,6 @@ outputs_of(const ores::storage::filesystem::local_store& store, const std::strin
             << "The output manifest of result " << result_id << " could not be read: " << e.what();
         return std::nullopt;
     }
-}
-
-/// The run, when the caller's own token can read it, or nothing.
-std::optional<ores::reporting::domain::report_instance>
-run_of(const http_request& req, nats_client& session, const std::string& id) {
-    reporting_messaging::list_report_instances_request msg;
-    msg.limit = 1;
-    msg.filter.emplace();
-    msg.filter->id_one_of = std::vector{boost::uuids::string_generator()(id)};
-    const auto reply = forwarding::forward(req, session, msg);
-    rr::require_done(reply.result);
-    if (reply.instances.empty())
-        return std::nullopt;
-    return reply.instances.front();
 }
 
 /**

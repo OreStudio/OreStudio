@@ -197,6 +197,7 @@ std::nullopt
 :name_singular_words: tenor convention resolution
 :name_words:          tenor convention resolutions
 :order_column:        tenor_code
+:system_tenant_visible: true
 :END:
 
 * C++

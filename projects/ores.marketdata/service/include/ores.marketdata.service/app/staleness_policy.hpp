@@ -32,16 +32,17 @@ namespace ores::marketdata::service::app {
  *
  * Every read that states a verdict asks here, so two clients cannot disagree
  * about the same value: the threshold is the server's configuration, not a
- * constant a client applies.
+ * constant a client applies. A deployment states one threshold, and may state
+ * another for each instrument kind, so a curve and a surface can age apart.
  *
  * The rule, stated once:
  * - `age_seconds = max(0, now - as_of)` in whole seconds;
  * - `stale = age_seconds > threshold`;
  * - a value with no instant is stale.
  *
- * The threshold is read from =ORES_MARKETDATA_STALE_SECONDS= on first use and
- * defaults to an hour. It moves into the service's options, beside the other
- * transport and storage settings, when that struct is next touched.
+ * The default threshold is read from =ORES_MARKETDATA_STALE_SECONDS= on first use
+ * and defaults to an hour. The service states its per-kind thresholds in its
+ * options, so the deployment configures them rather than the code.
  *
  * The *decision* is not restated here: the rate engine evaluates ages with
  * =ores::analytics::quant::domain::staleness_policy=, and this class is where a

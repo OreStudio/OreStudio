@@ -29,9 +29,9 @@ on every value block, so no client keeps its own threshold.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | The policy exists and four reads ask it; the surface was the last to keep its own hour (40c82037). The threshold is one number from ORES_MARKETDATA_STALE_SECONDS, not per instrument kind. |
+| Now          | The policy states a threshold for each instrument kind, the service states them in its options, and every read asks for its own kind. The deployment's one number answers for a kind nobody names. |
 | Waiting on   | Nothing.                               |
-| Next         | State the threshold per instrument kind, with hedgr's fx and ir values as the starting point. The call-site half is done. |
+| Next         | State the two values for this deployment. The mechanism is in place and the numbers are the owner's to choose. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -97,3 +97,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Notes added at review
+
+- The two values are the deployment's: =stale_seconds_ir= and =stale_seconds_fx=,
+  empty by default, answered by the deployment's one number until they are stated.
+  The story records a cadence rule per *source* (5 seconds while a live source
+  publishes, 5 days for an end-of-day one), which is a different axis from the
+  instrument kind, so it was not copied across as if it were the answer.
+- The published surface still states =as_of= and =stale= but no =age_seconds=.
+  Adding it is a contract change on that response, and was left for its own task.

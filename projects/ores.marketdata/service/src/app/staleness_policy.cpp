@@ -112,7 +112,13 @@ std::int64_t staleness_policy::threshold_seconds(std::string_view kind) {
 
 void staleness_policy::configure(std::string_view kind, std::int64_t seconds) {
     const std::lock_guard lock(per_kind_mutex());
-    per_kind()[std::string(kind)] = seconds > 0 ? seconds : default_threshold_seconds;
+    // Zero removes the kind's own threshold, so the deployment's one number answers for
+    // it again; a test restores the state it found the same way.
+    if (seconds <= 0) {
+        per_kind().erase(std::string(kind));
+        return;
+    }
+    per_kind()[std::string(kind)] = seconds;
 }
 
 bool staleness_policy::is_stale(std::string_view kind,

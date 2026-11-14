@@ -74,6 +74,10 @@ TEST_CASE("each_instrument_kind_has_its_own_threshold", policy_tags) {
         std::int64_t was = staleness_policy::threshold_seconds();
         ~restore() {
             staleness_policy::configure(was);
+            // Zero removes the kind's own threshold, so a later case starts where this
+            // one did rather than inheriting "fx" and "ir".
+            staleness_policy::configure("fx", 0);
+            staleness_policy::configure("ir", 0);
         }
     } guard;
 

@@ -64,19 +64,18 @@ struct options final {
      */
     std::string tick_writer_user;
     /**
-     * @brief Password of the tick writer role.
+     * @brief How long a quoted value of an IR instrument stays current, in seconds. Zero
+     * means the deployment's one threshold answers for the kind.
      */
-    std::string tick_writer_password;
-    /**
-     * @brief How long a quoted value of one instrument kind stays current, in seconds.
-     *
-     * Zero or absent means the deployment's one threshold answers for that kind.
-     */
-    std::int64_t stale_seconds_ir = 0;
+    std::int64_t stale_seconds_ir;
     /**
      * @brief The same, for the FX instruments.
      */
-    std::int64_t stale_seconds_fx = 0;
+    std::int64_t stale_seconds_fx;
+    /**
+     * @brief Password of the tick writer role.
+     */
+    std::string tick_writer_password;
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {

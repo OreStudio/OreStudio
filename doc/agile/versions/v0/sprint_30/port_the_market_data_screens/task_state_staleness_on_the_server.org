@@ -8,7 +8,7 @@
 #+filetags: :port_the_market_data_screens:sprint_30:v0:
 #+owner: marco
 #+branch: feature/port-the-market-data-screens
-#+pr: 4728
+#+pr: 4732
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -88,6 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4732][#4732]] | [web] Draw the montage's chosen pair over its own day |
 | [[https://github.com/OreStudio/OreStudio/pull/4728][#4728]] | [agile] Close the staleness task and the port |
 | [[https://github.com/OreStudio/OreStudio/pull/4724][#4724]] | [marketdata] State the staleness threshold for each instrument kind |
 

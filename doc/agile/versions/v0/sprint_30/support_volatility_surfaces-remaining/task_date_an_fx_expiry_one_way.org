@@ -8,7 +8,7 @@
 #+filetags: :marketdata:quant:synthetic:surfaces:dates:support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: fix/keep-the-ladder-run-up-out-of-the-pair-market
-#+pr:
+#+pr: 4729
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4729][#4729]] | [quant,marketdata,refdata,synthetic] Date an FX expiry one way |
 
 * Review
 

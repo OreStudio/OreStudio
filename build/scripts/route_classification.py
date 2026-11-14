@@ -696,6 +696,14 @@ RULES = (
          "One run's files: the tree the run hangs in, what each input package holds, the "
          "output files each accepted result's manifest names, and the bytes of whichever one "
          "the reader opened, so the screen reads one answer and not a walk of three services."),
+    Rule("the kinds of cut",
+         ("regex", r"^((GET|PUT|DELETE) /api/reporting/cut-kinds.*|GET /api/reporting/cut-kind-choices)$"),
+         CPP, RESOURCE, "reporting",
+         "The kinds of cut a report may select: the collection, one kind with the cuts the party "
+         "holds of it, a write or removal, and the lookups a kind's form offers. A kind is one "
+         "collection with three keys resolved -- its family's name, its resolution rule's name "
+         "and the approval kind that signs a cut of it, with the permission that decider needs "
+         "-- so one answer states words where the row holds codes."),
     Rule("a run's results",
          ("regex", r"^GET /api/reporting/runs/\{id\}/results$"),
          CPP, RESOURCE, "reporting",

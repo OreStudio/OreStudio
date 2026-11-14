@@ -19,6 +19,7 @@
  */
 #include "ores.http/routes/reporting/reporting_routes.hpp"
 #include "ores.http/routes/reporting/choice_routes.hpp"
+#include "ores.http/routes/reporting/cut_kind_routes.hpp"
 #include "ores.http/routes/reporting/report_routes.hpp"
 #include "ores.http/routes/reporting/result_routes.hpp"
 #include "ores.http/routes/reporting/run_file_routes.hpp"
@@ -32,6 +33,7 @@ void reporting_routes::register_routes(
     ores::nats::service::nats_client& session,
     std::string storage_dir) {
     choice_routes::register_routes(router, registry, session);
+    cut_kind_routes::register_routes(router, registry, session);
     report_routes::register_routes(router, registry, session);
     result_routes::register_routes(router, registry, session);
     run_file_routes::register_routes(router, registry, session, std::move(storage_dir));

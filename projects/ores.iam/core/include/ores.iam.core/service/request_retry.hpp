@@ -241,8 +241,9 @@ auto call_with_retry(Operation&& operation, const retry_call_options& options)
  * @param work Does the work and answers its result.
  */
 template <typename ReadBack, typename Work>
-auto do_unless_already_done(const retry_attempt& attempt, ReadBack&& read_back, Work&& work)
-    -> std::invoke_result_t<Work> {
+auto do_unless_already_done(const retry_attempt& attempt,
+                            ReadBack&& read_back,
+                            Work&& work) -> std::invoke_result_t<Work> {
     if (attempt.number > 1) {
         if (auto found = read_back())
             return std::move(*found);

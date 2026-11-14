@@ -77,8 +77,7 @@ using ores::inbox::service::approval_lifecycle;
 
 TEST_CASE("a_zero_rule_a_run_left_open_is_restored_before_the_next_test", tags) {
     ores::testing::scoped_database_helper h;
-    const auto ctx =
-        h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+    const auto ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
     approval_lifecycle lifecycle(ctx);
     const auto found = lifecycle.kind(std::string(curve_publish_kind_code));
     REQUIRE(found);
@@ -89,9 +88,7 @@ TEST_CASE("a_zero_rule_a_run_left_open_is_restored_before_the_next_test", tags) 
     ores::inbox::repository::approval_kind_repository repo;
     repo.write(ctx, leaked);
 
-    {
-        zero_approval_kind zeroed(h);
-    }
+    { zero_approval_kind zeroed(h); }
 
     const auto after = lifecycle.kind(std::string(curve_publish_kind_code));
     REQUIRE(after);

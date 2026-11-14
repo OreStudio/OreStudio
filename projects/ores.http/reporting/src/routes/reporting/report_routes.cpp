@@ -113,7 +113,7 @@ bool has_text(const std::string& text) {
 /// The party a row names, or nothing when the read that names parties failed.
 std::string party_field(const std::optional<std::vector<report_routes::party_name>>& parties,
                         const boost::uuids::uuid& id,
-                        std::string report_routes::party_name::* member) {
+                        std::string report_routes::party_name::*member) {
     if (!parties)
         return std::string();
     for (const auto& party : *parties)

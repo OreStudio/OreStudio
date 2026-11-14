@@ -28,9 +28,9 @@ Each provisioning step is dispatched to the service that owns its work, so iam r
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Stage 2 is done: ores.synthetic serves =generate_trades=, and a provisioning run passes with it. |
+| Now          | Steps 1 to 3 are done. Step 4 has started: =subscribe_market_data= is moving into ores.marketdata. |
 | Waiting on   | Nothing.                               |
-| Next         | Stage 3: the marketdata kinds.         |
+| Next         | Step 4: the marketdata kinds, one at a time, =subscribe_market_data= first. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -63,28 +63,23 @@ The move is one kind at a time, because each kind drags its own dependencies:
 5. Then the reporting, dq and inbox kinds: =schedule_reports=,
    =publish_bundle= and the two approval-mode steps.
 
-Stage 2's prerequisite is served: iam answers
-=iam.v1.ops.enter_tenant_as_service=, which gives a service account a session
-scoped to a tenant it serves, acting as the tenant's system party and carrying
-the service's own permissions. The story's Decisions state why the entry
-carries no person's identity.
+Step 3 (=generate_trades=) needed a prerequisite the plan did not foresee, and
+it is served: iam answers =iam.v1.ops.enter_tenant_as_service=, which gives a
+service account a session inside a tenant it serves, scoped to one of that
+tenant's parties and carrying the service's own permissions. The story's
+Decisions state why that session names no person. Step 2 avoided the need
+because the calendar work is refdata's own data and it writes as its own
+service account; =generate_trades= writes trades through requests that answer a
+session, which is why a request that grants one was necessary.
 
-It was a prerequisite this stage did not have, and it is now stated in the
-story's Decisions: a moved step that writes as the run's tenant needs a session,
-and the token is minted in process by =internal_impersonation_service=, which
-lives in iam.core. =iam.v1.ops.enter_tenant= is the only subject that issues a
-tenant-scoped token, and it issues read permissions for the caller's own
-account; the trading service takes the tenant, the party and the author from
-the caller's claims, so a step served outside iam cannot write a trade. The calendar step
-avoided it because its work is refdata's own data and it writes as its own
-service account. =generate_trades= books trades through requests that answer a
-session, so either iam offers a request that mints a short-lived session for a
-service acting on a tenant, or the moved steps write only through contexts. The
-first is the general answer and is a decision for the story, not for a stage. When a stage moves a kind
-   that runs *beside* another in the same run — =generate_trades= beside the
-   party publishes, or the surfaces beside the schedules — measure that the two
-   services work at once, which is the acceptance line this task has not yet
-   shown.
+Step 4 moves one kind at a time, because each brings its own machinery.
+=subscribe_market_data= goes first: it reads the tenant's feeds and gives each
+party a subscription and a route, all of it marketdata's own data, so it proves
+a second service's step dispatch with the least code moved.
+
+When a step moves a kind that runs *beside* another in the same run — the
+surfaces beside the schedules, or the curves beside the trades — measure that
+the two services work at once, which the =generate_trades= run already shows.
 
 Each stage is its own PR, because each one moves an executor and its link, and
 a stage that lands alone is a stage a run can be proved against.
@@ -110,12 +105,15 @@ task and name that file in the Command column.
 | The calendar step, as refdata served it | completed; wrote 473,025 day(s) | =grep build_calendars build/output/linux-clang-release-ninja/publish/log/ores.refdata.service.0.log=, and the step row: =compass sql -- -c "select name, command_subject from ores_workflow_workflow_steps_tbl where name = 'build_calendars'"= | =d03a2d5890=, run =d7e883ce-e3dd-4c61-b801-d82c00a12cdc= |
 | The run | failed at step 13 of 15, on a quant refusal that is
   captured, not on a step of this change | =compass smoke ticks --fresh= | the same run |
+| Step kinds ores.marketdata serves | 1 (=subscribe_market_data=) | =grep -c "routes.on" projects/ores.marketdata/service/src/messaging/provisioning_step_registrar.cpp= | =786190b6ac= |
+| The run with the subscription step in marketdata | passed, and the step completed there | =./compass.sh smoke ticks --fresh= | =786190b6ac= |
 | Step kinds ores.synthetic serves | 1 (=generate_trades=) | =grep -c "routes.on" projects/ores.synthetic/service/src/messaging/provisioning_step_registrar.cpp= | =6115e1936f= |
 | Core libraries ores.iam still links for other services' work | 1 (=ores.refdata.core=) | =grep -nE "ores\.(refdata\|synthetic)\.core" projects/ores.iam/core/src/CMakeLists.txt= | =6115e1936f= |
 | The run with the step in synthetic | passed, 20 of 20 curves and a provisioned tenant | =./compass.sh smoke ticks --fresh= | =6115e1936f= |
 | The author a population can put on a trade | the session's, whatever the request says | =ores.trading.core.tests "a_booking_is_stamped_with_the_sessions_actor_not_the_requests"= | =40618294de= |
 | =ores.trading.core.tests= | 246 cases, 1569 assertions | =ores.trading.core.tests= | =40618294de= |
 | The three defects the first runs found | acting party wrong for a party-scoped book read, a curve series refused for the same reason, and no fallback trader | the run logs of the three smoke attempts | =6115e1936f= |
+| The defects the subscription runs found | the owner table reached a stale service, the entry named the wrong permission, and the service role lacked the party read its step uses | the run logs of the three smoke attempts | =786190b6ac= |
 | =ores.iam.core.tests= | passed, 27.5 s | =compass test run -- -R ores.iam.core.tests= | =d7e9d200cd= |
 
 * Notes

@@ -1228,6 +1228,10 @@ BEGIN
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'Market data domain service', false);
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'marketdata::*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'iam::tenants:read');
+    -- The subscription step this service serves gives each party its feeds, so
+    -- it reads the tenant's parties and writes their subscriptions.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'iam::tenants:enter_as_service');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'refdata::parties:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'storage::objects:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'MarketdataService', 'storage::objects:write');
     -- The import reads the currency pairs it files observations under. Every read checks its code, so each is granted by name.

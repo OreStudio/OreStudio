@@ -24,7 +24,7 @@ from the tree so warnings-as-errors can be switched back on.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The macOS cause is fixed and three warnings are cleared, each verified on the affected translation unit. PR raised. |
+| Now           | The macOS cause is fixed, the initial three warnings are cleared, and the GCC 16 nightly's warnings are grouped and treated. PR raised. |
 | Waiting on    | The merge, then a nightly of each platform. |
 | Next          | Clear the warnings that only GCC 13 and MSVC report, then re-enable warnings-as-errors. |
 | Last touched  | 2026-11-13                               |
@@ -43,7 +43,7 @@ from the tree so warnings-as-errors can be switched back on.
 |------+-------+-------+-----+-------------|
 | [[id:C026B049-733A-4A60-8DE4-BE665124D30D][Scaffold story: Hotfix: Fix the warnings and the macOS database tests]] | DONE | 2026-11-13 | 2026-11-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:5998DE9E-545F-4483-8392-B006B88DF19F][Implement Hotfix: Fix the warnings and the macOS database tests]] | DONE | 2026-11-13 | 2026-11-13 | The exception export and the three warning fixes. |
-| [[id:A6F95890-EEB6-4B73-986E-EB6004FC40B3][Clear the GCC 16 warnings]] | STARTED | 2026-11-14 | | Clear the compiler warnings the GCC 16 nightly reports, and verify each against the translation unit it names. |
+| [[id:A6F95890-EEB6-4B73-986E-EB6004FC40B3][Clear the GCC 16 warnings]] | DONE | 2026-11-14 | 2026-11-14 | Clear the compiler warnings the GCC 16 nightly reports, and verify each against the translation unit it names. |
 
 * Decisions
 
@@ -57,6 +57,10 @@ from the tree so warnings-as-errors can be switched back on.
   =_dupenv_s=, so routing through it removes the warning without a suppression.
 - Warnings-as-errors stays off. Turning it on is the last step, after the
   remaining warnings are gone.
+- GCC 16's =-Warray-bounds= is off for GCC only. Every diagnostic it reports is
+  inside libstdc++'s =make_shared= control block or Boost's exception and beast
+  internals, and the generated component CMake files cannot carry a per-target
+  suppression. The cost is stated in =projects/CMakeLists.txt=.
 
 * Out of scope
 

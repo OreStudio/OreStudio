@@ -26,11 +26,11 @@ Make the linux-gcc nightly compile clean under GCC 16, so warnings-as-errors can
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F0233265-8B56-4FEB-BD0C-422D765CA5FC][Hotfix: Fix the warnings and the macOS database tests]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -42,9 +42,11 @@ Make the linux-gcc nightly compile clean under GCC 16, so warnings-as-errors can
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Classify the 138 warning rows the nightly reports into root causes, then
+treat each cause rather than each row. Fix the causes that are our code,
+and record the ones a library or the compiler emits. Check every fix by
+compiling the unity translation unit that reported it with g++, at the
+nightly's flags, and run the suites that cover the changed files.
 
 * Measurements
 
@@ -58,6 +60,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Warning rows on the GCC 16 nightly | 138 (58 diagnostic rows, 78 notes, 2 ctest rows) | CDash build 4539467 | cab661c |
+| Root causes behind those rows | 6 | Grouped by diagnostic and source file | cab661c |
+| Warnings in the four affected unity TUs | 0 | =g++ -O3 -std=c++23 -Wall -Wextra -c <unity_0_cxx.cxx>= for =ores.http.core=, =ores.trading.api=, =ores.nats= and =ores.storage.core= | a3409670ca |
+| Affected suites, trading and http | 2/2 passed | =compass test run --preset linux-clang-release-ninja -- -R 'ores.trading.api.tests\|ores.http.core.tests'= | a3409670ca |
+| Affected suites, nats and iam client | 2/2 passed | =compass test run --preset linux-clang-release-ninja -- -R 'ores.nats.tests\|ores.iam.client.tests'= | a3409670ca |
 |      |       |         |        |
 
 * Notes
@@ -86,3 +93,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed on branch =hotfix/clear-the-gcc-16-warnings=, code commit a3409670ca.
+
+The nightly's 138 warning rows come from six causes. Three were our code and are
+fixed here: =-Wsubobject-linkage= on the range type that =handle_get()='s
+coroutine frame held, =-Wmaybe-uninitialized= on the four rate builders that
+copied a value-initialised =swap_instrument_data= into their =expected=, and
+=-Wmaybe-uninitialized= on the anonymous temporary the NATS request's =as_tuple=
+adapter left in its frame. One was already fixed on main by eb04abd593, which
+renamed the curve route's =identity= struct, so the =-Wchanges-meaning= errors
+that failed the build are gone without a change here.
+
+The remaining two are =-Warray-bounds=, and both are inside code this tree does
+not own: libstdc++'s =make_shared= control block and Boost 1.92's exception and
+beast internals. =-Warray-bounds= is off for GCC in =projects/CMakeLists.txt=,
+with the trade-off stated there.
+
+The nightly that reported these rows ran GCC 16.0.1. On GCC 16.2.0-3 the NATS and
+iam.client warnings no longer reproduce, so those changes are precautionary for
+the nightly and necessary only while it stays on 16.0.1.

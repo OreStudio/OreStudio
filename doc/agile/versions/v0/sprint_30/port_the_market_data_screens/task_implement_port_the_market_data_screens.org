@@ -26,11 +26,11 @@ Hedgr prototyped five market-data screens for its own terminal. ORE Studio has n
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | The five prototypes and their journeys are merged, and the service answers all five reads. The published surface's contract now has a test, and its verdict comes from the one policy. Open: the slice case, and the threshold per instrument kind. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Write the slice case, raise this branch's pull request, and close the tasks it delivers. |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -91,11 +91,8 @@ via its "Verifies task" field.
 
 * Result
 
-The port is delivered: five prototypes and their journeys merged, and the service
-answers all five reads. This branch carries what the first pull request left open
-and what the run exposed: the published surface's contract has four cases, every
-read that states a staleness verdict asks the one policy, a discount ladder states
-the rates its factors imply, and a published forward set is read from spot, which
-is what let the tenant finish provisioning.
-
-Twelve commits, no quant: every number the screens show was already computed.
+Closed with #4702 (merge commit 081511e925), which carried the port's remaining
+work: the surface contract's tests, the staleness call sites, a discount ladder
+that states rates, and the forward set read from spot that let the tenant finish
+provisioning. The story's two remaining tasks stay open on their own acceptance:
+the surface's slice case, and the staleness threshold stated per instrument kind.

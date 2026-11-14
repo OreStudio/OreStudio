@@ -26,11 +26,11 @@ A person signs in to ores.web and reaches the four market-data screens from the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -122,21 +122,13 @@ via its "Verifies task" field.
 
 * Result
 
-The four desk screens are in ores.web, each reading the service through a route
-of its own: the instrument finder with a kind badge, its sources and its axes;
-the rate ladder with a forward start, a window, a column per provider and the
-consensus drawn across the rungs; the FX montage with the change the server
-measures from its own instant and the day's range as a bar; and the curve
-inspector with the metric chart, the market's quote dashed beside the curve, and
-the shift stated as the curve less the market.
+The four desk screens are merged in #4702 (merge commit 081511e925), with the
+review's findings addressed before the merge: the ladder gained the instrument
+control, the year fraction and the 2s30s spread; the montage a column per
+provider; the curve inspector its axis switch; every screen states the party; and
+the finder's Enter goes where the published journey says. The curve's staleness
+verdict, which the reader never set, is now the one policy's answer to when the
+market behind the curve was last written.
 
-The generated TypeScript protocol types had drifted from the org models, so the
-four reads were regenerated rather than written by hand, and the application
-declares the screens, their cards and their three languages. Every screen has a
-case that seeds an answer and asserts the page: 22 cases across the four suites,
-and the web gate runs typecheck, prettier and 2,526 tests.
-
-What the screens do not show, they say: the curve inspector states that its read
-carries no prior close, and the montage draws a range bar rather than the
-prototype's sparkline, because the read holds the low, the high and the last and
-no path.
+What remains is recorded rather than hidden: the prior-close columns need a
+compare-at read, and the surface has no page.

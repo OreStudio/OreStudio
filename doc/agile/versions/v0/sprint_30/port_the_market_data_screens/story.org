@@ -39,7 +39,7 @@ Hedgr prototyped five market-data screens for its own terminal. ORE Studio has n
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:03B553BB-EC34-41B0-A1BA-DDD1F5461B58][Scaffold story: Port the market data screens from hedgr]] | DONE | 2026-11-13 | 2026-11-13 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:E738F1C8-D7EC-45BE-AA45-26763D4FBD65][Diff the hedgr prototypes against ours]] | STARTED | 2026-11-13 | | Initial task for: Port the market data screens from hedgr |
+| [[id:E738F1C8-D7EC-45BE-AA45-26763D4FBD65][Diff the hedgr prototypes against ours]] | DONE | 2026-11-13 | 2026-11-14 | Initial task for: Port the market data screens from hedgr |
 | [[id:566E6CE1-FE76-4094-BA12-1A28B3C357B7][Confirm the IR and vols machinery]] | DONE | 2026-11-13 | 2026-11-13 | Show that the bootstrap, day count, forward and grid machinery the new screens read already exists, so the server work is presentation and no new quant is needed. |
 | [[id:C19A12E4-3128-4A59-B350-410EA8AB5493][Add list_instruments]] | DONE | 2026-11-13 | 2026-11-13 | Add the instrument catalogue operation: one entry per instrument with its kind, name, facets, axes in draw order, sources and staleness, scoped to the caller's party. |
 | [[id:F2923BAC-6D81-4CBB-A7C0-33778675B525][Add get_rate_ladder]] | DONE | | 2026-11-13 | Add the rate ladder operation: rungs in maturity order with the server's maturity dates, one quote per provider and the consensus. |
@@ -47,7 +47,7 @@ Hedgr prototyped five market-data screens for its own terminal. ORE Studio has n
 | [[id:A49E51FC-A10C-4F24-BE3F-C87EDFF0F1E0][Add get_fx_montage]] | DONE | | 2026-11-13 | Add the FX montage operation: a base currency's crosses, the spot each provider quotes, the consensus, the change and the day's range from a stated instant. |
 | [[id:D6395FF6-B7C8-4F82-B56E-9BA020018045][Extend the published vol surface read]] | STARTED | 2026-11-13 | | State the model, strike convention, delta type, conventions, axes and staleness on the published surface read, and expose the surface's instrument identity so a smile can be sliced. |
 | [[id:EE3F60A3-2823-42FC-9C93-FF558B905B66][State staleness on the server]] | STARTED | 2026-11-13 | | Make the staleness threshold configuration and state age_seconds and stale on every value block, so no client keeps its own threshold. |
-| [[id:C8307585-34F4-467B-8195-DBB5827DEC64][Implement the market data screens in ores.web]] | STARTED | 2026-11-13 | | Draw the four market-data journeys the port added - find an instrument, read a rate ladder, read the FX montage and inspect a curve's analytics - as screens in ores.web, over the reads the marketdata service now answers, through the BFF and the client the existing market-data screens use. |
+| [[id:C8307585-34F4-467B-8195-DBB5827DEC64][Implement the market data screens in ores.web]] | DONE | 2026-11-13 | 2026-11-14 | Draw the four market-data journeys the port added - find an instrument, read a rate ladder, read the FX montage and inspect a curve's analytics - as screens in ores.web, over the reads the marketdata service now answers, through the BFF and the client the existing market-data screens use. |
 
 * Decisions
 

@@ -63,7 +63,13 @@ The move is one kind at a time, because each kind drags its own dependencies:
 5. Then the reporting, dq and inbox kinds: =schedule_reports=,
    =publish_bundle= and the two approval-mode steps.
 
-Stage 2 has a prerequisite this stage did not, and it is now stated in the
+Stage 2's prerequisite is served: iam answers
+=iam.v1.ops.enter_tenant_as_service=, which gives a service account a session
+scoped to a tenant it serves, acting as the tenant's system party and carrying
+the service's own permissions. The story's Decisions state why the entry
+carries no person's identity.
+
+It was a prerequisite this stage did not have, and it is now stated in the
 story's Decisions: a moved step that writes as the run's tenant needs a session,
 and the token is minted in process by =internal_impersonation_service=, which
 lives in iam.core. =iam.v1.ops.enter_tenant= is the only subject that issues a

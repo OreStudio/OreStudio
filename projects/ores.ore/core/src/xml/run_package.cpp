@@ -143,6 +143,20 @@ bool names_a_file(std::string_view value) {
            value.find_first_of(" \t\r\n") == std::string_view::npos;
 }
 
+/**
+ * @brief Whether a parameter names a file the run reads.
+ *
+ * ORE states the files an analytic writes with @c output in the parameter's name,
+ * such as @c outputFileName or @c scenarioOutputFile, and those are absent from an
+ * input set by design. A parameter that names one is not a file the run must be
+ * given, so it is left alone.
+ */
+bool names_an_input_file(std::string_view parameter, std::string_view value) {
+    const auto writes_it = parameter.starts_with("output") || parameter.ends_with("OutputFile") ||
+                           parameter == "outputFileName";
+    return !writes_it && names_a_file(value);
+}
+
 }
 
 std::vector<std::string> missing_named_files(const input_files& files) {
@@ -153,18 +167,18 @@ std::vector<std::string> missing_named_files(const input_files& files) {
 
     const auto document = domain::run_document_projection::read(run->second);
     std::vector<std::string> names;
-    const auto note = [&names](const std::string& name) {
-        if (name.empty() || !names_a_file(name))
+    const auto note = [&names](const std::string& parameter, const std::string& name) {
+        if (name.empty() || !names_an_input_file(parameter, name))
             return;
         if (std::ranges::find(names, name) == names.end())
             names.push_back(name);
     };
 
     for (const auto& file : domain::run_document_projection::map_setup(document).files)
-        note(file.name);
+        note(file.parameter, file.name);
     for (const auto& analytic : domain::run_document_projection::map_analytics(document))
         for (const auto& parameter : analytic.parameters)
-            note(parameter.value);
+            note(parameter.name, parameter.value);
 
     std::vector<std::string> missing;
     for (const auto& name : names)
@@ -188,7 +202,8 @@ pruned_analytics without_unloadable_analytics(const input_files& files) {
     std::vector<std::string> dropped;
     const auto loadable = [&files](const auto& analytic) {
         for (const auto& parameter : analytic.parameter)
-            if (names_a_file(parameter.value) && !files.contains(parameter.value))
+            if (names_an_input_file(parameter.name, parameter.value) &&
+                !files.contains(parameter.value))
                 return false;
         return true;
     };

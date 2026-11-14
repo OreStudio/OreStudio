@@ -86,10 +86,14 @@ TEST_CASE("an analytic whose files the input does not carry is dropped from the 
     <Parameter name="conventionsFile">conventions.xml</Parameter>
   </Setup>
   <Analytics>
-    <Analytic type="npv"><Parameter name="active">Y</Parameter></Analytic>
+    <Analytic type="npv">
+      <Parameter name="active">Y</Parameter>
+      <Parameter name="outputFileName">npv.csv</Parameter>
+    </Analytic>
     <Analytic type="sensitivity">
       <Parameter name="active">Y</Parameter>
       <Parameter name="marketConfigFile">simulation.xml</Parameter>
+      <Parameter name="scenarioOutputFile">scenario.csv</Parameter>
     </Analytic>
   </Analytics>
 </ORE>)";
@@ -102,7 +106,10 @@ TEST_CASE("an analytic whose files the input does not carry is dropped from the 
     CHECK(pruned.dropped[0] == "sensitivity");
     CHECK(ores::ore::xml::missing_named_files(pruned.files).empty());
     CHECK(pruned.files.at("ore.xml").find("sensitivity") == std::string::npos);
+    // A file the analytic writes is not a file it reads, so npv keeps its output
+    // name and stays in the document.
     CHECK(pruned.files.at("ore.xml").find("npv") != std::string::npos);
+    CHECK(pruned.files.at("ore.xml").find("npv.csv") != std::string::npos);
 }
 
 TEST_CASE("an input whose analytics all load is handed back whole", "[ore][run_package]") {

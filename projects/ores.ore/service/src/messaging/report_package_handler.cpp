@@ -308,7 +308,14 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
         // package that cannot run. It is refused here, naming the files, rather
         // than shipped for the engine to stop on: a run that failed this way
         // states an exit code and nothing else.
-        const auto missing = ores::ore::xml::missing_named_files(run_input);
+        // What the staged directory holds, by the bare name the document uses: the
+        // files the export carried, and the run's own data, which the gather step
+        // supplies and this step places.
+        auto held = run_input;
+        for (const auto& place : {places.market_data, places.fixings, places.portfolio})
+            if (!place.empty())
+                held[std::filesystem::path(place).filename().string()] = std::string{};
+        const auto missing = ores::ore::xml::missing_named_files(held);
         if (!missing.empty()) {
             std::string names;
             for (const auto& name : missing)

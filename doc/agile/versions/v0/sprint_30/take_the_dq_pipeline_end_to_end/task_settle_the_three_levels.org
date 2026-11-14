@@ -73,11 +73,11 @@ every question below.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Bundles that name a system-level publication | 0 (no bundle carries calendars, currencies, commodities or equity) | investigation, section 3.4 | e050a2d239 |
-| Bundles defined | 9 today, 10 in the model: =system_core=, =base= (=world=), =tenant_defaults= (new), =party_essentials=, =party_reporting=, =ore_samples=, =risk_management=, =crm_topology=, =lei_hierarchy=, =crypto= | =grep -o "upsert_fn(ores_utility_system_tenant_id_fn(), '[a-z_]*'," projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql | - |
-| Datasets in =base= | 57 | same command, =base= | - |
-| Datasets in =system_core= | 21 | same command, =system_core= | - |
-| Reference-data tables the tenant provisioner copies | 36, in 62 insert statements | =grep -o "insert into ores_refdata_[a-z_]*" projects/ores.sql/create/iam/iam_tenant_provisioner_create.sql | - |
-| Refdata publish functions | 57 | =grep -c '^create or replace function ores_refdata_publish_' projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql | - |
+| Bundles defined | 9 today, 10 in the model: =system_core=, =base= (=world=), =tenant_defaults= (new), =party_essentials=, =party_reporting=, =ore_samples=, =risk_management=, =crm_topology=, =lei_hierarchy=, =crypto= | =grep -o "upsert_fn(ores_utility_system_tenant_id_fn(), '[a-z_]*'," projects/ores.sql/populate/dq/dq_dataset_bundle_member_populate.sql | 9759e10ae4 |
+| Datasets in =base= | 57 | same command, =base= | 9759e10ae4 |
+| Datasets in =system_core= | 21 | same command, =system_core= | 9759e10ae4 |
+| Reference-data tables the tenant provisioner copies | 36, in 62 insert statements | =grep -o "insert into ores_refdata_[a-z_]*" projects/ores.sql/create/iam/iam_tenant_provisioner_create.sql | 9759e10ae4 |
+| Refdata publish functions | 57 | =grep -c '^create or replace function ores_refdata_publish_' projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql | 9759e10ae4 |
 
 * Notes
 

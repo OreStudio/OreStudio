@@ -29,7 +29,13 @@
 
 namespace ores::marketdata::official::domain {
 
-/// Reads one variable of the process environment, or gives nothing when it is not set.
+/**
+ * @brief Reads one variable of the process environment, or gives nothing when it is not set.
+ *
+ * "Not set" is @c std::nullopt. A lookup that answers a null @c const @c char* instead is
+ * building a @c std::string from a null pointer, which throws rather than reading as unset, so
+ * a stand-in for a missing variable returns the optional and never a pointer.
+ */
 using environment_lookup = std::function<std::optional<std::string>(const char*)>;
 
 /**

@@ -70,20 +70,45 @@ struct fx_vol_surface_feed_build_input final {
     std::vector<std::string> contributors;
     /// Their noise profiles, in the same order; empty means every one is the clean contributor.
     std::vector<ores::analytics::quant::service::fx_vol_noise_profile> contributor_profiles;
-    /// The market of each expiry, one entry for each expiry row.
     /// The pair's quoting convention, which every expiry of the surface is quoted in.
     ores::analytics::quant::math::fx_quote_convention convention;
     /// The deltas, besides ATM, to quote a risk reversal and a butterfly at.
     std::vector<double> deltas;
 };
 
-/// The three values a surface reads from the run: its pair's spot and its two currencies.
+/**
+ * @brief The three values a surface reads from the run: its pair's spot and its two currencies.
+ *
+ * The spans point into the board's own storage and are valid until the member is published
+ * again, which on the ticking thread is its next tick.
+ */
 struct fx_vol_market_inputs final {
     ores::analytics::quant::math::fx_market spot{};
     std::span<const ores::analytics::quant::math::fx_curve_point> base{};
     std::span<const ores::analytics::quant::math::fx_curve_point> quote{};
     std::chrono::year_month_day spot_date{};
 };
+
+/**
+ * @brief The surface's three values as the run's board holds them, or the member it could not read.
+ *
+ * A surface may tick before any curve has, and a curve may be stopped, so a member that is not
+ * published is not an error but an ordering: the answer names the member -- =curve:EUR=,
+ * =spot:EUR/USD= -- and the caller decides what to do about it. The names are the members' own,
+ * because that is what a reader of the run's board looks for.
+ *
+ * @param values The run's board.
+ * @param base_curve The member of the pair's base currency, which is the foreign side.
+ * @param quote_curve The member of the pair's quote currency, which is the domestic side.
+ * @param spot The member of the pair's spot.
+ * @return The three values, whose spans are valid until the member they point into is published
+ *         again, or the name of the first member the run has not published.
+ */
+[[nodiscard]] ORES_SYNTHETIC_API_EXPORT std::expected<fx_vol_market_inputs, std::string>
+fx_vol_board_inputs(const ores::analytics::quant::domain::market_board& values,
+                    ores::analytics::quant::domain::market_board::member_id base_curve,
+                    ores::analytics::quant::domain::market_board::member_id quote_curve,
+                    ores::analytics::quant::domain::market_board::member_id spot);
 
 /**
  * @brief One market per expiry, from the run's values at one instant.
@@ -182,9 +207,6 @@ private:
     std::optional<ores::analytics::quant::domain::market_board::member_id> base_curve_id_;
     std::optional<ores::analytics::quant::domain::market_board::member_id> quote_curve_id_;
     std::optional<ores::analytics::quant::domain::market_board::member_id> spot_id_;
-    std::string base_code_;
-    std::string quote_code_;
-    std::string pair_label_;
     /// One period per expiry, in the emitter's own expiry order.
     std::vector<ores::analytics::quant::domain::date_period> expiry_periods_;
     /// One market per expiry, rebuilt every tick into the same storage.

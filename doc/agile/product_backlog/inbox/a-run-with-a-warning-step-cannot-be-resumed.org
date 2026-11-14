@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: CE766B4E-5AE4-4FAF-A696-1121A875DE27
+:END:
+#+title: A run that ended on a step with warnings cannot be resumed
+#+description: Resuming a tenant setup run that ended on a warning step is refused with 'The step <name> has not completed, so the run cannot resume past it', although the engine's has_finished already counts completed_with_warnings as finished. The stored state of that step is the thing to read.
+#+type: capture
+#+level: cross
+#+filetags: :workflow:resume:provisioning:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A tenant setup run whose last step "completes with warnings" leaves the run unresumable. The
+resume verb refuses with
+
+#+begin_src text
+The step '<name>' has not completed, so the run cannot resume past it.
+#+end_src
+
+That sentence comes from =workflow_engine.cpp=, in the loop that walks the steps before the
+resume target. The check it uses is
+
+#+begin_src cpp
+const auto has_finished = [&](const domain::workflow_step& s) {
+    return s.state_id == completed_id || s.state_id == completed_with_warnings_id;
+};
+#+end_src
+
+so a step stored as =completed_with_warnings= *is* past that gate. A run that refuses is
+therefore holding a step in some other state -- =skipped=, =cancelled=, or a state written
+before the warning state existed -- and the message names which step, not which state.
+
+* Why
+
+Provisioning stalls and the only way through is to rerun the tenant setup from the start,
+which is exactly the cost the resume verb exists to avoid. Two runs were lost to it while the
+synthetic service was dying, because a step that completes while warning is the normal end of
+a step whose service flaked.
+
+The engine's rule is defensible: "a retry resumes the work a run still owes; it never resumes
+past work that did not land". What is missing is a way to tell *from the refusal* whether the
+step did not land or landed with a warning, and a decision about whether a warned step is
+something to resume past.
+
+* What to read next
+
+Query the instance's steps and compare their =state_id= against the ids =step_states_.require=
+returns for =completed= and =completed_with_warnings=. If the step is in one of the other
+terminal states, the fix is a rule: a warned step counts as finished, and a skipped one does
+not. If it is stored under an id the engine no longer requires, the fix is a mapping.
+
+* References
+
+- =projects/ores.workflow/core/src/service/workflow_engine.cpp=: =has_finished=, the resume
+  precondition, and the refusal.
+- =projects/ores.workflow/core/src/messaging/workflow_query_handler.cpp=: where a step's
+  state is shown, which is the fastest way to see the stored id.
+
+* See also
+
+- [[id:25D92EF7-A9A6-4295-8BDA-990CD9D50047][The surface's test fixture is duplicated, and
+  its member ids travel bare]] -- found in the same session, also captured rather than fixed.

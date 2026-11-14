@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 25D92EF7-A9A6-4295-8BDA-990CD9D50047
+:END:
+#+title: The surface's test fixture is duplicated, and its member ids travel bare
+#+description: The two surface test files carry the same board fixture under a prefix rename, and fx_vol_board_inputs takes three member ids of one type in a row, where a base-and-quote transposition is silent.
+#+type: capture
+#+level: cross
+#+filetags: :testing:refactor:synthetic:market_board:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two findings from the review of the surface's tick tests that the branch recorded instead of
+fixing, because neither changes what is asserted.
+
+*Duplication.* =feeds_fx_vol_surface_tick_tests.cpp= and
+=feeds_fx_vol_surface_round_trip_tests.cpp= carry the same board fixture line for line under
+a prefix rename -- =tick_days_to= against =round_trip_days_to=, and the curve, the board and
+the publish with it. Seventy lines that differ only in the name of their constants. One
+=tests/fx_vol_board_fixture.hpp= of =inline= functions would carry it once; this project
+already does that in =provider_seed.hpp= and =test_suite.hpp=, and the header has to avoid an
+anonymous namespace, because a unity build merges the target's sources.
+
+*The ids.* =fx_vol_board_inputs= takes three =market_board::member_id= arguments of the same
+type in a row, and the feed holds three =optional= values of it. Passing the pair's base curve
+where the quote belongs is not a type error, it is a silent read of the wrong curve -- and it
+is exactly the mistake this pair of curves invites. One =fx_vol_member_ids= struct makes the
+transposition unrepresentable.
+
+* Why
+
+Both were judged out of scope for the task that found them: the first is a change to how the
+target's fixtures are built rather than to what any test asserts, and the second is a small
+API change with a call site in the feed and two in tests. Recording them keeps the review's
+findings from being lost without spending a task's worth of churn on either.
+
+* References
+
+- =projects/ores.synthetic/api/tests/feeds_fx_vol_surface_tick_tests.cpp=: the fixture, and
+  the three call sites.
+- =projects/ores.synthetic/api/tests/feeds_fx_vol_surface_round_trip_tests.cpp=: the duplicate.
+- =projects/ores.synthetic/api/include/ores.synthetic.api/feeds/fx_vol_surface_feed.hpp=:
+  =fx_vol_board_inputs= and the three =member_id= fields.
+
+* See also
+
+- [[id:CB3AAFB0-532C-413B-B522-C9B00908CAC6][Test the surface's tick through the values,
+  and the board's invariants]] -- the task whose review raised them, rows 10 and 11.

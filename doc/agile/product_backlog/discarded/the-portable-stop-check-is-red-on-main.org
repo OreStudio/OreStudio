@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: BA660F0F-00C6-4C88-BF2D-691E30127C94
+:END:
+#+title: The portable-stop check is red on main
+#+description: projects/ores.synthetic/service/src/app/application.cpp still includes <stop_token>, which nothing in the file uses, so check_portable_stop_types.py fails for every branch. One include is the whole fix.
+#+type: capture
+#+level: cross
+#+filetags: :check:portability:synthetic:
+#+created: 2026-11-13
+#+updated: 2026-11-13
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=projects/ores.synthetic/service/src/app/application.cpp= line 57 includes
+the =stop_token= header, and nothing in the file uses it. The file already names
+=ores::platform::concurrency::stop_token= in two places -- the worker's signature and the
+run loop -- so the include is a leftover from the port that introduced the platform type.
+
+=check_portable_stop_types.py= scans *includes*, not uses, so it reports the file and
+=compass check= fails the =portable-stop= check for everyone. Deleting the one include
+clears it.
+
+* Why
+
+Every branch's gate is red on a file it did not touch, which is the state that makes people
+stop reading the gate. A one-line removal fixes it, and it is nobody's task: it belongs to
+whoever finally removes the last C++20 stop type from the tree, and until then it costs
+every environment a failed check.
+
+Verified on =origin/main= =6dfbd3a3fb=: the include is still there. This branch's diff does
+not touch the file.
+
+* References
+
+- =projects/ores.synthetic/service/src/app/application.cpp= line 57: the include.
+- =projects/ores.codegen/scripts/check_portable_stop_types.py=: the scan that reports it.
+- =projects/ores.platform/include/ores.platform/concurrency/stoppable_thread.hpp=: the
+  type the file actually uses.
+
+* See also
+
+- [[id:B036AA61-F8F3-4EA3-98FC-CAFE1F9ED75E][Stop the scheduler the portable way]] --
+  the task whose port left the include behind.
+- [[id:30AA2C7B-8C84-4E7B-8910-1E3C21338C2C][Hotfix: Main CI is red on Windows, GCC,
+  and tests]] -- the kind of hotfix this would ride with.
+
+* Resolution
+
+Fixed on =origin/main= by the CI hotfix =eb04abd593=, which removed the same include. The
+surface-tick branch had made the same fix and dropped it on rebasing. The check answers "no
+C++20 stop type is named outside ores.platform" on this branch's tree, and =compass check= no
+longer reports it.

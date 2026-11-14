@@ -1,0 +1,369 @@
+:PROPERTIES:
+:ID: CB3AAFB0-532C-413B-B522-C9B00908CAC6
+:END:
+#+title: Task: Test the surface's tick through the values, and the board's invariants
+#+description: The feed-level tests the review asked for: a tick that names a missing member, two ticks that emit identical quotes for an unchanged curve, a spot whose level reads back from the board, and the round trip through the board rather than around it. Also the layout work run_market::drive and the board's AoS storage, which need evidence before they change.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/the-surfaces-tick-tested-without-a-wire
+#+pr: 4698
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-13
+#+updated: 2026-11-14
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The review of PR #4686 found that the surface's tick is tested only through hand-built markets, so
+four things it does are unproven: that it names a member the run has not published, that two ticks
+against an unchanged curve emit identical quotes, that a spot feed's level reads back from the board
+as the process's own value, and that the round trip goes *through* the board rather than around it.
+
+=fx_vol_expiry_markets= was extracted for exactly this: it takes the three values and the periods and
+answers one market per expiry, so a test can publish curves and a spot to a board, read them back
+through the same views the feed reads, and assert both the messages and the markets without a wire.
+
+Two layout questions ride with it, recorded as opportunities and not defects because nobody has
+measured them: =run_market::drive= finds a series' drivers in a =std::map= per tick, and a board
+member holds its points in a heap vector. Both are candidates for a flat arena once a run with a
+thousand feeds is measured.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- A surface ticked against a run that has published neither curve publishes nothing and answers =no market: curve:EUR=, naming the currency it could not read.
+- The same tick against a run that has published the base curve names the quote currency, and against one that has published both curves names the pair's spot: =no market: spot:EUR/USD=.
+- A curve published to the run's board reads back through the surface's own read as the same points, and the spot published under the pair's code reads back as the level that was published.
+- Each expiry's market resolves at the value date the spot date plus that expiry's period gives, so the three expiries discount over three different horizons and no two markets are interchangeable.
+- A market's forward is the ratio of the two curves' own factors at its value date, to =1e-12=, so the pair's two curves are both read and neither is assumed flat.
+- Two consecutive ticks against an unchanged board hand the emitter identical markets and it emits identical quotes, so the board adds no drift of its own. A republication of the same values changes nothing either.
+- The round trip goes through the board: curves and a spot are published to a board, read by the surface's read, turned into markets by =fx_vol_expiry_markets= and emitted, and then calibrated against those same markets, with no =fx_market= built by hand in that test. Its error is measured once and recorded in Measurements with its command and commit.
+- The pair's spot member is named by one function at the writer and at the reader, so the spot a spot feed publishes is the spot a surface reads.
+- A hidden benchmark states the cost of one driver lookup per tick and one board member read at a thousand members, with its command and commit. The budget it is read against is the sentence the tick's own body builds, which is the other thing the loop pays for on every tick: the layout of =drive= and of a member's points changes only if a lookup costs more than that sentence.
+
+* Plan
+
+Three questions the review left open, answered in this order, because each one's answer
+decides what the next can even assert.
+
+*Stage 1 — the seam.* The tick's gates are the two sentences the previous task shipped and
+nothing tests. They are unreachable because they sit after a =nats::client&= in the
+constructor and the publish loop. So the read comes out of =tick= into one function that
+takes the board and the three member ids and answers either the three values or the member
+it could not read. =tick= then keeps the publish loop and nothing else, and the message
+stays byte-identical: the function names the member, the tick prefixes =no market: =. The
+alternative -- constructing a feed with a default client -- would test the same sentence
+through a class whose only remaining dependence is a broker, which is the wire this task
+exists to avoid. The review showed the price of that: the =no market: = prefix belongs to
+the tick, so no test of the read alone can assert the sentence an operator greps for. Every
+gate answers before the publish, so a feed built on a client that is never used is not the
+wire -- it is the sentence. The gate case therefore does what this stage argued against, and
+the argument was wrong.
+
+*Stage 2 — the values.* With the read in hand, the tests publish to a real board and read
+back through the same views, under the name =fx_pair_member_code= builds. The curves are
+stated points rather than ones =append_curve_points= derives from a process: that path has
+its own tests, and stating the points is what lets the expected factor be a literal a reader
+can check by hand.
+
+*Stage 3 — the dates.* The value date is the claim the previous task made and never
+observed: the three expiries must discount over three different horizons. A flat curve with
+a point every tenor makes the expected factor =exp(-r t)= exactly, so the assertion is a
+number rather than a direction, and a forward ratio off the two curves pins that both are
+read.
+
+*Stage 4 — no drift.* Two ticks, and a republish between them, compared point by point. The
+emitter's processes are at their start and the drivers are zero, so the fixed point is
+exact and any difference is the board's.
+
+*Stage 5 — the round trip.* The existing round-trip test builds three identical =fx_market=s
+by hand and hands each side the same one, which is why the review called it weak. It is
+rewritten in place rather than joined by a second case: the case goes through the board end
+to end and calibrates the quotes against the markets the read produced, and it keeps the fit
+assertions it had, so the claim that the fit recovers the quotes is still measured -- on
+three markets that differ, rather than on one stated three times. The plan said the old case
+would stay; keeping it would have been a test that guarantees its own precondition.
+
+*Stage 6 — the measurement.* =drive= and the board's layout were deferred because nobody
+had measured them. A hidden =[.benchmark]= test, in the style of the pq layer benchmark,
+states one lookup and one read at a thousand members; the numbers go in Measurements and
+the decision follows from them, not from taste.
+
+*Two leftovers found while reading for stage 1*, both one line: a comment above
+=convention= that still describes the deleted =markets= field of the build input, and a
+manual slash join in =make_fx_spot_feed= that the previous task's review recorded as fixed
+by =fx_pair_member_code=. The second matters here because the spot member's name is what
+the reader and the writer must agree on.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| A tick whose run has published neither curve | =no market: curve:EUR=, and =publish_count()= stays zero | =ores.synthetic.api.tests "[fx_vol_surface_feed]"= | e97cc811db |
+| The same with the base curve published | =no market: curve:USD=, and nothing sent | the same | e97cc811db |
+| The same with both curves published | =no market: spot:EUR/USD=, and nothing sent | the same | e97cc811db |
+| The value date of each expiry | 16 December 2026, 16 February 2027, 16 May 2027, at 30, 92 and 181 days | =ores.synthetic.api.tests "[fx_vol_surface_tick]" --success= | e97cc811db |
+| The discounts each value date carries, domestic then foreign | 0.9991784198737006 and 0.997537284048252; 0.9974826259685393 and 0.9924668734686284; 0.9950533709567208 and 0.9852333992470845, asserted at =1e-12= relative | the same | e97cc811db |
+| The forward of each expiry | 1.0824192174825231, 1.0787481969120785, 1.0735002590229397, strictly falling, so one market is not reused | the same | e97cc811db |
+| A curve and a spot read back through the surface's own read | the published points, point for point, and the published level | the same | e97cc811db |
+| Two ticks with the same values republished between them | bit-for-bit identical quotes; the 1M ATM is 0.0699722922466306 | the same | e97cc811db |
+| Worst error of a calibration of the run's own quotes, through the board, at ATM | 2.55e-09 volatility, asserted at =1e-8= | =ores.synthetic.api.tests "[fx_vol_surface_round_trip]" --success= | e97cc811db |
+| The same at the 25 and 10 delta wings | 6.56e-09 volatility, asserted at =2e-8= | the same | e97cc811db |
+| One driver lookup in a run of a thousand series, which is 250 series keys | 15.85, 25.18 and 26.07 ns, the medians of three runs of five passes of 2,000,000, the spread between runs being the machine's load | =ores.analytics.quant.tests "[.benchmark][run_market]"= | 7e29c65775 |
+| A sentence of the tick body's shape, as the budget a lookup is read against | 50.45, 67.03 and 141.98 ns over the same three runs, so the lookup is between a third and a sixth of it | the same | 7e29c65775 |
+| One board member read at a thousand members | 6.39 and 8.09 ns, the medians of two runs | =ores.analytics.quant.tests "[.benchmark][market_board]"= | 7e29c65775 |
+| The quant suite | 712 cases | =ores.analytics.quant.tests= | e97cc811db |
+| The synthetic api suite | 1018 cases | =ores.synthetic.api.tests= | e97cc811db |
+| The marketdata core suite | 407 cases | =ores.marketdata.core.tests= | 7e29c65775 |
+| The reporting core suite | 303 cases | =ores.reporting.core.tests= | 7e29c65775 |
+| The local check gate | 29 of 31 checks pass | =compass check= | 8a1b4b1297 |
+| The marketdata official suite | 120 cases, 513 assertions | =ores.marketdata.official.tests= | abc41920a2 |
+| The synthetic core suite | 139 cases, 138 passed and 1 skipped, 3230 assertions | =ores.synthetic.core.tests= | 8a1b4b1297 |
+
+The three nanosecond ranges are the honest shape of this measurement: the same code on the
+same machine read 15.85 ns and then 26.07 ns for a lookup, so a single median would carry
+more precision than the number has. What the decision needs is the ratio, and that holds at
+every reading.
+
+* Notes
+
+** The layout questions are closed by numbers, not by taste
+
+The two candidates the previous review deferred were =drive='s map lookup and a member's
+points in their own heap vector. Measured at the scale the deferral named -- a thousand
+series, a thousand members -- a lookup reads between 15.85 and 26.07 ns across three runs
+and a member read between 6.39 and 8.09 ns across two, against 50.45 to 141.98 ns for a
+sentence of the tick body's shape and a publish in the microseconds. The spread is the
+machine's load, not the code's, which is why the table carries the range: at the worst
+reading a lookup still costs a sixth of what the body's own message costs, so nothing on
+the path is worth re-laying out. What a change would buy is 26 ns a tick, at ten thousand
+ticks a second 0.26 ms of a second of run.
+
+The second is worth one sentence of argument the number cannot make: a *reader* touches one
+member, and that member's points are contiguous inside its own vector, so the locality a
+flat arena would buy is locality the reader already has. A flat arena would help only a
+sweep over every member, which nothing does today; the screen read that will does so off
+the loop.
+
+** Two things the tests corrected, which the code had wrong
+
+- =fx_vol_point_tick::stale= is the noise model's stale-quote flag, not "this value repeats
+  the last one". The no-drift test first asserted it and failed correctly: the clean
+  contributor never reports a stale quote. The claim is carried by bit-for-bit equality.
+- The round trip compared =fit.error=, which is signed, to an absolute value. It passed
+  only because that fixture's residuals happened to be positive; with three different
+  markets one is negative and the comparison caught itself.
+
+** The review of this branch
+
+Two axes were run separately -- standards against the checklist and the repo's own rules,
+spec against this page's acceptance -- and they agreed on the load-bearing finding, which is
+why the gate case takes the shape it does. The findings and what came of each are in the
+review table further down this page.
+
+** The gate on this branch
+
+Two full =compass check= runs before the rebase and one after it, onto =origin/main= at
+=d38ed21c8c=. Everything this branch can move has passed at every point: the twenty-two
+code and documentation checks, the site page and the backlog indexes, and =build=.
+
+The rebase brought two things the branch had not caused. One was a build break: main's
+=rate_ladder_reader.cpp= still held a file-local function with no caller, and
+=-Werror,-Wunused-function= means the marketdata service did not compile at all, so nothing
+downstream of it could be built or tested. That is fixed here (ac74167513) because a branch
+that cannot build cannot be reviewed. The other was the smoke's failure being reproducible
+rather than theorised: a standalone =compass smoke ticks --fresh= gives the same sentence the
+gate gives.
+
+With the tree building, the checks the branch had only diagnosed are fixed, and each is a
+commit of its own:
+
+- =portable-stop=: =origin/main= cleared it before this branch merged, with the same
+  removal of the include =application.cpp= no longer used. The branch had made the fix and
+  dropped its copy when it rebased; =check_portable_stop_types.py= passes on the result.
+- =ores.marketdata.official.tests=: =origin/main= cleared it at the same time and in the same
+  way -- the file's stand-ins for a missing variable answer =std::nullopt= rather than a null
+  =const char*>=. What this branch keeps of that work is the note on =environment_lookup=
+  saying why (abc41920a2), and the suite passes.
+
+The two captures those checks produced are filed as *discarded* with their resolution, since
+neither needed a task: [[id:BA660F0F-00C6-4C88-BF2D-691E30127C94][the portable-stop one]] and
+[[id:C73E11BE-122E-466B-BCEC-3F0AF7A979F6][the Banxico one]].
+
+What is still red is one thing, and it is a date rule rather than a line: =ticks-smoke=
+stops at =publish_party_surfaces= with all forty surfaces refused for =expiry 1W: the row
+dated 2026-11-17 is before the spot date 2026-11-18=. The calibration dates its quotes at
+the as-of instant's day (=fx_vol_surface_calibration_service.cpp=) while the forward set it
+reads them against carries a spot date that has rolled further, and the pair market refuses a
+quote before spot. That is
+[[id:C15F8BD5-6941-43CC-A989-75F4C01E5377][The 1W FX quote is dated before the spot date, so
+every surface is refused]], which is now on this branch after the rebase. Deciding which
+calendar rule dates a quote row, and which dates a forward's spot, is the derived-quote
+owner's call, so this branch does not take it.
+
+The two ingest tests in =ores.marketdata.service.tests= also fail when the fleet is up, which
+is the state the inbox's own captures describe
+(=the_feed_ingest_tests_fail_while_the_environments_services_run=,
+=feed_ingest_small_batch_test_times_out_under_load=). With the services stopped, both pass.
+
+The run after these fixes is 29 of 31 (the gates, their commands and their commit are in
+Measurements): =portable-stop= is green and no longer reported, main having added
+=forward-declarable-includes= to the list in the meantime. =ctest= failed one suite,
+=ores.synthetic.core.tests=, on a database assertion that a basket constituent named =.SPX=
+and the equity catalogue did not hold it. Run on its own against the same freshly recreated
+database, that suite passed 138 cases with 1 skipped and 3230 assertions, which points at the
+four suites that share one database in parallel rather than at the code -- a serial =ctest=
+run would settle it, and none is recorded here. =ticks-smoke= is the date rule above and
+nothing else.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4698][#4698]] | [marketdata,quant,synthetic] Test the surface's tick through the run's values |
+
+* Review
+
+Two axes, run separately: standards against the code-review checklist and the repo's rules,
+spec against this page's acceptance.
+
+| # | Comment summary | Axis | File | Decision | Notes |
+|---+-----------------+------+------+----------+-------|
+| 1 | Nothing called =tick=, so the =no market: = prefix and "publishes nothing" were unasserted | both | tests | fixed | the gate case builds the real feed and ticks it three times, asserting the whole sentence and =publish_count()= |
+| 2 | The value dates and discounts were computed with the expression the fixture used, so a wrong =add_period= would agree with itself | standards | tick tests | fixed | dates, discounts and forwards are literals a reader can check |
+| 3 | The no-drift case compared the emitter with its own next step | standards | tick tests | fixed | it states the 1M ATM the first tick quotes |
+| 4 | The round trip measured 2.55e-09 and asserted < =1e-7=, so a doubling would stay green | spec | round-trip tests | fixed | asserted at =1e-8= and =2e-8= |
+| 5 | The new public function documented two of its four parameters and not its return | standards | =fx_vol_surface_feed.hpp= | fixed | all four and the return are documented |
+| 6 | The benchmark called 250 series keys "a thousand series", and measured a copy of the body's sentence | spec, standards | =run_market_benchmark_tests.cpp= | fixed | the label says what is measured, and the sentence is a reference, not a guard |
+| 7 | Plan stage 5 said the fit-only case stays; it was replaced instead | spec | this page | fixed | the plan now says what happened and why |
+| 8 | The round trip's comment narrated the design it replaced | standards | round-trip tests | fixed | the comment is gone |
+| 9 | Acceptance 9 named a budget no page states | spec | this page | fixed | the budget is the sentence the tick's body builds, measured beside the lookup |
+| 10 | The board fixture is duplicated between the two test files | standards | both test files | deferred | [[id:25D92EF7-A9A6-4295-8BDA-990CD9D50047][captured]]: a shared header changes how the fixtures are built, not what is asserted |
+| 11 | Three member ids travel as three arguments of one type | standards | =fx_vol_surface_feed.hpp= | deferred | [[id:25D92EF7-A9A6-4295-8BDA-990CD9D50047][captured]] with 10; a transposition is silent, which is the argument for taking it |
+| 12 | Two inbox captures and the predecessor's row 16 sit outside this task | spec | =doc/agile/= | accepted | the captures record red checks the gate hits on every branch, and row 16 is this task's closing |
+| 13 | Sentence-style test names | standards | tests | accepted | the neighbouring feed and emitter tests name cases the same way |
+| 14 | Four comments contrasted the code with the implementation it replaced | standards | three test files | fixed | each states what is |
+| 15 | A file comment claimed this file asserts the gate sentences, and said two where three members exist | standards | tick tests | fixed | the gate sentence is asserted in the feed tests, through the tick; this file says so |
+| 16 | The round trip's margins were credited to the commit that added the test, not the one that tightened it | spec | this page | fixed | cited to =e97cc811db= |
+| 17 | The gate's values print only with =--success=, and the benchmark rows cited two commits for one number | spec | this page | fixed | =--success= added, one commit per row |
+| 18 | The three red-fix commits carried no =Story-ID=, =Task-ID= or =Environment= trailer | standards | the red-fix commits | fixed | their messages were rewritten to carry them; two of the three were later dropped altogether, because =origin/main= had fixed the same reds |
+| 19 | Doxygen used org emphasis, and a fixture spelled nothing as an empty optional | standards | =secret.hpp=, =domain_banxico_tests.cpp= | fixed | 7876e77370 |
+| 20 | The round trip recomputes its discount with the fixture's helper, and fits over =1/12= while the market is built over =30/365= | standards | round-trip tests | accepted | the two year fractions are production's: the emitter fits on the row's tenor and the market discounts on the period's date. The recompute is what the tick test's literals pin, and the round trip is about the fit |
+| 21 | Nothing tests the spot feed's own choice of member code | spec | =fx_spot_feed.cpp= | accepted | the reader's side is tested; the writer would need the factory, its client and a config row. Recorded as a gap rather than a claim |
+| 22 | The page cited suite sizes and check counts as prose, without a command or a commit | spec | this page | fixed | each is a Measurements row now |
+
+* Result
+
+The surface's tick is now testable without a wire, and what it does is tested. The read came
+out of the body into =fx_vol_board_inputs=, which answers the pair's three values or the
+member it could not read; the tick keeps the walk over the points and the publish, so the
+sentence it logs is byte-identical to the one it logged before.
+
+Four claims, each of which had none. The three gates, asserted as the whole sentence a
+reader of the log sees -- =no market: curve:EUR=, =no market: curve:USD=,
+=no market: spot:EUR/USD= -- by building the real feed and ticking it, with =publish_count()=
+checked at zero after each, which is "publishes nothing" as a number rather than a hope. The
+value date of each expiry: 16 December, 16 February and 16 May, at 30, 92 and 181 days, with
+the discounts and forwards those dates carry stated as literals, so a wrong period addition
+or a shared expression cannot agree with itself. Two ticks with the same values republished
+between them quoting bit for bit, and stating the 1M ATM they quote rather than only
+comparing it with its own next step. And a round trip that goes *through* the board --
+curves and a spot published, read back through the surface's own read, and calibrated
+against the markets that read produced -- costing 2.55e-09 at ATM and 6.56e-09 at the wings,
+asserted at =1e-8= and =2e-8=.
+
+The two layout questions the previous review deferred are closed by measurement rather than
+by argument: a driver lookup reads 15.85 to 26.07 ns across three runs and a board read 6.39
+to 8.09 ns, at the scale the deferral named, against 50.45 to 141.98 ns for a sentence of
+the tick body's shape. Neither changed; the table carries the ranges because a single median
+would claim more precision than the number has.
+
+The review of this branch found that the first version of these tests asserted the member
+name and never the sentence -- nothing called =tick= -- which is the finding this page's
+Review table records first. It also found the expectations computing themselves, the
+no-drift case comparing the emitter with itself, and the round trip asserting forty times
+looser than it measured. All four are fixed in the commit the Measurements cite.
+
+Two leftovers from that review table were real and are gone: the comment above the build
+input's convention described a field deleted in the previous task, and =make_fx_spot_feed=
+built the pair's member code with a slash join of its own -- the one string the spot's
+writer and the surface's reader have to agree on, and now the one function that builds it.
+
+What is not here: the two gates' *static* side, the start verb's refusal of a pair with no
+curve feed. It is asserted where it lives, in the feed kind registry's tests, and this task
+adds nothing to it.
+
+* Promoted from capture
+
+Captured 2026-11-13 in the product backlog; promoted preserving the UUID.
+
+** What
+
+The review of PR #4686 found that the surface's tick is tested only through hand-built markets, so
+four things it does are unproven: that it names a member the run has not published, that two ticks
+against an unchanged curve emit identical quotes, that a spot feed's level reads back from the board
+as the process's own value, and that the round trip goes *through* the board rather than around it.
+
+=fx_vol_expiry_markets= was extracted for exactly this: it takes the three values and the periods and
+answers one market per expiry, so a test can publish curves and a spot to a board, read them back
+through the same views the feed reads, and assert both the messages and the markets without a wire.
+
+Two layout questions ride with it, recorded as opportunities and not defects because nobody has
+measured them: =run_market::drive= finds a series' drivers in a =std::map= per tick, and a board
+member holds its points in a heap vector. Both are candidates for a flat arena once a run with a
+thousand feeds is measured.
+
+** Why
+
+Because a test that guarantees its own precondition proves nothing about the code: the round trip as
+written passes one market to the emitter and the same one to the calibration, so the board, the
+period addition and the two-curve resolution are all bypassed. The gate messages are the whole point
+of the two gates, and neither is asserted anywhere.
+
+** References
+
+- =projects/ores.synthetic/api/include/ores.synthetic.api/feeds/fx_vol_surface_feed.hpp=:
+  =fx_vol_expiry_markets=, the function these tests would call.
+- =projects/ores.analytics/quant/src/service/run_market.cpp=: =drive=, the map lookup.
+- =projects/ores.analytics/quant/src/domain/market_board.cpp=: the member's points.
+
+** See also
+
+- [[id:DDF8585F-75EE-4190-B20B-8A913DC1F883][Build the run's market board and strike every surface against it]] -- the task
+  whose review asked for these.
+- [[id:1F404EE8-215D-4E62-AB09-B2D34BE9C12F][The components of the market data generator]] -- the shape the tests would exercise.

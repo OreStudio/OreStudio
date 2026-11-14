@@ -243,7 +243,7 @@ via its "Verifies task" field.
 | 13 | File-scope `current_markets` in the emitter tests | =feeds_fx_vol_surface_emitter_tests.cpp= | accepted | it is a test fixture, and the two tests that compare two markets now pass theirs explicitly, so the global is only used by single-emitter tests |
 | 14 | `market_member_view` and `member` repeat seven fields | =market_board.hpp= | accepted | one is the published snapshot, the other the storage; collapsing them would put the mutable buffer in the reader's hands |
 | 15 | `drive` finds drivers in a map per tick; the board is AoS | =run_market.cpp=, =market_board.cpp= | deferred | no measurement yet, so no change; the capture says what to measure |
-| 16 | No test for the two consecutive ticks, the spot read-back, the gate messages, or the round trip through the board | tests | deferred | =fx_vol_expiry_markets= was extracted to make them cheap; captured as its own work |
+| 16 | No test for the two consecutive ticks, the spot read-back, the gate messages, or the round trip through the board | tests | done | =fx_vol_expiry_markets= was extracted to make them cheap, and [[id:CB3AAFB0-532C-413B-B522-C9B00908CAC6][the follow-on task]] landed all four |
 | 17 | A two-way capture and its index row were not asked for | =doc/agile/product_backlog/inbox/= | accepted | the owner asked for that statement explicitly, before the review |
 | 18 | `market_board::find` has no production caller | =market_board.hpp= | accepted | it is the reader's non-creating lookup, which the screen read in the next task needs; it is covered by a test |
 

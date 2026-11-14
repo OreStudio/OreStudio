@@ -56,15 +56,6 @@ auto& rate_ladder_lg() {
 constexpr const char* ladder_tenor_convention = "RATES_SPOT_FORWARD";
 constexpr const char* ladder_day_count_convention = "A365F";
 
-
-std::int64_t ladder_age_seconds_of(std::chrono::system_clock::time_point as_of,
-                                   std::chrono::system_clock::time_point now) {
-    if (as_of == std::chrono::system_clock::time_point{})
-        return 0;
-    const auto age = std::chrono::duration_cast<std::chrono::seconds>(now - as_of).count();
-    return age < 0 ? 0 : age;
-}
-
 /// One provider's quote at one rung of one ladder series.
 struct quote_at_rung final {
     std::string provider_code;

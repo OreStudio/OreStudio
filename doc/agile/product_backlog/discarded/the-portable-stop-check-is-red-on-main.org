@@ -45,3 +45,9 @@ not touch the file.
   the task whose port left the include behind.
 - [[id:30AA2C7B-8C84-4E7B-8910-1E3C21338C2C][Hotfix: Main CI is red on Windows, GCC,
   and tests]] -- the kind of hotfix this would ride with.
+
+* Resolution
+
+Fixed in 0fc96aef88, on the surface-tick branch, because the check fails for every branch
+and the fix is the removal of one include. =check_portable_stop_types.py= answers "no C++20
+stop type is named outside ores.platform", and =compass check= no longer reports it.

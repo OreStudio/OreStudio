@@ -48,3 +48,10 @@ The fix is in the fixture, not in =resolve_secret=: the stand-in should answer
 
 - [[id:BA660F0F-00C6-4C88-BF2D-691E30127C94][The portable-stop check is red on
   main]] -- the other half of the same gate run.
+
+* Resolution
+
+Fixed in 6b035ddc90, on the surface-tick branch: the three fixtures return
+=std::optional<std::string>= now, the type's documentation says a missing variable is
+=std::nullopt= rather than a pointer, and =ores.marketdata.official.tests= passes — 120
+cases, 513 assertions — where it failed two.

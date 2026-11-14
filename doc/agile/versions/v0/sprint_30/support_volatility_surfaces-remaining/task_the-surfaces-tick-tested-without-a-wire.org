@@ -40,9 +40,9 @@ thousand feeds is measured.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Nothing: the read, the tests and the measurement have landed. |
-| Waiting on   | Nothing.                               |
-| Next         | Close the task once its pull request merges. |
+| Now          | Rebased onto main, reviewed, and green on everything it can move. |
+| Waiting on   | The smoke's 1W pre-spot refusal, which is a capture on main and not this task's. |
+| Next         | Raise the pull request. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -123,23 +123,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| A tick whose run has published neither curve | =no market: curve:EUR=, and =publish_count()= stays zero | =ores.synthetic.api.tests "[fx_vol_surface_feed]"= | 10595d103f |
-| The same with the base curve published | =no market: curve:USD=, and nothing sent | the same | 10595d103f |
-| The same with both curves published | =no market: spot:EUR/USD=, and nothing sent | the same | 10595d103f |
-| The value date of each expiry | 16 December 2026, 16 February 2027, 16 May 2027, at 30, 92 and 181 days | =ores.synthetic.api.tests "[fx_vol_surface_tick]"= | 10595d103f |
-| The discounts each value date carries, domestic then foreign | 0.9991784198737006 and 0.997537284048252; 0.9974826259685393 and 0.9924668734686284; 0.9950533709567208 and 0.9852333992470845, asserted at =1e-12= relative | the same | 10595d103f |
-| The forward of each expiry | 1.0824192174825231, 1.0787481969120785, 1.0735002590229397, strictly falling, so one market is not reused | the same | 10595d103f |
-| A curve and a spot read back through the surface's own read | the published points, point for point, and the published level | the same | 10595d103f |
-| Two ticks with the same values republished between them | bit-for-bit identical quotes; the 1M ATM is 0.0699722922466306 | the same | 10595d103f |
-| Worst error of a calibration of the run's own quotes, through the board, at ATM | 2.55e-09 volatility, asserted at =1e-8= | =ores.synthetic.api.tests "[fx_vol_surface_round_trip]"= | 941d11a13e |
-| The same at the 25 and 10 delta wings | 6.56e-09 volatility, asserted at =2e-8= | the same | 941d11a13e |
-| One driver lookup in a run of a thousand series, which is 250 series keys | 15.85, 25.18 and 26.07 ns, the medians of three runs of five passes of 2,000,000 | =ores.analytics.quant.tests "[.benchmark][run_market]"= | 941d11a13e, 10595d103f |
-| A sentence of the tick body's shape, as the budget a lookup is read against | 50.45, 67.03 and 141.98 ns over the same three runs, so the lookup is between a third and a sixth of it | the same | 941d11a13e, 10595d103f |
-| One board member read at a thousand members | 6.39 and 8.09 ns, the medians of two runs | =ores.analytics.quant.tests "[.benchmark][market_board]"= | 941d11a13e, 10595d103f |
-| The quant suite | 712 cases | =ores.analytics.quant.tests= | 10595d103f |
-| The synthetic api suite | 1018 cases | =ores.synthetic.api.tests= | 10595d103f |
-| The marketdata core suite | 407 cases | =ores.marketdata.core.tests= | 941d11a13e |
-| The reporting core suite | 303 cases | =ores.reporting.core.tests= | 941d11a13e |
+| A tick whose run has published neither curve | =no market: curve:EUR=, and =publish_count()= stays zero | =ores.synthetic.api.tests "[fx_vol_surface_feed]"= | e97cc811db |
+| The same with the base curve published | =no market: curve:USD=, and nothing sent | the same | e97cc811db |
+| The same with both curves published | =no market: spot:EUR/USD=, and nothing sent | the same | e97cc811db |
+| The value date of each expiry | 16 December 2026, 16 February 2027, 16 May 2027, at 30, 92 and 181 days | =ores.synthetic.api.tests "[fx_vol_surface_tick]"= | e97cc811db |
+| The discounts each value date carries, domestic then foreign | 0.9991784198737006 and 0.997537284048252; 0.9974826259685393 and 0.9924668734686284; 0.9950533709567208 and 0.9852333992470845, asserted at =1e-12= relative | the same | e97cc811db |
+| The forward of each expiry | 1.0824192174825231, 1.0787481969120785, 1.0735002590229397, strictly falling, so one market is not reused | the same | e97cc811db |
+| A curve and a spot read back through the surface's own read | the published points, point for point, and the published level | the same | e97cc811db |
+| Two ticks with the same values republished between them | bit-for-bit identical quotes; the 1M ATM is 0.0699722922466306 | the same | e97cc811db |
+| Worst error of a calibration of the run's own quotes, through the board, at ATM | 2.55e-09 volatility, asserted at =1e-8= | =ores.synthetic.api.tests "[fx_vol_surface_round_trip]"= | 7e29c65775 |
+| The same at the 25 and 10 delta wings | 6.56e-09 volatility, asserted at =2e-8= | the same | 7e29c65775 |
+| One driver lookup in a run of a thousand series, which is 250 series keys | 15.85, 25.18 and 26.07 ns, the medians of three runs of five passes of 2,000,000 | =ores.analytics.quant.tests "[.benchmark][run_market]"= | 7e29c65775, e97cc811db |
+| A sentence of the tick body's shape, as the budget a lookup is read against | 50.45, 67.03 and 141.98 ns over the same three runs, so the lookup is between a third and a sixth of it | the same | 7e29c65775, e97cc811db |
+| One board member read at a thousand members | 6.39 and 8.09 ns, the medians of two runs | =ores.analytics.quant.tests "[.benchmark][market_board]"= | 7e29c65775, e97cc811db |
+| The quant suite | 712 cases | =ores.analytics.quant.tests= | e97cc811db |
+| The synthetic api suite | 1018 cases | =ores.synthetic.api.tests= | e97cc811db |
+| The marketdata core suite | 407 cases | =ores.marketdata.core.tests= | 7e29c65775 |
+| The reporting core suite | 303 cases | =ores.reporting.core.tests= | 7e29c65775 |
 
 The three nanosecond ranges are the honest shape of this measurement: the same code on the
 same machine read 15.85 ns and then 26.07 ns for a lookup, so a single median would carry
@@ -184,34 +184,47 @@ review table further down this page.
 
 ** The gate on this branch
 
-Two full =compass check= runs. Everything this branch can move passed: the twenty-two code
-and documentation checks, among them =format=, =unity-collisions=, =unique-type-names=,
-=exported-types=, =reachability= and =boost-deps=; the site page and the backlog indexes;
-and =build=. What stayed red is not this branch's:
+Two full =compass check= runs before the rebase and one after it, onto =origin/main= at
+=d38ed21c8c=. Everything this branch can move has passed at every point: the twenty-two
+code and documentation checks, the site page and the backlog indexes, and =build=.
 
-- =portable-stop= names =projects/ores.synthetic/service/src/app/application.cpp=, which
-  this branch does not touch: an include left behind by the port to
-  =ores::platform::concurrency=. It is red on =origin/main= =6dfbd3a3fb= as well, and it is
-  captured as [[id:BA660F0F-00C6-4C88-BF2D-691E30127C94][The portable-stop check is red on
-  main]].
-- =ctest= fails one suite of 103: =ores.marketdata.official.tests=, two cases in
-  =domain_banxico_tests.cpp= where the fixture answers a =std::optional<std::string>= lookup
-  with a null =const char*=. That is not this branch's file either, and it is captured as
-  [[id:C73E11BE-122E-466B-BCEC-3F0AF7A979F6][The Banxico unset-key tests throw instead of
-  reporting unset]]. The other 102 suites pass, including every suite this branch can move:
-  quant 712 cases, synthetic api 1018, synthetic service 78 of 79 (the one failure is the
-  adapter-announce race the inbox already carries), marketdata core 407, reporting core 303.
-- =ticks-smoke= failed in every run it made. Two stopped at =publish_party_surfaces= with
-  all forty surfaces refused for =expiry 1W: the row dated 2026-11-17 is before the spot date
-  2026-11-18=, and a standalone =compass smoke ticks --fresh= reproduced it on 2026-11-14.
-  That is *The 1W FX quote is dated before the spot date, so every surface is refused*, a
-  capture another environment filed on =origin/main=, which this branch is cut from before.
-  The third run got past that step and stopped at =give_party_surface_blueprints= waiting for
-  derived =rate_lnvol= series, with no surface feed error in its log: the consequence of the
-  surfaces that were refused, at a later step. Not this branch's to fix, and not attributed
-  here as if it were.
-- One run also failed =build= because a =compass build= of mine held the lock at the same
-  time; the gate's own log says so.
+The rebase brought two things the branch had not caused. One was a build break: main's
+=rate_ladder_reader.cpp= still held a file-local function with no caller, and
+=-Werror,-Wunused-function= means the marketdata service did not compile at all, so nothing
+downstream of it could be built or tested. That is fixed here (2ba9ed0203) because a branch
+that cannot build cannot be reviewed. The other was the smoke's failure being reproducible
+rather than theorised: a standalone =compass smoke ticks --fresh= gives the same sentence the
+gate gives.
+
+With the tree building, the checks the branch had only diagnosed are fixed, and each is a
+commit of its own:
+
+- =portable-stop= (0fc96aef88): the include =application.cpp= no longer used is gone.
+  =check_portable_stop_types.py= answers "no C++20 stop type is named outside ores.platform".
+- =ores.marketdata.official.tests= (6b035ddc90): three fixtures answered a
+  =std::optional<std::string>= lookup with a null =const char*=, which throws rather than
+  reading as unset. They answer =std::nullopt=, the type's documentation says so, and the
+  suite passes — 120 cases, 513 assertions.
+
+The two captures those checks produced are filed as *discarded* with their resolution, since
+neither needed a task: [[id:BA660F0F-00C6-4C88-BF2D-691E30127C94][the portable-stop one]] and
+[[id:C73E11BE-122E-466B-BCEC-3F0AF7A979F6][the Banxico one]].
+
+What is still red is one thing, and it is a date rule rather than a line: =ticks-smoke=
+stops at =publish_party_surfaces= with all forty surfaces refused for =expiry 1W: the row
+dated 2026-11-17 is before the spot date 2026-11-18=. The calibration dates its quotes at
+the as-of instant's day (=fx_vol_surface_calibration_service.cpp=) while the forward set it
+reads them against carries a spot date that has rolled further, and the pair market refuses a
+quote before spot. That is
+[[id:C15F8BD5-6941-43CC-A989-75F4C01E5377][The 1W FX quote is dated before the spot date, so
+every surface is refused]], which is now on this branch after the rebase. Deciding which
+calendar rule dates a quote row, and which dates a forward's spot, is the derived-quote
+owner's call, so this branch does not take it.
+
+The two ingest tests in =ores.marketdata.service.tests= also fail when the fleet is up, which
+is the state the inbox's own captures describe
+(=the_feed_ingest_tests_fail_while_the_environments_services_run=,
+=feed_ingest_small_batch_test_times_out_under_load=). With the services stopped, both pass.
 
 * Test Scenarios
 

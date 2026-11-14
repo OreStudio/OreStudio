@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:services:authentication:iam:nats:jwt:workflow:
 #+created: 2026-07-29
-#+updated: 2026-07-29
+#+updated: 2026-11-14
 
 * Summary
 
@@ -165,6 +165,31 @@ construction left in that handler.
   in =internal_request_client= is specific to the =token_expired= =X-Error=
   case; other rejections (=forbidden=, =bad_request=) still fail immediately,
   by design — they will not resolve by re-minting.
+
+** A service that serves a tenant's work
+
+A step of a provisioning run may be served by the service that owns the work
+rather than by IAM. That service is an account of the deployment, not of the
+tenant the run provisions, so it cannot reach the tenant's data: every write
+names the tenant and the party from the caller's claims. It asks IAM to enter
+the tenant with =iam.v1.ops.enter_tenant_as_service=, which answers a token
+scoped to that tenant and acting as its system party.
+
+What that entry is, and is not:
+
+- It carries the *service's own* permissions, not a person's, so it writes
+  where the service's role already writes. Nothing is escalated.
+- It is refused to an account whose type is not =service=, to a caller
+  without =iam::tenants:enter_as_service=, to a caller already inside a
+  tenant, and for the system tenant.
+- It is recorded in the tenant's audit trail as that service's entry.
+- It does not impersonate a person. That is deliberate: trading's row-level
+  security is tenant-wide, so a token minted for one trader would reach every
+  trade of the tenant and would buy no narrowing, while letting a service
+  write history in a real person's name
+  ([[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] weighs the
+  alternatives). A trade the run generates therefore names the service that
+  wrote it.
 
 * See also
 

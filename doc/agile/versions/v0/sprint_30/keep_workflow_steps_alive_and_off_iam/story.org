@@ -80,11 +80,11 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
   process, through =internal_impersonation_service=, and that service says it is
   deliberately not on any subject. Two facts settle the question of what a
   moved step should be given.
-  - Trading's row-level security is *tenant-only*: =ores_trading_trades_tbl= is
-    filtered by =ores_iam_current_tenant_id_fn()= and nothing else. A token
-    minted for one trader therefore reaches every trade of the tenant, not that
-    trader's book. Impersonating a person buys no narrowing inside the data the
-    step writes.
+  - Trading filters =ores_trading_trades_tbl= by tenant *and*, restrictively,
+    by party: =trades_party_isolation_policy= keeps a session to the parties it
+    can see. A session scoped to the party the work belongs to therefore has
+    the reach the work needs, and impersonating a trader would narrow it no
+    further.
   - The run's actor is already named in the step command, and the provisioning
     service already writes other rows as its own service account.
   So the shapes weigh up as:
@@ -94,18 +94,19 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
      is the one the service already has. Cost: generated trades name the
      service, not a person.
   2. *The step's own actor.* The request names the step being served and iam
-     mints for that step's recorded actor. One more identity per step, but the
-     trader's authority is tenant-wide anyway, so it buys only the name in the
-     audit trail. Cost: a service can write history in a person's name.
+     mints for that step's recorded actor. Cost: a service can write history in
+     a person's name, and buys no reach the party-scoped session lacks.
   3. *The party's own traders, or any account the caller names.* Faithful
-     authorship, and the largest surface: a compromised service can act as any
-     person of a tenant, and because trading is tenant-scoped, as any of them
-     over all of its trades. This is the shape to avoid.
-  Recommendation: shape 1. Authorship of generated data is a simulated fact,
-  and attributing it to real people creates a permanent capability to falsify
-  an audit trail for no narrowing of what the token can reach. Shapes 2 and 3
-  stay recorded as the ways to get per-trader authorship if the product decides
-  the demonstration needs it, with the cost stated.
+     authorship, and the largest surface: a compromise of the service becomes
+     the identity of any person it names, with that person's permissions and
+     visible parties, and every write it makes is theirs in the trail. This is
+     the shape to avoid.
+  Recommendation: shape 1, and it is implemented: the session is scoped to the
+  tenant's party, which is the reach the work needs. Authorship of generated
+  data is a simulated fact, and attributing it to real people creates a
+  capability to write in their names for no reach it lacks. Shapes 2 and 3 stay
+  recorded as the ways to get per-trader authorship if the product decides the
+  demonstration needs it, with the cost stated.
 - *A command that cannot read the state it guards on refuses, 2026-11-14.*
   A recreate asks whether anything is still connected before it drops, and an
   answer that never came back used to read as "nothing is connected". The

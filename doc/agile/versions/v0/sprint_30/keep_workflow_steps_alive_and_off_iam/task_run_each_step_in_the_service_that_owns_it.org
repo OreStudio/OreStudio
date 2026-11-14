@@ -161,12 +161,18 @@ ores.refdata serves the calendar step in its own process.
   =ores.marketdata.core=, which nothing it compiled had used.
 - A test states the dispatch two ways: the table's answer for a kind, and the
   subject a built definition puts on the step.
+- Stage 2 is done as well: =generate_trades= is served by ores.synthetic, iam
+  has no executor for it, and a provisioning run passes with the step in its
+  new home. The two services do work at once: the last run had iam publishing a
+  party's curves and forwards while synthetic was writing that party's
+  population, which is the acceptance line about parallel steps.
 
 What this stage does not do, and the plan's later stages cover:
 
-- 17 of the 18 kinds still run in ores.iam, and it still links
-  =ores.synthetic.core= for =generate_trades=. It also still links
-  =ores.refdata.core= for the party repository that its identity handlers read,
+- 16 of the 18 kinds still run in ores.iam. It no longer links
+  =ores.synthetic.core=: stage 2 moved =generate_trades= into ores.synthetic. It
+  still links =ores.refdata.core= for the party repository that its identity
+  handlers read,
   which is identity work and not this task's to remove.
 - That the parallel steps of a run execute in different services at once is not
   yet measured. Nothing in the definition dispatches two *parallel* kinds to two

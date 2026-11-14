@@ -183,9 +183,9 @@ What that entry is, and is not:
   without =iam::tenants:enter_as_service=, to a caller already inside a
   tenant, and for the system tenant.
 - It is recorded in the tenant's audit trail as that service's entry.
-- It does not impersonate a person. That is deliberate: trading's row-level
-  security is tenant-wide, so a token minted for one trader would reach every
-  trade of the tenant and would buy no narrowing, while letting a service
+- It does not impersonate a person. That is deliberate: the session is scoped
+  to the party the work belongs to, which is the reach the work needs, so
+  impersonating a trader would narrow nothing further while letting a service
   write history in a real person's name
   ([[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] weighs the
   alternatives). A trade the run generates therefore names the service that

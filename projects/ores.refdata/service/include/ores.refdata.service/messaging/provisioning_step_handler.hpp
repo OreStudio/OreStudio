@@ -62,9 +62,9 @@ private:
     }
 
 public:
-    provisioning_step_handler(ores::nats::service::client& nats, ores::database::context ctx)
+    provisioning_step_handler(ores::nats::service::client& nats, const ores::database::context& ctx)
         : nats_(nats)
-        , ctx_(std::move(ctx)) {}
+        , ctx_(ctx) {}
 
     /// The last year the calendar rules and exceptions are materialised to.
     /// Later days would be built as weekdays with no holidays.

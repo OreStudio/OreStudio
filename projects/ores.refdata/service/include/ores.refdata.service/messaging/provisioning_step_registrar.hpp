@@ -20,7 +20,7 @@
 #ifndef ORES_REFDATA_SERVICE_MESSAGING_PROVISIONING_STEP_REGISTRAR_HPP
 #define ORES_REFDATA_SERVICE_MESSAGING_PROVISIONING_STEP_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.refdata.service/export.hpp"
@@ -39,7 +39,7 @@ namespace ores::refdata::messaging {
 class ORES_REFDATA_SERVICE_EXPORT provisioning_step_registrar {
 public:
     static std::vector<ores::nats::service::subscription>
-    register_handlers(ores::nats::service::client& nats, ores::database::context ctx);
+    register_handlers(ores::nats::service::client& nats, const ores::database::context& ctx);
 };
 
 }

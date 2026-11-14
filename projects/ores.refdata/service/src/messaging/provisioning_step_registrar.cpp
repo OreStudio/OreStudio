@@ -27,7 +27,7 @@ namespace ores::refdata::messaging {
 
 std::vector<ores::nats::service::subscription>
 provisioning_step_registrar::register_handlers(ores::nats::service::client& nats,
-                                               ores::database::context ctx) {
+                                               const ores::database::context& ctx) {
     // The step commands come from the engine, which has proved them, so the
     // handler takes no verifier.
     //
@@ -35,7 +35,7 @@ provisioning_step_registrar::register_handlers(ores::nats::service::client& nats
     // two families sharing one would replace each other's filter, so the
     // service would serve the second and silently stop serving the first.
     ores::service::messaging::step_routes routes{"provisioning"};
-    auto steps = std::make_shared<provisioning_step_handler>(nats, std::move(ctx));
+    auto steps = std::make_shared<provisioning_step_handler>(nats, ctx);
     routes.on(ores::iam::workflow::refdata_provision_tenant_step_subject,
               [steps](ores::nats::delivery delivery) { steps->step(std::move(delivery)); });
 

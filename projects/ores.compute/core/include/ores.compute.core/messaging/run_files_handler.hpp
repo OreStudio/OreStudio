@@ -45,10 +45,10 @@ namespace ores::compute::messaging {
 class ORES_COMPUTE_CORE_EXPORT run_files_handler final {
 public:
     run_files_handler(ores::nats::service::client& nats,
-                      ores::database::context ctx,
+                      const ores::database::context& ctx,
                       std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
-        , ctx_(std::move(ctx))
+        , ctx_(ctx)
         , verifier_(std::move(verifier)) {}
 
     /**

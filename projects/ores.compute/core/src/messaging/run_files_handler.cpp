@@ -49,7 +49,7 @@ namespace {
 constexpr std::uint32_t k_workunit_limit = 1000;
 
 /// The newest of the batches that name this run, or nothing when none does.
-std::optional<domain::batch> batch_of_run(ores::database::context ctx, const std::string& run_id) {
+std::optional<domain::batch> batch_of_run(const ores::database::context& ctx, const std::string& run_id) {
     repository::batch_repository batches;
     const auto found = batches.read_latest_by_external_ref(ctx, run_id);
     if (found.empty())

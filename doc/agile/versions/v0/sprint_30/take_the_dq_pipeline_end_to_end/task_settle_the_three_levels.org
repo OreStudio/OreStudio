@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 7F37FF2D-EDF1-4F69-AAA5-EA57B91DAF53
+:END:
+#+title: Task: Settle the three levels and the bundle map
+#+description: One documented level model, one bundle per level, and no name that means two opposite things.
+#+type: task
+#+level: s1
+#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+owner: marco
+#+branch: feature/settle-the-three-levels
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reader can say which level a dataset belongs to and which bundle publishes it, and no bundle name is ambiguous.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The levels are named for what they hold, and no name means two things.
+- Every dataset states its level and the bundle that publishes it, in one table.
+- The bundle map is committed, and a check fails when a dataset names no bundle.
+- =base= either becomes the per-tenant bundle name it actually is, or is retired.
+
+* Plan
+
+1. List every bundle and every dataset with its current level, from the
+   investigation's inventory.
+2. Give the levels names that cannot be confused: installation, world, tenant.
+3. State the world bundle: the one carrying calendars, currency pairs,
+   commodities and equity underlyings into the system tenant.
+4. Publish the map as a document and a check.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Bundles that name a system-level publication | 0 (no bundle carries calendars, currencies, commodities or equity) | investigation, section 3.4 | e050a2d239 |
+
+* Notes
+
+Answers requirement 4, and unblocks every task below it. Defect D3.
+
+See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] for the evidence behind every claim here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

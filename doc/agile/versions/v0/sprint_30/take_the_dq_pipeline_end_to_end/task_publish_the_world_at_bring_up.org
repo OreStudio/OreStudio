@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 56FB3A5C-FDC7-4F98-A5F3-CE46DB551882
+:END:
+#+title: Task: Publish the world at database bring-up
+#+description: A recreated database carries the canonical reference data, so no test has to provision or publish for itself.
+#+type: task
+#+level: s1
+#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+owner: marco
+#+branch: feature/publish-the-world-at-bring-up
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A fresh database values what it books, and no test calls a publish function.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- A recreated database holds the world bundle's datasets in the system tenant.
+- No test calls a publish function to make up for a missing catalogue.
+- =populate.sql= no longer says reference data arrives later.
+
+* Plan
+
+1. Add the world publication to the populate path, after the DQ seeds.
+2. Add one test-fixture helper that publishes the tenant tier, for tests that
+   need it.
+3. Point the test that motivated this at the bootstrap, and delete its local
+   seeding only where the bootstrap now covers it.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Populate scripts that call a publish function | 0 | `grep -rn publish_ projects/ores.sql/populate/` | e050a2d239 |
+
+* Notes
+
+Closes D1 and D12. The equity underlyings failure was the symptom.
+
+See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] for the evidence behind every claim here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

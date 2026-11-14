@@ -8,7 +8,7 @@
 #+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
 #+branch: feature/take-the-declaration-in-the-trade-type-headers
-#+pr: 4723
+#+pr: 4725
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -110,6 +110,7 @@ A decision that turns out wrong while it is applied, such as a type that cannot 
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4725][#4725]] | [branch] Sweep main's newer handlers and correct the record |
 | [[https://github.com/OreStudio/OreStudio/pull/4723][#4723]] | [codegen] Take the declaration in the trade-type headers |
 | [[https://github.com/OreStudio/OreStudio/pull/4720][#4720]] | [codegen] Take the declaration in the registrar headers |
 | [[https://github.com/OreStudio/OreStudio/pull/4695][#4695]] | [codegen] Take the declaration in the repository headers |

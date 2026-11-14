@@ -30,11 +30,11 @@ which delivered the first half of the area.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The nine task documents are written. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the scaffold PR.                 |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -126,3 +126,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story holds one task per unit of the last family, and the task that stood the
+reporting part up names them as the rest of its work.
+
+- Eight task documents. Each names its routes, its branch, its acceptance and
+  the task it waits on.
+- The split was counted from the inventory, not claimed: eighteen of the
+  reporting area's forty-four rows have no =ores.http= equivalent, and five
+  reference data rows have none. That is twenty-three routes, and the pricing
+  engines' vocabulary makes twenty-four.
+- The value set reader lives in =ores.http.core=. The reporting part already
+  links =ores.refdata.api=, so a reader in the reporting part would close a cycle
+  between the two part libraries, and the reference data part reads value sets
+  too.
+- The pricing engines' vocabulary is served, because the editor calls it, though
+  the inventory states it as not an API and in no area. It is the shape of
+  =choices=.
+- The design note's engine settings count is eight, not seven, and the note now
+  states where the reader lives and why the vocabulary is served.
+- The gate is 9 of 9 documentation checks. No code changed in this task.

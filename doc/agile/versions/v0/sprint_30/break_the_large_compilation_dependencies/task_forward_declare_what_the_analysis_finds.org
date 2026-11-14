@@ -88,7 +88,8 @@ task and name that file in the Command column.
 | Repository headers that keep the definition because they hold a member | 29, each carrying =context ctx_= | =grep -rl 'ores.database/domain/context.hpp' projects --include=*_repository.hpp= | =2e1c0fcc14= |
 | Archetypes the check's baseline held before | 5 | =check_forward_declarable_includes.py= | =2e1c0fcc14= |
 | Archetypes it holds after | 3: =cpp_nats_registrar=, =cpp_trade_type_digest=, =cpp_trade_type_writer= | the same check | =2e1c0fcc14= |
-| Objects that depend on the repository headers | unchanged by this commit; the implementations construct a context either way | not measured before and after, see Notes | =2e1c0fcc14= |
+| Objects that depend on =context.hpp=, after the family | 373 objects in 68 targets — unchanged in kind, because the implementations construct a context | =header_blast_radius.py --build-dir build/output/linux-clang-release-ninja= | =cd07249042= |
+| The same, at the analysis | 365 objects at =27cad5a0c6= on a smaller tree | the same instrument | =27cad5a0c6= |
 | Full build of the change | 539 steps, 0 failures, 37 minutes | =compass build --preset linux-clang-release-ninja= | =2e1c0fcc14= |
 | Suites that read repositories | 5 of 5, 606 s | =compass test run -- -R 'ores.database.tests|ores.refdata.core.tests|ores.trading.core.tests|ores.marketdata.core.tests|ores.marketdata.service.tests'= | =2e1c0fcc14= |
 
@@ -134,6 +135,23 @@ keeps =context.hpp=. The check that guards this rule can see a header that
 includes too much and cannot see one that includes too little, so this is a fact
 about the archetype only a build reports. The next family should be measured the
 same way before its PR claims a saving.
+
+*The dependency count is the measurement.* The acceptance asks for the objects
+that depend on the header before and after. The instrument answers it: 373
+objects in 68 targets depend on =context.hpp= after the family, against 365 on
+the smaller tree the analysis measured. The count did not fall, and that is the
+finding rather than a gap: the implementations include the definition, so the
+objects still read it. A family that claimed a rebuild saving here would be
+claiming a number the instrument refutes.
+
+*The order of work is contested, and this is the record.* The analysis orders the
+work by rebuild gain, and its first steps are =text_form.hpp= and =decimal.hpp=,
+in the codec chain. This task's first family is the context's users, which the
+analysis says buys nothing for rebuilds. The reason it went first is that the
+check and its baseline were fresh and the family was one line; the reason it is
+defensible is that it costs one build and removes 539 headers from the parse of
+every consumer. It is still not the analysis's order, and the next family should
+be the codec chain unless the work list says otherwise.
 
 *What this PR does not measure.* The acceptance asks for the objects that
 depend on the header and the rebuild time after it is touched, before and after.

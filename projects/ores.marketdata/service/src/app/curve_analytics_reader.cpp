@@ -100,10 +100,9 @@ get_curve_analytics(const ores::database::context& ctx,
         const auto horizon = std::chrono::floor<std::chrono::days>(as_of);
         const auto refctx = build_refdata_context(
             ctx, std::chrono::year_month_day{horizon}, config.tenor_convention_code);
-        const auto raw = read_pillar_rates(ctx, pillars, refctx, as_of);
-        const auto bootstrap_pillars =
-            resolve_bootstrap_pillars(pillars, refctx, raw.rates_by_point_id);
-        const auto points = curve_republish_service::compute(ctx, config.id, as_of);
+        // The build answers first, so a curve whose quotes have not arrived is
+        // reported as waiting rather than as a failed read of a grid it never had.
+        const auto computed = curve_republish_service::compute(ctx, config.id, as_of);
 
         const auto day_count =
             ores::refdata::mapping::parse_day_count_convention_code(config.day_count_convention);
@@ -114,6 +113,20 @@ get_curve_analytics(const ores::database::context& ctx,
         resp.conventions.compounding = "continuous";
         resp.conventions.interpolation = config.interpolation_method;
         resp.conventions.pillar_count = static_cast<int>(pillars.size());
+
+        // A curve with no quotes yet, or one whose funding curve is not live, has
+        // nothing to draw. The read says which input is missing in the curve's own
+        // words, so the screen states the reason where the tables would be rather
+        // than showing a curve of zeros.
+        if (!computed) {
+            resp.success = false;
+            resp.message = computed.error().reason;
+            return resp;
+        }
+        const auto& points = *computed;
+        const auto raw = read_pillar_rates(ctx, pillars, refctx, as_of);
+        const auto bootstrap_pillars =
+            resolve_bootstrap_pillars(pillars, refctx, raw.rates_by_point_id);
 
         repository::market_series_repository series_repo;
         std::optional<double> previous_zero;

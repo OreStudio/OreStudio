@@ -353,6 +353,8 @@ export function registerMarketReadRoutes(
             },
             curveAnalyticsReply,
         );
+        if (!reply.success)
+            throw refused(reply.message);
         return factsOf(reply);
     });
 }

@@ -22,6 +22,7 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.trading.api/domain/economic_digest.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.trading.core/repository/instrument_economic_shape.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.trading.core/repository/trade_additional_field_entity.hpp"

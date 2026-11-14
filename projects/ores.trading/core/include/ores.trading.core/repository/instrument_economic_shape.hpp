@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_ECONOMIC_SHAPE_HPP
 #define ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_ECONOMIC_SHAPE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"

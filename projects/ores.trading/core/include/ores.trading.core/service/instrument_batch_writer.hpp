@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_SERVICE_INSTRUMENT_BATCH_WRITER_HPP
 #define ORES_TRADING_CORE_SERVICE_INSTRUMENT_BATCH_WRITER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.core/repository/ascot_repository.hpp"

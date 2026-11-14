@@ -32,6 +32,7 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.trading.core/service/instrument_batch_writer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/nil_generator.hpp>

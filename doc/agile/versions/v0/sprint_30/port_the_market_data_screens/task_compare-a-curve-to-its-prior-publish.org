@@ -26,11 +26,11 @@ A person inspecting a curve reads what the market quoted at the previous close a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -87,3 +87,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The read compares: a request states an instant, and the answer carries the party's
+published set that was current then — published by then, its as-of at or before it,
+not withdrawn — with each pillar's prior zero rate and the change in basis points.
+
+The screen draws the prior and the change columns when the answer carries them, and
+says no set was current when the instant found none, rather than drawing a zero. The
+query is keyed by the comparison so changing the date refetches.
+
+Five cases hold the read (29 assertions across the analytics suite, including the
+absent branch), and nine hold the screen. The live probe of the route was refused
+upstream ("bad_request") and is not yet explained: the request names a bootstrap
+configuration and an as-of later than the server's clock, so the refusal is likely
+one of those two rather than the comparison.

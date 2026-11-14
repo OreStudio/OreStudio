@@ -24,6 +24,7 @@
 #include <map>
 #include <string>
 #include <string_view>
+#include <vector>
 
 /**
  * @file run_package.hpp
@@ -84,6 +85,28 @@ struct run_data_files {
  * is a tenant's to edit.
  */
 ORES_ORE_CORE_EXPORT run_data_files declared_data_files(const input_files& files);
+
+/**
+ * @brief The files the run document names that the input set does not hold.
+ *
+ * The engine stops at the first input it cannot open, before it reads a trade, so
+ * an input set that lacks one of the document's files cannot run. The document
+ * names its own files twice over: the Setup states the documents the run reads —
+ * its conventions, curve configuration, market and pricing engines, its portfolio,
+ * market data and fixings — and an analytic may name a file of its own, such as the
+ * sensitivity analysis's scenario market.
+ *
+ * The names come out of the document, not out of a list kept beside it, so a
+ * parameter an analytic grows later is checked without an edit here. A value that
+ * names no file — a flag, a date, a currency, a count — carries no extension and is
+ * not a name.
+ *
+ * @return The names, without repeats, in the order the document states them. Empty
+ * when every file it names is in the set, or when it names none.
+ * @throws std::invalid_argument if the set holds no run document, or it is not XML.
+ * @throws std::runtime_error if it is XML the model cannot read.
+ */
+ORES_ORE_CORE_EXPORT std::vector<std::string> missing_named_files(const input_files& files);
 
 }
 

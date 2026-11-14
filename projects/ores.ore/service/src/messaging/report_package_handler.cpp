@@ -303,6 +303,22 @@ void report_package_handler::prepare_package(ores::nats::delivery delivery) {
             f << content;
         }
 
+        // The engine stops at the first input it cannot open, before it reads a
+        // trade, so a package that lacks a file its own run document names is a
+        // package that cannot run. It is refused here, naming the files, rather
+        // than shipped for the engine to stop on: a run that failed this way
+        // states an exit code and nothing else.
+        const auto missing = ores::ore::xml::missing_named_files(run_input);
+        if (!missing.empty()) {
+            std::string names;
+            for (const auto& name : missing)
+                names += (names.empty() ? "" : ", ") + name;
+            wf->fail("prepare_ore_package: the run document names files the package does not "
+                     "hold: " +
+                     names + ", for run " + req.report_instance_id);
+            return;
+        }
+
         const auto tarball_key = tarball_storage_key(req.report_instance_id);
         transfer.pack_and_upload(stage_dir, std::string(platform_bucket), tarball_key);
 

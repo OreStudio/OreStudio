@@ -28,4 +28,5 @@ set(files
     "result_rollup_tests.cpp"
     "run_file_routes_tests.cpp"
     "run_routes_tests.cpp"
+    "schedule_routes_tests.cpp"
 )

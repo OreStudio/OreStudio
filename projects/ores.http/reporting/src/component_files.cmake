@@ -32,6 +32,7 @@ set(files
     "routes/reporting/run_file_routes.cpp"
     "routes/reporting/run_lookup.cpp"
     "routes/reporting/run_routes.cpp"
+    "routes/reporting/schedule_routes.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -50,4 +51,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/run_file_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/run_lookup.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/run_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/reporting/schedule_routes.hpp"
 )

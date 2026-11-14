@@ -744,7 +744,7 @@ RULES = (
          "Starts a run of one definition and answers the run it created."),
     Rule("the report schedule",
          ("regex", r"^POST /api/reporting/reports/(un)?schedule$"),
-         BFF, RESOURCE, "reporting",
+         None, RESOURCE, "reporting",
          "Sets or clears the schedule of one or more definitions, and answers how many it"
          " changed, which it refused and why."),
     Rule("the report runs",

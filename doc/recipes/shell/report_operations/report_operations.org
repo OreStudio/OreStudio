@@ -80,20 +80,20 @@ report_operations record-run-pricing 00000000-0000-0000-0000-000000000000 __none
 :ID: 790F561C-58C8-51D2-9BB3-DA4331F7253F
 :END:
 
-Sends =schedule_report_definitions_request= and prints =schedule_report_definitions_response=, so the shape is the protocol's and the meaning is the service's. It reads =ids=, in that order. The caller must have established a session first.
+Sends =schedule_report_definitions_request= and prints =schedule_report_definitions_response=, so the shape is the protocol's and the meaning is the service's. It reads =ids=, =schedule_expression=, in that order. The caller must have established a session first.
 
 
 The command is shaped like this:
 
 #+begin_example
-report_operations schedule-report-definitions <ids>
+report_operations schedule-report-definitions <ids> <schedule_expression>
 #+end_example
 
 It is addressed at =reporting.v1.ops.schedule_report_definitions=.
 
 #+name: report_operations-schedule-report-definitions
 #+begin_src ores-shell :tangle report_operations-schedule-report-definitions.ores :exports none
-report_operations schedule-report-definitions __none__
+report_operations schedule-report-definitions __none__ __none__
 #+end_src
 
 ** =unschedule-report-definitions=

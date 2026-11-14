@@ -32,6 +32,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <boost/uuid/string_generator.hpp>
+#include <expected>
 #include <optional>
 #include <string>
 #include <vector>
@@ -73,6 +74,44 @@ public:
         , verifier_(verifier)
         , svc_nats_(svc_nats) {}
 
+    /**
+     * @brief Writes one definition's schedule expression, or states why it cannot.
+     *
+     * The write goes through the definition service at the version just read, so
+     * a definition somebody else changed in between is a conflict and not a
+     * silent overwrite.
+     */
+    std::expected<void, std::string> set_expression(service::report_definition_service& svc,
+                                                    domain::report_definition definition,
+                                                    const std::string& expression) {
+        definition.schedule_expression = expression;
+        try {
+            svc.save_definition(definition);
+        } catch (const std::exception& e) {
+            return std::unexpected(std::string(e.what()));
+        }
+        return {};
+    }
+
+    /**
+     * @brief Puts the expression the definition carried back, best effort.
+     *
+     * A refusal must not leave a definition carrying a schedule nobody asked
+     * for. The restore is best effort because the refusal is the answer.
+     */
+    void restore_expression(service::report_definition_service& svc,
+                            domain::report_definition definition,
+                            const std::string& expression) noexcept {
+        try {
+            if (auto written = set_expression(svc, std::move(definition), expression); !written)
+                BOOST_LOG_SEV(report_scheduling_handler_lg(), warn)
+                    << "A schedule expression could not be restored: " << written.error();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(report_scheduling_handler_lg(), warn)
+                << "A schedule expression could not be restored: " << e.what();
+        }
+    }
+
     void schedule(ores::nats::message msg) {
         BOOST_LOG_SEV(report_scheduling_handler_lg(), debug) << "Handling " << msg.subject;
         auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
@@ -86,6 +125,23 @@ public:
             return;
         }
         if (auto req = decode<schedule_report_definitions_request>(msg)) {
+            /*
+             * An expression is one definition's, because it is written onto that
+             * definition. The write and the job are one handler's, so a caller
+             * that stops between them leaves neither: the expression is restored
+             * when the job is not made. The two cannot be one transaction, because
+             * the job is another component's; stating otherwise would be false.
+             */
+            if (!req->schedule_expression.empty() && req->ids.size() != 1) {
+                reply(nats_,
+                      msg,
+                      schedule_report_definitions_response{
+                          .success = false,
+                          .message = "A schedule expression names one definition.",
+                          .scheduled_count = 0,
+                          .failed_ids = req->ids});
+                return;
+            }
             service::report_definition_service svc(req_ctx);
             auto delegated = svc_nats_.with_delegation(ores::nats::service::extract_bearer(msg));
             service::report_scheduling_service scheduler(ctx_, svc_nats_, delegated);
@@ -108,13 +164,37 @@ public:
                                           "runs act in that party, with your consent.";
                         continue;
                     }
+                    /*
+                     * The expression is written first, at the version just read,
+                     * so a definition somebody else changed is a conflict and not
+                     * a silent overwrite.
+                     */
+                    std::optional<std::string> previous_expression;
+                    if (!req->schedule_expression.empty()) {
+                        previous_expression = def->schedule_expression;
+                        if (auto written = set_expression(svc, *def, req->schedule_expression);
+                            !written) {
+                            failed_ids.push_back(id);
+                            if (first_error.empty())
+                                first_error = written.error();
+                            continue;
+                        }
+                    }
                     auto result = scheduler.schedule_one(*def, actor);
-                    if (!result) {
+                    if (!result || !*result) {
                         failed_ids.push_back(id);
                         if (first_error.empty())
-                            first_error = result.error();
-                    } else if (*result)
+                            first_error =
+                                result ? "No job was made for this definition." : result.error();
+                        /*
+                         * A refusal must not leave a definition carrying a
+                         * schedule nobody asked for.
+                         */
+                        if (previous_expression)
+                            restore_expression(svc, *def, *previous_expression);
+                    } else {
                         ++scheduled_count;
+                    }
                 } catch (const std::exception& e) {
                     failed_ids.push_back(id);
                     if (first_error.empty())

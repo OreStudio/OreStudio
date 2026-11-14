@@ -179,6 +179,7 @@ struct schedule_report_definitions_request {
      */
     static constexpr bool requires_session = true;
     std::vector<std::string> ids;
+    std::string schedule_expression;
 
     friend bool operator==(const schedule_report_definitions_request&,
                            const schedule_report_definitions_request&) = default;
@@ -1046,6 +1047,8 @@ struct take_cut_response {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<schedule_report_definitions_request>) {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"ids", &schedule_report_definitions_request::ids},
+        ::ores::utility::codec::field{"schedule_expression",
+                                      &schedule_report_definitions_request::schedule_expression},
     };
 }
 

@@ -4,9 +4,9 @@
 #+title: The schedule writes: who owns the permission and the restore
 #+description: Two routes set and clear a report's schedule. The BFF refuses before writing with its own copy of a permission rule, and restores the previous schedule when the operation does not take. This states what that costs and where each part belongs.
 #+type: plan
-#+status: DRAFT
+#+status: AGREED
 #+created: 2026-11-13
-#+updated: 2026-11-13
+#+updated: 2026-11-14
 #+filetags: :plan:http:reporting:
 
 * Why this note exists
@@ -121,6 +121,28 @@ Two questions this task cannot answer on its own:
 2. Does the gateway ever pre-check permissions? Today several routes do not and
    let the service refuse; if this task adds one, it should say why it is
    different rather than quietly becoming the pattern.
+
+* The decision
+
+Option B, and the rule stays where it already lives.
+
+=schedule_report_definitions_request= gains =schedule_expression=. Empty leaves
+every definition as it is, which is what a call that only makes jobs states. A
+request that states one names a single id and no other, and the handler writes
+the expression at the version it read, makes the job, and puts the previous
+expression back when no job was made.
+
+The two writes cannot be one transaction, and this note will not claim they are:
+the job is another component's, minted over the bus. What B removes is the
+compensating write *from the caller*: the invariant "an expression no job honours
+must not stand" now lives in the handler that owns both the definition and the
+job, instead of in every caller that schedules. That is the part worth having.
+
+The gateway pre-checks nothing. A screen hears the refusal one call later than
+it did, in the service's own words, which is the sentence the person needed
+anyway; and the second question this note raised -- does the gateway ever
+pre-check permissions -- is answered no, with this route as the precedent rather
+than the exception.
 
 * What this means for the task
 

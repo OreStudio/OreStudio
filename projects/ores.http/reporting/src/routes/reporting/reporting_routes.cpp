@@ -26,6 +26,7 @@
 #include "ores.http/routes/reporting/result_routes.hpp"
 #include "ores.http/routes/reporting/run_file_routes.hpp"
 #include "ores.http/routes/reporting/run_routes.hpp"
+#include "ores.http/routes/reporting/schedule_routes.hpp"
 
 namespace ores::http::routes::reporting {
 
@@ -42,6 +43,7 @@ void reporting_routes::register_routes(
     result_routes::register_routes(router, registry, session);
     run_file_routes::register_routes(router, registry, session, std::move(storage_dir));
     run_routes::register_routes(router, registry, session);
+    schedule_routes::register_routes(router, registry, session);
 }
 
 }

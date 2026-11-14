@@ -109,6 +109,7 @@ export interface RecordRunPricingResponse {
 
 export interface ScheduleReportDefinitionsRequest {
     ids: string[];
+    schedule_expression: string;
 }
 
 export interface ScheduleReportDefinitionsResponse {

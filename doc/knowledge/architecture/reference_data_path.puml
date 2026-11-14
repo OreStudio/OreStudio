@@ -24,7 +24,8 @@ skinparam componentStyle rectangle
 package "Callers" {
     [ores.shell\nbundles publish] as shell
     [tenant provisioning\nworkflow step] as prov
-    [bootstrap\npopulate, as owner] as boot
+    [bring-up bootstrap\npopulate, as owner] as boot
+    [tenant bootstrap\nat tenant creation] as tboot
 }
 
 package "ores.dq" {
@@ -57,6 +58,7 @@ th --> fn : dataset, tenant, mode, params
 fn --> art : reads the staged rows
 fn --> tgt : writes the published row,\nwith its provenance
 boot --> fn : at bring-up,\nwithout the bus
+tboot --> fn : at tenant creation,\nwithout the bus
 
 note bottom of art
   A dataset's rows always live in the

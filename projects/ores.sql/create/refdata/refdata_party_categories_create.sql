@@ -125,7 +125,9 @@ do instead
 -- Validation function for party_category
 -- Validates that a code exists in the party_categories table.
 -- Returns the validated value, or raises an exception if invalid.
--- Uses tenant-scoped reference data.
+-- The categories are a platform vocabulary: the system tenant holds the one copy
+-- and a tenant reads it there rather than holding its own. A tenant may add a
+-- category of its own, which the tenant in the call covers.
 -- =============================================================================
 create or replace function ores_refdata_validate_party_category_fn(
     p_tenant_id uuid,
@@ -139,21 +141,25 @@ begin
     end if;
 
     -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_refdata_party_categories_tbl where tenant_id = p_tenant_id limit 1) then
+    if not exists (
+        select 1 from ores_refdata_party_categories_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+        limit 1
+    ) then
         return p_value;
     end if;
 
-    -- Validate against reference data
+    -- Validate against the categories the platform defines and the tenant's own
     if not exists (
         select 1 from ores_refdata_party_categories_tbl
-        where tenant_id = p_tenant_id
+        where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid party_category: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by display_order)
             from ores_refdata_party_categories_tbl
-            where tenant_id = p_tenant_id
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

@@ -77,15 +77,15 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_methodologies_tbl enable row level security;
 
--- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
--- table per-tenant at provisioning time (see change_reason_categories_read_policy
--- above for the full rationale).
+-- A tenant reads the system tenant's rows rather than holding a copy, so the
+-- read admits both and a write still stays in the caller's own tenant.
 drop policy if exists methodologies_read_policy
     on ores_dq_methodologies_tbl;
 
 create policy methodologies_read_policy on ores_dq_methodologies_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 drop policy if exists methodologies_modification_policy
@@ -101,15 +101,15 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_subject_areas_tbl enable row level security;
 
--- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
--- table per-tenant at provisioning time (see change_reason_categories_read_policy
--- above for the full rationale).
+-- A tenant reads the system tenant's rows rather than holding a copy, so the
+-- read admits both and a write still stays in the caller's own tenant.
 drop policy if exists subject_areas_read_policy
     on ores_dq_subject_areas_tbl;
 
 create policy subject_areas_read_policy on ores_dq_subject_areas_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 drop policy if exists subject_areas_modification_policy
@@ -125,15 +125,15 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_data_domains_tbl enable row level security;
 
--- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
--- table per-tenant at provisioning time (see change_reason_categories_read_policy
--- above for the full rationale).
+-- A tenant reads the system tenant's rows rather than holding a copy, so the
+-- read admits both and a write still stays in the caller's own tenant.
 drop policy if exists data_domains_read_policy
     on ores_dq_data_domains_tbl;
 
 create policy data_domains_read_policy on ores_dq_data_domains_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 drop policy if exists data_domains_modification_policy
@@ -149,15 +149,15 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_coding_schemes_tbl enable row level security;
 
--- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
--- table per-tenant at provisioning time (see change_reason_categories_read_policy
--- above for the full rationale).
+-- A tenant reads the system tenant's rows rather than holding a copy, so the
+-- read admits both and a write still stays in the caller's own tenant.
 drop policy if exists coding_schemes_read_policy
     on ores_dq_coding_schemes_tbl;
 
 create policy coding_schemes_read_policy on ores_dq_coding_schemes_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 drop policy if exists coding_schemes_modification_policy
@@ -173,15 +173,15 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_coding_scheme_authority_types_tbl enable row level security;
 
--- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
--- table per-tenant at provisioning time (see change_reason_categories_read_policy
--- above for the full rationale).
+-- A tenant reads the system tenant's rows rather than holding a copy, so the
+-- read admits both and a write still stays in the caller's own tenant.
 drop policy if exists coding_scheme_authority_types_read_policy
     on ores_dq_coding_scheme_authority_types_tbl;
 
 create policy coding_scheme_authority_types_read_policy on ores_dq_coding_scheme_authority_types_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 drop policy if exists coding_scheme_authority_types_modification_policy
@@ -197,16 +197,15 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_change_reason_categories_tbl enable row level security;
 
--- No system-tenant fallback: ores_iam_provision_tenant_fn copies the full
--- system-tenant taxonomy into every tenant's own scope at provisioning
--- time, so a fallback here would show each tenant its own copy plus the
--- system-tenant original it was copied from.
+-- A tenant reads the system tenant's rows rather than holding a copy, so the
+-- read admits both and a write still stays in the caller's own tenant.
 drop policy if exists change_reason_categories_read_policy
     on ores_dq_change_reason_categories_tbl;
 
 create policy change_reason_categories_read_policy on ores_dq_change_reason_categories_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 drop policy if exists change_reason_categories_modification_policy
@@ -222,15 +221,15 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_change_reasons_tbl enable row level security;
 
--- No system-tenant fallback: see change_reason_categories_read_policy above
--- -- ores_iam_provision_tenant_fn copies the full system-tenant taxonomy
--- into every tenant's own scope at provisioning time.
+-- A tenant reads the system tenant's rows rather than holding a copy, so the
+-- read admits both and a write still stays in the caller's own tenant.
 drop policy if exists change_reasons_read_policy
     on ores_dq_change_reasons_tbl;
 
 create policy change_reasons_read_policy on ores_dq_change_reasons_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 drop policy if exists change_reasons_modification_policy
@@ -246,15 +245,15 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_origin_dimensions_tbl enable row level security;
 
--- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
--- table per-tenant at provisioning time (see change_reason_categories_read_policy
--- above for the full rationale).
+-- A tenant reads the system tenant's rows rather than holding a copy, so the
+-- read admits both and a write still stays in the caller's own tenant.
 drop policy if exists origin_dimensions_read_policy
     on ores_dq_origin_dimensions_tbl;
 
 create policy origin_dimensions_read_policy on ores_dq_origin_dimensions_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 drop policy if exists origin_dimensions_modification_policy
@@ -270,15 +269,15 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_nature_dimensions_tbl enable row level security;
 
--- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
--- table per-tenant at provisioning time (see change_reason_categories_read_policy
--- above for the full rationale).
+-- A tenant reads the system tenant's rows rather than holding a copy, so the
+-- read admits both and a write still stays in the caller's own tenant.
 drop policy if exists nature_dimensions_read_policy
     on ores_dq_nature_dimensions_tbl;
 
 create policy nature_dimensions_read_policy on ores_dq_nature_dimensions_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 drop policy if exists nature_dimensions_modification_policy
@@ -294,15 +293,15 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_treatment_dimensions_tbl enable row level security;
 
--- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
--- table per-tenant at provisioning time (see change_reason_categories_read_policy
--- above for the full rationale).
+-- A tenant reads the system tenant's rows rather than holding a copy, so the
+-- read admits both and a write still stays in the caller's own tenant.
 drop policy if exists treatment_dimensions_read_policy
     on ores_dq_treatment_dimensions_tbl;
 
 create policy treatment_dimensions_read_policy on ores_dq_treatment_dimensions_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 drop policy if exists treatment_dimensions_modification_policy
@@ -338,8 +337,9 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 -- Artefact Types
 -- -----------------------------------------------------------------------------
--- No RLS existed for this table at all until now -- every tenant's rows
--- (and every ephemeral ctest tenant's rows) were visible to every session.
+-- No RLS existed for this table at all until the shared-reference policy was
+-- added: every tenant's rows (and every ephemeral ctest tenant's rows) were
+-- visible to every session.
 alter table ores_dq_artefact_types_tbl enable row level security;
 
 drop policy if exists artefact_types_read_policy
@@ -348,6 +348,7 @@ drop policy if exists artefact_types_read_policy
 create policy artefact_types_read_policy on ores_dq_artefact_types_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 drop policy if exists artefact_types_modification_policy
@@ -363,17 +364,16 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 -- -----------------------------------------------------------------------------
 alter table ores_dq_dataset_bundles_tbl enable row level security;
 
--- No system-tenant fallback: ores_iam_provision_tenant_fn copies the full
--- system-tenant taxonomy into every tenant's own scope at provisioning
--- time, so a fallback here would show each tenant its own copy plus the
--- system-tenant original it was copied from (and, worse, an edit through
--- the Qt UI can only ever close THIS tenant's own row, not the original).
+-- A tenant reads the system tenant's bundles rather than holding a copy. The
+-- copy was worse than redundant: an edit through the Qt UI could only ever
+-- close the tenant's own row and never the original, so the two diverged.
 drop policy if exists dataset_bundles_read_policy
     on ores_dq_dataset_bundles_tbl;
 
 create policy dataset_bundles_read_policy on ores_dq_dataset_bundles_tbl
 for select using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );
 
 drop policy if exists dataset_bundles_modification_policy
@@ -408,15 +408,12 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Badge Severities
--- System-owned global registry: seeded by the system tenant and readable by
--- all tenants. Tenants may define their own severities but cannot modify the
--- system set.
+-- A tenant-level row: the tenant's badges are its own, published into it by the
+-- tenant bootstrap and then the tenant's to change. The read stays in the
+-- caller's tenant, so no tenant reads another's badges.
 -- -----------------------------------------------------------------------------
 alter table ores_dq_badge_severities_tbl enable row level security;
 
--- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
--- table per-tenant at provisioning time (see change_reason_categories_read_policy
--- above for the full rationale).
 drop policy if exists badge_severities_read_policy
     on ores_dq_badge_severities_tbl;
 
@@ -435,15 +432,11 @@ with check (tenant_id = ores_iam_current_tenant_id_fn());
 
 -- -----------------------------------------------------------------------------
 -- Badge Definitions
--- System-owned global registry: seeded by the system tenant and readable by
--- all tenants. Tenants may define their own badge definitions but cannot
--- modify the system set.
+-- A tenant-level row, like the severities: published into the tenant by the
+-- tenant bootstrap and read in the caller's tenant alone.
 -- -----------------------------------------------------------------------------
 alter table ores_dq_badge_definitions_tbl enable row level security;
 
--- No system-tenant fallback: ores_iam_provision_tenant_fn copies this
--- table per-tenant at provisioning time (see change_reason_categories_read_policy
--- above for the full rationale).
 drop policy if exists badge_definitions_read_policy
     on ores_dq_badge_definitions_tbl;
 

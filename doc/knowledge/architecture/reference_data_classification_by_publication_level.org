@@ -190,6 +190,13 @@ The order of the steps is the dependency closure's and not the display order of
 the bundle members, and a dataset with no target subject is dropped from the
 run.
 
+Two callers publish without the bus, and they differ in the target alone. The
+bring-up publishes =system_core= and =world= into the system tenant, and the
+creation of a tenant publishes =tenant_defaults= into that tenant. Both call the
+same function, which takes the target tenant as an argument, and both read the
+dataset from the system tenant's one copy, so no tenant needs a dataset row of
+its own in order to publish.
+
 ** Provenance
 
 A published row records the dataset that produced it, and it records it by name.
@@ -230,9 +237,9 @@ a catalogue that agrees, and one that rewrites its rows returns =updated=. The
 tree holds both kinds, so a zero =inserted= count is the evidence and a zero
 =updated= count is not.
 
-Bring-up concludes with the system tenant. An operator continues by creating a
-tenant, publishing =tenant_defaults= into it and onboarding each party with
-=party_essentials=; market data and trades follow, and neither is published.
+Bring-up concludes with the system tenant. Creating a tenant publishes
+=tenant_defaults= into it, and an operator continues by onboarding each party
+with =party_essentials=; market data and trades follow, and neither is published.
 
 * See also
 

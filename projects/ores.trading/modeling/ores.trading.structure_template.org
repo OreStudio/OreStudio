@@ -82,6 +82,7 @@ std::string("Strategy")
 :PROPERTIES:
 :tablename: ores_trading_structure_templates_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Extra drops
@@ -115,6 +116,7 @@ The kind catalogue is system reference data.
 :entity_plural_short:   structure_templates
 :entity_singular_words: structure template
 :entity_plural_words:   structure templates
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

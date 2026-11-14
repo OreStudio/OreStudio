@@ -21,38 +21,31 @@
 -- =============================================================================
 -- Tenant Provisioning Functions
 -- =============================================================================
--- These functions handle the complete lifecycle of tenant creation,
--- including copying required IAM base data from the system tenant.
+-- These functions handle the complete lifecycle of tenant creation: the tenant
+-- record, the credentials its members start with, and the rows it is seeded
+-- with.
 
 -- -----------------------------------------------------------------------------
--- Provision a new tenant with IAM base data
+-- Provision a new tenant
 -- -----------------------------------------------------------------------------
--- Creates a new tenant and copies system IAM and refdata lookup tables:
---   - permissions: Permission definitions
---   - roles: Role definitions
---   - role_permissions: Role-permission assignments
---   - party_categories, party_types, party_statuses: Party classification
---   - contact_types, party_id_schemes: Contact and identifier lookups
---   - book_statuses, regulatory_book_types, book_purpose_types,
---     ledger_feed_types, purpose_types: Book and purpose lookups
---   - business_day_convention_types: Business day adjustment conventions
---   - convention_kinds: The kinds an atomised convention row may name
---   - day_count_fraction_types: Day count fraction conventions
---   - day_counters, calendar_names, curve_sections, curve_segment_types: ORE
---     curve configuration vocabulary
---   - diary_entry_types: Calendar event kinds (e.g. central_bank_meeting)
---   - rounding_types: Rounding method definitions
---   - monetary_natures, currency_market_tiers, currency_pair_classifications:
---     Currency and pair classification
---   - tenor_anchors, tenors, tenor_conventions, tenor_convention_resolutions:
---     Tenor labels and their per-convention resolution rules. A resolution's
---     schedule_code and schedule_step_count are not copied: the tenor
---     schedules they name arrive later, from the refdata.tenor_schedules
---     dataset, whose publish sets them.
+-- Creates a new tenant and seeds it with two kinds of row, and no third:
 --
--- Transactional reference data (currencies, countries, parties, etc.)
--- is NOT copied during provisioning. Tenants populate that data via the
--- dataset library using the "Publish Datasets" feature.
+--   1. The tenant's own authorization rows, copied from the system tenant and
+--      rewritten for the new tenant: permissions, roles, role-permission
+--      assignments and role-product-type grants. A tenant's roles are its own,
+--      because its members are granted them; they are copied so a new tenant
+--      offers the roles its starting point does.
+--   2. The rows the bundle map makes due when a tenant is created, which
+--      ores_dq_tenant_bootstrap_fn publishes. That function names the bundles in
+--      one place, so this script holds no list to keep in step.
+--
+-- Everything else a tenant reads is one row set in the system tenant, read
+-- there rather than copied: the DQ registries, the trading lookups, the series
+-- classification rules and every reference vocabulary. A shared row a tenant
+-- could write would admit two values for one fact, which is the defect the rule
+-- removes. Transactional reference data (currencies, countries, parties) is
+-- neither copied nor published here: tenants populate it from the dataset
+-- library.
 --
 -- The system tenant must exist and be active.
 -- Caller must have system tenant context set.
@@ -82,6 +75,7 @@ declare
     v_copied_count     integer;
     v_actor            text;
     v_owner_id         uuid;
+    v_boot             record;
 begin
     -- Resolve actor: use explicit parameter if provided, otherwise fall back to
     -- session GUC (ores_iam_current_actor_fn), then current_user.
@@ -222,405 +216,23 @@ begin
     raise notice 'Copied % role-product type grants', v_copied_count;
 
     -- =========================================================================
-    -- Copy refdata lookup tables from system tenant
+    -- Seed the tenant's own rows from the bundle map
     -- =========================================================================
-    -- Validation triggers on parties and counterparties check these lookup
-    -- tables against the tenant's own data. They must be seeded before
-    -- inserting the system party.
+    -- A new tenant is seeded with the bundles the bundle map places at the
+    -- tenant level and makes due when the tenant is created. The bootstrap
+    -- function names them in one place, so this script holds no list to keep in
+    -- step with the map.
+    --
+    -- Nothing else is copied. The DQ registries, the trading lookups, the series
+    -- classification rules and the reference vocabularies are one row set in the
+    -- system tenant, and every tenant reads them there. The system party below
+    -- is written by this script and not by a dataset: it is the tenant's own
+    -- row, and no publish function writes one.
 
-    -- Party categories (e.g. Operational, System)
-    insert into ores_refdata_party_categories_tbl (
-        code, tenant_id, version, name, description, display_order,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        code, v_tenant_id, 0, name, description, display_order,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_refdata_party_categories_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % party categories', v_copied_count;
-
-    /*
-     * The trading code lists a booked trade is read against: the scheme its
-     * identifier is stated in, the kinds of link two trades can have, the
-     * activities that move it, and the structures it can be a leg of. Without
-     * them a tenant answers an empty list to every picker while the writes still
-     * accept the codes. The product type catalogue is not among them: it is one
-     * copy in the system tenant, which every tenant reads.
-     */
-    -- Trade ID types
-    insert into ores_trading_trade_id_types_tbl (
-        code, description, tenant_id, version,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        code, description, v_tenant_id, 0,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_trading_trade_id_types_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % trade ID types', v_copied_count;
-
-    -- Trade link types
-    insert into ores_trading_trade_link_types_tbl (
-        code, description, from_role, to_role, has_economic_effect, tenant_id, version,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        code, description, from_role, to_role, has_economic_effect, v_tenant_id, 0,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_trading_trade_link_types_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % trade link types', v_copied_count;
-
-    -- Activity types
-    insert into ores_trading_activity_types_tbl (
-        code, category, requires_confirmation, is_economic, is_real, priority, description, fpml_event_type_code, fsm_transition_id, tenant_id, version,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        code, category, requires_confirmation, is_economic, is_real, priority, description, fpml_event_type_code, fsm_transition_id, v_tenant_id, 0,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_trading_activity_types_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % activity types', v_copied_count;
-
-    -- Structure kinds
-    insert into ores_trading_structure_kinds_tbl (
-        code, description, confirms_as_whole, tenant_id, version,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        code, description, confirms_as_whole, v_tenant_id, 0,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_trading_structure_kinds_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % structure kinds', v_copied_count;
-
-    -- Structure templates
-    insert into ores_trading_structure_templates_tbl (
-        code, description, kind, tenant_id, version,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        code, description, kind, v_tenant_id, 0,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_trading_structure_templates_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % structure templates', v_copied_count;
-
-    -- Structure template roles
-    insert into ores_trading_structure_template_roles_tbl (
-        template_code, role, min_legs, max_legs, description, tenant_id, version,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        template_code, role, min_legs, max_legs, description, v_tenant_id, 0,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_trading_structure_template_roles_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % structure template roles', v_copied_count;
-
-    -- DQ change reason categories (system, common, trade taxonomy)
-    insert into ores_dq_change_reason_categories_tbl (
-        code, tenant_id, version, description,
-        modified_by, performed_by, change_commentary
-    )
-    select
-        t.code, v_tenant_id, 0, t.description,
-        v_actor, v_actor, 'Copied from system tenant during provisioning'
-    from ores_dq_change_reason_categories_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % change reason categories', v_copied_count;
-
-    -- DQ change reasons (full regulatory taxonomy)
-    insert into ores_dq_change_reasons_tbl (
-        code, tenant_id, version, description, category_code,
-        applies_to_new, applies_to_amend, applies_to_delete,
-        requires_commentary, display_order,
-        modified_by, performed_by, change_commentary
-    )
-    select
-        t.code, v_tenant_id, 0, t.description, t.category_code,
-        t.applies_to_new, t.applies_to_amend, t.applies_to_delete,
-        t.requires_commentary, t.display_order,
-        v_actor, v_actor, 'Copied from system tenant during provisioning'
-    from ores_dq_change_reasons_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % change reasons', v_copied_count;
-
-    -- DQ artefact types (staging/publish infrastructure mapping) -- copied
-    -- per-tenant rather than left system-tenant-only + shared-read, so a
-    -- tenant admin's edit through the Qt UI closes THIS tenant's own row
-    -- (the insert trigger's "close previous version" lookup filters on
-    -- tenant_id = NEW.tenant_id, which can never match a system-tenant row).
-    insert into ores_dq_artefact_types_tbl (
-        code, tenant_id, version, name, description,
-        artefact_table, target_table, target_subject, display_order,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.code, v_tenant_id, 0, t.name, t.description,
-        t.artefact_table, t.target_table, t.target_subject, t.display_order,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_dq_artefact_types_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % artefact types', v_copied_count;
-
-    -- DQ dataset bundles -- same rationale as artefact types above.
-    insert into ores_dq_dataset_bundles_tbl (
-        id, tenant_id, version, code, name, description,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.id, v_tenant_id, 0, t.code, t.name, t.description,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_dq_dataset_bundles_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % dataset bundles', v_copied_count;
-
-    -- The following DQ reference/lookup tables share the exact same
-    -- shared-tenant-edit hazard as artefact_types/dataset_bundles above:
-    -- DDL-seeded under the system tenant, tenant_read_scope: shared (or
-    -- hand-maintained equivalent), and editable through the Qt UI. Copied
-    -- in dependency order (data_domains before subject_areas/coding_schemes,
-    -- badge_severities before badge_definitions) though none of the FK
-    -- validations below are actually tenant-scoped -- they just check
-    -- existence, which the untouched system-tenant rows still satisfy.
-    -- ores_dq_datasets_tbl is deliberately NOT included here: its insert
-    -- trigger validates seven FK references (catalog, subject_area, coding
-    -- scheme, three dimensions, methodology, artefact_type), and it is not
-    -- DDL-seeded as a standalone entity the same way as the tables below --
-    -- tracked separately rather than rushed.
-
-    -- DQ data domains
-    insert into ores_dq_data_domains_tbl (
-        name, tenant_id, version, description,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.name, v_tenant_id, 0, t.description,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_dq_data_domains_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % data domains', v_copied_count;
-
-    -- DQ subject areas (compound natural key: name + domain_name)
-    insert into ores_dq_subject_areas_tbl (
-        name, tenant_id, version, domain_name, description,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.name, v_tenant_id, 0, t.domain_name, t.description,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_dq_subject_areas_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % subject areas', v_copied_count;
-
-    -- DQ coding scheme authority types
-    insert into ores_dq_coding_scheme_authority_types_tbl (
-        code, tenant_id, version, name, description,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.code, v_tenant_id, 0, t.name, t.description,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_dq_coding_scheme_authority_types_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % coding scheme authority types', v_copied_count;
-
-    -- DQ coding schemes
-    insert into ores_dq_coding_schemes_tbl (
-        code, tenant_id, version, name, authority_type,
-        subject_area_name, domain_name, uri, description,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.code, v_tenant_id, 0, t.name, t.authority_type,
-        t.subject_area_name, t.domain_name, t.uri, t.description,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_dq_coding_schemes_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % coding schemes', v_copied_count;
-
-    -- DQ origin dimensions
-    insert into ores_dq_origin_dimensions_tbl (
-        code, tenant_id, version, name, description,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.code, v_tenant_id, 0, t.name, t.description,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_dq_origin_dimensions_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % origin dimensions', v_copied_count;
-
-    -- DQ nature dimensions
-    insert into ores_dq_nature_dimensions_tbl (
-        code, tenant_id, version, name, description,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.code, v_tenant_id, 0, t.name, t.description,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_dq_nature_dimensions_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % nature dimensions', v_copied_count;
-
-    -- DQ treatment dimensions
-    insert into ores_dq_treatment_dimensions_tbl (
-        code, tenant_id, version, name, description,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.code, v_tenant_id, 0, t.name, t.description,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_dq_treatment_dimensions_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % treatment dimensions', v_copied_count;
-
-    -- DQ methodologies
-    insert into ores_dq_methodologies_tbl (
-        id, tenant_id, version, name, description,
-        logic_reference, implementation_details,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.id, v_tenant_id, 0, t.name, t.description,
-        t.logic_reference, t.implementation_details,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_dq_methodologies_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % methodologies', v_copied_count;
-
-    -- DQ badge severities
-    insert into ores_dq_badge_severities_tbl (
-        code, tenant_id, version, name, description, display_order,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.code, v_tenant_id, 0, t.name, t.description, t.display_order,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_dq_badge_severities_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % badge severities', v_copied_count;
-
-    -- DQ badge definitions (FK: severity_code -> badge_severities, copied above)
-    insert into ores_dq_badge_definitions_tbl (
-        code, tenant_id, version, name, description,
-        background_colour, text_colour, severity_code, css_class, display_order,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.code, v_tenant_id, 0, t.name, t.description,
-        t.background_colour, t.text_colour, t.severity_code, t.css_class, t.display_order,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_dq_badge_definitions_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % badge definitions', v_copied_count;
-
-    -- Series classification rules (the taxonomy: which asset classes and
-    -- which series subclass each ORE series type maps onto). Every tenant
-    -- reads this table to build its classifier, and the reader rejects an
-    -- empty table, so a tenant without these rows cannot import market data
-    -- at all.
-    insert into ores_marketdata_series_classification_rules_tbl (
-        instrument, quote, key_kind, tenant_id, version, asset_class_source,
-        asset_class_code, series_subclass_code, description,
-        modified_by, performed_by, change_reason_code, change_commentary
-    )
-    select
-        t.instrument, t.quote, t.key_kind, v_tenant_id, 0, t.asset_class_source,
-        t.asset_class_code, t.series_subclass_code, t.description,
-        v_actor, v_actor, 'system.new_record',
-        'Copied from system tenant during provisioning'
-    from ores_marketdata_series_classification_rules_tbl t
-    where t.tenant_id = v_system_tenant_id
-      and t.valid_to = ores_utility_infinity_timestamp_fn();
-
-    get diagnostics v_copied_count = row_count;
-    raise notice 'Copied % series classification rules', v_copied_count;
+    for v_boot in select * from ores_dq_tenant_bootstrap_fn(v_tenant_id) loop
+        raise notice 'Tenant bootstrap: % % row(s) from dataset %',
+            v_boot.action, v_boot.record_count, v_boot.dataset_code;
+    end loop;
 
     -- =========================================================================
     -- Create the system party for the new tenant

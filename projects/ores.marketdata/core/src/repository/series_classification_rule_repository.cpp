@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule.hpp"
 #include "ores.marketdata.api/domain/series_classification_rule_json_io.hpp" // IWYU pragma: keep.
@@ -257,8 +258,10 @@ std::vector<domain::series_classification_rule>
 series_classification_rule_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("instrument"_c, "quote"_c, "key_kind"_c);
 
     return query_builder::execute_read_query<series_classification_rule_entity,
@@ -280,10 +283,11 @@ series_classification_rule_repository::read_latest(const context& ctx,
                                << " key_kind: " << key_kind;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<series_classification_rule_entity>> |
-        query_builder::where("tenant_id"_c == tid && "instrument"_c == instrument &&
-                             "quote"_c == quote && "key_kind"_c == key_kind && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "instrument"_c == instrument && "quote"_c == quote &&
+                                            "key_kind"_c == key_kind && "valid_to"_c == max);
 
     return query_builder::execute_read_query<series_classification_rule_entity,
                                              domain::series_classification_rule>(
@@ -304,9 +308,11 @@ series_classification_rule_repository::read_all(const context& ctx,
                                << "instrument: " << instrument << " quote: " << quote
                                << " key_kind: " << key_kind;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "instrument"_c == instrument &&
-                                            "quote"_c == quote && "key_kind"_c == key_kind) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "instrument"_c == instrument && "quote"_c == quote &&
+                                            "key_kind"_c == key_kind) |
                        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<series_classification_rule_entity,
@@ -328,10 +334,11 @@ series_classification_rule_repository::read_at_version(const context& ctx,
                                << "instrument: " << instrument << " quote: " << quote
                                << " key_kind: " << key_kind << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "instrument"_c == instrument &&
-                                            "quote"_c == quote && "key_kind"_c == key_kind &&
-                                            "version"_c == version) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "instrument"_c == instrument && "quote"_c == quote &&
+                                            "key_kind"_c == key_kind && "version"_c == version) |
                        query_builder::limit(1);
 
     const auto entities = query_builder::execute_read_query<series_classification_rule_entity,
@@ -400,9 +407,10 @@ series_classification_rule_repository::read_latest(const context& ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest series classification rules with offset: "
                                << offset << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
-                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
-                       query_builder::limit(limit);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys)) |
+                       query_builder::offset(offset) | query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<series_classification_rule_entity,
                                                      domain::series_classification_rule>(
@@ -420,8 +428,9 @@ std::uint32_t series_classification_rule_repository::get_total_rule_count(
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active series classification rule count";
 
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<series_classification_rule_entity>> |
-                       query_builder::where("tenant_id"_c == tid);
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys));
 
     return query_builder::execute_count_query<series_classification_rule_entity>(
         ctx,
@@ -461,11 +470,12 @@ series_classification_rule_repository::read_latest(const context& ctx,
     }
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<series_classification_rule_entity>> |
-        query_builder::where("tenant_id"_c == tid && "instrument"_c.in(instruments) &&
-                             "quote"_c.in(quotes) && "key_kind"_c.in(key_kinds) &&
-                             "valid_to"_c == max);
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "instrument"_c.in(instruments) && "quote"_c.in(quotes) &&
+                             "key_kind"_c.in(key_kinds) && "valid_to"_c == max);
     auto result = query_builder::execute_read_query<series_classification_rule_entity,
                                                     domain::series_classification_rule>(
         ctx,

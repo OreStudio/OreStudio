@@ -18,6 +18,8 @@
  *
  */
 
--- Drop the bring-up publisher
+-- Drop the bootstrap publishers
+drop function if exists ores_dq_tenant_bootstrap_fn;
 drop function if exists ores_dq_bootstrap_publish_fn;
+drop function if exists ores_dq_publish_bundle_fn;
 drop function if exists ores_dq_publish_dataset_fn;

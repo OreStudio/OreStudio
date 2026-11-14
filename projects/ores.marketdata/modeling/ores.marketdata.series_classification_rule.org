@@ -209,6 +209,7 @@ relates; the subclass is the correlation itself.'
 :PROPERTIES:
 :tablename: ores_marketdata_series_classification_rules_tbl
 :rls_tenant_isolation: true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks
@@ -243,6 +244,7 @@ relates; the subclass is the correlation itself.'
 :entity_plural_short:   rules
 :entity_singular_words: series classification rule
 :entity_plural_words:   series classification rules
+:system_tenant_visible: true
 :END:
 
 ** Domain includes

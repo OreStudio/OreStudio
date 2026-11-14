@@ -26,11 +26,11 @@ A new tenant states what it is seeded with, from the bundle map, and nothing is 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | The refdata vocabulary copies are gone and tenants read the system tenant's rows. |
+| Now          | A new tenant is seeded by the declared bootstrap, and every catalogue it reads stays in the system tenant. |
 | Waiting on   | Nothing. |
-| Next         | Record what the provisioner still copies: the DQ registries, IAM roles, trading types and party rows, and the runtime publish path that reads a dataset from the caller's tenant. |
+| Next         | Nothing on this task; the remaining work belongs to the tasks that follow it. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -52,7 +52,12 @@ A new tenant states what it is seeded with, from the bundle map, and nothing is 
 |------+-------+---------+--------|
 | Refdata tables the provisioner copied into each tenant | 34 of 36; =parties= and =business_centres= are created for the tenant and stay | `grep -o "insert into ores_refdata_[a-z_]*" iam_tenant_provisioner_create.sql` | 5cae6e2eb1 |
 | Refdata vocabulary tables a tenant reads from the system tenant | 34, each with the shared-reference policy and `:system_tenant_visible:` | `grep -c rls_own_or_system_tenant_rows projects/ores.refdata/modeling/*.org` | 5cae6e2eb1 |
-| Other tables the provisioner copies | 24 statements: the DQ registries, IAM roles and permissions, trading activity types and structure kinds, and the marketdata series classification rules | `grep -n -B12 "Copied from system tenant" iam_tenant_provisioner_create.sql` | 5cae6e2eb1 |
+| Other tables the provisioner copied | 24 statements when the refdata copies went: the DQ registries, IAM roles and permissions, the trading lookups, the marketdata series classification rules and =party_categories= | `grep -n -B12 "Copied from system tenant" iam_tenant_provisioner_create.sql` | 5cae6e2eb1 |
+| Statements the provisioner still copies | 4: IAM permissions, roles, role-permission assignments and role-product-type grants | `grep -c "Copied from system tenant during provisioning" iam_tenant_provisioner_create.sql` | this commit |
+| Catalogue tables a tenant reads from the system tenant after this task | 20: 12 DQ registries, 6 trading lookups, the series classification rules and =party_categories= | `grep -c "or tenant_id = ores_utility_system_tenant_id_fn" projects/ores.sql/create/dq/dq_rls_policies_create.sql` | this commit |
+| Rows the tenant bootstrap publishes into a new tenant | 144 badge definitions, 187 badge mappings, 6 badge severities, 49 code domains | `select * from ores_dq_tenant_bootstrap_fn('<tenant>')` | this commit |
+| pgTAP, the tenant bootstrap | 9 of 9 | `pg_prove -d <database> test/dq_tenant_bootstrap_test.sql` | this commit |
+| pgTAP, every SQL test | 93 files, 882 tests, all pass; =test.sql= is a loader with no plan | `pg_prove -d <database> projects/ores.sql/test/*.sql` | this commit |
 
 * Notes
 
@@ -85,7 +90,9 @@ via its "Verifies task" field.
 
 * Result
 
-The first half is delivered; the task is not closed.
+The task is delivered in two halves, and the second half is this commit.
+
+The refdata vocabularies came first.
 
 - The 34 refdata vocabulary tables the provisioner copied are no longer copied.
   Each one's model declares `:rls_own_or_system_tenant_rows:` and
@@ -101,16 +108,58 @@ The first half is delivered; the task is not closed.
 - A recreate passed end to end with the policies and the shortened provisioner,
   and `compass db status` reports the schema in sync.
 
-What remains, and it is the larger half:
+The catalogues and the bootstrap followed.
 
-- The provisioner still copies 24 more statements: the DQ registries (artefact
-  types, dataset bundles, coding schemes, dimensions, change reasons), IAM roles
-  and permissions, trading activity types and structure kinds, and the
-  marketdata series classification rules, plus =party_categories=, which has no
-  model to state a policy on.
-- The DQ registry copies cannot go until the runtime publish path reads a
-  dataset from the system tenant. =publish_service= resolves a dataset in the
-  caller's tenant today, so a tenant's publication depends on its own copy of
-  the dataset row even though the bring-up publishes from the system tenant's.
-- The tenant bootstrap itself is still unnamed: what a new tenant is seeded with
-  is stated by these insert statements and not by the bundle map.
+- Twenty more catalogue tables are read from the system tenant and copied into
+  no tenant: the twelve DQ registries (artefact types, dataset bundles, data
+  domains, subject areas, coding schemes and their authority types, the three
+  dimensions, methodologies, change reasons and their categories), the six
+  trading lookups (trade identifier types, trade link types, activity types,
+  structure kinds, structure templates and their roles), the marketdata series
+  classification rules, and =party_categories=. Path and row-level security
+  follow the same rule as the vocabularies: a shared-reference read, and a write
+  path only in the caller's own tenant.
+- =party_categories= had no row-level security at all, so every session read
+  every tenant's categories. It takes the shared-reference policy now, stated by
+  hand in the refdata policies file because the table has no codegen model. Its
+  validator reads the platform's copy, so removing the tenant copy loses no
+  check.
+- A new tenant is seeded by =ores_dq_tenant_bootstrap_fn(uuid)=, the second
+  caller of the publish function. It names its bundles in one place, publishes
+  them into the tenant being created, and the provisioner holds no list of its
+  own. Today the list is =tenant_defaults=: 144 badge definitions, 187 badge
+  mappings, 6 badge severities and 49 code domains, every row carrying the
+  provenance of the dataset that produced it.
+- The bootstrap reads the dataset from the system tenant rather than from the
+  target. That is what removes the last reason a tenant needed a dataset row of
+  its own, and it is the same rule the page states: the staged artefacts and the
+  row that describes them are held in one copy.
+- The four IAM copies stay, because those rows are the tenant's own: its
+  members are granted its roles. The function's header says so, so the copy is
+  declared rather than implicit.
+- =test/dq_tenant_bootstrap_test.sql= asserts the seeded row counts, the
+  provenance, the absence of every copied catalogue, the reads that replace them
+  and a second bootstrap that inserts nothing. A recreate passed end to end and
+  the whole SQL suite passes, 882 tests in 93 files.
+
+Three tests that this branch's earlier commits invalidated were repaired here:
+the currency groups test still named the =base= bundle, the conventions test
+asserted that the system tenant holds no convention, which the bring-up now
+publishes, and three trading fixtures wrote a business centre the published
+catalogue already holds. The conventions test now asserts provenance instead of
+absence, which is the property that distinguishes a published row from a seeded
+one.
+
+What remains is not this task's.
+
+- The IAM roles a tenant starts with are a copy of the system tenant's. Whether a
+  tenant's roles should be shared rows rather than copies is an IAM question, and
+  the copy is declared until it is answered.
+- =party_categories= still has no model, so its policy is stated by hand.
+- The publish functions rewrite their rows, so a second run reports =updated=
+  rather than =skipped=. The bootstrap leans on this being harmless, and
+  [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] owns the fix.
+- The badges are written both by a populate script, into the system tenant, and
+  by this bootstrap, into a tenant: the system tenant holds 138 badge definitions
+  and a tenant is seeded with the 144 the artefacts state.
+  [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]] owns that.

@@ -88,28 +88,31 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 /**
- * Publishes the platform and world bundles into the system tenant.
+ * Publishes the given bundles into one tenant, without the bus.
  *
- * This is the bring-up caller, and the only one that runs without the bus. It
- * takes bundle codes, orders their members by the dataset dependencies, and
- * publishes each one into the system tenant.
+ * The function orders the members by the dataset dependencies and publishes
+ * each one into the target tenant. Both bootstraps in this file are callers of
+ * it: the bring-up, which targets the system tenant, and the tenant bootstrap,
+ * which targets the tenant being created.
  *
  * A member is published only when it has a dataset and an artefact type with a
- * target subject, and an optional member is skipped, because a bring-up
- * publishes what every installation holds and an optional member is a tenant's
- * choice.
+ * target subject, and an optional member is skipped, because a bootstrap
+ * publishes what every tenant of that level holds and an optional member is a
+ * choice the holder makes later.
  *
  * Ordering by the declared dependencies is not enough on its own: a validator
  * may read a catalogue that no edge declares, as a convention's currency reads
  * the currency catalogue. A dataset that fails is therefore held back and
  * retried once every other member has published, which is enough for a
  * catalogue that another member writes. A dataset that fails twice is raised,
- * with its own error, so a bring-up cannot end with a hole it does not name.
+ * with its own error, so a bootstrap cannot end with a hole it does not name.
  *
- * The function is idempotent, as every publish function is, so a second call
- * writes nothing.
+ * A publish function compares its staged row with the row it holds, so a second
+ * call reports what it found rather than what it wrote. That makes the
+ * function safe to retry, and it is not the same promise as writing nothing.
  */
-create or replace function ores_dq_bootstrap_publish_fn(
+create or replace function ores_dq_publish_bundle_fn(
+    p_target_tenant_id uuid,
     p_bundle_codes text[]
 ) returns table (
     dataset_code text,
@@ -117,7 +120,7 @@ create or replace function ores_dq_bootstrap_publish_fn(
     record_count bigint
 ) as $$
 declare
-    v_target uuid := ores_utility_system_tenant_id_fn();
+    v_target uuid := p_target_tenant_id;
     v_code text;
     v_action text;
     v_count bigint;
@@ -125,7 +128,15 @@ declare
     v_failed text[] := '{}';
 begin
     if v_target is null then
-        raise exception 'The system tenant is not defined, so bring-up has no target to publish into.';
+        raise exception 'A bundle publish needs a target tenant, and none was given.';
+    end if;
+
+    if not exists (
+        select 1 from ores_iam_tenants_tbl t
+        where t.id = v_target
+          and t.valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Cannot publish into tenant %: no current tenant carries that id.', v_target;
     end if;
 
     if not exists (
@@ -133,7 +144,7 @@ begin
         where m.bundle_code = any(p_bundle_codes)
           and m.valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Bring-up was given no bundle that has members: %.',
+        raise exception 'A bundle publish was given no bundle that has members: %.',
             coalesce(array_to_string(p_bundle_codes, ', '), '(none)');
     end if;
 
@@ -173,10 +184,13 @@ begin
         left join ordered o on o.dataset_code = m.dataset_code
         order by coalesce(o.depth, 9999), m.dataset_code
     loop
+        -- The dataset is the system tenant's, whatever the target: the staged
+        -- artefacts and the row that describes them are held in one copy, and
+        -- the target tenant only receives the published rows.
         if not exists (
             select 1 from ores_dq_datasets_tbl d
             where d.code = v_code
-              and d.tenant_id = v_target
+              and d.tenant_id = ores_utility_system_tenant_id_fn()
               and d.valid_to = ores_utility_infinity_timestamp_fn()
         ) then
             v_missing := v_missing || v_code;
@@ -210,13 +224,62 @@ begin
                 return next;
             end loop;
         exception when others then
-            raise exception 'Bring-up could not publish dataset "%": %', v_code, SQLERRM;
+            raise exception 'Could not publish dataset "%" into tenant %: %',
+                v_code, v_target, SQLERRM;
         end;
     end loop;
 
     if cardinality(v_missing) > 0 then
-        raise warning 'Bring-up published nothing for % bundle member(s) with no dataset: %',
+        raise warning 'Published nothing for % bundle member(s) with no dataset: %',
             cardinality(v_missing), array_to_string(v_missing, ', ');
     end if;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+/**
+ * Publishes the platform and world bundles into the system tenant.
+ *
+ * This is the bring-up caller: the populate scripts run it once a database has
+ * a system tenant, and no bus is involved. It is the system tenant's own
+ * publication, and every other tenant reads the rows it writes.
+ */
+create or replace function ores_dq_bootstrap_publish_fn(
+    p_bundle_codes text[]
+) returns table (
+    dataset_code text,
+    action text,
+    record_count bigint
+) as $$
+begin
+    return query
+    select * from ores_dq_publish_bundle_fn(ores_utility_system_tenant_id_fn(), p_bundle_codes);
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+/**
+ * Publishes the bundles a newly created tenant is seeded with.
+ *
+ * The bundles are named here and nowhere else, so a tenant's seed rows are
+ * stated in one place. A bundle belongs to this list when the bundle map places
+ * it at the tenant level with tenant-wide scope and the publication happens
+ * when the tenant is created; today that is tenant_defaults, the badges, the
+ * badge mappings and the code domains a tenant starts with. The rule that
+ * assigns the level is stated in
+ * doc/knowledge/architecture/reference_data_classification_by_publication_level.org.
+ *
+ * When the bundle map carries its level as a column, the list becomes a query
+ * against it and this function keeps its name and its contract.
+ */
+create or replace function ores_dq_tenant_bootstrap_fn(
+    p_tenant_id uuid
+) returns table (
+    dataset_code text,
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_bundles constant text[] := array['tenant_defaults'];
+begin
+    return query select * from ores_dq_publish_bundle_fn(p_tenant_id, v_bundles);
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;

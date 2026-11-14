@@ -305,6 +305,12 @@ struct get_published_fx_vol_surface_response {
     bool stale = false;
     std::string publish_request_id;
     std::chrono::system_clock::time_point as_of;
+    /**
+     * @brief The series the surface is published into.
+     *
+     * Every publish of a blueprint writes this series, so it names the surface a
+     * slice belongs to rather than the publish the answer answers from.
+     */
     std::string series_id;
     std::optional<std::chrono::system_clock::time_point> published_at;
     std::string published_by;

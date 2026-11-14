@@ -640,8 +640,14 @@ refusal is a reply with =success= false and a message that names what failed.
 :cpp_type: std::string
 :END:
 
-The series the surface is published into: the identity a caller names to read the
-same surface again, and what a slice of it is a slice of.
+#+begin_src cpp :name comment
+/**
+ * @brief The series the surface is published into.
+ *
+ * Every publish of a blueprint writes this series, so it names the surface a
+ * slice belongs to rather than the publish the answer answers from.
+ */
+#+end_src
 
 *** published_at
 :PROPERTIES:

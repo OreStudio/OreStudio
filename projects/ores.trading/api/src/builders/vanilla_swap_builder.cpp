@@ -155,7 +155,10 @@ std::expected<domain::swap_instrument_data, build_error> vanilla_swap_builder::b
             build_error{"index", swap->id + ": no trade day count for " + floating.day_count});
 
     const bool fixed_pays = terms_.fixed_side.get() == side::pay;
-    domain::swap_instrument_data out{};
+    // Built inside the result: gcc 16 misreads the strings of a value-initialised
+    // local once it is copied into the expected, and warns that they are uninitialised.
+    std::expected<domain::swap_instrument_data, build_error> result(std::in_place);
+    auto& out = *result;
     out.header.start_date = terms_.start.get();
     out.header.maturity_date = terms_.maturity.get();
     out.facts = domain::vanilla_swap_instrument{};
@@ -172,7 +175,7 @@ std::expected<domain::swap_instrument_data, build_error> vanilla_swap_builder::b
     out.leg_rates = {rows::leg_rate(1, "fixed", terms_.fixed_rate.get()),
                      rows::leg_rate(2, "spread", utility::decimal::decimal{})};
     out.schedules = {schedule_of(1, terms_, fixed), schedule_of(2, terms_, floating)};
-    return out;
+    return result;
 }
 
 }

@@ -76,7 +76,7 @@ the repositories and the handlers all read and write it.
 - [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the one way to stage an entity's rows for DQ and
   publish them into the service that owns them, and the legacy patterns not to
   copy.
-- [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Where new data goes]] — the three levels a published row belongs
+- [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] — the three levels a published row belongs
   to, the bundle map, the one publish path, and what a published row's
   provenance and reproduction are.
 

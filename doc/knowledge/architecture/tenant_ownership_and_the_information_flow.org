@@ -184,6 +184,6 @@ The usage tab applies this. The compute service counts one tenant and groups it 
 - [[id:C3D570EF-468D-427D-B355-30C0443BCDDF][Read another tenant's data from inside it]] — the memory that states the rule.
 - [[id:577FE7CA-F7BC-44AE-834C-AD25DCC0E2F5][Audit the policies that let the system tenant read every tenant]] — where the existing widenings are being removed.
 - [[id:6C930659-6548-4371-B9EB-1AACE597D0E9][Read each tenant's cache partition inside its tenant]] — the first cross-tenant read rebuilt on token exchange.
-- [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Where new data goes]] — completes: which level a new table takes, and the bundle that publishes it.
+- [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] — completes: which level a new table takes, and the bundle that publishes it.
 - [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the screen whose counters this page explains.
 - [[id:3621E2BC-2670-4E59-8721-32F86B640F24][The grid read is scoped to the session tenant]] — the capture that started this study.

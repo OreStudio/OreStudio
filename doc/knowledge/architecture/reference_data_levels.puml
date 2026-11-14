@@ -22,13 +22,13 @@ title The three levels: one copy of each row, and who reads it
 skinparam componentStyle rectangle
 
 package "Readers" {
-    [installation service] as r_inst
+    [platform code] as r_inst
     [validator\nsecurity definer] as r_val
     [tenant screen\nrepository with\n:system_tenant_visible:] as r_tenant
 }
 
 node "System tenant" {
-    package "installation level\nwritten by system_core" as lvl_inst {
+    package "platform level\nwritten by system_core" as lvl_inst {
         [coding schemes, images,\nproviders, adapters,\nORE parameters] as t_inst
     }
     package "world level\nwritten by world" as lvl_world {

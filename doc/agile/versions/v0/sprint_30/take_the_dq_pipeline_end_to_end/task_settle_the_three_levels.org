@@ -28,9 +28,9 @@ A reader can say which level a dataset belongs to and which bundle publishes it,
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
-| Now          | The page and its three diagrams are written. They await review and sign-off. |
-| Waiting on   | The sign-off. Task 2 must not start until it lands. |
-| Next         | Review [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Where new data goes]], answer its decisions, then apply the bundle rename and the bundle map. |
+| Now          | The page is signed off, with six settled decisions. The bundle rename and the bundle map are next. |
+| Waiting on   | Nothing. Task 2 starts once the rename lands. |
+| Next         | Apply the bundle rename and the bundle map: =base= to =world=, =tenant_defaults=, one membership per dataset, and the level on the bundle row. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -38,12 +38,12 @@ A reader can say which level a dataset belongs to and which bundle publishes it,
 **Documentation first.** No implementation starts until these documents answer
 every question below.
 
-- One knowledge page answers one question: *where does this new data go?* It
-  gives the decision a developer makes — the level, the tenant, the bundle and
-  the writer — and the map that follows from it. It is an atomic note in the
-  sense of [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]]: one
-  assertion, a dense set of =id:= links, and nothing the pages it links already
-  own.
+- One knowledge page classifies a new kind of reference data by publication
+  level, and gives the decision a developer makes — the level, the tenant, the
+  bundle and the writer — with the map that follows from it. It is an atomic
+  note in the sense of
+  [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]]: one rule, a dense
+  set of =id:= links, and nothing the pages it links already own.
 - It states the target state and no history: no defect list, no "today", no
   retired path, no task table. What the tree still has to change is the story's
   record and not the page's.
@@ -100,21 +100,36 @@ picture the others point at.
 Answers requirement 4, and unblocks every task below it. Defect D3.
 
 The decisions a reviewer has to accept, because every task below depends on
-them:
+them. All six are settled; the reasons are in the page and in the sign-off
+exchange.
 
-1. Three levels, named after the owner of the values: *installation*, *world*,
-   *tenant*. They agree with the three ownership classes the row-level security
-   model already names.
-2. One copy of an installation row and of a world row, in the system tenant. No
+1. Three levels, named after the owner of the values: *platform*, *world*,
+   *tenant*. The name is *platform* and not *installation*, because
+   =data_tiers= gives "installation data" to a tenant's business entities and
+   the row-level security model gives "the installation" to the deployment's
+   registers. The deployment's registers sit outside the three levels: no
+   bundle carries them and no tenant reads them.
+2. One copy of a platform row and of a world row, in the system tenant. No
    tenant holds a copy, and a tenant reads them through the shared-reference
-   policy and =:system_tenant_visible:=, both of which exist.
-3. =base= becomes =world=, and the tenant's own starting configuration in
-   =base= becomes a bundle of its own, =tenant_defaults=. That is the rename
-   that ends the "base system" ambiguity.
-4. A dataset is a member of one bundle and no more, and a table has one
-   mechanism that writes it.
+   policy and =:system_tenant_visible:=, both of which exist. A shared table
+   takes no tenant write path; the restriction is by permission and not by a
+   further policy shape.
+3. =base= becomes =world=. The tenant's own starting configuration in =base=
+   becomes =tenant_defaults=, and holds only what a tenant may change: the
+   badges, the badge mappings and the code domains. The ORE parameters and
+   their value domains move to =system_core=, because nothing shows a tenant
+   editing them and their per-tenant copy was a duplicate for readers.
+4. A dataset is a member of one bundle and no more. A given table in a given
+   tenant has one mechanism that writes it, which lets a populate script own
+   the system tenant's party rows while the publish function owns every other
+   tenant's.
 5. The bundle publication and the bring-up bootstrap are the two callers of one
-   publish function. The bring-up publish is part of database setup.
+   publish function. The bring-up publish is part of database setup and runs
+   after every populate script.
+6. The bundle carries its level, and the level determines the target tenant; a
+   request does not name a target. A caller whose tenant the level does not
+   admit is refused, or a tenant administrator could publish a world bundle
+   into their own tenant and recreate the second copy by request.
 
 See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] for the evidence behind every claim here.
 

@@ -278,7 +278,7 @@ The gaps are of two kinds, and the two need different answers.
   B9 and B18 depend on.
 - [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]] — which rows
   a publication such as B14 carries.
-- [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Where new data goes]] —
+- [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] —
   the levels B14's datasets belong to, the bundle map, and the target tenant of
   each bundle.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this

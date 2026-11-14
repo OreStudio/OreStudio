@@ -57,9 +57,9 @@ on being able to say which bucket a dataset lives in.
 
 | Level | Holds | Published | By |
 |-------+-------+-----------+----|
-| Installation | schema, system vocabulary, the system party, WRLD | at migration | populate |
-| World | calendars, currencies, commodity and equity underlyings, conventions | once, into the system tenant | one world bundle |
-| Tenant | the tenant's own rows, and its copies of what a party may override | per tenant, declared | the tenant bootstrap |
+| Platform | the system vocabulary, the system party, WRLD, the deployment's registers | at bring-up | populate, then =system_core= |
+| World | calendars, currencies, commodity and equity underlyings, conventions | once, into the system tenant | the =world= bundle |
+| Tenant | the tenant's own rows | per tenant, declared | =tenant_defaults=, then =party_essentials= |
 
 The sequence is deliberate: 1 settles the vocabulary, 2 makes bring-up complete,
 3 removes the silent copy that made the gap invisible, 4 collapses the doubling,

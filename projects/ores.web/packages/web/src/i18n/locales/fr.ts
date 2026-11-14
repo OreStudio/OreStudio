@@ -5772,7 +5772,11 @@ const fr: SourceCatalogue = {
             lead: "Les croisements d'une devise de base, le spot de chaque fournisseur à côté du consensus, et l'amplitude du jour.",
             base: 'Base',
             chosenDay: 'La journée {pair}, de {provider}',
-            chosenDayLead: '{count} valeurs, de la plus ancienne à la plus récente.',
+            chosenDayLead: {
+                one: '{count} valeur, de la plus ancienne à la plus récente.',
+                other: '{count} valeurs, de la plus ancienne à la plus récente.',
+            },
+            dayEmpty: 'Aucune observation pour {pair} ce jour-là.',
             readingFor: 'Lecture pour {party}',
             rangeLabel: 'Aujourd’hui de {low} à {high}, dernier {last}',
             asOf: 'Au',

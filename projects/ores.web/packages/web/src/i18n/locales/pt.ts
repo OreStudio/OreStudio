@@ -5731,7 +5731,11 @@ const pt: SourceCatalogue = {
             lead: 'Os cruzamentos de uma moeda base, o spot de cada fornecedor ao lado do consenso, e a amplitude do dia.',
             base: 'Base',
             chosenDay: 'O dia {pair}, de {provider}',
-            chosenDayLead: '{count} valores, do mais antigo para o mais recente.',
+            chosenDayLead: {
+                one: '{count} valor, do mais antigo para o mais recente.',
+                other: '{count} valores, do mais antigo para o mais recente.',
+            },
+            dayEmpty: 'Nenhuma observação para {pair} neste dia.',
             readingFor: 'A ler para {party}',
             rangeLabel: 'Hoje de {low} a {high}, último {last}',
             asOf: 'Em',

@@ -19,16 +19,16 @@
  */
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
-import { queryOptions, useQuery } from '@tanstack/react-query';
-import { fromWireTimestamp } from '@ores/wire-protocol/browser';
-import { api, type FxMontagePair, type MontageSpot } from '../api/client.js';
-import { series } from '../api/series.js';
+import { useQuery } from '@tanstack/react-query';
+import type { FxMontagePair } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { pointsOf } from '../market/seriesView.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { formatDateTime, relativeTime } from '../ui/Time.js';
+import { chosenDayQuery, drawnSpot, montageQuery, newestSpot } from './fxMontage.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
-import { DATA_CELL, HEAD_CELL, asOfInstant, oneOf, todayIso, useReadParty } from './readScreen.js';
+import { DATA_CELL, HEAD_CELL, oneOf, todayIso, useReadParty } from './readScreen.js';
 
 /**
  * One base currency's crosses, from
@@ -40,58 +40,14 @@ import { DATA_CELL, HEAD_CELL, asOfInstant, oneOf, todayIso, useReadParty } from
  * "today" means.
  *
  * The chosen pair's day is a second read, of the series the montage already
- * named. Its window ends at the same as-of the montage answered, so the path and
- * the table describe one day rather than two.
+ * named: the observations over the twenty four hours that end at the as-of the
+ * montage answered for.
  */
 
 const BASES = ['EUR', 'USD', 'GBP', 'AUD', 'JPY', 'CHF', 'CAD', 'NZD'] as const;
 const SORTS = ['pair', 'move'] as const;
-/** The observations one day panel reads, and the most it draws. */
-const DAY_LIMIT = 500;
 
 type Sort = (typeof SORTS)[number];
-
-/**
- * The montage of one base at an instant.
- *
- * Exported so a test can drive the read the screen drives, rather than seed an
- * answer under a key the screen might not ask for.
- */
-export function montageQuery(base: string, asOf: string) {
-    return queryOptions({
-        queryKey: ['fx-montage', base, asOf] as const,
-        queryFn: () => api.fxMontage({ baseCurrency: base, asOf: asOfInstant(asOf) }),
-        retry: false,
-    });
-}
-
-/** The day ending at @p asOf, of the series @p seriesId names. */
-export function chosenDayQuery(seriesId: string, asOf: string) {
-    return queryOptions({
-        queryKey: ['series-observations', seriesId, 'day', asOf] as const,
-        queryFn: () => series.observations(seriesId, DAY_LIMIT, 'day', asOfInstant(asOf)),
-        enabled: seriesId !== '',
-        retry: false,
-    });
-}
-
-/**
- * The spot the day is drawn from: the freshest one the pair has, and the
- * provider whose name says so.
- *
- * The choice is stated once and used for both the read and the caption. A
- * screen that read one provider's series and named another's would draw a path
- * under the wrong name.
- */
-function drawnSpot(pair: FxMontagePair | undefined): MontageSpot | undefined {
-    if (pair === undefined) return undefined;
-    return [...pair.spot_by_provider]
-        .filter((spot) => spot.series_id !== '')
-        .sort(
-            (a, b) =>
-                a.age_seconds - b.age_seconds || a.provider_code.localeCompare(b.provider_code),
-        )[0];
-}
 
 function fixed(value: number, places: number, language: string): string {
     return value.toLocaleString(language, {
@@ -106,7 +62,7 @@ function sorted(rows: readonly FxMontagePair[], sort: Sort): readonly FxMontageP
 }
 
 function rowAge(pair: FxMontagePair, language: string): string {
-    const newest = [...pair.spot_by_provider].sort((a, b) => a.age_seconds - b.age_seconds)[0];
+    const newest = newestSpot(pair);
     if (newest === undefined) return '—';
     const now = new Date();
     return relativeTime(new Date(now.getTime() - newest.age_seconds * 1000), now, language);
@@ -165,7 +121,7 @@ function RangeBar({
 }
 
 export function FxMontagePage(): ReactNode {
-    const { t, language } = useTranslation();
+    const { t, language, plural } = useTranslation();
     const party = useReadParty();
     const [search, setSearch] = useSearchParams();
     const set = (values: Readonly<Record<string, string>>): void => {
@@ -183,11 +139,14 @@ export function FxMontagePage(): ReactNode {
     const montage = useQuery(montageQuery(base, asOf));
 
     const rows = montage.data === undefined ? [] : sorted(montage.data.pairs, sort);
-    const chosenPair = search.get('pair') ?? rows[0]?.pair_name ?? '';
+    // The pair that is open is the one the address names, or the answer's own first
+    // pair: the display's sort must not decide which day is drawn.
+    const chosenPair = search.get('pair') ?? montage.data?.pairs[0]?.pair_name ?? '';
     const chosen = rows.find((pair) => pair.pair_name === chosenPair);
     const drawn = drawnSpot(chosen);
     const seriesId = drawn?.series_id ?? '';
     const day = useQuery(chosenDayQuery(seriesId, asOf));
+    const dayPoints = day.data === undefined ? [] : pointsOf(day.data.observations);
     const places = 4;
     const head = HEAD_CELL;
     const cell = DATA_CELL;
@@ -382,35 +341,36 @@ export function FxMontagePage(): ReactNode {
                     </div>
                 </section>
             )}
-            {day.data !== undefined &&
-                day.data.observations.length >= 2 &&
-                chosen !== undefined && (
-                    <section className="space-y-2 rounded-md border border-line p-4">
-                        <h2 className="text-sm font-semibold">
-                            {t('marketdata.fxMontage.chosenDay', {
-                                pair: chosen.pair_name,
-                                provider: drawn?.provider_code ?? '',
-                            })}
-                        </h2>
-                        <p className="text-xs text-ink-faint">
-                            {t('marketdata.fxMontage.chosenDayLead', {
-                                count: day.data.observations.length,
-                            })}
-                        </p>
+            {day.isError && <Notice tone="error">{day.error.message}</Notice>}
+            {day.isSuccess && chosen !== undefined && dayPoints.length === 0 && (
+                <Notice tone="info">
+                    {t('marketdata.fxMontage.dayEmpty', { pair: chosen.pair_name })}
+                </Notice>
+            )}
+            {/* One value is stated, not drawn: a chart of one point is a line the
+                source never drew. */}
+            {day.isSuccess && chosen !== undefined && dayPoints.length > 0 && (
+                <section className="space-y-2 rounded-md border border-line p-4">
+                    <h2 className="text-sm font-semibold">
+                        {t('marketdata.fxMontage.chosenDay', {
+                            pair: chosen.pair_name,
+                            provider: drawn?.provider_code ?? '',
+                        })}
+                    </h2>
+                    <p className="text-xs text-ink-faint">
+                        {plural('marketdata.fxMontage.chosenDayLead', dayPoints.length)}
+                    </p>
+                    {dayPoints.length >= 2 && (
                         <LineChart
                             series={[
                                 {
-                                    points: day.data.observations.map((point) =>
-                                        Number(point.value),
-                                    ),
+                                    points: dayPoints.map((point) => point.value),
                                     colour: SERIES_COLOURS[0],
                                     fill: true,
                                     strong: true,
                                 },
                             ]}
-                            xs={day.data.observations.map((point) =>
-                                fromWireTimestamp(point.at).getTime(),
-                            )}
+                            xs={dayPoints.map((point) => point.at)}
                             format={(value) => fixed(value, places, language)}
                             xFormat={(value) => new Date(value).toLocaleTimeString(language)}
                             label={t('marketdata.fxMontage.chosenDay', {
@@ -419,8 +379,9 @@ export function FxMontagePage(): ReactNode {
                             })}
                             padding={0.08}
                         />
-                    </section>
-                )}
+                    )}
+                </section>
+            )}
         </div>
     );
 }

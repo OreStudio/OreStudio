@@ -25,16 +25,20 @@ import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FxMontage } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
-import { chosenDayQuery, FxMontagePage, montageQuery } from './FxMontagePage.js';
+import { FxMontagePage } from './FxMontagePage.js';
+import { chosenDayQuery, montageQuery } from './fxMontage.js';
 
 /**
  * The montage screen, drawn from answers the reads actually fetched.
  *
- * The queries are built by the screen's own options and settled through a
- * stubbed `fetch`, then the page is drawn from the cache those reads filled. A
- * page that asked for a different key, or read a field under another name,
- * would draw nothing here even though a hand-seeded answer would have drawn it.
+ * The queries are the screen's own, settled through a stubbed `fetch`, and the
+ * page is drawn from the cache those reads filled. A page that asked for another
+ * key, or read a field under another name, would draw nothing here even though a
+ * hand-seeded answer would have drawn it.
  */
+
+const AS_OF = '2026-11-13';
+const ADDRESS = `/market-data/fx-montage?base=EUR&asof=${AS_OF}`;
 
 const montage: FxMontage = {
     base_currency: 'EUR',
@@ -97,6 +101,10 @@ const observations: Readonly<Record<string, readonly [string, string][]>> = {
         ['2026-11-13 12:00:00Z', '1.0860'],
         ['2026-11-13 15:00:00Z', '1.0850'],
     ],
+    's-2': [
+        ['2026-11-13 09:00:00Z', '1.0840'],
+        ['2026-11-13 15:00:00Z', '1.0848'],
+    ],
     's-3': [
         ['2026-11-13 09:00:00Z', '0.8410'],
         ['2026-11-13 15:00:00Z', '0.8421'],
@@ -106,19 +114,22 @@ const observations: Readonly<Record<string, readonly [string, string][]>> = {
 /**
  * Answer both routes the screen reads, and record what it asked for.
  *
- * The two answers keep the shapes their BFF routes send, so the screen's own
- * schemas parse them: an observation is a wire timestamp and a value as text.
+ * The answers keep the shapes the BFF routes send, so the screen's own schemas
+ * parse them: an observation is a wire timestamp and a value as text.
  */
-function serve(): string[] {
+function serve(
+    montageAnswer: FxMontage = montage,
+    dayRows: Readonly<Record<string, readonly [string, string][]>> = observations,
+): string[] {
     const asked: string[] = [];
     vi.stubGlobal('fetch', async (url: string | URL | Request) => {
         const address = String(url);
         asked.push(address);
         if (address.startsWith('/api/market/fx-montage')) {
-            return new Response(JSON.stringify(montage), { status: 200 });
+            return new Response(JSON.stringify(montageAnswer), { status: 200 });
         }
         const id = /^\/api\/series\/([^/]+)\/observations/.exec(address)?.[1] ?? '';
-        const rows = observations[id] ?? [];
+        const rows = dayRows[id] ?? [];
         return new Response(
             JSON.stringify({
                 observations: rows.map(([at, value]) => ({ at, value, source: 'ore' })),
@@ -130,13 +141,25 @@ function serve(): string[] {
     return asked;
 }
 
-/** Settle both reads through the client, then draw the page from what they wrote. */
-async function settle(client: QueryClient, asOf: string, seriesId: string): Promise<void> {
-    await client.fetchQuery(montageQuery('EUR', asOf));
-    await client.fetchQuery(chosenDayQuery(seriesId, asOf));
+/**
+ * Settle the montage, and every series its answer names.
+ *
+ * Every candidate is settled because the page chooses which spot to draw from; a
+ * page that chose another provider would find that provider's rows and say so in
+ * its heading, which is what these tests read.
+ */
+async function settle(client: QueryClient): Promise<void> {
+    await client.fetchQuery(montageQuery('EUR', AS_OF));
+    for (const id of ['s-1', 's-2', 's-3']) {
+        await client.fetchQuery(chosenDayQuery(id, AS_OF));
+    }
 }
 
-function draw(address: string, client: QueryClient): string {
+function emptyClient(): QueryClient {
+    return new QueryClient({ defaultOptions: { queries: { retry: false } } });
+}
+
+function draw(client: QueryClient, address: string = ADDRESS): string {
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -148,8 +171,16 @@ function draw(address: string, client: QueryClient): string {
     );
 }
 
-function emptyClient(): QueryClient {
-    return new QueryClient({ defaultOptions: { queries: { retry: false } } });
+/** Settle both reads from a fresh answer, then draw the page from what they wrote. */
+async function drawnPage(
+    address: string = ADDRESS,
+    montageAnswer: FxMontage = montage,
+    dayRows: Readonly<Record<string, readonly [string, string][]>> = observations,
+): Promise<string> {
+    serve(montageAnswer, dayRows);
+    const client = emptyClient();
+    await settle(client);
+    return draw(client, address);
 }
 
 afterEach(() => {
@@ -158,47 +189,51 @@ afterEach(() => {
 
 describe('the FX montage page', () => {
     it('draws every cross of the base with its consensus and its range', async () => {
-        serve();
-        const client = emptyClient();
-        await settle(client, '2026-11-13', 's-1');
-        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13', client);
+        const page = await drawnPage();
         for (const text of ['EUR/USD', '1.0850', '1.0802', '1.0891', 'EUR/GBP', '0.8421']) {
             expect(page).toContain(text);
         }
     });
 
     it('states the change and leaves an unmeasured one absent', async () => {
-        serve();
-        const client = emptyClient();
-        await settle(client, '2026-11-13', 's-1');
-        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13', client);
+        const page = await drawnPage();
         expect(page).toContain('+0.12%');
         // The second row's window holds no price at its start.
         expect(page).toContain('—');
     });
 
     it('draws the day\u2019s range with the consensus on it', async () => {
-        serve();
-        const client = emptyClient();
-        await settle(client, '2026-11-13', 's-1');
-        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13', client);
+        const page = await drawnPage();
         expect(page).toContain('Today from 1.0802 to 1.0891, last 1.085');
     });
 
-    it('draws the chosen pair\u2019s day from the series read, and names its provider', async () => {
-        serve();
-        const client = emptyClient();
-        await settle(client, '2026-11-13', 's-1');
-        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13', client);
+    it('draws the chosen pair\u2019s day from the freshest provider, and names it', async () => {
+        const page = await drawnPage();
         expect(page).toContain('The EUR/USD day, from ore');
         expect(page).toContain('3 values, oldest first.');
+    });
+
+    it('states one value without drawing a line from it', async () => {
+        const page = await drawnPage(ADDRESS, montage, {
+            ...observations,
+            's-1': [['2026-11-13 09:00:00Z', '1.0820']],
+        });
+        expect(page).toContain('The EUR/USD day, from ore');
+        expect(page).toContain('1 value, oldest first.');
+        expect(page).not.toContain('aria-label="The EUR/USD day, from ore"');
+    });
+
+    it('says so when the day holds no observation', async () => {
+        const page = await drawnPage(ADDRESS, montage, { ...observations, 's-1': [] });
+        expect(page).toContain('No observations for EUR/USD on this day.');
     });
 
     it('reads the day the address names, ending at that day and nothing after it', async () => {
         const asked = serve();
         const client = emptyClient();
-        await settle(client, '2026-11-13', 's-1');
-        draw('/market-data/fx-montage?base=EUR&asof=2026-11-13', client);
+        await client.fetchQuery(montageQuery('EUR', AS_OF));
+        await client.fetchQuery(chosenDayQuery('s-1', AS_OF));
+        draw(client);
 
         expect(asked).toContain(
             '/api/series/s-1/observations?limit=500&window=day&as_of=2026-11-13+23%3A59%3A59Z',
@@ -206,48 +241,32 @@ describe('the FX montage page', () => {
     });
 
     it('draws the pair the address chooses, with its own provider and its own values', async () => {
-        serve();
-        const client = emptyClient();
-        await settle(client, '2026-11-13', 's-3');
-        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13&pair=EUR/GBP', client);
+        const page = await drawnPage(`${ADDRESS}&pair=EUR/GBP`);
         expect(page).toContain('The EUR/GBP day, from ore');
         expect(page).toContain('2 values, oldest first.');
     });
 
     it('makes every pair a control that states which one the day belongs to', async () => {
-        serve();
-        const client = emptyClient();
-        await settle(client, '2026-11-13', 's-1');
-        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13&pair=EUR/GBP', client);
+        const page = await drawnPage(`${ADDRESS}&pair=EUR/GBP`);
         const chosen = /<button[^>]*aria-pressed="true"[^>]*>EUR\/GBP<\/button>/;
         expect(chosen.test(page)).toBe(true);
         expect(/<button[^>]*aria-pressed="false"[^>]*>EUR\/USD<\/button>/.test(page)).toBe(true);
     });
 
     it('says which instant the change is measured from', async () => {
-        serve();
-        const client = emptyClient();
-        await settle(client, '2026-11-13', 's-1');
-        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13', client);
+        const page = await drawnPage();
         expect(page).toContain('Change measured from');
     });
 
-    it('sorts by move when asked', async () => {
-        serve();
-        const client = emptyClient();
-        await settle(client, '2026-11-13', 's-1');
-        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13&sort=move', client);
-        expect(page.indexOf('EUR/USD')).toBeLessThan(page.indexOf('EUR/GBP'));
+    it('sorts by move without changing which pair the day belongs to', async () => {
+        const moved = await drawnPage(`${ADDRESS}&sort=move`);
+        expect(moved.indexOf('EUR/USD')).toBeLessThan(moved.indexOf('EUR/GBP'));
+        // The open pair is the answer's first, not the moved table's first.
+        expect(moved).toContain('The EUR/USD day, from ore');
     });
 
     it('says nothing is quoted when the base has no crosses', async () => {
-        vi.stubGlobal(
-            'fetch',
-            async () => new Response(JSON.stringify({ ...montage, pairs: [] }), { status: 200 }),
-        );
-        const client = emptyClient();
-        await client.fetchQuery(montageQuery('EUR', '2026-11-13'));
-        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13', client);
+        const page = await drawnPage(ADDRESS, { ...montage, pairs: [] });
         expect(page).toContain('Nothing quoted.');
     });
 });

@@ -50,8 +50,10 @@ a different read, with its own page and journey.
    low, and the instant they are measured from. A client does not decide what
    "today" means: the trading session does, and the server states it.
 6. *Open one pair.* The person opens a pair. The system draws the pair's day
-   over the stated window and marks the high and the low on it. No new read is
-   needed: the row and the chart are one answer.
+   over the stated window, from the observations of the series the montage
+   already names, and marks the high and the low on it. The path is a second
+   read, of one series, because the montage states the day's ends and not its
+   path.
 7. *Meet an empty answer.* No provider quotes a cross of the base. The system
    says so, and does not carry yesterday's price as if it were today's.
 8. *Leave.* The address holds the base, the provider set, the as-of and the
@@ -97,7 +99,7 @@ The prototype is the visual record:
 |------+-----------+---------+--------|
 | Choose the base | the instrument catalogue, to find the pairs | =marketdata.v1.ops.list_instruments= | missing |
 | Read a pair | the montage: spot per provider, consensus, change, high, low | =marketdata.v1.ops.get_fx_montage= | missing |
-| Open one pair | one series' ticks over the window | =marketdata.v1.ops.get_series_ticks= | exists |
+| Open one pair | the observations of one series over the window | =marketdata.v1.market_observations.list_by_series_id= | exists |
 | Read a forward | the published forward set of a pair | =marketdata.v1.ops.get_published_fx_forward= | exists |
 
 The montage is not built from =get_series_ticks= per pair: that is one call per

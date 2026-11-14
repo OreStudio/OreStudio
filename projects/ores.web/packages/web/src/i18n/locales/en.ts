@@ -5690,7 +5690,11 @@ export const en: SourceCatalogue = {
             lead: "One base currency's crosses, each provider's spot beside the consensus, and the day's range.",
             base: 'Base',
             chosenDay: 'The {pair} day, from {provider}',
-            chosenDayLead: '{count} values, oldest first.',
+            chosenDayLead: {
+                one: '{count} value, oldest first.',
+                other: '{count} values, oldest first.',
+            },
+            dayEmpty: 'No observations for {pair} on this day.',
             readingFor: 'Reading for {party}',
             rangeLabel: 'Today from {low} to {high}, last {last}',
             asOf: 'As of',

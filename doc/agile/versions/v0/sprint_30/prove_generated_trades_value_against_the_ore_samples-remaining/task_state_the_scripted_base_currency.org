@@ -26,11 +26,11 @@ Every scripted product prices: the engine's required parameters are stated on th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -41,9 +41,30 @@ Every scripted product prices: the engine's required parameters are stated on th
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A scripted trade is priced by a script, and the builder that runs it reads its
+parameters from the pricing engine configuration before anything else, throwing
+on any mandatory one the configuration does not state. The ORE code reads eight
+of them with no default: the model, its base currency, whether base currency
+enforcement and dynamic FX apply, the grid coarsening rule, and the engine,
+samples, regression order, time steps per year and interactivity. The report
+recorded "parameter BaseCcy not found" for 48 scripted trades.
+
+The parameters are the pair's, not a product type's, and the curation already
+has a place for them: =curation/pair-settings.json= states a setting once per
+(model, engine) pair and the merge puts it on every product that names the pair.
+Two of the eight were already there, because a product that delegates to a script
+cannot price without knowing its model and engine. The other eight join them,
+with the values the ORE example configuration states for every scripted product.
+
+That leaves the vocabulary: a setting is only carried into a seeded
+configuration when the curation marks it required, and the mark is the word at
+the end of its description, so each setting the pair now states also gets a
+description from the code that reads it. The base currency's own description
+said "Required" in the middle of a sentence and so was not marked.
+
+The base currency is a default and not a claim about a trade: with
+=EnforceBaseCcy= false the engine infers the trade's own currency when the trade
+has exactly one, which is every scripted trade the generator books.
 
 * Measurements
 
@@ -57,9 +78,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Error rows that ask for a scripted parameter, before | 48 | =select count(*) from ores_reporting_report_error_events_tbl where message ilike '%BaseCcy%'= | =2ed46fc776= |
+| Error rows that ask for a scripted parameter, after | 0 | the same query, on the instance the new seed produced | =1b740a5dc9= |
+| The run's scripted configuration block | states Model, BaseCcy, EnforceBaseCcy, FullDynamicFx, GridCoarsening, Engine, Samples, RegressionOrder, TimeStepsPerYear and Interactive | =Input/pricingengine.xml= of the run's job | =1b740a5dc9= |
+| Error rows the scripted products still record | 9 script library, 11 basket data; the rest are market data | =ores_reporting_report_error_events_tbl= grouped by message | =1b740a5dc9= |
+| Metrics the report records | 1440, as before | =ores_reporting_report_metrics_tbl= | =1b740a5dc9= |
 
 * Notes
+
+- The setting's required flag is the word at the end of its description, which is
+  a fragile contract. The base currency carried "Required" mid-sentence and was
+  read as optional, which is how a mandatory parameter stayed unstated while the
+  curation looked right.
+- The scripted trades now get past their configuration and stop on market data:
+  the equity and commodity curves and spot objects their underlyings name, and
+  the fx volatility objects their indices need. Those are the market data tasks'
+  work, not this one's.
+- Nine rows still ask for the =AsianBasketOption= script, which the run does not
+  publish, and eleven still ask for basket data. Both belong to other tasks.
 
 * Test Scenarios
 
@@ -85,3 +121,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The two pairs the scripted products name state every parameter the engine reads
+with no default, and the seeded configurations carry them: the run's
+pricingengine.xml block holds Model, BaseCcy, EnforceBaseCcy, FullDynamicFx,
+GridCoarsening, Engine, Samples, RegressionOrder, TimeStepsPerYear and
+Interactive.
+
+The report records no missing parameter for a scripted trade, down from 48 rows.
+The 538 error rows it still records are market data (curves, indices and fx
+volatility objects the trades name), 11 rows of basket data and 9 rows for the
+script library the run does not publish. The scripted products now reach their
+market data, which is the next task's work.

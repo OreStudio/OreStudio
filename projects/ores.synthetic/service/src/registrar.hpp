@@ -53,6 +53,7 @@ public:
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
                       ores::nats::service::nats_client& auth_nats,
+                      ores::nats::service::nats_client::token_provider service_token,
                       generator_fleet& generators,
                       std::shared_ptr<ores::synthetic::feed::fault_state> faults,
                       const ores::database::context& ctx,

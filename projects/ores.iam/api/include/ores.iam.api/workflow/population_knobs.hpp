@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_CORE_MESSAGING_POPULATION_KNOBS_HPP
-#define ORES_IAM_CORE_MESSAGING_POPULATION_KNOBS_HPP
+#ifndef ORES_IAM_API_WORKFLOW_POPULATION_KNOBS_HPP
+#define ORES_IAM_API_WORKFLOW_POPULATION_KNOBS_HPP
 
-#include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
-#include "ores.iam.core/messaging/provision_step_arguments.hpp"
+#include "ores.iam.api/workflow/provision_step_arguments.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <format>
@@ -32,7 +31,7 @@
 #include <string>
 #include <vector>
 
-namespace ores::iam::messaging {
+namespace ores::iam::workflow {
 
 /**
  * @brief The population a run states by numbers rather than by seeded rows.
@@ -92,7 +91,7 @@ inline std::uint32_t read_count(const std::string& name, const std::string& valu
  * mix its recipe already states, which is what makes the size a knob on its own.
  */
 [[nodiscard]] inline population_knobs
-read_population_knobs(const std::vector<workflow::provision_tenant_parameter>& parameters) {
+read_population_knobs(const std::vector<provision_tenant_parameter>& parameters) {
     population_knobs knobs;
     for (const auto& parameter : parameters) {
         if (parameter.name == "population_size") {

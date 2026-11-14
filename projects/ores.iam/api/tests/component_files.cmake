@@ -60,6 +60,7 @@ set(files
     "password_policy_protocol_codec_roundtrip_tests.cpp"
     "permission_codec_roundtrip_tests.cpp"
     "permission_protocol_codec_roundtrip_tests.cpp"
+    "provision_step_arguments_tests.cpp"
     "registration_policy_protocol_codec_roundtrip_tests.cpp"
     "reset_protocol_codec_roundtrip_tests.cpp"
     "role_codec_roundtrip_tests.cpp"

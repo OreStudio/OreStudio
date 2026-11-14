@@ -41,6 +41,7 @@ const std::string correlation_id("33333333-3333-4333-8333-333333333333");
 using ores::iam::workflow::build_calendars_step_kind;
 using ores::iam::workflow::complete_provisioning_step_kind;
 using ores::iam::workflow::detail::unique_step_name;
+using ores::iam::workflow::generate_trades_step_kind;
 using ores::iam::workflow::is_declared_step_kind;
 using ores::iam::workflow::is_executed_step_kind;
 using ores::iam::workflow::is_system_scoped_step_kind;
@@ -52,6 +53,7 @@ using ores::iam::workflow::provision_tenant_step;
 using ores::iam::workflow::provision_tenant_step_command;
 using ores::iam::workflow::publish_system_curves_step_kind;
 using ores::iam::workflow::refdata_provision_tenant_step_subject;
+using ores::iam::workflow::synthetic_provision_tenant_step_subject;
 using ores::iam::workflow::provision_tenant_step_subject;
 using ores::iam::workflow::provision_tenant_workflow_request;
 using ores::iam::workflow::provision_tenant_workflow_type;
@@ -235,6 +237,10 @@ TEST_CASE("a step is dispatched to the service that owns the work it does", "[wo
     // served there and reaches the store directly.
     CHECK(step_subject_for_kind(build_calendars_step_kind) ==
           refdata_provision_tenant_step_subject);
+    // The trade population is synthetic's work, so the step that writes it is
+    // served there through the service's own tenant-scoped session.
+    CHECK(step_subject_for_kind(generate_trades_step_kind) ==
+          synthetic_provision_tenant_step_subject);
     // The identity steps stay in ores.iam, which owns the run and the people.
     CHECK(step_subject_for_kind(load_staff_step_kind) == provision_tenant_step_subject);
     CHECK(step_subject_for_kind(system_provision_step_kind) == provision_tenant_step_subject);

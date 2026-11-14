@@ -263,10 +263,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // talks to the marketdata service (series + observations), all of which
     // require authentication and the marketdata permissions granted to the
     // SyntheticService IAM role. The token provider authenticates with the
-    // service's own database account credentials.
-    ores::nats::service::nats_client svc_nats(nats,
-                                              ores::iam::client::make_service_token_provider(
-                                                  nats, cfg.database.user, cfg.database.password));
+    // service's own database account credentials, and is kept beside the client
+    // because a provisioning step enters a tenant with it.
+    auto service_token = ores::iam::client::make_service_token_provider(
+        nats, cfg.database.user, cfg.database.password);
+    ores::nats::service::nats_client svc_nats(nats, service_token);
 
     auto db_ctx = make_context(cfg.database);
 
@@ -431,11 +432,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         nats,
         db_ctx,
         "ores.synthetic.service",
-        [&generators, faults, &svc_nats, &registry, &run_market_of_the_run](
+        [&generators, faults, &svc_nats, service_token, &registry, &run_market_of_the_run](
             auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
-            auto market_subs = ores::synthetic::service::registrar::register_handlers(
-                n, svc_nats, generators, faults, c, v, registry, run_market_of_the_run);
+            auto market_subs =
+                ores::synthetic::service::registrar::register_handlers(n,
+                                                                       svc_nats,
+                                                                       service_token,
+                                                                       generators,
+                                                                       faults,
+                                                                       c,
+                                                                       v,
+                                                                       registry,
+                                                                       run_market_of_the_run);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));

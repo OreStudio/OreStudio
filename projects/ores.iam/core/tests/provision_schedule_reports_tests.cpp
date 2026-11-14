@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/messaging/provision_step_arguments.hpp"
+#include "ores.iam.api/workflow/provision_step_arguments.hpp"
 #include "ores.iam.core/messaging/report_schedule_selection.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.utility/codec/json_document.hpp"
@@ -188,9 +188,9 @@ TEST_CASE("the schedule row names the parties the staff step loads, and nothing 
     REQUIRE(staff != nullptr);
 
     const auto arguments =
-        ores::iam::messaging::parse_report_schedule_arguments(schedule->arguments_json);
+        ores::iam::workflow::parse_report_schedule_arguments(schedule->arguments_json);
     const auto staff_assignments =
-        ores::iam::messaging::parse_staff_assignments(staff->arguments_json);
+        ores::iam::workflow::parse_staff_assignments(staff->arguments_json);
     REQUIRE(staff_assignments.size() == 4);
 
     std::vector<std::string> staff_parties;

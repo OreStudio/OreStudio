@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.iam.api/workflow/population_knobs.hpp"
+#include "ores.iam.api/workflow/provision_step_arguments.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
-#include "ores.iam.core/messaging/population_knobs.hpp"
-#include "ores.iam.core/messaging/provision_step_arguments.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
@@ -31,20 +31,20 @@
 
 namespace {
 
-using ores::iam::messaging::classify_step_kind;
-using ores::iam::messaging::feeds_of_party;
-using ores::iam::messaging::market_data_feed;
-using ores::iam::messaging::parse_lei_hierarchy_arguments;
-using ores::iam::messaging::parse_market_data_arguments;
-using ores::iam::messaging::parse_photo_arguments;
-using ores::iam::messaging::parse_provision_party_arguments;
-using ores::iam::messaging::parse_publish_bundle_arguments;
-using ores::iam::messaging::parse_report_schedule_arguments;
-using ores::iam::messaging::parse_set_staff_passwords_arguments;
-using ores::iam::messaging::parse_staff_assignments;
-using ores::iam::messaging::parse_step_bundles;
-using ores::iam::messaging::parse_trade_generation_assignments;
-using ores::iam::messaging::provision_step_action;
+using ores::iam::workflow::classify_step_kind;
+using ores::iam::workflow::feeds_of_party;
+using ores::iam::workflow::market_data_feed;
+using ores::iam::workflow::parse_lei_hierarchy_arguments;
+using ores::iam::workflow::parse_market_data_arguments;
+using ores::iam::workflow::parse_photo_arguments;
+using ores::iam::workflow::parse_provision_party_arguments;
+using ores::iam::workflow::parse_publish_bundle_arguments;
+using ores::iam::workflow::parse_report_schedule_arguments;
+using ores::iam::workflow::parse_set_staff_passwords_arguments;
+using ores::iam::workflow::parse_staff_assignments;
+using ores::iam::workflow::parse_step_bundles;
+using ores::iam::workflow::parse_trade_generation_assignments;
+using ores::iam::workflow::provision_step_action;
 
 std::vector<ores::iam::workflow::provision_tenant_parameter> parameters(std::string name,
                                                                         std::string value) {
@@ -77,7 +77,7 @@ TEST_CASE("the executor classifies each kind it executes into its own action", "
           provision_step_action::publish_party_forwards);
     CHECK(classify_step_kind("publish_party_surfaces") ==
           provision_step_action::publish_party_surfaces);
-    CHECK(classify_step_kind("generate_trades") == provision_step_action::generate_trades);
+    CHECK(classify_step_kind("generate_trades") == provision_step_action::refuse);
     CHECK(classify_step_kind("schedule_reports") == provision_step_action::schedule_reports);
     CHECK(classify_step_kind("complete_provisioning") ==
           provision_step_action::complete_provisioning);
@@ -516,9 +516,9 @@ TEST_CASE("a trade generation step that states no config is refused", "[provisio
 
 namespace {
 
-using ores::iam::messaging::apply_population_knobs;
-using ores::iam::messaging::population_knobs;
-using ores::iam::messaging::read_population_knobs;
+using ores::iam::workflow::apply_population_knobs;
+using ores::iam::workflow::population_knobs;
+using ores::iam::workflow::read_population_knobs;
 using ores::iam::workflow::provision_tenant_parameter;
 
 /// The codes each class's planner cycles, as the handler resolves them.
@@ -540,11 +540,11 @@ std::size_t codes_of(const std::string& asset_class) {
     return 3;
 }
 
-std::vector<ores::iam::messaging::trade_generation_assignment>
+std::vector<ores::iam::workflow::trade_generation_assignment>
 four_configs(const std::string& asset_class) {
-    std::vector<ores::iam::messaging::trade_generation_assignment> assignments;
+    std::vector<ores::iam::workflow::trade_generation_assignment> assignments;
     for (int i = 0; i < 4; ++i) {
-        ores::iam::messaging::trade_generation_assignment entry;
+        ores::iam::workflow::trade_generation_assignment entry;
         entry.name = asset_class + std::to_string(i);
         entry.party = "Acme Corporation Plc";
         entry.asset_class_code = asset_class;
@@ -560,7 +560,7 @@ four_configs(const std::string& asset_class) {
 namespace {
 
 /// The configs a demonstration run records: one per book the class books into.
-std::vector<ores::iam::messaging::trade_generation_assignment> all_configs() {
+std::vector<ores::iam::workflow::trade_generation_assignment> all_configs() {
     const std::vector<std::pair<std::string, int>> classes{{"bond", 4},
                                                            {"commodity", 1},
                                                            {"credit", 1},
@@ -570,7 +570,7 @@ std::vector<ores::iam::messaging::trade_generation_assignment> all_configs() {
                                                            {"interest_rates", 3},
                                                            {"scripted", 1}};
 
-    std::vector<ores::iam::messaging::trade_generation_assignment> assignments;
+    std::vector<ores::iam::workflow::trade_generation_assignment> assignments;
     for (const auto& [asset_class, configs] : classes)
         for (int i = 0; i < configs; ++i) {
             auto entry = four_configs(asset_class).front();
@@ -582,7 +582,7 @@ std::vector<ores::iam::messaging::trade_generation_assignment> all_configs() {
 
 /// The counts the configs of one class state, in order.
 std::vector<std::uint32_t>
-counts_of(const std::vector<ores::iam::messaging::trade_generation_assignment>& assignments,
+counts_of(const std::vector<ores::iam::workflow::trade_generation_assignment>& assignments,
           const std::string& asset_class) {
     std::vector<std::uint32_t> counts;
     for (const auto& entry : assignments)

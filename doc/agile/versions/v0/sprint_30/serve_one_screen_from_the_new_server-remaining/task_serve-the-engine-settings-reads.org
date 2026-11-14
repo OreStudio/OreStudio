@@ -34,11 +34,11 @@ three reads are how they say it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The three reads answer, and the rows the page joins onto them are read from the services. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. The value set reader is on main. |
-| Next         | Finish the gate and raise the PR.      |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -154,3 +154,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+
+The gateway answers the engine settings' three reads at the BFF's paths and in
+its shapes.
+
+- The page states one row per configuration: its party's name and code, its
+  version, how many groups hold a part of the whole, the threads the execution
+  part states, and who changed it when.
+- One configuration states each group with its values, and a group with no row
+  states null for every value, so the screen says which value the engine
+  defaults to.
+- The history states the central row's versions and every part's versions in one
+  list, newest first.
+- A value is picked by the column the setting table names, from the row's own
+  codec, so the shape is stated once.
+- The owning-party check the BFF made is not restated: the service reads under
+  the caller's own party.
+- The suite is 51 cases and 481 assertions, nine of them for these routes and the
+  routing decision between the documentation address and a configuration id.
+- The gate is 44 of 45; the one failure is the reference data drift that main
+  carries.
+- The reporting area states 30 of 44 routes paired where it stated 27.

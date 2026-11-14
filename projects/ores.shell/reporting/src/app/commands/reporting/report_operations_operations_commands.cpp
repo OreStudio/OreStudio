@@ -119,7 +119,7 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_schedule_report_definitions(std::ref(out), std::ref(session), std::move(args));
         },
-        "schedule-report-definitions <ids>");
+        "schedule-report-definitions <ids> <schedule_expression>");
 
     menu->Insert(
         "unschedule-report-definitions",
@@ -479,7 +479,7 @@ void report_operations_operations_commands::process_schedule_report_definitions(
         return;
     }
 
-    constexpr std::size_t positional_count = 1;
+    constexpr std::size_t positional_count = 2;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -490,6 +490,7 @@ void report_operations_operations_commands::process_schedule_report_definitions(
     std::size_t next = 0;
     try {
         req.ids = report_operations_split_list_token(parsed->positionals[next++]);
+        req.schedule_expression = parsed->positionals[next++];
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

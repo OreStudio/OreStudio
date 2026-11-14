@@ -37,9 +37,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -74,6 +76,47 @@ badge_definition_read_one(repository::badge_definition_repository& repo,
                           const ores::database::context& ctx,
                           const messaging::badge_definition_key& key) {
     return repo.read_latest(ctx, key.code);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::badge_definition>>
+badge_definition_read_many(repository::badge_definition_repository& repo,
+                           const ores::database::context& ctx,
+                           const std::vector<messaging::badge_definition_key>& keys) {
+    std::vector<std::vector<domain::badge_definition>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> code_keys;
+        code_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            code_keys.push_back(key.code);
+        }
+        std::map<key_tuple, std::vector<domain::badge_definition>> by_key;
+        for (auto& row : repo.read_latest(ctx, code_keys)) {
+            key_tuple named(row.code);
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(key.code));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 /**
@@ -163,12 +206,12 @@ messaging::get_many_badge_definitions_response badge_definition_service::get_man
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = badge_definition_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::badge_definition_lookup entry;
-        entry.key = k;
-        auto found = badge_definition_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.badge_definition = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.badge_definition = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -178,7 +221,9 @@ messaging::put_badge_definition_response badge_definition_service::put_badge_def
     const messaging::put_badge_definition_request& request) {
     messaging::put_badge_definition_response response;
     domain::badge_definition value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = badge_definition_read_one(
+        repo_, ctx_, badge_definition_key_from(badge_definition_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -191,11 +236,18 @@ messaging::put_badge_definition_response badge_definition_service::put_badge_def
 messaging::put_many_badge_definitions_response badge_definition_service::put_many_badge_definitions(
     const messaging::put_many_badge_definitions_request& request) {
     messaging::put_many_badge_definitions_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::badge_definition_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(badge_definition_key_from(badge_definition_to_domain(change.write)));
+    const auto current = badge_definition_read_many(repo_, ctx_, keys);
     std::vector<domain::badge_definition> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::badge_definition value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -213,9 +265,12 @@ messaging::put_many_badge_definitions_response badge_definition_service::put_man
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.definitions.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = badge_definition_read_one(repo_, ctx_, badge_definition_key_from(value));
-        response.definitions.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = badge_definition_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.definitions.push_back(written[i].empty() ? batch[i] :
+                                                            std::move(written[i].front()));
     }
     return response;
 }
@@ -332,12 +387,12 @@ badge_definition_service::get_badge_definition_version(
 ores::utility::domain::result
 badge_definition_service::prepare_change(const messaging::badge_definition_change& change,
                                          const ores::utility::domain::change_intent& intent,
+                                         const std::vector<domain::badge_definition>& current,
                                          domain::badge_definition& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = badge_definition_to_domain(change.write);
-    const auto current = badge_definition_read_one(repo_, ctx_, badge_definition_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

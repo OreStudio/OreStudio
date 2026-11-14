@@ -32,10 +32,14 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -70,6 +74,47 @@ lei_relationship_read_one(repository::lei_relationship_repository& repo,
                           const ores::database::context& ctx,
                           const messaging::lei_relationship_key& key) {
     return repo.read_latest(ctx, key.relationship_start_node_node_id);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::lei_relationship>>
+lei_relationship_read_many(repository::lei_relationship_repository& repo,
+                           const ores::database::context& ctx,
+                           const std::vector<messaging::lei_relationship_key>& keys) {
+    std::vector<std::vector<domain::lei_relationship>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> relationship_start_node_node_id_keys;
+        relationship_start_node_node_id_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            relationship_start_node_node_id_keys.push_back(key.relationship_start_node_node_id);
+        }
+        std::map<key_tuple, std::vector<domain::lei_relationship>> by_key;
+        for (auto& row : repo.read_latest(ctx, relationship_start_node_node_id_keys)) {
+            key_tuple named(row.relationship_start_node_node_id);
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(key.relationship_start_node_node_id));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 }
@@ -115,12 +160,12 @@ messaging::get_many_lei_relationships_response lei_relationship_service::get_man
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = lei_relationship_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::lei_relationship_lookup entry;
-        entry.key = k;
-        auto found = lei_relationship_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.lei_relationship = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.lei_relationship = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;

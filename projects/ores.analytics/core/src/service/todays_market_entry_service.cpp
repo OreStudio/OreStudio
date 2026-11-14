@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -78,6 +80,47 @@ todays_market_entry_read_one(repository::todays_market_entry_repository& repo,
                              const ores::database::context& ctx,
                              const messaging::todays_market_entry_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.id));
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::todays_market_entry>>
+todays_market_entry_read_many(repository::todays_market_entry_repository& repo,
+                              const ores::database::context& ctx,
+                              const std::vector<messaging::todays_market_entry_key>& keys) {
+    std::vector<std::vector<domain::todays_market_entry>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> id_keys;
+        id_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            id_keys.push_back(boost::uuids::to_string(key.id));
+        }
+        std::map<key_tuple, std::vector<domain::todays_market_entry>> by_key;
+        for (auto& row : repo.read_latest(ctx, id_keys)) {
+            key_tuple named(boost::uuids::to_string(row.id));
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.id)));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 /**
@@ -264,12 +307,12 @@ todays_market_entry_service::get_many_todays_market_entries(
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = todays_market_entry_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::todays_market_entry_lookup entry;
-        entry.key = k;
-        auto found = todays_market_entry_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.todays_market_entry = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.todays_market_entry = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -279,7 +322,11 @@ messaging::put_todays_market_entry_response todays_market_entry_service::put_tod
     const messaging::put_todays_market_entry_request& request) {
     messaging::put_todays_market_entry_response response;
     domain::todays_market_entry value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = todays_market_entry_read_one(
+        repo_,
+        ctx_,
+        todays_market_entry_key_from(todays_market_entry_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -293,11 +340,18 @@ messaging::put_many_todays_market_entries_response
 todays_market_entry_service::put_many_todays_market_entries(
     const messaging::put_many_todays_market_entries_request& request) {
     messaging::put_many_todays_market_entries_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::todays_market_entry_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(todays_market_entry_key_from(todays_market_entry_to_domain(change.write)));
+    const auto current = todays_market_entry_read_many(repo_, ctx_, keys);
     std::vector<domain::todays_market_entry> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::todays_market_entry value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -315,10 +369,11 @@ todays_market_entry_service::put_many_todays_market_entries(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.entries.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written =
-            todays_market_entry_read_one(repo_, ctx_, todays_market_entry_key_from(value));
-        response.entries.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = todays_market_entry_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.entries.push_back(written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -437,13 +492,12 @@ todays_market_entry_service::get_todays_market_entry_version(
 ores::utility::domain::result
 todays_market_entry_service::prepare_change(const messaging::todays_market_entry_change& change,
                                             const ores::utility::domain::change_intent& intent,
+                                            const std::vector<domain::todays_market_entry>& current,
                                             domain::todays_market_entry& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = todays_market_entry_to_domain(change.write);
-    const auto current =
-        todays_market_entry_read_one(repo_, ctx_, todays_market_entry_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

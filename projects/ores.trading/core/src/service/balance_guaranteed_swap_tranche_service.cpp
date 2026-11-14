@@ -31,9 +31,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -78,6 +80,53 @@ std::vector<domain::balance_guaranteed_swap_tranche> balance_guaranteed_swap_tra
     const messaging::balance_guaranteed_swap_tranche_key& key) {
     return repo.read_latest(
         ctx, boost::uuids::to_string(key.trade_id), std::to_string(key.sequence_number));
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::balance_guaranteed_swap_tranche>>
+balance_guaranteed_swap_tranche_read_many(
+    repository::balance_guaranteed_swap_tranche_repository& repo,
+    const ores::database::context& ctx,
+    const std::vector<messaging::balance_guaranteed_swap_tranche_key>& keys) {
+    std::vector<std::vector<domain::balance_guaranteed_swap_tranche>> found(keys.size());
+    using key_tuple = std::tuple<std::string, std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> trade_id_keys;
+        trade_id_keys.reserve(end - begin);
+        std::vector<std::string> sequence_number_keys;
+        sequence_number_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            trade_id_keys.push_back(boost::uuids::to_string(key.trade_id));
+            sequence_number_keys.push_back(std::to_string(key.sequence_number));
+        }
+        std::map<key_tuple, std::vector<domain::balance_guaranteed_swap_tranche>> by_key;
+        for (auto& row : repo.read_latest(ctx, trade_id_keys, sequence_number_keys)) {
+            key_tuple named(boost::uuids::to_string(row.trade_id),
+                            std::to_string(row.sequence_number));
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.trade_id),
+                                                    std::to_string(key.sequence_number)));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 /**
@@ -203,12 +252,12 @@ balance_guaranteed_swap_tranche_service::get_many_balance_guaranteed_swap_tranch
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = balance_guaranteed_swap_tranche_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::balance_guaranteed_swap_tranche_lookup entry;
-        entry.key = k;
-        auto found = balance_guaranteed_swap_tranche_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.balance_guaranteed_swap_tranche = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.balance_guaranteed_swap_tranche = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -219,7 +268,12 @@ balance_guaranteed_swap_tranche_service::put_balance_guaranteed_swap_tranche(
     const messaging::put_balance_guaranteed_swap_tranche_request& request) {
     messaging::put_balance_guaranteed_swap_tranche_response response;
     domain::balance_guaranteed_swap_tranche value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = balance_guaranteed_swap_tranche_read_one(
+        repo_,
+        ctx_,
+        balance_guaranteed_swap_tranche_key_from(
+            balance_guaranteed_swap_tranche_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -234,11 +288,19 @@ messaging::put_many_balance_guaranteed_swap_tranches_response
 balance_guaranteed_swap_tranche_service::put_many_balance_guaranteed_swap_tranches(
     const messaging::put_many_balance_guaranteed_swap_tranches_request& request) {
     messaging::put_many_balance_guaranteed_swap_tranches_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::balance_guaranteed_swap_tranche_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(balance_guaranteed_swap_tranche_key_from(
+            balance_guaranteed_swap_tranche_to_domain(change.write)));
+    const auto current = balance_guaranteed_swap_tranche_read_many(repo_, ctx_, keys);
     std::vector<domain::balance_guaranteed_swap_tranche> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::balance_guaranteed_swap_tranche value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -256,11 +318,12 @@ balance_guaranteed_swap_tranche_service::put_many_balance_guaranteed_swap_tranch
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.balance_guaranteed_swap_tranches.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = balance_guaranteed_swap_tranche_read_one(
-            repo_, ctx_, balance_guaranteed_swap_tranche_key_from(value));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = balance_guaranteed_swap_tranche_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
         response.balance_guaranteed_swap_tranches.push_back(
-            written.empty() ? value : std::move(written.front()));
+            written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -394,13 +457,12 @@ balance_guaranteed_swap_tranche_service::get_balance_guaranteed_swap_tranche_ver
 ores::utility::domain::result balance_guaranteed_swap_tranche_service::prepare_change(
     const messaging::balance_guaranteed_swap_tranche_change& change,
     const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::balance_guaranteed_swap_tranche>& current,
     domain::balance_guaranteed_swap_tranche& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = balance_guaranteed_swap_tranche_to_domain(change.write);
-    const auto current = balance_guaranteed_swap_tranche_read_one(
-        repo_, ctx_, balance_guaranteed_swap_tranche_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

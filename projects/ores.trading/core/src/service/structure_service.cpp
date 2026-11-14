@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -139,6 +141,47 @@ std::vector<domain::structure> structure_read_one(repository::structure_reposito
 }
 
 /**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::structure>>
+structure_read_many(repository::structure_repository& repo,
+                    const ores::database::context& ctx,
+                    const std::vector<messaging::structure_key>& keys) {
+    std::vector<std::vector<domain::structure>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> id_keys;
+        id_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            id_keys.push_back(boost::uuids::to_string(key.id));
+        }
+        std::map<key_tuple, std::vector<domain::structure>> by_key;
+        for (auto& row : repo.read_latest(ctx, id_keys)) {
+            key_tuple named(boost::uuids::to_string(row.id));
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.id)));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
+}
+
+/**
  * @brief The key a domain object states, so a written row can be read back.
  *
  * A create states its own key in the write record, so the key of the row a
@@ -220,12 +263,12 @@ structure_service::get_many_structures(const messaging::get_many_structures_requ
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = structure_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::structure_lookup entry;
-        entry.key = k;
-        auto found = structure_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.structure = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.structure = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -235,7 +278,9 @@ messaging::put_structure_response
 structure_service::put_structure(const messaging::put_structure_request& request) {
     messaging::put_structure_response response;
     domain::structure value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = structure_read_one(
+        repo_, ctx_, structure_key_from(structure_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -249,11 +294,18 @@ structure_service::put_structure(const messaging::put_structure_request& request
 messaging::put_many_structures_response
 structure_service::put_many_structures(const messaging::put_many_structures_request& request) {
     messaging::put_many_structures_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::structure_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(structure_key_from(structure_to_domain(change.write)));
+    const auto current = structure_read_many(repo_, ctx_, keys);
     std::vector<domain::structure> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::structure value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -273,9 +325,12 @@ structure_service::put_many_structures(const messaging::put_many_structures_requ
     for (const auto& written_value : batch)
         name_structure(ctx_, written_value);
     response.structures.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = structure_read_one(repo_, ctx_, structure_key_from(value));
-        response.structures.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = structure_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.structures.push_back(written[i].empty() ? batch[i] :
+                                                           std::move(written[i].front()));
     }
     return response;
 }
@@ -388,12 +443,12 @@ structure_service::get_structure_version(const messaging::get_structure_version_
 ores::utility::domain::result
 structure_service::prepare_change(const messaging::structure_change& change,
                                   const ores::utility::domain::change_intent& intent,
+                                  const std::vector<domain::structure>& current,
                                   domain::structure& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = structure_to_domain(change.write);
-    const auto current = structure_read_one(repo_, ctx_, structure_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

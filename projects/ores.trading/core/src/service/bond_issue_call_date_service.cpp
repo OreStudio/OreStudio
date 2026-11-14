@@ -31,9 +31,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -78,6 +80,52 @@ bond_issue_call_date_read_one(repository::bond_issue_call_date_repository& repo,
                               const messaging::bond_issue_call_date_key& key) {
     return repo.read_latest(
         ctx, boost::uuids::to_string(key.issue_id), std::to_string(key.sequence_number));
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::bond_issue_call_date>>
+bond_issue_call_date_read_many(repository::bond_issue_call_date_repository& repo,
+                               const ores::database::context& ctx,
+                               const std::vector<messaging::bond_issue_call_date_key>& keys) {
+    std::vector<std::vector<domain::bond_issue_call_date>> found(keys.size());
+    using key_tuple = std::tuple<std::string, std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> issue_id_keys;
+        issue_id_keys.reserve(end - begin);
+        std::vector<std::string> sequence_number_keys;
+        sequence_number_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            issue_id_keys.push_back(boost::uuids::to_string(key.issue_id));
+            sequence_number_keys.push_back(std::to_string(key.sequence_number));
+        }
+        std::map<key_tuple, std::vector<domain::bond_issue_call_date>> by_key;
+        for (auto& row : repo.read_latest(ctx, issue_id_keys, sequence_number_keys)) {
+            key_tuple named(boost::uuids::to_string(row.issue_id),
+                            std::to_string(row.sequence_number));
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.issue_id),
+                                                    std::to_string(key.sequence_number)));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 /**
@@ -160,12 +208,12 @@ bond_issue_call_date_service::get_many_bond_issue_call_dates(
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = bond_issue_call_date_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::bond_issue_call_date_lookup entry;
-        entry.key = k;
-        auto found = bond_issue_call_date_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.bond_issue_call_date = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.bond_issue_call_date = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -175,7 +223,11 @@ messaging::put_bond_issue_call_date_response bond_issue_call_date_service::put_b
     const messaging::put_bond_issue_call_date_request& request) {
     messaging::put_bond_issue_call_date_response response;
     domain::bond_issue_call_date value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = bond_issue_call_date_read_one(
+        repo_,
+        ctx_,
+        bond_issue_call_date_key_from(bond_issue_call_date_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -189,11 +241,18 @@ messaging::put_many_bond_issue_call_dates_response
 bond_issue_call_date_service::put_many_bond_issue_call_dates(
     const messaging::put_many_bond_issue_call_dates_request& request) {
     messaging::put_many_bond_issue_call_dates_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::bond_issue_call_date_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(bond_issue_call_date_key_from(bond_issue_call_date_to_domain(change.write)));
+    const auto current = bond_issue_call_date_read_many(repo_, ctx_, keys);
     std::vector<domain::bond_issue_call_date> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::bond_issue_call_date value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -211,10 +270,12 @@ bond_issue_call_date_service::put_many_bond_issue_call_dates(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.call_dates.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written =
-            bond_issue_call_date_read_one(repo_, ctx_, bond_issue_call_date_key_from(value));
-        response.call_dates.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = bond_issue_call_date_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.call_dates.push_back(written[i].empty() ? batch[i] :
+                                                           std::move(written[i].front()));
     }
     return response;
 }
@@ -341,16 +402,15 @@ bond_issue_call_date_service::get_bond_issue_call_date_version(
     return response;
 }
 
-ores::utility::domain::result
-bond_issue_call_date_service::prepare_change(const messaging::bond_issue_call_date_change& change,
-                                             const ores::utility::domain::change_intent& intent,
-                                             domain::bond_issue_call_date& out) {
+ores::utility::domain::result bond_issue_call_date_service::prepare_change(
+    const messaging::bond_issue_call_date_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::bond_issue_call_date>& current,
+    domain::bond_issue_call_date& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = bond_issue_call_date_to_domain(change.write);
-    const auto current =
-        bond_issue_call_date_read_one(repo_, ctx_, bond_issue_call_date_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

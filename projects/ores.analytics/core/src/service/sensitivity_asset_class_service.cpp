@@ -37,9 +37,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -74,6 +76,47 @@ sensitivity_asset_class_read_one(repository::sensitivity_asset_class_repository&
                                  const ores::database::context& ctx,
                                  const messaging::sensitivity_asset_class_key& key) {
     return repo.read_latest(ctx, key.asset_class_code);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::sensitivity_asset_class>>
+sensitivity_asset_class_read_many(repository::sensitivity_asset_class_repository& repo,
+                                  const ores::database::context& ctx,
+                                  const std::vector<messaging::sensitivity_asset_class_key>& keys) {
+    std::vector<std::vector<domain::sensitivity_asset_class>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> asset_class_code_keys;
+        asset_class_code_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            asset_class_code_keys.push_back(key.asset_class_code);
+        }
+        std::map<key_tuple, std::vector<domain::sensitivity_asset_class>> by_key;
+        for (auto& row : repo.read_latest(ctx, asset_class_code_keys)) {
+            key_tuple named(row.asset_class_code);
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(key.asset_class_code));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 /**
@@ -165,12 +208,12 @@ sensitivity_asset_class_service::get_many_sensitivity_asset_classes(
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = sensitivity_asset_class_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::sensitivity_asset_class_lookup entry;
-        entry.key = k;
-        auto found = sensitivity_asset_class_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.sensitivity_asset_class = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.sensitivity_asset_class = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -181,7 +224,11 @@ sensitivity_asset_class_service::put_sensitivity_asset_class(
     const messaging::put_sensitivity_asset_class_request& request) {
     messaging::put_sensitivity_asset_class_response response;
     domain::sensitivity_asset_class value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = sensitivity_asset_class_read_one(
+        repo_,
+        ctx_,
+        sensitivity_asset_class_key_from(sensitivity_asset_class_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -196,11 +243,19 @@ messaging::put_many_sensitivity_asset_classes_response
 sensitivity_asset_class_service::put_many_sensitivity_asset_classes(
     const messaging::put_many_sensitivity_asset_classes_request& request) {
     messaging::put_many_sensitivity_asset_classes_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::sensitivity_asset_class_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(
+            sensitivity_asset_class_key_from(sensitivity_asset_class_to_domain(change.write)));
+    const auto current = sensitivity_asset_class_read_many(repo_, ctx_, keys);
     std::vector<domain::sensitivity_asset_class> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::sensitivity_asset_class value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -218,10 +273,12 @@ sensitivity_asset_class_service::put_many_sensitivity_asset_classes(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.asset_classes.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written =
-            sensitivity_asset_class_read_one(repo_, ctx_, sensitivity_asset_class_key_from(value));
-        response.asset_classes.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = sensitivity_asset_class_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.asset_classes.push_back(written[i].empty() ? batch[i] :
+                                                              std::move(written[i].front()));
     }
     return response;
 }
@@ -341,13 +398,12 @@ sensitivity_asset_class_service::get_sensitivity_asset_class_version(
 ores::utility::domain::result sensitivity_asset_class_service::prepare_change(
     const messaging::sensitivity_asset_class_change& change,
     const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::sensitivity_asset_class>& current,
     domain::sensitivity_asset_class& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = sensitivity_asset_class_to_domain(change.write);
-    const auto current =
-        sensitivity_asset_class_read_one(repo_, ctx_, sensitivity_asset_class_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

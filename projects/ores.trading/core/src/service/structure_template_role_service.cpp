@@ -37,9 +37,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -74,6 +76,50 @@ structure_template_role_read_one(repository::structure_template_role_repository&
                                  const ores::database::context& ctx,
                                  const messaging::structure_template_role_key& key) {
     return repo.read_latest(ctx, key.template_code, key.role);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::structure_template_role>>
+structure_template_role_read_many(repository::structure_template_role_repository& repo,
+                                  const ores::database::context& ctx,
+                                  const std::vector<messaging::structure_template_role_key>& keys) {
+    std::vector<std::vector<domain::structure_template_role>> found(keys.size());
+    using key_tuple = std::tuple<std::string, std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> template_code_keys;
+        template_code_keys.reserve(end - begin);
+        std::vector<std::string> role_keys;
+        role_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            template_code_keys.push_back(key.template_code);
+            role_keys.push_back(key.role);
+        }
+        std::map<key_tuple, std::vector<domain::structure_template_role>> by_key;
+        for (auto& row : repo.read_latest(ctx, template_code_keys, role_keys)) {
+            key_tuple named(row.template_code, row.role);
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(key.template_code, key.role));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 /**
@@ -160,12 +206,12 @@ structure_template_role_service::get_many_structure_template_roles(
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = structure_template_role_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::structure_template_role_lookup entry;
-        entry.key = k;
-        auto found = structure_template_role_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.structure_template_role = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.structure_template_role = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -176,7 +222,11 @@ structure_template_role_service::put_structure_template_role(
     const messaging::put_structure_template_role_request& request) {
     messaging::put_structure_template_role_response response;
     domain::structure_template_role value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = structure_template_role_read_one(
+        repo_,
+        ctx_,
+        structure_template_role_key_from(structure_template_role_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -191,11 +241,19 @@ messaging::put_many_structure_template_roles_response
 structure_template_role_service::put_many_structure_template_roles(
     const messaging::put_many_structure_template_roles_request& request) {
     messaging::put_many_structure_template_roles_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::structure_template_role_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(
+            structure_template_role_key_from(structure_template_role_to_domain(change.write)));
+    const auto current = structure_template_role_read_many(repo_, ctx_, keys);
     std::vector<domain::structure_template_role> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::structure_template_role value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -213,10 +271,12 @@ structure_template_role_service::put_many_structure_template_roles(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.template_roles.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written =
-            structure_template_role_read_one(repo_, ctx_, structure_template_role_key_from(value));
-        response.template_roles.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = structure_template_role_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.template_roles.push_back(written[i].empty() ? batch[i] :
+                                                               std::move(written[i].front()));
     }
     return response;
 }
@@ -343,13 +403,12 @@ structure_template_role_service::get_structure_template_role_version(
 ores::utility::domain::result structure_template_role_service::prepare_change(
     const messaging::structure_template_role_change& change,
     const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::structure_template_role>& current,
     domain::structure_template_role& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = structure_template_role_to_domain(change.write);
-    const auto current =
-        structure_template_role_read_one(repo_, ctx_, structure_template_role_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

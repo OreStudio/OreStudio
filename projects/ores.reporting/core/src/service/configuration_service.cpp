@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -78,6 +80,27 @@ configuration_read_one(repository::configuration_repository& repo,
                        const ores::database::context& ctx,
                        const messaging::configuration_key& key) {
     return repo.read_latest_by_name(ctx, key.name);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::configuration>>
+configuration_read_many(repository::configuration_repository& repo,
+                        const ores::database::context& ctx,
+                        const std::vector<messaging::configuration_key>& keys) {
+    std::vector<std::vector<domain::configuration>> found(keys.size());
+    for (std::size_t i = 0; i < keys.size(); ++i)
+        found[i] = configuration_read_one(repo, ctx, keys[i]);
+    return found;
 }
 
 /**
@@ -200,12 +223,12 @@ messaging::get_many_configurations_response configuration_service::get_many_conf
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = configuration_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::configuration_lookup entry;
-        entry.key = k;
-        auto found = configuration_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.configuration = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.configuration = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -215,7 +238,9 @@ messaging::put_configuration_response
 configuration_service::put_configuration(const messaging::put_configuration_request& request) {
     messaging::put_configuration_response response;
     domain::configuration value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = configuration_read_one(
+        repo_, ctx_, configuration_key_from(configuration_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -228,11 +253,18 @@ configuration_service::put_configuration(const messaging::put_configuration_requ
 messaging::put_many_configurations_response configuration_service::put_many_configurations(
     const messaging::put_many_configurations_request& request) {
     messaging::put_many_configurations_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::configuration_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(configuration_key_from(configuration_to_domain(change.write)));
+    const auto current = configuration_read_many(repo_, ctx_, keys);
     std::vector<domain::configuration> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::configuration value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -250,9 +282,12 @@ messaging::put_many_configurations_response configuration_service::put_many_conf
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.configurations.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = configuration_read_one(repo_, ctx_, configuration_key_from(value));
-        response.configurations.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = configuration_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.configurations.push_back(written[i].empty() ? batch[i] :
+                                                               std::move(written[i].front()));
     }
     return response;
 }
@@ -328,10 +363,13 @@ messaging::delete_many_configurations_response configuration_service::delete_man
     // each column's conversion. A name that matches no row is skipped: the
     // batch reports what it removed, and a row that is already gone is not a
     // failure.
+    std::vector<messaging::configuration_key> keys;
+    keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        keys.push_back(removal.key);
     std::vector<domain::configuration> resolved;
     resolved.reserve(request.removals.size());
-    for (const auto& removal : request.removals) {
-        auto named = configuration_read_one(repo_, ctx_, removal.key);
+    for (auto& named : configuration_read_many(repo_, ctx_, keys)) {
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -398,12 +436,12 @@ messaging::get_configuration_version_response configuration_service::get_configu
 ores::utility::domain::result
 configuration_service::prepare_change(const messaging::configuration_change& change,
                                       const ores::utility::domain::change_intent& intent,
+                                      const std::vector<domain::configuration>& current,
                                       domain::configuration& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = configuration_to_domain(change.write);
-    const auto current = configuration_read_one(repo_, ctx_, configuration_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

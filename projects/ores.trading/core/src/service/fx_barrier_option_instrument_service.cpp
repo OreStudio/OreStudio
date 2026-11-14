@@ -32,9 +32,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -78,6 +80,48 @@ fx_barrier_option_instrument_read_one(repository::fx_barrier_option_instrument_r
                                       const ores::database::context& ctx,
                                       const messaging::fx_barrier_option_instrument_key& key) {
     return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::fx_barrier_option_instrument>>
+fx_barrier_option_instrument_read_many(
+    repository::fx_barrier_option_instrument_repository& repo,
+    const ores::database::context& ctx,
+    const std::vector<messaging::fx_barrier_option_instrument_key>& keys) {
+    std::vector<std::vector<domain::fx_barrier_option_instrument>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> trade_id_keys;
+        trade_id_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            trade_id_keys.push_back(boost::uuids::to_string(key.trade_id));
+        }
+        std::map<key_tuple, std::vector<domain::fx_barrier_option_instrument>> by_key;
+        for (auto& row : repo.read_latest(ctx, trade_id_keys)) {
+            key_tuple named(boost::uuids::to_string(row.identity.trade_id));
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(boost::uuids::to_string(key.trade_id)));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 /**
@@ -189,30 +233,12 @@ fx_barrier_option_instrument_service::get_many_fx_barrier_option_instruments(
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    // One read for the whole key set. The store returns every row the keys
-    // name, and the reply joins them back to the order asked for, so a caller
-    // sees the same positional answer without a round trip per key. The set is
-    // capped for the reason the list filter's is: one statement carries every
-    // key, and the store's bind count is finite.
-    if (request.keys.size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
-        return response;
-    }
-    std::vector<std::string> keys;
-    keys.reserve(request.keys.size());
-    for (const auto& k : request.keys)
-        keys.push_back(boost::uuids::to_string(k.trade_id));
-    const auto rows = repo_.read_latest(ctx_, keys);
-    for (const auto& k : request.keys) {
+    auto found = fx_barrier_option_instrument_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::fx_barrier_option_instrument_lookup entry;
-        entry.key = k;
-        for (const auto& row : rows) {
-            if (row.identity.trade_id == k.trade_id) {
-                entry.fx_barrier_option_instrument = row;
-                break;
-            }
-        }
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.fx_barrier_option_instrument = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -223,7 +249,12 @@ fx_barrier_option_instrument_service::put_fx_barrier_option_instrument(
     const messaging::put_fx_barrier_option_instrument_request& request) {
     messaging::put_fx_barrier_option_instrument_response response;
     domain::fx_barrier_option_instrument value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = fx_barrier_option_instrument_read_one(
+        repo_,
+        ctx_,
+        fx_barrier_option_instrument_key_from(
+            fx_barrier_option_instrument_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -238,11 +269,19 @@ messaging::put_many_fx_barrier_option_instruments_response
 fx_barrier_option_instrument_service::put_many_fx_barrier_option_instruments(
     const messaging::put_many_fx_barrier_option_instruments_request& request) {
     messaging::put_many_fx_barrier_option_instruments_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::fx_barrier_option_instrument_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(fx_barrier_option_instrument_key_from(
+            fx_barrier_option_instrument_to_domain(change.write)));
+    const auto current = fx_barrier_option_instrument_read_many(repo_, ctx_, keys);
     std::vector<domain::fx_barrier_option_instrument> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::fx_barrier_option_instrument value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -260,19 +299,12 @@ fx_barrier_option_instrument_service::put_many_fx_barrier_option_instruments(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.fx_barrier_option_instruments.reserve(batch.size());
-    // One read for the whole written set, for the same reason as the batch
-    // get: the store already holds every row the write just landed.
-    std::vector<std::string> written_keys;
-    written_keys.reserve(batch.size());
-    for (const auto& value : batch)
-        written_keys.push_back(boost::uuids::to_string(value.identity.trade_id));
-    const auto written_rows = repo_.read_latest(ctx_, written_keys);
-    for (const auto& value : batch) {
-        const auto row =
-            std::find_if(written_rows.begin(), written_rows.end(), [&](const auto& candidate) {
-                return candidate.identity.trade_id == value.identity.trade_id;
-            });
-        response.fx_barrier_option_instruments.push_back(row == written_rows.end() ? value : *row);
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = fx_barrier_option_instrument_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.fx_barrier_option_instruments.push_back(
+            written[i].empty() ? batch[i] : std::move(written[i].front()));
     }
     return response;
 }
@@ -397,13 +429,12 @@ fx_barrier_option_instrument_service::get_fx_barrier_option_instrument_version(
 ores::utility::domain::result fx_barrier_option_instrument_service::prepare_change(
     const messaging::fx_barrier_option_instrument_change& change,
     const ores::utility::domain::change_intent& intent,
+    const std::vector<domain::fx_barrier_option_instrument>& current,
     domain::fx_barrier_option_instrument& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = fx_barrier_option_instrument_to_domain(change.write);
-    const auto current = fx_barrier_option_instrument_read_one(
-        repo_, ctx_, fx_barrier_option_instrument_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

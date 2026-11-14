@@ -37,9 +37,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -73,6 +75,47 @@ std::vector<domain::supplier> supplier_read_one(repository::supplier_repository&
                                                 const ores::database::context& ctx,
                                                 const messaging::supplier_key& key) {
     return repo.read_latest(ctx, key.code);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::supplier>>
+supplier_read_many(repository::supplier_repository& repo,
+                   const ores::database::context& ctx,
+                   const std::vector<messaging::supplier_key>& keys) {
+    std::vector<std::vector<domain::supplier>> found(keys.size());
+    using key_tuple = std::tuple<std::string>;
+    constexpr std::size_t chunk_size = 1000;
+    for (std::size_t begin = 0; begin < keys.size(); begin += chunk_size) {
+        const auto end = std::min(begin + chunk_size, keys.size());
+        std::vector<std::string> code_keys;
+        code_keys.reserve(end - begin);
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            code_keys.push_back(key.code);
+        }
+        std::map<key_tuple, std::vector<domain::supplier>> by_key;
+        for (auto& row : repo.read_latest(ctx, code_keys)) {
+            key_tuple named(row.code);
+            by_key[std::move(named)].push_back(std::move(row));
+        }
+        for (std::size_t i = begin; i < end; ++i) {
+            const auto& key = keys[i];
+            const auto rows = by_key.find(key_tuple(key.code));
+            if (rows != by_key.end())
+                found[i] = rows->second;
+        }
+    }
+    return found;
 }
 
 }
@@ -128,12 +171,12 @@ supplier_service::get_many_suppliers(const messaging::get_many_suppliers_request
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = supplier_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::supplier_lookup entry;
-        entry.key = k;
-        auto found = supplier_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.supplier = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.supplier = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;

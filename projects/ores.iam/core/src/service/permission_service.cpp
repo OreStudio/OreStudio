@@ -28,10 +28,14 @@
 #include "ores.iam.core/repository/permission_repository.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 // Log lines stream uuids with uuid_io's operator<<, which the include check
@@ -74,6 +78,27 @@ std::vector<domain::permission> permission_read_one(repository::permission_repos
                                                     const ores::database::context& ctx,
                                                     const messaging::permission_key& key) {
     return repo.read_latest_by_code(ctx, key.code);
+}
+
+/**
+ * @brief The current rows a key set names, one entry per key in the keys' order.
+ *
+ * Each entry holds what the one-key read holds for its key, so a batch checks
+ * each row against the same answer a single request gets. A key set is read
+ * in chunks, one statement each, because every key is a bind and the store's
+ * bind count is finite.
+ *
+ * The batch read answers by the storage key. When the declared key is not the
+ * storage key, each key is read on its own.
+ */
+std::vector<std::vector<domain::permission>>
+permission_read_many(repository::permission_repository& repo,
+                     const ores::database::context& ctx,
+                     const std::vector<messaging::permission_key>& keys) {
+    std::vector<std::vector<domain::permission>> found(keys.size());
+    for (std::size_t i = 0; i < keys.size(); ++i)
+        found[i] = permission_read_one(repo, ctx, keys[i]);
+    return found;
 }
 
 /**
@@ -156,12 +181,12 @@ permission_service::get_many_permissions(const messaging::get_many_permissions_r
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
+    auto found = permission_read_many(repo_, ctx_, request.keys);
+    for (std::size_t i = 0; i < request.keys.size(); ++i) {
         messaging::permission_lookup entry;
-        entry.key = k;
-        auto found = permission_read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.permission = std::move(found.front());
+        entry.key = request.keys[i];
+        if (!found[i].empty())
+            entry.permission = std::move(found[i].front());
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -171,7 +196,9 @@ messaging::put_permission_response
 permission_service::put_permission(const messaging::put_permission_request& request) {
     messaging::put_permission_response response;
     domain::permission value;
-    response.result = prepare_change(request.change, request.intent, value);
+    const auto current = permission_read_one(
+        repo_, ctx_, permission_key_from(permission_to_domain(request.change.write)));
+    response.result = prepare_change(request.change, request.intent, current, value);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
     repo_.write(ctx_, value, request.change.precondition);
@@ -184,11 +211,18 @@ permission_service::put_permission(const messaging::put_permission_request& requ
 messaging::put_many_permissions_response
 permission_service::put_many_permissions(const messaging::put_many_permissions_request& request) {
     messaging::put_many_permissions_response response;
+    // The rows the set names are read once, before any change is checked, so
+    // a set of n rows costs one read rather than n.
+    std::vector<messaging::permission_key> keys;
+    keys.reserve(request.changes.size());
+    for (const auto& change : request.changes)
+        keys.push_back(permission_key_from(permission_to_domain(change.write)));
+    const auto current = permission_read_many(repo_, ctx_, keys);
     std::vector<domain::permission> batch;
     batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
+    for (std::size_t i = 0; i < request.changes.size(); ++i) {
         domain::permission value;
-        const auto result = prepare_change(change, request.intent, value);
+        const auto result = prepare_change(request.changes[i], request.intent, current[i], value);
         if (result.outcome != ores::utility::domain::outcome::ok) {
             // Nothing has been written: the whole set is checked before any
             // of it lands, so a refused element refuses the batch.
@@ -206,9 +240,12 @@ permission_service::put_many_permissions(const messaging::put_many_permissions_r
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.permissions.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = permission_read_one(repo_, ctx_, permission_key_from(value));
-        response.permissions.push_back(written.empty() ? value : std::move(written.front()));
+    // The keys of the written rows are the keys read above: a write keeps
+    // the key its change states.
+    auto written = permission_read_many(repo_, ctx_, keys);
+    for (std::size_t i = 0; i < batch.size(); ++i) {
+        response.permissions.push_back(written[i].empty() ? batch[i] :
+                                                            std::move(written[i].front()));
     }
     return response;
 }
@@ -281,10 +318,13 @@ messaging::delete_many_permissions_response permission_service::delete_many_perm
     // each column's conversion. A name that matches no row is skipped: the
     // batch reports what it removed, and a row that is already gone is not a
     // failure.
+    std::vector<messaging::permission_key> keys;
+    keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        keys.push_back(removal.key);
     std::vector<domain::permission> resolved;
     resolved.reserve(request.removals.size());
-    for (const auto& removal : request.removals) {
-        auto named = permission_read_one(repo_, ctx_, removal.key);
+    for (auto& named : permission_read_many(repo_, ctx_, keys)) {
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
@@ -299,12 +339,12 @@ messaging::delete_many_permissions_response permission_service::delete_many_perm
 ores::utility::domain::result
 permission_service::prepare_change(const messaging::permission_change& change,
                                    const ores::utility::domain::change_intent& intent,
+                                   const std::vector<domain::permission>& current,
                                    domain::permission& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = permission_to_domain(change.write);
-    const auto current = permission_read_one(repo_, ctx_, permission_key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())

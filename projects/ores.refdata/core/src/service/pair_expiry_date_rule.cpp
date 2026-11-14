@@ -87,12 +87,9 @@ read_pair_expiry_date_rule(const ores::database::context& ctx, const std::string
 
     const auto roll = mapping::parse_business_day_convention_code(
         convention.business_day_convention.value_or("ModifiedFollowing"));
-    return pair_expiry_date_rule{.rule = ores::analytics::quant::service::fx_expiry_date_rule(
-                                     roll,
-                                     convention.end_of_month.value_or(false),
-                                     only_calendar,
-                                     joint_calendar(calendars)),
-                                 .calendar_codes = std::move(codes)};
+    auto rule = ores::analytics::quant::service::fx_expiry_date_rule(
+        roll, convention.end_of_month.value_or(false), only_calendar, joint_calendar(calendars));
+    return pair_expiry_date_rule{.rule = std::move(rule), .calendar_codes = std::move(codes)};
 }
 
 }

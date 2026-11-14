@@ -8,7 +8,7 @@
 #+filetags: :port_the_market_data_screens:sprint_30:v0:
 #+owner: marco
 #+branch: feature/port-the-market-data-screens
-#+pr: 4702
+#+pr: 4710
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -112,6 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4710][#4710]] | [agile] Close the port and its screens |
 | [[https://github.com/OreStudio/OreStudio/pull/4702][#4702]] | [marketdata] Read forwards from spot and draw the desk screens |
 
 * Review

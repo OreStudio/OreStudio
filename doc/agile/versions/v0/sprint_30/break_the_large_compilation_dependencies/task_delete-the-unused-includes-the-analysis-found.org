@@ -8,7 +8,7 @@
 #+filetags: :build:compilation:headers:break_the_large_compilation_dependencies:sprint_30:v0:
 #+owner: marco
 #+branch: feature/delete-the-unused-includes-the-analysis-found
-#+pr:
+#+pr: 4733
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4733][#4733]] | [tooling] Drop the unused includes and the functions behind them |
 
 * Review
 

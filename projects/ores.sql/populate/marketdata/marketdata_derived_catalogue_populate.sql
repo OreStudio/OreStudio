@@ -99,10 +99,18 @@ insert into t_derived_inventory (external_id, oresmd_uri)
 select p.base || p.quote || '/' || e.expiry || '/' || l.label,
        'oresmd://fx/' || p.base || '?type=quote&instrument=fx_option&quote=rate_lnvol&ccy='
            || p.quote || '&expiry=' || e.expiry || '&strike_label=' || l.label
-from (values ('EUR', 'USD'), ('GBP', 'USD'), ('USD', 'JPY'), ('USD', 'CHF'),
-             ('AUD', 'USD'), ('USD', 'CAD'), ('NZD', 'USD'), ('EUR', 'GBP'),
-             ('EUR', 'JPY'), ('EUR', 'CHF')) as p (base, quote)
-cross join (values ('1W'), ('1M'), ('2M'), ('3M'), ('6M'), ('9M'), ('1Y'), ('2Y')) as e (expiry)
+from (values ('AUD', 'CAD'), ('AUD', 'CHF'), ('AUD', 'JPY'), ('AUD', 'NZD'),
+             ('AUD', 'USD'), ('CAD', 'JPY'), ('CHF', 'JPY'), ('EUR', 'AUD'),
+             ('EUR', 'CAD'), ('EUR', 'CHF'), ('EUR', 'CZK'), ('EUR', 'DKK'),
+             ('EUR', 'GBP'), ('EUR', 'JPY'), ('EUR', 'NZD'), ('EUR', 'SEK'),
+             ('EUR', 'TRY'), ('EUR', 'USD'), ('GBP', 'AUD'), ('GBP', 'CAD'),
+             ('GBP', 'CHF'), ('GBP', 'JPY'), ('GBP', 'NZD'), ('GBP', 'USD'),
+             ('NZD', 'JPY'), ('NZD', 'USD'), ('USD', 'CAD'), ('USD', 'CHF'),
+             ('USD', 'CLP'), ('USD', 'COP'), ('USD', 'CZK'), ('USD', 'HKD'),
+             ('USD', 'INR'), ('USD', 'JPY'), ('USD', 'KRW'), ('USD', 'MXN'),
+             ('USD', 'SGD'), ('USD', 'TRY'), ('USD', 'ZAR')) as p (base, quote)
+cross join (values ('1W'), ('1M'), ('2M'), ('3M'), ('6M'), ('9M'), ('1Y'), ('18M'),
+                    ('2Y'), ('3Y'), ('5Y'), ('7Y'), ('10Y')) as e (expiry)
 cross join (values ('ATM'), ('25RR'), ('25BF'), ('10RR'), ('10BF')) as l (label);
 
 insert into ores_marketdata_market_data_vendor_instruments_tbl (

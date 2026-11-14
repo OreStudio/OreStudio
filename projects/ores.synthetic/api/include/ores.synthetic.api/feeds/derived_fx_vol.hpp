@@ -62,19 +62,28 @@ struct derived_fx_pair final {
 };
 
 /// An expiry the derived source quotes: its tenor label and its length in years.
+///
+/// The list is the grid a surface may name, and every one of them needs a window of daily
+/// returns as long as its own length, so the fixing history the source reads bounds how far
+/// this list can reach.
 struct derived_fx_expiry final {
     std::string_view label;
     double years;
 };
 
-inline constexpr std::array<derived_fx_expiry, 8> derived_fx_expiries{{{"1W", 7.0 / 365.0},
-                                                                       {"1M", 1.0 / 12.0},
-                                                                       {"2M", 2.0 / 12.0},
-                                                                       {"3M", 0.25},
-                                                                       {"6M", 0.5},
-                                                                       {"9M", 0.75},
-                                                                       {"1Y", 1.0},
-                                                                       {"2Y", 2.0}}};
+inline constexpr std::array<derived_fx_expiry, 13> derived_fx_expiries{{{"1W", 7.0 / 365.0},
+                                                                        {"1M", 1.0 / 12.0},
+                                                                        {"2M", 2.0 / 12.0},
+                                                                        {"3M", 0.25},
+                                                                        {"6M", 0.5},
+                                                                        {"9M", 0.75},
+                                                                        {"1Y", 1.0},
+                                                                        {"18M", 1.5},
+                                                                        {"2Y", 2.0},
+                                                                        {"3Y", 3.0},
+                                                                        {"5Y", 5.0},
+                                                                        {"7Y", 7.0},
+                                                                        {"10Y", 10.0}}};
 
 /// The labels of an expiry's quotes, the strike_label of their fx_option items.
 inline constexpr std::array<std::string_view, 5> derived_fx_labels{

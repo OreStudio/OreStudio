@@ -323,3 +323,115 @@ TEST_CASE("a_ladder_no_provider_quotes_is_refused_in_words", catalogue_read_tags
     CHECK(resp.success == false);
     CHECK(resp.message.empty() == false);
 }
+
+namespace {
+
+/**
+ * @brief One party's discount curve, held as factors at two rungs.
+ *
+ * A discount series stores what a discount curve is: factors. The ladder a desk
+ * reads states rates, so the read has to convert, and this fixture is what
+ * proves it did.
+ */
+struct discount_ladder_fixture {
+    discount_ladder_fixture()
+        : gctx(ores::testing::make_generation_context(h))
+        , party_id(uuid_gen())
+        , series_id(uuid_gen()) {
+        write_party();
+        party = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
+        write_series();
+        write_factors();
+    }
+
+    ores::marketdata::messaging::get_rate_ladder_request request() const {
+        ores::marketdata::messaging::get_rate_ladder_request req;
+        req.party_id = boost::uuids::to_string(party_id);
+        req.currency = "AUD";
+        req.instrument_type = "discount";
+        return req;
+    }
+
+    ores::testing::scoped_database_helper h;
+    ores::utility::generation::generation_context gctx;
+    boost::uuids::random_generator uuid_gen;
+    boost::uuids::uuid party_id;
+    boost::uuids::uuid series_id;
+    std::optional<ores::database::context> party;
+
+private:
+    void write_party() {
+        ores::refdata::repository::party_repository repo;
+        auto p = ores::refdata::generators::generate_synthetic_party(gctx);
+        p.id = party_id;
+        p.version = 0;
+        p.is_registration_default = false;
+        for (const auto& e : repo.read_latest(h.context()))
+            if (e.tenant_id == h.tenant_id() && !e.parent_party_id) {
+                p.parent_party_id = e.id;
+                break;
+            }
+        p.change_reason_code = "system.test";
+        p.change_commentary = "discount ladder test";
+        repo.write(h.context(), p);
+    }
+
+    void write_series() {
+        ores::marketdata::domain::market_series s;
+        s.id = series_id;
+        s.version = 0;
+        s.tenant_id = h.tenant_id();
+        s.party_id = party_id;
+        s.oresmd_uri = "oresmd://ir/AUD?type=series&instrument=discount&quote=rate"
+                       "&curve_id=AUD-DISCOUNT-TEST";
+        s.series_subclass = "yield";
+        s.provider_code = "ore";
+        s.derivation_kind = "OBSERVED";
+        s.derivation_config_id = boost::uuids::nil_uuid();
+        s.derivation_config_version = 0;
+        s.modified_by = h.db_user();
+        s.performed_by = h.db_user();
+        s.change_reason_code = "system.test";
+        s.change_commentary = "discount ladder test";
+        ores::marketdata::repository::market_series_repository{}.write(h.context(), s);
+    }
+
+    void write_factors() {
+        const auto now = std::chrono::system_clock::now();
+        ores::marketdata::repository::market_observation_repository repo;
+        for (const auto& [term, factor] :
+             {std::pair{"1Y", "0.960789"}, std::pair{"2Y", "0.923116"}}) {
+            ores::marketdata::domain::market_observation o;
+            o.id = uuid_gen();
+            o.tenant_id = h.tenant_id();
+            o.party_id = party_id;
+            o.series_id = series_id;
+            o.observation_datetime = now;
+            o.oresmd_uri =
+                "oresmd://ir/AUD?instrument=discount&quote=rate&term=" + std::string(term);
+            o.value = factor;
+            o.source = "discount ladder test";
+            repo.insert(*party, {o});
+        }
+    }
+};
+
+}
+
+TEST_CASE("a_discount_ladder_states_rates_and_not_the_factors_it_stores", catalogue_read_tags) {
+    discount_ladder_fixture f;
+
+    const auto resp = get_rate_ladder(*f.party, f.request());
+
+    INFO("message: " << resp.message);
+    REQUIRE(resp.success);
+    REQUIRE(resp.rungs.empty() == false);
+    for (const auto& rung : resp.rungs) {
+        REQUIRE(rung.quotes.empty() == false);
+        // A factor of 0.96 read as a rate would be 96%; the read states the rate
+        // the factor implies, which for a one-year rung is close to 4%.
+        CHECK(rung.quotes.front().value > 0.0);
+        CHECK(rung.quotes.front().value < 0.2);
+        CHECK(rung.consensus.value == rung.quotes.front().value);
+    }
+}

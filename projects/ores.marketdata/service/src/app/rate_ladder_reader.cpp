@@ -33,6 +33,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <map>
 #include <string>
 #include <vector>
@@ -55,6 +56,23 @@ auto& rate_ladder_lg() {
 /// it resolved the dates under rather than leaving the client to guess.
 constexpr const char* ladder_tenor_convention = "RATES_SPOT_FORWARD";
 constexpr const char* ladder_day_count_convention = "A365F";
+
+/**
+ * @brief A discount curve's observation turned into the rate a person reads.
+ *
+ * A discount series holds factors, and the ladder a desk reads states rates. The
+ * rung's own year fraction is what turns one into the other, and that fraction is
+ * the server's, because the calendar, the day count and the tenor convention are:
+ * a client that converted would need all three and could disagree with the curve
+ * it is looking at.
+ *
+ * @return nothing when the factor is not positive, which no discount factor is.
+ */
+std::optional<double> implied_zero_rate(double discount_factor, double year_fraction) {
+    if (discount_factor <= 0.0 || year_fraction <= 0.0)
+        return std::nullopt;
+    return -std::log(discount_factor) / year_fraction;
+}
 
 /// One provider's quote at one rung of one ladder series.
 struct quote_at_rung final {
@@ -184,6 +202,10 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
     const auto refctx =
         build_refdata_context(ctx, std::chrono::year_month_day{horizon}, ladder_tenor_convention);
     const auto day_count = ores::analytics::quant::service::day_count_convention_code::A365F;
+    // A discount ladder's observations are factors. Every other instrument type
+    // quotes its rate, so only this one is converted.
+    const bool discount_ladder = request.instrument_type == "discount";
+    std::string unreadable;
 
     std::vector<std::pair<std::chrono::year_month_day, std::string>> dated;
     std::string undated;
@@ -217,16 +239,29 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
 
         std::vector<double> values;
         for (const auto& q : quotes[tenor]) {
+            auto value = q.value;
+            if (discount_ladder) {
+                const auto rate = implied_zero_rate(q.value, rung.year_fraction);
+                if (!rate) {
+                    if (!unreadable.empty())
+                        unreadable += "; ";
+                    unreadable += tenor + " of " + q.provider_code;
+                    continue;
+                }
+                value = *rate;
+            }
             mm::rung_quote wire;
             wire.provider_code = q.provider_code;
-            wire.value = q.value;
+            wire.value = value;
             wire.as_of = q.as_of;
             wire.age_seconds = staleness_policy::age_seconds(q.as_of, now);
             wire.stale = staleness_policy::is_stale(q.as_of, now);
             wire.series_id = q.series_id;
-            values.push_back(q.value);
+            values.push_back(value);
             rung.quotes.push_back(std::move(wire));
         }
+        if (rung.quotes.empty())
+            continue;
         rung.consensus.value = median_of(values);
         rung.consensus.method = "median";
         rung.consensus.providers_used = static_cast<int>(values.size());
@@ -234,9 +269,17 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
     }
 
     resp.provider_count = static_cast<int>(provider_codes.size());
-    if (!undated.empty())
-        resp.message = "Some rungs could not be dated under " +
-                       std::string(ladder_tenor_convention) + ": " + undated;
+    if (!unreadable.empty())
+        resp.message = "Some quotes of the " + request.currency +
+                       " discount ladder are not discount factors, so no rate was read from "
+                       "them: " +
+                       unreadable + ".";
+    if (!undated.empty()) {
+        if (!resp.message.empty())
+            resp.message += " ";
+        resp.message += "Some rungs could not be dated under " +
+                        std::string(ladder_tenor_convention) + ": " + undated + ".";
+    }
     resp.success = true;
     return resp;
 }

@@ -165,13 +165,12 @@ read_party_names(const ores::http::domain::http_request& req,
                  ores::nats::service::nats_client& session);
 
 /**
- * @brief The report definitions that bind one configuration, or nothing when the
- * binding cannot be read.
+ * @brief The report definitions that bind one configuration.
  *
- * A binding that cannot be read must not hide the settings, so a failure is
- * stated as an unknown list and not as a refusal of the page.
+ * A read that fails is thrown, so a caller that must not act on an unknown
+ * binding can tell a configuration with no report from one it could not read.
  */
-[[nodiscard]] std::optional<std::vector<engine_bound_report>>
+[[nodiscard]] std::vector<engine_bound_report>
 read_bound_reports(const ores::http::domain::http_request& req,
                    ores::nats::service::nats_client& session,
                    const boost::uuids::uuid& configuration_id);

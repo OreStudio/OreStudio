@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-engine-settings-writes
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -33,11 +33,11 @@ service's, and the route states the answer it gives.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:F321B6FD-AA33-4B71-84F2-A000578F02F5][Serve the engine settings' reads]] |
-| Next         | Begin implementation.                  |
+| Now          | The four writes answer, and the service decides what a proposal is. |
+| Waiting on   | Nothing. The reads are on main.        |
+| Next         | Finish the gate and raise the PR.      |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -78,6 +78,35 @@ binds the settings to a report, so a failed create must not leave one behind.
 The gateway checks no permission before a write. The service applies the rule
 and its sentence is the one the person needs, as the earlier families settled.
 
+* Notes
+
+** The value set's rule is not restated
+
+The BFF validated every value of a group against the value set of its ORE
+parameter before writing, with a copy of a rule the service applies to the same
+four tables. The gateway does not: it checks that the body names exactly the
+settings of the group, and that each value is of the form its column holds, and
+leaves the rule to the service. A value a set refuses is the service's sentence.
+
+** The party of a new configuration
+
+The BFF took the party from its own session, which is the party the caller's
+token states. The gateway reads the same claim, and still accepts a party the
+body names, because the BFF's form allowed one.
+
+** The removal reads the bindings strictly
+
+The reads task states a binding that cannot be read as an unknown list, so a page
+still answers. The removal does not: a configuration whose binding cannot be read
+is refused rather than deleted, because deleting on an unknown binding is the one
+mistake a person cannot undo. The BFF threw there too, as it did not catch.
+
+** The owning-party check is not restated
+
+As in the reads, the gateway does not compare the row's party with the caller's.
+The service reads and writes under the caller's own party, and its refusal is the
+one the person reads.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -90,7 +119,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The reporting part's test suite | 61 cases, 531 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the engine settings writes commit |
+| The reporting area's routes the C++ server answers | 34 of the BFF's 44 paired | =python3 build/scripts/route_inventory.py --check= | the engine settings writes commit |
+| The reporting area's routes the C++ server does not yet answer | 10 | =python3 build/scripts/route_inventory.py --check= | the engine settings writes commit |
+| The gateway's routes in the inventory | 1335 routes, 1007 answered by the gateway, 241 of the BFF's 328 paired | =python3 build/scripts/route_inventory.py --check= | the engine settings writes commit |
 
 * Notes
 
@@ -118,3 +150,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The gateway answers the engine settings' four writes at the BFF's paths, shapes
+and statuses.
+
+- A create writes the reporting configuration header first and the central row
+  second, and removes the header when the central write fails.
+- A group write that the service says is a proposal writes no part: the answer is
+  a 202 carrying the document as it stands and the approval's id.
+- A group whose settings change no numbers, or a configuration no report binds,
+  is written in place, at the version the form read or as a new row.
+- A removal refuses with 409 when a report binds the configuration, and otherwise
+  removes the parts, then the central row, then the header.
+- The value set's rule is the service's: the gateway checks the body's shape and
+  the form of each value, and states the service's sentence for the rest.
+- The suite is 61 cases and 531 assertions, nineteen of them for the engine
+  settings routes.
+- The gate is 44 of 45; the one failure is the reference data drift that main
+  carries.
+- The reporting area states 34 of 44 routes paired where it stated 30.

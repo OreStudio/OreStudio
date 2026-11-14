@@ -224,9 +224,10 @@ std::map<std::string, engine_party_name> read_party_names(const http_request& re
     return names;
 }
 
-std::optional<std::vector<engine_bound_report>> read_bound_reports(
-    const http_request& req, nats_client& session, const boost::uuids::uuid& configuration_id) {
-    try {
+std::vector<engine_bound_report> read_bound_reports(const http_request& req,
+                                                    nats_client& session,
+                                                    const boost::uuids::uuid& configuration_id) {
+    {
         reporting_messaging::list_report_configurations_request ask;
         ask.filter.emplace();
         ask.filter->configuration_type_code = std::string(engine_settings_configuration_type);
@@ -260,9 +261,6 @@ std::optional<std::vector<engine_bound_report>> read_bound_reports(
         for (const auto& definition : definitions)
             reports.push_back({boost::uuids::to_string(definition.id), definition.name});
         return reports;
-    } catch (const std::exception&) {
-        // A binding that cannot be read must not hide the settings.
-        return std::nullopt;
     }
 }
 

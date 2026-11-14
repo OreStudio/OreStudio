@@ -30,6 +30,7 @@ namespace ores::http::domain {
 enum class http_status : std::uint16_t {
     ok = 200,
     created = 201,
+    accepted = 202,
     no_content = 204,
     partial_content = 206,
     not_modified = 304,

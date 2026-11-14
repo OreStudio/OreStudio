@@ -1,14 +1,14 @@
 :PROPERTIES:
 :ID: 34A4373F-1BD1-4710-885B-95B3C3A3B8F7
 :END:
-#+title: Task: Port the DQ UI to ores.web
+#+title: Task: Design and build the DQ screens from the journeys, not from the Qt screens
 #+description: Show the datasets, their artefacts, their publish state and the publish action in ores.web; no DQ screens exist there today.
 #+type: task
 #+level: s1
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch: feature/take-the-dq-pipeline-end-to-end
-#+pr: 4711
+#+pr: 4712
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -20,15 +20,22 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Port the DQ screens of the Qt client to ores.web, so a person can see every
-dataset, what it holds, whether it is published, and run the publication.
+Give DQ a better experience in ores.web than the Qt client had, designed from the
+journeys a person actually runs rather than from the screens Qt happened to
+ship.
 
-The source to port is =/home/marco/Vault/Development/OreStudio/ores.qt/dq=: 88
-translation units and 27 =*.ui= screens, of which 18 are entity detail dialogs
-and 9 are history dialogs. Publishing is not a hidden action there: the area
-carries a =DataLibrarianWindow=, a =PublishBundleWizard= and a
-=PublishDatasetsDialog=, with dataset, dataset-bundle and dataset-dependency
-models behind them.
+The Qt area is input, not a specification: =ores.qt/dq= holds 88 translation
+units, 27 screens (18 entity detail dialogs, 9 history dialogs) and a publishing
+surface (Librarian window, bundle wizard, publish dialog). None of that is a
+requirement in itself. A screen may answer one journey or several, and a journey
+may need a screen that has no Qt ancestor at all.
+
+The refdata work already shows the method: 63 Qt reference-data entities became
+three web shapes — 12 record screens, 24 rows of one classification screen and 9
+kinds of one convention screen — because the entities were grouped by the
+journey that uses them, not by their Qt window. See
+[[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] for
+that precedent and its field tables.
 
 * Status
 
@@ -43,26 +50,39 @@ models behind them.
 
 * Acceptance
 
-- The dataset, dataset bundle and dataset dependency lists are readable in
-  ores.web.
-- Each dataset states whether it is published, and for which tenant.
-- Publishing runs from ores.web, for one dataset and for a bundle, and reports
-  what it inserted, updated and skipped.
-- The coded vocabularies the Qt area shows — code domains, coding schemes,
-  natures, origins, treatments, methodologies, change reasons, badges — have
-  their ores.web screens.
-- Nothing in the port needs a Qt client to be running.
+- The DQ journeys are written as journey documents under
+  =doc/knowledge/journeys/dq/=, in the shape
+  [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][the user journey document type]]
+  sets out, and judged before anything is designed. They cover at least:
+  seeing whether the system's reference data is complete, publishing a dataset,
+  publishing a bundle, correcting one artefact, and finding which trade a
+  published value belongs to.
+- Each journey names the screen that answers it. The mapping is many-to-many
+  where that is honest, and
+  [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][one screen, not one per entity]]
+  is the default, not the exception.
+- Prototypes are on main under =doc/prototypes/dq/=, as plain HTML, CSS and
+  JavaScript with the design tokens copied from the product, listed on the group
+  page, with a review recorded. No React prototype and no route in ores.web.
+- The prototypes are signed off before a screen is built from the shared parts.
+- The built screens follow the Record screen standard for records, and group the
+  maintenance vocabularies the way the refdata work grouped its 63 entities into
+  three shapes.
+- Publish state and the publish action are reachable from the journey, not
+  hidden behind a wizard only an administrator knows about.
+- A person who has never seen the Qt client can complete every journey.
 
 * Plan
 
-1. Walk the Qt DQ area and list every screen and the model behind it.
-2. Decide which screens are records (entity page plus history) and which are
-   tools (librarian, wizards), because ores.web has a record-page standard for
-   the first and none for the second.
-3. Port the record screens first, through the screen pipeline, so the lists and
-   detail pages exist before the tools do.
-4. Port the librarian and the two publish dialogs last, against the model the
-   publish task settles.
+1. Read the Qt area as evidence of what the domain holds, not as a screen list.
+2. Write the journeys as documents, and judge them before designing anything.
+3. Prototype the screens that answer them, as static pages under
+   =doc/prototypes/dq/=, and get the prototypes signed off. The inventory check
+   (=build/scripts/check_prototype_inventory.py=) keeps the group page honest.
+4. Build from the shared parts, following
+   [[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][Take a topic through the screen
+   pipeline]].
+5. Prove each journey on a fresh database.
 
 * Measurements
 
@@ -76,9 +96,20 @@ models behind them.
 
 * Notes
 
-Publish-state is the point of the screens. The Qt area shows it because the
-Librarian is where publishing happens; ores.web has neither the screens nor the
+Publish state is the point of the screens. The Qt client showed it because the
+Librarian was where publishing happened; ores.web has neither the screens nor the
 action today, which is why an empty catalogue after a recreate went unnoticed.
+
+The prototype stays on main once accepted
+([[id:708C2462-C1F8-455B-B091-9D9690FEEAAB][keep journey prototypes on main]]):
+it is the design record, and the
+product is written afterwards from the shared components, never from the
+prototype's markup.
+
+This task deliberately does not aim at parity. The measure is whether a person
+can complete the journeys with less friction than the Qt client imposed, and
+whether the vocabulary screens are fewer and clearer than the 18 detail dialogs
+they would otherwise become.
 
 * Test Scenarios
 
@@ -90,6 +121,7 @@ action today, which is why an empty catalogue after a recreate went unnoticed.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4712][#4712]] | [agile] Scope the DQ screens as journeys and prototypes, not a port |
 | [[https://github.com/OreStudio/OreStudio/pull/4711][#4711]] | [agile] Record the Qt source and screens for the DQ port |
 
 * Review

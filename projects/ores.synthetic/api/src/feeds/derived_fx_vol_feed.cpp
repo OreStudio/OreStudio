@@ -29,6 +29,11 @@ namespace ores::synthetic::feed {
 
 namespace {
 
+/// How many of the newest days a feed keeps derived beside the current one. A tail, not a
+/// history: the grid is one pass either way, but a fresh tenant needs the quotes it reads at its
+/// as-of and owes nobody a decade of them.
+constexpr std::size_t history_days = 5;
+
 auto& derived_fx_feed_lg() {
     static auto instance = ores::logging::make_logger("ores.synthetic.api.derived_fx_vol_feed");
     return instance;
@@ -249,10 +254,14 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
         BOOST_LOG_SEV(derived_fx_feed_lg(), debug)
             << "Derived history of " << key << ": " << returns->dates.size()
             << " daily return(s) from the fixings, read in " << seconds_since(started) << "s";
-        // A history already held whole needs no derivation: only a new day of fixings does.
+        // The tail a feed keeps is what it owes: a tail already held needs no derivation, and
+        // reading the pair's convention to discover that would cost a query per pair per pass.
         const auto first = static_cast<std::size_t>(std::max(settings_.minimum_window, 1)) - 1;
+        const auto tail_from = returns->dates.size() > history_days ?
+                                   std::max(first, returns->dates.size() - history_days) :
+                                   first;
         const bool whole = std::ranges::all_of(
-            std::views::drop(returns->dates, static_cast<std::ptrdiff_t>(first)),
+            std::views::drop(returns->dates, static_cast<std::ptrdiff_t>(tail_from)),
             [&](const std::chrono::year_month_day d) { return held.contains(d); });
         if (whole) {
             BOOST_LOG_SEV(derived_fx_feed_lg(), debug)
@@ -265,8 +274,10 @@ std::size_t derived_fx_vol_feed::persist(std::chrono::year_month_day today,
             continue;
         }
         started = std::chrono::steady_clock::now();
+        // A feed publishes the current day, so it asks for a short tail: the whole history is a
+        // vintage's business, and deriving it per tenant is what stalled a fresh one.
         const auto missing = derive_missing_days(
-            pair, *returns, *convention, held, settings_, settings_.minimum_window);
+            pair, *returns, *convention, held, settings_, settings_.minimum_window, history_days);
         if (!missing) {
             fail(key, missing.error());
             continue;

@@ -19,6 +19,7 @@
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
 #include "ores.synthetic.api/feeds/derived_fx_vol_feed.hpp"
 #include "ores.testing/fx_vol_surface_fixture.hpp"
+#include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <charconv>
@@ -120,7 +121,10 @@ TEST_CASE("a_derived_vendor_id_names_a_pair_an_expiry_and_a_label_and_reads_back
         .pair = {.base = "EUR", .quote = "USD"}, .expiry = "1Y", .label = "25RR"};
     CHECK(derived_fx_external_id(id) == "EURUSD/1Y/25RR");
     CHECK(parse_derived_fx_external_id("EURUSD/1Y/25RR") == id);
-    CHECK_FALSE(parse_derived_fx_external_id("EURUSD/5Y/25RR"));
+    CHECK(parse_derived_fx_external_id("EURUSD/5Y/25RR") ==
+          derived_fx_quote_id{
+              .pair = {.base = "EUR", .quote = "USD"}, .expiry = "5Y", .label = "25RR"});
+    CHECK_FALSE(parse_derived_fx_external_id("EURUSD/15Y/25RR"));
     CHECK_FALSE(parse_derived_fx_external_id("EURUSD/1Y/15RR"));
     CHECK_FALSE(parse_derived_fx_external_id("EURUS/1Y/ATM"));
     CHECK_FALSE(parse_derived_fx_external_id("EURUSD/1Y/ATM/X"));
@@ -175,16 +179,33 @@ TEST_CASE("a_derivation_becomes_one_tick_per_label_of_each_quoted_expiry", deriv
              .convention = *convention_at(ores::testing::eur_usd_fx_option_convention(), e.label)});
     const auto d = qm::derive_fx_quotes(returns->returns, expiries, {});
     REQUIRE(d);
-    REQUIRE(d->expiries[7].has_value() == false);
+    // An expiry is quoted only if the returns cover a window as long as the expiry itself, so
+    // the expiries the derivation leaves out are the ones past the history it was given: four
+    // hundred fixings reach a little over one and a half years. This is the bound the surface's
+    // grid has -- a ten-year expiry needs ten years of fixings behind it -- and it is checked as
+    // a rule rather than as a fixture's arithmetic.
+    const auto quoted = static_cast<std::size_t>(
+        std::ranges::find_if(d->expiries, [](const auto& e) { return !e.has_value(); }) -
+        d->expiries.begin());
+    REQUIRE(quoted > 0);
+    REQUIRE(quoted < derived_fx_expiries.size());
+    const double trading_days = qm::fx_derivation_settings{}.trading_days_per_year;
+    CHECK(derived_fx_expiries[quoted - 1].years * trading_days <=
+          static_cast<double>(returns->returns.size()));
+    CHECK(derived_fx_expiries[quoted].years * trading_days >
+          static_cast<double>(returns->returns.size()));
+    for (std::size_t i = quoted; i < derived_fx_expiries.size(); ++i)
+        REQUIRE_FALSE(d->expiries[i].has_value());
     const auto ticks = derived_fx_ticks({.base = "EUR", .quote = "USD"},
                                         *d,
                                         *returns->last,
                                         40,
                                         std::chrono::system_clock::time_point::max());
-    REQUIRE(ticks.size() == 7 * derived_fx_labels.size());
+    REQUIRE(ticks.size() == quoted * derived_fx_labels.size());
     CHECK(ticks.front().external_id == "EURUSD/1W/ATM");
     CHECK(ticks[1].external_id == "EURUSD/1W/25RR");
-    CHECK(ticks.back().external_id == "EURUSD/1Y/10BF");
+    CHECK(ticks.back().external_id ==
+          "EURUSD/" + std::string(derived_fx_expiries[quoted - 1].label) + "/10BF");
     CHECK(ticks.front().sequence == 40);
     CHECK(ticks.back().sequence == 40 + ticks.size() - 1);
     for (const auto& t : ticks) {
@@ -391,7 +412,7 @@ TEST_CASE("a_missing_day_is_derived_from_the_returns_up_to_it_and_no_later", der
     const auto convention = ores::testing::eur_usd_fx_option_convention();
     const derived_fx_pair pair{.base = "EUR", .quote = "USD"};
     const std::set<year_month_day> stored{returns->dates[300]};
-    const auto history = derive_missing_days(pair, *returns, convention, stored, {}, 250);
+    const auto history = derive_missing_days(pair, *returns, convention, stored, {}, 250, 0);
     REQUIRE(history);
     CHECK(history->underived.empty());
     const auto* days = &history->days;
@@ -414,7 +435,9 @@ TEST_CASE("a_missing_day_is_derived_from_the_returns_up_to_it_and_no_later", der
     bool found = false;
     for (const auto& p : on.points)
         if (p.coordinate == atm) {
-            CHECK(p.value == direct->expiries[0]->quotes.atm);
+            // The pass and the day-at-a-time function differ in the order their moments add
+            // in, and in nothing else.
+            CHECK(p.value == Catch::Approx(direct->expiries[0]->quotes.atm).epsilon(1e-12));
             found = true;
         }
     CHECK(found);
@@ -432,7 +455,8 @@ TEST_CASE("a_day_whose_history_covers_no_long_expiry_quotes_only_the_short_ones"
                                              ores::testing::eur_usd_fx_option_convention(),
                                              {},
                                              {},
-                                             30);
+                                             30,
+                                             0);
     REQUIRE(history);
     const auto* days = &history->days;
     REQUIRE_FALSE(days->empty());
@@ -476,7 +500,7 @@ struct derived_memory_store {
 
 }
 
-TEST_CASE("the_feed_keeps_the_whole_history_once_and_then_each_new_day", derived_tags) {
+TEST_CASE("the_feed_keeps_a_tail_of_its_history_once_and_then_each_new_day", derived_tags) {
     const auto fixings = derived_fixings(400, 19);
     derived_memory_store memory;
     derived_fx_vol_feed feed(
@@ -485,9 +509,11 @@ TEST_CASE("the_feed_keeps_the_whole_history_once_and_then_each_new_day", derived
     const auto& usd = fixings.at(ecb_fixing_item("USD"));
     const auto series = derived_fx_series_uri({.base = "EUR", .quote = "USD"});
 
+    // A fresh store is owed the newest days, not ten years of them: the whole history is a
+    // vintage's business, and deriving it per tenant is what stalled a fresh one.
     const auto first = feed.persist(usd.dates[350]);
     CHECK(feed.failures().empty());
-    CHECK(first == 350 - 21 + 1);
+    CHECK(first == 5);
     CHECK(memory.held[series].size() == first);
     CHECK(feed.persist(usd.dates[350]) == 0);
     CHECK(feed.persist(usd.dates[351]) == 1);
@@ -505,7 +531,7 @@ TEST_CASE("the_feed_writes_no_day_the_store_already_holds", derived_tags) {
     derived_fx_vol_feed feed(
         "derived-fx-vol", "derived", derived_readers_of(fixings), {}, memory.store());
     feed.set_universe(derived_ids_of({.base = "EUR", .quote = "USD"}));
-    CHECK(feed.persist(usd.dates.back()) == (200 - 1) - 150);
+    CHECK(feed.persist(usd.dates.back()) == 5);
 }
 
 TEST_CASE("the_feed_keeps_every_pair_of_its_universe_and_names_one_it_cannot", derived_tags) {
@@ -594,13 +620,15 @@ TEST_CASE("a_history_held_whole_is_not_derived_again", derived_tags) {
 TEST_CASE("days_that_cannot_be_derived_are_named_once_and_not_tried_again", derived_tags) {
     auto fixings = derived_fixings(200, 41);
     auto& usd = fixings.at(ecb_fixing_item("USD"));
-    for (std::size_t i = 0; i < 60; ++i)
-        usd.values[i] = 1.10;
+    // A series that never moves has no spread on any day, so every day of the tail is one the
+    // derivation cannot quote.
+    for (auto& value : usd.values)
+        value = 1.10;
     derived_memory_store memory;
     derived_fx_vol_feed feed(
         "derived-fx-vol", "derived", derived_readers_of(fixings), {}, memory.store());
     feed.set_universe(derived_ids_of({.base = "EUR", .quote = "USD"}));
-    CHECK(feed.persist(usd.dates.back()) > 0);
+    CHECK(feed.persist(usd.dates.back()) == 0);
     REQUIRE(feed.failures().size() == 1);
     CHECK(feed.failures()[0].find("could not be derived") != std::string::npos);
     CHECK(feed.persist(usd.dates.back()) == 0);

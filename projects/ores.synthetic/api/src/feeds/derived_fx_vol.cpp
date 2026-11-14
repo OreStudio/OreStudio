@@ -178,7 +178,8 @@ derive_missing_days(const derived_fx_pair& pair,
                     const refdata::domain::fx_option_convention& convention,
                     const std::set<std::chrono::year_month_day>& stored,
                     const qm::fx_derivation_settings& settings,
-                    int minimum_returns) {
+                    int minimum_returns,
+                    std::size_t newest_days) {
     std::vector<qm::fx_expiry> expiries;
     expiries.reserve(derived_fx_expiries.size());
     for (const auto& e : derived_fx_expiries) {
@@ -190,28 +191,44 @@ derive_missing_days(const derived_fx_pair& pair,
     derived_history out;
     const auto n = std::min(returns.returns.size(), returns.dates.size());
     const auto first = static_cast<std::size_t>(std::max(minimum_returns, 1)) - 1;
-    for (std::size_t k = first; k < n; ++k) {
+    if (n <= first)
+        return out;
+
+    // The whole grid in one pass over the returns, then the days the caller asked for. A day
+    // costs a constant-time moment lookup, so filling every day and publishing the newest ones
+    // is cheaper than asking the model for one day at a time.
+    std::vector<qm::fx_derived_cell> grid(n * expiries.size());
+    if (const auto derived = qm::derive_grid(returns.returns, expiries, settings, grid); !derived)
+        return std::unexpected(derived.error());
+
+    // The tail is the last @p newest_days days of the sample, not the newest missing ones: a
+    // second call over the same day must find nothing owed, and a later one must find exactly
+    // the day that arrived.
+    const auto start =
+        (newest_days > 0 && n > newest_days) ? std::max(first, n - newest_days) : first;
+    std::vector<std::size_t> owed;
+    owed.reserve(n - start);
+    for (std::size_t k = start; k < n; ++k)
+        if (!stored.contains(returns.dates[k]))
+            owed.push_back(k);
+
+    for (const auto k : owed) {
         const auto day = returns.dates[k];
-        if (stored.contains(day))
-            continue;
-        const auto derivation = qm::derive_fx_quotes(
-            std::span<const double>(returns.returns.data(), k + 1), expiries, settings);
-        if (!derivation) {
-            out.underived.push_back(day);
-            continue;
-        }
         derived_fx_day today{.day = day, .points = {}};
-        for (const auto& expiry : derivation->expiries) {
-            if (!expiry)
+        for (std::size_t e = 0; e < expiries.size(); ++e) {
+            const auto& cell = grid[k * expiries.size() + e];
+            if (!cell.quoted)
                 continue;
-            const auto& q = expiry->quotes;
-            const std::array<double, derived_fx_labels.size()> values{
-                q.atm, q.rr25, q.bf25, q.rr10, q.bf10};
+            const std::array<double, derived_fx_labels.size()> values{cell.quotes.atm,
+                                                                      cell.quotes.rr25,
+                                                                      cell.quotes.bf25,
+                                                                      cell.quotes.rr10,
+                                                                      cell.quotes.bf10};
             for (std::size_t i = 0; i < derived_fx_labels.size(); ++i)
                 if (std::isfinite(values[i]))
                     today.points.push_back({.coordinate = derived_fx_quote_uri(
                                                 {.pair = pair,
-                                                 .expiry = expiry->label,
+                                                 .expiry = expiries[e].label,
                                                  .label = std::string(derived_fx_labels[i])}),
                                             .value = values[i]});
         }

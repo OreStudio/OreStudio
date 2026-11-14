@@ -64,6 +64,33 @@ struct fx_derivation final {
     std::vector<std::expected<derived_fx_expiry, std::string>> expiries;
 };
 
+/// One cell of the grid derive_grid fills: an expiry's quotes on one day, or nothing.
+struct fx_derived_cell final {
+    fx_smile_quotes quotes{};
+    bool quoted = false;
+};
+
+/**
+ * @brief The quotes of every day of @p returns at once, for every expiry.
+ *
+ * The same model the day-at-a-time function applies, arranged for a caller that needs many days:
+ * the moments of a day's prefix, and of an expiry's window, come from prefix sums of the first
+ * four powers of the returns, so a day costs the same whether its window is a week or ten years
+ * and no window is walked twice. The shrink, the Gram-Charlier clamp, the smile and the five
+ * labels are the model's, unchanged, and the grid agrees cell for cell with the day-at-a-time
+ * answer.
+ *
+ * @param out One cell per day per expiry, day-major: =day * expiries.size() + expiry=, where a
+ * day is the returns up to and including it. A cell is left unquoted where the day holds too few
+ * returns for the expiry's window and where the day has no spread, which are the cases the
+ * day-at-a-time function refuses the expiry for. Its size must be the product.
+ */
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::expected<void, std::string>
+derive_grid(std::span<const double> returns,
+            std::span<const fx_expiry> expiries,
+            const fx_derivation_settings& settings,
+            std::span<fx_derived_cell> out);
+
 /**
  * @brief The quotes of a pair inferred from its daily log returns.
  *

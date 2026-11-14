@@ -20,10 +20,13 @@ Represents the AMC script-based product types ORE states:
 =ScriptedTrade= with its inline or library script, =Autocallable_01=,
 =DoubleDigitalOption= and =PerformanceOption_01=. =trade_type_code=
 discriminates the exact product and =script_name= names the payoff
-script, while the optional JSON fields carry the script's events, its
-underlyings and its parameters. The table stays flat by design: it holds
-no nested sub-struct, because the script definition is embedded text and
-not a set of typed columns.
+script. The script body is the only text the trade keeps: a variable is a
+=scripted_parameter= row and an underlying block is an
+=instrument_underlying= row, so the trade states no blob.
+
+The table stays flat by design: it holds no nested sub-struct, because
+what a script reads is a list of named variables and a list of underlying
+blocks, and both are rows of their own.
 
 The table is a flat instrument sub-type, so it binds
 =:profile: trading-instrument=. Two table features justify that binding:
@@ -131,7 +134,7 @@ std::string("Autocallable")
 Optional embedded ORE script body. Empty when the trade names a library
 script instead.
 
-** events_json
+** script_npv
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
@@ -139,27 +142,9 @@ script instead.
 :economic: true
 :END:
 
-Optional JSON array of event schedule entries. Empty when not applicable.
-
-** underlyings_json
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:economic: true
-:END:
-
-Optional JSON array of underlying asset codes. Empty when not applicable.
-
-** parameters_json
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:nullable: true
-:economic: true
-:END:
-
-Optional JSON object of script parameters. Empty when not applicable.
+The script variable that holds the trade's result, as the script's =NPV=
+element names it, such as =Option=. The schema requires the name beside an
+embedded body, so a body the trade keeps needs it to be written again.
 
 ** description
 :PROPERTIES:

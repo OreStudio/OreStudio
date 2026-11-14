@@ -55,9 +55,7 @@ struct scripted_instrument_write {
     boost::uuids::uuid trade_activity_id;
     std::string script_name;
     std::string script_body;
-    std::string events_json;
-    std::string underlyings_json;
-    std::string parameters_json;
+    std::string script_npv;
     std::string description;
     std::optional<std::string> data_element;
 
@@ -396,9 +394,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_instrume
         utility::codec::field{"trade_activity_id", &scripted_instrument_write::trade_activity_id},
         utility::codec::field{"script_name", &scripted_instrument_write::script_name},
         utility::codec::field{"script_body", &scripted_instrument_write::script_body},
-        utility::codec::field{"events_json", &scripted_instrument_write::events_json},
-        utility::codec::field{"underlyings_json", &scripted_instrument_write::underlyings_json},
-        utility::codec::field{"parameters_json", &scripted_instrument_write::parameters_json},
+        utility::codec::field{"script_npv", &scripted_instrument_write::script_npv},
         utility::codec::field{"description", &scripted_instrument_write::description},
         utility::codec::field{"data_element", &scripted_instrument_write::data_element},
     };

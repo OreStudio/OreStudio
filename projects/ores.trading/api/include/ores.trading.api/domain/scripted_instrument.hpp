@@ -41,10 +41,13 @@ namespace ores::trading::domain {
  * ScriptedTrade with its inline or library script, Autocallable_01,
  * DoubleDigitalOption and PerformanceOption_01. trade_type_code
  * discriminates the exact product and script_name names the payoff
- * script, while the optional JSON fields carry the script's events, its
- * underlyings and its parameters. The table stays flat by design: it holds
- * no nested sub-struct, because the script definition is embedded text and
- * not a set of typed columns.
+ * script. The script body is the only text the trade keeps: a variable is a
+ * scripted_parameter row and an underlying block is an
+ * instrument_underlying row, so the trade states no blob.
+ *
+ * The table stays flat by design: it holds no nested sub-struct, because
+ * what a script reads is a list of named variables and a list of underlying
+ * blocks, and both are rows of their own.
  *
  * The table is a flat instrument sub-type, so it binds
  * :profile: trading-instrument. Two table features justify that binding:
@@ -74,19 +77,11 @@ struct scripted_instrument final {
     std::string script_body;
 
     /**
-     * @brief Optional JSON array of event schedule entries. Empty when not applicable.
+     * @brief The script variable that holds the trade's result, as the script's NPV element names
+     * it, such as Option. The schema requires the name beside an embedded body, so a body the trade
+     * keeps needs it to be written again.
      */
-    std::string events_json;
-
-    /**
-     * @brief Optional JSON array of underlying asset codes. Empty when not applicable.
-     */
-    std::string underlyings_json;
-
-    /**
-     * @brief Optional JSON object of script parameters. Empty when not applicable.
-     */
-    std::string parameters_json;
+    std::string script_npv;
 
     /**
      * @brief Optional free-text description.
@@ -126,9 +121,7 @@ struct scripted_instrument final {
     std::string out = "{";
     ores::utility::digest::append_member(out, "script_name", v.script_name);
     ores::utility::digest::append_member(out, "script_body", v.script_body);
-    ores::utility::digest::append_member(out, "events_json", v.events_json);
-    ores::utility::digest::append_member(out, "underlyings_json", v.underlyings_json);
-    ores::utility::digest::append_member(out, "parameters_json", v.parameters_json);
+    ores::utility::digest::append_member(out, "script_npv", v.script_npv);
     ores::utility::digest::append_member(out, "data_element", v.data_element);
     out.push_back('}');
     return out;

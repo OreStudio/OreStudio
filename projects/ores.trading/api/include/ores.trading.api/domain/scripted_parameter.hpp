@@ -89,8 +89,12 @@ struct scripted_parameter final {
 
     /**
      * @brief The parameter's type as the document states it: the element of a generic parameter
-     * (Number, Event, Index, Currency, Daycounter), or the type attribute of a named product's
-     * parameter (number, bool, event, dayCounter and so on).
+     * (Number, Event, Index, Currency, Daycounter), the type attribute of a named product's
+     * parameter (number, bool, event, dayCounter and so on), or, for a product whose element states
+     * no type attribute at all, the kind of leaf its schema gives the element (text, integer,
+     * decimal, real, enumeration). The last is a product ORE reads through its own class rather
+     * than through the script, such as DoubleDigitalOption: its parameters are the members that
+     * element states.
      */
     std::string declared_type;
 

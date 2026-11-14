@@ -20,14 +20,16 @@
 #include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
-#include "ores.ore.core/domain/scalar_terms_projection.hpp"
+#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 namespace ores::ore::domain {
 
@@ -55,185 +57,33 @@ auto scripted_instrument_projection_make_base(std::string_view trade_type_code)
     return r;
 }
 
-auto scripted_instrument_projection_json_escape(std::string_view text) -> std::string {
-    std::string out;
-    for (const char c : text) {
-        if (c == '"')
-            out += "\\\"";
-        else if (c == '\\')
-            out += "\\\\";
-        else
-            out += c;
-    }
-    return out;
-}
-
-auto json_array(const std::vector<std::string>& values) -> std::string {
-    std::string out = "[";
-    for (std::size_t i = 0; i < values.size(); ++i) {
-        if (i != 0)
-            out.push_back(',');
-        out += "\"" + scripted_instrument_projection_json_escape(values[i]) + "\"";
-    }
-    out += "]";
-    return out;
-}
-
-auto number_text(std::string_view value) -> double {
-    try {
-        return static_cast<double>(std::stof(std::string(value)));
-    } catch (const std::exception&) {
-        return 0;
-    }
-}
-
-auto make_params_json(std::string_view put_call, double notional, double strike) -> std::string {
-    return "{\"PutCall\":\"" + std::string(put_call) +
-           "\",\"Notional\":" + std::to_string(notional) + ",\"Strike\":" + std::to_string(strike) +
-           "}";
-}
-
-auto parse_json_string_array(std::string_view json) -> std::vector<std::string> {
-    std::vector<std::string> result;
-    std::size_t i = 0;
-    while (i < json.size() && json[i] != '[')
-        ++i;
-    if (i >= json.size())
-        return result;
-    ++i;
-    while (i < json.size()) {
-        while (i < json.size() && (json[i] == ' ' || json[i] == ',' || json[i] == '\t'))
-            ++i;
-        if (i >= json.size() || json[i] == ']')
-            break;
-        if (json[i] != '"') {
-            ++i;
-            continue;
-        }
-        ++i;
-        std::string value;
-        while (i < json.size() && json[i] != '"') {
-            if (json[i] == '\\' && i + 1 < json.size()) {
-                ++i;
-                if (json[i] == '"')
-                    value += '"';
-                else if (json[i] == '\\')
-                    value += '\\';
-                else
-                    value += json[i];
-            } else {
-                value += json[i];
-            }
-            ++i;
-        }
-        ++i;
-        result.push_back(std::move(value));
-    }
-    return result;
-}
-
-auto parse_json_object(std::string_view json) -> std::vector<std::pair<std::string, std::string>> {
-    std::vector<std::pair<std::string, std::string>> result;
-    std::size_t i = 0;
-    while (i < json.size() && json[i] != '{')
-        ++i;
-    if (i >= json.size())
-        return result;
-    ++i;
-    while (i < json.size()) {
-        while (i < json.size() && (json[i] == ' ' || json[i] == ',' || json[i] == '\t'))
-            ++i;
-        if (i >= json.size() || json[i] == '}')
-            break;
-        if (json[i] != '"') {
-            ++i;
-            continue;
-        }
-        ++i;
-        std::string key;
-        while (i < json.size() && json[i] != '"')
-            key += json[i++];
-        ++i;
-        while (i < json.size() && json[i] != ':')
-            ++i;
-        ++i;
-        while (i < json.size() && (json[i] == ' ' || json[i] == '\t'))
-            ++i;
-        std::string value;
-        if (i < json.size() && json[i] == '"') {
-            ++i;
-            while (i < json.size() && json[i] != '"') {
-                if (json[i] == '\\' && i + 1 < json.size()) {
-                    ++i;
-                    value += json[i];
-                } else {
-                    value += json[i];
-                }
-                ++i;
-            }
-            ++i;
-        } else {
-            while (i < json.size() && json[i] != ',' && json[i] != '}')
-                value += json[i++];
-        }
-        result.emplace_back(std::move(key), std::move(value));
-    }
-    return result;
-}
-
-auto own_text(const xml::record_reader& record, std::string_view name) -> std::string {
-    const auto child = record.child(name);
-    if (!child)
-        return {};
-    return child->own_text().value_or("");
-}
-
-auto vector_values(const xml::record_reader& record,
-                   std::string_view name) -> std::vector<std::string> {
-    const auto child = record.child(name);
-    if (!child)
-        return {};
-    return child->values("Value");
-}
-
 /**
- * @brief The parameter key that carries one underlying's type.
+ * @brief The products ORE reads through a class of its own, and the element
+ * each states its terms in.
  *
- * The schema requires an underlying to state a type and the flat table has no
- * column for it, so the type travels in the parameters beside the names the
- * underlying list carries.
+ * A scripted trade states its variables with a type on each: under
+ * ScriptedTradeData for the generic form, or on the element of the named product
+ * whose script it runs. These two state a fixed element instead, whose members
+ * carry no type attribute, and ORE reads it with a class that turns the members
+ * into the variables the script needs. So the members are the trade's terms and
+ * each is a parameter row.
  */
-auto underlying_type_key(std::size_t index) -> std::string {
-    return "Underlying" + std::to_string(index + 1) + "Type";
-}
+struct scripted_legacy_product {
+    std::string_view trade_type;
+    std::string_view element;
+};
 
-/// The underlying a parameter key names the type of, when the key is one.
-auto underlying_of_type_key(std::string_view key) -> std::optional<std::string> {
-    constexpr std::string_view prefix = "Underlying";
-    constexpr std::string_view suffix = "Type";
-    if (!key.starts_with(prefix) || !key.ends_with(suffix) ||
-        key.size() <= prefix.size() + suffix.size())
-        return std::nullopt;
-    return std::string(key.substr(0, key.size() - suffix.size()));
-}
+constexpr scripted_legacy_product legacy_products[] = {
+    {"DoubleDigitalOption", "DoubleDigitalOptionData"},
+    {"PerformanceOption_01", "PerformanceOption01Data"},
+};
 
-/// The type entries a parameter list states, in the order it states them.
-auto underlying_types_of(const std::vector<std::pair<std::string, std::string>>& params)
-    -> std::vector<std::string> {
-    std::vector<std::string> types;
-    for (const auto& [key, value] : params)
-        if (underlying_of_type_key(key))
-            types.push_back(value);
-    return types;
+auto legacy_product_of(std::string_view trade_type) -> const scripted_legacy_product* {
+    for (const auto& product : legacy_products)
+        if (product.trade_type == trade_type)
+            return &product;
+    return nullptr;
 }
-
-/// States the type each appended underlying requires, empty when none is known.
-void set_underlying_type(xml::record_writer& underlying,
-                         const std::vector<std::string>& types,
-                         std::size_t index) {
-    underlying.set_text("Type", index < types.size() ? types[index] : std::string{});
-}
-
 
 // ---------------------------------------------------------------------------
 // The parameters: ORE reads every scripted trade as named parameters of five
@@ -333,7 +183,7 @@ void append_leaf(xml::record_writer& w, std::string_view name, const std::string
 /// The terms of a derived schedule, each kept on its own column.
 struct derived_term {
     std::string_view element;
-    std::optional<std::string> scripted_parameter::*column;
+    std::optional<std::string> scripted_parameter::* column;
 };
 
 constexpr derived_term derived_terms[] = {
@@ -363,15 +213,8 @@ auto stated_value_of(const scripted_parameter& parameter, const std::string& val
     return parameter.declared_type == "Index" ? ore_name_of(value) : value;
 }
 
-auto addresses_of(std::vector<std::string> names) -> std::vector<std::string> {
-    for (auto& name : names)
-        name = script_index_address_of(name);
-    return names;
-}
-
-auto make_parameter(scripted_instrument_data& data,
-                    std::string name,
-                    std::string type) -> scripted_parameter& {
+auto make_parameter(scripted_instrument_data& data, std::string name, std::string type)
+    -> scripted_parameter& {
     scripted_parameter row;
     row.sequence_number = static_cast<int>(data.parameters.size()) + 1;
     row.name = std::move(name);
@@ -483,8 +326,8 @@ void read_named_parameters(scripted_instrument_data& data, const xml::record_rea
     }
 }
 
-auto values_of(const scripted_instrument_data& data,
-               int parameter_sequence_number) -> std::vector<std::string> {
+auto values_of(const scripted_instrument_data& data, int parameter_sequence_number)
+    -> std::vector<std::string> {
     std::vector<const scripted_parameter_value*> rows;
     for (const auto& row : data.parameter_values)
         if (row.parameter_sequence_number == parameter_sequence_number)
@@ -560,182 +403,235 @@ void write_named_parameters(xml::record_writer& product, const scripted_instrume
     }
 }
 
+// ---------------------------------------------------------------------------
+// A legacy product's element: its members are the trade's terms, the element
+// states no type on any of them, and the schema is what says how each is
+// written. An Underlying block is an entity of its own and never a parameter.
+// ---------------------------------------------------------------------------
+
+/// The kind of leaf a field states, by the schema's name for it.
+auto leaf_kind_name(xml::scalar_kind kind) -> std::string_view {
+    switch (kind) {
+        case xml::scalar_kind::text:
+            return "text";
+        case xml::scalar_kind::integer:
+            return "integer";
+        case xml::scalar_kind::decimal:
+            return "decimal";
+        case xml::scalar_kind::real:
+            return "real";
+        case xml::scalar_kind::enumeration:
+            return "enumeration";
+    }
+    return "text";
 }
 
+/// The kind of leaf a scalar member states.
+auto member_kind_name(xml::field_kind kind) -> std::string_view {
+    switch (kind) {
+        case xml::field_kind::integer:
+            return "integer";
+        case xml::field_kind::decimal:
+            return "decimal";
+        case xml::field_kind::real:
+            return "real";
+        case xml::field_kind::enumeration:
+            return "enumeration";
+        default:
+            return "text";
+    }
+}
+
+/**
+ * @brief The leaf a member states, for a member whose values are a list.
+ *
+ * A list is a container element whose only child is the value, such as
+ * StrikePrices holding a StrikePrice per value.
+ */
+auto container_leaf_of(const xml::field& member) -> const xml::field* {
+    if (member.kind != xml::field_kind::nested || member.type == nullptr)
+        return nullptr;
+    for (std::uint8_t i = 0; i < member.type->field_count; ++i) {
+        const auto& f = member.type->fields[i];
+        if (f.kind == xml::field_kind::repeated_leaf)
+            return &f;
+    }
+    return nullptr;
+}
+
+auto container_leaf_of(const xml::record_type& type, std::string_view member) -> const xml::field* {
+    const auto* f = xml::find_field(type, member, false);
+    return f == nullptr ? nullptr : container_leaf_of(*f);
+}
+
+/// The type a member of a legacy product's element states, which the schema gives it.
+auto declared_type_of(const xml::field& member) -> std::string {
+    if (const auto* leaf = container_leaf_of(member))
+        return std::string(leaf_kind_name(leaf->scalar));
+    return std::string(member_kind_name(member.kind));
+}
+
+/// Whether the member states one Underlying block.
+auto states_an_underlying(const xml::field& member) -> bool {
+    return member.kind == xml::field_kind::nested && member.type != nullptr &&
+           member.type->name == "underlying";
+}
+
+/// The repeated Underlying block a member states, for a member that states a list.
+auto repeated_underlying_of(const xml::field& member) -> const xml::field* {
+    if (member.kind != xml::field_kind::nested || member.type == nullptr)
+        return nullptr;
+    for (std::uint8_t i = 0; i < member.type->field_count; ++i) {
+        const auto& f = member.type->fields[i];
+        if (f.kind == xml::field_kind::repeated_nested && f.type != nullptr &&
+            f.type->name == "underlying")
+            return &f;
+    }
+    return nullptr;
+}
+
+/**
+ * @brief The role the underlying rows of a member are kept under.
+ *
+ * The role names the element the document states the blocks in, so a product
+ * that states Underlying1 beside Underlying2 keeps the two apart.
+ */
+auto underlying_role_of(std::string_view element) -> std::string {
+    std::string role;
+    for (const char c : element)
+        role += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return role;
+}
+
+void read_legacy_members(scripted_instrument_data& data, const xml::record_reader& product) {
+    const auto& type = product.type();
+    for (std::uint8_t i = 0; i < type.field_count; ++i) {
+        const auto& f = type.fields[i];
+        if (f.is_attribute || states_an_underlying(f) || repeated_underlying_of(f) != nullptr)
+            continue;
+        if (!product.has(f.name))
+            continue;
+        auto& parameter = make_parameter(data, std::string(f.name), declared_type_of(f));
+        if (const auto* leaf = container_leaf_of(f)) {
+            parameter.shape = "vector";
+            add_values(data, parameter, leaf_list(*product.child(f.name), leaf->name));
+        } else if (const auto value = scalar_text(product, f.name)) {
+            parameter.value = *value;
+        }
+    }
+}
+
+void read_legacy_underlyings(scripted_instrument_data& data, const xml::record_reader& product) {
+    const auto& type = product.type();
+    for (std::uint8_t i = 0; i < type.field_count; ++i) {
+        const auto& f = type.fields[i];
+        if (f.is_attribute || !product.has(f.name))
+            continue;
+        if (states_an_underlying(f)) {
+            underlying_block::read_underlying(
+                data, *product.child(f.name), underlying_role_of(f.name), 1);
+        } else if (const auto* block = repeated_underlying_of(f)) {
+            underlying_block::read_underlyings(
+                data, *product.child(f.name), block->name, underlying_role_of(block->name));
+        }
+    }
+}
+
+void write_legacy_members(xml::record_writer& product, const scripted_instrument_data& data) {
+    for (const auto* parameter : ordered_parameters(data)) {
+        if (!product.declares(parameter->name))
+            continue;
+        if (parameter->shape == "vector") {
+            const auto* leaf = container_leaf_of(product.type(), parameter->name);
+            if (leaf == nullptr)
+                continue;
+            auto container = product.child(parameter->name);
+            for (const auto& value : values_of(data, parameter->sequence_number))
+                append_leaf(container, leaf->name, value);
+        } else if (parameter->value) {
+            set_scalar_text(product, parameter->name, *parameter->value);
+        }
+    }
+}
+
+void write_legacy_underlyings(xml::record_writer& product, const scripted_instrument_data& data) {
+    const auto& type = product.type();
+    for (std::uint8_t i = 0; i < type.field_count; ++i) {
+        const auto& f = type.fields[i];
+        if (states_an_underlying(f)) {
+            const auto rows = underlying_block::underlyings_of(data, underlying_role_of(f.name));
+            if (!rows.empty())
+                underlying_block::write_underlying(product.child(f.name), *rows.front());
+        } else if (const auto* block = repeated_underlying_of(f)) {
+            const auto rows =
+                underlying_block::underlyings_of(data, underlying_role_of(block->name));
+            if (rows.empty())
+                continue;
+            auto container = product.child(f.name);
+            for (const auto* row : rows)
+                underlying_block::write_underlying(container.append(block->name), *row);
+        }
+    }
+}
+
+}
 namespace {
 
-auto read_scripted_row(xml::record_reader trade,
-                       std::string_view trade_type) -> std::optional<scripted_instrument> {
-    if (trade_type == "ScriptedTrade") {
-        auto r = scripted_instrument_projection_make_base(trade_type);
-        if (const auto named = trade.child("AsianBasketOptionData")) {
-            r.script_name = "AsianBasketOption";
-            r.underlyings_json = json_array(addresses_of(vector_values(*named, "Underlyings")));
-            r.parameters_json = make_params_json(own_text(*named, "PutCall"),
-                                                 number_text(own_text(*named, "Notional")),
-                                                 number_text(own_text(*named, "Strike")));
-            return r;
-        }
-        if (const auto named = trade.child("AverageStrikeBasketOptionData")) {
-            r.script_name = "AverageStrikeBasketOption";
-            r.underlyings_json = json_array(addresses_of(vector_values(*named, "Underlyings")));
-            r.parameters_json = make_params_json(
-                own_text(*named, "PutCall"), number_text(own_text(*named, "Notional")), 0.0);
-            return r;
-        }
-        if (const auto data = trade.child("ScriptedTradeData")) {
-            if (const auto name = data->text("ScriptName"))
-                r.script_name = *name;
-            std::string npv;
-            if (const auto script = data->child("Script")) {
-                if (const auto code = script->text("Code"))
-                    r.script_body = *code;
-                if (const auto value = script->text("NPV"))
-                    npv = *value;
-            }
-            if (const auto values = data->child("Data")) {
-                std::string params = "{";
-                bool first = true;
-                // The script's NPV is a name the schema requires, and the
-                // instrument's flat table has no column for it, so it rides in
-                // the parameters the table does carry.
-                if (!npv.empty()) {
-                    params += "\"NPV\":\"" + npv + "\"";
-                    first = false;
-                }
-                for (const auto& number : values->children("Number")) {
-                    if (!first)
-                        params += ",";
-                    params += "\"" + number.text("Name").value_or("") + "\":\"" +
-                              number.text("Value").value_or("") + "\"";
-                    first = false;
-                }
-                if (!first)
-                    r.parameters_json = params + "}";
+auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
+    -> std::optional<scripted_instrument> {
+    if (trade_type != "ScriptedTrade")
+        return std::nullopt;
 
-                const auto indices = values->children("Index");
-                if (!indices.empty()) {
-                    std::vector<std::string> names;
-                    for (const auto& index : indices)
-                        names.push_back(script_index_address_of(index.text("Value").value_or("")));
-                    r.underlyings_json = json_array(names);
-                }
-            }
+    auto r = scripted_instrument_projection_make_base(trade_type);
+    if (const auto data = trade.child("ScriptedTradeData")) {
+        r.data_element = "ScriptedTradeData";
+        if (const auto name = data->text("ScriptName"))
+            r.script_name = *name;
+        if (const auto script = data->child("Script")) {
+            if (const auto code = script->text("Code"))
+                r.script_body = *code;
+            if (const auto npv = script->text("NPV"))
+                r.script_npv = *npv;
         }
         return r;
     }
 
-    if (trade_type == "DoubleDigitalOption") {
-        auto r = scripted_instrument_projection_make_base(trade_type);
-        r.script_name = "DoubleDigitalOption";
-        if (const auto d = trade.child("DoubleDigitalOptionData")) {
-            std::vector<std::string> names;
-            std::vector<std::string> types;
-            for (const auto* name : {"Underlying1", "Underlying2", "Underlying3", "Underlying4"}) {
-                if (const auto u = d->child(name)) {
-                    if (const auto n = u->text("Name")) {
-                        types.push_back(u->text("Type").value_or(""));
-                        names.push_back(underlying_address_of(types.back(), *n));
-                    }
-                }
-            }
-            r.underlyings_json = json_array(names);
-            const auto number = [&](std::string_view name) {
-                return std::to_string(decimal_as_double(*d, name).value_or(0));
-            };
-            std::string params = "{\"BinaryPayout\":" + number("BinaryPayout") +
-                                 ",\"BinaryLevel1\":" + number("BinaryLevel1") +
-                                 ",\"BinaryLevel2\":" + number("BinaryLevel2") + ",\"Type1\":\"" +
-                                 d->text("Type1").value_or("") + "\"" + ",\"Type2\":\"" +
-                                 d->text("Type2").value_or("") + "\"" + ",\"Position\":\"" +
-                                 d->spelling("Position").value_or("") + "\"" + ",\"Expiry\":\"" +
-                                 d->text("Expiry").value_or("") + "\"" + ",\"Settlement\":\"" +
-                                 d->text("Settlement").value_or("") + "\"" + ",\"PayCcy\":\"" +
-                                 d->spelling("PayCcy").value_or("") + "\"";
-            for (std::size_t i = 0; i < types.size(); ++i)
-                if (!types[i].empty())
-                    params += ",\"" + underlying_type_key(i) + "\":\"" + types[i] + "\"";
-            r.parameters_json = params + "}";
-        }
-        return r;
+    // A named product states its variables on the element of the product, so the
+    // element's name is the script the trade runs.
+    if (const auto element = named_product_of(trade)) {
+        r.data_element = *element;
+        r.script_name = element->substr(0, element->size() - 4);
     }
-
-    if (trade_type == "PerformanceOption_01") {
-        auto r = scripted_instrument_projection_make_base(trade_type);
-        r.script_name = "PerformanceOption_01";
-        if (const auto d = trade.child("PerformanceOption01Data")) {
-            std::vector<std::string> names;
-            std::vector<std::string> types;
-            std::string underlying_terms;
-            if (const auto underlyings = d->child("Underlyings"))
-                for (const auto& u : underlyings->children("Underlying")) {
-                    const auto index = std::to_string(names.size() + 1);
-                    types.push_back(u.text("Type").value_or(""));
-                    names.push_back(
-                        underlying_address_of(types.back(), u.text("Name").value_or("")));
-                    if (const auto weight = u.decimal("Weight"))
-                        underlying_terms +=
-                            ",\"UnderlyingWeight" + index + "\":\"" + weight->to_string() + "\"";
-                    if (const auto price_type = u.text("PriceType"))
-                        underlying_terms +=
-                            ",\"UnderlyingPriceType" + index + "\":\"" + *price_type + "\"";
-                }
-            r.underlyings_json = json_array(names);
-
-            const auto number = [&](std::string_view name) {
-                return std::to_string(decimal_as_double(*d, name).value_or(0));
-            };
-            std::string params = "{\"NotionalAmount\":" + number("NotionalAmount") +
-                                 ",\"ParticipationRate\":" + number("ParticipationRate") +
-                                 ",\"Strike\":" + number("Strike") + ",\"ValuationDate\":\"" +
-                                 d->text("ValuationDate").value_or("") + "\"" +
-                                 ",\"SettlementDate\":\"" + d->text("SettlementDate").value_or("") +
-                                 "\"" + ",\"Position\":\"" + d->spelling("Position").value_or("") +
-                                 "\"" + ",\"PayCcy\":\"" + d->spelling("PayCcy").value_or("") +
-                                 "\"";
-            std::string joined;
-            if (const auto prices = d->child("StrikePrices")) {
-                for (const auto& strike : prices->decimals("StrikePrice")) {
-                    if (!joined.empty())
-                        joined += ",";
-                    joined += strike.to_string();
-                }
-            }
-            params += ",\"StrikePrices\":\"" + joined + "\"";
-            if (const auto included = scalar_terms::read_text(*d, "StrikeIncluded");
-                included && d->has("StrikeIncluded"))
-                params += ",\"StrikeIncluded\":\"" + *included + "\"";
-            for (std::size_t i = 0; i < types.size(); ++i)
-                if (!types[i].empty())
-                    params += ",\"" + underlying_type_key(i) + "\":\"" + types[i] + "\"";
-            r.parameters_json = params + underlying_terms + "}";
-        }
-        return r;
-    }
-
-    return std::nullopt;
+    return r;
 }
 
 }
 
 auto read_scripted_instrument(xml::record_reader trade, std::string_view trade_type)
     -> std::optional<trading::domain::trade_instrument> {
+    const auto* legacy = legacy_product_of(trade_type);
+    if (legacy != nullptr) {
+        auto row = scripted_instrument_projection_make_base(trade_type);
+        row.script_name = std::string(trade_type);
+        row.data_element = std::string(legacy->element);
+        scripted_instrument_data data{std::move(row)};
+        if (const auto product = trade.child(legacy->element)) {
+            read_legacy_members(data, *product);
+            read_legacy_underlyings(data, *product);
+        }
+        return trading::domain::trade_instrument{std::move(data)};
+    }
+
     auto row = read_scripted_row(trade, trade_type);
     if (!row)
         return std::nullopt;
 
     scripted_instrument_data data{std::move(*row)};
-    if (trade_type == "ScriptedTrade") {
-        if (const auto generic = trade.child("ScriptedTradeData")) {
-            data.instrument.data_element = "ScriptedTradeData";
-            if (const auto values = generic->child("Data"))
-                read_generic_parameters(data, *values);
-        } else if (const auto element = named_product_of(trade)) {
-            data.instrument.data_element = *element;
-            if (data.instrument.script_name.empty())
-                data.instrument.script_name = element->substr(0, element->size() - 4);
-            read_named_parameters(data, *trade.child(*element));
-        }
+    if (trade.child("ScriptedTradeData")) {
+        if (const auto values = trade.child("ScriptedTradeData")->child("Data"))
+            read_generic_parameters(data, *values);
+    } else if (const auto element = named_product_of(trade)) {
+        read_named_parameters(data, *trade.child(*element));
     }
     return trading::domain::trade_instrument{std::move(data)};
 }
@@ -749,139 +645,39 @@ auto write_scripted_instrument(xml::record_writer& trade,
         return false;
     const auto* r = &carrier->instrument;
 
-    // A trade whose parameters are rows states them in the form it was read
-    // in: the generic ScriptedTradeData, or the named product's own element.
-    if (trade_type == "ScriptedTrade" && !carrier->parameters.empty() && r->data_element &&
-        *r->data_element != "ScriptedTradeData") {
+    if (const auto* legacy = legacy_product_of(trade_type)) {
+        auto product = trade.child(legacy->element);
+        write_legacy_members(product, *carrier);
+        write_legacy_underlyings(product, *carrier);
+        return true;
+    }
+
+    if (trade_type != "ScriptedTrade")
+        return false;
+
+    // A trade states its variables in the form it was read in: the generic
+    // ScriptedTradeData, or the named product's own element.
+    if (r->data_element && *r->data_element != "ScriptedTradeData") {
         auto product = trade.child(*r->data_element);
         write_named_parameters(product, *carrier);
         return true;
     }
 
-    if (trade_type == "ScriptedTrade") {
-        auto data = trade.child("ScriptedTradeData");
-        if (!r->script_name.empty())
-            data.set_text("ScriptName", r->script_name);
-        if (!r->script_body.empty())
-            data.child("Script").set_text("Code", r->script_body);
-
-        // The schema requires the data element even when the row states no
-        // parameter, so it is stated before anything fills it.
-        auto values = data.child("Data");
-        const auto numbers = parse_json_object(r->parameters_json);
-        if (!carrier->parameters.empty()) {
-            for (const auto& [name, value] : numbers)
-                if (name == "NPV")
-                    data.child("Script").set_text("NPV", value);
-            write_generic_parameters(values, *carrier);
-            return true;
-        }
-        for (const auto& [name, value] : numbers) {
-            if (name == "NPV") {
-                data.child("Script").set_text("NPV", value);
-                continue;
-            }
-            auto number = values.append("Number");
-            number.set_text("Name", name);
-            number.set_text("Value", value);
-        }
-        const auto indices = parse_json_string_array(r->underlyings_json);
-        for (const auto& value : indices) {
-            auto index = values.append("Index");
-            index.set_text("Name", "Underlying");
-            index.set_text("Value", ore_name_of(value));
-        }
-        return true;
+    auto data = trade.child("ScriptedTradeData");
+    if (!r->script_name.empty())
+        data.set_text("ScriptName", r->script_name);
+    // The schema requires the variable the script's result lands in beside the
+    // body, so the two are written together or not at all.
+    if (!r->script_body.empty() && !r->script_npv.empty()) {
+        auto script = data.child("Script");
+        script.set_text("Code", r->script_body);
+        script.set_text("NPV", r->script_npv);
     }
-
-    if (trade_type == "DoubleDigitalOption") {
-        auto d = trade.child("DoubleDigitalOptionData");
-        const auto params = parse_json_object(r->parameters_json);
-        for (const auto& [key, value] : params) {
-            if (key == "Type1" || key == "Type2" || key == "Expiry" || key == "Settlement")
-                d.set_text(key, value);
-            else if (key == "Position")
-                d.set_spelling("Position", value, "long short");
-            else if (key == "PayCcy")
-                d.set_spelling("PayCcy", value, "currency");
-            else if (underlying_of_type_key(key))
-                continue;
-            else
-                set_decimal_from_double(d, key, std::stod(value));
-        }
-        const auto names = parse_json_string_array(r->underlyings_json);
-        const auto types = underlying_types_of(params);
-        for (std::size_t i = 0; i < names.size() && i < 4; ++i) {
-            auto underlying = d.child("Underlying" + std::to_string(i + 1));
-            underlying.set_text("Name", underlying_name_of(names[i]));
-            set_underlying_type(underlying, types, i);
-        }
-        return true;
-    }
-
-    if (trade_type == "PerformanceOption_01") {
-        auto d = trade.child("PerformanceOption01Data");
-        std::vector<std::string> strike_prices;
-        const auto params = parse_json_object(r->parameters_json);
-        for (const auto& [key, value] : params) {
-            if (key == "Position")
-                d.set_spelling("Position", value, "long short");
-            else if (key == "PayCcy")
-                d.set_spelling("PayCcy", value, "currency");
-            else if (key == "ValuationDate" || key == "SettlementDate")
-                d.set_text(key, value);
-            else if (key == "StrikeIncluded")
-                scalar_terms::write_text(d, key, value);
-            else if (key.starts_with("UnderlyingWeight") || key.starts_with("UnderlyingPriceType"))
-                continue;
-            else if (key == "StrikePrices") {
-                std::size_t start = 0;
-                while (start < value.size()) {
-                    const auto comma = value.find(',', start);
-                    const auto length =
-                        comma == std::string::npos ? value.size() - start : comma - start;
-                    const auto token = value.substr(start, length);
-                    if (!token.empty())
-                        strike_prices.push_back(token);
-                    if (comma == std::string::npos)
-                        break;
-                    start = comma + 1;
-                }
-            } else if (underlying_of_type_key(key))
-                continue;
-            else
-                set_decimal_from_double(d, key, std::stod(value));
-        }
-        if (!strike_prices.empty()) {
-            auto prices = d.child("StrikePrices");
-            for (const auto& price : strike_prices) {
-                if (const auto parsed = ores::utility::decimal::decimal::from_string(price))
-                    prices.append_decimal("StrikePrice", *parsed);
-            }
-        }
-        const auto names = parse_json_string_array(r->underlyings_json);
-        if (!names.empty()) {
-            const auto types = underlying_types_of(params);
-            auto underlyings = d.child("Underlyings");
-            for (std::size_t i = 0; i < names.size(); ++i) {
-                auto underlying = underlyings.append("Underlying");
-                underlying.set_text("Name", underlying_name_of(names[i]));
-                set_underlying_type(underlying, types, i);
-                const auto index = std::to_string(i + 1);
-                for (const auto& [key, value] : params) {
-                    if (key == "UnderlyingWeight" + index) {
-                        if (const auto parsed = ores::utility::decimal::decimal::from_string(value))
-                            underlying.set_decimal("Weight", *parsed);
-                    } else if (key == "UnderlyingPriceType" + index) {
-                        scalar_terms::write_text(underlying, "PriceType", value);
-                    }
-                }
-            }
-        }
-        return true;
-    }
-
-    return false;
+    // The schema requires the data element even when the trade states no
+    // variable, so it is stated before anything fills it.
+    auto values = data.child("Data");
+    write_generic_parameters(values, *carrier);
+    return true;
 }
 
 }

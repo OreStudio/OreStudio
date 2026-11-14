@@ -386,6 +386,9 @@ private:
 #include <boost/uuid/uuid.hpp>
 {{/has_uuid_left_or_right}}
 #include "ores.logging/make_logger.hpp"
+{{! The junction header holds a context ctx_ member, so it needs the definition
+    while the entity header above only names the context and takes the forward
+    declaration. }}
 #include "ores.database/domain/context.hpp"
 #include "ores.{{component_include}}/domain/{{name_singular}}.hpp"
 #include "ores.utility/domain/protocol.hpp"

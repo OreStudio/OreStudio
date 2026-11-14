@@ -26,9 +26,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                                   |
+| State        | STARTED                                |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | The repository family is done; the baseline holds three archetypes. |
+| Now          | One family done and merged-pending; the baseline holds three archetypes. |
 | Waiting on   | Nothing.                               |
 | Next         | The nats registrar and trade-type families. |
 | Last touched | 2026-11-13                             |
@@ -83,7 +83,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files the change touches | 1088: 1079 generated C++ files, 6 templates, 1 baseline, 2 agile docs | =git diff --name-only origin/main...HEAD= | =f2594af9ae= |
+| Generated repository headers that take the declaration | 539 | =git diff --name-only origin/main...HEAD | grep '_repository\.hpp$' | xargs grep -l context_fwd.hpp | wc -l= | =2e1c0fcc14= |
+| Repository headers that keep the definition because they hold a member | 29, each carrying =context ctx_= | =grep -rl 'ores.database/domain/context.hpp' projects --include=*_repository.hpp= | =2e1c0fcc14= |
+| Archetypes the check's baseline held before | 5 | =check_forward_declarable_includes.py= | =2e1c0fcc14= |
+| Archetypes it holds after | 3: =cpp_nats_registrar=, =cpp_trade_type_digest=, =cpp_trade_type_writer= | the same check | =2e1c0fcc14= |
+| Objects that depend on the repository headers | unchanged by this commit; the implementations construct a context either way | not measured before and after, see Notes | =2e1c0fcc14= |
+| Full build of the change | 539 steps, 0 failures, 37 minutes | =compass build --preset linux-clang-release-ninja= | =2e1c0fcc14= |
+| Suites that read repositories | 5 of 5, 606 s | =compass test run -- -R 'ores.database.tests|ores.refdata.core.tests|ores.trading.core.tests|ores.marketdata.core.tests|ores.marketdata.service.tests'= | =2e1c0fcc14= |
 
 * Notes
 
@@ -110,7 +117,7 @@ The first family is done and the check that guards the rule carries the rest.
   definition it used to get from the header by accident. =cpp_convention_family_units=
   takes the declaration with it. The baseline falls from five archetypes to
   three: =cpp_nats_registrar=, =cpp_trade_type_digest= and =cpp_trade_type_writer=.
-- Measured at =2e1c0fcc14=: 1086 files regenerated, build clean (539 steps, 37
+- Measured at =2e1c0fcc14=: 1079 generated files, build clean (539 steps, 37
   minutes), and the five suites that read repositories pass (5 of 5, 606 s). The
   objects that rebuild when =context.hpp= is touched do not move, because the
   implementations construct a context and read it either way; what moves is what
@@ -127,6 +134,18 @@ keeps =context.hpp=. The check that guards this rule can see a header that
 includes too much and cannot see one that includes too little, so this is a fact
 about the archetype only a build reports. The next family should be measured the
 same way before its PR claims a saving.
+
+*What this PR does not measure.* The acceptance asks for the objects that
+depend on the header and the rebuild time after it is touched, before and after.
+The rebuild time is recorded; the dependency count is not, because the
+instruments measure a tree and this branch and =main= differ by 1079 generated
+files, so a before-and-after pair needs a build of each. The analysis already
+says the answer in advance: forward declarations in the context's users buy
+nothing for rebuilds, because the implementations construct a context. Claiming
+a rebuild saving here would be the wrong claim; the honest one is that the
+header a consumer of a repository parses no longer sets off the definition, and
+that the next family should measure before and after rather than reason about
+it.
 
 *What the next family needs.* =cpp_nats_registrar= is 556 headers and its
 implementation includes the definition on its own, so the swap is one line.

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :build:compilation:headers:database:sprint_30:v0:
 #+created: 2026-11-11
-#+updated: 2026-11-11
+#+updated: 2026-11-13
 #+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -63,6 +63,11 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 - Rebuild radius and parse cost are separate measures, and this story is about
   the first. Forward declarations reach only the types held by pointer or
   reference.
+- A header family is not uniform, and only a compile says so. The repository
+  archetype emits two headers, and the junction one carries a =context ctx_=
+  member in 29 generated files, so it keeps the definition while its 539
+  siblings take the declaration. The check that guards the rule can see a header
+  that includes too much and cannot see one that includes too little.
 - The copies are real and come from codegen: 21874 by-value =context=
   parameters, 11141 of them emitted by the =repository= and =service=
   archetypes. Changing them to =const&= is worth doing for run time and for the

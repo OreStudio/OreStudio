@@ -26,11 +26,11 @@ Only the script body is text. The parameters, their types and their array values
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Done but for the scripted products' own pricing, which two other tasks own. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The scripted trades need the engine's BaseCcy per trade and the script library in the run, which are other tasks. |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -89,7 +89,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Projection round trips | 1368 assertions, 39 cases, all pass | =ores.ore.core.tests "[projection]"= | =396d0a936f= |
+| Every trade of ORE's example portfolios, value for value | 266 assertions, 1 case, all pass | =ores.ore.core.tests "every trade in the ORE example corpus comes back as it was read"= | =396d0a936f= |
+| The ORE core suite | 520110 assertions, 539 cases, all pass | =ores.ore.core.tests= | =2ed46fc776= |
+| The planner's population | 1828 assertions, 59 cases, all pass | =ores.synthetic.core.tests "[trade_population]"= | =396d0a936f= |
+| The trading API suite | 16383 assertions, 4429 cases, all pass | =ores.trading.api.tests= | =2ed46fc776= |
+| The shell's trading suite | 3756 assertions, 1330 cases, all pass | =ores.shell.trading.tests= | =2ed46fc776= |
+| The report over the provisioned book | completed; 1440 metric rows; 538 errors, 311 warnings, 577 infos | =report_operations trigger-report-instance=, then =ores_reporting_report_error_events_tbl= | =2ed46fc776= |
+| The trades the report exported | 475 trades, and the scripted products' elements are stated whole from their rows | =Input/portfolio.xml= of the run's job | =2ed46fc776= |
+| The failures the scripted products still report | 48 rows ask for =BaseCcy=, 9 ask for the =AsianBasketOption= script library, 11 for basket data | =ores_reporting_report_error_events_tbl=, grouped by message | =2ed46fc776= |
 
 * Notes
 
@@ -134,3 +142,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The scripted instrument holds no JSON column. A scripted trade's variables are
+=scripted_parameter= rows and their list values =scripted_parameter_value= rows,
+an index variable holds an oresmd address, and the ORE projection builds the
+document's typed lists from the rows and reads them back into rows.
+
+Measured on the provisioned Acme book: the report completes, exports 475 trades,
+and states =DoubleDigitalOptionData=, =PerformanceOption01Data= and
+=ScriptedTradeData= whole from the rows, the underlyings resolved from their
+oresmd addresses back to the ORE names the document spells. Every trade of ORE's
+example portfolios survives a read and a write through the rows with no value
+changed, which is the proof the boundary is faithful.
+
+The scripted products still do not price, and did not price before this task.
+The report states the two reasons: the engine reads =BaseCcy= of every scripted
+trade and no configuration states it, which is a setting of the trade rather than
+of a pair, and a generated =ScriptedTrade= states the generic form with a script
+the run publishes no library for.

@@ -156,6 +156,7 @@ the test seeds a IborFallback segment rather than the kind the generator names.
 :target_column: code
 :nullable:      true
 :error_message: Invalid ibor_index: %. No active floating index type found with this code.
+:system_tenant_visible: true
 :END:
 
 ** rfr_index
@@ -164,6 +165,7 @@ the test seeds a IborFallback segment rather than the kind the generator names.
 :target_column: code
 :nullable:      true
 :error_message: Invalid rfr_index: %. No active floating index type found with this code.
+:system_tenant_visible: true
 :END:
 
 * Insert trigger

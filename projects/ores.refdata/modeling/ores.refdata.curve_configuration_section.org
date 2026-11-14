@@ -104,6 +104,7 @@ std::string("YieldCurves")
 :target_column: code
 :nullable:      false
 :error_message: Invalid section_code: %. No active curve section found with this code.
+:system_tenant_visible: true
 :END:
 
 * SQL

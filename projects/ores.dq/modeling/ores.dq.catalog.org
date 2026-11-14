@@ -84,7 +84,7 @@ std::string(faker::person::fullName())
 
 * Validation function
 :PROPERTIES:
-:tenant_scope: tenant
+:tenant_scope: both
 :order_by:     name
 :END:
 

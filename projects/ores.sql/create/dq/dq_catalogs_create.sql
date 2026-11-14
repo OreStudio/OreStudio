@@ -153,7 +153,7 @@ on delete to "ores_dq_catalogs_tbl" do instead (
 -- Validation function for catalog
 -- Validates that a name exists in the catalogs table.
 -- Returns the validated value, or default if null/empty.
--- Validates against the tenant's own data only.
+-- Validates against both the tenant's own data and the system tenant's canonical set.
 -- =============================================================================
 create or replace function ores_dq_validate_catalog_fn(
     p_tenant_id uuid,
@@ -165,7 +165,8 @@ begin
         perform ores_outcome_raise_fn('missing_field', 'catalog');
     end if;
 
-    -- Allow pass-through if this tenant has no active catalogs yet.
+    -- Allow pass-through if neither this tenant nor the system tenant has
+    -- seeded active catalogs yet (freshly provisioned tenant).
     if not exists (
         select 1 from ores_dq_catalogs_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
@@ -174,7 +175,7 @@ begin
         return p_value;
     end if;
 
-    -- Validate against this tenant's values.
+    -- Validate against this tenant's values and the system tenant's canonical set.
     if not exists (
         select 1 from ores_dq_catalogs_tbl
         where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
@@ -184,7 +185,7 @@ begin
         raise exception 'Invalid catalog: %. Must be one of: %', p_value, (
             select string_agg(name::text, ', ' order by name)
             from ores_dq_catalogs_tbl
-            where tenant_id = p_tenant_id
+            where tenant_id in (p_tenant_id, ores_utility_system_tenant_id_fn())
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';
     end if;

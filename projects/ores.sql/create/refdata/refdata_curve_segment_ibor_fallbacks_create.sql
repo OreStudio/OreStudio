@@ -100,7 +100,8 @@ begin
     if NEW.ibor_index is not null then
         if not exists (
             select 1 from ores_refdata_floating_index_types_tbl
-            where tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
+            where (tenant_id = NEW.tenant_id
+               or tenant_id = ores_utility_system_tenant_id_fn())
               and code = NEW.ibor_index
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then
@@ -113,7 +114,8 @@ begin
     if NEW.rfr_index is not null then
         if not exists (
             select 1 from ores_refdata_floating_index_types_tbl
-            where tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
+            where (tenant_id = NEW.tenant_id
+               or tenant_id = ores_utility_system_tenant_id_fn())
               and code = NEW.rfr_index
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) then

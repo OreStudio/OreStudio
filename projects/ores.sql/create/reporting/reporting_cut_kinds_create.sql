@@ -112,7 +112,7 @@ begin
     -- Validate family_code (soft FK to ores_reporting_cut_families_tbl)
     if not exists (
         select 1 from ores_reporting_cut_families_tbl
-        where (tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
+        where (tenant_id = NEW.tenant_id
            or tenant_id = ores_utility_system_tenant_id_fn())
           and code = NEW.family_code
           and valid_to = ores_utility_infinity_timestamp_fn()
@@ -125,7 +125,7 @@ begin
     if NEW.approval_kind_code is not null then
         if not exists (
             select 1 from ores_inbox_approval_kinds_tbl
-            where (tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
+            where (tenant_id = NEW.tenant_id
                or tenant_id = ores_utility_system_tenant_id_fn())
               and code = NEW.approval_kind_code
               and valid_to = ores_utility_infinity_timestamp_fn()
@@ -138,7 +138,7 @@ begin
     -- Validate resolution_rule_code (soft FK to ores_reporting_cut_resolution_rules_tbl)
     if not exists (
         select 1 from ores_reporting_cut_resolution_rules_tbl
-        where (tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
+        where (tenant_id = NEW.tenant_id
            or tenant_id = ores_utility_system_tenant_id_fn())
           and code = NEW.resolution_rule_code
           and valid_to = ores_utility_infinity_timestamp_fn()

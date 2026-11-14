@@ -114,7 +114,8 @@ begin
     -- Validate diary_entry_type (soft FK to ores_refdata_diary_entry_types_tbl)
     if not exists (
         select 1 from ores_refdata_diary_entry_types_tbl
-        where tenant_id in (NEW.tenant_id, ores_utility_system_tenant_id_fn())
+        where (tenant_id = NEW.tenant_id
+           or tenant_id = ores_utility_system_tenant_id_fn())
           and code = NEW.diary_entry_type
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then

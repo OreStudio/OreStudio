@@ -185,6 +185,7 @@ drop function if exists ores_refdata_validate_tenor_schedule_fn;
 :nullable:      true
 :error_message: Invalid diary_entry_type: %. No active diary entry type found with this code.
 :list_by:       true
+:system_tenant_visible: true
 :END:
 
 * Validation function

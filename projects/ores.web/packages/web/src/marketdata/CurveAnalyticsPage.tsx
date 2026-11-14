@@ -93,7 +93,11 @@ export function CurveAnalyticsPage(): ReactNode {
     const analytics = useQuery({
         queryKey: key,
         queryFn: () =>
-            api.curveAnalytics({ instrumentId: chosen?.id ?? '', asOf: asOfInstant(asOf) }),
+            api.curveAnalytics({
+                instrumentId: chosen?.id ?? '',
+                asOf: asOfInstant(asOf),
+                compareAt: compare === '' ? '' : asOfInstant(compare),
+            }),
         enabled: chosen !== undefined,
         retry: false,
     });
@@ -389,7 +393,9 @@ export function CurveAnalyticsPage(): ReactNode {
                         </p>
                     )}
                     <Notice tone="info">{t('marketdata.curveAnalytics.shiftNote')}</Notice>
-                    <Notice tone="info">{t('marketdata.curveAnalytics.noPriorClose')}</Notice>
+                    {data.compare_at === '' && (
+                        <Notice tone="info">{t('marketdata.curveAnalytics.noPriorClose')}</Notice>
+                    )}
                 </>
             )}
         </div>

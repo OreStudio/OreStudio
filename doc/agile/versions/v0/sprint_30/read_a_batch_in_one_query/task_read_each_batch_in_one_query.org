@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 02E729DE-FEA1-4D7A-9C60-0A6048B43C49
+:END:
+#+title: Task: Read each batch in one query in the service template
+#+description: The service template reads each row of a get-many, put-many and delete-many batch by key; read the batch's rows with one query per path, chosen by key shape.
+#+type: task
+#+level: s1
+#+filetags: :codegen:performance:services:read_a_batch_in_one_query:sprint_30:v0:
+#+owner: marco
+#+branch: feature/read-each-batch-in-one-query
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4E2AD35F-121F-452F-8D01-8B27723022B8][Read a batch of rows in one query in the generated services]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The generated get-many, put-many and delete-many paths read their rows with one query per batch, and put-many answers from one read of the rows it wrote.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:4E2AD35F-121F-452F-8D01-8B27723022B8][Read a batch of rows in one query in the generated services]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The service template reads the current rows of each batch path with one query.
+- A put-many still refuses the whole batch when one row fails its precondition, and writes nothing.
+- The regenerated services build and pass their suites, and the codegen drift gate is clean.
+- A 1,000-row put of market observations is measured before and after, with the command, on the same environment.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

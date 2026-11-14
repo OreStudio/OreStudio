@@ -8,7 +8,7 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch: feature/take-the-dq-pipeline-end-to-end
-#+pr:
+#+pr: 4711
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -90,7 +90,7 @@ action today, which is why an empty catalogue after a recreate went unnoticed.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4711][#4711]] | [agile] Record the Qt source and screens for the DQ port |
 
 * Review
 

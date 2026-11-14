@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch: feature/serve-the-reporting-cuts
+#+branch: feature/serve-the-reporting-schedule-writes
 #+pr: 4696
 #+blocked_on:
 #+blocked_since:

@@ -8,7 +8,7 @@
 #+filetags: :appleclang_min_and_the_generated_links:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/appleclang-min-and-the-generated-links
-#+pr:
+#+pr: 4703
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4703][#4703]] | [ci] Fix the AppleClang min call and the generated link drift |
 
 * Review
 

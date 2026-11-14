@@ -21,6 +21,8 @@
 #define ORES_SYNTHETIC_CORE_TESTS_ORE_EXAMPLE_CONVENTIONS_HPP
 
 #include "ores.marketdata.api/conventions/convention_lookup.hpp"
+#include "ores.synthetic.api/domain/trade_population_plan.hpp"
+#include <chrono>
 #include <string>
 
 namespace ores::synthetic::tests {
@@ -91,6 +93,46 @@ inline marketdata::conventions::convention_set ore_example_conventions() {
             .inflation_swaps = {inflation("UKRPIX", "UK", "2M", false),
                                 inflation("USCPIA", "US", "3M", true),
                                 inflation("BECPIHL", "TARGET", "3M", false)}};
+}
+
+/**
+ * @brief The part of a generation scope the trade tests state the same way.
+ *
+ * The bands, the anchor, the seed and every reference the planners draw on are
+ * one recipe, so each test states the same values and a reference added here
+ * reaches them all. The caller states what it is that varies: the config, the
+ * party, how many trades a book holds, the book, the counterparties and the
+ * trader.
+ */
+inline domain::trade_generation_scope trade_generation_scope_recipe() {
+    domain::trade_generation_scope scope;
+    scope.min_tenor_code = "1Y";
+    scope.max_tenor_code = "10Y";
+    scope.min_notional = 100000.0;
+    scope.max_notional = 10000000.0;
+    scope.as_of_date = std::chrono::year{2026} / 1 / 2;
+    scope.seed = 7;
+    scope.currency_code = "EUR";
+    scope.equity_underlyings = {
+        domain::equity_underlying_reference{.code = ".SPX", .kind = "index", .currency = "USD"},
+        domain::equity_underlying_reference{.code = "MSFT.O", .kind = "share", .currency = "USD"},
+        domain::equity_underlying_reference{
+            .code = ".STOXX50E", .kind = "index", .currency = "EUR"},
+        domain::equity_underlying_reference{
+            .code = "GB0005405286", .kind = "share", .currency = "GBP"}};
+    scope.commodities = {
+        domain::commodity_reference{.code = "NYMEX:CL", .unit = "bbl", .quotation_currency = "USD"},
+        domain::commodity_reference{
+            .code = "NYMEX:NG", .unit = "MMBtu", .quotation_currency = "USD"}};
+    scope.floating_index_codes = {"EUR-EURIBOR-6M", "EUR-EONIA", "EUR-ESTR", "USD-SOFR"};
+    scope.inflation_index_codes = {"UKRPIX", "USCPIA", "BECPIHL"};
+    scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
+    scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
+    scope.conventions = ore_example_conventions();
+    // The curve a bond is discounted on, as a generation config names it; the
+    // Products example builds this one.
+    scope.reference_curve_id = "EUR-EURIBOR-6M";
+    return scope;
 }
 
 }

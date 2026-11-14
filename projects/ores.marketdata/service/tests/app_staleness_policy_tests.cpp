@@ -28,7 +28,7 @@ using ores::marketdata::service::app::staleness_policy;
 using std::chrono::seconds;
 using std::chrono::system_clock;
 
-system_clock::time_point at(seconds offset) {
+system_clock::time_point instant_at(seconds offset) {
     return system_clock::time_point{} + std::chrono::hours{24 * 365 * 50} + offset;
 }
 
@@ -36,27 +36,27 @@ system_clock::time_point at(seconds offset) {
 
 TEST_CASE("a_value_inside_the_threshold_is_not_stale", policy_tags) {
     staleness_policy::configure(60);
-    const auto now = at(seconds{1000});
+    const auto now = instant_at(seconds{1000});
     CHECK(staleness_policy::age_seconds(now - seconds{60}, now) == 60);
     CHECK(staleness_policy::is_stale(now - seconds{60}, now) == false);
 }
 
 TEST_CASE("a_value_past_the_threshold_is_stale", policy_tags) {
     staleness_policy::configure(60);
-    const auto now = at(seconds{1000});
+    const auto now = instant_at(seconds{1000});
     CHECK(staleness_policy::is_stale(now - seconds{61}, now) == true);
 }
 
 TEST_CASE("a_value_with_no_instant_is_stale_and_has_no_age", policy_tags) {
     staleness_policy::configure(60);
-    const auto now = at(seconds{1000});
+    const auto now = instant_at(seconds{1000});
     CHECK(staleness_policy::age_seconds(system_clock::time_point{}, now) == 0);
     CHECK(staleness_policy::is_stale(system_clock::time_point{}, now) == true);
 }
 
 TEST_CASE("an_instant_after_now_has_no_negative_age", policy_tags) {
     staleness_policy::configure(60);
-    const auto now = at(seconds{1000});
+    const auto now = instant_at(seconds{1000});
     CHECK(staleness_policy::age_seconds(now + seconds{30}, now) == 0);
     CHECK(staleness_policy::is_stale(now + seconds{30}, now) == false);
 }

@@ -68,6 +68,7 @@ namespace fs = std::filesystem;
 using namespace ores::logging;
 using namespace ores::synthetic;
 using namespace ores::synthetic::service;
+using namespace ores::synthetic::tests;
 using ores::ore::xml::document;
 using ores::platform::filesystem::file;
 
@@ -87,50 +88,29 @@ const boost::uuids::uuid export_trader_account =
 /// How many trades of each type a recorded portfolio holds.
 constexpr std::uint32_t trades_per_type = 2;
 
-const std::vector<std::string> asset_classes = {
-    "bond", "commodity", "credit", "equity", "fx", "inflation", "interest_rates", "scripted"};
+/// The classes a planner draws, as the strings the scope and the planners take.
+const std::vector<std::string> asset_classes = [] {
+    std::vector<std::string> codes;
+    for (const auto code : planned_asset_classes())
+        codes.emplace_back(code);
+    return codes;
+}();
 
 /*
  * A scope of the class on one book. A planner draws its codes by the slot's
  * position, so a book of twice its code count states each code twice.
  */
 domain::trade_generation_scope scope_of(const std::string& asset_class_code) {
-    domain::trade_generation_scope scope;
+    auto scope = trade_generation_scope_recipe();
     scope.config_id = export_config_id;
     scope.party_id = export_party_id;
     scope.asset_class_code = asset_class_code;
-    scope.min_tenor_code = "1Y";
-    scope.max_tenor_code = "10Y";
-    scope.min_notional = 100000.0;
-    scope.max_notional = 10000000.0;
-    scope.as_of_date = std::chrono::year{2026} / 1 / 2;
-    scope.seed = 7;
     scope.trades_per_book =
         trades_per_type * static_cast<std::uint32_t>(planner_for(asset_class_code).code_count());
     scope.book_ids = {book};
     scope.counterparty_ids = {export_bank, export_second_bank};
     scope.issuer_ids = {export_bank, export_second_bank};
     scope.traders = {domain::trade_population_trader{export_trader_account, "trader.one"}};
-    scope.currency_code = "EUR";
-    scope.equity_underlyings = {
-        domain::equity_underlying_reference{.code = ".SPX", .kind = "index", .currency = "USD"},
-        domain::equity_underlying_reference{.code = "MSFT.O", .kind = "share", .currency = "USD"},
-        domain::equity_underlying_reference{
-            .code = ".STOXX50E", .kind = "index", .currency = "EUR"},
-        domain::equity_underlying_reference{
-            .code = "GB0005405286", .kind = "share", .currency = "GBP"}};
-    scope.commodities = {
-        domain::commodity_reference{.code = "NYMEX:CL", .unit = "bbl", .quotation_currency = "USD"},
-        domain::commodity_reference{
-            .code = "NYMEX:NG", .unit = "MMBtu", .quotation_currency = "USD"}};
-    scope.floating_index_codes = {"EUR-EURIBOR-6M", "EUR-EONIA", "EUR-ESTR", "USD-SOFR"};
-    scope.inflation_index_codes = {"UKRPIX", "USCPIA", "BECPIHL"};
-    scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
-    scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
-    scope.conventions = ores::synthetic::tests::ore_example_conventions();
-    // The curve a bond is discounted on, as a generation config names it; the
-    // Products example builds this one.
-    scope.reference_curve_id = "EUR-EURIBOR-6M";
     return scope;
 }
 

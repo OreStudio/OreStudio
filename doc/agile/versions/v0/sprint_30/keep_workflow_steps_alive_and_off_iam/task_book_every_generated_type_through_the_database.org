@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/book-every-generated-trade-type
+#+pr: 4692
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
-#+updated: 2026-11-12
-#+environment: jolly_knuth
+#+updated: 2026-11-13
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A check books one trade of every generated type through the real tables, so a re
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-12                               |
+| Now          | PR #4692 is raised and the review round is addressed: the check is reworked and green. |
+| Waiting on   | A reviewer.                            |
+| Next         | Merge, then close the task.            |
+| Last touched | 2026-11-13                               |
 
 * Acceptance
 
@@ -56,9 +56,55 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Booking check | 118 assertions pass, every class the planner names | =ores.synthetic.core.tests "every_generated_trade_type_books_through_the_database"= | ed3b576323 |
+| =ores.synthetic.core.tests= | 139 cases, 3230 assertions | =ores.synthetic.core.tests= | ed3b576323 |
+| =ores.trading.core.tests= | 245 cases, 1560 assertions | =ores.trading.core.tests= | ed3b576323 |
 
 * Notes
+
+- The check lives in =ores.synthetic.core.tests=, which already links the
+  trading core service, so it draws each class's population with the planner
+  and books it through =trade_operations_service=. It asks the planner for a
+  population of each class's own code count, so every code the class cycles
+  appears exactly once.
+- Four defects, in the order they appeared. The check found the last three.
+  - The fixture's first attempt wrote a portfolio whose currency was a random
+    code, which the currency validator refuses. The fixture now writes the
+    currency it uses, because the conventions the population draws on name
+    indices in EUR.
+  - The check built the service from a temporary port:
+    =trade_operations_service books(f.ctx, open_books{})=. The service holds the
+    port it asks, so the temporary died at the end of that statement and the
+    first booking read it. That is the segmentation fault a backtrace put inside
+    =book_trade=: the port is the first thing a booking reads once it has
+    checked the instrument rows. The check now names the port, and the service
+    deletes the rvalue overload, so a port that only the constructing statement
+    owns is a compile error and not a crash.
+  - The store holds a trade's counterparty to =ores_refdata_counterparties_tbl=
+    and not to the parties table. The fixture writes a generated counterparty,
+    and the population states that row as its counterparty and its issuer.
+  - The check drew all eight classes from one config, so the second class booked
+    trade ids the first had already written, and every one answered
+    =already_exists=. A config states one asset class, and the planner names a
+    trade from its config, so each class is now drawn from its own config, built
+    with =config_id_for= the way a provisioner builds one.
+- The review round reworked the check and the two stale marketdata lists.
+  - The check named its own eight classes, counted a type it had only
+    attempted, and would pass on a class whose plan held nothing. It now takes
+    the classes =planned_asset_classes()= names, counts a type only when the
+    store answered =ok=, and requires each class to state types and the plan to
+    hold them.
+  - A unity clash between this check's scope and the export test's was two
+    names for one recipe. The recipe the trade tests state the same way now
+    lives in =ore_example_conventions.hpp=, and both tests build on it.
+  - The marketdata helper rename stays, and it is not a side change: main has
+    the collision. =app_staleness_policy_tests.cpp= and
+    =fx_forward_ladder_plan_tests.cpp= each define =at= in one target, so
+    =unity-collisions= reports it on main. The compiler tolerates it because
+    the two files land in different batches today, and the next reshuffle ends
+    that. The two stale marketdata lists stay for the same kind of reason:
+    =cmake-sources= checks every component, so main fails it until they are
+    regenerated.
 
 * Test Scenarios
 
@@ -75,12 +121,32 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4692][#4692]] | [synthetic,trading] Book every generated trade type through the database |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The PR-record commit states no Environment or Co-Authored-By trailer | - | Kept | =compass pr create= writes that commit, and every one on main has this form; it states no environment because the record names none. |
+| 2 | A unity clash between two tests' scopes is one concept renamed apart | =ore_example_conventions.hpp= | Fixed | The shared recipe carries the common part. |
+| 3 | The check hardcodes the eight classes rather than asking the planner | booking tests | Fixed | It uses =planned_asset_classes()=. |
+| 4 | A class with no codes would pass without booking anything | booking tests | Fixed | Each class requires types and a plan that holds them. |
+| 5 | =booked_types= counted attempted types, not booked ones | booking tests | Fixed | A type is counted when the store answered =ok=. |
+| 6 | A refusal names the type but never the column | booking tests | Kept | The store's message names the column, and the =INFO= quotes it. |
+| 7 | The measurement cited a commit that is not an ancestor of the branch | task | Fixed | Measured again on the rebased tree. |
+| 8 | The marketdata test rename looks like scope creep | marketdata tests | Kept | The collision is on main: =unity-collisions= reports the two =at= helpers today. The compiler tolerates it only because the files fall in different batches. |
+| 9 | The port's lifetime is stated twice in the header | trading header | Fixed | The constructor states it; the deleted overload says what it refuses. |
 
 * Result
+
+The check books one trade of every generated type of every asset class the
+planner names, through the real tables: 118 assertions, one population per
+class. Each of the three defects it found is fixed at its cause: the fixture
+writes the counterparty the store holds the trade to, each class is drawn from
+a config of its own, and the service now refuses a temporary port instead of
+crashing on one.
+
+The crash it found was in the check and not in the store. The service let the
+mistake through, though, so it refuses a port that only the constructing
+statement owns. A named port that dies sooner still compiles; the type cannot
+see a lifetime it was not told about.

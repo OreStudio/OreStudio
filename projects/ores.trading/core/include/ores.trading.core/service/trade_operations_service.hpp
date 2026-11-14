@@ -56,8 +56,19 @@ public:
      * whether its book is open, or whether the book allows its product type,
      * would apply those rules to some callers and not others, and the caller
      * that forgot would be the one nobody notices.
+     *
+     * The port must outlive the service, which holds it: a booking asks the
+     * port long after the statement that made the service has ended.
      */
     trade_operations_service(const context& ctx, const book_rules_port& books);
+
+    /**
+     * @brief Refuses a port that only the constructing statement owns.
+     *
+     * The mistake would be a crash inside the first booking, so the compiler
+     * refuses it here, where the reader sees it.
+     */
+    trade_operations_service(context, const book_rules_port&&) = delete;
 
     /**
      * @brief Books a trade: its anchor, its booking and its first state, in

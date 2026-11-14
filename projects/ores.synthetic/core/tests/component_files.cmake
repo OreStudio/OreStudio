@@ -30,6 +30,7 @@ set(files
     "fx_vol_surface_feed_contributor_eventing_integration_tests.cpp"
     "fx_vol_surface_feed_eventing_integration_tests.cpp"
     "fx_vol_surface_feed_expiry_eventing_integration_tests.cpp"
+    "generated_trade_booking_tests.cpp"
     "generated_trade_export_tests.cpp"
     "generated_trade_ore_engine_tests.cpp"
     "generation_context_tests.cpp"

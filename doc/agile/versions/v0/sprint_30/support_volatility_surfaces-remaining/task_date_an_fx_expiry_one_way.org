@@ -26,11 +26,11 @@ One mechanism dates every FX expiry: the pair's roll, month-end rule and calenda
 
 | Field        | Value                                                                                         |
 |--------------|-----------------------------------------------------------------------------------------------|
-| State        | STARTED                                                                                       |
+| State        | DONE                                                                                          |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Implemented and proven by a provisioning run.                                                 |
-| Waiting on   | The user's decision on when to raise the PR.                                                  |
-| Next         | Raise the PR for =fix/keep-the-ladder-run-up-out-of-the-pair-market=.                         |
+| Now          | Nothing.                                                                                      |
+| Waiting on   | Nothing.                                                                                      |
+| Next         | Nothing: the PR carries the work.                                                             |
 | Last touched | 2026-11-14                                                                                    |
 
 * Acceptance
@@ -88,6 +88,8 @@ task and name that file in the Command column.
 | The surfaces a fresh tenant publishes | 17 of 17 provisioning steps completed; 40 surfaces published, 40 converged, 0 violations, 0 pillars beyond tolerance, largest absolute error 0.000493 | =provision tenant --profile acme_demo= (code =acme_verify=) | =8a007e8aa4= |
 | The whole tree | 460 of 460 build steps, no error | =compass build= | =a5fbe40624= |
 | The fleet on that tree | 25 of 25 units running, none failed | =compass services restart= then =compass services status= | =a5fbe40624= |
+| The four suites the change reaches | 4 of 4 pass | =ctest -R "^ores.(analytics.quant\|marketdata.service\|synthetic.api\|synthetic.service).tests$"= | =158aea4492= |
+| A second fresh tenant, after the review fixes | 17 of 17 steps, 40 surfaces, all converged, no violations, largest absolute error 0.00048 | =provision tenant --profile acme_demo= (code =acme_verify_r2=) | =158aea4492= |
 
 * Notes
 

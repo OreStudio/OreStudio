@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 73C239AE-8FCE-4A21-95DB-2243C1432A35
+:END:
+#+title: Task: Model the scripted variables as rows, and build ORE's lists at the boundary
+#+description: A scripted trade's parameters, their declared types and their array values become rows in scripted_parameter and scripted_parameter_value; the three JSON columns on scripted_instrument are removed. An index variable holds an oresmd URI, validated against the market series identity, and the ORE projection produces the ORE index name at the boundary on export and reads it back into the URI on import. No migration: the database is dropped and recreated.
+#+type: task
+#+level: s1
+#+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/model-the-scripted-variables-as-rows
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Only the script body is text. The parameters, their types and their array values are rows, an index variable is named by its oresmd URI, and ORE's four typed lists are built from those rows on export.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- scripted_instrument holds no JSON column
+- scripted_parameter and scripted_parameter_value hold every scripted trade's variables, an index one holding an oresmd URI
+- the ORE export builds the four typed lists from the rows and the import writes rows from the document
+- a report over the provisioned book prices the scripted products with the same values as before
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

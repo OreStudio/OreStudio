@@ -67,8 +67,10 @@ TEST_CASE("the executor classifies each kind it executes into its own action", "
     CHECK(classify_step_kind("load_staff") == provision_step_action::load_staff);
     CHECK(classify_step_kind("set_staff_passwords") == provision_step_action::set_staff_passwords);
     CHECK(classify_step_kind("attach_photos") == provision_step_action::attach_photos);
-    CHECK(classify_step_kind("subscribe_market_data") ==
-          provision_step_action::subscribe_market_data);
+    // The subscriptions are marketdata's work, so the executor has no action
+    // for it and the step is refused here rather than worked by the wrong
+    // service.
+    CHECK(classify_step_kind("subscribe_market_data") == provision_step_action::refuse);
     CHECK(classify_step_kind("publish_party_curves") ==
           provision_step_action::publish_party_curves);
     CHECK(classify_step_kind("give_party_surface_blueprints") ==

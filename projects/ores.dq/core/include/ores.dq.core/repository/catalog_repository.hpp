@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_CATALOG_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CATALOG_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.dq.api/domain/catalog.hpp"
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.core/export.hpp"

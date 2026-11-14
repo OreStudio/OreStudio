@@ -28,6 +28,7 @@
 #include "ores.analytics.api/messaging/stress_test_shift_protocol.hpp"
 #include "ores.analytics.core/repository/stress_test_shift_entity.hpp"
 #include "ores.analytics.core/repository/stress_test_shift_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"

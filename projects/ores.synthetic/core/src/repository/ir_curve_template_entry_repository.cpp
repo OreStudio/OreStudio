@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"

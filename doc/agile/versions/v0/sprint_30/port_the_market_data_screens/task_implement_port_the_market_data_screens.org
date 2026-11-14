@@ -26,11 +26,11 @@ Hedgr prototyped five market-data screens for its own terminal. ORE Studio has n
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -41,9 +41,14 @@ Hedgr prototyped five market-data screens for its own terminal. ORE Studio has n
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Prototypes first, judged screen by screen against hedgr's, then the journeys
+they answer, then the server reads those journeys named as missing. Each read
+was stated in the protocol model before it was served, and each was built
+behind a test that writes its own market rather than depending on a seeded one.
+The machinery the screens read already existed, so no quant work was needed:
+the bootstrap, the day counts, the forward the surface is struck against and
+the grid all had implementations. What remained was presentation and the four
+decisions the story records.
 
 * Measurements
 
@@ -85,3 +90,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed with #4702 (merge commit 081511e925), which carried the port's remaining
+work: the surface contract's tests, the staleness call sites, a discount ladder
+that states rates, and the forward set read from spot that let the tenant finish
+provisioning. The story's two remaining tasks stay open on their own acceptance:
+the surface's slice case, and the staleness threshold stated per instrument kind.

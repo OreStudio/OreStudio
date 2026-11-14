@@ -25,7 +25,7 @@
 #ifndef ORES_IAM_CORE_REPOSITORY_ROLE_GRANT_REQUEST_REPOSITORY_HPP
 #define ORES_IAM_CORE_REPOSITORY_ROLE_GRANT_REQUEST_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.iam.api/domain/role_grant_request.hpp"
 #include "ores.iam.api/messaging/role_grant_request_protocol.hpp"
 #include "ores.iam.core/export.hpp"

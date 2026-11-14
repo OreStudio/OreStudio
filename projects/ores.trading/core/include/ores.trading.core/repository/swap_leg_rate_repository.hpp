@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_SWAP_LEG_RATE_REPOSITORY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_SWAP_LEG_RATE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include "ores.trading.api/messaging/swap_leg_rate_protocol.hpp"

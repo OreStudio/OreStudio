@@ -1253,6 +1253,194 @@ const termsOutcomeSchema = z.object({
 export type TermsOutcome = z.infer<typeof termsOutcomeSchema>;
 const termsListReplySchema = z.object({ outcomes: z.array(termsOutcomeSchema) });
 
+/**
+ * One source behind an instrument, and whether its value is current.
+ *
+ * The verdict is the server's. A screen draws it and does not recompute it, so
+ * two screens cannot disagree about the same series.
+ */
+const instrumentSourceSchema = z.object({
+    provider_code: z.string().default(''),
+    provider_kind: z.string().default(''),
+    series_id: z.string().default(''),
+    as_of: z.string().default(''),
+    age_seconds: z.number().default(0),
+    stale: z.boolean().default(false),
+});
+
+/** One axis of an instrument, its values in the order the server draws them. */
+const instrumentAxisSchema = z.object({
+    field: z.string(),
+    values: z.array(z.string()).default([]),
+});
+
+/**
+ * One instrument: the series a person reads as one thing.
+ *
+ * A curve is one entry and not one per pillar; a pair is one entry with no
+ * axes; a surface is one entry whose two axes are its expiries and its strikes.
+ */
+const marketInstrumentSchema = z.object({
+    instrument_id: z.string(),
+    kind: z.string().default(''),
+    name: z.string().default(''),
+    currency: z.string().default(''),
+    base_currency: z.string().default(''),
+    quote_currency: z.string().default(''),
+    instrument_type: z.string().default(''),
+    quote_type: z.string().default(''),
+    forward_start: z.string().default(''),
+    axes: z.array(instrumentAxisSchema).default([]),
+    sources: z.array(instrumentSourceSchema).default([]),
+    party_id: z.string().default(''),
+    stale: z.boolean().default(false),
+    as_of: z.string().default(''),
+});
+
+const instrumentCatalogueSchema = z.object({
+    instruments: z.array(marketInstrumentSchema).default([]),
+    total: z.number().default(0),
+    truncated: z.boolean().default(false),
+});
+
+export type InstrumentSource = z.infer<typeof instrumentSourceSchema>;
+export type InstrumentAxis = z.infer<typeof instrumentAxisSchema>;
+export type MarketInstrument = z.infer<typeof marketInstrumentSchema>;
+export type InstrumentCatalogue = z.infer<typeof instrumentCatalogueSchema>;
+
+/** One provider's quote of one rung. A provider that does not quote a rung has no entry. */
+const rungQuoteSchema = z.object({
+    provider_code: z.string().default(''),
+    value: z.number(),
+    as_of: z.string().default(''),
+    age_seconds: z.number().default(0),
+    stale: z.boolean().default(false),
+    series_id: z.string().default(''),
+});
+
+const ladderConsensusSchema = z.object({
+    value: z.number(),
+    method: z.string().default(''),
+    providers_used: z.number().default(0),
+});
+
+/**
+ * One rung: a tenor, the maturity the server dated it at, and the quotes.
+ *
+ * The year fraction is the server's, because the calendar, the day count and
+ * the tenor convention are server facts.
+ */
+const rateLadderRungSchema = z.object({
+    tenor: z.string().default(''),
+    maturity_date: z.string().default(''),
+    year_fraction: z.number().default(0),
+    quotes: z.array(rungQuoteSchema).default([]),
+    consensus: ladderConsensusSchema,
+});
+
+const rateLadderSchema = z.object({
+    currency: z.string().default(''),
+    instrument_type: z.string().default(''),
+    forward_start: z.string().default(''),
+    as_of: z.string().default(''),
+    provider_count: z.number().default(0),
+    tenor_convention: z.string().default(''),
+    day_count_convention: z.string().default(''),
+    rungs: z.array(rateLadderRungSchema).default([]),
+});
+
+export type RungQuote = z.infer<typeof rungQuoteSchema>;
+export type LadderConsensus = z.infer<typeof ladderConsensusSchema>;
+export type RateLadderRung = z.infer<typeof rateLadderRungSchema>;
+export type RateLadder = z.infer<typeof rateLadderSchema>;
+
+const montageSpotSchema = z.object({
+    provider_code: z.string().default(''),
+    value: z.number(),
+    as_of: z.string().default(''),
+    age_seconds: z.number().default(0),
+    stale: z.boolean().default(false),
+    series_id: z.string().default(''),
+});
+
+/**
+ * One pair of the base: the providers' spots and the move since the instant the
+ * server stated. A change the window cannot measure is absent, not zero.
+ */
+const fxMontagePairSchema = z.object({
+    pair_name: z.string().default(''),
+    base_currency: z.string().default(''),
+    quote_currency: z.string().default(''),
+    spot_by_provider: z.array(montageSpotSchema).default([]),
+    consensus: z.number(),
+    change_pct: z.number().nullable().default(null),
+    day_high: z.number().nullable().default(null),
+    day_low: z.number().nullable().default(null),
+});
+
+const fxMontageSchema = z.object({
+    base_currency: z.string().default(''),
+    as_of: z.string().default(''),
+    change_since: z.string().default(''),
+    pairs: z.array(fxMontagePairSchema).default([]),
+});
+
+export type MontageSpot = z.infer<typeof montageSpotSchema>;
+export type FxMontagePair = z.infer<typeof fxMontagePairSchema>;
+export type FxMontage = z.infer<typeof fxMontageSchema>;
+
+const curveConventionsSchema = z.object({
+    index_name: z.string().default(''),
+    day_count: z.string().default(''),
+    compounding: z.string().default(''),
+    interpolation: z.string().default(''),
+    calendar: z.string().default(''),
+    spot_lag_days: z.number().default(0),
+    pillar_count: z.number().default(0),
+});
+
+const curveMarketPillarSchema = z.object({
+    tenor: z.string().default(''),
+    maturity_date: z.string().default(''),
+    year_fraction: z.number().default(0),
+    rate: z.number(),
+    provider_code: z.string().default(''),
+    series_id: z.string().default(''),
+    as_of: z.string().default(''),
+});
+
+/**
+ * What the curve makes of one pillar.
+ *
+ * The zero rate is continuously compounded; the implied forward is the rate the
+ * segment ending at this pillar implies; the shift is the zero rate less the
+ * market rate at the pillar, not an applied parallel shift.
+ */
+const curveBootstrappedPointSchema = z.object({
+    tenor: z.string().default(''),
+    maturity_date: z.string().default(''),
+    year_fraction: z.number().default(0),
+    discount_factor: z.number(),
+    zero_rate: z.number(),
+    implied_forward: z.number(),
+    shift_bps: z.number(),
+});
+
+const curveAnalyticsSchema = z.object({
+    instrument_id: z.string().default(''),
+    name: z.string().default(''),
+    as_of: z.string().default(''),
+    stale: z.boolean().default(false),
+    conventions: curveConventionsSchema,
+    market_pillars: z.array(curveMarketPillarSchema).default([]),
+    bootstrapped: z.array(curveBootstrappedPointSchema).default([]),
+});
+
+export type CurveConventions = z.infer<typeof curveConventionsSchema>;
+export type CurveMarketPillar = z.infer<typeof curveMarketPillarSchema>;
+export type CurveBootstrappedPoint = z.infer<typeof curveBootstrappedPointSchema>;
+export type CurveAnalytics = z.infer<typeof curveAnalyticsSchema>;
+
 export const api = {
     /**
      * Whether the deployment still needs its first administrator.
@@ -3404,6 +3592,103 @@ export const api = {
                 method: 'POST',
                 headers: JSON_HEADERS,
                 body: JSON.stringify({ pair_code: query.pairCode, as_of: query.asOf }),
+            }),
+        );
+    },
+
+    /**
+     * The instruments of the session party: one entry per instrument, with its
+     * axes in draw order and the verdict on each source.
+     *
+     * A search and a kind filter are the server's to apply, because the name and
+     * the kind are facts it states.
+     */
+    async marketInstruments(query: {
+        readonly query?: string;
+        readonly kinds?: readonly string[];
+        readonly providerCode?: string;
+        readonly offset?: number;
+        readonly limit?: number;
+    }): Promise<InstrumentCatalogue> {
+        return instrumentCatalogueSchema.parse(
+            await request('/api/market/instruments', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({
+                    query: query.query ?? '',
+                    kinds: query.kinds ?? [],
+                    provider_code: query.providerCode ?? '',
+                    offset: query.offset ?? 0,
+                    limit: query.limit ?? 200,
+                }),
+            }),
+        );
+    },
+
+    /**
+     * One currency's rate ladder at an instant, with the server's maturity dates,
+     * one quote per provider and the consensus it derives.
+     */
+    async rateLadder(query: {
+        readonly currency: string;
+        readonly asOf: string;
+        readonly instrumentType?: string;
+        readonly forwardStart?: string;
+        readonly providers?: readonly string[];
+    }): Promise<RateLadder> {
+        return rateLadderSchema.parse(
+            await request('/api/market/rate-ladder', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({
+                    currency: query.currency,
+                    instrument_type: query.instrumentType ?? 'discount',
+                    forward_start: query.forwardStart ?? '',
+                    as_of: query.asOf,
+                    providers: query.providers ?? [],
+                }),
+            }),
+        );
+    },
+
+    /**
+     * One base currency's crosses at an instant, and the instant the server
+     * measures their change from.
+     */
+    async fxMontage(query: {
+        readonly baseCurrency: string;
+        readonly asOf: string;
+        readonly providers?: readonly string[];
+    }): Promise<FxMontage> {
+        return fxMontageSchema.parse(
+            await request('/api/market/fx-montage', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({
+                    base_currency: query.baseCurrency,
+                    as_of: query.asOf,
+                    providers: query.providers ?? [],
+                }),
+            }),
+        );
+    },
+
+    /**
+     * One curve's conventions, its market pillars and what the bootstrap makes of
+     * them, as of an instant.
+     */
+    async curveAnalytics(query: {
+        readonly instrumentId: string;
+        readonly asOf: string;
+    }): Promise<CurveAnalytics> {
+        return curveAnalyticsSchema.parse(
+            await request('/api/market/curve-analytics', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({
+                    instrument_id: query.instrumentId,
+                    as_of: query.asOf,
+                }),
             }),
         );
     },

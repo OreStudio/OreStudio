@@ -27,6 +27,7 @@
 #include "ores.compute.api/domain/node_sample_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.core/repository/node_sample_entity.hpp"
 #include "ores.compute.core/repository/node_sample_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"

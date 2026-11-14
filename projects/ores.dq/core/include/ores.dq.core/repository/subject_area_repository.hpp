@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_SUBJECT_AREA_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_SUBJECT_AREA_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.dq.api/domain/subject_area.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.logging/make_logger.hpp"

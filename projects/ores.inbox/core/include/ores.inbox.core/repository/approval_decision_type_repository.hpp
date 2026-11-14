@@ -25,7 +25,7 @@
 #ifndef ORES_INBOX_CORE_REPOSITORY_APPROVAL_DECISION_TYPE_REPOSITORY_HPP
 #define ORES_INBOX_CORE_REPOSITORY_APPROVAL_DECISION_TYPE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.inbox.api/domain/approval_decision_type.hpp"
 #include "ores.inbox.api/messaging/approval_decision_type_protocol.hpp"
 #include "ores.inbox.core/export.hpp"

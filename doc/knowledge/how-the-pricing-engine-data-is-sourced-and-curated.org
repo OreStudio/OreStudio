@@ -111,6 +111,8 @@ Curation is data, not code. It lives in =projects/ores.seeder/datasets/ore_prici
 | =models.json= | the description, the detail and the source of a model |
 | =engines.json= | the description, the detail and the source of an engine |
 | =templates.json= | the asset class, the method and the description of a sensitivity template |
+| =guide-omits.json= | the pairs the ORE code registers, for a product type the guide's chapter leaves out and for one whose pair the guide states wrongly, with the values the code reads |
+| =pair-settings.json= | a setting the engine takes of every product that names a pair, stated once for the pair rather than per product type |
 | =globals.json= | a global parameter: its domain, default, label, help and description |
 | =value-sets.json= | each guide value set, its values, the catalogues it draws on and the setting that names it |
 | =value-sets-code.json= | the sets the type extractor writes, one per type and enum it finds |
@@ -126,6 +128,8 @@ Curation is data, not code. It lives in =projects/ores.seeder/datasets/ore_prici
   "date": "2026-10-25"
 }
 #+end_src
+
+A product type the ORE code registers an engine for and the guide's chapter omits has no pair, so ORE refuses to price the trade and no configuration can fix that. The guide is wrong a second way: for some product types it states a model or an engine the code never registers for that trade type, and the pair ORE resolves is another one. =guide-omits.json= records the pair or pairs the code registers in both cases, and the values the example configuration under =Examples/= or the code reads. A pair it states for a product type the guide already documents becomes that type's usual pair, and the guide's rows stay as alternatives. Each setting it names carries a value and a scope only: the prose, the control and the required flag come from the vocabulary entry that already states that setting name for the engine or the model, so a setting is described once. The loader fails on an entry with no =used_by=, no pair, or a setting with no value.
 
 The =instrument= is the quality the screen groups by. It comes from the type, not from the trade, and this file is its only home. A product type the guide names but the file does not fails the generator, so the debt is visible and a person decides it.
 

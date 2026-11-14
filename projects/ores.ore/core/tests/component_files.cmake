@@ -22,6 +22,7 @@
 set(files
     "codec_wire_bytes_tests.cpp"
     "configuration_type_seed_tests.cpp"
+    "conventions_fx_conventions_tests.cpp"
     "conventions_package_tests.cpp"
     "hierarchy_hierarchy_builder_tests.cpp"
     "log_engine_log_tests.cpp"
@@ -67,6 +68,7 @@ set(files
     "xml_roundtrip_reference_tests.cpp"
     "xml_roundtrip_values_tests.cpp"
     "xml_run_document_files_tests.cpp"
+    "xml_run_package_missing_files_tests.cpp"
     "xml_scanner_tests.cpp"
     "xml_todays_market_projection_tests.cpp"
     "xml_trade_import_tests.cpp"

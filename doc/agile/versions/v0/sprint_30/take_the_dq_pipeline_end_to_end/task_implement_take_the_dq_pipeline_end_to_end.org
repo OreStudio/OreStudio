@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: B8609EB8-C1C1-4280-A487-C76D78AC8877
+:END:
+#+title: Task: Implement Take the DQ pipeline end to end, from a seeded artefact table to a published system
+#+description: Establish the publishing model with evidence: documentation, inventories, defects and a proposed model., from a seeded artefact table to a published system
+#+type: task
+#+level: s1
+#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr: 4713
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Establish the publishing model with evidence: what the documentation claims, what
+the code does, which datasets exist, where each is published, and what is broken.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end]] |
+| Now          | The review is running.                 |
+| Waiting on   | Nothing.                               |
+| Next         | Read the findings and sequence the implementation. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- Inventories of the seeded datasets, the publish functions and the direct-insert
+  tables, each with the file it was read from.
+- The runtime publish path traced through the bundle workflow, the handler and
+  the dataset dependency edges.
+- A numbered list of defects, each with evidence.
+- A proposed model for blank database to usable database, with the level of
+  every dataset.
+
+* Plan
+
+1. Read what documents publishing, and say what the documentation claims.
+2. Inventory the three flows: direct insert, DQ seed plus publish, runtime publish.
+3. Test each dataset against the requirement that it is published at the right
+   level.
+4. Write the defects and the proposed model.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Publish functions defined | 56 | reading =refdata_publish_from_dq_create.sql= | e050a2d239 |
+| Datasets seeded as DQ artefacts | 17 | reading =populate/refdata/refdata_populate.sql= | e050a2d239 |
+| Populate scripts that call a publish function | 0 | =grep -rn publish_ projects/ores.sql/populate/= | e050a2d239 |
+| DQ screens in ores.web | 0 | listing =packages/web/src/**/*Page.tsx= | e050a2d239 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4713][#4713]] | [doc] File the publishing pipeline architecture review |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

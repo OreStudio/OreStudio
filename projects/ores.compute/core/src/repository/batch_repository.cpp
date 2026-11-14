@@ -28,6 +28,7 @@
 #include "ores.compute.api/messaging/batch_protocol.hpp"
 #include "ores.compute.core/repository/batch_entity.hpp"
 #include "ores.compute.core/repository/batch_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"

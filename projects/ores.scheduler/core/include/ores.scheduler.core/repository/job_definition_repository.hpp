@@ -25,7 +25,7 @@
 #ifndef ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
 #define ORES_SCHEDULER_CORE_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.api/messaging/job_definition_protocol.hpp"

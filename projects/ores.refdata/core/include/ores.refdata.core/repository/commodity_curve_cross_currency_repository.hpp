@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COMMODITY_CURVE_CROSS_CURRENCY_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COMMODITY_CURVE_CROSS_CURRENCY_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/commodity_curve_cross_currency.hpp"
 #include "ores.refdata.api/messaging/commodity_curve_cross_currency_protocol.hpp"

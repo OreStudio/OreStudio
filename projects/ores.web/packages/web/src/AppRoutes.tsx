@@ -119,6 +119,10 @@ import { ConventionRecordPage } from './refdata/ConventionRecordPage.js';
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { FxForwardLadderPage } from './marketdata/FxForwardLadderPage.js';
+import { InstrumentFinderPage } from './marketdata/InstrumentFinderPage.js';
+import { RateLadderPage } from './marketdata/RateLadderPage.js';
+import { FxMontagePage } from './marketdata/FxMontagePage.js';
+import { CurveAnalyticsPage } from './marketdata/CurveAnalyticsPage.js';
 import { PublishedCurvePage } from './marketdata/PublishedCurvePage.js';
 import { PublishedCurvesPage } from './marketdata/PublishedCurvesPage.js';
 import { CurveBlueprintsPage, CurveBlueprintPage } from './marketdata/curveBlueprints.js';
@@ -831,6 +835,54 @@ export function AppRoutes({
                     shell,
                     () => (
                         <PublishedCurvesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.instruments}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <InstrumentFinderPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.rateLadder}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <RateLadderPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.fxMontage}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <FxMontagePage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.curveAnalytics}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CurveAnalyticsPage />
                     ),
                     'workspace',
                 )}

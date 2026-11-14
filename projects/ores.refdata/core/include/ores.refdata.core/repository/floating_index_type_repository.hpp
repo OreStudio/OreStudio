@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_FLOATING_INDEX_TYPE_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_FLOATING_INDEX_TYPE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/floating_index_type.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"

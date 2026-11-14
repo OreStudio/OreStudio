@@ -160,3 +160,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The gateway reads the ORE value sets and answers
+=GET /api/reporting/engine-settings/documentation= at the BFF's path, in the
+BFF's shape.
+
+- The reader is in =ores.http.core=, and the reporting and reference data parts
+  both reach it. It answers the same seven fields the BFF's does.
+- The documentation page answers the groups the data states, each setting's
+  documentation from the =ore.xsd= / =Setup= parameters, and its allowed values
+  from the value set of its ORE parameter. Nothing is derived that a service
+  states.
+- A set whose kind this build does not know is a 500 that names the set and the
+  word, as the BFF's own throw was, and not a control that checks nothing.
+- The seventeen routes the three earlier families served but never paired are
+  paired. The coverage table states 27 of 44 reporting routes where it stated 9.
+- The reader's eight cases and the route's two cases pass. The gateway core's
+  suite is 100 cases and 100590 assertions; the reporting part's is 44 cases and
+  447 assertions.
+- The gate is 45 of 45.

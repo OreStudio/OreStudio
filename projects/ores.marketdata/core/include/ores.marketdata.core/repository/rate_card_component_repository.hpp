@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_RATE_CARD_COMPONENT_REPOSITORY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_RATE_CARD_COMPONENT_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/rate_card_component.hpp"
 #include "ores.marketdata.api/messaging/rate_card_component_protocol.hpp"

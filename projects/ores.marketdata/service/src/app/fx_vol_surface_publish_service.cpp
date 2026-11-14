@@ -29,6 +29,7 @@
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_grid.hpp"
+#include "ores.marketdata.service/app/staleness_policy.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.core/repository/fx_vol_surface_blueprint_repository.hpp"
@@ -442,16 +443,10 @@ msg::get_published_fx_vol_surface_response fx_vol_surface_publish_service::read_
                 out.delta_type = conventions.front().delta_type;
         }
         out.strike_convention = out.delta_type.empty() ? "absolute" : "delta";
-        // The verdict is the server's: a publish older than the threshold is
-        // stale, and no client recomputes it.
-        if (out.published_at) {
-            const auto age = std::chrono::duration_cast<std::chrono::seconds>(
-                                 std::chrono::system_clock::now() - *out.published_at)
-                                 .count();
-            out.stale = age > 3600;
-        } else {
-            out.stale = true;
-        }
+        // The verdict is the server's, asked of the one policy, so a surface
+        // cannot disagree with a curve about what "stale" means.
+        out.stale = staleness_policy::is_stale(out.published_at.value_or(time_point{}),
+                                               std::chrono::system_clock::now());
         out.expiries = std::move(grid->expiries);
         out.strikes = std::move(grid->strikes);
         for (auto& p : grid->points)

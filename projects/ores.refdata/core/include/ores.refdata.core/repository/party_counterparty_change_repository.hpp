@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PARTY_COUNTERPARTY_CHANGE_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PARTY_COUNTERPARTY_CHANGE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/party_counterparty_change.hpp"
 #include "ores.refdata.api/messaging/party_counterparty_change_protocol.hpp"

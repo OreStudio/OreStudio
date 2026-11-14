@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_TRADE_LINK_TYPE_REPOSITORY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_TRADE_LINK_TYPE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade_link_type.hpp"
 #include "ores.trading.api/messaging/trade_link_type_protocol.hpp"

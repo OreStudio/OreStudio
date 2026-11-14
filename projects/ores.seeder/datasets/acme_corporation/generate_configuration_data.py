@@ -7,7 +7,9 @@ The documents are Acme's own, crafted for the reports each entity runs. They are
 inspired by the ORE examples under external/ore/examples and are not ORE import
 data. Which engine prices a product is a choice of the group, and the choice here
 follows the desks an entity runs (rule D15 of the sprint 27 investigation "Which
-reports each ACME party runs").
+reports each ACME party runs"). Every document prices every product type the ORE
+guide documents an engine for, because a report binds one document and its book
+holds every product type, whichever desk the trade sits on.
 
 Each entity holds several documents, one for each job its reports do, and a report
 binds exactly one of them. Each document is a header, its products and their parameters, staged in three
@@ -92,18 +94,6 @@ def required_settings(product_type, model, engine):
     return found["model"], found["engine"]
 
 
-# What each entity prices. The holding company holds intercompany loans and the
-# hedges of its subsidiaries' currencies, so it prices linear products only. A
-# trading entity prices the products its desks trade. London alone holds option
-# books (design rule D8), so it alone prices options.
-ENTITY_PRODUCTS = {
-    "acme_group": ["Swap", "FxForward", "Bond"],
-    "acme_uk": ["Swap", "CrossCurrencySwap", "FxForward", "CreditDefaultSwap", "Bond",
-                "FxOption", "CapFloor", "EuropeanSwaption"],
-    "acme_us": ["Swap", "CrossCurrencySwap", "FxForward", "CreditDefaultSwap", "Bond"],
-    "acme_hk": ["Swap", "CrossCurrencySwap", "FxForward", "CreditDefaultSwap", "Bond"],
-}
-
 # The engine settings of the American Monte Carlo engine, as the ORE example
 # AmericanMonteCarlo/Input/pricingengine_amc.xml sets them for a swap and for a
 # cross currency swap: a training run on a fixed seed, then pricing on the
@@ -133,7 +123,11 @@ SENSITIVITIES = {"SensitivityTemplate": "IR_Analytical"}
 # The cycle (end of day or intraday), the risk question and the rule a regulator
 # sets all change the model, the engine or its settings.
 #
-# - skip: product types the configuration does not price.
+# Every configuration prices every product type ORE documents an engine for, each on
+# its usual pair. A configuration says how a product is priced, and which trades
+# arrive is the report's scope, not the configuration's: one configuration serves
+# several reports, and the book holds every product type whichever desk it sits on.
+#
 # - bond_step: the step of the default probability grid of a bond. A finer step
 #   costs more and is for the numbers that are booked or filed.
 # - calibration_stops: whether a failed calibration stops the run. An official
@@ -146,7 +140,6 @@ CONFIGURATIONS = {
         "description": "The numbers that are booked. Every product type ORE prices, each on its "
                        "usual pair, a fine grid for bonds and a stop on any calibration that "
                        "fails.",
-        "all_products": True,
         "bond_step": "6M",
         "calibration_stops": True,
     },
@@ -159,8 +152,7 @@ CONFIGURATIONS = {
     },
     "Pre-Trade Quick Price": {
         "description": "The price a trader sees while a trade is built. It answers at once, so "
-                       "it uses a coarse bond grid and leaves out credit default swaps.",
-        "skip": ["CreditDefaultSwap"],
+                       "it uses a coarse bond grid and a failed calibration does not stop it.",
         "bond_step": "1Y",
         "calibration_stops": False,
     },
@@ -189,9 +181,9 @@ CONFIGURATIONS = {
         "settings": {"Swap": SENSITIVITIES},
     },
     "Regulatory SIMM": {
-        "description": "The prices behind the initial margin of uncleared derivatives. Bonds are "
-                       "not margined, so they are left out.",
-        "skip": ["Bond"],
+        "description": "The prices behind the initial margin of uncleared derivatives. The "
+                       "sensitivities are analytic and a failed calibration stops the run.",
+        "bond_step": "3M",
         "calibration_stops": True,
         "settings": {"Swap": SENSITIVITIES},
     },
@@ -214,9 +206,8 @@ CONFIGURATIONS = {
 # Which configurations each entity holds. The holding company has no desk, so it
 # holds the official numbers and the overnight exposure run. A trading entity
 # holds what its desks and its regulator need. London alone holds the
-# sensitivities, the margin prices and the sandbox: it has the option books and
-# the quants (design rule D8), and the other entities take their sensitivities
-# from the official numbers.
+# sensitivities, the margin prices and the sandbox: it has the quants (design rule
+# D8), and the other entities take their sensitivities from the official numbers.
 ENTITY_CONFIGURATIONS = {
     "acme_group": ["EOD Official", "XVA Overnight"],
     "acme_uk": list(CONFIGURATIONS),
@@ -400,15 +391,12 @@ def pricing_engines():
                 "config_variant": "",
                 "configuration_id": new_uuid(f"configuration:{key}"),
             })
-            wanted = [t for t in ENTITY_PRODUCTS[company] if t not in spec.get("skip", [])]
-            if spec.get("all_products"):
-                wanted += sorted(t for t in VOCABULARY if t not in wanted and usual_pair(t))
-            for position, product_type in enumerate(wanted):
+            for position, product_type in enumerate(sorted(VOCABULARY)):
                 if product_type in spec.get("replace", {}) or product_type in PRODUCTS:
                     model, model_parameters, engine, engine_parameters = spec.get(
                         "replace", {}).get(product_type, PRODUCTS.get(product_type))
                 else:
-                    pair = usual_pair(product_type)
+                    pair = usual_pair(product_type) or VOCABULARY[product_type]["pairs"][0]
                     model, model_parameters, engine, engine_parameters = (
                         pair["model"], {}, pair["engine"], {})
                 needed_model, needed_engine = required_settings(product_type, model, engine)

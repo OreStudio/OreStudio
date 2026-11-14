@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_FX_VOL_SURFACE_PILLAR_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_FX_VOL_SURFACE_PILLAR_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/fx_vol_surface_pillar.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_pillar_protocol.hpp"

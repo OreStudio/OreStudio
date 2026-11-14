@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :build:compilation:headers:database:sprint_30:v0:
 #+created: 2026-11-11
-#+updated: 2026-11-11
+#+updated: 2026-11-13
 #+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -48,7 +48,7 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 |------+-------+-------+-----+-------------|
 | [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]] | DONE | 2026-11-13 | | Analyse the include graph to find the headers most of the build depends on, and decide for each which types to forward-declare, which to move, and which to split. |
 | [[id:908E710A-C9A3-433E-AC93-92B67FB76B6C][Pass the database context by reference behind a forward declaration]] | DONE | 2026-11-13 | | Pass the database context as a const reference, forward-declare it in every header that only passes it along, and keep libpq and the pool out of context.hpp. |
-| [[id:DEA440DD-F4B6-4D37-9083-5F3BB33F1018][Forward-declare what the analysis finds]] | BACKLOG | | | Apply the decisions of the header analysis to every other heavy header it names, one header family per PR, each with its measured effect. |
+| [[id:DEA440DD-F4B6-4D37-9083-5F3BB33F1018][Forward-declare what the analysis finds]] | STARTED | 2026-11-13 | | Apply the decisions of the header analysis to every other heavy header it names, one header family per PR, each with its measured effect. |
 
 * Decisions
 
@@ -63,6 +63,11 @@ A developer sees the result as shorter rebuilds after a change to a shared heade
 - Rebuild radius and parse cost are separate measures, and this story is about
   the first. Forward declarations reach only the types held by pointer or
   reference.
+- A header family is not uniform, and only a compile says so. The repository
+  archetype emits two headers, and the junction one carries a =context ctx_=
+  member in 29 generated files, so it keeps the definition while its 539
+  siblings take the declaration. The check that guards the rule can see a header
+  that includes too much and cannot see one that includes too little.
 - The copies are real and come from codegen: 21874 by-value =context=
   parameters, 11141 of them emitted by the =repository= and =service=
   archetypes. Changing them to =const&= is worth doing for run time and for the

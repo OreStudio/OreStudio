@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CMS_SPREAD_OPTION_CONVENTION_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CMS_SPREAD_OPTION_CONVENTION_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/cms_spread_option_convention.hpp"
 #include "ores.refdata.api/messaging/cms_spread_option_convention_protocol.hpp"

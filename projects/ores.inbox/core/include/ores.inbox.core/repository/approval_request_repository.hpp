@@ -25,7 +25,7 @@
 #ifndef ORES_INBOX_CORE_REPOSITORY_APPROVAL_REQUEST_REPOSITORY_HPP
 #define ORES_INBOX_CORE_REPOSITORY_APPROVAL_REQUEST_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.api/messaging/approval_request_protocol.hpp"
 #include "ores.inbox.core/export.hpp"

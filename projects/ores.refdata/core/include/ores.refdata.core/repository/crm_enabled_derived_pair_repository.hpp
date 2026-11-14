@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CRM_ENABLED_DERIVED_PAIR_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CRM_ENABLED_DERIVED_PAIR_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/crm_enabled_derived_pair.hpp"
 #include "ores.refdata.api/messaging/crm_enabled_derived_pair_protocol.hpp"

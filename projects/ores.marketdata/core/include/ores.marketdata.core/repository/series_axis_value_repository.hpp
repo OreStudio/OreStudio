@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_SERIES_AXIS_VALUE_REPOSITORY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_SERIES_AXIS_VALUE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/series_axis_value.hpp"
 #include "ores.marketdata.core/export.hpp"

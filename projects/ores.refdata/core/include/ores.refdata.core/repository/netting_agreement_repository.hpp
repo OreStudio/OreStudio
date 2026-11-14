@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_NETTING_AGREEMENT_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_NETTING_AGREEMENT_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/netting_agreement.hpp"
 #include "ores.refdata.api/messaging/netting_agreement_protocol.hpp"

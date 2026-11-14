@@ -214,6 +214,13 @@ that names it is no longer the header that defines it.
   families that still include the definition: the =repository= archetype, 539
   files, and one header that cannot drop the include.
 
+*The repository family debt is cleared.* This task left 539 generated
+repository headers including the definition to spell a name, recorded in the
+check's baseline because their archetype emitted it. The archetype now emits the
+declaration and the implementation includes the definition, so that entry is
+gone; the debt that remains is three other archetypes and one header that cannot
+drop the include.
+
 Measured, at the commits the measurements name: the build is clean (720 steps,
 50 minutes) and the eleven suites this change reaches pass (11 of 11, 604 s).
 The gate passes every check that passes on =main=; the two that fail,

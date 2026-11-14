@@ -22,6 +22,7 @@
 
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/xml/generated/conventions.hpp"
+#include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.api/messaging/conventions_bundle.hpp"
 #include <string>
@@ -74,6 +75,41 @@ ORES_ORE_CORE_EXPORT conventions join_conventions(const conventions_package& p);
  * does not keep.
  */
 ORES_ORE_CORE_EXPORT std::vector<std::string> skipped_fx_conventions(const conventions_package& p);
+
+/**
+ * @brief One currency pair and the reference data rows that make its FX convention.
+ *
+ * A document states an FX convention as one element, and refdata holds the same
+ * facts across a currency pair, that pair's convention and the calendars the pair
+ * advances on, so a reader of the store hands the three here.
+ */
+struct fx_pair_source {
+    /// The pair code the convention and the calendars are keyed by.
+    std::string pair_code;
+    std::string base_currency;
+    std::string quote_currency;
+    /// Business days to settlement: the longer of the two currencies' own counts.
+    int spot_days = 2;
+    ores::refdata::domain::currency_pair_convention convention;
+    std::vector<std::string> advance_calendars;
+};
+
+/**
+ * @brief The FX conventions a conventions document states, from the pairs refdata holds.
+ *
+ * A document names each FX convention, and ORE resolves a name rather than a pair,
+ * so one convention is written for each distinct name the document's FX option
+ * conventions state, in the currency order that name states. A pair no FX option
+ * convention names is written once more under the canonical spelling, which is
+ * the one refdata's own readers expect.
+ *
+ * @param sources Every pair the store holds, with its convention and calendars.
+ * @param references The name each FX option convention resolves, in the order the
+ * store reads them; a name stated twice is written once.
+ */
+ORES_ORE_CORE_EXPORT std::vector<ores::refdata::messaging::fx_convention>
+fx_conventions(const std::vector<fx_pair_source>& sources,
+               const std::vector<std::string>& references);
 
 }
 

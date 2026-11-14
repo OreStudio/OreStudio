@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BASE_CORRELATION_CONFIG_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BASE_CORRELATION_CONFIG_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/base_correlation_config.hpp"
 #include "ores.refdata.api/messaging/base_correlation_config_protocol.hpp"

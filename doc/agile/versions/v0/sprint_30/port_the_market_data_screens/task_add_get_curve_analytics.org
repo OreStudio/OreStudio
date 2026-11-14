@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-13
 #+updated: 2026-11-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ pillar.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -98,4 +98,9 @@ via its "Verifies task" field.
 
 * Result
 
+The read states the curve's conventions, its market pillars and, for each
+pillar, the bootstrapped zero rate, implied forward, discount factor and shift.
+Merged in #4688. Three cases are in =app_curve_analytics_tests=. The seeded
+=RATES_SPOT_FORWARD= convention still has no 1Y resolution row, so a 1Y pillar
+is named as unresolved rather than dropped.
 The curve analytics read answers a curve's conventions, its market pillars and its bootstrapped points. It reuses the discount factors the bootstrap already returns and derives the zero rate, the segment forward and the curve-less-market shift from them; no new mathematics. Three cases: the pillar pairs, the zero rate recomputed from the discount factor to 1e-10, and an unknown curve refused in words.

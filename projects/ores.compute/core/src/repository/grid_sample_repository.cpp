@@ -27,6 +27,7 @@
 #include "ores.compute.api/domain/grid_sample_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.core/repository/grid_sample_entity.hpp"
 #include "ores.compute.core/repository/grid_sample_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"

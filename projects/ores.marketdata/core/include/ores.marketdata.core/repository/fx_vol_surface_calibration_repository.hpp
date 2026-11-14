@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_FX_VOL_SURFACE_CALIBRATION_REPOSITORY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_FX_VOL_SURFACE_CALIBRATION_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/fx_vol_surface_calibration.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_calibration_protocol.hpp"

@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 34A4373F-1BD1-4710-885B-95B3C3A3B8F7
+:END:
+#+title: Task: Design and build the DQ screens from the journeys, not from the Qt screens
+#+description: Show the datasets, their artefacts, their publish state and the publish action in ores.web; no DQ screens exist there today.
+#+type: task
+#+level: s1
+#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+owner: marco
+#+branch: feature/take-the-dq-pipeline-end-to-end
+#+pr: 4712
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give DQ a better experience in ores.web than the Qt client had, designed from the
+journeys a person actually runs rather than from the screens Qt happened to
+ship.
+
+The Qt area is input, not a specification: =ores.qt/dq= holds 88 translation
+units, 27 screens (18 entity detail dialogs, 9 history dialogs) and a publishing
+surface (Librarian window, bundle wizard, publish dialog). None of that is a
+requirement in itself. A screen may answer one journey or several, and a journey
+may need a screen that has no Qt ancestor at all.
+
+The refdata work already shows the method: 63 Qt reference-data entities became
+three web shapes — 12 record screens, 24 rows of one classification screen and 9
+kinds of one convention screen — because the entities were grouped by the
+journey that uses them, not by their Qt window. See
+[[id:C82ED7AD-7E13-46FA-B7E9-C4E66E823478][Qt to web reference data matrix]] for
+that precedent and its field tables.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end]] |
+| Now          | Nothing. |
+| Waiting on   | The publish model the review settles.  |
+| Next         | Port the record screens first.         |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The DQ journeys are written as journey documents under
+  =doc/knowledge/journeys/dq/=, in the shape
+  [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][the user journey document type]]
+  sets out, and judged before anything is designed. They cover at least:
+  seeing whether the system's reference data is complete, publishing a dataset,
+  publishing a bundle, correcting one artefact, and finding which trade a
+  published value belongs to.
+- Each journey names the screen that answers it. The mapping is many-to-many
+  where that is honest, and
+  [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][one screen, not one per entity]]
+  is the default, not the exception.
+- Prototypes are on main under =doc/prototypes/dq/=, as plain HTML, CSS and
+  JavaScript with the design tokens copied from the product, listed on the group
+  page, with a review recorded. No React prototype and no route in ores.web.
+- The prototypes are signed off before a screen is built from the shared parts.
+- The built screens follow the Record screen standard for records, and group the
+  maintenance vocabularies the way the refdata work grouped its 63 entities into
+  three shapes.
+- Publish state and the publish action are reachable from the journey, not
+  hidden behind a wizard only an administrator knows about.
+- A person who has never seen the Qt client can complete every journey.
+
+* Plan
+
+1. Read the Qt area as evidence of what the domain holds, not as a screen list.
+2. Write the journeys as documents, and judge them before designing anything.
+3. Prototype the screens that answer them, as static pages under
+   =doc/prototypes/dq/=, and get the prototypes signed off. The inventory check
+   (=build/scripts/check_prototype_inventory.py=) keeps the group page honest.
+4. Build from the shared parts, following
+   [[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][Take a topic through the screen
+   pipeline]].
+5. Prove each journey on a fresh database.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Qt DQ translation units | 88 | =find ores.qt/dq -name "*.cpp" | wc -l= | n/a |
+| Qt DQ screens | 27 | =find ores.qt/dq -name "*.ui" | wc -l= | n/a |
+| Entities with a detail dialog | 18 | listing *=DetailDialog.ui= | n/a |
+| Entities with a history dialog | 9 | listing *=HistoryDialog.ui= | n/a |
+| DQ screens in ores.web today | 0 | listing =packages/web/src/**/*Page.tsx= | e050a2d239 |
+
+* Notes
+
+Publish state is the point of the screens. The Qt client showed it because the
+Librarian was where publishing happened; ores.web has neither the screens nor the
+action today, which is why an empty catalogue after a recreate went unnoticed.
+
+The prototype stays on main once accepted
+([[id:708C2462-C1F8-455B-B091-9D9690FEEAAB][keep journey prototypes on main]]):
+it is the design record, and the
+product is written afterwards from the shared components, never from the
+prototype's markup.
+
+This task deliberately does not aim at parity. The measure is whether a person
+can complete the journeys with less friction than the Qt client imposed, and
+whether the vocabulary screens are fewer and clearer than the 18 detail dialogs
+they would otherwise become.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4712][#4712]] | [agile] Scope the DQ screens as journeys and prototypes, not a port |
+| [[https://github.com/OreStudio/OreStudio/pull/4711][#4711]] | [agile] Record the Qt source and screens for the DQ port |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

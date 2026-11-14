@@ -98,6 +98,22 @@ struct surface_forward_set final {
     std::vector<surface_forward_point> points;
 };
 
+/**
+ * @brief The published set rebased so its spot date discounts to one.
+ *
+ * A published forward set states its factors from the as-of and quotes its short dates
+ * before spot: ON, then TN on the spot date itself. A surface is struck against a
+ * spot-starting market, and `pair_market_at` refuses a row earlier than spot, so the
+ * calibration reads the set through this: the row on the spot date becomes the anchor,
+ * every row before it goes, and both factors of every other row are divided by the
+ * anchor's. What is left starts at spot, at exactly one on both sides.
+ *
+ * @return the set, or why it cannot be read from spot: no row on the spot date, or a
+ * factor that is not positive.
+ */
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::expected<surface_forward_set, std::string>
+spot_starting(const surface_forward_set& forwards);
+
 /// The quotes of one source series at the as-of, by the expiry and strike label of the datum.
 using surface_series_quotes = std::map<std::pair<std::string, std::string>, double>;
 

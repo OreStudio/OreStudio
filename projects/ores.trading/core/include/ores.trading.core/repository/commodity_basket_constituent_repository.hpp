@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_COMMODITY_BASKET_CONSTITUENT_REPOSITORY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_COMMODITY_BASKET_CONSTITUENT_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.api/messaging/commodity_basket_constituent_protocol.hpp"

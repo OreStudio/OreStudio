@@ -28,6 +28,7 @@
 #include "ores.analytics.api/messaging/pricing_model_product_parameter_protocol.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_parameter_entity.hpp"
 #include "ores.analytics.core/repository/pricing_model_product_parameter_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"

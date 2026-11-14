@@ -8,12 +8,12 @@
 #+filetags: :port_the_market_data_screens:sprint_30:v0:
 #+owner: marco
 #+branch: feature/port-the-market-data-screens
-#+pr:
+#+pr: 4688
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
 #+updated: 2026-11-13
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ the change is measured from.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4688][#4688]] | [marketdata] Port the hedgr market data screens and serve their reads |
 
 * Review
 
@@ -92,3 +92,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The montage answers a base currency's crosses, the spot each provider quotes,
+the consensus, the change and the day's range from a stated instant. Merged in
+#4688. Four cases are in =app_fx_montage_tests=.

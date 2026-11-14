@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_BADGE_SEVERITY_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_BADGE_SEVERITY_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.dq.api/domain/badge_severity.hpp"
 #include "ores.dq.api/messaging/badge_severity_protocol.hpp"
 #include "ores.dq.core/export.hpp"

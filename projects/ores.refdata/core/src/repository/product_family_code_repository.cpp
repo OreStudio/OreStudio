@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.core/repository/product_family_code_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"

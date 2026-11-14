@@ -21,6 +21,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/faker/datetime.hpp"
 #include "test_suite.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>

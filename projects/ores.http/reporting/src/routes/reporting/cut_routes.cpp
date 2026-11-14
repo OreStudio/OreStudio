@@ -27,6 +27,7 @@
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <map>

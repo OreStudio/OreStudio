@@ -20,6 +20,7 @@
 #define ORES_TRADING_API_TESTS_TEST_HELPERS_HPP_
 
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/string_generator.hpp>
 
 inline ores::utility::uuid::tenant_id tenant_of(std::string_view text) {
     return ores::utility::uuid::tenant_id::from_string(text).value();

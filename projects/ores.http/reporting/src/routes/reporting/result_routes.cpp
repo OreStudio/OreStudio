@@ -32,6 +32,7 @@
 #include "ores.reporting.api/messaging/run_result_protocol.hpp"
 #include "ores.trading.api/messaging/trade_booking_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <algorithm>
 #include <cmath>
 #include <format>

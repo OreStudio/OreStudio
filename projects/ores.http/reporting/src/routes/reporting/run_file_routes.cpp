@@ -42,6 +42,7 @@
 #include "ores.storage.core/filesystem/local_store.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/compression/gzip.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <algorithm>
 #include <fstream>
 #include <iterator>

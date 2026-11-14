@@ -64,6 +64,7 @@
 #include "provider_seed.hpp"
 #include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>

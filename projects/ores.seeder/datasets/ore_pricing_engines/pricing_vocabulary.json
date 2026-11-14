@@ -11218,7 +11218,7 @@
    {
     "model": "LGM-FlexiSwap",
     "engine": "Grid",
-    "usual": true,
+    "usual": false,
     "note": "Prices the balance guaranteed swap by simulating its pre-payment option on an LGM grid. The values are the ones the ORE example configuration Products/Input/pricingengine.xml sets for this product.",
     "settings": [
      {

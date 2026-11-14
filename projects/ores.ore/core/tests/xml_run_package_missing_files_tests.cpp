@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/run_package.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <map>
@@ -27,8 +28,17 @@
  * @brief What a package owes the run document it carries.
  */
 
-TEST_CASE("the files a run document names and the input does not hold are named",
-          "[ore][run_package]") {
+namespace {
+
+const std::string run_package_missing_files_test_suite("ores::ore::core::tests");
+const std::string run_package_missing_files_tags("[ore][run_package]");
+
+}
+
+TEST_CASE("names_the_files_the_run_document_holds_and_the_input_does_not",
+          run_package_missing_files_tags) {
+    auto lg(ores::logging::make_logger(run_package_missing_files_test_suite));
+
     // The sensitivity analytic states a scenario market of its own, and the input
     // set carries the document's configuration but not that file. The engine would
     // stop at it before reading a trade.
@@ -58,8 +68,9 @@ TEST_CASE("the files a run document names and the input does not hold are named"
     CHECK(missing[1] == "simulation.xml");
 }
 
-TEST_CASE("an input that holds every file its run document names holds nothing missing",
-          "[ore][run_package]") {
+TEST_CASE("holds_nothing_missing_when_every_named_file_is_present",
+          run_package_missing_files_tags) {
+    auto lg(ores::logging::make_logger(run_package_missing_files_test_suite));
     std::map<std::string, std::string> pack;
     pack["ore.xml"] = R"(<ORE>
   <Setup>
@@ -77,8 +88,9 @@ TEST_CASE("an input that holds every file its run document names holds nothing m
     CHECK(ores::ore::xml::missing_named_files(pack).empty());
 }
 
-TEST_CASE("an analytic whose files the input does not carry is dropped from the document",
-          "[ore][run_package]") {
+TEST_CASE("drops_the_analytic_whose_files_the_input_does_not_carry",
+          run_package_missing_files_tags) {
+    auto lg(ores::logging::make_logger(run_package_missing_files_test_suite));
     std::map<std::string, std::string> pack;
     pack["ore.xml"] = R"(<ORE>
   <Setup>
@@ -112,7 +124,8 @@ TEST_CASE("an analytic whose files the input does not carry is dropped from the 
     CHECK(pruned.files.at("ore.xml").find("npv.csv") != std::string::npos);
 }
 
-TEST_CASE("an input whose analytics all load is handed back whole", "[ore][run_package]") {
+TEST_CASE("hands_back_an_input_whose_analytics_all_load", run_package_missing_files_tags) {
+    auto lg(ores::logging::make_logger(run_package_missing_files_test_suite));
     std::map<std::string, std::string> pack;
     pack["ore.xml"] = R"(<ORE>
   <Setup>

@@ -152,8 +152,7 @@ bool names_a_file(std::string_view value) {
  * given, so it is left alone.
  */
 bool names_an_input_file(std::string_view parameter, std::string_view value) {
-    const auto writes_it = parameter.starts_with("output") || parameter.ends_with("OutputFile") ||
-                           parameter == "outputFileName";
+    const auto writes_it = parameter.starts_with("output") || parameter.ends_with("OutputFile");
     return !writes_it && names_a_file(value);
 }
 
@@ -215,8 +214,7 @@ pruned_analytics without_unloadable_analytics(const input_files& files) {
         dropped.push_back(it->type);
         it = analytics.erase(it);
     }
-    if (!dropped.empty())
-        document.analytics.present = analytics.empty() ? 0 : document.analytics.present;
+    document.analytics.present = static_cast<int>(analytics.size());
 
     pruned_analytics pruned;
     pruned.files = files;

@@ -195,8 +195,14 @@ fx_conventions(const std::vector<fx_pair_source>& sources,
             continue;
         bool reversed = false;
         const auto* source = pair_named_by(name, sources, reversed);
-        if (source == nullptr)
+        if (source == nullptr) {
+            static auto lg =
+                ores::logging::make_logger("ores.ore.core.domain.conventions_fx_projection");
+            BOOST_LOG_SEV(lg, warn)
+                << "The conventions document names the FX convention " << name
+                << ", and no currency pair spells it, so the document will not state it.";
             continue;
+        }
         named.insert(source);
         out.push_back(written(*source, name, reversed));
     }

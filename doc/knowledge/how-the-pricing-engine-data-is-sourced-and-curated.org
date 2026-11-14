@@ -112,6 +112,7 @@ Curation is data, not code. It lives in =projects/ores.seeder/datasets/ore_prici
 | =engines.json= | the description, the detail and the source of an engine |
 | =templates.json= | the asset class, the method and the description of a sensitivity template |
 | =guide-omits.json= | the pairs the ORE code registers, for a product type the guide's chapter leaves out and for one whose pair the guide states wrongly, with the values the code reads |
+| =pair-settings.json= | a setting the engine takes of every product that names a pair, stated once for the pair rather than per product type |
 | =globals.json= | a global parameter: its domain, default, label, help and description |
 | =value-sets.json= | each guide value set, its values, the catalogues it draws on and the setting that names it |
 | =value-sets-code.json= | the sets the type extractor writes, one per type and enum it finds |

@@ -223,7 +223,7 @@ def with_the_pairs_the_guide_omits(vocabulary):
             if all(known is not pair for pair in merged):
                 merged.append(known)
         for index, pair in enumerate(merged):
-            pair["usual"] = index < len(pairs)
+            pair["usual"] = index == 0
         held["pairs"] = merged
     return vocabulary
 

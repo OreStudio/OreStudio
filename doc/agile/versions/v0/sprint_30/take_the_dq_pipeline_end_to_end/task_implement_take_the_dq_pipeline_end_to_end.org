@@ -63,6 +63,9 @@ the code does, which datasets exist, where each is published, and what is broken
 
 * Notes
 
+The investigation is written up beside this task:
+[[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]].
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -28,9 +28,9 @@ A check books one trade of every generated type through the real tables, so a re
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | The check passes for all eight asset classes. It found three defects on the way, all fixed. |
-| Waiting on   | Nothing.                               |
-| Next         | Run the gates and raise the PR.        |
+| Now          | PR #4692 is raised and the review round is addressed: the check is reworked and green. |
+| Waiting on   | A reviewer.                            |
+| Next         | Merge, then close the task.            |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -56,9 +56,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Booking check | 103 assertions pass, eight asset classes | =ores.synthetic.core.tests "every_generated_trade_type_books_through_the_database"= | 0867791bee plus the working tree |
-| =ores.synthetic.core.tests= | 138 cases, 3201 assertions | =ores.synthetic.core.tests= | 0867791bee plus the working tree |
-| =ores.trading.core.tests= | 245 cases, 1560 assertions | =ores.trading.core.tests= | 0867791bee plus the working tree |
+| Booking check | 118 assertions pass, every class the planner names | =ores.synthetic.core.tests "every_generated_trade_type_books_through_the_database"= | ed3b576323 |
+| =ores.synthetic.core.tests= | 139 cases, 3230 assertions | =ores.synthetic.core.tests= | ed3b576323 |
+| =ores.trading.core.tests= | 245 cases, 1560 assertions | =ores.trading.core.tests= | ed3b576323 |
 
 * Notes
 
@@ -88,6 +88,23 @@ task and name that file in the Command column.
     =already_exists=. A config states one asset class, and the planner names a
     trade from its config, so each class is now drawn from its own config, built
     with =config_id_for= the way a provisioner builds one.
+- The review round reworked the check and the two stale marketdata lists.
+  - The check named its own eight classes, counted a type it had only
+    attempted, and would pass on a class whose plan held nothing. It now takes
+    the classes =planned_asset_classes()= names, counts a type only when the
+    store answered =ok=, and requires each class to state types and the plan to
+    hold them.
+  - A unity clash between this check's scope and the export test's was two
+    names for one recipe. The recipe the trade tests state the same way now
+    lives in =ore_example_conventions.hpp=, and both tests build on it.
+  - The marketdata helper rename stays, and it is not a side change: main has
+    the collision. =app_staleness_policy_tests.cpp= and
+    =fx_forward_ladder_plan_tests.cpp= each define =at= in one target, so
+    =unity-collisions= reports it on main. The compiler tolerates it because
+    the two files land in different batches today, and the next reshuffle ends
+    that. The two stale marketdata lists stay for the same kind of reason:
+    =cmake-sources= checks every component, so main fails it until they are
+    regenerated.
 
 * Test Scenarios
 
@@ -110,15 +127,26 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The PR-record commit states no Environment or Co-Authored-By trailer | - | Kept | =compass pr create= writes that commit, and every one on main has this form; it states no environment because the record names none. |
+| 2 | A unity clash between two tests' scopes is one concept renamed apart | =ore_example_conventions.hpp= | Fixed | The shared recipe carries the common part. |
+| 3 | The check hardcodes the eight classes rather than asking the planner | booking tests | Fixed | It uses =planned_asset_classes()=. |
+| 4 | A class with no codes would pass without booking anything | booking tests | Fixed | Each class requires types and a plan that holds them. |
+| 5 | =booked_types= counted attempted types, not booked ones | booking tests | Fixed | A type is counted when the store answered =ok=. |
+| 6 | A refusal names the type but never the column | booking tests | Kept | The store's message names the column, and the =INFO= quotes it. |
+| 7 | The measurement cited a commit that is not an ancestor of the branch | task | Fixed | Measured again on the rebased tree. |
+| 8 | The marketdata test rename looks like scope creep | marketdata tests | Kept | The collision is on main: =unity-collisions= reports the two =at= helpers today. The compiler tolerates it only because the files fall in different batches. |
+| 9 | The port's lifetime is stated twice in the header | trading header | Fixed | The constructor states it; the deleted overload says what it refuses. |
 
 * Result
 
-The check books one trade of every generated type of all eight asset classes
-through the real tables, 103 assertions, one population per class. Each of the
-three defects it found is fixed at its cause: the service no longer accepts a
-port it would outlive, the fixture writes the counterparty the store holds the
-trade to, and each class is drawn from a config of its own.
+The check books one trade of every generated type of every asset class the
+planner names, through the real tables: 118 assertions, one population per
+class. Each of the three defects it found is fixed at its cause: the fixture
+writes the counterparty the store holds the trade to, each class is drawn from
+a config of its own, and the service now refuses a temporary port instead of
+crashing on one.
 
 The crash it found was in the check and not in the store. The service let the
-mistake through, though, which is why the constructor refuses it now.
+mistake through, though, so it refuses a port that only the constructing
+statement owns. A named port that dies sooner still compiles; the type cannot
+see a lifetime it was not told about.

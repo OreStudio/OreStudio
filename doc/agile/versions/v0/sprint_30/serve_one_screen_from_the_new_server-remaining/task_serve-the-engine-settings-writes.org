@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: AA8CAD80-1892-4323-85FD-BBA153B99DF4
+:END:
+#+title: Task: Serve the engine settings' writes
+#+description: Four routes: the create with its configuration header and the compensation that removes it, the update, the group write or its proposal, and the removal with the bound-report guard.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Serve the four writes of the engine settings: the create, the update, the group
+write and the removal. A write to a group makes the next version of the central
+row in the service, so a part is written alone and the document is never saved
+whole.
+
+A group whose settings change the numbers a run computes, on a configuration
+that a report binds, is a proposal and not a write. That decision is the
+service's, and the route states the answer it gives.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:F321B6FD-AA33-4B71-84F2-A000578F02F5][Serve the engine settings' reads]] |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The C++ server answers =POST /api/reporting/engine-settings=,
+  =PUT /api/reporting/engine-settings/:id=,
+  =PUT /api/reporting/engine-settings/:id/groups/:group= and
+  =DELETE /api/reporting/engine-settings/:id= at the BFF's member names and
+  status codes: 201 on a create, 202 on a proposal, 204 on a removal.
+- A create writes the reporting configuration header first and the central row
+  second, and removes the header when the central write fails.
+- A group write that is a proposal writes no part, and the answer states the
+  document as it stands and the id of the approval it raised.
+- The service decides that a write is a proposal. The gateway asks for one and
+  does not decide.
+- A removal refuses with 409 when a report binds the configuration, and
+  otherwise removes the parts, then the central row, then the header.
+- A body that names a member the route does not know is refused, as in the
+  earlier families.
+- A test proves each refusal; the happy paths need a live estate and this task
+  does not prove them.
+- Each route in scope names its C++ equivalent in the inventory.
+- The local gate is green.
+
+* Plan
+
+Branch =feature/serve-the-engine-settings-writes=.
+
+The writes extend the =engine_settings_rows= unit that the reads task adds. The
+proposal travels on the service's own operation, so the gateway carries the
+group, the base version, the values as text and the reason, and states the
+approval it gets back.
+
+The compensation the BFF keeps is kept: a create that cannot write its central
+row removes the header it wrote. The header is the reporting configuration that
+binds the settings to a report, so a failed create must not leave one behind.
+
+The gateway checks no permission before a write. The service applies the rule
+and its sentence is the one the person needs, as the earlier families settled.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

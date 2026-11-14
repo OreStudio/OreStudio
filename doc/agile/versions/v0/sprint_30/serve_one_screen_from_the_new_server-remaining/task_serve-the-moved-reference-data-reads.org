@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: B55B55AE-1F27-402A-86F4-92419A2A6E38
+:END:
+#+title: Task: Serve the reference data reads this story moved here
+#+description: Five routes the story's Acceptance moves from the reference data and pick-list tasks: two convention documents and three curve configurations, through the value set reader.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Serve the five reference data routes that read the ORE value sets, which the
+story's Acceptance moved here from the reference data and pick-list tasks. Two
+answer a convention document and its terms; three answer a party's curve
+configurations.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:42084FE1-9A9B-49CC-9E50-F48426DFA6C3][Read the ORE value sets, and serve the documentation page]] |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The C++ server answers =GET /api/conventions/:family/documents/:id=,
+  =PUT /api/conventions/:family/documents/:id/terms=,
+  =GET /api/refdata/curve-configurations=,
+  =GET /api/refdata/curve-configurations/:id= and
+  =PUT /api/refdata/curve-configurations/:id= at the BFF's member names and
+  status codes.
+- The routes read the value sets through the reader the first task adds, and do
+  not restate it.
+- The reference data part answers them, beside the conventions and pick-list
+  routes it already answers.
+- Each route names its C++ equivalent in the inventory.
+- The local gate is green.
+
+* Plan
+
+Branch =feature/serve-the-moved-reference-data-reads=.
+
+This task corrects the design note in one place. The note says the value set
+reader lives in the reporting part, because the engine settings and pricing
+engine routes read it too. These five routes are reference data area routes and
+the reference data part already answers other convention routes, so a reader in
+the reporting part would make the reference data part depend on reporting, which
+already depends on =ores.refdata.api=. The reader therefore lives in
+=ores.http.core=, and this task links it from the reference data part.
+
+The five routes can be taken as soon as the first task has merged; they do not
+wait on the engine settings or the pricing engines.
+
+If the convention document routes prove as large as the machinery they need, this
+task splits into one task for the convention documents and one for the curve
+configurations.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

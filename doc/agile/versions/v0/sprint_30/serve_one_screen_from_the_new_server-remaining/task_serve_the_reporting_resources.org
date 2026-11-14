@@ -28,15 +28,15 @@ The gateway has no part for the reporting area. Add the part with the adapter re
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The part answers the form's codes, the whole definitions family, a report's start and its runs, one run's page and the problems it recorded, and the first family: a run's files, the bytes of one of them, what a file is, and the run's figures at the level the reader asks for. Fourteen routes of the fifty are paired in the inventory. |
+| Now          | The part answers the form's codes, the whole definitions family, a report's start and its runs, one run's page and the problems it recorded, the first family, the cuts and their kinds, the two schedule writes and the health tally. Twenty-seven routes of the fifty are paired in the inventory. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve a run's files and results, then the two schedule writes. |
-| Last touched | 2026-11-13                               |
+| Next         | The eight tasks the last family is split into, in their order. The first is [[id:42084FE1-9A9B-49CC-9E50-F48426DFA6C3][Read the ORE value sets, and serve the documentation page]]. |
+| Last touched | 2026-11-14                               |
 
 * Acceptance
 
 - The C++ server answers =GET /api/reporting/choices=, the codes the report edit form offers, moved here from the pick list task.
-- The C++ server answers the five reference data routes that read the ORE parameter value sets, moved here from [[id:023530BB-1715-4609-A52C-3C3A4ECFECE2][Serve the reference data operations]]: =GET /api/conventions/:family/documents/:id=, =PUT /api/conventions/:family/documents/:id/terms=, and =GET /api/refdata/curve-configurations=, =GET= and =PUT /api/refdata/curve-configurations/:id=. The value set reader, the C++ form of the BFF's =readValueSets=, lives in the reporting part, because the engine settings and pricing engine routes read it too.
+- The C++ server answers the five reference data routes that read the ORE parameter value sets, moved here from [[id:023530BB-1715-4609-A52C-3C3A4ECFECE2][Serve the reference data operations]]: =GET /api/conventions/:family/documents/:id=, =PUT /api/conventions/:family/documents/:id/terms=, and =GET /api/refdata/curve-configurations=, =GET= and =PUT /api/refdata/curve-configurations/:id=. The value set reader, the C++ form of the BFF's =readValueSets=, is shared by the reporting and reference data parts, so it lives in =ores.http.core= and not in the reporting part: the reporting part already links =ores.refdata.api=, and a reader in it would close a cycle between two part libraries. [[id:42084FE1-9A9B-49CC-9E50-F48426DFA6C3][The first task of the last family]] owns the reader.
 - The gateway part builds and its routes are reachable.
 - Each route in scope names its C++ equivalent in the inventory.
 - A test proves each new route against the answer the BFF gives.
@@ -126,10 +126,30 @@ task and name that file in the Command column.
 
 ** The last family's state
 
-The design note names four units and their order. One is served here; the three
-that remain are the engine settings (7 routes), the pricing engines (10) and the
-ORE value sets with the schema's zip (5). None needs a service change, so each is
-a unit of gateway work with its own tests, and the note states what each needs.
+The design note names four units and their order. One is served here. The rest
+of the area is delivered by eight tasks of its own, one per unit a PR can prove
+on its own, because the three remaining units of the note are more work than one
+task can carry:
+
+| # | Task | Routes |
+|---+------+--------|
+| 1 | [[id:42084FE1-9A9B-49CC-9E50-F48426DFA6C3][Read the ORE value sets, and serve the documentation page]] | 1 |
+| 2 | [[id:F321B6FD-AA33-4B71-84F2-A000578F02F5][Serve the engine settings' reads]] | 3 |
+| 3 | [[id:AA8CAD80-1892-4323-85FD-BBA153B99DF4][Serve the engine settings' writes]] | 4 |
+| 4 | [[id:C1830F26-2A60-49CE-AC82-6B784F34F79E][Serve the pricing engines' reads]] | 5 |
+| 5 | [[id:281CBA86-E948-472D-89C1-CBCE7DADAD12][Serve the pricing engines' writes]] | 3 |
+| 6 | [[id:408B68E8-AFC7-46C3-9C04-ED9C181A308B][Serve the ORE import and its preview]] | 2 |
+| 7 | [[id:8338F10C-815D-4D7F-A1C5-109FEB986371][Serve the ORE schema as a zip]] | 1 |
+| 8 | [[id:B55B55AE-1F27-402A-86F4-92419A2A6E38][Serve the reference data reads this story moved here]] | 5 |
+
+Twenty-four routes, of which twenty-three are in the fifty this task counts and
+one, the pricing engines' vocabulary, is a route the screen calls that the
+inventory states as not an API. Two departures from the design note are recorded
+in [[id:A329F86E-9B22-42DC-8B4A-E0F4875A8767][the task that scaffolds them]]:
+the value set reader lives in =ores.http.core= and not in the reporting part,
+because the reference data part reads it too; and the vocabulary is served
+because the editor calls it. The five routes this task's Acceptance moves here
+are task 8.
 
 * Test Scenarios
 

@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: C1830F26-2A60-49CE-AC82-6B784F34F79E
+:END:
+#+title: Task: Serve the pricing engines' reads
+#+description: Five routes: the page of engines, one document with its bound reports, its history, its ORE document as a file, and the vocabulary the editor draws its controls from.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Serve the pricing engines' five reads. A pricing engine configuration is three
+tables in the analytics service: a header, one row for each product and one row
+for each parameter. The screens never see the split, so a read answers the whole
+document.
+
+The ORE document of a configuration is one more read: the ORE service writes it
+and names it, and the route hands it to the browser as a file. The vocabulary is
+the last: the lookups the editor draws its controls from.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:AA8CAD80-1892-4323-85FD-BBA153B99DF4][Serve the engine settings' writes]] |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The C++ server answers =GET /api/reporting/pricing-engines=,
+  =GET /api/reporting/pricing-engines/:id=,
+  =GET /api/reporting/pricing-engines/:id/history=,
+  =GET /api/reporting/pricing-engines/:id/ore-document= and
+  =GET /api/reporting/pricing-engines/vocabulary= at the BFF's paths, with the
+  BFF's member names and status codes.
+- The page states each configuration's parties, its count of products and its
+  count of parameters.
+- One configuration states the document and the reports that bind it.
+- The ORE document is answered as a file, under the name the service states, as
+  =application/xml=, and an export that says it could not write one is a refusal
+  that carries the service's sentence.
+- The vocabulary is paired in the inventory as a route that is not an API, as
+  =choices= was, because the editor calls it and the screen breaks without it.
+- A test proves each route against the answer the BFF gives.
+- Each route in scope names its C++ equivalent in the inventory.
+- The local gate is green.
+
+* Plan
+
+Branch =feature/serve-the-pricing-engines-reads=.
+
+The document read is the unit the writes task extends: the header, its products,
+its parameters, its bound reports and the party names, stated as one document.
+The history reads the versions of all three tables.
+
+The ORE document joins two ids. The screen names the configuration by the id it
+shows; the ORE service reads a document by the reporting configuration that the
+record fills. The gateway makes that join and the screen never learns the second
+id.
+
+The vocabulary is one read of fifteen lookup collections, keyed by the names the
+editor's controls use. The inventory states it as not an API and in no area, so
+serving it changes no area's count. It is served because the editor calls it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

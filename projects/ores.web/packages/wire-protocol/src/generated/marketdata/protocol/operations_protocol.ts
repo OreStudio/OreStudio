@@ -257,6 +257,324 @@ export interface ListSeriesIdentitiesResponse {
     message: string;
 }
 
+/**
+ * @brief One axis of an instrument's shape, with its values in draw order.
+ *
+ * The field is the oresmd field code the shape stores, such as `tenor` or
+ * `strike_label`, never a display name. The values are in the order the server
+ * states, so a plot draws them without sorting.
+ */
+export interface InstrumentAxis {
+    field: string;
+    values: string[];
+}
+
+/**
+ * @brief One source behind an instrument, and whether its value is current.
+ *
+ * The provider kind is the provider table's own code, so a client can hide
+ * reference definitions without a second read. The verdict is the server's
+ * against the configured threshold for the instrument kind; a client may draw
+ * it and must not recompute it.
+ */
+export interface InstrumentSource {
+    provider_code: string;
+    provider_kind: string;
+    series_id: string;
+    as_of: string;
+    age_seconds: number;
+    stale: boolean;
+}
+
+/**
+ * @brief One instrument: the series a person reads as one thing.
+ *
+ * This is the definition of an instrument. A curve is one entry and never one
+ * entry per pillar; a pair is one entry with no axes; a surface is one entry
+ * whose two axes are its strikes and its expiries. The name is the server's and
+ * is unique within the party and the kind, because it is what a person types
+ * into the search.
+ */
+export interface MarketInstrument {
+    instrument_id: string;
+    kind: string;
+    name: string;
+    currency: string;
+    base_currency: string;
+    quote_currency: string;
+    instrument_type: string;
+    quote_type: string;
+    forward_start: string;
+    axes: InstrumentAxis[];
+    sources: InstrumentSource[];
+    party_id: string;
+    stale: boolean;
+    as_of: string;
+}
+
+/**
+ * @brief Reads the instrument catalogue of the caller's party.
+ *
+ * An instrument is a group of series that shares an asset, a subject, an
+ * instrument type, a quote type, a party and a provider, and differs in exactly
+ * one identity field: that field is the instrument's axis, and its values are
+ * the axis values in draw order. A group that differs in no field is a
+ * single-value instrument, such as a pair. A shape the schema declares is one
+ * instrument, not one per node.
+ *
+ * An empty `party_id` means the session's own party. A client never decides
+ * which party's data it sees.
+ */
+export interface ListInstrumentsRequest {
+    party_id: string;
+    query: string;
+    kinds: string[];
+    provider_code: string;
+    offset: number;
+    limit: number;
+}
+
+/**
+ * @brief The instruments the caller can see, in a stable order.
+ *
+ * The order is by kind and then by name, so a client draws the list as it
+ * arrives. `total` is the size of the whole filtered set, so a screen pages
+ * without a second read.
+ */
+export interface ListInstrumentsResponse {
+    instruments: MarketInstrument[];
+    total: number;
+    truncated: boolean;
+    success: boolean;
+    message: string;
+}
+
+/**
+ * @brief One provider's quote of one rung.
+ *
+ * A provider that does not quote a rung has no entry, rather than a zero: a
+ * gap is what the desk needs to see.
+ */
+export interface RungQuote {
+    provider_code: string;
+    value: number;
+    as_of: string;
+    age_seconds: number;
+    stale: boolean;
+    series_id: string;
+}
+
+/**
+ * @brief The value the server derives across the quoting providers.
+ *
+ * The method is a word the server states, so the column can say what it is.
+ * A consensus over one value says so by naming a count of one.
+ */
+export interface LadderConsensus {
+    value: number;
+    method: string;
+    providers_used: number;
+}
+
+/**
+ * @brief One rung: a tenor, its maturity and its quotes.
+ *
+ * The maturity date and the year fraction are the server's, because the
+ * calendar, the day count and the tenor convention are server facts. A
+ * client cannot compute either, and must not try.
+ */
+export interface RateLadderRung {
+    tenor: string;
+    maturity_date: string;
+    year_fraction: number;
+    quotes: RungQuote[];
+    consensus: LadderConsensus;
+}
+
+/**
+ * @brief Reads one currency's rate ladder at an as-of.
+ *
+ * A ladder is one series read across its term axis, not several series joined:
+ * the provider dimension is one series row per provider, and each row states
+ * every rung. The maturity dates and their order are the server's.
+ *
+ * Rungs are ordered by maturity date, so a rung quoted with a convention (ON,
+ * TN, SN) sorts before 1W and carries its own date.
+ */
+export interface GetRateLadderRequest {
+    party_id: string;
+    currency: string;
+    instrument_type: string;
+    forward_start: string;
+    as_of: string;
+    providers: string[];
+    limit: number;
+}
+
+/**
+ * @brief The ladder, in maturity order, and the facts its numbers rest on.
+ *
+ * The counts and the as-of travel with the rungs so a person never reads a
+ * rate without the instrument, the forward start and the currency it belongs
+ * to.
+ */
+export interface GetRateLadderResponse {
+    success: boolean;
+    message: string;
+    currency: string;
+    instrument_type: string;
+    forward_start: string;
+    as_of: string;
+    provider_count: number;
+    tenor_convention: string;
+    day_count_convention: string;
+    rungs: RateLadderRung[];
+}
+
+/**
+ * @brief One provider's spot of one pair.
+ *
+ * A provider that does not quote the pair has no entry, rather than a zero.
+ */
+export interface MontageSpot {
+    provider_code: string;
+    value: number;
+    as_of: string;
+    age_seconds: number;
+    stale: boolean;
+    series_id: string;
+}
+
+/**
+ * @brief One pair of the base: the providers' spots and the move.
+ *
+ * A pair whose base is on the quote side is included, because a montage is for
+ * the base and not for the pair's spelling. The change and the range are absent
+ * when the window holds no price at its start, rather than zero.
+ */
+export interface FxMontagePair {
+    pair_name: string;
+    base_currency: string;
+    quote_currency: string;
+    spot_by_provider: MontageSpot[];
+    consensus: number;
+    change_pct: number | null;
+    day_high: number | null;
+    day_low: number | null;
+}
+
+/**
+ * @brief Reads one base currency's crosses at an as-of.
+ *
+ * The instant the change and the range are measured from is the server's: a
+ * trading day starts when the session says it does, and a client must not
+ * decide what "today" means.
+ */
+export interface GetFxMontageRequest {
+    party_id: string;
+    base_currency: string;
+    providers: string[];
+    as_of: string;
+}
+
+/**
+ * @brief The base's crosses, ordered by pair name.
+ *
+ * `change_since` is stated once for the whole answer, so every row's change is
+ * measured from the same instant.
+ */
+export interface GetFxMontageResponse {
+    success: boolean;
+    message: string;
+    base_currency: string;
+    as_of: string;
+    change_since: string;
+    pairs: FxMontagePair[];
+}
+
+/**
+ * @brief The conventions the curve was built under.
+ *
+ * `compounding` describes the curve's own convention. The `zero_rate` column is
+ * always continuously compounded, so a client never has to know how to convert
+ * it; the two are stated apart on purpose.
+ */
+export interface CurveConventions {
+    index_name: string;
+    day_count: string;
+    compounding: string;
+    interpolation: string;
+    calendar: string;
+    spot_lag_days: number;
+    pillar_count: number;
+}
+
+/**
+ * @brief One pillar as the market quoted it.
+ *
+ * The rate is the observation the bootstrap read, and the series is where it
+ * read it, so a person can go and look at the quote.
+ */
+export interface CurveMarketPillar {
+    tenor: string;
+    maturity_date: string;
+    year_fraction: number;
+    rate: number;
+    provider_code: string;
+    series_id: string;
+    as_of: string;
+}
+
+/**
+ * @brief What the curve makes of one pillar.
+ *
+ * `zero_rate` is continuously compounded. `implied_forward` is the rate the
+ * segment ending at this pillar implies, so the first pillar carries its own
+ * zero rate. `shift_bps` is the bootstrapped zero rate less the market rate at
+ * the pillar: the distance between the curve and the market, not an applied
+ * parallel shift.
+ */
+export interface CurveBootstrappedPoint {
+    tenor: string;
+    maturity_date: string;
+    year_fraction: number;
+    discount_factor: number;
+    zero_rate: number;
+    implied_forward: number;
+    shift_bps: number;
+}
+
+/**
+ * @brief Reads a curve's conventions, its market pillars and its bootstrapped points.
+ *
+ * This is not the publish record and not a candidate's check: it reads the
+ * curve a bootstrap configuration produces as of an instant, so a person can
+ * say why the curve differs from the market.
+ */
+export interface GetCurveAnalyticsRequest {
+    party_id: string;
+    instrument_id: string;
+    as_of: string;
+}
+
+/**
+ * @brief The curve's facts, its market pillars and its bootstrapped points.
+ *
+ * A market pillar and a bootstrapped point for the same tenor are a pair, and
+ * both state the same maturity date so a reader can check that they are.
+ */
+export interface GetCurveAnalyticsResponse {
+    success: boolean;
+    message: string;
+    instrument_id: string;
+    name: string;
+    as_of: string;
+    stale: boolean;
+    conventions: CurveConventions;
+    market_pillars: CurveMarketPillar[];
+    bootstrapped: CurveBootstrappedPoint[];
+}
+
 export interface CrmRateItem {
     crm_name: string;
     base_currency_code: string;
@@ -1168,6 +1486,10 @@ export const subjects = {
     parse_oresmd_uri_request: 'marketdata.v1.ops.parse_oresmd_uri',
     compose_oresmd_uri_request: 'marketdata.v1.ops.compose_oresmd_uri',
     list_series_identities_request: 'marketdata.v1.ops.list_series_identities',
+    list_instruments_request: 'marketdata.v1.ops.list_instruments',
+    get_rate_ladder_request: 'marketdata.v1.ops.get_rate_ladder',
+    get_fx_montage_request: 'marketdata.v1.ops.get_fx_montage',
+    get_curve_analytics_request: 'marketdata.v1.ops.get_curve_analytics',
     get_crm_rate_request: 'marketdata.v1.ops.get_crm_rate',
     get_crm_rates_request: 'marketdata.v1.ops.get_crm_rates',
     republish_curve_request: 'marketdata.v1.ops.republish_curve',
@@ -1199,6 +1521,10 @@ export const requiresSession = {
     parse_oresmd_uri_request: true,
     compose_oresmd_uri_request: true,
     list_series_identities_request: true,
+    list_instruments_request: true,
+    get_rate_ladder_request: true,
+    get_fx_montage_request: true,
+    get_curve_analytics_request: true,
     get_crm_rate_request: true,
     get_crm_rates_request: true,
     republish_curve_request: true,

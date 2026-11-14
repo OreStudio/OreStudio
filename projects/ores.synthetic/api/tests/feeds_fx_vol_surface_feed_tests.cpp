@@ -18,11 +18,13 @@
  *
  */
 #include "ores.analytics.quant/domain/market_board.hpp"
+#include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.analytics.quant/service/run_clock.hpp"
 #include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
 #include "ores.testing/nats_options_helper.hpp"
+#include <bitset>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -78,6 +80,15 @@ feed_markets(std::size_t expiries, ores::analytics::quant::math::fx_market marke
     return std::vector<ores::analytics::quant::math::fx_market>(expiries, market);
 }
 
+/// The pair's rule: weekends closed, no dated holidays, so a tenor that lands on one moves.
+fx_expiry_date_rule feed_rule() {
+    return fx_expiry_date_rule(ores::analytics::quant::domain::business_day_convention::following,
+                               false,
+                               0,
+                               ores::analytics::quant::domain::business_day_calendar_set::from_rows(
+                                   {}, 1, {std::bitset<7>{0b1000001}}));
+}
+
 fx_vol_surface_feed_build_input feed_input() {
     fx_vol_surface_feed_build_input in;
     in.config = feed_row();
@@ -86,6 +97,7 @@ fx_vol_surface_feed_build_input feed_input() {
     in.contributors = {"reference"};
     in.convention = feed_convention;
     in.deltas = {0.25, 0.10};
+    in.expiry_rule = feed_rule();
     return in;
 }
 

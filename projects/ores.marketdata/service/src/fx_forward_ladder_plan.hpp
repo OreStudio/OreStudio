@@ -23,6 +23,7 @@
 #include "ores.analytics.quant/domain/business_day_calendar_set.hpp"
 #include "ores.analytics.quant/domain/date_convention.hpp"
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
+#include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.analytics.quant/service/fx_forward_calculator.hpp"
 #include "ores.marketdata.api/domain/curve_publish.hpp"
 #include "ores.marketdata.service/export.hpp"
@@ -89,10 +90,6 @@ ORES_MARKETDATA_SERVICE_EXPORT std::vector<analytics::quant::service::bootstrapp
 anchor_curve(std::vector<analytics::quant::service::bootstrapped_point> points,
              std::chrono::year_month_day reference_date);
 
-/// One calendar index that is closed whenever any of @p calendars is closed.
-ORES_MARKETDATA_SERVICE_EXPORT analytics::quant::domain::business_day_calendar_set
-joint_calendar(std::span<const std::vector<ores::refdata::domain::calendar_date>> calendars);
-
 struct fx_ladder_dates final {
     std::chrono::year_month_day spot_date{};
     std::vector<analytics::quant::service::fx_forward_tenor> tenors;
@@ -110,9 +107,7 @@ struct fx_ladder_dates final {
 ORES_MARKETDATA_SERVICE_EXPORT fx_ladder_dates
 build_ladder_dates(std::chrono::year_month_day as_of_date,
                    int spot_days,
-                   analytics::quant::domain::business_day_convention roll,
-                   bool end_of_month,
-                   const analytics::quant::domain::business_day_calendar_set& calendar);
+                   const analytics::quant::service::fx_expiry_date_rule& rule);
 
 }
 

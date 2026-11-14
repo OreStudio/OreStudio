@@ -20,7 +20,6 @@
 #include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
 #include "ores.analytics.quant/math/fx_pair_market.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
-#include "ores.analytics.quant/service/calendar_arithmetic.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -219,12 +218,18 @@ fx_vol_board_inputs(const ores::analytics::quant::domain::market_board& values,
 std::expected<void, std::string>
 fx_vol_expiry_markets(const fx_vol_market_inputs& inputs,
                       std::span<const ores::analytics::quant::domain::date_period> periods,
+                      const ores::analytics::quant::service::fx_expiry_date_rule& rule,
                       std::vector<ores::analytics::quant::math::fx_market>& out) {
+    // A rule with no calendar dates nothing: the arithmetic refuses rather than treat an unread
+    // calendar as one closed only at weekends. A surface built that way is named here, because
+    // the exception's own message says more about indexes than about the pair.
+    if (rule.calendar_count() == 0)
+        return std::unexpected(std::string("the pair's expiry date rule names no calendar"));
     out.clear();
     out.reserve(periods.size());
     for (const auto& period : periods) {
-        const auto value_date = ores::analytics::quant::service::calendar_arithmetic::add_period(
-            inputs.spot_date, period);
+        // The date the ladder publishes for this tenor, because both call the same rule.
+        const auto value_date = rule.expiry(inputs.spot_date, period);
         auto resolved = ores::analytics::quant::math::pair_market_at(
             inputs.spot.spot, inputs.spot_date, inputs.base, inputs.quote, value_date, {});
         if (!resolved)
@@ -243,7 +248,8 @@ fx_vol_surface_feed::fx_vol_surface_feed(
     run_market& market,
     double sensitivity,
     const ores::analytics::quant::domain::arrival_spec& arrival)
-    : nats_(nats)
+    : expiry_rule_(input.expiry_rule)
+    , nats_(nats)
     , source_name_(std::move(source_name))
     , nats_subject_(std::move(nats_subject))
     , emitter_(surface_or_throw(input, run_seed, source_name_))
@@ -326,7 +332,8 @@ std::string fx_vol_surface_feed::tick(const tick_context& context) {
         fx_vol_board_inputs(market_.values(), *base_curve_id_, *quote_curve_id_, *spot_id_);
     if (!inputs)
         return "no market: " + inputs.error();
-    if (const auto built = fx_vol_expiry_markets(*inputs, expiry_periods_, markets_); !built)
+    if (const auto built = fx_vol_expiry_markets(*inputs, expiry_periods_, expiry_rule_, markets_);
+        !built)
         return "no market: " + built.error();
     const auto points = emitter_.step(context.drivers, markets_);
     const auto& codec = ores::nats::default_wire_codec();

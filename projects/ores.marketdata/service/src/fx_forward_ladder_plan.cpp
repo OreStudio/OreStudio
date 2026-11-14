@@ -20,7 +20,6 @@
 #include "fx_forward_ladder_plan.hpp"
 #include "ores.analytics.quant/service/calendar_arithmetic.hpp"
 #include <algorithm>
-#include <bitset>
 #include <utility>
 
 namespace ores::marketdata::service {
@@ -33,7 +32,6 @@ using quant::domain::period_unit;
 using quant::service::calendar_arithmetic;
 using quant::service::fx_forward_tenor;
 
-constexpr unsigned weekend_mask = 0b1000001;
 constexpr std::size_t only_calendar = 0;
 
 struct ladder_tenor final {
@@ -91,38 +89,19 @@ anchor_curve(std::vector<quant::service::bootstrapped_point> points,
     return points;
 }
 
-quant::domain::business_day_calendar_set
-joint_calendar(std::span<const std::vector<ores::refdata::domain::calendar_date>> calendars) {
-    std::vector<quant::domain::calendar_date_row> holidays;
-    for (const auto& days : calendars)
-        for (const auto& day : days)
-            if (!day.is_business_day)
-                holidays.push_back({only_calendar, day.date});
-    const auto earlier = [](const auto& a, const auto& b) {
-        return std::chrono::sys_days(a.date) < std::chrono::sys_days(b.date);
-    };
-    std::ranges::sort(holidays, earlier);
-    const auto same = [](const auto& a, const auto& b) {
-        return a.date == b.date;
-    };
-    holidays.erase(std::unique(holidays.begin(), holidays.end(), same), holidays.end());
-    return quant::domain::business_day_calendar_set::from_rows(
-        holidays, 1, {std::bitset<7>{weekend_mask}});
-}
-
 fx_ladder_dates build_ladder_dates(std::chrono::year_month_day as_of_date,
                                    int spot_days,
-                                   quant::domain::business_day_convention roll,
-                                   bool end_of_month,
-                                   const quant::domain::business_day_calendar_set& calendar) {
-    const auto horizon = calendar_arithmetic::adjust(
-        as_of_date, quant::domain::business_day_convention::following, only_calendar, calendar);
+                                   const quant::service::fx_expiry_date_rule& rule) {
+    const auto horizon =
+        calendar_arithmetic::adjust(as_of_date,
+                                    quant::domain::business_day_convention::following,
+                                    only_calendar,
+                                    rule.calendars());
     const auto advance = [&](std::chrono::year_month_day from, date_period period) {
-        return calendar_arithmetic::advance(
-            from, period, roll, end_of_month, only_calendar, calendar);
+        return rule.expiry(from, period);
     };
     const auto business_days = [&](int n) {
-        return advance(horizon, {period_unit::day, n});
+        return rule.business_day(horizon, n);
     };
 
     fx_ladder_dates out;

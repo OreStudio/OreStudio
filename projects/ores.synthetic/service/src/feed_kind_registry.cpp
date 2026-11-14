@@ -25,6 +25,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.refdata.core/service/pair_expiry_date_rule.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
@@ -721,10 +722,24 @@ feed_kind make_fx_vol_surface_kind() {
                                                    " has no forward to be struck against"};
                 }
 
+                /*
+                 * The date each expiry is struck at is the pair's, read the way the forward
+                 * ladder reads it: one reader of the convention and the calendars, so the
+                 * surface quotes at the dates the ladder publishes rather than its own.
+                 */
+                const auto pair_code = cfg.base_currency_code + "/" + cfg.quote_currency_code;
+                const auto expiry_rule =
+                    ores::refdata::service::read_pair_expiry_date_rule(ctx, pair_code);
+                if (!expiry_rule)
+                    return {.input = std::nullopt,
+                            .skip_reason = "The surface " + pair_code +
+                                           " cannot date its expiries: " + expiry_rule.error()};
+
                 fx_vol_surface_feed_build_input in;
                 in.config = cfg;
                 in.expiries = std::move(expiries);
                 in.contributors = std::move(contributors);
+                in.expiry_rule = expiry_rule->rule;
                 /*
                  * The market is not a fact of the row: the feed reads its pair's spot and its
                  * two currencies' curves from the run's values on every tick, and solves each

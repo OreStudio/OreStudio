@@ -26,11 +26,17 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.refdata.api/domain/calendar_date.hpp"
+#include "ores.refdata.api/domain/currency_pair_convention.hpp"
+#include "ores.refdata.api/domain/currency_pair_convention_calendar.hpp"
 #include "ores.refdata.api/domain/instrument_code.hpp"
 #include "ores.refdata.api/domain/payment_frequency.hpp"
 #include "ores.refdata.api/domain/tenor.hpp"
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
+#include "ores.refdata.core/repository/calendar_date_repository.hpp"
+#include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
+#include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/instrument_code_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/repository/payment_frequency_repository.hpp"
@@ -129,6 +135,71 @@ struct seeded_configs {
     std::string ir_enabled_source;
     std::string surface_enabled_source;
 };
+
+
+// The tenant provisioner copies the tenor, instrument, payment-frequency and
+// rates-convention catalogs into every new tenant, but not the pair
+// conventions: a surface dates its expiries on its pair's convention and
+// calendars, and refuses to start without them, so the test states them the way
+// an environment's reference data does.
+void seed_pair_expiry_calendar(ores::testing::scoped_database_helper& h,
+                               const std::string& pair_code,
+                               const std::string& calendar_code,
+                               std::chrono::year_month_day from,
+                               std::chrono::year_month_day to) {
+    namespace refdata_repo = ores::refdata::repository;
+    using namespace ores::refdata::domain;
+    auto& ctx = h.context();
+    const auto tenant = h.tenant_id().to_string();
+    const auto actor = h.db_user();
+
+    currency_pair_convention convention;
+    convention.tenant_id = h.tenant_id();
+    convention.pair_code = pair_code;
+    convention.pip_factor = 0.0001;
+    convention.tick_size = 0.00001;
+    convention.decimal_places = 5;
+    convention.business_day_convention = "ModifiedFollowing";
+    convention.spot_relative = false;
+    convention.end_of_month = false;
+    convention.modified_by = actor;
+    convention.performed_by = actor;
+    convention.change_reason_code = "system.test";
+    convention.change_commentary = "Synthetic test data";
+    refdata_repo::currency_pair_convention_repository().write(ctx, convention);
+
+    currency_pair_convention_calendar link;
+    link.tenant_id = tenant;
+    link.pair_code = pair_code;
+    link.calendar_code = calendar_code;
+    link.modified_by = actor;
+    link.performed_by = actor;
+    link.change_reason_code = "system.test";
+    link.change_commentary = "Synthetic test data";
+    refdata_repo::currency_pair_convention_calendar_repository{ctx}.write(link);
+
+    // Only the business days are written: the reader takes the rows that are
+    // not business days as the holidays, and an empty calendar is refused.
+    std::vector<calendar_date> days;
+    for (auto day = std::chrono::sys_days(from); day <= std::chrono::sys_days(to);
+         day += std::chrono::days{1}) {
+        const std::chrono::year_month_day date{day};
+        const std::chrono::weekday weekday{day};
+        if (weekday == std::chrono::Saturday || weekday == std::chrono::Sunday)
+            continue;
+        calendar_date row;
+        row.tenant_id = tenant;
+        row.calendar_code = calendar_code;
+        row.date = date;
+        row.is_business_day = true;
+        row.modified_by = actor;
+        row.performed_by = actor;
+        row.change_reason_code = "system.test";
+        row.change_commentary = "Synthetic test data";
+        days.push_back(row);
+    }
+    refdata_repo::calendar_date_repository{ctx}.write(days);
+}
 
 // Seeds four enabled containers holding: an enabled FX config (EUR/USD, with
 // its GMM component) and an enabled IR curve config (USD/sofr, with its
@@ -599,6 +670,11 @@ TEST_CASE("feed_config_starts_a_volatility_surface_by_config_id",
     config_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_configs(f.db, test_party);
+    seed_pair_expiry_calendar(f.db,
+                              "EUR/USD",
+                              "TARGET",
+                              std::chrono::year{2026} / std::chrono::January / 1,
+                              std::chrono::year{2027} / std::chrono::December / 31);
     const auto token = mint_token(f.db.tenant_id().to_string(),
                                   test_party,
                                   {"synthetic::fx_spot_generation_configs:read",

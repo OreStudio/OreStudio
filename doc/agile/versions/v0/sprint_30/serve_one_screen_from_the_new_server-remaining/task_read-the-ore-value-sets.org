@@ -129,6 +129,14 @@ refuses with 500 and the reader's sentence. Every other failure keeps the
 house answer, which logs the detail and tells the browser the service could not
 answer.
 
+** The check the merge turned red
+
+=component-drift= fails after main advanced under this branch. The file it names
+is =projects/ores.refdata/api/include/ores.refdata.api/messaging/configuration_document_protocol.hpp=,
+which =ae416bfd8e= changed on main. This branch touches no reference data file.
+Regenerating the component would undo that change, so the failure is named here
+and not fixed.
+
 ** The relation the page does not need
 
 The documentation page reads the =Setup= scope, whose settings name no catalogue

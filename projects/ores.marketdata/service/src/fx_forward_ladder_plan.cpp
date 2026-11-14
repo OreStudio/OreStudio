@@ -76,15 +76,6 @@ select_published_set(std::span<const domain::curve_publish> sets,
     return best ? std::optional(*best) : std::nullopt;
 }
 
-std::vector<quant::service::bootstrapped_point>
-anchor_curve(std::vector<quant::service::bootstrapped_point> points,
-             std::chrono::year_month_day reference_date) {
-    if (points.empty() ||
-        std::chrono::sys_days(points.front().date) > std::chrono::sys_days(reference_date))
-        points.insert(points.begin(), {"", reference_date, 1.0});
-    return points;
-}
-
 fx_ladder_dates build_ladder_dates(std::chrono::year_month_day as_of_date,
                                    int spot_days,
                                    const quant::service::fx_expiry_date_rule& rule) {

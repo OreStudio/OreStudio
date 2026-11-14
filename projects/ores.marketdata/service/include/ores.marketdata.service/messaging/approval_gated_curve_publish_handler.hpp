@@ -201,10 +201,8 @@ private:
 
         // A deferred build writes nothing and stamps nothing, so the request is not
         // spent on a curve whose inputs have not arrived: the next firing applies it.
-        const auto built =
-            curve_republish_service::republish(req_ctx,
-                                               attempted.bootstrap_config_id,
-                                               attempted.as_of);
+        const auto built = curve_republish_service::republish(
+            req_ctx, attempted.bootstrap_config_id, attempted.as_of);
         if (!built) {
             resp.status = service::app::publish_status_deferred;
             resp.message = "Deferred. " + built.error().reason;

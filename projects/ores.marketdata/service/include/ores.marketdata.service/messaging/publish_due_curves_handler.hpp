@@ -230,8 +230,8 @@ public:
                     approval_gated_curve_publish_handler::answer(req_ctx, publish, answer);
                     // The publish path answers in the same words the sweep reports, so
                     // a curve's fate is never restated in a second vocabulary.
-                    outcome.status = answer.status.empty() ? std::string(publish_status_failed)
-                                                           : answer.status;
+                    outcome.status =
+                        answer.status.empty() ? std::string(publish_status_failed) : answer.status;
                     outcome.message = answer.message;
                 } catch (const std::exception& e) {
                     outcome.status = std::string(publish_status_failed);
@@ -264,11 +264,11 @@ public:
 private:
     /// The name a curve is known by, or the identifier when the firing does not
     /// hold the curve the edge names.
-    static std::string name_of(
-        const std::string& config_id,
-        const std::unordered_map<std::string,
-                                 const ores::refdata::domain::ir_curve_bootstrap_config*>&
-            configs_by_id) {
+    static std::string
+    name_of(const std::string& config_id,
+            const std::unordered_map<std::string,
+                                     const ores::refdata::domain::ir_curve_bootstrap_config*>&
+                configs_by_id) {
         const auto it = configs_by_id.find(config_id);
         return it == configs_by_id.end() ? config_id : it->second->name;
     }
@@ -282,11 +282,11 @@ private:
             configs_by_id) {
         std::string names;
         for (const auto& id : refusal.node_ids)
-            names += (names.empty() ? "" : ", ") + std::string("'") +
-                     name_of(id, configs_by_id) + std::string("'");
-        const auto what = refusal.kind == curve_build_refusal_kind::cycle
-                              ? "the curves discount off each other in a cycle"
-                              : "a curve is configured more than once";
+            names += (names.empty() ? "" : ", ") + std::string("'") + name_of(id, configs_by_id) +
+                     std::string("'");
+        const auto what = refusal.kind == curve_build_refusal_kind::cycle ?
+                              "the curves discount off each other in a cycle" :
+                              "a curve is configured more than once";
         return "The curve build cannot be planned: " + std::string(what) + ": " + names;
     }
 };

@@ -20,6 +20,7 @@
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "../curve_pillar_reader.hpp"
 #include "../curve_republish_resolver.hpp"
+#include "../published_curve.hpp"
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
@@ -183,9 +184,17 @@ compute_curve(const ores::database::context& ctx,
         discount_config = read_config(ctx, *config.discount_curve_config_id);
         discount_curve = read_discount_curve(ctx, discount_config->output_series_id, as_of, refctx);
         if (discount_curve.empty())
-            return std::unexpected(
-                curve_deferral{"curve '" + config.name + "' discounts off '" +
-                               discount_config->name + "', which has published nothing yet"});
+            return std::unexpected(curve_deferral{"curve '" + config.name + "' discounts off '" +
+                                                  discount_config->name +
+                                                  "', which has published nothing yet"});
+
+        // A stored set leaves out its own reference date, where the discount factor
+        // is one by definition, so the curve is anchored before it is judged. A
+        // projection may hold a pillar shorter than the funding curve's first one --
+        // a one month deposit against a curve whose first deposit is three months --
+        // and that pillar lies between the reference date and the first point.
+        discount_curve =
+            anchor_curve(std::move(discount_curve), std::chrono::year_month_day{horizon});
     }
 
     curve_computation out;
@@ -202,12 +211,12 @@ compute_curve(const ores::database::context& ctx,
     out.source_series_ids = std::move(distinct);
 
     try {
-        out.points = quant::curve_bootstrap_engine::bootstrap(std::chrono::year_month_day{horizon},
-                                                              bootstrap_pillars,
-                                                              day_count_convention,
-                                                              interpolation_method,
-                                                              is_projection ? &discount_curve
-                                                                            : nullptr);
+        out.points =
+            quant::curve_bootstrap_engine::bootstrap(std::chrono::year_month_day{horizon},
+                                                     bootstrap_pillars,
+                                                     day_count_convention,
+                                                     interpolation_method,
+                                                     is_projection ? &discount_curve : nullptr);
     } catch (const quant::discount_curve_required_error& e) {
         // The funding curve is published but does not reach a pillar's date, so what
         // this curve reads is not there yet. The engine states the date; the build

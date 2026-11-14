@@ -103,6 +103,34 @@ TEST_CASE("one_firing_builds_the_funding_curve_and_the_projection_that_reads_it"
     CHECK(resp.curves[1].status == "published");
 }
 
+TEST_CASE("a_projection_reads_its_funding_curve_from_that_curves_reference_date",
+          curve_republish_tags) {
+    curve_fixture f;
+    zero_approval_kind zeroed(f.h);
+    const auto maker = seed_person(f.h);
+    // The projection's first deposit is 6M and the funding curve's first point is
+    // 12M, so the pillar falls between the funding curve's reference date, where the
+    // discount factor is one by definition, and its first stored point. A stored set
+    // states no reference date, so the projection must anchor the curve it reads.
+    const auto projection_id = f.seed_projection_curve_with_a_short_pillar();
+
+    const auto ctx =
+        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, maker.account.username);
+    const auto resp = publish_due_curves_handler::publish_all(ctx);
+
+    INFO(resp.message);
+    for (const auto& curve : resp.curves) {
+        INFO(curve.name << ": " << curve.status << " " << curve.message);
+        CHECK(curve.status == "published");
+    }
+    REQUIRE(resp.success);
+    const auto projection = std::ranges::find_if(resp.curves, [&](const auto& one) {
+        return one.bootstrap_config_id == boost::uuids::to_string(projection_id);
+    });
+    REQUIRE(projection != resp.curves.end());
+    CHECK(projection->status == "published");
+}
+
 TEST_CASE("a_projection_whose_funding_curve_cannot_build_is_deferred_not_failed",
           curve_republish_tags) {
     curve_fixture f;

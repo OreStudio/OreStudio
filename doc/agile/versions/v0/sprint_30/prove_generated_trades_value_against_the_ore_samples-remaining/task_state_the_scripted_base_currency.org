@@ -78,11 +78,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Error rows that ask for a scripted parameter, before | 48 | =select count(*) from ores_reporting_report_error_events_tbl where message ilike '%BaseCcy%'= | =2ed46fc776= |
-| Error rows that ask for a scripted parameter, after | 0 | the same query, on the instance the new seed produced | =1b740a5dc9= |
-| The run's scripted configuration block | states Model, BaseCcy, EnforceBaseCcy, FullDynamicFx, GridCoarsening, Engine, Samples, RegressionOrder, TimeStepsPerYear and Interactive | =Input/pricingengine.xml= of the run's job | =1b740a5dc9= |
-| Error rows the scripted products still record | 9 script library, 11 basket data; the rest are market data | =ores_reporting_report_error_events_tbl= grouped by message | =1b740a5dc9= |
-| Metrics the report records | 1440, as before | =ores_reporting_report_metrics_tbl= | =1b740a5dc9= |
+| Error rows that ask for a scripted parameter, before | 48 | =select count(*) from ores_reporting_report_error_events_tbl where message ilike '%BaseCcy%'= | =cf010d9c18= |
+| Error rows that ask for a scripted parameter, after | 0 | the same query, on the instance the new seed produced | =07a9c302f1= |
+| The run's scripted configuration block | states Model, BaseCcy, EnforceBaseCcy, FullDynamicFx, GridCoarsening, Engine, Samples, RegressionOrder, TimeStepsPerYear and Interactive | =Input/pricingengine.xml= of the run's job | =07a9c302f1= |
+| Error rows the scripted products still record | 9 script library, 11 basket data; the rest are market data | =ores_reporting_report_error_events_tbl= grouped by message | =07a9c302f1= |
+| Metrics the report records | 1440, as before | =ores_reporting_report_metrics_tbl= | =07a9c302f1= |
 
 * Notes
 

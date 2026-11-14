@@ -27,11 +27,11 @@ on every value block, so no client keeps its own threshold.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | The policy states a threshold for each instrument kind, the service states them in its options, and every read asks for its own kind. The deployment's one number answers for a kind nobody names. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | State the two values for this deployment. The mechanism is in place and the numbers are the owner's to choose. |
+| Next         | Nothing. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -97,6 +97,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed with #4724 (merge commit 5b0fd75da0). The policy states a threshold for each
+instrument kind; the service states them in its options, taken from the component's
+model so the parser binds them; every read asks for its own kind, and the catalogue
+for each source's asset class. Zero removes a kind's value, so the deployment's one
+number answers for it.
+
+The two numbers are the deployment's and are empty by default: the mechanism is
+in place, and the story's recorded cadence rule is per source, not per kind, so it
+was not copied across.
 
 * Notes added at review
 

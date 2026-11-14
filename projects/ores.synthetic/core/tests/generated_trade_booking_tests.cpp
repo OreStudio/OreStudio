@@ -18,6 +18,7 @@
  *
  */
 #include "ore_example_conventions.hpp"
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -196,6 +197,27 @@ void write_issue(const trade_population_slot& slot,
 TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
     auto lg(make_logger(test_suite));
     fixture f;
+
+    // A recreate seeds the DQ artefact tables and leaves the refdata catalogues
+    // empty, because the Librarian publishes them on demand. A basket
+    // constituent is refused unless its code is in the published catalogue, so
+    // the bookings below publish the three catalogues a basket reads first.
+    const auto publish = [&](const char* function, const char* dataset) {
+        const std::string sql = std::string("select * from ") + function +
+                                "((select id from ores_dq_datasets_tbl"
+                                " where code = '" +
+                                dataset +
+                                "'"
+                                " and tenant_id = ores_utility_system_tenant_id_fn()"
+                                " and valid_to = ores_utility_infinity_timestamp_fn()),"
+                                " ores_utility_system_tenant_id_fn())";
+        ores::database::query_builder::execute_raw_multi_column_query(
+            f.h.context(), sql, lg, dataset);
+    };
+    publish("ores_refdata_publish_equity_underlyings_from_dq_fn", "refdata.equity_underlyings");
+    publish("ores_refdata_publish_currency_pairs_from_dq_fn", "refdata.currency_pairs");
+    publish("ores_refdata_publish_commodities_from_dq_fn", "refdata.commodities");
+
     // The service holds a reference to the port, so the port outlives it.
     open_books open;
     trade_operations_service books(f.ctx, open);

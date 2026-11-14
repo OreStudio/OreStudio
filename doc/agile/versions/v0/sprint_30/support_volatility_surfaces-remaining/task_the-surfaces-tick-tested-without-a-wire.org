@@ -38,12 +38,12 @@ thousand feeds is measured.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Rebased onto main, reviewed, and green on everything it can move. |
-| Waiting on   | The smoke's 1W pre-spot refusal, which is a capture on main and not this task's. |
-| Next         | Raise the pull request. |
-| Last touched | 2026-11-13                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
 
 * Acceptance
 

@@ -28,6 +28,7 @@
 #include "ores.analytics.api/messaging/todays_market_entry_protocol.hpp"
 #include "ores.analytics.core/repository/todays_market_entry_entity.hpp"
 #include "ores.analytics.core/repository/todays_market_entry_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"

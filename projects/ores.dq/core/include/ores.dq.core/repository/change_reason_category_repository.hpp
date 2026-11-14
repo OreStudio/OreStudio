@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_CATEGORY_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CHANGE_REASON_CATEGORY_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.dq.api/domain/change_reason_category.hpp"
 #include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
 #include "ores.dq.core/export.hpp"

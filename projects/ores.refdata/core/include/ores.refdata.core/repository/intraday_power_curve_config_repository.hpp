@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_INTRADAY_POWER_CURVE_CONFIG_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_INTRADAY_POWER_CURVE_CONFIG_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
 #include "ores.refdata.api/messaging/intraday_power_curve_config_protocol.hpp"

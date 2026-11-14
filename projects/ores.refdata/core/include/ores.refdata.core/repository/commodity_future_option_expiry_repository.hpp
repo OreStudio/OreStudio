@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COMMODITY_FUTURE_OPTION_EXPIRY_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COMMODITY_FUTURE_OPTION_EXPIRY_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/commodity_future_option_expiry.hpp"
 #include "ores.refdata.api/messaging/commodity_future_option_expiry_protocol.hpp"

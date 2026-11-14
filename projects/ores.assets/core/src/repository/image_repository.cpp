@@ -28,6 +28,7 @@
 #include "ores.assets.api/messaging/image_protocol.hpp"
 #include "ores.assets.core/repository/image_entity.hpp"
 #include "ores.assets.core/repository/image_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"

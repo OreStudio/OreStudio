@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.reporting.core/repository/ore_parameter_setting_value_set_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"

@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_SCHEDULE_DATE_REPOSITORY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_INSTRUMENT_SCHEDULE_DATE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/messaging/instrument_schedule_date_protocol.hpp"

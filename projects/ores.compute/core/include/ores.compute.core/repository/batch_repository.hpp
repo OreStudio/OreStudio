@@ -28,7 +28,7 @@
 #include "ores.compute.api/domain/batch.hpp"
 #include "ores.compute.api/messaging/batch_protocol.hpp"
 #include "ores.compute.core/export.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>

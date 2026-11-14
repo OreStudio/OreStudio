@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.inbox.core/repository/approval_part_repository.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.inbox.api/domain/approval_part.hpp"

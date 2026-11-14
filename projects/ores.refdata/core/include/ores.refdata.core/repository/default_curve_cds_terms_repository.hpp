@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_DEFAULT_CURVE_CDS_TERMS_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_DEFAULT_CURVE_CDS_TERMS_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/default_curve_cds_terms.hpp"
 #include "ores.refdata.api/messaging/default_curve_cds_terms_protocol.hpp"

@@ -28,7 +28,7 @@
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
 #include "ores.analytics.api/messaging/pricing_model_product_protocol.hpp"
 #include "ores.analytics.core/export.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>

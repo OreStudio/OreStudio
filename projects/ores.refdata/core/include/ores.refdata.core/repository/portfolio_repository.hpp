@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_PORTFOLIO_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_PORTFOLIO_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/portfolio.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"

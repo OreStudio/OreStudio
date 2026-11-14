@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_MARKET_OBSERVATION_REPOSITORY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_MARKET_OBSERVATION_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"

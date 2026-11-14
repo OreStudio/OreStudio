@@ -25,7 +25,7 @@
 #ifndef ORES_MARKETDATA_CORE_REPOSITORY_CURVE_PUBLISH_REPOSITORY_HPP
 #define ORES_MARKETDATA_CORE_REPOSITORY_CURVE_PUBLISH_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/curve_publish.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_protocol.hpp"

@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CSA_ELIGIBLE_CURRENCY_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CSA_ELIGIBLE_CURRENCY_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/csa_eligible_currency.hpp"
 #include "ores.refdata.api/messaging/csa_eligible_currency_protocol.hpp"

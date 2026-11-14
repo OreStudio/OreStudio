@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_CODE_DOMAIN_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CODE_DOMAIN_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.dq.api/domain/code_domain.hpp"
 #include "ores.dq.api/messaging/code_domain_protocol.hpp"
 #include "ores.dq.core/export.hpp"

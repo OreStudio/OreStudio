@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_BALANCE_GUARANTEED_SWAP_TRANCHE_NOTIONAL_REPOSITORY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_BALANCE_GUARANTEED_SWAP_TRANCHE_NOTIONAL_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_tranche_notional.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_notional_protocol.hpp"

@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_FX_DIGITAL_OPTION_INSTRUMENT_REPOSITORY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_FX_DIGITAL_OPTION_INSTRUMENT_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.api/messaging/fx_digital_option_instrument_protocol.hpp"

@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_DIARY_ENTRY_TYPE_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_DIARY_ENTRY_TYPE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/diary_entry_type.hpp"
 #include "ores.refdata.api/messaging/diary_entry_type_protocol.hpp"

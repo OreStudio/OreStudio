@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_INDEX_CREDIT_DEFAULT_SWAP_OPTION_INSTRUMENT_REPOSITORY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_INDEX_CREDIT_DEFAULT_SWAP_OPTION_INSTRUMENT_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
 #include "ores.trading.api/messaging/index_credit_default_swap_option_instrument_protocol.hpp"

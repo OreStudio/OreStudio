@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_BADGE_DEFINITION_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_BADGE_DEFINITION_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.dq.api/domain/badge_definition.hpp"
 #include "ores.dq.api/messaging/badge_definition_protocol.hpp"
 #include "ores.dq.core/export.hpp"

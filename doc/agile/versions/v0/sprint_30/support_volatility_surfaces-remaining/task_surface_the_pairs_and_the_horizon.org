@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 13EA0CF7-5C33-4A0E-A218-5EBB1BC51CB8
+:END:
+#+title: Task: Surface every pair the ladder carries, out to ten years
+#+description: The demo surfaces ten majors out to 1Y because the blueprint catalogue and the derived source say so, not because the pipeline cannot do more: 39 pairs already have published forward ladders and the funding curves bootstrap to 30Y. Extend the surface catalogue to every pair with a ladder and the grid to 10Y, extending the ladder's own tenor list to match.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:seeder:derived:surfaces:tenors:support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/surface-every-pair-out-to-ten-years
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every pair the forward ladder publishes a set for has a surface blueprint, and every surface's grid reaches 10Y, so a desk can read a volatility for any pair and tenor its linear book already has.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+What bounds the surface set today, measured on a freshly provisioned environment:
+
+1. The catalogue. The system tenant holds ten blueprints, seeded by
+   =projects/ores.seeder/datasets/fx_vol_surfaces/generate_sql.py= from a fixed =PAIRS= list of
+   ten majors. Provisioning copies those ten into each party. Nothing else limits the count.
+2. The quotes. The derived source's universe is its vendor inventory, seeded by
+   =projects/ores.sql/populate/marketdata/marketdata_derived_catalogue_populate.sql= from the
+   same ten pairs and eight expiries (1W to 2Y), so it publishes 10 x 8 x 5 = 400 quotes.
+3. The horizon. A surface's grid expiry must be a tenor the forward ladder publishes a row for.
+   The ladder's standard tenors end at 5Y, so 5Y is the ceiling today; beyond it the calibration
+   refuses the expiry by name, which is the rule the previous task established.
+4. The discounting. Not a constraint: the funding curves bootstrap pillars to 3M, 6M, 12M, 2Y,
+   5Y, 10Y and 30Y, so a forward is priced at 10Y as readily as at 6M.
+5. The forwards. Not a constraint either: 39 pairs already publish a forward set for every party.
+
+Steps:
+
+- Add 3Y, 7Y and 10Y to the ladder's standard tenors, so the grid can reach 10Y. 10Y is where the
+  market convention stops (FX volatility is quoted to 10Y); the curve pillars reach 30Y, so the
+  forward side is not what would stop a 30Y grid, the quote convention is.
+- Extend the derived source's inventory to the same pairs and expiries.
+- Extend the seeder's =PAIRS= to the 39 pairs that carry a ladder, each with its own convention's
+  short-dated delta type, and its =EXPIRIES= to the ladder's list.
+- Regenerate the dataset SQL, recreate the database, provision a tenant, and check that every
+  party has a surface for every pair, with the 10Y grid expiry present and the fit converged.
+
+Open question for the pairs whose convention switches delta type at 2Y (USD/JPY, EUR/CZK and the
+rest): the blueprint states one delta type for its output strikes while the calibration resolves
+the pair's convention per expiry. A grid that reaches past the switch states a strike type the
+long expiry does not use. To be settled while implementing.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

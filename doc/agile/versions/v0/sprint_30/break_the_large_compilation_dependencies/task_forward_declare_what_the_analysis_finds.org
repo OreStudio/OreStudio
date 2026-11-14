@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
-#+updated: 2026-11-11
+#+updated: 2026-11-13
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
-| Now          | Not yet started.                       |
+| Now          | Started; the check and its baseline are the work list. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-11                               |
+| Next         | The repository archetype family.       |
+| Last touched | 2026-11-13                             |
 
 * Acceptance
 
@@ -44,9 +44,32 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The check that guards the rule already exists:
+=build/scripts/check_forward_declarable_includes.py=, fed by
+=forward_declarable_types.list=, with the header families that still include a
+definition they only name recorded in its baseline. That baseline is the work
+list, so this task starts from what it reports rather than from a reading of the
+tree, and it closes when the baseline holds only what cannot be fixed.
+
+One header family per PR, in the order the analysis gives, each with the two
+numbers the analysis asks for: the objects that depend on the header, and the
+rebuild time after the header is touched, before and after, at named commits.
+
+The first family is the =repository= archetype. It emits
+=#include "ores.database/domain/context.hpp"= in 539 headers that only name the
+context, and its implementation does not include the definition itself, so the
+swap is two lines: the header's include becomes =context_fwd.hpp=, and the
+implementation's include becomes =context.hpp= because it calls through the
+context in full. The convention-family units header is one file and goes with
+it. The analysis says the rebuild gain is one object, because the =.cpp= files
+that construct a context keep reading the definition; the gain that is real is
+in what a header-only consumer parses, and the PR has to say so rather than
+claim more.
+
+A header that cannot take the declaration stays in the baseline with its reason
+beside it, so the debt is visible without blocking the gate. The one there today
+is =pq/unit_of_work.hpp=, whose body needs =pq::transaction= from the same
+header that defines =pq::session_context=.
 
 * Measurements
 

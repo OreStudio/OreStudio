@@ -90,6 +90,16 @@ inline constexpr std::string_view provision_tenant_step_subject =
 inline constexpr std::string_view refdata_provision_tenant_step_subject =
     "refdata.v1.ops.provision_tenant_step";
 
+/**
+ * @brief The subject ores.synthetic serves the provisioning steps it owns.
+ *
+ * ores.synthetic owns the generators, so the step that writes a generated trade
+ * population runs there and reaches the trading operations through its own
+ * tenant-scoped session.
+ */
+inline constexpr std::string_view synthetic_provision_tenant_step_subject =
+    "synthetic.v1.ops.provision_tenant_step";
+
 /// The step kind that completes the tenant, appended to every run after the
 /// kinds the profile declares. A run finishes only by running its steps out, so
 /// "the tenant is ready" is a step rather than a property of the definition.
@@ -203,6 +213,7 @@ struct step_owner {
  */
 inline constexpr step_owner provision_step_owners[] = {
     {build_calendars_step_kind, refdata_provision_tenant_step_subject},
+    {generate_trades_step_kind, synthetic_provision_tenant_step_subject},
 };
 
 /**
@@ -799,10 +810,11 @@ build_declared_steps(const provision_tenant_workflow_request& run,
  * The system side of a tenant's provisioning, as its own run: one engine step
  * per system-scoped kind the request declares, in the order the profile
  * declared them, plus the step that hands the tenant to its own administrator
- * and starts the run that finishes it. Every step is dispatched to
- * @ref provision_tenant_step_subject, which ores.iam serves: the engine sends a
- * step and waits for the handler to report it, so a step's kind must have an
- * executor there.
+ * and starts the run that finishes it. Every step is dispatched to the subject
+ * the service that owns its kind serves: ores.iam for the identity kinds,
+ * ores.refdata for the calendars and ores.synthetic for the trades. The engine
+ * sends a step and waits for the handler to report it, so a step's kind must
+ * have an executor in the service its subject names.
  */
 inline void
 register_provision_tenant_workflow(ores::workflow::service::workflow_registry& registry) {

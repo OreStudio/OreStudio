@@ -31,11 +31,11 @@ statement of it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | The reader is in =ores.http.core=, the documentation page answers, and the routes the earlier families served are paired in the inventory. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. This task is first.           |
-| Next         | Finish the gate and raise the PR.      |
+| Next         | Nothing. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance

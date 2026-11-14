@@ -43,6 +43,42 @@ driven.
 - ores.web shows each dataset, its artefacts, whether it is published, and
   offers the publish action.
 
+
+* Approach
+
+The investigation found one question behind most of the defects: *what turns a
+blank database into a usable one?* Four documents answered it four ways. The
+mop-up therefore starts by settling the levels, because every other task depends
+on being able to say which bucket a dataset lives in.
+
+| Level | Holds | Published | By |
+|-------+-------+-----------+----|
+| Installation | schema, system vocabulary, the system party, WRLD | at migration | populate |
+| World | calendars, currencies, commodity and equity underlyings, conventions | once, into the system tenant | one world bundle |
+| Tenant | the tenant's own rows, and its copies of what a party may override | per tenant, declared | the tenant bootstrap |
+
+The sequence is deliberate: 1 settles the vocabulary, 2 makes bring-up complete,
+3 removes the silent copy that made the gap invisible, 4 collapses the doubling,
+5 makes the remaining promises true, 6 documents what settled. Each closes at
+least one defect in the investigation, and none depends on the screen work.
+
+The earlier task *Publish every seeded dataset at the level it belongs* is
+superseded by these six: its scope is now split across settling the levels,
+publishing at bring-up and collapsing the double writers. It stays in the
+backlog as history until it is closed as abandoned.
+
+The screens task stays last. "Is my reference data complete?" is a question about
+levels, so it can only be designed once 1 and 2 have an answer.
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7F37FF2D-EDF1-4F69-AAA5-EA57B91DAF53][Settle the three levels and the bundle map]] | BACKLOG | | | Level names and the world bundle. Blocks the rest. |
+| [[id:56FB3A5C-FDC7-4F98-A5F3-CE46DB551882][Publish the world at database bring-up]] | BACKLOG | | | Closes D1 and D12. |
+| [[id:2A720F12-FA8F-4625-A178-76E9E93444D2][Declare the tenant bootstrap and retire the silent copy]] | BACKLOG | | | Flow D, undocumented. |
+| [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]] | BACKLOG | | | Defect D5 and D14. |
+| [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] | BACKLOG | | | Defects D2, D4, D6, D7. |
+| [[id:9D8A7038-FF2B-4F09-9BD3-E487B5ED0A48][Retire the legacy patterns and align the documentation]] | BACKLOG | | | Defects D8 and D9, plus the legacy catalogue. |
+| [[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from the journeys]] | BACKLOG | | | Journeys first, prototypes, then screens. |
 * Tasks
 
 | Task | State | Start | End | Description |
@@ -51,6 +87,12 @@ driven.
 | [[id:B8609EB8-C1C1-4280-A487-C76D78AC8877][Review the publishing pipeline end to end]] | STARTED | 2026-11-14 | | The analysis: documented model, implemented model, inventories, defects. |
 | [[id:E9BBFCCD-8E21-4C92-AAD1-A07941AD1C8B][Publish every seeded dataset at the level it belongs]] | BACKLOG | | | The implementation: base-system publication at recreate, ACME per tenant. |
 | [[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from the journeys]] | BACKLOG | | | Journeys first, prototypes, then screens built from the shared parts. Not a port. |
+| [[id:7F37FF2D-EDF1-4F69-AAA5-EA57B91DAF53][Settle the three levels and the bundle map]] | BACKLOG | | | One documented level model, one bundle per level, and no name that means two opposite things. |
+| [[id:56FB3A5C-FDC7-4F98-A5F3-CE46DB551882][Publish the world at database bring-up]] | BACKLOG | | | A recreated database carries the canonical reference data, so no test has to provision or publish for itself. |
+| [[id:2A720F12-FA8F-4625-A178-76E9E93444D2][Declare the tenant bootstrap and retire the silent copy]] | BACKLOG | | | The provisioner stops copying tables nobody documented and runs a declared bootstrap instead. |
+| [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]] | BACKLOG | | | Every reference table has one writer, chosen by which model owns the data. |
+| [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] | BACKLOG | | | The audit row, atomicity, the spurious dependency and the unreachable datasets are made true or removed. |
+| [[id:9D8A7038-FF2B-4F09-9BD3-E487B5ED0A48][Retire the legacy patterns and align the documentation]] | BACKLOG | | | The catalogued legacy patterns are retired and the documents state the live model once. |
 
 * Decisions
 

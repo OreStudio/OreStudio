@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: A611C520-54AA-4562-9BA6-768278E5DDEE
+:END:
+#+title: Task: Collapse the tables written both ways
+#+description: Every reference table has one writer, chosen by which model owns the data.
+#+type: task
+#+level: s1
+#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+owner: marco
+#+branch: feature/collapse-the-double-writers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No table is written by both a direct seed and a DQ publish, and a check proves it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- No table is written by both a direct seed and a DQ publish.
+- The surviving writer is the one that owns the data, and the reason is stated.
+- A check fails when a table gains a second writer.
+- The eleven system-only tables are classified, not left undecided.
+
+* Plan
+
+1. Take the fourteen two-writer tables from the inventory.
+2. Keep DQ for the eight refdata datasets and =iso.countries=; keep the direct
+   seed only for the system party and the WRLD business centre.
+3. Delete the other side, and adjust the dataset or the seed accordingly.
+4. Classify the eleven tables that have no tenant route.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Tables written both by a direct seed and a DQ publish | 14 | investigation, section 3.3 | e050a2d239 |
+| System-only tables with no tenant route | 11 | investigation, section 3.3 | e050a2d239 |
+
+* Notes
+
+Defect D5 and D14. This is the task that makes the seeding model stop being two models.
+
+See [[id:16920F25-F0EF-4031-9C2D-DF57B5865072][Investigation: publishing pipeline]] for the evidence behind every claim here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

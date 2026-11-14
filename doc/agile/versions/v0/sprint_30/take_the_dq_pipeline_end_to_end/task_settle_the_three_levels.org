@@ -8,7 +8,7 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch: feature/settle-the-three-levels
-#+pr:
+#+pr: 4719
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4719][#4719]] | [agile] Make the DQ documentation the first deliverable |
 
 * Review
 

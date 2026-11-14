@@ -52,7 +52,7 @@ every question below.
   classes and policies in
   [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
   information flow]], the artefact and the publish function in
-  [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]], the provenance
+  [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]], the provenance
   fields in [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]], and the
   atomicity of a bundle in
   [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][The bundle and package

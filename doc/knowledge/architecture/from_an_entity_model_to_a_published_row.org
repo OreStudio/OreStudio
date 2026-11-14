@@ -1,20 +1,22 @@
 :PROPERTIES:
 :ID: F19A6B98-1CAD-4206-913B-A4EAAED2DEAF
 :END:
-#+title: DQ artefacts
-#+description: The one way to stage an entity's data for DQ and publish it into its owning service: the owning model's artefact flag, the dataset, artefact type, bundle and dependencies, the publish subject and function, and the legacy patterns not to copy.
+#+title: From an entity model to a published row
+#+description: The one way to stage an entity's rows and publish them into the owning service: the owning model's artefact flag, the dataset, the artefact type, the bundle and dependencies, the publish subject and function, and the patterns not to copy.
 #+type: knowledge
 #+level: cross
 #+filetags: :dq:codegen:architecture:staging:
 #+created: 2026-10-12
-#+updated: 2026-10-14
+#+updated: 2026-11-14
 
 * Summary
 
-A DQ artefact is a staging table, =ores_dq_<plural>_artefact_tbl=, that holds
-an entity's rows by dataset until a publication writes them into the service
-that owns the entity. There is one way to make one: the entity's own model, in
-the component that owns the data, opts in with
+A published row travels from the model of the entity it describes to the table
+of the service that owns it, and it does so through one route. The route
+begins at a staging table, =ores_dq_<plural>_artefact_tbl=, which holds the
+entity's rows by dataset until a publication writes them onward. There is one
+way to make one: the entity's own model, in the component that owns the data,
+opts in with
 =:ores.sql.schema.domain_entity_artefact_create.enabled: true=, and codegen
 generates the table from that model. The model adds an =* Artefact columns=
 section only when the staging shape differs from the entity. A staging table

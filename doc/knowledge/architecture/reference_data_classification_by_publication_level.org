@@ -26,7 +26,7 @@ are cited rather than reproduced: the tiers are treated in
 classes and their policies in
 [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the
 information flow]], and the artefact and the publish function in
-[[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]].
+[[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]].
 
 * Detail
 
@@ -174,7 +174,7 @@ database bring-up. The function reads the dataset's artefact rows, which are
 held in the system tenant, and writes the owning tables in the target tenant.
 It is idempotent and returns the four counts — inserted, updated, skipped and
 deleted — that the caller reads.
-[[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] holds the function's
+[[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]] holds the function's
 contract, the artefact table, the artefact type and the steps by which one is
 added.
 
@@ -237,11 +237,11 @@ tenant, publishing =tenant_defaults= into it and onboarding each party with
   the substitutability test behind the first two questions.
 - [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] — completes: the three
   ownership classes, the policy each deserves, and why a widening is not one.
-- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — completes: the
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]] — completes: the
   artefact, the dataset, the publish function and the steps that add one.
 - [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]] — completes: the shared-reference read and the
   checklist for a new shared table.
-- [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][The bundle and package catalogue]] — completes: the atomicity a bundle gives,
+- [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Data classification by owner count]] — completes: the atomicity a bundle gives,
   and the sets that are packages instead.
 - [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]] — completes: the
   provenance fields and the dimensions every dataset carries.

@@ -42,7 +42,7 @@ table (=ores_dq_<plural>_artefact_tbl=) are all generated. The staging
 table comes from the model of the entity it stages, in the component
 that owns the published rows, which opts in with
 =:ores.sql.schema.domain_entity_artefact_create.enabled: true=; the one
-way to do this is [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]].
+way to do this is [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]].
 Populating the shadow table is also codegen-generic when the source is FPML
 coding-scheme data (via =fpml_parser.py=); other external sources need
 a bespoke per-source parser, and computed data (e.g. synthetic
@@ -112,7 +112,7 @@ registration, and any publisher UI config page.
   A staging table for another component's entity gets no DQ model, no
   DQ C++ code, no shell commands and no TypeScript; a terminal one,
   which publishes nowhere and is therefore the entity's only store, is
-  DQ's own, model and all. [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]]
+  DQ's own, model and all. [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]]
   states the rule and the checklist.
 
 So four of the five metadata/schema artefacts are codegen-generated
@@ -384,7 +384,7 @@ the bundle/membership rows (one-liners) and the actual seed data.
   rationale and migration history behind the publish-from-dq rule.
 - [[id:2DC7CB2C-EF21-4E55-BB05-07F42DF5BD8B][ores.dq.dataset_bundle]] — codegen entity model for bundles.
 - [[id:6D8510CF-B977-4126-9051-5BFA9DE929B3][ores.dq.artefact_type]] — codegen entity model for artefact types.
-- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the one way to add an artefact, and the retired
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]] — the one way to add an artefact, and the retired
   patterns this page's history produced.
 - [[id:53116563-2667-48CD-941E-8521D3E42CBC][Codegen facet: generate the DQ publish-from-dq pattern]] — the story
   that would carry the recommendation above.

@@ -1093,7 +1093,7 @@ Not built, and deliberately:
 
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]], the criteria applied to the bond family.
 - [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]], the composite and field-group patterns.
-- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]], the artefact and publication contract.
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]], the artefact and publication contract.
 - [[id:A1310399-0ACD-4FA1-9645-AB24B3C8BEB8][Trade Population Weights]], the product mix a population should follow.
 - [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]], the September review this document re-measures.
 - [[id:A8E9807F-1BC8-4DA5-9A66-720D2444DA1B][ores.trading.trade_type_catalogue]], coverage and routing.

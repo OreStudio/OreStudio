@@ -33,4 +33,4 @@ Two options exist for the ORE parameters. In the first, every reader checks the 
 * See also
 
 - [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][Data classification by substitutability]]
-- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]]
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]]

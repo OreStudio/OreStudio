@@ -43,7 +43,7 @@ If the entity's rows arrive through DQ, stage them from this model: set
 =* Artefact columns= section only when the staging shape differs. Never add an
 =ores.dq= model for another component's entity; it duplicates the columns and
 generates a DQ stack nobody needs. Follow
-[[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] for the rest of the
+[[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]] for the rest of the
 pipeline.
 
 ** Step 2 — Create one task per layer

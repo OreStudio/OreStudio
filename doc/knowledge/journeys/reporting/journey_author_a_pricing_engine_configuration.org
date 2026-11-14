@@ -242,8 +242,8 @@ carries all three as arrays.
 4. *The write is not one transaction.* The document service writes the
    configuration, then the products, then the parameters in sequence, with no unit
    of work, so a failure part way leaves a configuration without its parameters.
-   The [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][bundle catalogue]] records it as
-   B3, "wrongly shaped". The screen cannot repair it, and the final step says what
+   [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Data classification by owner count]]
+   records it as B3, "wrongly shaped". The screen cannot repair it, and the final step says what
    it would do after a failed write: read the document back and show what landed.
 5. *The party's book and the portfolios.* Steps 2 and 5 need the instrument types
    of the party's trades and of each report's portfolio, and no operation returns
@@ -269,7 +269,7 @@ carries all three as arrays.
 
 - [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the =pricingengine.xml= schema, and the layers it feeds
-- [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Bundle catalogue]] — the document write and its shape
+- [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Data classification by owner count]] — the document write and its shape
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
 
 * See also

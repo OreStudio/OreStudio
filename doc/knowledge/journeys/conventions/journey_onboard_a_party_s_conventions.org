@@ -280,7 +280,7 @@ publish step's four counts.
 
 - [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey belongs to
 - [[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][Provisioning operations and the plan]] — the starting point, the operations and the party bundle
-- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the bundle member and the publish subject the plan's step resolves
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]] — the bundle member and the publish subject the plan's step resolves
 - [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the provenance a published row carries
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the conventions file the party's run writes
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index

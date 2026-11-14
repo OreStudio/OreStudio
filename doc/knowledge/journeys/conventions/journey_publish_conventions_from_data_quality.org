@@ -322,7 +322,7 @@ does not exist today.
 * Related knowledge
 
 - [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey belongs to
-- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the artefact table, the dataset, the artefact type, the bundle and the publish contract this journey follows
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]] — the artefact table, the dataset, the artefact type, the bundle and the publish contract this journey follows
 - [[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][Provisioning operations and the plan]] — the bundle a starting point publishes and the scope it publishes for
 - [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — provenance, change reasons and the bitemporal store
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the ORE =conventions.xml= elements the published rows export to

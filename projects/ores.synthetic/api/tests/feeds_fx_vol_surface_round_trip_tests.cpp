@@ -265,8 +265,8 @@ TEST_CASE("the surface a run publishes is the surface a calibration recovers",
     }
     INFO("worst ATM error " << worst_atm << ", worst wing error " << worst_wing);
     // Measured on this fixture: 2.55e-09 at ATM and 6.56e-09 at the wings. The margins sit just
-    // above that, at four times and three times the measurement, so a regression that doubled the
-    // fit's cost would fail rather than hide under a tenth of a volatility point.
+    // above that -- four times and three times the measurement -- so a fit that cost twice as much
+    // fails here.
     CHECK(worst_atm < 1e-8);
     CHECK(worst_wing < 2e-8);
 

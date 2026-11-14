@@ -215,8 +215,7 @@ TEST_CASE("each contributor of a surface is its own stream", "[fx_vol_surface_fe
 TEST_CASE("a tick whose run has not published what the surface reads says which and sends nothing",
           "[fx_vol_surface_feed]") {
     // The gates are the sentences an operator greps for, so they are asserted through the tick
-    // that logs them rather than through the function underneath it. Every one of them answers
-    // before the publish, so this test needs no broker.
+    // that logs them. Every one of them answers before the publish, so this test needs no broker.
     ores::analytics::quant::service::manual_run_clock clock(std::chrono::system_clock::now());
     ores::analytics::quant::service::run_market market(clock, {}, 7);
     ores::nats::service::client nats(ores::testing::make_nats_options());

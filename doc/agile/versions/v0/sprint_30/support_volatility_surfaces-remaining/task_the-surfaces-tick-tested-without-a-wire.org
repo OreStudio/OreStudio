@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
-#+updated: 2026-11-13
+#+updated: 2026-11-14
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -126,16 +126,16 @@ task and name that file in the Command column.
 | A tick whose run has published neither curve | =no market: curve:EUR=, and =publish_count()= stays zero | =ores.synthetic.api.tests "[fx_vol_surface_feed]"= | e97cc811db |
 | The same with the base curve published | =no market: curve:USD=, and nothing sent | the same | e97cc811db |
 | The same with both curves published | =no market: spot:EUR/USD=, and nothing sent | the same | e97cc811db |
-| The value date of each expiry | 16 December 2026, 16 February 2027, 16 May 2027, at 30, 92 and 181 days | =ores.synthetic.api.tests "[fx_vol_surface_tick]"= | e97cc811db |
+| The value date of each expiry | 16 December 2026, 16 February 2027, 16 May 2027, at 30, 92 and 181 days | =ores.synthetic.api.tests "[fx_vol_surface_tick]" --success= | e97cc811db |
 | The discounts each value date carries, domestic then foreign | 0.9991784198737006 and 0.997537284048252; 0.9974826259685393 and 0.9924668734686284; 0.9950533709567208 and 0.9852333992470845, asserted at =1e-12= relative | the same | e97cc811db |
 | The forward of each expiry | 1.0824192174825231, 1.0787481969120785, 1.0735002590229397, strictly falling, so one market is not reused | the same | e97cc811db |
 | A curve and a spot read back through the surface's own read | the published points, point for point, and the published level | the same | e97cc811db |
 | Two ticks with the same values republished between them | bit-for-bit identical quotes; the 1M ATM is 0.0699722922466306 | the same | e97cc811db |
-| Worst error of a calibration of the run's own quotes, through the board, at ATM | 2.55e-09 volatility, asserted at =1e-8= | =ores.synthetic.api.tests "[fx_vol_surface_round_trip]"= | 7e29c65775 |
-| The same at the 25 and 10 delta wings | 6.56e-09 volatility, asserted at =2e-8= | the same | 7e29c65775 |
-| One driver lookup in a run of a thousand series, which is 250 series keys | 15.85, 25.18 and 26.07 ns, the medians of three runs of five passes of 2,000,000 | =ores.analytics.quant.tests "[.benchmark][run_market]"= | 7e29c65775, e97cc811db |
-| A sentence of the tick body's shape, as the budget a lookup is read against | 50.45, 67.03 and 141.98 ns over the same three runs, so the lookup is between a third and a sixth of it | the same | 7e29c65775, e97cc811db |
-| One board member read at a thousand members | 6.39 and 8.09 ns, the medians of two runs | =ores.analytics.quant.tests "[.benchmark][market_board]"= | 7e29c65775, e97cc811db |
+| Worst error of a calibration of the run's own quotes, through the board, at ATM | 2.55e-09 volatility, asserted at =1e-8= | =ores.synthetic.api.tests "[fx_vol_surface_round_trip]" --success= | e97cc811db |
+| The same at the 25 and 10 delta wings | 6.56e-09 volatility, asserted at =2e-8= | the same | e97cc811db |
+| One driver lookup in a run of a thousand series, which is 250 series keys | 15.85, 25.18 and 26.07 ns, the medians of three runs of five passes of 2,000,000, the spread between runs being the machine's load | =ores.analytics.quant.tests "[.benchmark][run_market]"= | 7e29c65775 |
+| A sentence of the tick body's shape, as the budget a lookup is read against | 50.45, 67.03 and 141.98 ns over the same three runs, so the lookup is between a third and a sixth of it | the same | 7e29c65775 |
+| One board member read at a thousand members | 6.39 and 8.09 ns, the medians of two runs | =ores.analytics.quant.tests "[.benchmark][market_board]"= | 7e29c65775 |
 | The quant suite | 712 cases | =ores.analytics.quant.tests= | e97cc811db |
 | The synthetic api suite | 1018 cases | =ores.synthetic.api.tests= | e97cc811db |
 | The marketdata core suite | 407 cases | =ores.marketdata.core.tests= | 7e29c65775 |
@@ -201,7 +201,7 @@ commit of its own:
 
 - =portable-stop= (0fc96aef88): the include =application.cpp= no longer used is gone.
   =check_portable_stop_types.py= answers "no C++20 stop type is named outside ores.platform".
-- =ores.marketdata.official.tests= (6b035ddc90): three fixtures answered a
+- =ores.marketdata.official.tests= (6b035ddc90): two fixtures answered a
   =std::optional<std::string>= lookup with a null =const char*=, which throws rather than
   reading as unset. They answer =std::nullopt=, the type's documentation says so, and the
   suite passes — 120 cases, 513 assertions.

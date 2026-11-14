@@ -39,9 +39,9 @@ using namespace ores::synthetic::feed;
 
 /*
  * A surface's tick, without a wire: the run's board is published to with the points a curve feed
- * would write, and the surface's own read is what is exercised. The gates are the two sentences a
- * reader of the run's log sees when a member is missing, and they are asserted character for
- * character because that is what an operator greps for.
+ * would write, and the surface's own read is what is exercised. The sentence a reader of the log
+ * sees for a missing member belongs to the tick, and is asserted through it in
+ * feeds_fx_vol_surface_feed_tests.cpp; this file is the values, the dates and the no-drift claim.
  */
 
 namespace {
@@ -208,11 +208,11 @@ TEST_CASE("a surface names the member the run has not published", "[fx_vol_surfa
 }
 
 TEST_CASE("a surface resolves each expiry at the date its period gives", "[fx_vol_surface_tick]") {
-    // The three value dates the periods name, and the discounts and forward that a flat curve and
-    // a spot give there. Every number here is stated rather than recomputed: if the fixture and
-    // the code shared one expression, a wrong date or a wrong interpolation would agree with
-    // itself. One month from 16 November is 16 December, a year is 365 days, and the forward is
-    // the spot times the pair's foreign discount over its domestic one.
+    // The three value dates the periods name, and the discounts and forward a flat curve and a
+    // spot give there. One month from 16 November is 16 December, a year is 365 days, and the
+    // forward is the spot times the pair's foreign discount over its domestic one.
+    // Every number below is a literal, so a wrong date or a wrong interpolation cannot agree with
+    // the expression that built the fixture.
     struct expected_expiry final {
         std::chrono::year_month_day value_date;
         int days;
@@ -287,8 +287,7 @@ TEST_CASE("two ticks against an unchanged board quote the same surface", "[fx_vo
         REQUIRE(point.value);
         first.push_back(*point.value);
     }
-    // Stated rather than compared with the next tick's own output: the row's 7% less the
-    // delta-neutral adjustment its skew makes, measured on this fixture.
+    // The row's 7% less the delta-neutral adjustment its skew makes, measured on this fixture.
     CHECK(first.front() == Catch::Approx(0.0699722922466306).epsilon(1e-9));
 
     // A tick later the same three values are published again, as a curve's feed does when the

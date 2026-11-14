@@ -39,9 +39,9 @@ double figure_in(const std::vector<money>& figures, const std::string& currency)
 }
 
 /// One figure of a set of rows, each currency added apart.
-std::vector<money> money_of(const std::vector<aggregate_row>& rows,
-                            const std::function<const std::vector<money>&(const aggregate_row&)>&
-                                figure_of_row) {
+std::vector<money>
+money_of(const std::vector<aggregate_row>& rows,
+         const std::function<const std::vector<money>&(const aggregate_row&)>& figure_of_row) {
     std::map<std::string, double> totals;
     for (const auto& row : rows)
         for (const auto& one : figure_of_row(row))
@@ -55,9 +55,10 @@ std::vector<money> money_of(const std::vector<aggregate_row>& rows,
 }
 
 /// One figure of a set of trades, each currency added apart.
-std::vector<money> sum_of(const std::vector<priced_trade>& rows,
-                          const std::function<double(const priced_trade&)>& amount_of,
-                          const std::function<const std::string&(const priced_trade&)>& currency_of) {
+std::vector<money>
+sum_of(const std::vector<priced_trade>& rows,
+       const std::function<double(const priced_trade&)>& amount_of,
+       const std::function<const std::string&(const priced_trade&)>& currency_of) {
     std::map<std::string, double> totals;
     for (const auto& row : rows) {
         const auto amount = amount_of(row);
@@ -84,16 +85,14 @@ double figure_of(const aggregate_row& row) {
 
 /// The per-currency total of the run's net present values.
 std::vector<money> npv_totals(const std::vector<priced_trade>& rows) {
-    return sum_of(rows,
-                  [](const priced_trade& row) { return row.npv; },
-                  [](const priced_trade& row) -> const std::string& {
-                      return row.npv_currency;
-                  });
+    return sum_of(
+        rows,
+        [](const priced_trade& row) { return row.npv; },
+        [](const priced_trade& row) -> const std::string& { return row.npv_currency; });
 }
 
 /// The change between two sets of figures, each currency apart.
-change_set change_between(const std::vector<money>& current,
-                          const std::vector<money>& previous) {
+change_set change_between(const std::vector<money>& current, const std::vector<money>& previous) {
     std::set<std::string> currencies;
     for (const auto& one : current)
         currencies.insert(one.currency);
@@ -108,8 +107,7 @@ change_set change_between(const std::vector<money>& current,
         // A change stated as a share of nothing is not a figure, so it is left
         // unstated rather than drawn as no movement at all.
         out.pct.push_back(money{currency,
-                                before == 0 ? 0.0 :
-                                               ((now - before) / std::abs(before)) * 100.0,
+                                before == 0 ? 0.0 : ((now - before) / std::abs(before)) * 100.0,
                                 before != 0});
     }
     return out;
@@ -128,20 +126,21 @@ aggregate_rows(const std::vector<priced_trade>& rows,
     out.reserve(groups.size());
     for (const auto& [key, members] : groups) {
         const auto found = names.find(key);
-        out.push_back(aggregate_row{key,
-                                    found == names.end() ? std::string() : found->second,
-                                    members.size(),
-                                    sum_of(members,
-                                           [](const priced_trade& row) { return row.npv; },
-                                           [](const priced_trade& row) -> const std::string& {
-                                               return row.npv_currency;
-                                           }),
-                                    sum_of(members,
-                                           [](const priced_trade& row) { return row.notional; },
-                                           [](const priced_trade& row) -> const std::string& {
-                                               return row.notional_currency;
-                                           }),
-                                    std::string()});
+        out.push_back(aggregate_row{
+            key,
+            found == names.end() ? std::string() : found->second,
+            members.size(),
+            sum_of(
+                members,
+                [](const priced_trade& row) { return row.npv; },
+                [](const priced_trade& row) -> const std::string& { return row.npv_currency; }),
+            sum_of(
+                members,
+                [](const priced_trade& row) { return row.notional; },
+                [](const priced_trade& row) -> const std::string& {
+                    return row.notional_currency;
+                }),
+            std::string()});
     }
     std::ranges::sort(out, [](const aggregate_row& left, const aggregate_row& right) {
         return figure_of(left) > figure_of(right);
@@ -159,12 +158,10 @@ aggregate_row node_of(const std::string& key,
     node.name = name;
     for (const auto& child : children)
         node.trades += child.trades;
-    node.totals = money_of(children, [](const aggregate_row& row) -> const auto& {
-        return row.totals;
-    });
-    node.notional = money_of(children, [](const aggregate_row& row) -> const auto& {
-        return row.notional;
-    });
+    node.totals =
+        money_of(children, [](const aggregate_row& row) -> const auto& { return row.totals; });
+    node.notional =
+        money_of(children, [](const aggregate_row& row) -> const auto& { return row.notional; });
     node.is_group = true;
     node.depth = depth;
     return node;
@@ -183,8 +180,7 @@ with_portfolio_tree(const std::vector<aggregate_row>& books,
                     const std::map<std::string, std::string>& book_portfolio,
                     const std::map<std::string, std::string>& portfolio_name,
                     const std::map<std::string, std::string>& portfolio_parent) {
-    const auto lookup = [](const std::map<std::string, std::string>& from,
-                           const std::string& key) {
+    const auto lookup = [](const std::map<std::string, std::string>& from, const std::string& key) {
         const auto found = from.find(key);
         return found == from.end() ? std::string() : found->second;
     };
@@ -230,8 +226,8 @@ with_portfolio_tree(const std::vector<aggregate_row>& books,
         });
 
         std::vector<std::pair<aggregate_row, std::vector<aggregate_row>>> children;
-        for (const auto& child : children_of.contains(id) ? children_of[id] :
-                                                            std::vector<std::string>{}) {
+        for (const auto& child :
+             children_of.contains(id) ? children_of[id] : std::vector<std::string>{}) {
             auto built = build(child, depth + 1);
             aggregate_row child_node = built.front();
             built.erase(built.begin());
@@ -273,8 +269,8 @@ with_portfolio_tree(const std::vector<aggregate_row>& books,
     walk = [&](const std::string& id) {
         if (!reachable.insert(id).second)
             return;
-        for (const auto& child : children_of.contains(id) ? children_of[id] :
-                                                            std::vector<std::string>{})
+        for (const auto& child :
+             children_of.contains(id) ? children_of[id] : std::vector<std::string>{})
             walk(child);
     };
     walk(std::string());
@@ -327,8 +323,7 @@ with_portfolio_tree(const std::vector<aggregate_row>& books,
 std::vector<aggregate_row> with_groups(const std::vector<aggregate_row>& rows,
                                        const std::map<std::string, std::string>& parents,
                                        const std::map<std::string, std::string>& names) {
-    const auto lookup = [](const std::map<std::string, std::string>& from,
-                           const std::string& key) {
+    const auto lookup = [](const std::map<std::string, std::string>& from, const std::string& key) {
         const auto found = from.find(key);
         return found == from.end() ? std::string() : found->second;
     };
@@ -346,7 +341,7 @@ std::vector<aggregate_row> with_groups(const std::vector<aggregate_row>& rows,
     std::vector<aggregate_row> standing;
     for (const auto& row : rows) {
         const auto parent = lookup(parents, row.key);
-        const auto group = !parent.empty() ? parent :
+        const auto group = !parent.empty()           ? parent :
                            leading.contains(row.key) ? row.key :
                                                        std::string();
         const auto group_name = lookup(names, group);
@@ -370,12 +365,10 @@ std::vector<aggregate_row> with_groups(const std::vector<aggregate_row>& rows,
         group.name = lookup(names, parent);
         for (const auto& child : children)
             group.trades += child.trades;
-        group.totals = money_of(children, [](const aggregate_row& row) -> const auto& {
-            return row.totals;
-        });
-        group.notional = money_of(children, [](const aggregate_row& row) -> const auto& {
-            return row.notional;
-        });
+        group.totals =
+            money_of(children, [](const aggregate_row& row) -> const auto& { return row.totals; });
+        group.notional = money_of(
+            children, [](const aggregate_row& row) -> const auto& { return row.notional; });
         group.is_group = true;
         groups.emplace_back(std::move(group), std::move(children));
     }

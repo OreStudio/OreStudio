@@ -52,10 +52,8 @@ http_response answer_at(http_method method,
                         const std::string& expected_pattern) {
     ores::nats::service::nats_client session;
     auto table = std::make_shared<ores::http::net::router>();
-    run_file_routes::register_routes(table,
-                                     std::make_shared<ores::http::openapi::endpoint_registry>(),
-                                     session,
-                                     ".");
+    run_file_routes::register_routes(
+        table, std::make_shared<ores::http::openapi::endpoint_registry>(), session, ".");
     const auto route = table->match(method, path, req.path_params);
     REQUIRE(route.has_value());
     REQUIRE(route->pattern == expected_pattern);

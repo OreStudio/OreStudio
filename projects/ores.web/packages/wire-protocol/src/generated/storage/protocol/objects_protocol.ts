@@ -151,11 +151,71 @@ export interface ListObjectsResponse {
     total_available_count: number;
 }
 
+/**
+ * @brief One regular file a package holds.
+ *
+ * A directory or a link is not a file a person opens, so neither is stated.
+ */
+export interface ArchiveEntry {
+    /**
+     * @brief The file's path inside the package, as the package states it.
+     */
+    name: string;
+    size_bytes: number;
+}
+
+/**
+ * @brief What one object the caller named holds, or why it could not be read.
+ *
+ * A key that is missing, or that holds bytes no archive reader accepts, is
+ * stated here rather than failing the whole reply, so one unreadable package
+ * does not cost the caller every other package's listing.
+ */
+export interface ArchiveListing {
+    key: string;
+    /**
+     * @brief The size of the object as the store holds it, packed.
+     */
+    size_bytes: number;
+    success: boolean;
+    message: string;
+    entries: ArchiveEntry[];
+}
+
+/**
+ * @brief Asks what the files inside a set of packages are.
+ *
+ * The caller that wants one package's contents wants every package's contents,
+ * because they are one screen: a run's inputs and outputs arrive together, and
+ * a call per package would put the walk back in the caller. So the keys travel
+ * as a set and the reply states each one.
+ *
+ * The unpacking happens here, in the service that holds the object, so no
+ * caller needs an archive reader of its own.
+ */
+export interface ListArchiveEntriesRequest {
+    bucket: string;
+    /**
+     * @brief The objects to read, in one bucket. An empty set asks for nothing.
+     */
+    keys: string[];
+}
+
+/**
+ * @brief What each object the caller named holds, in the order it named them.
+ */
+export interface ListArchiveEntriesResponse {
+    success: boolean;
+    message: string;
+    archives: ArchiveListing[];
+}
+
 export const subjects = {
     put_objects_request: 'storage.v1.objects.put',
     get_objects_request: 'storage.v1.objects.get',
     delete_objects_request: 'storage.v1.objects.delete',
     list_objects_request: 'storage.v1.objects.list',
+    list_archive_entries_request: 'storage.v1.ops.list_archive_entries',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -167,4 +227,5 @@ export const requiresSession = {
     get_objects_request: true,
     delete_objects_request: true,
     list_objects_request: true,
+    list_archive_entries_request: true,
 } as const;

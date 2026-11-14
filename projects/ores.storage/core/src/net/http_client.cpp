@@ -183,8 +183,8 @@ std::string http_client::get_returning_body(const std::string& url,
 }
 
 http_client::answered_object http_client::get_range(const std::string& url,
-                                                   const std::string& bearer_token,
-                                                   const std::string& range) {
+                                                    const std::string& bearer_token,
+                                                    const std::string& range) {
     const auto parts = parse_url(url);
 
     connected_stream conn(parts.host, parts.port);

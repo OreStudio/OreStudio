@@ -476,6 +476,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'compute.v1.ops.list_run_files': {
+        asOf: false,
+        filter: [],
+        rows: ['archives'],
+    },
     'compute.v1.platforms.list': {
         asOf: true,
         filter: ['id_one_of'],
@@ -5166,6 +5171,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: [],
         rows: ['objects'],
+    },
+    'storage.v1.ops.list_archive_entries': {
+        asOf: false,
+        filter: [],
+        rows: ['archives'],
     },
     'synthetic.v1.calibration_fallbacks.list': {
         asOf: true,

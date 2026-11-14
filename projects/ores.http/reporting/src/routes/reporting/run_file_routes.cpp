@@ -18,9 +18,8 @@
  *
  */
 #include "ores.http/routes/reporting/run_file_routes.hpp"
-#include "ores.http/routes/reporting/run_lookup.hpp"
-#include "ores.compute.api/messaging/run_files_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
+#include "ores.compute.api/messaging/run_files_protocol.hpp"
 #include "ores.compute.api/messaging/workunit_protocol.hpp"
 #include "ores.compute.api/net/compute_storage.hpp"
 #include "ores.http.api/domain/http_request.hpp"
@@ -29,10 +28,11 @@
 #include "ores.http.core/routes/storage_entry_source.hpp"
 #include "ores.http.core/routes/storage_file_source.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.http/routes/reporting/run_lookup.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/results/output_manifest.hpp"
-#include "ores.reporting.api/messaging/ore_file_category_protocol.hpp"
 #include "ores.reporting.api/messaging/file_type_protocol.hpp"
+#include "ores.reporting.api/messaging/ore_file_category_protocol.hpp"
 #include "ores.reporting.api/messaging/ore_file_protocol.hpp"
 #include "ores.reporting.api/messaging/ore_file_version_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
@@ -132,23 +132,22 @@ std::vector<catalogue_pattern> read_catalogue(const http_request& req, nats_clie
         const auto reply = forwarding::forward(req, session, msg);
         for (const auto& file : reply.files) {
             const auto found = category_of.find(file.category_code);
-            catalogue_file row{
-                file.code,
-                file.name,
-                file.category_code,
-                found == category_of.end() ? std::string() : found->second.first,
-                found == category_of.end() ? std::string() : found->second.second,
-                file.configuration_type_code,
-                file.guide_section,
-                file.origin,
-                file.format,
-                file.schema_ore_file_code,
-                file.typical_filename,
-                file.filename_regex,
-                file.description};
+            catalogue_file row{file.code,
+                               file.name,
+                               file.category_code,
+                               found == category_of.end() ? std::string() : found->second.first,
+                               found == category_of.end() ? std::string() : found->second.second,
+                               file.configuration_type_code,
+                               file.guide_section,
+                               file.origin,
+                               file.format,
+                               file.schema_ore_file_code,
+                               file.typical_filename,
+                               file.filename_regex,
+                               file.description};
             try {
-                patterns.push_back(catalogue_pattern{std::move(row),
-                                                     std::regex(file.filename_regex)});
+                patterns.push_back(
+                    catalogue_pattern{std::move(row), std::regex(file.filename_regex)});
             } catch (const std::regex_error& e) {
                 // A row whose expression does not compile must not leave every
                 // other file unidentified.
@@ -302,7 +301,9 @@ bool split_uri(const std::string& uri, std::string& bucket, std::string& key) {
  * trip and not one per workunit.
  */
 std::map<std::string, storage_messaging::archive_listing>
-entries_of(const http_request& req, nats_client& session, const std::string& bucket,
+entries_of(const http_request& req,
+           nats_client& session,
+           const std::string& bucket,
            const std::vector<std::string>& keys) {
     std::map<std::string, storage_messaging::archive_listing> listings;
     if (keys.empty())
@@ -423,36 +424,34 @@ run_files files_of_run(const http_request& req,
             }
 
             const auto listing = listings.find(key);
-            out.files.push_back(
-                run_file{node_id,
-                         "input",
-                         "archive",
-                         base_name(archive.uri),
-                         std::string(),
-                         listing == listings.end() ?
-                             std::nullopt :
-                             std::optional<std::int64_t>(
-                                 static_cast<std::int64_t>(listing->second.size_bytes)),
-                         std::nullopt,
-                         archive.workunit_id,
-                         node_id,
-                         nullptr,
-                         object_ref{bucket, key, std::string(), false}});
+            out.files.push_back(run_file{node_id,
+                                         "input",
+                                         "archive",
+                                         base_name(archive.uri),
+                                         std::string(),
+                                         listing == listings.end() ?
+                                             std::nullopt :
+                                             std::optional<std::int64_t>(static_cast<std::int64_t>(
+                                                 listing->second.size_bytes)),
+                                         std::nullopt,
+                                         archive.workunit_id,
+                                         node_id,
+                                         nullptr,
+                                         object_ref{bucket, key, std::string(), false}});
             if (listing == listings.end())
                 continue;
             for (const auto& entry : listing->second.entries)
-                out.files.push_back(
-                    run_file{node_id + ":" + entry.name,
-                             "input",
-                             "file",
-                             entry.name,
-                             std::string(),
-                             static_cast<std::int64_t>(entry.size_bytes),
-                             std::nullopt,
-                             archive.workunit_id,
-                             node_id,
-                             nullptr,
-                             object_ref{bucket, key, entry.name, false}});
+                out.files.push_back(run_file{node_id + ":" + entry.name,
+                                             "input",
+                                             "file",
+                                             entry.name,
+                                             std::string(),
+                                             static_cast<std::int64_t>(entry.size_bytes),
+                                             std::nullopt,
+                                             archive.workunit_id,
+                                             node_id,
+                                             nullptr,
+                                             object_ref{bucket, key, entry.name, false}});
             continue;
         }
 
@@ -538,8 +537,8 @@ std::string write_file(const run_file& file) {
     std::ostringstream body;
     body << "{\"id\":" << json::write(file.id) << ",\"direction\":" << json::write(file.direction)
          << ",\"kind\":" << json::write(file.kind) << ",\"name\":" << json::write(file.name)
-         << ",\"family\":" << json::write(file.family) << ",\"bytes\":"
-         << (file.bytes ? std::to_string(*file.bytes) : std::string("null"))
+         << ",\"family\":" << json::write(file.family)
+         << ",\"bytes\":" << (file.bytes ? std::to_string(*file.bytes) : std::string("null"))
          << ",\"sha256\":" << optional_text(file.sha256) << ",\"job\":" << optional_text(file.job)
          << ",\"node\":" << json::write(file.node) << ",\"ore_file_code\":"
          << (file.ore_file ? json::write(file.ore_file->code) : std::string("null"))
@@ -575,8 +574,7 @@ std::string ore_file_json(const catalogue_file& file) {
          << ",\"category_description\":" << json::write(file.category_description)
          << ",\"configuration_type_code\":" << optional_text(file.configuration_type_code)
          << ",\"guide_section\":" << optional_text(file.guide_section)
-         << ",\"origin\":" << json::write(file.origin)
-         << ",\"format\":" << json::write(file.format)
+         << ",\"origin\":" << json::write(file.origin) << ",\"format\":" << json::write(file.format)
          << ",\"schema_ore_file_code\":" << optional_text(file.schema_ore_file_code)
          << ",\"typical_filename\":" << json::write(file.typical_filename)
          << ",\"filename_regex\":" << json::write(file.filename_regex)
@@ -587,8 +585,8 @@ std::string ore_file_json(const catalogue_file& file) {
 /// One parameter of the documents that name a file.
 std::string parameter_json(const ores::reporting::domain::file_type& type) {
     std::ostringstream body;
-    body << "{\"code\":" << json::write(type.code) << ",\"analytic_type_code\":"
-         << optional_text(type.analytic_type_code)
+    body << "{\"code\":" << json::write(type.code)
+         << ",\"analytic_type_code\":" << optional_text(type.analytic_type_code)
          << ",\"ore_parameter\":" << json::write(type.ore_parameter)
          << ",\"direction\":" << json::write(type.direction)
          << ",\"kind\":" << json::write(type.kind)
@@ -608,8 +606,8 @@ std::string files_json(const run_files& run) {
 
 /// The file a screen named, or nothing when the run holds no such file.
 const run_file* file_of(const run_files& run, const std::string& id) {
-    const auto found = std::ranges::find_if(run.files,
-                                            [&](const run_file& f) { return f.id == id; });
+    const auto found =
+        std::ranges::find_if(run.files, [&](const run_file& f) { return f.id == id; });
     return found == run.files.end() ? nullptr : &*found;
 }
 
@@ -621,8 +619,7 @@ const run_file* file_of(const run_files& run, const std::string& id) {
  * that is held is an output file, which the node stores gzipped: it is small,
  * it arrives whole, and the reply is the file rather than the object.
  */
-http_response body_of(const run_file& file,
-                      const ores::storage::filesystem::local_store& store) {
+http_response body_of(const run_file& file, const ores::storage::filesystem::local_store& store) {
     const auto path = store.resolve(file.source.bucket, file.source.key);
     if (!path)
         rr::refuse(http_status::not_found,
@@ -634,13 +631,11 @@ http_response body_of(const run_file& file,
     resp.content_type = file.kind == "archive" ? "application/gzip" : "application/octet-stream";
 
     if (!file.source.entry.empty()) {
-        auto packed =
-            std::make_shared<ores::http::server::routes::storage_entry_source>(*path,
-                                                                               file.source.entry);
+        auto packed = std::make_shared<ores::http::server::routes::storage_entry_source>(
+            *path, file.source.entry);
         if (!packed->found())
-            rr::refuse(http_status::not_found,
-                       "not-found",
-                       "The package no longer holds this file.");
+            rr::refuse(
+                http_status::not_found, "not-found", "The package no longer holds this file.");
         resp.body_stream = std::move(packed);
         return resp;
     }
@@ -693,17 +688,16 @@ void run_file_routes::register_routes(
             .description("The run, its batch, each job of the batch, and each job's input "
                          "package and output. A package that cannot be read leaves its archive "
                          "listed without the files inside it.")
-            .handler([&session, store](const http_request& req)
-                         -> boost::asio::awaitable<http_response> {
+            .handler([&session,
+                      store](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<compute_messaging::list_run_files_request>([&] {
                     const auto raw = req.get_path_param("id");
                     if (!rr::is_uuid(raw))
                         rr::invalid("The address names an id that is not a uuid.");
                     rr::refuse_unknown_params(req, {});
                     if (!run_of(req, session, raw))
-                        rr::refuse(http_status::not_found,
-                                   "not-found",
-                                   "No report run has this id.");
+                        rr::refuse(
+                            http_status::not_found, "not-found", "No report run has this id.");
 
                     auto run = files_of_run(req, session, *store, raw);
                     const auto catalogue = read_catalogue(req, session);
@@ -721,25 +715,23 @@ void run_file_routes::register_routes(
             .description("The file, the ORE file the catalogue says it is, the parameters that "
                          "describe it, the engine version the job ran on and whether that "
                          "version stores the schema the catalogue names.")
-            .handler([&session, store](const http_request& req)
-                         -> boost::asio::awaitable<http_response> {
+            .handler([&session,
+                      store](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<compute_messaging::list_run_files_request>([&] {
                     const auto raw = req.get_path_param("id");
                     if (!rr::is_uuid(raw))
                         rr::invalid("The address names an id that is not a uuid.");
                     rr::refuse_unknown_params(req, {});
                     if (!run_of(req, session, raw))
-                        rr::refuse(http_status::not_found,
-                                   "not-found",
-                                   "No report run has this id.");
+                        rr::refuse(
+                            http_status::not_found, "not-found", "No report run has this id.");
 
                     auto run = files_of_run(req, session, *store, raw);
                     const auto catalogue = read_catalogue(req, session);
                     const auto* found = file_of(run, req.get_path_param("file"));
                     if (found == nullptr)
-                        rr::refuse(http_status::not_found,
-                                   "not-found",
-                                   "This run has no such file.");
+                        rr::refuse(
+                            http_status::not_found, "not-found", "This run has no such file.");
                     const auto* ore_file = ore_file_of(found->name, catalogue);
 
                     std::string parameters;
@@ -765,8 +757,7 @@ void run_file_routes::register_routes(
                                 engine_version && schema_is_stored(req,
                                                                    session,
                                                                    *engine_version,
-                                                                   candidate.file
-                                                                       .typical_filename,
+                                                                   candidate.file.typical_filename,
                                                                    catalogue);
                             schema = "{\"code\":" + json::write(candidate.file.code) +
                                      ",\"name\":" + json::write(candidate.file.name) +
@@ -789,24 +780,22 @@ void run_file_routes::register_routes(
             .summary("The bytes of one file of a report run")
             .description("A file inside a package is copied out of it as it is asked for, so "
                          "reading one result never reads the package that holds it.")
-            .handler([&session, store](const http_request& req)
-                         -> boost::asio::awaitable<http_response> {
+            .handler([&session,
+                      store](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<compute_messaging::list_run_files_request>([&] {
                     const auto raw = req.get_path_param("id");
                     if (!rr::is_uuid(raw))
                         rr::invalid("The address names an id that is not a uuid.");
                     rr::refuse_unknown_params(req, {});
                     if (!run_of(req, session, raw))
-                        rr::refuse(http_status::not_found,
-                                   "not-found",
-                                   "No report run has this id.");
+                        rr::refuse(
+                            http_status::not_found, "not-found", "No report run has this id.");
 
                     const auto run = files_of_run(req, session, *store, raw);
                     const auto* found = file_of(run, req.get_path_param("file"));
                     if (found == nullptr)
-                        rr::refuse(http_status::not_found,
-                                   "not-found",
-                                   "This run has no such file.");
+                        rr::refuse(
+                            http_status::not_found, "not-found", "This run has no such file.");
 
                     auto resp = body_of(*found, *store);
                     resp.headers["Content-Disposition"] = disposition_for(found->name);

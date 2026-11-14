@@ -218,8 +218,8 @@ void objects_handler::list_archive_entries(ores::nats::message msg) {
         if (!path) {
             listing.success = false;
             listing.message = "No object at this key.";
-            BOOST_LOG_SEV(lg(), warn) << "list_archive_entries: no object at " << req->bucket
-                                      << "/" << key;
+            BOOST_LOG_SEV(lg(), warn)
+                << "list_archive_entries: no object at " << req->bucket << "/" << key;
             resp.archives.push_back(std::move(listing));
             continue;
         }

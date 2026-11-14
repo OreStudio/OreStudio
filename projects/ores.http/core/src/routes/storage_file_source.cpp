@@ -25,8 +25,8 @@
 namespace ores::http::server::routes {
 
 storage_file_source::storage_file_source(std::filesystem::path path,
-                                           std::uint64_t offset,
-                                           std::uint64_t length)
+                                         std::uint64_t offset,
+                                         std::uint64_t length)
     : path_(std::move(path)) {
 
     std::error_code ec;

@@ -397,15 +397,12 @@ TEST_CASE("one_file_inside_a_package_is_served_without_the_package",
     ores::storage::net::storage_transfer client(gateway.url(), capability_token("ores", ""));
     client.upload("ores", "compute/packages/input.tar.gz", archive);
 
-    const auto url =
-        gateway.url() +
-        ores::storage::net::storage_paths::make_object_path("ores", "compute/packages/input.tar.gz");
+    const auto url = gateway.url() + ores::storage::net::storage_paths::make_object_path(
+                                         "ores", "compute/packages/input.tar.gz");
 
     // The entry is the file's own bytes, and the package is never sent.
-    const auto whole =
-        ores::storage::net::http_client::get_range(url + "?entry=output%2Ffx.csv",
-                                                   capability_token("ores", ""),
-                                                   "");
+    const auto whole = ores::storage::net::http_client::get_range(
+        url + "?entry=output%2Ffx.csv", capability_token("ores", ""), "");
     REQUIRE(whole.status == 200);
     REQUIRE(whole.body == held);
 
@@ -417,8 +414,8 @@ TEST_CASE("one_file_inside_a_package_is_served_without_the_package",
     REQUIRE(part.body == "EUR/USD");
 
     // A range of the object itself is answered the same way.
-    const auto object = ores::storage::net::http_client::get_range(
-        url, capability_token("ores", ""), "bytes=0-9");
+    const auto object =
+        ores::storage::net::http_client::get_range(url, capability_token("ores", ""), "bytes=0-9");
     REQUIRE(object.status == 206);
     REQUIRE(object.body.size() == 10);
     REQUIRE(object.content_range.starts_with("bytes 0-9/"));

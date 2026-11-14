@@ -459,7 +459,7 @@ caller, checks the operation's permission code, and calls =ores.storage.core=.
 
 ** list_archive_entries_request
 :PROPERTIES:
-:subject: storage.v1.objects.list_archive_entries
+:subject: storage.v1.ops.list_archive_entries
 :response: list_archive_entries_response
 :END:
 

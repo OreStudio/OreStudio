@@ -84,8 +84,7 @@ double figure_of(const aggregate_row& row);
 std::vector<money> npv_totals(const std::vector<priced_trade>& rows);
 
 /// The change between two sets of figures, each currency apart.
-change_set change_between(const std::vector<money>& current,
-                          const std::vector<money>& previous);
+change_set change_between(const std::vector<money>& current, const std::vector<money>& previous);
 
 /// The rows rolled up by the key they share, largest first.
 std::vector<aggregate_row>

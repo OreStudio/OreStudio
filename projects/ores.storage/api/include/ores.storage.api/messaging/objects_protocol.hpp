@@ -270,7 +270,7 @@ struct archive_listing {
  */
 struct list_archive_entries_request {
     using response_type = struct list_archive_entries_response;
-    static constexpr std::string_view nats_subject = "storage.v1.objects.list_archive_entries";
+    static constexpr std::string_view nats_subject = "storage.v1.ops.list_archive_entries";
     /**
      * @brief Whether the caller must have established a session first.
      *

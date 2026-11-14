@@ -74,9 +74,8 @@ TEST_CASE("a_run_totals_each_currency_apart", "[result_rollup]") {
 TEST_CASE("a_book_holds_the_trades_of_that_book", "[result_rollup]") {
     auto lg(make_logger(test_suite));
 
-    const std::vector<priced_trade> rows{trade("t1", 100, "b1"),
-                                         trade("t2", 250, "b1"),
-                                         trade("t3", 40, "b2")};
+    const std::vector<priced_trade> rows{
+        trade("t1", 100, "b1"), trade("t2", 250, "b1"), trade("t3", 40, "b2")};
     const auto rolled = aggregate_rows(rows,
                                        [](const priced_trade& row) { return row.book_id; },
                                        {{"b1", "Desk one"}, {"b2", "Desk two"}});
@@ -95,10 +94,8 @@ TEST_CASE("a_portfolio_sums_the_books_under_it", "[result_rollup]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<aggregate_row> books{book_row("b1", 100, 1), book_row("b2", 250, 2)};
-    const auto rows = with_portfolio_tree(books,
-                                          {{"b1", "p1"}, {"b2", "p1"}},
-                                          {{"p1", "Rates"}},
-                                          {});
+    const auto rows =
+        with_portfolio_tree(books, {{"b1", "p1"}, {"b2", "p1"}}, {{"p1", "Rates"}}, {});
 
     REQUIRE(rows.size() == 3);
     CHECK(rows[0].is_group);
@@ -136,10 +133,7 @@ TEST_CASE("a_book_in_no_portfolio_stands_at_the_top", "[result_rollup]") {
     auto lg(make_logger(test_suite));
 
     const std::vector<aggregate_row> books{book_row("b1", 100, 1), book_row("b2", 250, 2)};
-    const auto rows = with_portfolio_tree(books,
-                                          {{"b1", "p1"}},
-                                          {{"p1", "Rates"}},
-                                          {});
+    const auto rows = with_portfolio_tree(books, {{"b1", "p1"}}, {{"p1", "Rates"}}, {});
 
     REQUIRE(rows.size() == 3);
     CHECK(rows[0].name == "Rates");
@@ -151,15 +145,12 @@ TEST_CASE("a_book_in_no_portfolio_stands_at_the_top", "[result_rollup]") {
 TEST_CASE("a_counterparty_group_sums_its_members", "[result_rollup]") {
     auto lg(make_logger(test_suite));
 
-    const std::vector<aggregate_row> counterparties{book_row("c1", 100, 1),
-                                                    book_row("c2", 250, 2),
-                                                    book_row("c3", 40, 1)};
-    const auto rows = with_groups(counterparties,
-                                  {{"c1", "group"}, {"c2", "group"}},
-                                  {{"c1", "Member one"},
-                                   {"c2", "Member two"},
-                                   {"group", "The group"},
-                                   {"c3", "Alone"}});
+    const std::vector<aggregate_row> counterparties{
+        book_row("c1", 100, 1), book_row("c2", 250, 2), book_row("c3", 40, 1)};
+    const auto rows = with_groups(
+        counterparties,
+        {{"c1", "group"}, {"c2", "group"}},
+        {{"c1", "Member one"}, {"c2", "Member two"}, {"group", "The group"}, {"c3", "Alone"}});
 
     REQUIRE(rows.size() == 4);
     CHECK(rows[0].is_group);

@@ -48,10 +48,11 @@ public:
      * @throws std::runtime_error when the object is not a package this build
      * reads.
      */
-    storage_entry_source(std::filesystem::path packed,
-                         std::string_view name,
-                         std::uint64_t offset = 0,
-                         std::uint64_t length = storage::filesystem::archive_reader::stream::to_end);
+    storage_entry_source(
+        std::filesystem::path packed,
+        std::string_view name,
+        std::uint64_t offset = 0,
+        std::uint64_t length = storage::filesystem::archive_reader::stream::to_end);
 
     /// Whether the package holds a regular file of that name.
     [[nodiscard]] bool found() const noexcept {

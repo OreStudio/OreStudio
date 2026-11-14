@@ -97,10 +97,8 @@ void run_files_handler::list_run_files(ores::nats::message msg) {
         resp.batch_id = boost::uuids::to_string(batch->id);
 
         repository::workunit_repository workunits;
-        const auto units = workunits.read_latest_by_batch_id(ctx,
-                                                          boost::uuids::to_string(batch->id),
-                                                          0,
-                                                          k_workunit_limit);
+        const auto units = workunits.read_latest_by_batch_id(
+            ctx, boost::uuids::to_string(batch->id), 0, k_workunit_limit);
 
         std::vector<std::string> result_ids;
         result_ids.reserve(units.size());
@@ -131,11 +129,10 @@ void run_files_handler::list_run_files(ores::nats::message msg) {
             const auto found = result_of.find(boost::uuids::to_string(unit.canonical_result_id));
             if (found == result_of.end() || found->second.output_uri.empty())
                 continue;
-            resp.archives.push_back(run_file_archive{
-                "output",
-                unit_id,
-                boost::uuids::to_string(found->second.id),
-                found->second.output_uri});
+            resp.archives.push_back(run_file_archive{"output",
+                                                     unit_id,
+                                                     boost::uuids::to_string(found->second.id),
+                                                     found->second.output_uri});
         }
 
         resp.success = true;

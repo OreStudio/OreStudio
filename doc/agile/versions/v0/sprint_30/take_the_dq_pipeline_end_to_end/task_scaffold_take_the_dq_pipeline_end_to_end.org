@@ -8,7 +8,7 @@
 #+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
 #+owner: marco
 #+branch: feature/take-the-dq-pipeline-end-to-end
-#+pr:
+#+pr: 4709
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-14
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4709][#4709]] | [agile] Open the DQ pipeline story |
 
 * Review
 

@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_EQUITY_INSTRUMENT_REPOSITORY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_EQUITY_INSTRUMENT_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/equity_instrument.hpp"
 #include "ores.trading.api/messaging/equity_instrument_protocol.hpp"

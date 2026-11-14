@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CURVE_PARAMETRIC_SMILE_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CURVE_PARAMETRIC_SMILE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/curve_parametric_smile.hpp"
 #include "ores.refdata.api/messaging/curve_parametric_smile_protocol.hpp"

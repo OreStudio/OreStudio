@@ -25,7 +25,7 @@
 #ifndef ORES_SYNTHETIC_CORE_REPOSITORY_TRADE_GENERATION_TRADE_TYPE_REPOSITORY_HPP
 #define ORES_SYNTHETIC_CORE_REPOSITORY_TRADE_GENERATION_TRADE_TYPE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/trade_generation_trade_type.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_trade_type_protocol.hpp"

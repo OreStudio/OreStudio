@@ -25,7 +25,7 @@
 #ifndef ORES_IAM_CORE_REPOSITORY_ACCOUNT_CREDENTIAL_REPOSITORY_HPP
 #define ORES_IAM_CORE_REPOSITORY_ACCOUNT_CREDENTIAL_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.iam.api/domain/account_credential.hpp"
 #include "ores.iam.api/messaging/account_credential_protocol.hpp"
 #include "ores.iam.core/export.hpp"

@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_FLEXI_SWAP_LOWER_NOTIONAL_REPOSITORY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_FLEXI_SWAP_LOWER_NOTIONAL_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
 #include "ores.trading.api/messaging/flexi_swap_lower_notional_protocol.hpp"

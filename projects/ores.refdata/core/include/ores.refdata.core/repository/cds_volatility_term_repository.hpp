@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_CDS_VOLATILITY_TERM_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_CDS_VOLATILITY_TERM_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
 #include "ores.refdata.api/messaging/cds_volatility_term_protocol.hpp"

@@ -25,7 +25,7 @@
 #ifndef ORES_SYNTHETIC_CORE_REPOSITORY_FX_VOL_CONTRIBUTOR_REPOSITORY_HPP
 #define ORES_SYNTHETIC_CORE_REPOSITORY_FX_VOL_CONTRIBUTOR_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/fx_vol_contributor.hpp"
 #include "ores.synthetic.api/messaging/fx_vol_contributor_protocol.hpp"

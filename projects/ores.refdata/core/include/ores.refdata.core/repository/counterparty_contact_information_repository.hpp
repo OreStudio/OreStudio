@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_CONTACT_INFORMATION_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_COUNTERPARTY_CONTACT_INFORMATION_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.api/messaging/counterparty_contact_information_protocol.hpp"

@@ -25,7 +25,7 @@
 #ifndef ORES_SYNTHETIC_CORE_REPOSITORY_CALIBRATION_PROVIDER_ORDER_REPOSITORY_HPP
 #define ORES_SYNTHETIC_CORE_REPOSITORY_CALIBRATION_PROVIDER_ORDER_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/calibration_provider_order.hpp"
 #include "ores.synthetic.api/messaging/calibration_provider_order_protocol.hpp"

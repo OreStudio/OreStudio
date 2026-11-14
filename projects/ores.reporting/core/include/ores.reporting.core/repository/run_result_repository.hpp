@@ -25,7 +25,7 @@
 #ifndef ORES_REPORTING_CORE_REPOSITORY_RUN_RESULT_REPOSITORY_HPP
 #define ORES_REPORTING_CORE_REPOSITORY_RUN_RESULT_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.api/domain/run_result.hpp"
 #include "ores.reporting.api/messaging/run_result_protocol.hpp"

@@ -27,6 +27,7 @@
 #include "ores.compute.api/domain/workflow_batch_link_json_io.hpp" // IWYU pragma: keep.
 #include "ores.compute.core/repository/workflow_batch_link_entity.hpp"
 #include "ores.compute.core/repository/workflow_batch_link_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"

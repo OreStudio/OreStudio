@@ -28,6 +28,7 @@
 #include "ores.compute.api/messaging/platform_protocol.hpp"
 #include "ores.compute.core/repository/platform_entity.hpp"
 #include "ores.compute.core/repository/platform_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/service/tenant_context.hpp"

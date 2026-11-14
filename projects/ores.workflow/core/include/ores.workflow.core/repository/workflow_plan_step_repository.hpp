@@ -25,7 +25,7 @@
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_PLAN_STEP_REPOSITORY_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_PLAN_STEP_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include "ores.workflow.api/domain/workflow_plan_step.hpp"

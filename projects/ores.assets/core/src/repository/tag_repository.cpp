@@ -28,6 +28,7 @@
 #include "ores.assets.api/messaging/tag_protocol.hpp"
 #include "ores.assets.core/repository/tag_entity.hpp"
 #include "ores.assets.core/repository/tag_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"

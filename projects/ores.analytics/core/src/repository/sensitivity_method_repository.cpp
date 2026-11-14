@@ -28,6 +28,7 @@
 #include "ores.analytics.api/messaging/sensitivity_method_protocol.hpp"
 #include "ores.analytics.core/repository/sensitivity_method_entity.hpp"
 #include "ores.analytics.core/repository/sensitivity_method_mapper.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.logging/boost_severity.hpp"

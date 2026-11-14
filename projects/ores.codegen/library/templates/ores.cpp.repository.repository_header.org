@@ -36,7 +36,7 @@ The full template source. Edit here and re-tangle with
 #include <string_view>
 #include <vector>
 #include "ores.logging/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 {{#domain_entity.has_filter_record}}
 #include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"

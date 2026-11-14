@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_BMA_BASIS_SWAP_CONVENTION_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_BMA_BASIS_SWAP_CONVENTION_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/bma_basis_swap_convention.hpp"
 #include "ores.refdata.api/messaging/bma_basis_swap_convention_protocol.hpp"

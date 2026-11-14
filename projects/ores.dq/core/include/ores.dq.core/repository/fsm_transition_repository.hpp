@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_FSM_TRANSITION_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_FSM_TRANSITION_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.dq.api/domain/fsm_transition.hpp"
 #include "ores.dq.api/messaging/fsm_transition_protocol.hpp"
 #include "ores.dq.core/export.hpp"

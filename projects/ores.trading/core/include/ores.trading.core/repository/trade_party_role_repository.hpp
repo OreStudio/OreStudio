@@ -25,7 +25,7 @@
 #ifndef ORES_TRADING_CORE_REPOSITORY_TRADE_PARTY_ROLE_REPOSITORY_HPP
 #define ORES_TRADING_CORE_REPOSITORY_TRADE_PARTY_ROLE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade_party_role.hpp"
 #include "ores.trading.api/messaging/trade_party_role_protocol.hpp"

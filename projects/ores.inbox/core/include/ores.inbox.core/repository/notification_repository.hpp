@@ -25,7 +25,7 @@
 #ifndef ORES_INBOX_CORE_REPOSITORY_NOTIFICATION_REPOSITORY_HPP
 #define ORES_INBOX_CORE_REPOSITORY_NOTIFICATION_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.inbox.api/domain/notification.hpp"
 #include "ores.inbox.api/messaging/notification_protocol.hpp"
 #include "ores.inbox.core/export.hpp"

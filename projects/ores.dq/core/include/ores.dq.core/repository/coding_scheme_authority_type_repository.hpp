@@ -25,7 +25,7 @@
 #ifndef ORES_DQ_CORE_REPOSITORY_CODING_SCHEME_AUTHORITY_TYPE_REPOSITORY_HPP
 #define ORES_DQ_CORE_REPOSITORY_CODING_SCHEME_AUTHORITY_TYPE_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
 #include "ores.dq.api/messaging/coding_scheme_authority_type_protocol.hpp"
 #include "ores.dq.core/export.hpp"

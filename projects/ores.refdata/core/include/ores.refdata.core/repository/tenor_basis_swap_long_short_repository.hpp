@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_REPOSITORY_TENOR_BASIS_SWAP_LONG_SHORT_REPOSITORY_HPP
 #define ORES_REFDATA_CORE_REPOSITORY_TENOR_BASIS_SWAP_LONG_SHORT_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
 #include "ores.refdata.api/messaging/tenor_basis_swap_long_short_protocol.hpp"

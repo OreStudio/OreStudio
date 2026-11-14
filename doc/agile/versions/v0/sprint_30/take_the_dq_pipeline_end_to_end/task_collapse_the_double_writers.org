@@ -47,6 +47,11 @@ No table is written by both a direct seed and a DQ publish, and a check proves i
    seed only for the system party and the WRLD business centre.
 3. Delete the other side, and adjust the dataset or the seed accordingly.
 4. Classify the eleven tables that have no tenant route.
+The deletion is only safe once the reader question is settled. The backlog
+capture *One source for reference data that the system and each tenant read*
+records why the copy exists: the screens read the caller's tenant and the
+row-level security hides the system tenant's rows, so a reader change may have
+to land before the writer goes.
 
 * Measurements
 

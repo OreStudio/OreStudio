@@ -47,7 +47,11 @@ A reader can say which level a dataset belongs to and which bundle publishes it,
 2. Give the levels names that cannot be confused: installation, world, tenant.
 3. State the world bundle: the one carrying calendars, currency pairs,
    commodities and equity underlyings into the system tenant.
-4. Publish the map as a document and a check.
+4. Publish the map as a document and a check.5. Settle the reader side with the map: which level each reader looks in, and
+   how row-level security lets a tenant's session read world data without a
+   copy. The backlog already records both halves -- *World data versus party
+   configuration* and *One source for reference data that the system and each
+   tenant read* -- so this task decides, it does not rediscover.
 
 * Measurements
 

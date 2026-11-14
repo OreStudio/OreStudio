@@ -103,6 +103,43 @@ levels, so it can only be designed once 1 and 2 have an answer.
   no way to see publish state is the reason the gap went unnoticed: a recreate
   looked successful while the catalogues were empty.
 
+
+* Related backlog
+
+The backlog already carries analysis on this theme. These items are not
+duplicates to be closed; they are inputs the tasks must absorb, and two of them
+correct the plan below.
+
+| Item |
+|------|
+| [[id:A77947D9-FB2E-4518-A26B-21680DB0E1E1][World data versus party configuration]] |
+| [[id:A5B4097A-0FF4-4855-9BBE-D7461FC096F5][One source for reference data that the system and each tenant read]] |
+| [[id:A8DF818F-6CC3-40A0-9D1D-B5B2839D8EFD][Clarify and enforce system-tenant vs per-tenant dataset publish scope]] |
+| [[id:263C0B6B-D983-44F7-8D57-BB095972445A][Story: DQ/Refdata service boundary cleanup]] |
+| [[id:B5EFB803-EB60-4438-9304-3BC64FB54E1A][Three-level provisioning: end-to-end testing]] |
+| [[id:C743B8B4-563C-472F-9F01-BB8B98C9300A][The LEI dataset is system-tenant only, so a party cannot read it]] |
+| [[id:1CAA4761-AF7A-4264-8A41-C514083A4FA9][publish_from_dq codegen facet: hand-writing artefact tables is a recurring cost]] |
+| [[id:0BE07732-FE6C-40C9-87BC-22D3E651AD3F][Suppress staging dataset publication warnings]] |
+| [[id:30000917-5A85-4301-9D36-7C44CB51707F][Librarian errors]] |
+| [[id:35AA0437-F71C-488B-B9B9-8B10B9577FB8][Lock down data librarian for production tenants]] |
+| [[id:8897A0BD-A542-4C65-BF90-F5F8BD1491CB][The minimal Acme tenant lacks reference data some example trades need]] |
+| [[id:C4A1ACE8-4A3A-4CA4-8F53-A025AB6585B4][The provision_tenant step is published and never consumed, leaving a tenant half bootstrapped]] |
+| [[id:907B5B32-0B4F-4F16-8353-34B3799CCC4F][Fix the flaky conventions publish pgTAP test]] |
+| [[id:C1C77943-A2F6-42C9-8DB7-648F21DA4678][The starter FX spot dataset cannot publish]] |
+
+Two of them change the shape of the work:
+
+- *World data versus party configuration* and *One source for reference data
+  that the system and each tenant read* settle the levels in advance: the reason
+  the same dataset is written twice is that *different readers look in different
+  places*. Some code checks the system tenant; the screens read the caller's
+  tenant, and row-level security hides the system tenant's rows from them. So
+  collapsing the double writers is not a deletion -- it is a decision about who
+  reads what, taken first.
+- *The LEI dataset is system-tenant only, so a party cannot read it* is the same
+  defect already biting a credit trade. It confirms that the level split has to
+  reach the readers, not just the writers.
+
 * Out of scope
 
 - Re-seeding the corpus. This story moves what exists to where it belongs; it

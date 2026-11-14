@@ -23,8 +23,10 @@
 #include "ores.analytics.quant/service/day_count_calculator.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
+#include "ores.marketdata.service/app/staleness_policy.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
 #include "ores.refdata.core/mapping/quant_codes.hpp"
@@ -112,6 +114,9 @@ get_curve_analytics(const ores::database::context& ctx,
         repository::market_series_repository series_repo;
         std::optional<double> previous_zero;
         std::optional<double> previous_tau;
+        // The newest instant any pillar's series was observed at: that is when the
+        // market behind this curve was last written, and what its verdict measures.
+        std::chrono::system_clock::time_point newest_instant{};
         for (std::size_t i = 0; i < pillars.size() && i < points.size(); ++i) {
             const auto& pillar = pillars[i];
             const auto& boot = bootstrap_pillars[i];
@@ -132,7 +137,12 @@ get_curve_analytics(const ores::database::context& ctx,
             const auto series = series_repo.read_latest(ctx, market.series_id);
             if (!series.empty())
                 market.provider_code = series.front().provider_code;
-            market.as_of = as_of;
+            for (const auto& observation :
+                 repository::market_observation_repository{}.read_latest_for_series(
+                     ctx, pillar.market_series_id))
+                if (observation.observation_datetime > newest_instant)
+                    newest_instant = observation.observation_datetime;
+            market.as_of = newest_instant;
             resp.market_pillars.push_back(std::move(market));
 
             mm::curve_bootstrapped_point point;
@@ -152,6 +162,9 @@ get_curve_analytics(const ores::database::context& ctx,
             previous_tau = tau;
         }
 
+        // The verdict is the server's, asked of the one policy, of when the market
+        // behind the curve was last written rather than of the instant it was read.
+        resp.stale = staleness_policy::is_stale(newest_instant, std::chrono::system_clock::now());
         resp.success = !resp.bootstrapped.empty();
         if (!resp.success)
             resp.message = "Curve " + config.name + " produced no analyzable pillar.";

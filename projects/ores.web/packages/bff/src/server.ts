@@ -55,6 +55,7 @@ import { registerFixingSeriesRoutes } from './fixing-series.js';
 import { registerSubscriptionRoutes } from './subscriptions.js';
 import { registerOresmdRoutes } from './oresmd.js';
 import { registerSeriesRoutes } from './series.js';
+import { registerMarketReadRoutes } from './market-reads.js';
 import { registerTenorRoutes } from './tenors.js';
 import { registerAuditRoutes } from './audit.js';
 import { registerTimelineRoutes } from './timeline.js';
@@ -2704,6 +2705,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerFixingSeriesRoutes(server, requireSession);
     registerOresmdRoutes(server, requireSession);
     registerSeriesRoutes(server, requireSession);
+    registerMarketReadRoutes(server, requireSession);
     registerTenorRoutes(server, requireSession);
     registerRecordRoutes(server, requireSession);
     registerInboxRoutes(server, requireSession);

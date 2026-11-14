@@ -1,0 +1,941 @@
+diff --git a/projects/ores.marketdata/service/include/ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp b/projects/ores.marketdata/service/include/ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp
+index d6d2a44a6f..f1b210a699 100644
+--- a/projects/ores.marketdata/service/include/ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp
++++ b/projects/ores.marketdata/service/include/ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp
+@@ -98,6 +98,22 @@ struct surface_forward_set final {
+     std::vector<surface_forward_point> points;
+ };
+ 
++/**
++ * @brief The published set rebased so its spot date discounts to one.
++ *
++ * A published forward set states its factors from the as-of and quotes its short dates
++ * before spot: ON, then TN on the spot date itself. A surface is struck against a
++ * spot-starting market, and `pair_market_at` refuses a row earlier than spot, so the
++ * calibration reads the set through this: the row on the spot date becomes the anchor,
++ * every row before it goes, and both factors of every other row are divided by the
++ * anchor's. What is left starts at spot, at exactly one on both sides.
++ *
++ * @return the set, or why it cannot be read from spot: no row on the spot date, or a
++ * factor that is not positive.
++ */
++[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::expected<surface_forward_set, std::string>
++spot_starting(const surface_forward_set& forwards);
++
+ /// The quotes of one source series at the as-of, by the expiry and strike label of the datum.
+ using surface_series_quotes = std::map<std::pair<std::string, std::string>, double>;
+ 
+diff --git a/projects/ores.marketdata/service/src/app/fx_vol_surface_calibration_plan.cpp b/projects/ores.marketdata/service/src/app/fx_vol_surface_calibration_plan.cpp
+index 58f02ef121..bc1e483a28 100644
+--- a/projects/ores.marketdata/service/src/app/fx_vol_surface_calibration_plan.cpp
++++ b/projects/ores.marketdata/service/src/app/fx_vol_surface_calibration_plan.cpp
+@@ -156,6 +156,40 @@ std::expected<expiry_terms, std::string> terms_at(const surface_calibration_reci
+ 
+ }
+ 
++std::expected<surface_forward_set, std::string> spot_starting(const surface_forward_set& forwards) {
++    const auto at_spot = [&](const surface_forward_point& point) {
++        return std::chrono::sys_days(point.value_date) == std::chrono::sys_days(forwards.spot_date);
++    };
++    const auto anchor = std::ranges::find_if(forwards.points, at_spot);
++    if (anchor == forwards.points.end())
++        return std::unexpected(
++            "the forward set " + forwards.publish_id + " has no row on its spot date " +
++            std::format("{}", forwards.spot_date) + ", so it cannot be read from spot");
++    if (!(anchor->base_discount > 0.0) || !(anchor->quote_discount > 0.0))
++        return std::unexpected("the row on the spot date " + std::format("{}", forwards.spot_date) +
++                               " of the forward set " + forwards.publish_id +
++                               " discounts to a factor that is not above zero");
++
++    surface_forward_set out{.publish_id = forwards.publish_id,
++                            .spot = forwards.spot,
++                            .spot_date = forwards.spot_date,
++                            .points = {}};
++    for (const auto& point : forwards.points) {
++        // ON and any other delivery before spot are not part of a spot-starting market.
++        if (std::chrono::sys_days(point.value_date) < std::chrono::sys_days(forwards.spot_date))
++            continue;
++        if (!(point.base_discount > 0.0) || !(point.quote_discount > 0.0))
++            return std::unexpected("the " + point.tenor + " row of the forward set " +
++                                   forwards.publish_id +
++                                   " discounts to a factor that is not above zero");
++        out.points.push_back({.tenor = point.tenor,
++                              .value_date = point.value_date,
++                              .base_discount = point.base_discount / anchor->base_discount,
++                              .quote_discount = point.quote_discount / anchor->quote_discount});
++    }
++    return out;
++}
++
+ std::vector<std::string> split_blueprint_list(const std::string& text) {
+     std::vector<std::string> out;
+     std::size_t start = 0;
+diff --git a/projects/ores.marketdata/service/src/app/fx_vol_surface_calibration_service.cpp b/projects/ores.marketdata/service/src/app/fx_vol_surface_calibration_service.cpp
+index dfcb88ba26..8867ab6147 100644
+--- a/projects/ores.marketdata/service/src/app/fx_vol_surface_calibration_service.cpp
++++ b/projects/ores.marketdata/service/src/app/fx_vol_surface_calibration_service.cpp
+@@ -119,16 +119,21 @@ read_forwards(const context& ctx, const surface_calibration_recipe& recipe, time
+         throw std::invalid_argument("The forwards of " + pair + ": " + set.message +
+                                     " A surface reads its forwards from a published set, which "
+                                     "needs the published funding curves of both currencies.");
+-    surface_forward_set out{.publish_id = set.publish_id,
+-                            .spot = set.spot_rate,
+-                            .spot_date = set.spot_date,
+-                            .points = {}};
++    surface_forward_set published{.publish_id = set.publish_id,
++                                  .spot = set.spot_rate,
++                                  .spot_date = set.spot_date,
++                                  .points = {}};
+     for (const auto& row : set.rows)
+-        out.points.push_back({.tenor = row.tenor,
+-                              .value_date = row.value_date,
+-                              .base_discount = row.base_discount,
+-                              .quote_discount = row.quote_discount});
+-    return out;
++        published.points.push_back({.tenor = row.tenor,
++                                    .value_date = row.value_date,
++                                    .base_discount = row.base_discount,
++                                    .quote_discount = row.quote_discount});
++    // The published set discounts from its as-of and quotes ON before spot; a surface is
++    // struck against a spot-starting market, so the set is rebased at its spot date here.
++    const auto anchored = spot_starting(published);
++    if (!anchored)
++        throw std::invalid_argument("The forwards of " + pair + ": " + anchored.error() + ".");
++    return *anchored;
+ }
+ 
+ surface_series_quotes
+diff --git a/projects/ores.marketdata/service/src/app/fx_vol_surface_publish_service.cpp b/projects/ores.marketdata/service/src/app/fx_vol_surface_publish_service.cpp
+index d113939f8d..8f83386cc1 100644
+--- a/projects/ores.marketdata/service/src/app/fx_vol_surface_publish_service.cpp
++++ b/projects/ores.marketdata/service/src/app/fx_vol_surface_publish_service.cpp
+@@ -29,6 +29,7 @@
+ #include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
+ #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
+ #include "ores.marketdata.service/app/fx_vol_surface_grid.hpp"
++#include "ores.marketdata.service/app/staleness_policy.hpp"
+ #include "ores.platform/numeric/floating_point.hpp"
+ #include "ores.platform/time/datetime.hpp"
+ #include "ores.refdata.core/repository/fx_vol_surface_blueprint_repository.hpp"
+@@ -442,16 +443,10 @@ msg::get_published_fx_vol_surface_response fx_vol_surface_publish_service::read_
+                 out.delta_type = conventions.front().delta_type;
+         }
+         out.strike_convention = out.delta_type.empty() ? "absolute" : "delta";
+-        // The verdict is the server's: a publish older than the threshold is
+-        // stale, and no client recomputes it.
+-        if (out.published_at) {
+-            const auto age = std::chrono::duration_cast<std::chrono::seconds>(
+-                                 std::chrono::system_clock::now() - *out.published_at)
+-                                 .count();
+-            out.stale = age > 3600;
+-        } else {
+-            out.stale = true;
+-        }
++        // The verdict is the server's, asked of the one policy, so a surface
++        // cannot disagree with a curve about what "stale" means.
++        out.stale = staleness_policy::is_stale(out.published_at.value_or(time_point{}),
++                                               std::chrono::system_clock::now());
+         out.expiries = std::move(grid->expiries);
+         out.strikes = std::move(grid->strikes);
+         for (auto& p : grid->points)
+diff --git a/projects/ores.marketdata/service/src/app/instrument_catalogue.cpp b/projects/ores.marketdata/service/src/app/instrument_catalogue.cpp
+index a2c20a6ae3..65c9412512 100644
+--- a/projects/ores.marketdata/service/src/app/instrument_catalogue.cpp
++++ b/projects/ores.marketdata/service/src/app/instrument_catalogue.cpp
+@@ -52,17 +52,6 @@ auto& instrument_catalogue_lg() {
+ /// The page a request that states no limit gets.
+ constexpr std::int64_t default_page = 100;
+ 
+-/// The staleness threshold, until it moves into configuration.
+-std::int64_t age_seconds_of(std::chrono::system_clock::time_point as_of,
+-                            std::chrono::system_clock::time_point now) {
+-    return staleness_policy::age_seconds(as_of, now);
+-}
+-
+-bool is_stale(std::optional<std::chrono::system_clock::time_point> as_of,
+-              std::chrono::system_clock::time_point now) {
+-    return staleness_policy::is_stale(as_of.value_or(std::chrono::system_clock::time_point{}), now);
+-}
+-
+ std::string lower(std::string s) {
+     std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
+         return static_cast<char>(std::tolower(c));
+@@ -243,8 +232,8 @@ mm::list_instruments_response list_instruments(const ores::database::context& ct
+             source.provider_kind = pk->second;
+         source.series_id = series_id;
+         source.as_of = newest.value_or(std::chrono::system_clock::time_point{});
+-        source.age_seconds = age_seconds_of(source.as_of, now);
+-        source.stale = is_stale(newest, now);
++        source.age_seconds = staleness_policy::age_seconds(source.as_of, now);
++        source.stale = staleness_policy::is_stale(source.as_of, now);
+         instrument.sources.push_back(std::move(source));
+ 
+         if (!newest || newest > instrument.as_of)
+diff --git a/projects/ores.marketdata/service/src/app/rate_ladder_reader.cpp b/projects/ores.marketdata/service/src/app/rate_ladder_reader.cpp
+index 126deb15ef..e8c921d360 100644
+--- a/projects/ores.marketdata/service/src/app/rate_ladder_reader.cpp
++++ b/projects/ores.marketdata/service/src/app/rate_ladder_reader.cpp
+@@ -33,6 +33,7 @@
+ #include <boost/uuid/uuid_io.hpp>
+ #include <algorithm>
+ #include <chrono>
++#include <cmath>
+ #include <map>
+ #include <string>
+ #include <vector>
+@@ -56,6 +57,23 @@ auto& rate_ladder_lg() {
+ constexpr const char* ladder_tenor_convention = "RATES_SPOT_FORWARD";
+ constexpr const char* ladder_day_count_convention = "A365F";
+ 
++/**
++ * @brief A discount curve's observation turned into the rate a person reads.
++ *
++ * A discount series holds factors, and the ladder a desk reads states rates. The
++ * rung's own year fraction is what turns one into the other, and that fraction is
++ * the server's, because the calendar, the day count and the tenor convention are:
++ * a client that converted would need all three and could disagree with the curve
++ * it is looking at.
++ *
++ * @return nothing when the factor is not positive, which no discount factor is.
++ */
++std::optional<double> implied_zero_rate(double discount_factor, double year_fraction) {
++    if (discount_factor <= 0.0 || year_fraction <= 0.0)
++        return std::nullopt;
++    return -std::log(discount_factor) / year_fraction;
++}
++
+ /// One provider's quote at one rung of one ladder series.
+ struct quote_at_rung final {
+     std::string provider_code;
+@@ -184,6 +202,10 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
+     const auto refctx =
+         build_refdata_context(ctx, std::chrono::year_month_day{horizon}, ladder_tenor_convention);
+     const auto day_count = ores::analytics::quant::service::day_count_convention_code::A365F;
++    // A discount ladder's observations are factors. Every other instrument type
++    // quotes its rate, so only this one is converted.
++    const bool discount_ladder = request.instrument_type == "discount";
++    std::string unreadable;
+ 
+     std::vector<std::pair<std::chrono::year_month_day, std::string>> dated;
+     std::string undated;
+@@ -217,16 +239,29 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
+ 
+         std::vector<double> values;
+         for (const auto& q : quotes[tenor]) {
++            auto value = q.value;
++            if (discount_ladder) {
++                const auto rate = implied_zero_rate(q.value, rung.year_fraction);
++                if (!rate) {
++                    if (!unreadable.empty())
++                        unreadable += "; ";
++                    unreadable += tenor + " of " + q.provider_code;
++                    continue;
++                }
++                value = *rate;
++            }
+             mm::rung_quote wire;
+             wire.provider_code = q.provider_code;
+-            wire.value = q.value;
++            wire.value = value;
+             wire.as_of = q.as_of;
+             wire.age_seconds = staleness_policy::age_seconds(q.as_of, now);
+             wire.stale = staleness_policy::is_stale(q.as_of, now);
+             wire.series_id = q.series_id;
+-            values.push_back(q.value);
++            values.push_back(value);
+             rung.quotes.push_back(std::move(wire));
+         }
++        if (rung.quotes.empty())
++            continue;
+         rung.consensus.value = median_of(values);
+         rung.consensus.method = "median";
+         rung.consensus.providers_used = static_cast<int>(values.size());
+@@ -234,9 +269,17 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
+     }
+ 
+     resp.provider_count = static_cast<int>(provider_codes.size());
+-    if (!undated.empty())
+-        resp.message = "Some rungs could not be dated under " +
+-                       std::string(ladder_tenor_convention) + ": " + undated;
++    if (!unreadable.empty())
++        resp.message = "Some quotes of the " + request.currency +
++                       " discount ladder are not discount factors, so no rate was read from "
++                       "them: " +
++                       unreadable + ".";
++    if (!undated.empty()) {
++        if (!resp.message.empty())
++            resp.message += " ";
++        resp.message += "Some rungs could not be dated under " +
++                        std::string(ladder_tenor_convention) + ": " + undated + ".";
++    }
+     resp.success = true;
+     return resp;
+ }
+diff --git a/projects/ores.marketdata/service/tests/app_fx_vol_surface_calibration_plan_tests.cpp b/projects/ores.marketdata/service/tests/app_fx_vol_surface_calibration_plan_tests.cpp
+index 25ef350322..cbcff1c19b 100644
+--- a/projects/ores.marketdata/service/tests/app_fx_vol_surface_calibration_plan_tests.cpp
++++ b/projects/ores.marketdata/service/tests/app_fx_vol_surface_calibration_plan_tests.cpp
+@@ -246,3 +246,46 @@ TEST_CASE("a forward set that ends before an expiry refuses the calibration, nam
+     CHECK(prepared.error().find("expiry 2Y") != std::string::npos);
+     CHECK(prepared.error().find("ends at") != std::string::npos);
+ }
++
++TEST_CASE("a_published_forward_set_is_read_from_spot_and_not_from_its_as_of",
++          "[app][fx_vol_surface_calibration_plan]") {
++    using namespace std::chrono;
++    const auto at = [](int d) {
++        return year_month_day{
++            year{2026}, month{static_cast<unsigned>(11)}, day{static_cast<unsigned>(d)}};
++    };
++    // A published set as the ladder writes it: ON before spot, and factors that discount
++    // from the as-of rather than from spot, so the spot row is not one.
++    const surface_forward_set published{.publish_id = "fwd-2",
++                                        .spot = 1.08,
++                                        .spot_date = at(11),
++                                        .points = {{"ON", at(9), 0.9997500, 0.9996316},
++                                                   {"TN", at(11), 0.9996667, 0.9995088},
++                                                   {"1M", at(11), 0.9980000, 0.9960000}}};
++
++    const auto anchored = spot_starting(published);
++
++    INFO("error: " << (anchored ? std::string{} : anchored.error()));
++    REQUIRE(anchored);
++    REQUIRE(anchored->points.size() == 2);
++    // ON is gone, and the spot row discounts to exactly one on both sides.
++    CHECK(anchored->points.front().tenor == "TN");
++    CHECK(anchored->points.front().base_discount == Approx(1.0).epsilon(1e-12));
++    CHECK(anchored->points.front().quote_discount == Approx(1.0).epsilon(1e-12));
++    // A later row is rebased by the same anchor, so spot-relative discounting is preserved.
++    CHECK(anchored->points.back().base_discount == Approx(0.9980000 / 0.9996667).epsilon(1e-12));
++    CHECK(anchored->points.back().quote_discount == Approx(0.9960000 / 0.9995088).epsilon(1e-12));
++}
++
++TEST_CASE("a_forward_set_with_no_row_on_its_spot_date_is_refused_naming_it",
++          "[app][fx_vol_surface_calibration_plan]") {
++    auto forwards = eur_usd_forward_set();
++    forwards.spot_date = std::chrono::year_month_day{
++        std::chrono::year{2026}, std::chrono::month{12}, std::chrono::day{1}};
++
++    const auto anchored = spot_starting(forwards);
++
++    REQUIRE_FALSE(anchored);
++    CHECK(anchored.error().find("no row on its spot date") != std::string::npos);
++    CHECK(anchored.error().find("2026-12-01") != std::string::npos);
++}
+diff --git a/projects/ores.marketdata/service/tests/app_instrument_catalogue_read_tests.cpp b/projects/ores.marketdata/service/tests/app_instrument_catalogue_read_tests.cpp
+index 044a78548e..40196a60ff 100644
+--- a/projects/ores.marketdata/service/tests/app_instrument_catalogue_read_tests.cpp
++++ b/projects/ores.marketdata/service/tests/app_instrument_catalogue_read_tests.cpp
+@@ -323,3 +323,115 @@ TEST_CASE("a_ladder_no_provider_quotes_is_refused_in_words", catalogue_read_tags
+     CHECK(resp.success == false);
+     CHECK(resp.message.empty() == false);
+ }
++
++namespace {
++
++/**
++ * @brief One party's discount curve, held as factors at two rungs.
++ *
++ * A discount series stores what a discount curve is: factors. The ladder a desk
++ * reads states rates, so the read has to convert, and this fixture is what
++ * proves it did.
++ */
++struct discount_ladder_fixture {
++    discount_ladder_fixture()
++        : gctx(ores::testing::make_generation_context(h))
++        , party_id(uuid_gen())
++        , series_id(uuid_gen()) {
++        write_party();
++        party = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
++        write_series();
++        write_factors();
++    }
++
++    ores::marketdata::messaging::get_rate_ladder_request request() const {
++        ores::marketdata::messaging::get_rate_ladder_request req;
++        req.party_id = boost::uuids::to_string(party_id);
++        req.currency = "AUD";
++        req.instrument_type = "discount";
++        return req;
++    }
++
++    ores::testing::scoped_database_helper h;
++    ores::utility::generation::generation_context gctx;
++    boost::uuids::random_generator uuid_gen;
++    boost::uuids::uuid party_id;
++    boost::uuids::uuid series_id;
++    std::optional<ores::database::context> party;
++
++private:
++    void write_party() {
++        ores::refdata::repository::party_repository repo;
++        auto p = ores::refdata::generators::generate_synthetic_party(gctx);
++        p.id = party_id;
++        p.version = 0;
++        p.is_registration_default = false;
++        for (const auto& e : repo.read_latest(h.context()))
++            if (e.tenant_id == h.tenant_id() && !e.parent_party_id) {
++                p.parent_party_id = e.id;
++                break;
++            }
++        p.change_reason_code = "system.test";
++        p.change_commentary = "discount ladder test";
++        repo.write(h.context(), p);
++    }
++
++    void write_series() {
++        ores::marketdata::domain::market_series s;
++        s.id = series_id;
++        s.version = 0;
++        s.tenant_id = h.tenant_id();
++        s.party_id = party_id;
++        s.oresmd_uri = "oresmd://ir/AUD?type=series&instrument=discount&quote=rate"
++                       "&curve_id=AUD-DISCOUNT-TEST";
++        s.series_subclass = "yield";
++        s.provider_code = "ore";
++        s.derivation_kind = "OBSERVED";
++        s.derivation_config_id = boost::uuids::nil_uuid();
++        s.derivation_config_version = 0;
++        s.modified_by = h.db_user();
++        s.performed_by = h.db_user();
++        s.change_reason_code = "system.test";
++        s.change_commentary = "discount ladder test";
++        ores::marketdata::repository::market_series_repository{}.write(h.context(), s);
++    }
++
++    void write_factors() {
++        const auto now = std::chrono::system_clock::now();
++        ores::marketdata::repository::market_observation_repository repo;
++        for (const auto& [term, factor] :
++             {std::pair{"1Y", "0.960789"}, std::pair{"2Y", "0.923116"}}) {
++            ores::marketdata::domain::market_observation o;
++            o.id = uuid_gen();
++            o.tenant_id = h.tenant_id();
++            o.party_id = party_id;
++            o.series_id = series_id;
++            o.observation_datetime = now;
++            o.oresmd_uri =
++                "oresmd://ir/AUD?instrument=discount&quote=rate&term=" + std::string(term);
++            o.value = factor;
++            o.source = "discount ladder test";
++            repo.insert(*party, {o});
++        }
++    }
++};
++
++}
++
++TEST_CASE("a_discount_ladder_states_rates_and_not_the_factors_it_stores", catalogue_read_tags) {
++    discount_ladder_fixture f;
++
++    const auto resp = get_rate_ladder(*f.party, f.request());
++
++    INFO("message: " << resp.message);
++    REQUIRE(resp.success);
++    REQUIRE(resp.rungs.empty() == false);
++    for (const auto& rung : resp.rungs) {
++        REQUIRE(rung.quotes.empty() == false);
++        // A factor of 0.96 read as a rate would be 96%; the read states the rate
++        // the factor implies, which for a one-year rung is close to 4%.
++        CHECK(rung.quotes.front().value > 0.0);
++        CHECK(rung.quotes.front().value < 0.2);
++        CHECK(rung.consensus.value == rung.quotes.front().value);
++    }
++}
+diff --git a/projects/ores.marketdata/service/tests/app_published_surface_tests.cpp b/projects/ores.marketdata/service/tests/app_published_surface_tests.cpp
+new file mode 100644
+index 0000000000..f2bff6c6e9
+--- /dev/null
++++ b/projects/ores.marketdata/service/tests/app_published_surface_tests.cpp
+@@ -0,0 +1,114 @@
++/* -*- mode: c++; tab-width: 4; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
++ *
++ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License as published by the Free Software
++ * Foundation; either version 3 of the License, or (at your option) any later
++ * version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ */
++#include "ores.marketdata.service/app/staleness_policy.hpp"
++#include "published_surface_fixture.hpp"
++#include <catch2/catch_test_macros.hpp>
++#include <chrono>
++#include <cstdint>
++#include <string>
++#include <vector>
++
++constexpr const char* published_surface_tags = "[published_surface][database]";
++
++namespace {
++
++using ores::marketdata::service::app::staleness_policy;
++using ores::marketdata::service::tests::surface_fixture;
++
++/// The instant a fixture is published at when the test wants it to read as fresh.
++std::chrono::system_clock::time_point a_minute_ago() {
++    return std::chrono::system_clock::now() - std::chrono::minutes{1};
++}
++
++/// Puts the threshold back, so a suite that changes it leaves no verdict behind.
++struct threshold_guard final {
++    std::int64_t was = staleness_policy::threshold_seconds();
++    ~threshold_guard() {
++        staleness_policy::configure(was);
++    }
++};
++
++}
++
++TEST_CASE("the_published_surface_states_its_model_its_convention_and_its_grid",
++          published_surface_tags) {
++    surface_fixture f(a_minute_ago());
++
++    const auto resp = f.read();
++
++    INFO("message: " << resp.message);
++    REQUIRE(resp.success);
++    // A strike column called ATM is not a volatility without the model it was
++    // fitted by and the delta convention it is quoted under.
++    CHECK(resp.model == "ssvi");
++    CHECK(resp.delta_type == "Spot");
++    CHECK(resp.strike_convention == "delta");
++    CHECK(resp.publish_request_id == f.request_id());
++    CHECK(resp.published_by.empty() == false);
++    CHECK(resp.stale == false);
++
++    CHECK(resp.expiries == std::vector<std::string>{"1W", "1M"});
++    CHECK(resp.strikes == std::vector<std::string>{"DEL/Spot/Put/25", "ATM", "DEL/Spot/Call/25"});
++    REQUIRE(resp.points.size() == 6);
++    CHECK(resp.points.front().expiry == "1W");
++    CHECK(resp.points.front().strike == "DEL/Spot/Put/25");
++    CHECK(resp.points.front().volatility == 0.095);
++}
++
++TEST_CASE("a_convention_that_does_not_resolve_states_absolute_strikes", published_surface_tags) {
++    surface_fixture f(a_minute_ago(), false);
++
++    const auto resp = f.read();
++
++    INFO("message: " << resp.message);
++    REQUIRE(resp.success);
++    CHECK(resp.model == "ssvi");
++    CHECK(resp.delta_type.empty());
++    // The blueprint names a convention by a soft reference and this one does not
++    // resolve, so its strikes are levels and the read must not invent a delta type.
++    CHECK(resp.strike_convention == "absolute");
++    CHECK(resp.strikes == std::vector<std::string>{"1.05", "1.10", "1.15"});
++}
++
++TEST_CASE("the_stale_verdict_is_the_server_threshold_and_not_the_age_alone",
++          published_surface_tags) {
++    threshold_guard guard;
++    surface_fixture f(std::chrono::system_clock::now() - std::chrono::hours{2});
++
++    staleness_policy::configure(3600);
++    const auto fresh_by_an_hour = f.read();
++    REQUIRE(fresh_by_an_hour.success);
++    CHECK(fresh_by_an_hour.stale == true);
++
++    staleness_policy::configure(3 * 24 * 3600);
++    const auto fresh_by_three_days = f.read();
++    REQUIRE(fresh_by_three_days.success);
++    CHECK(fresh_by_three_days.stale == false);
++}
++
++TEST_CASE("an_as_of_before_the_publication_finds_no_surface_and_says_so", published_surface_tags) {
++    surface_fixture f(a_minute_ago());
++
++    const auto resp = f.read(f.published_at() - std::chrono::seconds{1});
++
++    CHECK(resp.success == false);
++    CHECK(resp.message.empty() == false);
++    CHECK(resp.points.empty());
++}
+diff --git a/projects/ores.marketdata/service/tests/component_files.cmake b/projects/ores.marketdata/service/tests/component_files.cmake
+index 822dbf2388..f54ac6ba05 100644
+--- a/projects/ores.marketdata/service/tests/component_files.cmake
++++ b/projects/ores.marketdata/service/tests/component_files.cmake
+@@ -42,6 +42,7 @@ set(files
+     "app_instrument_catalogue_tests.cpp"
+     "app_live_tenants_tests.cpp"
+     "app_published_curves_tests.cpp"
++    "app_published_surface_tests.cpp"
+     "app_staleness_policy_tests.cpp"
+     "app_tick_batch_tests.cpp"
+     "app_tick_plan_tests.cpp"
+diff --git a/projects/ores.marketdata/service/tests/published_surface_fixture.hpp b/projects/ores.marketdata/service/tests/published_surface_fixture.hpp
+new file mode 100644
+index 0000000000..2c646df122
+--- /dev/null
++++ b/projects/ores.marketdata/service/tests/published_surface_fixture.hpp
+@@ -0,0 +1,359 @@
++/* -*- mode: c++; tab-width: 4; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil -*-
++ *
++ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License as published by the Free Software
++ * Foundation; either version 3 of the License, or (at your option) any later
++ * version.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
++ * details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 51
++ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
++ *
++ */
++#ifndef ORES_MARKETDATA_SERVICE_TESTS_PUBLISHED_SURFACE_FIXTURE_HPP
++#define ORES_MARKETDATA_SERVICE_TESTS_PUBLISHED_SURFACE_FIXTURE_HPP
++
++/**
++ * @file published_surface_fixture.hpp
++ * @brief One party's published FX volatility surface, written whole, for the
++ * suite that reads it back.
++ *
++ * The read states what a surface means as well as its grid: the smile model,
++ * the pair's delta type, the strike convention those labels are read under and
++ * whether the publication has aged past the server's threshold. Proving that
++ * needs a surface that is published, so the fixture writes the four records a
++ * publish leaves behind -- the party, the surface series, the blueprint with its
++ * convention, the publish record and the grid -- without running the calibration
++ * or the approval chain, which other suites own.
++ */
++
++#include "ores.iam.api/generators/account_generator.hpp"
++#include "ores.iam.core/repository/account_repository.hpp"
++#include "ores.inbox.core/service/approval_lifecycle.hpp"
++#include "ores.marketdata.api/datum/market_datum.hpp"
++#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
++#include "ores.marketdata.api/datum/value.hpp"
++#include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
++#include "ores.marketdata.core/repository/fx_vol_surface_publish_repository.hpp"
++#include "ores.marketdata.core/repository/market_observation_repository.hpp"
++#include "ores.marketdata.core/repository/market_series_repository.hpp"
++#include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
++#include "ores.refdata.api/domain/fx_option_convention.hpp"
++#include "ores.refdata.api/domain/fx_vol_surface_blueprint.hpp"
++#include "ores.refdata.api/generators/party_generator.hpp"
++#include "ores.refdata.core/repository/fx_option_convention_repository.hpp"
++#include "ores.refdata.core/repository/fx_vol_surface_blueprint_repository.hpp"
++#include "ores.refdata.core/repository/party_repository.hpp"
++#include "ores.testing/make_generation_context.hpp"
++#include "ores.testing/scoped_database_helper.hpp"
++#include <boost/uuid/random_generator.hpp>
++#include <boost/uuid/uuid_io.hpp>
++#include <chrono>
++#include <optional>
++#include <stdexcept>
++#include <string>
++#include <utility>
++#include <vector>
++
++namespace ores::marketdata::service::tests {
++
++/// The convention the fixture's pair is quoted under, as refdata seeds it.
++inline constexpr const char* surface_convention_id = "EUR-USD-FXOPTION";
++
++/// The delta type the convention states, which makes a delta strike a vol a person can price.
++inline constexpr const char* surface_delta_type = "Spot";
++
++/// The smile model the fixture's blueprint fits.
++inline constexpr const char* surface_model = "ssvi";
++
++/// The expiries the fixture publishes, in the blueprint's order.
++inline constexpr const char* surface_expiries = "1W,1M";
++
++/// The strikes a pair quoted in delta publishes, in the blueprint's order.
++inline constexpr const char* surface_delta_strikes = "DEL/Spot/Put/25,ATM,DEL/Spot/Call/25";
++
++/// The strikes a surface published off absolute levels holds, in the same order.
++inline constexpr const char* surface_absolute_strikes = "1.05,1.10,1.15";
++
++/**
++ * @brief One surface a party has published, and the reads that answer for it.
++ *
++ * Every call names the instant the publication is stamped at, so a test can
++ * publish into the past and ask what the server says about its age. A blueprint
++ * names its convention by a soft reference, so a fixture can state a surface
++ * whose convention row is missing: its strikes are then levels, and the read
++ * must say so rather than claim a delta type nobody recorded.
++ */
++class surface_fixture {
++public:
++    explicit surface_fixture(const std::chrono::system_clock::time_point published_at,
++                             const bool convention_exists = true)
++        : gctx(ores::testing::make_generation_context(h))
++        , published_at_(published_at)
++        , party_id_(uuid_gen())
++        , series_id_(uuid_gen())
++        , blueprint_id_(uuid_gen())
++        , convention_exists_(convention_exists) {
++        write_party();
++        party = h.context().with_party(h.tenant_id(), party_id_, {party_id_}, actor_username());
++        if (convention_exists)
++            write_convention();
++        write_series();
++        write_blueprint();
++        write_request();
++        write_publish();
++        write_grid();
++    }
++
++    /// @brief The read a client makes, as of an instant at or after the publication.
++    ores::marketdata::messaging::get_published_fx_vol_surface_response
++    read(const std::chrono::system_clock::time_point as_of) const {
++        ores::marketdata::messaging::get_published_fx_vol_surface_request req;
++        req.blueprint_id = boost::uuids::to_string(blueprint_id_);
++        req.as_of = as_of;
++        return ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(
++            *party, req);
++    }
++
++    /// @brief The read for the publication the fixture wrote.
++    ores::marketdata::messaging::get_published_fx_vol_surface_response read() const {
++        return read(published_at_);
++    }
++
++    [[nodiscard]] std::string blueprint_id() const {
++        return boost::uuids::to_string(blueprint_id_);
++    }
++
++    [[nodiscard]] std::string request_id() const {
++        return boost::uuids::to_string(request_id_);
++    }
++
++    [[nodiscard]] std::chrono::system_clock::time_point published_at() const {
++        return published_at_;
++    }
++
++    /// The strikes the fixture's blueprint publishes on.
++    [[nodiscard]] static std::string strikes_of(const bool convention_resolves) {
++        return convention_resolves ? surface_delta_strikes : surface_absolute_strikes;
++    }
++
++    ores::testing::scoped_database_helper h;
++    ores::utility::generation::generation_context gctx;
++    boost::uuids::random_generator uuid_gen;
++    /// The party's context: the read answers only the session party's surfaces.
++    std::optional<ores::database::context> party;
++
++private:
++    /// The account the publish request is raised by, which the store validates.
++    std::string actor_username() const {
++        return account_username_;
++    }
++
++    void write_party() {
++        ores::refdata::repository::party_repository repo;
++        auto p = ores::refdata::generators::generate_synthetic_party(gctx);
++        p.id = party_id_;
++        p.version = 0;
++        p.is_registration_default = false;
++        const auto existing = repo.read_latest(h.context());
++        for (const auto& e : existing)
++            if (e.tenant_id == h.tenant_id() && !e.parent_party_id) {
++                p.parent_party_id = e.id;
++                break;
++            }
++        p.change_reason_code = "system.test";
++        p.change_commentary = "published surface fixture";
++        repo.write(h.context(), p);
++
++        auto a = ores::iam::generators::generate_synthetic_account(gctx);
++        a.account_type = "service";
++        a.change_reason_code = "system.test";
++        a.change_commentary = "published surface fixture";
++        ores::iam::repository::account_repository{}.write(h.context(), a);
++        account_username_ = a.username;
++    }
++
++    void write_convention() {
++        ores::refdata::domain::fx_option_convention c;
++        c.id = std::string(surface_convention_id);
++        c.party_id = party_id_;
++        c.atm_type = "AtmDeltaNeutral";
++        c.delta_type = std::string(surface_delta_type);
++        c.switch_tenor = "2Y";
++        c.butterfly_style = "Broker";
++        c.modified_by = h.db_user();
++        c.performed_by = h.db_user();
++        c.change_reason_code = "system.test";
++        c.change_commentary = "published surface fixture";
++        ores::refdata::repository::fx_option_convention_repository{}.write(*party, c);
++    }
++
++    void write_series() {
++        ores::marketdata::domain::market_series s;
++        s.id = series_id_;
++        s.version = 0;
++        s.tenant_id = h.tenant_id();
++        s.party_id = party_id_;
++        s.oresmd_uri = surface_series_uri();
++        s.series_subclass = "volatility";
++        s.provider_code = "ore";
++        s.derivation_kind = "OBSERVED";
++        s.derivation_config_id = boost::uuids::nil_uuid();
++        s.derivation_config_version = 0;
++        s.modified_by = h.db_user();
++        s.performed_by = h.db_user();
++        s.change_reason_code = "system.test";
++        s.change_commentary = "published surface fixture";
++        ores::marketdata::repository::market_series_repository{}.write(*party, s);
++    }
++
++    void write_blueprint() {
++        ores::refdata::domain::fx_vol_surface_blueprint b;
++        b.version = 0;
++        b.tenant_id = h.tenant_id();
++        b.id = blueprint_id_;
++        b.output_series_id = series_id_;
++        b.party_id = party_id_;
++        b.name = "EURUSD_SSVI_FIXTURE";
++        b.base_currency_code = "EUR";
++        b.quote_currency_code = "USD";
++        b.fx_option_convention_id = std::string(surface_convention_id);
++        b.smile_model = std::string(surface_model);
++        b.expiry_interpolation = "linear_total_variance";
++        b.output_expiries = std::string(surface_expiries);
++        b.output_strikes = strikes_of(convention_exists_);
++        b.modified_by = h.db_user();
++        b.performed_by = h.db_user();
++        b.change_reason_code = "system.test";
++        b.change_commentary = "published surface fixture";
++        ores::refdata::repository::fx_vol_surface_blueprint_repository{}.write(*party, b);
++    }
++
++    /// The publish record names the request that authorised it, so one is raised.
++    void write_request() {
++        ores::inbox::service::approval_lifecycle lifecycle(*party);
++        const auto kind = lifecycle.kind(
++            std::string(ores::marketdata::service::app::fx_vol_surface_publish_kind_code));
++        if (!kind)
++            throw std::runtime_error("The surface publish kind is not seeded.");
++        const auto me = lifecycle.actor_account_id();
++        if (!me)
++            throw std::runtime_error("The fixture's account was not found.");
++        const auto raised = lifecycle.raise(*kind, "The fixture publishes its surface", *me);
++        request_id_ = raised.id;
++    }
++
++    void write_publish() {
++        ores::marketdata::domain::fx_vol_surface_publish r;
++        r.id = uuid_gen();
++        r.request_id = request_id_;
++        r.party_id = party_id_;
++        r.blueprint_id = blueprint_id_;
++        r.as_of = published_at_;
++        r.output_series_id = series_id_;
++        r.calibration_id = uuid_gen();
++        r.calibration_version = 1;
++        r.converged = true;
++        r.max_abs_error = 0.0;
++        r.pillars_beyond_tolerance = 0;
++        r.violation_count = 0;
++        r.published_at = published_at_;
++        r.published_by = account_username_;
++        r.modified_by = h.db_user();
++        r.performed_by = h.db_user();
++        r.change_reason_code = "system.test";
++        r.change_commentary = "published surface fixture";
++        ores::marketdata::repository::fx_vol_surface_publish_repository{}.write(*party, r);
++    }
++
++    /// The grid is six observations of one series, each naming its expiry and strike.
++    void write_grid() {
++        const auto series = series_datum();
++        std::vector<ores::marketdata::domain::market_observation> observations;
++        for (const auto& [expiry, strike, volatility] : grid_values(convention_exists_)) {
++            const auto point = point_datum(series, expiry, strike);
++            ores::marketdata::domain::market_observation o;
++            o.id = uuid_gen();
++            o.tenant_id = h.tenant_id();
++            o.party_id = party_id_;
++            o.series_id = series_id_;
++            o.observation_datetime = published_at_;
++            o.oresmd_uri = point;
++            o.value = volatility;
++            o.source = "published surface fixture";
++            observations.push_back(std::move(o));
++        }
++        ores::marketdata::repository::market_observation_repository{}.insert(*party, observations);
++    }
++
++    static std::vector<std::tuple<std::string, std::string, std::string>>
++    grid_values(const bool convention_resolves) {
++        if (!convention_resolves)
++            return {{"1W", "1.05", "0.095"},
++                    {"1W", "1.10", "0.085"},
++                    {"1W", "1.15", "0.089"},
++                    {"1M", "1.05", "0.092"},
++                    {"1M", "1.10", "0.082"},
++                    {"1M", "1.15", "0.086"}};
++        return {{"1W", "DEL/Spot/Put/25", "0.095"},
++                {"1W", "ATM", "0.085"},
++                {"1W", "DEL/Spot/Call/25", "0.089"},
++                {"1M", "DEL/Spot/Put/25", "0.092"},
++                {"1M", "ATM", "0.082"},
++                {"1M", "DEL/Spot/Call/25", "0.086"}};
++    }
++
++    static std::string surface_series_uri() {
++        return "oresmd://fx/EUR?type=series&instrument=fx_vol_surface&quote=rate_lnvol"
++               "&ccy=USD&surface_id=EURUSD_SSVI_FIXTURE";
++    }
++
++    static ores::marketdata::datum::market_datum series_datum() {
++        const auto read = ores::marketdata::datum::oresmd_uri_codec::read(surface_series_uri());
++        if (!read || !read->is_series())
++            throw std::runtime_error("The fixture's surface series URI does not read.");
++        return *read;
++    }
++
++    static std::string point_datum(const ores::marketdata::datum::market_datum& series,
++                                   const std::string& expiry,
++                                   const std::string& strike) {
++        const auto term = ores::marketdata::datum::term::parse(expiry);
++        if (!term)
++            throw std::runtime_error("The expiry " + expiry + " is not a term: " + term.error());
++        const auto level = ores::marketdata::datum::strike::parse(strike);
++        if (!level)
++            throw std::runtime_error("The strike " + strike + " is not a strike: " + level.error());
++        const auto point = ores::marketdata::datum::datum_at(
++            series,
++            {{ores::marketdata::datum::field::expiry, ores::marketdata::datum::value(*term)},
++             {ores::marketdata::datum::field::strike, ores::marketdata::datum::value(*level)}});
++        if (!point)
++            throw std::runtime_error("The grid point " + expiry + " " + strike +
++                                     " does not build.");
++        const auto uri = ores::marketdata::datum::oresmd_uri_codec::write(*point);
++        if (!uri)
++            throw std::runtime_error("The grid point " + expiry + " " + strike +
++                                     " does not write.");
++        return *uri;
++    }
++
++    std::chrono::system_clock::time_point published_at_;
++    boost::uuids::uuid party_id_;
++    boost::uuids::uuid series_id_;
++    boost::uuids::uuid blueprint_id_;
++    boost::uuids::uuid request_id_;
++    std::string account_username_;
++    bool convention_exists_;
++};
++
++}
++
++#endif

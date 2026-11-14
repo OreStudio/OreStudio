@@ -119,16 +119,21 @@ read_forwards(const context& ctx, const surface_calibration_recipe& recipe, time
         throw std::invalid_argument("The forwards of " + pair + ": " + set.message +
                                     " A surface reads its forwards from a published set, which "
                                     "needs the published funding curves of both currencies.");
-    surface_forward_set out{.publish_id = set.publish_id,
-                            .spot = set.spot_rate,
-                            .spot_date = set.spot_date,
-                            .points = {}};
+    surface_forward_set published{.publish_id = set.publish_id,
+                                  .spot = set.spot_rate,
+                                  .spot_date = set.spot_date,
+                                  .points = {}};
     for (const auto& row : set.rows)
-        out.points.push_back({.tenor = row.tenor,
-                              .value_date = row.value_date,
-                              .base_discount = row.base_discount,
-                              .quote_discount = row.quote_discount});
-    return out;
+        published.points.push_back({.tenor = row.tenor,
+                                    .value_date = row.value_date,
+                                    .base_discount = row.base_discount,
+                                    .quote_discount = row.quote_discount});
+    // The published set discounts from its as-of and quotes ON before spot; a surface is
+    // struck against a spot-starting market, so the set is rebased at its spot date here.
+    const auto anchored = spot_starting(published);
+    if (!anchored)
+        throw std::invalid_argument("The forwards of " + pair + ": " + anchored.error() + ".");
+    return *anchored;
 }
 
 surface_series_quotes

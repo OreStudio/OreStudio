@@ -28,9 +28,9 @@ Hedgr prototyped five market-data screens for its own terminal. ORE Studio has n
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] |
-| Now          | Not yet started.                       |
+| Now          | The five prototypes and their journeys are merged, and the service answers all five reads. The published surface's contract now has a test, and its verdict comes from the one policy. Open: the slice case, and the threshold per instrument kind. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Write the slice case, raise this branch's pull request, and close the tasks it delivers. |
 | Last touched | 2026-11-13                               |
 
 * Acceptance
@@ -41,9 +41,14 @@ Hedgr prototyped five market-data screens for its own terminal. ORE Studio has n
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Prototypes first, judged screen by screen against hedgr's, then the journeys
+they answer, then the server reads those journeys named as missing. Each read
+was stated in the protocol model before it was served, and each was built
+behind a test that writes its own market rather than depending on a seeded one.
+The machinery the screens read already existed, so no quant work was needed:
+the bootstrap, the day counts, the forward the surface is struck against and
+the grid all had implementations. What remained was presentation and the four
+decisions the story records.
 
 * Measurements
 
@@ -85,3 +90,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The port is delivered: five prototypes and their journeys merged, and the service
+answers all five reads. This branch carries what the first pull request left open
+and what the run exposed: the published surface's contract has four cases, every
+read that states a staleness verdict asks the one policy, a discount ladder states
+the rates its factors imply, and a published forward set is read from spot, which
+is what let the tenant finish provisioning.
+
+Twelve commits, no quant: every number the screens show was already computed.

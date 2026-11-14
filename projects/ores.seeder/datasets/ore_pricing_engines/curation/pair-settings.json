@@ -1,8 +1,8 @@
 {
   "Generic/Generic": {
-    "reason": "A scripted trade reads two mandatory parameters before it can price: the model the script prices with and the engine that evaluates it. The ORE example configuration states BlackScholes and MC as the shared values and overrides them per product class where a product needs another, so the pair states the two shared values once rather than on the twenty product types that delegate to a script.",
+    "reason": "A scripted trade reads its model and engine parameters from the configuration before it can price, and the engine treats most of them as mandatory: the model it prices with, the base currency the model discounts in, whether FX and IR are fully dynamic, the rule that coarsens its schedule grids, and the engine, paths, regression order, time steps and interactivity it runs with. The guide states none of them, the ORE example configuration states all of them once for every scripted product, and they are the pair's own, so the pair states them rather than each of the twenty product types that delegates to a script.",
     "source": "ore_code",
-    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:125, and external/ore/examples/Products/Input/pricingengine.xml Product ScriptedTrade",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:523-531,622-623, and external/ore/examples/Products/Input/pricingengine.xml Product ScriptedTrade",
     "curator": "marco",
     "date": "2026-11-14",
     "settings": [
@@ -12,16 +12,56 @@
         "usual": "BlackScholes"
       },
       {
+        "scope": "model",
+        "name": "BaseCcy",
+        "usual": "USD"
+      },
+      {
+        "scope": "model",
+        "name": "EnforceBaseCcy",
+        "usual": "false"
+      },
+      {
+        "scope": "model",
+        "name": "FullDynamicFx",
+        "usual": "true"
+      },
+      {
+        "scope": "model",
+        "name": "GridCoarsening",
+        "usual": "3M(1W),1Y(1M),5Y(3M),10Y(1Y),50Y(5Y)"
+      },
+      {
         "scope": "engine",
         "name": "Engine",
         "usual": "MC"
+      },
+      {
+        "scope": "engine",
+        "name": "Samples",
+        "usual": "10000"
+      },
+      {
+        "scope": "engine",
+        "name": "RegressionOrder",
+        "usual": "2"
+      },
+      {
+        "scope": "engine",
+        "name": "TimeStepsPerYear",
+        "usual": "24"
+      },
+      {
+        "scope": "engine",
+        "name": "Interactive",
+        "usual": "false"
       }
     ]
   },
   "ScriptedTrade/ScriptedTrade": {
-    "reason": "A scripted trade reads two mandatory parameters before it can price: the model the script prices with and the engine that evaluates it. The ORE example configuration states BlackScholes and MC as the shared values and overrides them per product class where a product needs another, so the pair states the two shared values once rather than on the twenty product types that delegate to a script.",
+    "reason": "A scripted trade reads its model and engine parameters from the configuration before it can price, and the engine treats most of them as mandatory: the model it prices with, the base currency the model discounts in, whether FX and IR are fully dynamic, the rule that coarsens its schedule grids, and the engine, paths, regression order, time steps and interactivity it runs with. The guide states none of them, the ORE example configuration states all of them once for every scripted product, and they are the pair's own, so the pair states them rather than each of the twenty product types that delegates to a script.",
     "source": "ore_code",
-    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:125",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:523-531,622-623, and external/ore/examples/Products/Input/pricingengine.xml Product ScriptedTrade",
     "curator": "marco",
     "date": "2026-11-14",
     "settings": [
@@ -31,9 +71,49 @@
         "usual": "BlackScholes"
       },
       {
+        "scope": "model",
+        "name": "BaseCcy",
+        "usual": "USD"
+      },
+      {
+        "scope": "model",
+        "name": "EnforceBaseCcy",
+        "usual": "false"
+      },
+      {
+        "scope": "model",
+        "name": "FullDynamicFx",
+        "usual": "true"
+      },
+      {
+        "scope": "model",
+        "name": "GridCoarsening",
+        "usual": "3M(1W),1Y(1M),5Y(3M),10Y(1Y),50Y(5Y)"
+      },
+      {
         "scope": "engine",
         "name": "Engine",
         "usual": "MC"
+      },
+      {
+        "scope": "engine",
+        "name": "Samples",
+        "usual": "10000"
+      },
+      {
+        "scope": "engine",
+        "name": "RegressionOrder",
+        "usual": "2"
+      },
+      {
+        "scope": "engine",
+        "name": "TimeStepsPerYear",
+        "usual": "24"
+      },
+      {
+        "scope": "engine",
+        "name": "Interactive",
+        "usual": "false"
       }
     ]
   }

@@ -37,7 +37,7 @@
   },
   "BaseCcy": {
     "scope": "model",
-    "description": "The base currency of the scripted trade model, used as the domestic currency for model currencies and FX indices. Required; it is overridden by the single FX target currency unless EnforceBaseCcy is true.",
+    "description": "The base currency of the scripted trade model, used as the domestic currency for model currencies and FX indices. It is overridden by the single FX target currency unless EnforceBaseCcy is true. Required.",
     "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
     "source": "ore_code",
     "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:524",
@@ -334,7 +334,7 @@
   },
   "GridCoarsening": {
     "scope": "model",
-    "description": "Rule that coarsens schedule date grids in the scripted trade model, written as term pairs such as 10Y(1M),20Y(3M). Required, but an empty value means no coarsening.",
+    "description": "Rule that coarsens schedule date grids in the scripted trade model, written as term pairs such as 10Y(1M),20Y(3M); an empty value means no coarsening. Required.",
     "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
     "source": "ore_code",
     "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:527",
@@ -529,6 +529,15 @@
     "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:580",
     "curator": "marco",
     "date": "2026-10-25"
+  },
+  "Interactive": {
+    "scope": "engine",
+    "description": "Whether the scripted trade model runs interactively, which hands the simulation one step at a time to a caller rather than taking it to maturity. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:531",
+    "curator": "marco",
+    "date": "2026-11-14"
   },
   "IrReversion": {
     "scope": "model",
@@ -746,6 +755,15 @@
     "curator": "marco",
     "date": "2026-10-25"
   },
+  "RegressionOrder": {
+    "scope": "engine",
+    "description": "The order of the monomial basis the Monte Carlo engine regresses the continuation value on. It is read only when the engine is MC, where it is Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:623",
+    "curator": "marco",
+    "date": "2026-11-14"
+  },
   "RegressionVarianceCutoff": {
     "scope": "engine",
     "description": "Fraction of total regressor variance that may be discarded when the regression variables are projected onto principal components. Optional and empty by default, which disables the projection.",
@@ -754,6 +772,15 @@
     "source_ref": "OREData/ored/portfolio/builders/callablebond.cpp:477",
     "curator": "marco",
     "date": "2026-10-25"
+  },
+  "Samples": {
+    "scope": "engine",
+    "description": "The number of paths the Monte Carlo engine simulates for a scripted trade. It is read only when the engine is MC, where it is Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:622",
+    "curator": "marco",
+    "date": "2026-11-14"
   },
   "SequenceType": {
     "scope": "engine",
@@ -826,6 +853,15 @@
     "source_ref": "OREData/ored/portfolio/builders/utilities.cpp:35",
     "curator": "marco",
     "date": "2026-10-25"
+  },
+  "TimeStepsPerYear": {
+    "scope": "engine",
+    "description": "The number of simulation time steps the scripted trade model takes in a year. Required.",
+    "reason": "The ORE guide does not list the setting. The text is written from the code that reads it, which is the only statement of what it does.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.cpp:530",
+    "curator": "marco",
+    "date": "2026-11-14"
   },
   "TimingAdjustment": {
     "scope": "engine",

@@ -696,6 +696,21 @@ RULES = (
          "One run's files: the tree the run hangs in, what each input package holds, the "
          "output files each accepted result's manifest names, and the bytes of whichever one "
          "the reader opened, so the screen reads one answer and not a walk of three services."),
+    Rule("the cuts",
+         ("regex", r"^((GET|POST) /api/reporting/cuts.*)$"),
+         CPP, COMPOSED, "reporting",
+         "The cuts a party holds and one cut's record: the body's facts, the state and the label "
+         "the reporting service derives, the kind the body was taken under, the gaps the "
+         "assembly could not fill, the runs that priced from it, and the hand take that "
+         "assembles a body part by part and presses."),
+    Rule("the kinds of cut",
+         ("regex", r"^((GET|PUT|DELETE) /api/reporting/cut-kinds.*|GET /api/reporting/cut-kind-choices)$"),
+         CPP, RESOURCE, "reporting",
+         "The kinds of cut a report may select: the collection, one kind with the cuts the party "
+         "holds of it, a write or removal, and the lookups a kind's form offers. A kind is one "
+         "collection with three keys resolved -- its family's name, its resolution rule's name "
+         "and the approval kind that signs a cut of it, with the permission that decider needs "
+         "-- so one answer states words where the row holds codes."),
     Rule("a run's results",
          ("regex", r"^GET /api/reporting/runs/\{id\}/results$"),
          CPP, RESOURCE, "reporting",
@@ -738,8 +753,8 @@ RULES = (
          "One report run: its state, its results at the level the reader asked for, and its"
          " output archive as the run stored it."),
     Rule("a report configuration",
-         ("exact", "GET /api/reporting/configurations/:id"),
-         BFF, COMPOSED, "reporting",
+         ("regex", r"^GET /api/reporting/configurations/[^/]+$"),
+         None, COMPOSED, "reporting",
          "One configuration with what its five keys point at: the type names, the party"
          " names, its analytics, their analytic names and its market data bindings, five"
          " reads so the page shows names rather than ids."),

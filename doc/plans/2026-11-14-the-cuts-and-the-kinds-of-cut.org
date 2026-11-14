@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: B4E7A2C9-0D31-4F86-9A52-6C8E1D74B3F0
+:END:
+#+title: The cuts and the kinds of cut: who joins a row's words
+#+description: The ten routes that draw the cuts, the kinds they are taken under and the configuration a report binds. Each row states three codes and the screen reads three words, so the question is where the join belongs.
+#+type: plan
+#+status: AGREED
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+filetags: :plan:http:reporting:
+
+* Why this note exists
+
+Ten routes remain of the reporting area's fifty. Nine draw the cuts and the
+kinds of cut they are taken under, and one draws a report configuration. Four of
+the nine are the kinds' write, read and removal, which are ordinary reference
+data. The other five each state a row whose three columns are codes and whose
+screen reads three words: the kind's family, its resolution rule, and the
+approval kind that signs a cut of it, with the permission its decider needs.
+
+That is the question this note settles. A code is the store's, a word is
+another component's, and a join placed in the wrong layer either states a rule
+twice or makes a service read another's tables.
+
+* What the BFF does today
+
+** The kinds, and the three words
+
+=kindRows= reads four collections on every request: the kinds, the cut
+families, the cut resolution rules, and the inbox's approval kinds. The first
+three are the reporting component's own; the fourth is the inbox's, reached over
+the bus. Each kind's row is then stated as its family's name, its rule's name,
+and the approval kind's name with =approvals_required= and
+=decide_permission_code= beside it.
+
+The kind's own =signed= flag is not stored: it is the approval kind's presence,
+and the design says a firm that gives the close to another function changes one
+approval kind and no kind.
+
+A refusal of the inbox read is not a failure. An account that may not read the
+inbox gets an empty map, because the cut's own facts already state whether a
+signature was required, so the absence costs the decider's words and nothing
+else. Any other failure is raised.
+
+** The choices, and a lookup nobody keeps
+
+=families=, =resolutionRules= and =approvalKinds= are three collection reads.
+=retentionDestinations= is not: no lookup states the tiers, so the answer is the
+distinct =retention_destination_code= values the kinds themselves hold, sorted.
+=businessCentres= is the reference data resource the take fixes a body against.
+
+** The cuts, whose words are already the service's
+
+=list_cut_rows= answers a cut with its state and its label already derived, its
+kind's name, the acts that made it and the count of runs that priced from it.
+=get_cut_record= answers the body, the derived words, the kind, the gaps and the
+approval detail. The BFF derives neither, and says why: a second derivation would
+be a second rule.
+
+=runsOfCut= reads the runs by the cut they resolved to, one read, and their
+states beside them, which a failed read leaves empty rather than failing the tab.
+
+** The take
+
+=take_cut_request= takes =kind_code=, =scope_code=, =business_centre_code=, the
+timepoint with its zone, the cut time, a reason and =preview=, and answers the
+cut it wrote, the parts, the gaps, the counts, the three versions and the
+approval request it raised. One request serves the floor's assembly and its
+press, because an assembly computed by a second path is a preview of that path.
+
+* Where the cost lands
+
+- **The gateway.** Four small collection reads per kind request. That is the
+  whole cost, because every derived word arrives derived.
+- **The services.** No service reads another's tables. The inbox's approval kind
+  is reached over the bus, by the code the kind holds.
+- **The store.** The list counts each kind's cuts from one read of the newest
+  page of the party's cuts, so a type list costs one cut read and not one per
+  row.
+
+* The decisions
+
+** The gateway joins, because two of the three words are beside it
+
+The kind's row is assembled in the gateway from the four reads. The alternative
+is a composed read in the reporting service, and it does not close the question:
+the family and the rule are reporting's own, but the approval kind is the
+inbox's, so a service-side join would either cross a component boundary or split
+one row's words across two answers.
+
+One answer that states every word of a row is worth four small reads. The reads
+are a closed set a firm seeds, not a table that grows, so the cost does not
+follow the estate's size.
+
+** A refused inbox read costs the decider's words, and nothing else
+
+A 403 from the inbox is answered as an empty set of approval kinds. The cut and
+the kind still draw, because both state whether an authorisation was required
+without naming who decides it. An outage is a failure and is raised.
+
+This is an asymmetry on purpose: a refusal is a fact about the account, and an
+outage is a fact about the estate.
+
+** The retention destinations are the kinds' own codes
+
+No lookup states the tiers a cut may be kept for, so the choices answer states
+the distinct codes the kinds hold and invents none. A form shows the destination
+its kind keeps rather than asking a person to type one.
+
+If the estate gains a retention tier lookup, this decision is the one to
+revisit: the answer would then read that lookup and state it whole.
+
+** The page's search and sort stay in the gateway
+
+The kinds are a closed set of a handful, read whole, so the search and the sort
+are a slice of what was read. Asking the service for a page and then filtering it
+would page a set the filter changes.
+
+** The take is a forward, and the assembly stays where it is
+
+The gateway does not assemble a body. It validates the request and forwards it,
+preview or press, and states the answer as the service wrote it. The family's
+heaviest route is already one operation, and porting it must not move the logic
+into the process that answers HTTP.
+
+** A cut whose kind was retired still draws
+
+=get_cut_record= answers the kind only while the store holds it, and the cut
+records what it copied from its kind when it was taken. The gateway therefore
+states those facts as the row when the kind cannot be read, rather than refusing
+to show a body that exists.
+
+* What a screen costs now
+
+| Step | Today | Agreed |
+|------+-------+--------|
+| The kinds | 4 collection reads, joined in the BFF | the same 4 reads, joined in the gateway |
+| One kind | 4 collection reads and one cut read | the same |
+| The cuts | 1 service read, the words already derived | the same |
+| One cut | 1 service read, one kind join, one read of the superseding body | the same |
+| The take | 1 service call | the same |
+
+* The work, and who does it
+
+| Work | Owner |
+|-------+-------|
+| The kinds' four reads and the join of the three words | this task, in the gateway |
+| The choices, the derived retention destinations and the business centres | this task, in the gateway |
+| The cuts list, one cut's record, its runs and the take | this task, in the gateway, each a forward |
+| =GET /api/reporting/configurations/:id= | this task |
+
+No service change is needed. Every read this family makes already exists, which
+is the difference between it and the family before it.
+
+* What this does not change
+
+A cut stores no state and no label, and the service keeps deriving both. A kind
+stays reference data the reporting component owns, and the inbox keeps the words
+about who signs a cut. Nothing is copied and no second rule is stated.

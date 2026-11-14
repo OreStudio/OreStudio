@@ -1651,6 +1651,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['adapters'],
     },
+    'marketdata.v1.ops.list_instruments': {
+        asOf: false,
+        filter: [],
+        rows: ['instruments'],
+    },
     'marketdata.v1.ops.list_published_curves': {
         asOf: false,
         filter: [],

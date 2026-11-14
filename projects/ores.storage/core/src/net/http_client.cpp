@@ -182,6 +182,35 @@ std::string http_client::get_returning_body(const std::string& url,
     return res.body();
 }
 
+http_client::answered_object http_client::get_range(const std::string& url,
+                                                    const std::string& bearer_token,
+                                                    const std::string& range) {
+    const auto parts = parse_url(url);
+
+    connected_stream conn(parts.host, parts.port);
+
+    http::request<http::empty_body> req{http::verb::get, parts.path, 11};
+    req.set(http::field::host, parts.host);
+    req.set(http::field::user_agent, "ores.storage/1.0");
+    if (!range.empty())
+        req.set(http::field::range, range);
+    set_authorization(req, bearer_token);
+
+    http::write(conn.stream, req);
+
+    beast::flat_buffer buf;
+    http::response<http::string_body> res;
+    http::read(conn.stream, buf, res);
+
+    shutdown(conn.stream);
+
+    answered_object answer;
+    answer.status = res.result_int();
+    answer.content_range = std::string(res[http::field::content_range]);
+    answer.body = res.body();
+    return answer;
+}
+
 std::string http_client::del(const std::string& url, const std::string& bearer_token) {
     const auto parts = parse_url(url);
 

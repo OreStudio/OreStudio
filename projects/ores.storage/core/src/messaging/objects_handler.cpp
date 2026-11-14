@@ -21,6 +21,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.storage.api/messaging/objects_protocol.hpp"
+#include "ores.storage.core/filesystem/archive_reader.hpp"
 #include <algorithm>
 #include <utility>
 
@@ -187,6 +188,52 @@ void objects_handler::list(ores::nats::message msg) {
         BOOST_LOG_SEV(lg(), error) << "list failed: " << e.what();
         resp.success = false;
         resp.message = e.what();
+    }
+
+    reply(nats_, msg, resp);
+}
+
+void objects_handler::list_archive_entries(ores::nats::message msg) {
+    BOOST_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
+
+    const auto req = decode<list_archive_entries_request>(msg);
+    if (!req) {
+        error_reply(nats_, msg, ores::service::error_code::bad_request);
+        return;
+    }
+
+    if (!authorise(msg, "storage::objects:read", "list_archive_entries"))
+        return;
+
+    list_archive_entries_response resp;
+    for (const auto& key : req->keys) {
+        archive_listing listing;
+        listing.key = key;
+        /*
+         * One package the store cannot read is stated in its own listing, so a
+         * run whose output never arrived still draws the files it did write.
+         */
+        const auto path = store_.resolve(req->bucket, key);
+        listing.size_bytes = store_.size(req->bucket, key).value_or(0);
+        if (!path) {
+            listing.success = false;
+            listing.message = "No object at this key.";
+            BOOST_LOG_SEV(lg(), warn)
+                << "list_archive_entries: no object at " << req->bucket << "/" << key;
+            resp.archives.push_back(std::move(listing));
+            continue;
+        }
+        try {
+            for (const auto& entry : filesystem::archive_reader::index_file(*path))
+                listing.entries.push_back(
+                    archive_entry{entry.name, static_cast<std::uint64_t>(entry.size)});
+        } catch (const std::exception& e) {
+            listing.success = false;
+            listing.message = e.what();
+            BOOST_LOG_SEV(lg(), warn) << "list_archive_entries: " << req->bucket << "/" << key
+                                      << " is not a package: " << e.what();
+        }
+        resp.archives.push_back(std::move(listing));
     }
 
     reply(nats_, msg, resp);

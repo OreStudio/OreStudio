@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "archive_reader_tests.cpp"
     "archiver_tests.cpp"
     "http_client_tests.cpp"
     "local_store_tests.cpp"

@@ -20,7 +20,8 @@ string, and the store never parses any of the three. That is why the surface is
 an operation model rather than an entity model, and why the messages below carry
 no tenancy and no server-owned field.
 
-Four operations are modelled. There is deliberately no =exists= operation: the
+Four operations are modelled, and one that reads inside a package. There is
+deliberately no =exists= operation: the
 protocol has no such verb, and existence is a read, so =get= reports absence in
 its own reply and the HTTP projection answers =HEAD= without a body. There is no
 =counter= either, because a count is a property of a list.
@@ -378,6 +379,144 @@ caller, checks the operation's permission code, and calls =ores.storage.core=.
 :PROPERTIES:
 :cpp_type: std::uint64_t
 :default:  0
+:END:
+
+** archive_entry
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One regular file a package holds.
+ *
+ * A directory or a link is not a file a person opens, so neither is stated.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The file's path inside the package, as the package states it.
+ */
+#+end_src
+
+*** size_bytes
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+** archive_listing
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What one object the caller named holds, or why it could not be read.
+ *
+ * A key that is missing, or that holds bytes no archive reader accepts, is
+ * stated here rather than failing the whole reply, so one unreadable package
+ * does not cost the caller every other package's listing.
+ */
+#+end_src
+
+*** key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** size_bytes
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The size of the object as the store holds it, packed.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** entries
+:PROPERTIES:
+:cpp_type: std::vector<archive_entry>
+:END:
+
+** list_archive_entries_request
+:PROPERTIES:
+:subject: storage.v1.ops.list_archive_entries
+:response: list_archive_entries_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks what the files inside a set of packages are.
+ *
+ * The caller that wants one package's contents wants every package's contents,
+ * because they are one screen: a run's inputs and outputs arrive together, and
+ * a call per package would put the walk back in the caller. So the keys travel
+ * as a set and the reply states each one.
+ *
+ * The unpacking happens here, in the service that holds the object, so no
+ * caller needs an archive reader of its own.
+ */
+#+end_src
+
+*** bucket
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** keys
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The objects to read, in one bucket. An empty set asks for nothing.
+ */
+#+end_src
+
+** list_archive_entries_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What each object the caller named holds, in the order it named them.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** archives
+:PROPERTIES:
+:cpp_type: std::vector<archive_listing>
 :END:
 
 * See also

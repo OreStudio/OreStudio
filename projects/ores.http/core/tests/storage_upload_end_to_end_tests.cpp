@@ -21,6 +21,9 @@
 #include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.storage.api/net/storage_paths.hpp"
+#include "ores.storage.core/filesystem/archiver.hpp"
+#include "ores.storage.core/net/http_client.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.utility/crypto/sha256.hpp"
 #include "test_suite.hpp"
@@ -369,4 +372,51 @@ TEST_CASE("an_upload_outside_the_capability_is_refused_and_leaves_nothing",
     REQUIRE(!store.exists("ores", "compute/packages/package.tar.gz"));
 
     REQUIRE(parts_after_the_answer(objects.path(), std::chrono::seconds(5)) == 0);
+}
+
+TEST_CASE("one_file_inside_a_package_is_served_without_the_package",
+          "[storage_upload][end_to_end]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a caller reads one file out of a package";
+
+    scratch_dir objects("ores-e2e-objects-");
+    scratch_dir files("ores-e2e-files-");
+
+    // A package with one file whose bytes a caller can pick out of it.
+    const std::string held = "pair,value\nEUR/USD,1.09\n";
+    const auto source = files.path() / "tree";
+    fs::create_directories(source / "output");
+    {
+        std::ofstream(source / "output" / "fx.csv", std::ios::binary) << held;
+        std::ofstream(source / "manifest.txt", std::ios::binary) << "name=ores.reporting\n";
+    }
+    const auto archive = files.path() / "input.tar.gz";
+    ores::storage::filesystem::archiver::pack(source, archive);
+
+    storage_gateway gateway(objects.path().string(), 64ull * 1024 * 1024);
+    ores::storage::net::storage_transfer client(gateway.url(), capability_token("ores", ""));
+    client.upload("ores", "compute/packages/input.tar.gz", archive);
+
+    const auto url = gateway.url() + ores::storage::net::storage_paths::make_object_path(
+                                         "ores", "compute/packages/input.tar.gz");
+
+    // The entry is the file's own bytes, and the package is never sent.
+    const auto whole = ores::storage::net::http_client::get_range(
+        url + "?entry=output%2Ffx.csv", capability_token("ores", ""), "");
+    REQUIRE(whole.status == 200);
+    REQUIRE(whole.body == held);
+
+    // A range is stated in the entry's bytes, not the package's.
+    const auto part = ores::storage::net::http_client::get_range(
+        url + "?entry=output%2Ffx.csv", capability_token("ores", ""), "bytes=11-17");
+    REQUIRE(part.status == 206);
+    REQUIRE(part.content_range == "bytes 11-17/" + std::to_string(held.size()));
+    REQUIRE(part.body == "EUR/USD");
+
+    // A range of the object itself is answered the same way.
+    const auto object =
+        ores::storage::net::http_client::get_range(url, capability_token("ores", ""), "bytes=0-9");
+    REQUIRE(object.status == 206);
+    REQUIRE(object.body.size() == 10);
+    REQUIRE(object.content_range.starts_with("bytes 0-9/"));
 }

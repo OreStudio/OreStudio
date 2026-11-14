@@ -72,6 +72,17 @@ http_response http_response::not_found(const std::string& message) {
     return error(http_status::not_found, message);
 }
 
+http_response http_response::range_not_satisfiable(std::uint64_t total) {
+    auto resp =
+        error(http_status::range_not_satisfiable, "The range starts past the end of the object.");
+    /*
+     * The caller cannot act on a refusal that does not say how much there was,
+     * so the length travels in the header the standard names for it.
+     */
+    resp.headers["Content-Range"] = "bytes */" + std::to_string(total);
+    return resp;
+}
+
 http_response http_response::unauthorized(const std::string& message) {
     return error(http_status::unauthorized, message);
 }

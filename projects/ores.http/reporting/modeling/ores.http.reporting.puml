@@ -35,11 +35,55 @@ namespace ores #F2F2F2 {
                     +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
                 }
                 class reporting_routes {
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session, string storage_dir) : void
+                }
+                class result_routes {
                     +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
+                class run_file_routes {
+                    +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session, string storage_dir) : void
                 }
                 class run_routes {
                     +runs_json(vector<run_view> runs) : string
                     +register_routes(shared_ptr<ores::http::net::router> router, shared_ptr<ores::http::openapi::endpoint_registry> registry, ores::nats::service::nats_client& session) : void
+                }
+                namespace rollup #F2F2F2 {
+                    class money <<struct>> {
+                        +currency : string
+                        +total : double
+                        +stated : bool
+                    }
+                    class priced_trade <<struct>> {
+                        +trade_id : string
+                        +npv : double
+                        +npv_currency : string
+                        +npv_base : double
+                        +has_npv_base : bool
+                        +notional : double
+                        +notional_currency : string
+                        +counterparty : string
+                        +counterparty_name : string
+                        +book_id : string
+                        +book_name : string
+                    }
+                    class aggregate_row <<struct>> {
+                        +key : string
+                        +name : string
+                        +trades : size_t
+                        +totals : vector<money>
+                        +notional : vector<money>
+                        +group : string
+                        +is_group : bool
+                        +previous : vector<money>
+                        +change : vector<money>
+                        +change_pct : vector<money>
+                        +is_removed : bool
+                        +depth : int
+                    }
+                    class change_set <<struct>> {
+                        +change : vector<money>
+                        +pct : vector<money>
+                    }
                 }
             }
         }

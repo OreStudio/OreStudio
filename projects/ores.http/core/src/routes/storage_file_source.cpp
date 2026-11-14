@@ -18,21 +18,31 @@
  *
  */
 #include "ores.http.core/routes/storage_file_source.hpp"
+#include <algorithm>
 #include <stdexcept>
 #include <system_error>
 
 namespace ores::http::server::routes {
 
-storage_file_source::storage_file_source(std::filesystem::path path)
+storage_file_source::storage_file_source(std::filesystem::path path,
+                                         std::uint64_t offset,
+                                         std::uint64_t length)
     : path_(std::move(path)) {
 
     std::error_code ec;
-    const auto size = std::filesystem::file_size(path_, ec);
+    const auto stated = std::filesystem::file_size(path_, ec);
     if (ec)
         throw std::runtime_error("Cannot read object: " + path_.string() + ": " + ec.message());
-    size_ = size;
+
+    const auto start = std::min(offset, stated);
+    const auto rest = stated - start;
+    size_ = length == to_end ? rest : std::min(length, rest);
 
     in_.open(path_, std::ios::binary);
+    if (!in_)
+        throw std::runtime_error("Cannot read object: " + path_.string());
+    if (start != 0)
+        in_.seekg(static_cast<std::streamoff>(start));
     if (!in_)
         throw std::runtime_error("Cannot read object: " + path_.string());
 }
@@ -45,11 +55,18 @@ std::size_t storage_file_source::read(std::span<char> into) {
     if (into.empty())
         return 0;
 
-    in_.read(into.data(), static_cast<std::streamsize>(into.size()));
+    const auto remaining = size_ - produced_;
+    if (remaining == 0)
+        return 0;
+    const auto want = static_cast<std::size_t>(
+        std::min<std::uint64_t>(remaining, static_cast<std::uint64_t>(into.size())));
+
+    in_.read(into.data(), static_cast<std::streamsize>(want));
     if (in_.bad())
         throw std::runtime_error("Cannot read object: " + path_.string());
 
     const auto taken = static_cast<std::size_t>(in_.gcount());
+    produced_ += taken;
     return taken > 0 ? taken : 0;
 }
 

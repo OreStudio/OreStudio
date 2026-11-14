@@ -24,14 +24,74 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace storage #F2F2F2 {
         namespace filesystem #F2F2F2 {
+            class archive_reader {
+                +index(span<const byte> packed) : vector<entry>
+                +extract(span<const byte> packed, string_view name) : vector<byte>
+            }
             class archiver {
+                +pack(const filesystem::path& src_dir, const filesystem::path& dest_archive) : void
+                +extract(const filesystem::path& archive, const filesystem::path& dest_dir) : void
+            }
+            class object_not_found {
+                +object_not_found(const string& what)
+            }
+            class local_store {
+                -root_ : filesystem::path
+                +local_store(filesystem::path root)
+                +root() : [[nodiscard]] const filesystem::path&
+                +is_valid_bucket(string_view bucket) : [[nodiscard]] static bool
+                +is_valid_key(const string& bucket, const string& key) : [[nodiscard]] bool
+                +resolve(const string& bucket, const string& key) : [[nodiscard]] optional<filesystem::path>
+                +put(const string& bucket, const string& key, string_view data) : void
+                +begin_put(const string& bucket, const string& key) : [[nodiscard]] filesystem::path
+                +commit_put(const filesystem::path& part, const string& bucket, const string& key) : void
+                +abandon_put(const filesystem::path& part) : void
+                +get(const string& bucket, const string& key) : [[nodiscard]] string
+                +exists(const string& bucket, const string& key) : [[nodiscard]] bool
+                +size(const string& bucket, const string& key) : [[nodiscard]] optional<uintmax_t>
+                +remove(const string& bucket, const string& key) : bool
+                +list(const string& bucket, const string& prefix) : [[nodiscard]] vector<entry>
+            }
+        }
+        namespace messaging #F2F2F2 {
+            class objects_handler {
+                -nats_ : ores::nats::service::client&
+                -base_ctx_ : ores::database::context
+                -store_ : filesystem::local_store
+                -verifier_ : optional<ores::security::jwt::jwt_authenticator>
+                +objects_handler(ores::nats::service::client& nats, ores::database::context base_ctx, filesystem::local_store store, optional<ores::security::jwt::jwt_authenticator> verifier)
+                +put(ores::nats::message msg) : void
+                +get(ores::nats::message msg) : void
+                +remove(ores::nats::message msg) : void
+                +list(ores::nats::message msg) : void
+                -lg() : auto&
+                -authorise(const ores::nats::message& msg, string_view required_permission, string_view operation_name) : optional<ores::database::context>
             }
         }
         namespace net #F2F2F2 {
             class http_client {
+                +get(const string& url, const filesystem::path& dest, const string& bearer_token) : void
+                +put(const string& url, const filesystem::path& src, const string& bearer_token) : void
+                +put_returning_body(const string& url, const filesystem::path& src, const string& bearer_token) : string
+                +get_returning_body(const string& url, const string& bearer_token) : string
+                +del(const string& url, const string& bearer_token) : string
+                -parse_url(const string& url) : url_parts
             }
             class storage_transfer {
                 -http_base_url_ : string
+                -bearer_token_ : string
+                +storage_transfer(string http_base_url, string bearer_token)
+                +pack(const filesystem::path& src_dir, const filesystem::path& dest_archive) : void
+                +unpack(const filesystem::path& archive, const filesystem::path& dest_dir) : void
+                +upload(const string& bucket, const string& key, const filesystem::path& src_file) : void
+                +upload_returning_response(const string& bucket, const string& key, const filesystem::path& src_file) : string
+                +download(const string& bucket, const string& key, const filesystem::path& dest_file) : void
+                +remove(const string& bucket, const string& key) : string
+                +list(const string& bucket, const string& prefix, uint32_t offset, uint32_t limit) : string
+                +pack_and_upload(const filesystem::path& src_dir, const string& bucket, const string& key) : void
+                +fetch_and_unpack(const string& bucket, const string& key, const filesystem::path& dest_dir) : void
+                +upload_blob(const string& bucket, const string& key, span<const char> data) : void
+                +download_blob(const string& bucket, const string& key) : vector<char>
             }
         }
     }

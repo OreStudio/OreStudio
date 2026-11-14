@@ -34,8 +34,9 @@ namespace ores::storage::messaging {
 /**
  * @brief Serves the object operation set on the bus.
  *
- * One method per subject the operation model declares: put, get, delete and
- * list. Each one authenticates the caller, checks the permission code for its
+ * One method per subject the operation model declares: put, get, delete, list,
+ * and the read of what a package holds. Each one authenticates the caller,
+ * checks the permission code for its
  * own operation, and only then touches the store, so a read is never admitted
  * by the code a write uses.
  *
@@ -76,6 +77,11 @@ public:
      * @brief Answers a page of a bucket, filtered by key prefix.
      */
     void list(ores::nats::message msg);
+
+    /**
+     * @brief Answers the files inside each of a set of packages.
+     */
+    void list_archive_entries(ores::nats::message msg);
 
 private:
     inline static std::string_view logger_name = "ores.storage.messaging.objects_handler";

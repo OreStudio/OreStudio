@@ -63,10 +63,11 @@ TEST_CASE("objects_operations_registers_every_declared_command", "[commands]") {
              std::string{"get-objects"},
              std::string{"delete-objects"},
              std::string{"list-objects"},
+             std::string{"list-archive-entries"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 4 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 5 command(s).";
 }
 
 TEST_CASE("objects_operations_process_put_objects_requires_a_session", "[commands]") {
@@ -313,6 +314,69 @@ TEST_CASE("objects_operations_process_list_objects_reaches_the_transport", "[com
                                                           "sample",
                                                           "sample",
                                                       });
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("objects_operations_process_list_archive_entries_requires_a_session", "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    objects_operations_commands::process_list_archive_entries(out,
+                                                              session,
+                                                              std::vector<std::string>{
+                                                                  "sample",
+                                                                  "sample",
+                                                              });
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("objects_operations_process_list_archive_entries_reports_the_expected_count",
+          "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    objects_operations_commands::process_list_archive_entries(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 2 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("objects_operations_process_list_archive_entries_reaches_the_transport", "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    objects_operations_commands::process_list_archive_entries(out,
+                                                              session,
+                                                              std::vector<std::string>{
+                                                                  "sample",
+                                                                  "sample",
+                                                              });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
     // Whether the command carries a token or not, everything ahead of the

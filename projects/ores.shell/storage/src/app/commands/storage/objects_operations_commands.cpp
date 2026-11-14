@@ -48,6 +48,30 @@ using ores::nats::service::nats_client;
 namespace {
 
 /**
+ * @brief Split a comma-separated token into the elements of a list field.
+ *
+ * The token __none__ states the empty list, because the command line cannot
+ * carry an empty argument: the tokenizer drops one, and a command whose list
+ * field should be empty has no other way to say so.
+ */
+std::vector<std::string> objects_split_list_token(const std::string& value) {
+    if (value == "__none__")
+        return {};
+    std::vector<std::string> parts;
+    std::string current;
+    for (const char c : value) {
+        if (c == ',') {
+            parts.push_back(current);
+            current.clear();
+        } else {
+            current.push_back(c);
+        }
+    }
+    parts.push_back(current);
+    return parts;
+}
+
+/**
  * @brief Read a boolean token, which the shell spells out as a word.
  */
 bool parse_flag(const std::string& value, bool& out) {
@@ -94,6 +118,13 @@ void objects_operations_commands::register_commands(cli::Menu& root_menu, nats_c
             process_list_objects(std::ref(out), std::ref(session), std::move(args));
         },
         "list-objects <bucket> <prefix> [--offset <v>] [--limit <v>]");
+
+    menu->Insert(
+        "list-archive-entries",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_list_archive_entries(std::ref(out), std::ref(session), std::move(args));
+        },
+        "list-archive-entries <bucket> <keys>");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
@@ -332,6 +363,61 @@ void objects_operations_commands::process_list_objects(std::ostream& out,
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::storage::messaging::list_objects_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void objects_operations_commands::process_list_archive_entries(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list-archive-entries request.";
+
+    using request_type = ores::storage::messaging::list_archive_entries_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run list-archive-entries." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 2;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.bucket = parsed->positionals[next++];
+        req.keys = objects_split_list_token(parsed->positionals[next++]);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::storage::messaging::list_archive_entries_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::storage::messaging::list_archive_entries_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::storage::messaging::list_archive_entries_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

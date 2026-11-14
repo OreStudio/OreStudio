@@ -8,7 +8,7 @@
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
 #+branch: feature/let-a-recreate-wait-for-connections-to-drain
-#+pr:
+#+pr: 4700
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
@@ -130,7 +130,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4700][#4700]] | [compass] Let a database recreate wait for connections to close |
 
 * Review
 

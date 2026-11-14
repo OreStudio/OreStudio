@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :build_ir_curves_from_public_data-remaining:sprint_30:v0:
 #+owner: marco
-#+branch: feature/show-an-ibor-curve-beside-the-overnight-curve
+#+branch: feature/bootstrap-every-ibor-curve
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
-#+updated: 2026-11-13
-#+environment:
+#+updated: 2026-11-14
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Every IBOR feed has a bootstrapped curve beside its overnight curve, marked as a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The curve analytics screen names each curve's role and index tenor, draws a projection beside the funding curve it discounts off, and states the gap pillar by pillar. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-13                               |
+| Next         | The curves and coverage screens: group every curve of a currency, and the page that states the difference the comparison teaches. |
+| Last touched | 2026-11-14                             |
 
 * Acceptance
 
@@ -107,3 +107,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** The pair view, on the curve analytics screen
+
+Commit =37891753d7=. The screen is
+=projects/ores.web/packages/web/src/marketdata/CurveAnalyticsPage.tsx=.
+
+The picker names each curve's role and index tenor, so a projection is a
+projection before it is opened. Opening one reads its =discount_curve_config_id=
+without being asked and draws that curve beside it, and the pair reads pillar
+by pillar in whichever of the three metrics is showing. The funding curve leads
+that table, so the gap is the term premium whichever of the two was opened
+first: =USD-LIBOR-1M= over =USD-SOFR-FOMC= was +28.0 and +26.0 bp at 1M and 3M
+on the seeded fixture. Either curve can be drawn alone, as the prototype offers,
+and a projection opens on its forward rates rather than its zero rates.
+
+The pair is the read the screen already makes, asked a second time against the
+BFF's =/api/market/curve-analytics=, so no protocol, BFF or server change was
+needed. A deferred second curve states the reason the server gave, because the
+read answers a deferred curve with its words rather than an empty page.
+
+** What the environment holds
+
+Measured on 2026-11-14 against the running database. Every projection config
+names the currency's overnight curve: =USD-LIBOR-1M= points at
+=USD-SOFR-FOMC=, =EUR-EURIBOR-1M= at =EUR-ESTR=, =GBP-LIBOR-3M= at
+=GBP-SONIA=. =USD-LIBOR-1M= and =USD-SOFR-FOMC= each hold 462 published points,
+so the pair has both sides to draw.
+
+** What is still open
+
+- The curves screen and the coverage screen do not group a currency's curves
+  yet: the coverage screen still takes one feed config per currency, so it
+  shows =AUD-AONIA= and never =AUD-LIBOR-3M=.
+- No page states the four differences the comparison teaches, though the
+  prototype carries the text.
+- Nothing consumes a published projection curve for pricing yet, so "price from
+  either" is unbuilt rather than untested.
+- The acceptance item that a test states no consumer takes a projection for a
+  discount curve is still unmet.

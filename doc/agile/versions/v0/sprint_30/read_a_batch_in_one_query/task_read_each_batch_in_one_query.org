@@ -42,9 +42,25 @@ The generated get-many, put-many and delete-many paths read their rows with one 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Add one helper, =<entity>_read_many=, beside =<entity>_read_one= in
+  =ores.cpp.service.service_impl.org=. It returns one entry per key, in the
+  order of the keys, and each entry holds what =_read_one= holds for that key.
+  Every bulk path calls it, so the call sites do not depend on the key shape.
+- When the declared key is the storage key, the helper calls the repository's
+  batch =read_latest= in chunks of 1,000 keys. It joins the rows back to the
+  keys by the text form of each key column (=key_text= and =row_text=), which
+  is the same conversion the compound-key filter already uses.
+- When the declared key is not the storage key, the helper loops over
+  =_read_one=. A batch finder by declared key is a separate task.
+- =prepare_change= takes the current rows as a parameter. Put-many reads all
+  current rows once before the loop. The single put reads its one row.
+- Put-many reads back the written rows with the keys it read before the
+  write. A write keeps the key its change states.
+- Delete-many uses the helper on the gated path and on the declared-key path.
+- Remove =:service_batch_reads_by_trade_id:=. The general path covers its
+  seven trade-id entities, so the flag has no use.
+- Out of scope: the junction service variant (24 services). Its repository
+  has no batch read.
 
 * Measurements
 
@@ -61,6 +77,13 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The trade-id get-many refused more than 1,000 keys with
+  =filter_too_large=, because one statement carried every key. The helper
+  reads in chunks, so that reason is gone and the refusal is removed. No test
+  asserted it.
+- =:has_batch_read:= is set on seven trading models, but no template reads it.
+  Every repository declares the batch =read_latest=.
 
 * Test Scenarios
 

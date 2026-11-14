@@ -635,6 +635,20 @@ refusal is a reply with =success= false and a message that names what failed.
 :cpp_type: std::chrono::system_clock::time_point
 :END:
 
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The series the surface is published into.
+ *
+ * Every publish of a blueprint writes this series, so it names the surface a
+ * slice belongs to rather than the publish the answer answers from.
+ */
+#+end_src
+
 *** published_at
 :PROPERTIES:
 :cpp_type: std::optional<std::chrono::system_clock::time_point>

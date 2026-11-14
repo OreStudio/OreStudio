@@ -427,6 +427,7 @@ msg::get_published_fx_vol_surface_response fx_vol_surface_publish_service::read_
             throw std::invalid_argument("The published surface of " + blueprint.name + ": " +
                                         grid.error() + ".");
         out.success = true;
+        out.series_id = boost::uuids::to_string(found->output_series_id);
         out.publish_request_id = boost::uuids::to_string(found->request_id);
         out.as_of = found->as_of;
         out.published_at = found->published_at;

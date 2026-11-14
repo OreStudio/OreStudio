@@ -210,6 +210,13 @@ export interface GetPublishedFxVolSurfaceResponse {
     stale: boolean;
     publish_request_id: string;
     as_of: string;
+    /**
+     * @brief The series the surface is published into.
+     *
+     * Every publish of a blueprint writes this series, so it names the surface a
+     * slice belongs to rather than the publish the answer answers from.
+     */
+    series_id: string;
     published_at: string | null;
     published_by: string;
     superseded_at: string | null;

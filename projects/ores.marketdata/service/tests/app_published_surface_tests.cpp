@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.service/app/staleness_policy.hpp"
 #include "published_surface_fixture.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cstdint>
@@ -110,5 +111,79 @@ TEST_CASE("an_as_of_before_the_publication_finds_no_surface_and_says_so", publis
 
     CHECK(resp.success == false);
     CHECK(resp.message.empty() == false);
+    CHECK(resp.points.empty());
+}
+
+TEST_CASE("a_slice_for_one_expiry_holds_the_numbers_that_row_of_the_grid_holds",
+          published_surface_tags) {
+    surface_fixture f(a_minute_ago());
+    const auto grid = f.read();
+    REQUIRE(grid.success);
+
+    ores::marketdata::messaging::get_published_fx_vol_surface_request q;
+    q.blueprint_id = f.blueprint_id();
+    q.as_of = f.published_at();
+    q.expiry = "1W";
+    const auto slice =
+        ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(*f.party, q);
+
+    INFO("message: " << slice.message);
+    REQUIRE(slice.success);
+    // The slice is a fact about the same surface, not a second read of it: one expiry,
+    // every strike, and the same numbers the grid states for them.
+    CHECK(slice.expiries == std::vector<std::string>{"1W"});
+    // The answer names the series it read, so a caller can ask for the same surface again.
+    CHECK(slice.series_id == grid.series_id);
+    CHECK(slice.series_id.empty() == false);
+    CHECK(slice.strikes == grid.strikes);
+    REQUIRE(slice.points.size() == 3);
+    for (std::size_t i = 0; i < slice.points.size(); ++i) {
+        CHECK(slice.points[i].expiry == "1W");
+        CHECK(slice.points[i].strike == grid.strikes[i]);
+        CHECK(slice.points[i].volatility == grid.points[i].volatility);
+    }
+}
+
+TEST_CASE("a_slice_for_one_strike_holds_the_numbers_that_column_holds", published_surface_tags) {
+    surface_fixture f(a_minute_ago());
+    const auto grid = f.read();
+    REQUIRE(grid.success);
+
+    ores::marketdata::messaging::get_published_fx_vol_surface_request q;
+    q.blueprint_id = f.blueprint_id();
+    q.as_of = f.published_at();
+    q.strike = "ATM";
+    const auto slice =
+        ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(*f.party, q);
+
+    INFO("message: " << slice.message);
+    REQUIRE(slice.success);
+    CHECK(slice.strikes == std::vector<std::string>{"ATM"});
+    REQUIRE(slice.points.size() == 2);
+    // Each expiry's ATM point, checked against the grid's own point for that pair.
+    const auto volatility_at = [&](const std::string& expiry) {
+        const auto point = std::ranges::find_if(
+            grid.points, [&](const auto& p) { return p.expiry == expiry && p.strike == "ATM"; });
+        REQUIRE(point != grid.points.end());
+        return point->volatility;
+    };
+    for (const auto& point : slice.points) {
+        CHECK(point.strike == "ATM");
+        CHECK(point.volatility == volatility_at(point.expiry));
+    }
+}
+
+TEST_CASE("a_slice_the_surface_does_not_hold_is_refused_in_words", published_surface_tags) {
+    surface_fixture f(a_minute_ago());
+
+    ores::marketdata::messaging::get_published_fx_vol_surface_request q;
+    q.blueprint_id = f.blueprint_id();
+    q.as_of = f.published_at();
+    q.expiry = "2Y";
+    const auto resp =
+        ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(*f.party, q);
+
+    CHECK(resp.success == false);
+    CHECK(resp.message.find("no expiry") != std::string::npos);
     CHECK(resp.points.empty());
 }

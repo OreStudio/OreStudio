@@ -11,6 +11,17 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
+* Resolution
+
+Fixed in 891235a57f. The row was not the 1W quote's date and not a mis-rolled expiry: it was
+the forward ladder's ON tenor. =build_ladder_dates= writes ON at one business day past the
+horizon, so a pair with T+2 spot values it a day before spot; the calibration planner was
+handing every ladder row to =pair_market_at= as a discount point, and that function refuses a
+point dated before the spot date. The planner now drops the rows before spot -- the settlement
+run-up is not part of a pair's market, which is anchored at spot -- and the ladder keeps
+publishing its overnight tenors. The new case in
+=app_fx_vol_surface_calibration_plan_tests.cpp= fails without the filter and passes with it.
+
 * What
 
 A provisioning run on 2026-11-13 refused every surface with

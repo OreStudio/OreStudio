@@ -34,8 +34,11 @@ driven.
 
 * Acceptance
 
-- The publishing model is documented: what a blank database holds, what a
-  recreate publishes, what a tenant is provisioned with, and in what order.
+- The publishing model is documented in **one** page, with UML where a table
+  cannot carry the meaning, and with provenance, methodology and reproducibility
+  sections: what a blank database holds, what a recreate publishes, what a
+  tenant is provisioned with, and in what order.
+- That page is signed off before any implementation task starts.
 - Every dataset is classified as base-system or ACME, with the reason stated.
 - No dataset is seeded and left unpublished, and no refdata table is populated
   by a second, silent path without that being deliberate.

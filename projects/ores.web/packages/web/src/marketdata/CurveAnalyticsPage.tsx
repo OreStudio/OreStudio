@@ -24,6 +24,7 @@ import { api, type CurveAnalytics } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
+import { LineChart, SERIES_COLOURS, type ChartSeries } from './LineChart.js';
 
 /**
  * One curve's analytics, from
@@ -37,6 +38,15 @@ import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/P
  */
 
 const CONFIGS = 'ir-curve-bootstrap-configs';
+
+/** What the chart draws: the curve's own numbers, one metric at a time, as the prototype does. */
+const METRICS = ['zero', 'forward', 'discount'] as const;
+
+type Metric = (typeof METRICS)[number];
+
+function oneOf<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
+    return allowed.find((candidate) => candidate === value) ?? fallback;
+}
 
 function asOfInstant(date: string): string {
     return `${date} 23:59:59Z`;
@@ -81,6 +91,7 @@ export function CurveAnalyticsPage(): ReactNode {
     const chosen =
         options.find((option) => option.id === stated || option.name === stated) ?? options[0];
     const asOf = search.get('asof') ?? todayIso();
+    const metric = oneOf(search.get('m'), METRICS, 'zero');
 
     const key = ['curve-analytics', chosen?.id ?? '', asOf] as const;
     const analytics = useQuery({
@@ -159,6 +170,41 @@ export function CurveAnalyticsPage(): ReactNode {
             {analytics.isError && <Notice tone="error">{analytics.error.message}</Notice>}
             {data !== undefined && data.stale && (
                 <Notice tone="warn">{t('marketdata.curveAnalytics.stale')}</Notice>
+            )}
+            {data !== undefined && data.bootstrapped.length >= 2 && (
+                <section className="space-y-2 rounded-md border border-line p-4">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h2 className="text-sm font-semibold">
+                            {t('marketdata.curveAnalytics.chart')}
+                        </h2>
+                        <Select
+                            value={metric}
+                            onChange={(event) => {
+                                set({ m: event.target.value });
+                            }}
+                        >
+                            {METRICS.map((option) => (
+                                <option key={option} value={option}>
+                                    {t(`marketdata.curveAnalytics.metrics.${option}`)}
+                                </option>
+                            ))}
+                        </Select>
+                    </div>
+                    <p className="text-xs text-ink-faint">
+                        {t(`marketdata.curveAnalytics.chartLegend.${metric}`, {
+                            dayCount: data.conventions.day_count,
+                        })}
+                    </p>
+                    <LineChart
+                        series={chartSeries(data, metric)}
+                        categories={data.bootstrapped.map((point) => point.tenor)}
+                        format={(value) =>
+                            metric === 'discount' ? value.toFixed(4) : `${value.toFixed(3)}%`
+                        }
+                        label={t(`marketdata.curveAnalytics.metrics.${metric}`)}
+                        padding={0.08}
+                    />
+                </section>
             )}
             {data !== undefined && (
                 <>
@@ -283,4 +329,39 @@ export function CurveAnalyticsPage(): ReactNode {
             )}
         </div>
     );
+}
+
+/**
+ * The metric's own numbers, and for a rate the market's beside them.
+ *
+ * The market overlay is dashed because it is a different kind of fact: the
+ * curve is what the bootstrap made of the quotes, and the overlay is what the
+ * quotes said. A discount, factor by factor, has no market counterpart to draw.
+ */
+function chartSeries(data: CurveAnalytics, metric: Metric): readonly ChartSeries[] {
+    const percent = (value: number): number => value * 100;
+    const curve = data.bootstrapped.map((point) =>
+        metric === 'zero'
+            ? percent(point.zero_rate)
+            : metric === 'forward'
+              ? percent(point.implied_forward)
+              : point.discount_factor,
+    );
+    const series: ChartSeries[] = [
+        { points: curve, colour: SERIES_COLOURS[0], fill: metric !== 'discount', strong: true },
+    ];
+    if (metric !== 'discount') {
+        // The market's own quote at each pillar, matched by tenor so the two lines
+        // share an x. A pillar the market did not quote is a gap, not a zero.
+        const market = new Map(
+            data.market_pillars.map((pillar) => [pillar.tenor, percent(pillar.rate)]),
+        );
+        series.push({
+            points: data.bootstrapped.map((point) => market.get(point.tenor) ?? null),
+            colour: SERIES_COLOURS[2],
+            dashed: true,
+            dots: true,
+        });
+    }
+    return series;
 }

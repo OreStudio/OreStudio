@@ -110,6 +110,11 @@ describe('the FX montage page', () => {
         expect(page).toContain('—');
     });
 
+    it('draws the day\u2019s range with the consensus on it', () => {
+        const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13');
+        expect(page).toContain('today 1.0802 to 1.0891, last 1.085');
+    });
+
     it('says which instant the change is measured from', () => {
         const page = draw('/market-data/fx-montage?base=EUR&asof=2026-11-13');
         expect(page).toContain('Change measured from');

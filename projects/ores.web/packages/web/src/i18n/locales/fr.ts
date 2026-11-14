@@ -5740,6 +5740,10 @@ const fr: SourceCatalogue = {
             thin: 'Mince',
             noQuotes: 'Personne ne cote ce barreau',
             whereThin: 'Là où le marché est mince',
+            curve: 'Courbe',
+            curveLegend:
+                'Consensus par barreau, {tenor}, {dayCount}. Un fournisseur donne une valeur par barreau et aucune valeur n’est inventée.',
+            curveLabel: 'La courbe {currency}, consensus par barreau',
             thinLine: '{rung} : coté par {quoted} ; le consensus repose sur {resting}.',
         },
 
@@ -5793,6 +5797,18 @@ const fr: SourceCatalogue = {
                 "Cette lecture ne porte pas de clôture précédente, l'écran n'affiche donc aucune variation d'un jour à l'autre.",
             stale: 'La cotation la plus récente derrière cette courbe est plus ancienne que ce que le serveur considère comme courant.',
             noCurves: 'La partie ne détient aucune configuration de courbe.',
+            chart: 'La courbe',
+            metrics: {
+                zero: 'Taux zéro',
+                forward: 'Forward implicite',
+                discount: 'Facteur d’actualisation',
+            },
+            chartLegend: {
+                zero: 'Le taux zéro bootstrappé, {dayCount}, face au taux de marché à chaque pilier.',
+                forward:
+                    'Le taux implicite de chaque segment, {dayCount}, face au taux de marché à chaque pilier.',
+                discount: 'Le facteur d’actualisation que la courbe porte à chaque pilier.',
+            },
         },
 
         fxForwards: {

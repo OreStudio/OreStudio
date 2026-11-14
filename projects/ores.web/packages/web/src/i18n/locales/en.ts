@@ -5659,6 +5659,10 @@ export const en: SourceCatalogue = {
             thin: 'Thin',
             noQuotes: 'Nobody quotes this rung',
             whereThin: 'Where the market is thin',
+            curve: 'Curve',
+            curveLegend:
+                'Consensus by rung, {tenor}, {dayCount}. One provider is one value per rung and no value is invented.',
+            curveLabel: 'The {currency} curve, consensus by rung',
             thinLine: '{rung}: quoted by {quoted}; the consensus rests on {resting}.',
         },
 
@@ -5712,6 +5716,18 @@ export const en: SourceCatalogue = {
                 'This read carries no prior close, so the screen states no day-on-day change.',
             stale: 'The newest quote behind this curve is older than the server treats as current.',
             noCurves: 'The party holds no curve configuration.',
+            chart: 'The curve',
+            metrics: {
+                zero: 'Zero rate',
+                forward: 'Implied forward',
+                discount: 'Discount factor',
+            },
+            chartLegend: {
+                zero: 'The bootstrapped zero rate, {dayCount}, against the market rate at each pillar.',
+                forward:
+                    'The rate each segment implies, {dayCount}, against the market rate at each pillar.',
+                discount: 'The discount factor the curve holds at each pillar.',
+            },
         },
 
         fxForwards: {

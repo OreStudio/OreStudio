@@ -135,6 +135,20 @@ describe('the rate ladder page', () => {
         expect(page).toContain('3M: quoted by ore; the consensus rests on mean.');
     });
 
+    it('draws the consensus as a curve over the rungs', () => {
+        const page = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13');
+        expect(page).toContain('The USD curve, consensus by rung');
+        expect(page).toContain('<svg');
+    });
+
+    it('draws no curve for a single rung, because a line needs two', () => {
+        const page = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13', {
+            ...ladder,
+            rungs: [ladder.rungs[0]],
+        });
+        expect(page).not.toContain('The USD curve, consensus by rung');
+    });
+
     it('says so when the party holds no ladder for the currency', () => {
         const page = draw('/market-data/rate-ladder?ccy=USD&asof=2026-11-13', {
             ...ladder,

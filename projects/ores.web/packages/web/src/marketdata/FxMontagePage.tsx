@@ -72,6 +72,56 @@ function rowAge(pair: FxMontagePair, language: string): string {
     return relativeTime(new Date(now.getTime() - newest.age_seconds * 1000), now, language);
 }
 
+/**
+ * The day's range as a bar with the consensus on it.
+ *
+ * The prototype drew a sparkline from a path it generated. This read holds the
+ * low, the high and the last price and no path, so the bar is what the data
+ * supports: where the pair has traded today, and where it stands now.
+ */
+function RangeBar({
+    low,
+    high,
+    last,
+    up,
+}: {
+    readonly low: number | null;
+    readonly high: number | null;
+    readonly last: number;
+    readonly up: boolean;
+}): ReactNode {
+    if (low === null || high === null || !(high > low)) return <span>—</span>;
+    const width = 120;
+    const height = 12;
+    const share = Math.min(1, Math.max(0, (last - low) / (high - low)));
+    const at = 4 + share * (width - 8);
+    return (
+        <svg
+            width={width}
+            height={height}
+            viewBox={`0 0 ${width} ${height}`}
+            role="img"
+            aria-label={`today ${low} to ${high}, last ${last}`}
+        >
+            <line
+                x1="4"
+                y1={height / 2}
+                x2={width - 4}
+                y2={height / 2}
+                stroke="currentColor"
+                strokeWidth="1"
+                opacity="0.35"
+            />
+            <circle
+                cx={at}
+                cy={height / 2}
+                r="2.5"
+                fill={up ? 'var(--color-up)' : 'var(--color-down)'}
+            />
+        </svg>
+    );
+}
+
 export function FxMontagePage(): ReactNode {
     const { t, language } = useTranslation();
     const [search, setSearch] = useSearchParams();
@@ -185,6 +235,14 @@ export function FxMontagePage(): ReactNode {
                                                         {t('marketdata.fxMontage.unquoted')}
                                                     </Tag>
                                                 )}
+                                                <div className="text-ink-faint">
+                                                    <RangeBar
+                                                        low={pair.day_low}
+                                                        high={pair.day_high}
+                                                        last={pair.consensus}
+                                                        up={(pair.change_pct ?? 0) >= 0}
+                                                    />
+                                                </div>
                                             </td>
                                             <td className={cell}>
                                                 {fixed(pair.consensus, places, language)}

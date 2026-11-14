@@ -5699,6 +5699,10 @@ const pt: SourceCatalogue = {
             thin: 'Escasso',
             noQuotes: 'Ninguém cota este degrau',
             whereThin: 'Onde o mercado é escasso',
+            curve: 'Curva',
+            curveLegend:
+                'Consenso por degrau, {tenor}, {dayCount}. Um fornecedor dá um valor por degrau e nenhum valor é inventado.',
+            curveLabel: 'A curva {currency}, consenso por degrau',
             thinLine: '{rung}: cotado por {quoted}; o consenso assenta em {resting}.',
         },
 
@@ -5752,6 +5756,18 @@ const pt: SourceCatalogue = {
                 'Esta leitura não traz o fecho anterior, por isso o ecrã não mostra variação de um dia para o outro.',
             stale: 'A cotação mais recente por trás desta curva é mais antiga do que o servidor considera atual.',
             noCurves: 'A parte não tem qualquer configuração de curva.',
+            chart: 'A curva',
+            metrics: {
+                zero: 'Taxa zero',
+                forward: 'Forward implícito',
+                discount: 'Fator de atualização',
+            },
+            chartLegend: {
+                zero: 'A taxa zero bootstrapped, {dayCount}, contra a taxa de mercado em cada pilar.',
+                forward:
+                    'A taxa implícita de cada segmento, {dayCount}, contra a taxa de mercado em cada pilar.',
+                discount: 'O fator de atualização que a curva guarda em cada pilar.',
+            },
         },
 
         fxForwards: {

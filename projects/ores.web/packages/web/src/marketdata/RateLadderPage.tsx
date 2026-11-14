@@ -25,6 +25,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { relativeTime } from '../ui/Time.js';
+import { LineChart, SERIES_COLOURS } from './LineChart.js';
 
 /**
  * One currency's rate ladder, from
@@ -161,6 +162,34 @@ export function RateLadderPage(): ReactNode {
             {ladder.isError && <Notice tone="error">{ladder.error.message}</Notice>}
             {ladder.isSuccess && rows.length === 0 && (
                 <Notice tone="info">{t('marketdata.rateLadder.noRungs')}</Notice>
+            )}
+            {rows.length >= 2 && ladder.data !== undefined && (
+                <section className="space-y-2 rounded-md border border-line p-4">
+                    <h2 className="text-sm font-semibold">{t('marketdata.rateLadder.curve')}</h2>
+                    <p className="text-xs text-ink-faint">
+                        {t('marketdata.rateLadder.curveLegend', {
+                            tenor: ladder.data.tenor_convention,
+                            dayCount: ladder.data.day_count_convention,
+                        })}
+                    </p>
+                    <LineChart
+                        series={[
+                            {
+                                points: rows.map((rung) => rung.consensus.value * 100),
+                                colour: SERIES_COLOURS[0],
+                                fill: true,
+                                dots: true,
+                                strong: true,
+                            },
+                        ]}
+                        categories={rows.map((rung) => rung.tenor)}
+                        format={(value) => `${value.toFixed(3)}%`}
+                        label={t('marketdata.rateLadder.curveLabel', {
+                            currency: ladder.data.currency,
+                        })}
+                        padding={0.08}
+                    />
+                </section>
             )}
             {rows.length > 0 && ladder.data !== undefined && (
                 <section className="space-y-2 rounded-md border border-line p-4">

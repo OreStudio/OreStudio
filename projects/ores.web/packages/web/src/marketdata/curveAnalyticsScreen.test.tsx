@@ -53,6 +53,15 @@ const analytics: CurveAnalytics = {
             series_id: 's-1',
             as_of: '2026-11-13 10:00:00Z',
         },
+        {
+            tenor: '3M',
+            maturity_date: '2027-02-13',
+            year_fraction: 0.2521,
+            rate: 0.0418,
+            provider_code: 'ore',
+            series_id: 's-1',
+            as_of: '2026-11-13 10:00:00Z',
+        },
     ],
     bootstrapped: [
         {
@@ -63,6 +72,15 @@ const analytics: CurveAnalytics = {
             zero_rate: 0.0432,
             implied_forward: 0.0432,
             shift_bps: 1.25,
+        },
+        {
+            tenor: '3M',
+            maturity_date: '2027-02-13',
+            year_fraction: 0.2521,
+            discount_factor: 0.9895,
+            zero_rate: 0.0419,
+            implied_forward: 0.0414,
+            shift_bps: 0.9,
         },
     ],
 };
@@ -115,6 +133,17 @@ describe('the curve analytics page', () => {
     it('states the shift in basis points as the curve less the market', () => {
         const page = draw(`/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13`);
         expect(page).toContain('+1.3');
+    });
+
+    it('draws the curve and switches the metric it draws', () => {
+        const zero = draw(`/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13`);
+        expect(zero).toContain('The bootstrapped zero rate');
+        expect(zero).toContain('<svg');
+        const discount = draw(
+            `/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13&m=discount`,
+        );
+        expect(discount).toContain('The discount factor the curve holds at each pillar.');
+        expect(discount).not.toContain('The bootstrapped zero rate');
     });
 
     it('warns when the newest quote behind the curve is old', () => {

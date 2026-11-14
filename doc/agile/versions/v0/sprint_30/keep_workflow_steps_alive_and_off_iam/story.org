@@ -44,7 +44,7 @@ Provisioning completes on a busy host. A step reports its progress as a heartbea
 | [[id:9CA04D58-E330-4F27-AF8A-B3BDBB2E63EC][Bound the work of a request]] | DONE | 2026-11-13 | 2026-11-13 | No request handler does work that grows with the data inside one request: such work is paged, or runs as a step with its own heartbeat. |
 | [[id:C1048693-F5A5-40F2-9BCA-186D7E6B84B7][Run each step in the service that owns it]] | STARTED | 2026-11-13 | | Each provisioning step is dispatched to the service that owns its work, so iam runs only identity steps and links no synthetic, marketdata or reporting core library. |
 | [[id:E96AA88B-1355-4957-996E-D0544735F092][Book every generated trade type through the database]] | DONE | 2026-11-13 | 2026-11-14 | A check books one trade of every generated type through the real tables, so a refused value fails the check rather than provisioning. |
-| [[id:4B6D5F00-12DD-4B73-8430-EE04316A7278][Let a database recreate wait for connections to drain]] | BACKLOG | | | compass db recreate waits for the stopped services' connections to close, instead of refusing while they drain. |
+| [[id:4B6D5F00-12DD-4B73-8430-EE04316A7278][Let a database recreate wait for connections to drain]] | STARTED | 2026-11-14 | | compass db recreate waits for the stopped services' connections to close, instead of refusing while they drain. |
 
 * Decisions
 

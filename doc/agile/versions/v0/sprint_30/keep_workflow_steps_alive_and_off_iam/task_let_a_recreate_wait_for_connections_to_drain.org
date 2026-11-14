@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :keep_workflow_steps_alive_and_off_iam:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/let-a-recreate-wait-for-connections-to-drain
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-12
-#+updated: 2026-11-12
-#+environment: jolly_knuth
+#+updated: 2026-11-14
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ compass db recreate waits for the stopped services' connections to close, instea
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A4D0E305-CEF6-4684-ABBA-0D09657479F1][Keep workflow steps alive while they work, and off iam]] |
-| Now          | Not yet started.                       |
+| Now          | The refusal is understood: the kill path waits 10 seconds, and the backends of a stopped service close for longer. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-12                               |
+| Next         | Widen the wait and make it say what it is waiting for. |
+| Last touched | 2026-11-14                               |
 
 * Acceptance
 
@@ -40,9 +40,20 @@ compass db recreate waits for the stopped services' connections to close, instea
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Widen the drain window in =check_connections(kill=True)=, from the 10
+   seconds it waits today to a bounded minute, and keep it bounded: a backend
+   that never closes must still fail the recreate rather than hang it. The
+   wait reports how many connections remain, so a run that waits says so.
+2. Keep the refusal honest without =-k=. Terminating a backend is the
+   caller's decision, so a recreate that was not told to kill still refuses at
+   once, and the hint stays.
+3. Move the deadline into one named constant, so the window the wait uses and
+   the window the tests state are the same number.
+4. Update =test_compass_db_connections.py=: its deadline case counts the kill
+   rounds, so it changes with the window. Add a case that the wait reports the
+   connections it is waiting for.
+5. Prove it against the real environment: stop the services, then recreate
+   back to back, which is the acceptance line the story recorded as failing.
 
 * Measurements
 
@@ -56,9 +67,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The drain window today | 10 seconds, one constant in =check_connections= | read =projects/ores.compass/src/compass_db.py= | d38ed21c8c |
+| The suite that pins the wait | 3 cases pass | =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests/test_compass_db_connections.py -q= | d38ed21c8c |
 
 * Notes
+
+- The refusal is a 10 second wait in =check_connections=, in
+  =projects/ores.compass/src/compass_db.py=. After it terminates the backends,
+  it polls every half second until the count is zero or the deadline passes,
+  and the deadline is short: the story recorded a recreate refusing while the
+  stopped services' connections drained for about 15 seconds. The wait is
+  already the right shape, so the work is its window and what it says, not its
+  algorithm.
+- The function is well covered: =test_compass_db_connections.py= already pins
+  the kill path, the deadline path and the refusal without =-k=, through a
+  stand-in for =psql=. The deadline case counts the kill rounds, which is how
+  the current window was measured.
+- The story's evidence names the failing shape concretely: =compass db recreate
+  -k= refused while the connections of 25 stopped services drained.
 
 * Test Scenarios
 

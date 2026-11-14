@@ -154,6 +154,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:B2DAE5A6-27F7-4C40-9463-BADD460A742C][Port the market data screens from hedgr]] | STARTED | 2026-11-13 | | Give ORE Studio the market-data screens hedgr prototyped - instrument search, a rates ladder, an FX spot montage, a curve inspector and a published vol surface - with the journeys they answer to and the server reads they need. |
 | [[id:6A8F01EC-54BE-4730-B7EC-8CF6438A6725][Start the synthetic service on a fresh database]] | DONE | 2026-11-13 | | The synthetic service never became ready on a recreated database, so the fleet start timed out and no tenant was provisioned. |
 | [[id:0721569D-CBEF-4779-8726-F62A7179D567][Hotfix: Clear the Windows, GCC and test breakages CI now reports]] | STARTED | 2026-11-14 | | CI reports a Windows export collision, a GCC name collision and a set of failing tests. |
+| [[id:EAD87500-027A-46B7-BD34-911D827DCF71][Hotfix: Fix the AppleClang min call and the generated link drift]] | STARTED | | | macOS fails to compile a min call, and three generated CMake files no longer match their models. |
 
 * Achievements
 

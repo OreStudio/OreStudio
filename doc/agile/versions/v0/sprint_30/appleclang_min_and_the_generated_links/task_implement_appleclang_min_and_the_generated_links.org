@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 9610FEC2-2D29-4EA6-BAFB-65D9046DE5BD
+:END:
+#+title: Task: Implement Hotfix: Fix the AppleClang min call and the generated link drift
+#+description: Initial task for: Hotfix: Fix the AppleClang min call and the generated link drift
+#+type: task
+#+level: s1
+#+filetags: :appleclang_min_and_the_generated_links:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:EAD87500-027A-46B7-BD34-911D827DCF71][Hotfix: Fix the AppleClang min call and the generated link drift]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the AppleClang min call and the three generated CMake files that drifted
+from their models.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:EAD87500-027A-46B7-BD34-911D827DCF71][Hotfix: Fix the AppleClang min call and the generated link drift]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The min call compiles on AppleClang.
+- The three components report no drift.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| macOS build errors at main | 1 unique, =no matching function for call to 'min'= at =storage_file_source.cpp:37= | CDash build 4539690 | cab661cc8c |
+| Drifted files reported by the drift job | 3 | Codegen drift run 43583279306 | b3a5b2aa41 |
+| Drifted files after the fix | 0 | =check_component_drift.py --component iam/refdata/synthetic= | bd0ec589d6 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The AppleClang error is a portability defect that only macOS can see: the two
+types are the same on Linux. The drift was one-directional in both cases. A
+hand edit had added a link the model did not know, and an unused model link had
+been dropped from the file; both now agree with what the code actually uses.

@@ -34,7 +34,7 @@ const analytics: CurveAnalytics = {
     instrument_id: CONFIG_ID,
     name: 'USD-SOFR',
     as_of: '2026-11-13 23:59:59Z',
-    compare_at: '',
+    compare_at: null,
     stale: false,
     conventions: {
         index_name: 'USD-SOFR',
@@ -97,7 +97,7 @@ const libor: CurveAnalytics = {
     name: 'USD-LIBOR-1M',
     as_of: '2026-11-13 23:59:59Z',
     stale: false,
-    compare_at: '',
+    compare_at: null,
     conventions: {
         index_name: 'USD-LIBOR-1M',
         day_count: 'A360F',
@@ -324,7 +324,7 @@ describe('the curve analytics page', () => {
     it('says no set was current rather than drawing a zero', () => {
         const page = draw(
             `/market-data/curve-analytics?curve=${CONFIG_ID}&asof=2026-11-13&compare=2026-11-12`,
-            { ...analytics, compare_at: '' },
+            { ...analytics, compare_at: null },
         );
         expect(page).toContain('No published set was current at that instant');
         expect(page).not.toContain('Prior zero (%)');

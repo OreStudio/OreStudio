@@ -154,7 +154,7 @@ export function CurveAnalyticsPage(): ReactNode {
             api.curveAnalytics({
                 instrumentId: chosen?.id ?? '',
                 asOf: asOfInstant(asOf),
-                compareAt: compare === '' ? '' : asOfInstant(compare),
+                compareAt: compare === '' ? null : asOfInstant(compare),
             }),
         enabled: chosen !== undefined,
         retry: false,
@@ -167,7 +167,7 @@ export function CurveAnalyticsPage(): ReactNode {
             api.curveAnalytics({
                 instrumentId: beside?.id ?? '',
                 asOf: asOfInstant(asOf),
-                compareAt: '',
+                compareAt: null,
             }),
         enabled: beside !== undefined,
         retry: false,
@@ -295,7 +295,7 @@ export function CurveAnalyticsPage(): ReactNode {
                 <Notice tone="info">{t('marketdata.curveAnalytics.noCurves')}</Notice>
             )}
             {analytics.isError && <Notice tone="error">{analytics.error.message}</Notice>}
-            {data !== undefined && compare !== '' && data.compare_at === '' && (
+            {data !== undefined && compare !== '' && data.compare_at === null && (
                 <Notice tone="info">{t('marketdata.curveAnalytics.noPriorSet')}</Notice>
             )}
             {besideAnalytics.isError && (
@@ -505,7 +505,7 @@ export function CurveAnalyticsPage(): ReactNode {
                                         <th className={head}>
                                             {t('marketdata.curveAnalytics.impliedForward')}
                                         </th>
-                                        {data.compare_at !== '' && (
+                                        {data.compare_at !== null && (
                                             <>
                                                 <th className={head}>
                                                     {t('marketdata.curveAnalytics.priorZero')}
@@ -542,7 +542,7 @@ export function CurveAnalyticsPage(): ReactNode {
                                             <td className={cell}>
                                                 {percent(point.implied_forward, language)}
                                             </td>
-                                            {data.compare_at !== '' && (
+                                            {data.compare_at !== null && (
                                                 <>
                                                     <td className={cell}>
                                                         {point.prior_zero_rate === null
@@ -576,7 +576,7 @@ export function CurveAnalyticsPage(): ReactNode {
                             </table>
                         </div>
                     </section>
-                    {data.compare_at !== '' && (
+                    {data.compare_at !== null && (
                         <p className="text-xs text-ink-faint">
                             {t('marketdata.curveAnalytics.comparedWith', {
                                 at: data.compare_at,
@@ -584,7 +584,7 @@ export function CurveAnalyticsPage(): ReactNode {
                         </p>
                     )}
                     <Notice tone="info">{t('marketdata.curveAnalytics.shiftNote')}</Notice>
-                    {data.compare_at === '' && (
+                    {data.compare_at === null && (
                         <Notice tone="info">{t('marketdata.curveAnalytics.noPriorClose')}</Notice>
                     )}
                 </>

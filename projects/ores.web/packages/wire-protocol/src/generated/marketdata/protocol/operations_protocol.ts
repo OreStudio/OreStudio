@@ -557,7 +557,7 @@ export interface GetCurveAnalyticsRequest {
     party_id: string;
     instrument_id: string;
     as_of: string;
-    compare_at: string;
+    compare_at: string | null;
 }
 
 /**
@@ -572,7 +572,7 @@ export interface GetCurveAnalyticsResponse {
     instrument_id: string;
     name: string;
     as_of: string;
-    compare_at: string;
+    compare_at: string | null;
     stale: boolean;
     conventions: CurveConventions;
     market_pillars: CurveMarketPillar[];

@@ -1432,7 +1432,7 @@ const curveAnalyticsSchema = z.object({
     instrument_id: z.string().default(''),
     name: z.string().default(''),
     as_of: z.string().default(''),
-    compare_at: z.string().default(''),
+    compare_at: z.string().nullable().default(null),
     stale: z.boolean().default(false),
     conventions: curveConventionsSchema,
     market_pillars: z.array(curveMarketPillarSchema).default([]),
@@ -3683,7 +3683,7 @@ export const api = {
     async curveAnalytics(query: {
         readonly instrumentId: string;
         readonly asOf: string;
-        readonly compareAt?: string;
+        readonly compareAt?: string | null;
     }): Promise<CurveAnalytics> {
         return curveAnalyticsSchema.parse(
             await request('/api/market/curve-analytics', {
@@ -3692,7 +3692,7 @@ export const api = {
                 body: JSON.stringify({
                     instrument_id: query.instrumentId,
                     as_of: query.asOf,
-                    compare_at: query.compareAt ?? '',
+                    compare_at: query.compareAt ?? null,
                 }),
             }),
         );

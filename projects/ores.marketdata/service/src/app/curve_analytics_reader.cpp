@@ -183,8 +183,8 @@ get_curve_analytics(const ores::database::context& ctx,
         // was current at the instant, and the zero rate each pillar held then. A set
         // a person could not have seen at that instant is not a prior close, so a
         // publish stamped later does not count however old its as-of is.
-        if (request.compare_at != std::chrono::system_clock::time_point{}) {
-            const auto at = request.compare_at;
+        if (request.compare_at.has_value()) {
+            const auto at = *request.compare_at;
             auto sets = repository::curve_publish_repository{}.read_applied_for_series(
                 ctx, config.output_series_id);
             // A set is current only if it is the party's, was published by the

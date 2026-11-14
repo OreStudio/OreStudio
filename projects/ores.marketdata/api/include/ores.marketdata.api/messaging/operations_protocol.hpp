@@ -742,7 +742,7 @@ struct get_curve_analytics_request {
     std::string party_id;
     std::string instrument_id;
     std::chrono::system_clock::time_point as_of;
-    std::chrono::system_clock::time_point compare_at;
+    std::optional<std::chrono::system_clock::time_point> compare_at;
 
     friend bool operator==(const get_curve_analytics_request&,
                            const get_curve_analytics_request&) = default;
@@ -760,7 +760,7 @@ struct get_curve_analytics_response {
     std::string instrument_id;
     std::string name;
     std::chrono::system_clock::time_point as_of;
-    std::chrono::system_clock::time_point compare_at;
+    std::optional<std::chrono::system_clock::time_point> compare_at;
     bool stale = false;
     curve_conventions conventions;
     std::vector<curve_market_pillar> market_pillars;

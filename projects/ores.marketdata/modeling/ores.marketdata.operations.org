@@ -1726,11 +1726,11 @@ Empty means now, resolved server-side.
 
 *** compare_at
 :PROPERTIES:
-:cpp_type: std::chrono::system_clock::time_point
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
 :END:
 
-Optional; empty asks for no comparison. When stated, the answer carries the
-party's published set that was current at that instant and the change from it.
+Absent asks for no comparison. When stated, the answer carries the party's
+published set that was current at that instant and the change from it.
 
 ** get_curve_analytics_response
 
@@ -1774,10 +1774,10 @@ order.
 
 *** compare_at
 :PROPERTIES:
-:cpp_type: std::chrono::system_clock::time_point
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
 :END:
 
-The as-of of the published set the change is measured from. Empty when no
+The as-of of the published set the change is measured from. Absent when no
 comparison was asked for, or when no set was current at the instant asked.
 
 *** stale

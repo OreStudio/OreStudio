@@ -40,6 +40,7 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         ores.reporting.api.lib
         ores.refdata.api.lib
+        ores.analytics.api.lib
         ores.iam.api.lib
         ores.compute.api.lib
         ores.trading.api.lib

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-ore-value-sets
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -31,11 +31,11 @@ statement of it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | The reader is in =ores.http.core=, the documentation page answers, and the routes the earlier families served are paired in the inventory. |
 | Waiting on   | Nothing. This task is first.           |
-| Next         | Begin implementation.                  |
+| Next         | Finish the gate and raise the PR.      |
 | Last touched | 2026-11-14                               |
 
 * Acceptance
@@ -88,9 +88,53 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The reporting part's test suite | 44 cases, 447 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.reporting.tests= | the documentation page commit |
+| The gateway core's test suite | 100 cases, 100590 assertions, all pass | =build/output/linux-clang-release-ninja/publish/bin/ores.http.core.tests= | the documentation page commit |
+| The reporting area's routes the C++ server answers | 27 of the BFF's 44 paired | =python3 build/scripts/route_inventory.py --check= | the documentation page commit |
+| The reporting area's routes the C++ server does not yet answer | 17 | =python3 build/scripts/route_inventory.py --check= | the documentation page commit |
+| The routes the inventory pairs | 234 of the BFF's 324 | =python3 build/scripts/route_inventory.py --check= | the documentation page commit |
+| The gateway's routes in the inventory | 1324 routes, 1000 answered by the gateway | =python3 build/scripts/route_inventory.py --check= | the documentation page commit |
 
 * Notes
+
+** The reader's home
+
+The design note and this task's predecessor said the value set reader lives in
+the reporting part. It does not. The reference data part answers convention and
+curve routes and reads value sets too, and the reporting part already links
+=ores.refdata.api=, so a reader in the reporting part would close a cycle
+between two part libraries. The reader is at
+=projects/ores.http/core/include/ores.http.core/routes/ore_value_sets.hpp=.
+
+The reader takes the four tables as rows, so the shared part gains no link to
+the reporting part. The catalogue relations are the caller's: a relation names a
+view in another component, so the part that serves a screen states which
+relations it reads. The reporting part reads the three the value set data names
+(tenors, currencies and sensitivity templates) and refuses any other with a
+sentence that names it.
+
+** The routes the earlier families left unpaired
+
+The three families before this one added their routes to the inventory but never
+added them to =build/scripts/route_pairing.py=, which is the table the coverage
+is counted from. The coverage table therefore stated 9 of 44 reporting routes
+paired where 26 were served. This task adds those seventeen pairs, so the
+coverage is now counted and not claimed.
+
+** A seed this build cannot read
+
+The BFF threw from the handler, and the browser read a 500 with the sentence.
+The gateway does the same: the reader raises =value_set_error= and the route
+refuses with 500 and the reader's sentence. Every other failure keeps the
+house answer, which logs the detail and tells the browser the service could not
+answer.
+
+** The relation the page does not need
+
+The documentation page reads the =Setup= scope, whose settings name no catalogue
+relation. The reader still resolves the relations the data names, because a set
+that names one must not be drawn as an empty list; a relation is read only when
+a setting that draws on it is asked for.
 
 * Test Scenarios
 

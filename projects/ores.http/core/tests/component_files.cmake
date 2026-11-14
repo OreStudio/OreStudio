@@ -29,6 +29,7 @@ set(files
     "change_watch_tests.cpp"
     "history_routes_tests.cpp"
     "main.cpp"
+    "ore_value_sets_tests.cpp"
     "site_routes_tests.cpp"
     "storage_upload_end_to_end_tests.cpp"
     "storage_upload_sink_tests.cpp"

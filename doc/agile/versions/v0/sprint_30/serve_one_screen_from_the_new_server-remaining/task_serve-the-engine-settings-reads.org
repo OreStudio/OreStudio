@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: F321B6FD-AA33-4B71-84F2-A000578F02F5
+:END:
+#+title: Task: Serve the engine settings' reads
+#+description: Three routes: the page of settings with each group's tally, one setting with its groups and parts, and the history across the central row and the four part tables.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The gateway answers none of the engine settings' reads. Serve the page of
+settings, one setting with its groups and their parts, and its history, at the
+paths and in the shapes the BFF answers.
+
+A configuration is a central row and three parts, one for each group of
+settings. A part with no row means the engine default for every setting in it,
+and a setting that is null inside a row means the engine default for that
+setting. The screens can therefore always say which value is in force, and these
+three reads are how they say it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:42084FE1-9A9B-49CC-9E50-F48426DFA6C3][Read the ORE value sets, and serve the documentation page]] |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The C++ server answers =GET /api/reporting/engine-settings=,
+  =GET /api/reporting/engine-settings/:id= and
+  =GET /api/reporting/engine-settings/:id/history= at the BFF's paths, with the
+  BFF's member names and status codes.
+- The page states, for each configuration, the party's name and code, the count
+  of groups that hold a part, the count of groups the data states, and the
+  threads the execution part holds.
+- One configuration states each group with its values, and a group with no row
+  states null for every value.
+- A group the data states and the wiring does not name is not offered, because
+  its part cannot be read or written.
+- The history states the central row's versions and every part's versions in one
+  list, newest first.
+- A configuration that another party owns is refused, with that party's name in
+  the sentence.
+- A test proves each route against the answer the BFF gives.
+- Each route in scope names its C++ equivalent in the inventory.
+- The local gate is green.
+
+* Plan
+
+Branch =feature/serve-the-engine-settings-reads=.
+
+The three reads share an =engine_settings_rows= unit beside the documentation
+route: the groups, the parts of each group, the central row, the party names and
+the bound reports. That unit is what the writes task extends, so the second half
+of the engine settings adds to it rather than restating it.
+
+The counts are arithmetic over the reads. No service derives them and the
+gateway derives nothing a service could state.
+
+A part's rows travel under a subject per group, and the gateway names those
+subjects. That is the wiring of the service and not the model of the screen, and
+it stays beside the routes for the same reason.
+
+The router registers =/documentation= before =/{id}=. A parameter at the end of
+a pattern matches anything, so a literal that follows one is never reached
+unless it is registered first.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

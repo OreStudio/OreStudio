@@ -11,12 +11,12 @@
 
 * Why this note exists
 
-Nineteen routes remain of the reporting area's fifty, and they are not one
-subject. The engine settings are a tree of named parameters a person edits; the
-pricing engines are configurations with an ORE document behind them; the ORE
-value sets are reference data the engine reads; and one route tallies the
-health of a party's report definitions. Together they are the family the task
-calls "the ORE value sets and the engine settings".
+Nineteen routes of the reporting area's fifty were unassigned when this note was
+written, and they are not one subject. The engine settings are a tree of named
+parameters a person edits; the pricing engines are configurations with an ORE
+document behind them; the ORE value sets are reference data the engine reads; and
+one route tallies the health of a party's report definitions. Together they are
+the family the task calls "the ORE value sets and the engine settings".
 
 Two of the four translate between a screen's fields and an ORE XML document.
 That translation is the question: it is the only place in this area where the
@@ -96,12 +96,34 @@ The family is four units, and each is a verifiable step on its own:
 | Unit | Routes | What it needs |
 |------+--------+---------------|
 | The health tally | 1 | one read, no composition |
-| The engine settings | 7 | the settings model, its groups, its history and its documentation |
+| The engine settings | 8 | the settings model, its groups, its history and its documentation |
 | The pricing engines | 10 | the engines model, its history, its document and the import with its preview |
 | The ORE value sets and the schema's zip | 5 | the value sets and the schema's includes |
 
+Twenty-four routes. The engine settings count is eight and not seven: the page,
+one setting, its history, the documentation, the create, the update, the group
+write and the removal.
+
 Nothing here needs a service change that the first three families did not already
 make: every read exists, and the document translation is where it belongs.
+
+** Where the work landed
+
+Two facts learned while splitting the units into tasks, recorded here so the next
+reader does not have to rediscover them.
+
+The value set reader belongs to neither the reporting part nor the reference data
+part alone. The five routes the reporting task's Acceptance moves here are
+reference data area routes, and the reference data part answers other convention
+routes already. The reporting part links =ores.refdata.api=, so a reader in it
+would close a cycle between the two part libraries. The reader lives in
+=ores.http.core=, beside the history and change route helpers, and both parts
+link it.
+
+The pricing engines' vocabulary is a route the screen calls, at
+=packages/web/src/api/pricingEngines.ts=, though the inventory states it as not
+an API and in no area. It is served for the reason =choices= was served: the
+screen breaks without it when the BFF goes.
 
 * What this does not change
 

@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 42084FE1-9A9B-49CC-9E50-F48426DFA6C3
+:END:
+#+title: Task: Read the ORE value sets, and serve the documentation page
+#+description: One route and the reader it unlocks: the C++ form of the BFF's value set reader, in the shared part, and the page that states what each engine setting means and which values it accepts.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The gateway has no reader of the ORE value sets. Add the C++ form of the BFF's
+=readValueSets=, and serve the one route that needs nothing else:
+=GET /api/reporting/engine-settings/documentation=. The route states, for each
+group of settings, what each setting means and which values it accepts, so a
+person editing a document reads the engine's own answer and not a second
+statement of it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing. This task is first.           |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-14                               |
+
+* Acceptance
+
+- The C++ server answers =GET /api/reporting/engine-settings/documentation= at
+  the BFF's path, with the BFF's member names and status codes.
+- The value set reader is the C++ form of the BFF's =readValueSets=, and it
+  lives where the reporting part and the reference data part can both read it.
+- A value set whose kind this build does not know is refused, with a sentence
+  that names the set and the kind, and is not drawn as a control that checks
+  nothing.
+- A catalogue relation is read once, however many sets name it.
+- A test proves the route against the answer the BFF gives, and a test proves
+  the reader's refusals.
+- Each route in scope names its C++ equivalent in the inventory.
+- The local gate is green.
+
+* Plan
+
+Branch =feature/serve-the-ore-value-sets=.
+
+The reader goes in =projects/ores.http/core/=, under =routes/=, beside
+=history_routes= and =change_routes=. The reporting part and the reference data
+part both read value sets, and the reporting part already links
+=ores.refdata.api=, so a reader in the reporting part would close a cycle
+between two part libraries.
+
+The reader answers the same seven fields the BFF's does: the set's code, its
+kind, the catalogue it draws on, its choices, its minimum, its maximum and its
+pattern. It takes the four tables as the service returned them, so it needs no
+entity type from the reporting part and the shared part gains no new link. It
+answers a fixed list of catalogue relations, and a set that names another one is
+a seed error that is refused rather than drawn empty.
+
+The documentation route is the reader's first consumer and its proof. It joins
+three reads: the groups of settings, the settings of each group, and the
+=ore.xsd= / =Setup= parameters. It states each setting's documentation from the
+parameter and its fields from the value set. It lives in the reporting part, in
+an =engine_settings_rows= unit that the reads task extends.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -65,9 +65,8 @@ public:
     /**
      * @brief Refuses a port that only the constructing statement owns.
      *
-     * The service holds the port, so a port that is a temporary is destroyed
-     * before the first booking reads it. The call is refused here, where the
-     * reader sees the mistake, and not by a crash inside the booking.
+     * The mistake would be a crash inside the first booking, so the compiler
+     * refuses it here, where the reader sees it.
      */
     trade_operations_service(context, const book_rules_port&&) = delete;
 

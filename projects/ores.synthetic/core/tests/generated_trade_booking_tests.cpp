@@ -47,7 +47,9 @@ namespace {
 
 using ores::synthetic::domain::trade_generation_scope;
 using ores::synthetic::domain::trade_population_slot;
+using ores::synthetic::tests::trade_generation_scope_recipe;
 using ores::synthetic::service::config_id_for;
+using ores::synthetic::service::planned_asset_classes;
 using ores::synthetic::service::planner_for;
 using ores::synthetic::service::trading_trade_population_writer;
 using ores::trading::messaging::book_trade_request;
@@ -56,8 +58,7 @@ using ores::trading::service::book_rules_port;
 using ores::trading::service::trade_operations_service;
 using ores::utility::domain::outcome;
 
-const std::vector<std::string> booking_asset_classes = {
-    "bond", "commodity", "credit", "equity", "fx", "inflation", "interest_rates", "scripted"};
+const std::string tags("[service][integration]");
 
 /// The name of the config one asset class is drawn from.
 std::string booking_config_name(const std::string& asset_class_code) {
@@ -151,43 +152,18 @@ struct fixture final {
  * class's own code count states each code exactly once.
  */
 trade_generation_scope booking_scope_of(const fixture& f, const std::string& asset_class_code) {
-    trade_generation_scope scope;
+    auto scope = trade_generation_scope_recipe();
     // A config states one asset class, so each class is drawn from its own:
     // the trades are named by their config, and two classes on one config
     // would book the same trade id twice.
     scope.config_id = config_id_for(f.party_id, booking_config_name(asset_class_code));
     scope.party_id = f.party_id;
     scope.asset_class_code = asset_class_code;
-    scope.min_tenor_code = "1Y";
-    scope.max_tenor_code = "10Y";
-    scope.min_notional = 100000.0;
-    scope.max_notional = 10000000.0;
-    scope.as_of_date = std::chrono::year{2026} / 1 / 2;
-    scope.seed = 7;
     scope.trades_per_book = static_cast<std::uint32_t>(planner_for(asset_class_code).code_count());
     scope.book_ids = {f.book_id};
     scope.counterparty_ids = {f.counterparty_id};
     scope.issuer_ids = {f.counterparty_id};
     scope.traders = {ores::synthetic::domain::trade_population_trader{f.account_id, f.username}};
-    scope.currency_code = f.currency_code;
-    scope.equity_underlyings = {ores::synthetic::domain::equity_underlying_reference{
-                                    .code = ".SPX", .kind = "index", .currency = "USD"},
-                                ores::synthetic::domain::equity_underlying_reference{
-                                    .code = "MSFT.O", .kind = "share", .currency = "USD"},
-                                ores::synthetic::domain::equity_underlying_reference{
-                                    .code = ".STOXX50E", .kind = "index", .currency = "EUR"},
-                                ores::synthetic::domain::equity_underlying_reference{
-                                    .code = "GB0005405286", .kind = "share", .currency = "GBP"}};
-    scope.commodities = {ores::synthetic::domain::commodity_reference{
-                             .code = "NYMEX:CL", .unit = "bbl", .quotation_currency = "USD"},
-                         ores::synthetic::domain::commodity_reference{
-                             .code = "NYMEX:NG", .unit = "MMBtu", .quotation_currency = "USD"}};
-    scope.floating_index_codes = {"EUR-EURIBOR-6M", "EUR-EONIA", "EUR-ESTR", "USD-SOFR"};
-    scope.inflation_index_codes = {"UKRPIX", "USCPIA", "BECPIHL"};
-    scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
-    scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
-    scope.conventions = ores::synthetic::tests::ore_example_conventions();
-    scope.reference_curve_id = "EUR-EURIBOR-6M";
     return scope;
 }
 
@@ -196,7 +172,9 @@ trade_generation_scope booking_scope_of(const fixture& f, const std::string& ass
 /// A bond states its issue before its trade, and the issue's own rows belong to
 /// the security rather than to the trade, so they are written here and not in
 /// the booking request.
-void write_issue(const trade_population_slot& slot, trade_operations_service& books) {
+void write_issue(const trade_population_slot& slot,
+                 trade_operations_service& books,
+                 const std::string& asset_class) {
     if (!slot.bond_issue)
         return;
     put_bond_issue_composite_request request;
@@ -208,39 +186,56 @@ void write_issue(const trade_population_slot& slot, trade_operations_service& bo
     request.call_dates = slot.bond_issue_call_dates;
     request.conversion_targets = slot.bond_issue_conversion_targets;
     const auto response = books.put_bond_issue_composite(request);
-    INFO("the issue of " << slot.trade_type_code << " was refused: " << response.result.message);
+    INFO("asset class " << asset_class << ", trade type " << slot.trade_type_code
+                        << ": the issue was refused: " << response.result.message);
     CHECK(response.result.outcome == outcome::ok);
 }
 
 }
 
-TEST_CASE("every_generated_trade_type_books_through_the_database",
-          "[generated_trade][integration]") {
+TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
     auto lg(make_logger(test_suite));
     fixture f;
     // The service holds a reference to the port, so the port outlives it.
     open_books open;
     trade_operations_service books(f.ctx, open);
 
-    for (const auto& asset_class : booking_asset_classes) {
+    const auto asset_classes = planned_asset_classes();
+    REQUIRE(!asset_classes.empty());
+    BOOST_LOG_SEV(lg, info) << "Booking one trade of every type, over " << asset_classes.size()
+                            << " asset classes.";
+
+    for (const auto code : asset_classes) {
+        const std::string asset_class(code);
+        const auto offered = planner_for(asset_class).code_count();
+        // A class that states no code would book nothing and pass below, so
+        // the case states that each class has types to book.
+        INFO("asset class " << asset_class);
+        REQUIRE(offered > 0);
+
         const auto scope = booking_scope_of(f, asset_class);
         const auto plan = planner_for(asset_class).plan(scope);
+        REQUIRE(plan.slots.size() == offered);
+
         std::set<std::string> booked_types;
         for (const auto& slot : plan.slots) {
             INFO("asset class " << asset_class << ", trade type " << slot.trade_type_code
                                 << ", slot " << slot.slot);
-            write_issue(slot, books);
+            write_issue(slot, books, asset_class);
 
             const book_trade_request request =
                 trading_trade_population_writer::book_request_for(slot, scope);
             const auto response = books.book_trade(request, "");
             INFO("the database refused it: " << response.result.message);
             CHECK(response.result.outcome == outcome::ok);
-            booked_types.insert(slot.trade_type_code);
+            if (response.result.outcome == outcome::ok)
+                booked_types.insert(slot.trade_type_code);
         }
         // The scope states each code the class cycles, so a type the store
         // refused is a type the population cannot book.
         INFO("asset class " << asset_class);
-        CHECK(booked_types.size() == planner_for(asset_class).code_count());
+        CHECK(booked_types.size() == offered);
+        BOOST_LOG_SEV(lg, info) << "Booked " << booked_types.size() << " type(s) of " << asset_class
+                                << ".";
     }
 }

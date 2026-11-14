@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 7D2BBBBC-36A3-4BFB-9673-0F9005991D94
+:END:
+#+title: Story: Take the DQ pipeline end to end, from a seeded artefact table to a published system
+#+description: Reference data is seeded as DQ artefacts and never published, the seeding model is inconsistent, and the DQ UI was never ported to ores.web.
+#+type: story
+#+level: s2
+#+filetags: :dq:data:architecture:publishing:web:sprint_30:v0:
+#+created: 2026-11-14
+#+updated: 2026-11-14
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Carry reference data from a blank database to a usable one, deliberately. Today
+a recreate seeds DQ artefacts, nothing publishes them, some tables are seeded
+directly instead, and there is no screen anywhere that shows what is published.
+This story settles the model, implements it, and gives it a place to be seen and
+driven.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The end-to-end review of the publishing pipeline is running. |
+| Waiting on    | Nothing.                               |
+| Next          | Review the findings, then sequence the two implementation tasks. |
+| Last touched  | 2026-11-14                               |
+
+* Acceptance
+
+- The publishing model is documented: what a blank database holds, what a
+  recreate publishes, what a tenant is provisioned with, and in what order.
+- Every dataset is classified as base-system or ACME, with the reason stated.
+- No dataset is seeded and left unpublished, and no refdata table is populated
+  by a second, silent path without that being deliberate.
+- A recreated database can value every trade type the system books.
+- ores.web shows each dataset, its artefacts, whether it is published, and
+  offers the publish action.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:22B17001-2467-4CE2-9E70-583420BDF74F][Scaffold story: Take the DQ pipeline end to end]] | STARTED | 2026-11-14 | | Story scaffolding rides this task. |
+| [[id:B8609EB8-C1C1-4280-A487-C76D78AC8877][Review the publishing pipeline end to end]] | STARTED | 2026-11-14 | | The analysis: documented model, implemented model, inventories, defects. |
+| [[id:E9BBFCCD-8E21-4C92-AAD1-A07941AD1C8B][Publish every seeded dataset at the level it belongs]] | BACKLOG | | | The implementation: base-system publication at recreate, ACME per tenant. |
+| [[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Port the DQ UI to ores.web]] | BACKLOG | | | The screen that shows and drives the above. |
+
+* Decisions
+
+- The analysis precedes the implementation. The two are separate tasks because
+  the shape of the fix depends on which datasets are base-system and which are
+  per-tenant, and that is not yet settled.
+- The DQ UI belongs in this story rather than beside it. A publishing model with
+  no way to see publish state is the reason the gap went unnoticed: a recreate
+  looked successful while the catalogues were empty.
+
+* Out of scope
+
+- Re-seeding the corpus. This story moves what exists to where it belongs; it
+  does not add new market data.

@@ -157,6 +157,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:EAD87500-027A-46B7-BD34-911D827DCF71][Hotfix: Fix the AppleClang min call and the generated link drift]] | STARTED | | | macOS fails to compile a min call, and three generated CMake files no longer match their models. |
 | [[id:07B94320-9844-4292-A266-3F63639B2CB6][Hotfix: Publish the catalogues the booking test reads]] | STARTED | | | The generated-trade booking test is refused because the refdata catalogues are never published in a recreated database. |
 | [[id:664765D8-1D00-4F55-A750-D16BBC60BEDE][Hotfix: Give the booking test its own refdata]] | STARTED | | | The booking test must write the equity vocabulary its scope names instead of publishing it. |
+| [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] | STARTED | | | Reference data is seeded as DQ artefacts and never published, the seeding model is inconsistent, and the DQ UI was never ported to ores.web. |
 
 * Achievements
 

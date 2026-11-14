@@ -43,6 +43,15 @@ public:
      * @param storage_dir The root the file service serves objects from, which
      * the run's files are read out of.
      */
+    /**
+     * @brief Register the health tally, which states what the service counted
+     * and derives nothing.
+     */
+    static void
+    register_health_routes(std::shared_ptr<ores::http::net::router> router,
+                           std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
+                           ores::nats::service::nats_client& session);
+
     static void register_routes(std::shared_ptr<ores::http::net::router> router,
                                 std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                 ores::nats::service::nats_client& session,

@@ -25,6 +25,7 @@ set(files
     "routes/reporting/cut_kind_routes.cpp"
     "routes/reporting/cut_kind_rows.cpp"
     "routes/reporting/cut_routes.cpp"
+    "routes/reporting/health_routes.cpp"
     "routes/reporting/report_routes.cpp"
     "routes/reporting/reporting_routes.cpp"
     "routes/reporting/result_rollup.cpp"

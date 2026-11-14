@@ -152,6 +152,15 @@
     "curator": "marco",
     "date": "2026-10-25"
   },
+  "Generic": {
+    "description": "No market model; the trade's own script states the payoff.",
+    "detail": "A scripted trade carries its script, its variables and its own description of the underlyings, so the model is the script rather than a market model. ORE registers it as Generic so a trade of that type resolves to the scripted engine and builds nothing stochastic of its own.",
+    "reason": "The ORE guide says nothing about it; the text restates the builder class the ORE code registers.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.hpp",
+    "curator": "marco",
+    "date": "2026-11-14"
+  },
   "Hagan": {
     "description": "Hagan replication pricers for constant maturity swap coupons.",
     "detail": "Prices a CMS coupon by replicating the coupon with swaptions, after Hagan. The analytic pricer uses a closed-form approximation. The numerical pricer integrates numerically.",

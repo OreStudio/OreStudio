@@ -485,6 +485,15 @@
     "curator": "marco",
     "date": "2026-10-25"
   },
+  "Generic": {
+    "description": "Prices a scripted trade from its own script.",
+    "detail": "The engine evaluates the script the trade states, reading the market through the library the script names. A trade of a product type that delegates to a scripted trade resolves through that product's own pair, not through this one.",
+    "reason": "The ORE guide says nothing about it; the text restates the builder class the ORE code registers.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/scriptedtrade.hpp",
+    "curator": "marco",
+    "date": "2026-11-14"
+  },
   "Grid": {
     "description": "Convolution grid engine for the LGM model.",
     "detail": "Rolls the value back on a grid of the LGM state with numerical integration, after Hagan, Methodology for callable swaps and Bermudan exercise into swaptions. The settings set the width and the point count of the grid.",
@@ -637,6 +646,15 @@
     "source_ref": "OREData/ored and OREAnalytics/orea, the classes the ORE code builds",
     "curator": "marco",
     "date": "2026-10-25"
+  },
+  "ReplicatingVarianceSwapEngine": {
+    "description": "Replicates a variance swap from the options of its maturity.",
+    "detail": "Prices the swap from a static replication of the log contract over a strip of options, taking the scheme, the bounds and the numerical tolerances from the engine parameters. Every parameter has a default, so the pair prices with none stated.",
+    "reason": "The ORE guide does not describe the engine it names; the text restates the builder and the parameters the ORE code reads.",
+    "source": "ore_code",
+    "source_ref": "OREData/ored/portfolio/builders/varianceswap.hpp",
+    "curator": "marco",
+    "date": "2026-11-14"
   },
   "Replication": {
     "description": "Prices a product as the sum of the products it contains.",

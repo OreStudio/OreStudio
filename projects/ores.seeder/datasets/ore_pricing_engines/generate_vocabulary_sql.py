@@ -159,19 +159,15 @@ def required_by_code(name):
     return re.search(r"[Rr]equired\.?\s*$", entry["description"]) is not None
 
 
-def with_the_pairs_the_guide_omits(vocabulary, strict):
-    """The products the guide's chapter omits, as the curation states them.
+def with_the_pairs_the_guide_omits(vocabulary):
+    """The pairs the ORE code registers, where the guide states none or another one.
 
-    The guide is the source of the vocabulary, so a product its chapter leaves out
-    carries no pair and ORE refuses to price that product. The ORE code registers a
-    pair anyway, and the curation records what the code states.
+    The guide is the source of the vocabulary, and it is wrong in two ways: it
+    leaves a product type out, or it states a model and engine the code does not
+    register for that trade type. Either way ORE refuses to price the trade, and
+    the curation records the pair the code registers, which becomes the usual one.
     """
     for code, entry in CURATED.guide_omits.items():
-        if code in vocabulary:
-            if strict:
-                sys.exit(f"the ORE guide now documents {code}, which curation/guide-omits.json "
-                         "still states. Remove the entry and run the extraction again.")
-            continue
         pairs = []
         for index, pair in enumerate(entry["pairs"]):
             settings = []
@@ -205,7 +201,25 @@ def with_the_pairs_the_guide_omits(vocabulary, strict):
                 "note": pair["note"],
                 "settings": settings,
             })
-        vocabulary[code] = {"used_by": entry["used_by"], "pairs": pairs}
+        held = vocabulary.get(code)
+        if held is None:
+            vocabulary[code] = {"used_by": entry["used_by"], "pairs": pairs}
+            continue
+        # The guide documents the product type and states a pair the ORE code does
+        # not register for it, or an earlier run already merged the code's pair. The
+        # code's pair becomes the usual one and the guide's rows stay as
+        # alternatives, so a screen can still see what the guide says.
+        merged = []
+        for pair in pairs:
+            known = next((k for k in held["pairs"]
+                          if k["model"] == pair["model"] and k["engine"] == pair["engine"]), None)
+            merged.append(known if known is not None else pair)
+        for known in held["pairs"]:
+            if all(known is not pair for pair in merged):
+                merged.append(known)
+        for index, pair in enumerate(merged):
+            pair["usual"] = index < len(pairs)
+        held["pairs"] = merged
     return vocabulary
 
 
@@ -258,7 +272,7 @@ def write_templates():
 def main(ore):
     vocabulary = (extract.main_result(ore) if ore is not None
                   else json.load(open(VOCABULARY, encoding="utf-8")))
-    vocabulary = with_the_pairs_the_guide_omits(vocabulary, strict=ore is not None)
+    vocabulary = with_the_pairs_the_guide_omits(vocabulary)
     with open(os.path.join(HERE, "pricing_vocabulary.json"), "w", encoding="utf-8") as handle:
         json.dump(vocabulary, handle, indent=1, ensure_ascii=False)
         handle.write("\n")

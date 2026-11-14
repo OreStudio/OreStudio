@@ -491,7 +491,7 @@
     "pricing_model_config_id": "9138636d-654a-5c60-8165-4a17e3128788",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -755,7 +755,7 @@
     "pricing_model_config_id": "9138636d-654a-5c60-8165-4a17e3128788",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -875,7 +875,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "9138636d-654a-5c60-8165-4a17e3128788",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -996,7 +996,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "9138636d-654a-5c60-8165-4a17e3128788",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -1008,7 +1008,7 @@
     "pricing_model_config_id": "9138636d-654a-5c60-8165-4a17e3128788",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -1128,8 +1128,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "9138636d-654a-5c60-8165-4a17e3128788",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -1657,7 +1657,7 @@
     "pricing_model_config_id": "0c2031e5-e5cd-5829-996c-35d3fb1cc3ea",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -1921,7 +1921,7 @@
     "pricing_model_config_id": "0c2031e5-e5cd-5829-996c-35d3fb1cc3ea",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -2041,7 +2041,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "0c2031e5-e5cd-5829-996c-35d3fb1cc3ea",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -2162,7 +2162,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "0c2031e5-e5cd-5829-996c-35d3fb1cc3ea",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -2174,7 +2174,7 @@
     "pricing_model_config_id": "0c2031e5-e5cd-5829-996c-35d3fb1cc3ea",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -2294,8 +2294,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "0c2031e5-e5cd-5829-996c-35d3fb1cc3ea",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -2823,7 +2823,7 @@
     "pricing_model_config_id": "8260f3f3-004e-527a-9aac-dcfb47616800",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -3087,7 +3087,7 @@
     "pricing_model_config_id": "8260f3f3-004e-527a-9aac-dcfb47616800",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -3207,7 +3207,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "8260f3f3-004e-527a-9aac-dcfb47616800",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -3328,7 +3328,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "8260f3f3-004e-527a-9aac-dcfb47616800",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -3340,7 +3340,7 @@
     "pricing_model_config_id": "8260f3f3-004e-527a-9aac-dcfb47616800",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -3460,8 +3460,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "8260f3f3-004e-527a-9aac-dcfb47616800",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -3989,7 +3989,7 @@
     "pricing_model_config_id": "561c1184-a396-55dc-9770-40ee754ea520",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -4253,7 +4253,7 @@
     "pricing_model_config_id": "561c1184-a396-55dc-9770-40ee754ea520",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -4373,7 +4373,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "561c1184-a396-55dc-9770-40ee754ea520",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -4494,7 +4494,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "561c1184-a396-55dc-9770-40ee754ea520",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -4506,7 +4506,7 @@
     "pricing_model_config_id": "561c1184-a396-55dc-9770-40ee754ea520",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -4626,8 +4626,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "561c1184-a396-55dc-9770-40ee754ea520",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -5155,7 +5155,7 @@
     "pricing_model_config_id": "eb6814d5-1d3f-5c34-9458-4f60ca5f961a",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -5419,7 +5419,7 @@
     "pricing_model_config_id": "eb6814d5-1d3f-5c34-9458-4f60ca5f961a",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -5539,7 +5539,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "eb6814d5-1d3f-5c34-9458-4f60ca5f961a",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -5660,7 +5660,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "eb6814d5-1d3f-5c34-9458-4f60ca5f961a",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -5672,7 +5672,7 @@
     "pricing_model_config_id": "eb6814d5-1d3f-5c34-9458-4f60ca5f961a",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -5792,8 +5792,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "eb6814d5-1d3f-5c34-9458-4f60ca5f961a",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -6321,7 +6321,7 @@
     "pricing_model_config_id": "0a320d9d-fdfc-5f5f-989f-e86d6d7f70f9",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -6585,7 +6585,7 @@
     "pricing_model_config_id": "0a320d9d-fdfc-5f5f-989f-e86d6d7f70f9",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -6705,7 +6705,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "0a320d9d-fdfc-5f5f-989f-e86d6d7f70f9",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -6826,7 +6826,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "0a320d9d-fdfc-5f5f-989f-e86d6d7f70f9",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -6838,7 +6838,7 @@
     "pricing_model_config_id": "0a320d9d-fdfc-5f5f-989f-e86d6d7f70f9",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -6958,8 +6958,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "0a320d9d-fdfc-5f5f-989f-e86d6d7f70f9",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -7487,7 +7487,7 @@
     "pricing_model_config_id": "b7d8c963-32fd-5eac-a4fe-f0adadbb0267",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -7751,7 +7751,7 @@
     "pricing_model_config_id": "b7d8c963-32fd-5eac-a4fe-f0adadbb0267",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -7871,7 +7871,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "b7d8c963-32fd-5eac-a4fe-f0adadbb0267",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -7992,7 +7992,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "b7d8c963-32fd-5eac-a4fe-f0adadbb0267",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -8004,7 +8004,7 @@
     "pricing_model_config_id": "b7d8c963-32fd-5eac-a4fe-f0adadbb0267",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -8124,8 +8124,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "b7d8c963-32fd-5eac-a4fe-f0adadbb0267",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -8653,7 +8653,7 @@
     "pricing_model_config_id": "b8d2d31a-5219-518c-a89d-88b5d82ecf96",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -8917,7 +8917,7 @@
     "pricing_model_config_id": "b8d2d31a-5219-518c-a89d-88b5d82ecf96",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -9037,7 +9037,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "b8d2d31a-5219-518c-a89d-88b5d82ecf96",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -9158,7 +9158,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "b8d2d31a-5219-518c-a89d-88b5d82ecf96",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -9170,7 +9170,7 @@
     "pricing_model_config_id": "b8d2d31a-5219-518c-a89d-88b5d82ecf96",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -9290,8 +9290,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "b8d2d31a-5219-518c-a89d-88b5d82ecf96",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -9819,7 +9819,7 @@
     "pricing_model_config_id": "ed5bb931-8c68-51a7-badf-f21787132684",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -10083,7 +10083,7 @@
     "pricing_model_config_id": "ed5bb931-8c68-51a7-badf-f21787132684",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -10203,7 +10203,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "ed5bb931-8c68-51a7-badf-f21787132684",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -10324,7 +10324,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "ed5bb931-8c68-51a7-badf-f21787132684",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -10336,7 +10336,7 @@
     "pricing_model_config_id": "ed5bb931-8c68-51a7-badf-f21787132684",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -10456,8 +10456,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "ed5bb931-8c68-51a7-badf-f21787132684",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -10985,7 +10985,7 @@
     "pricing_model_config_id": "ef348959-5b53-5688-a877-c03df9a94a6a",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -11249,7 +11249,7 @@
     "pricing_model_config_id": "ef348959-5b53-5688-a877-c03df9a94a6a",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -11369,7 +11369,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "ef348959-5b53-5688-a877-c03df9a94a6a",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -11490,7 +11490,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "ef348959-5b53-5688-a877-c03df9a94a6a",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -11502,7 +11502,7 @@
     "pricing_model_config_id": "ef348959-5b53-5688-a877-c03df9a94a6a",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -11622,8 +11622,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "ef348959-5b53-5688-a877-c03df9a94a6a",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -12151,7 +12151,7 @@
     "pricing_model_config_id": "952507fb-5972-5c02-ae24-ebde30baa5af",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -12415,7 +12415,7 @@
     "pricing_model_config_id": "952507fb-5972-5c02-ae24-ebde30baa5af",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -12535,7 +12535,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "952507fb-5972-5c02-ae24-ebde30baa5af",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -12656,7 +12656,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "952507fb-5972-5c02-ae24-ebde30baa5af",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -12668,7 +12668,7 @@
     "pricing_model_config_id": "952507fb-5972-5c02-ae24-ebde30baa5af",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -12788,8 +12788,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "952507fb-5972-5c02-ae24-ebde30baa5af",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -13317,7 +13317,7 @@
     "pricing_model_config_id": "13f2fc89-3689-5ebe-84c7-0a7003eb023f",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -13581,7 +13581,7 @@
     "pricing_model_config_id": "13f2fc89-3689-5ebe-84c7-0a7003eb023f",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -13701,7 +13701,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "13f2fc89-3689-5ebe-84c7-0a7003eb023f",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -13822,7 +13822,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "13f2fc89-3689-5ebe-84c7-0a7003eb023f",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -13834,7 +13834,7 @@
     "pricing_model_config_id": "13f2fc89-3689-5ebe-84c7-0a7003eb023f",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -13954,8 +13954,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "13f2fc89-3689-5ebe-84c7-0a7003eb023f",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -14483,7 +14483,7 @@
     "pricing_model_config_id": "5136a290-076b-51c5-81c9-2484a54914ac",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -14747,7 +14747,7 @@
     "pricing_model_config_id": "5136a290-076b-51c5-81c9-2484a54914ac",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -14867,7 +14867,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "5136a290-076b-51c5-81c9-2484a54914ac",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -14988,7 +14988,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "5136a290-076b-51c5-81c9-2484a54914ac",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -15000,7 +15000,7 @@
     "pricing_model_config_id": "5136a290-076b-51c5-81c9-2484a54914ac",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -15120,8 +15120,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "5136a290-076b-51c5-81c9-2484a54914ac",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -15649,7 +15649,7 @@
     "pricing_model_config_id": "1d2d54d3-3580-53fb-bf91-ad0938a27222",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -15913,7 +15913,7 @@
     "pricing_model_config_id": "1d2d54d3-3580-53fb-bf91-ad0938a27222",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -16033,7 +16033,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "1d2d54d3-3580-53fb-bf91-ad0938a27222",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -16154,7 +16154,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "1d2d54d3-3580-53fb-bf91-ad0938a27222",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -16166,7 +16166,7 @@
     "pricing_model_config_id": "1d2d54d3-3580-53fb-bf91-ad0938a27222",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -16286,8 +16286,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "1d2d54d3-3580-53fb-bf91-ad0938a27222",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -16815,7 +16815,7 @@
     "pricing_model_config_id": "f50def04-9a3c-5468-a097-85b836f21034",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -17079,7 +17079,7 @@
     "pricing_model_config_id": "f50def04-9a3c-5468-a097-85b836f21034",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -17199,7 +17199,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "f50def04-9a3c-5468-a097-85b836f21034",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -17320,7 +17320,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "f50def04-9a3c-5468-a097-85b836f21034",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -17332,7 +17332,7 @@
     "pricing_model_config_id": "f50def04-9a3c-5468-a097-85b836f21034",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -17452,8 +17452,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "f50def04-9a3c-5468-a097-85b836f21034",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -17981,7 +17981,7 @@
     "pricing_model_config_id": "e98950cf-31bc-5f47-8e73-c1b45068206d",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -18245,7 +18245,7 @@
     "pricing_model_config_id": "e98950cf-31bc-5f47-8e73-c1b45068206d",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -18365,7 +18365,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "e98950cf-31bc-5f47-8e73-c1b45068206d",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -18486,7 +18486,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "e98950cf-31bc-5f47-8e73-c1b45068206d",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -18498,7 +18498,7 @@
     "pricing_model_config_id": "e98950cf-31bc-5f47-8e73-c1b45068206d",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -18618,8 +18618,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "e98950cf-31bc-5f47-8e73-c1b45068206d",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -19147,7 +19147,7 @@
     "pricing_model_config_id": "9678e19e-e222-50ef-ae31-7a0989b40939",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -19411,7 +19411,7 @@
     "pricing_model_config_id": "9678e19e-e222-50ef-ae31-7a0989b40939",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -19531,7 +19531,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "9678e19e-e222-50ef-ae31-7a0989b40939",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -19652,7 +19652,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "9678e19e-e222-50ef-ae31-7a0989b40939",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -19664,7 +19664,7 @@
     "pricing_model_config_id": "9678e19e-e222-50ef-ae31-7a0989b40939",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -19784,8 +19784,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "9678e19e-e222-50ef-ae31-7a0989b40939",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -20313,7 +20313,7 @@
     "pricing_model_config_id": "58881c79-9c2a-57ec-9f51-8c3fdfd1c46f",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -20577,7 +20577,7 @@
     "pricing_model_config_id": "58881c79-9c2a-57ec-9f51-8c3fdfd1c46f",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -20697,7 +20697,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "58881c79-9c2a-57ec-9f51-8c3fdfd1c46f",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -20818,7 +20818,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "58881c79-9c2a-57ec-9f51-8c3fdfd1c46f",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -20830,7 +20830,7 @@
     "pricing_model_config_id": "58881c79-9c2a-57ec-9f51-8c3fdfd1c46f",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -20950,8 +20950,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "58881c79-9c2a-57ec-9f51-8c3fdfd1c46f",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -21479,7 +21479,7 @@
     "pricing_model_config_id": "3a10608a-4fce-53c7-8063-6a800bc772ea",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -21743,7 +21743,7 @@
     "pricing_model_config_id": "3a10608a-4fce-53c7-8063-6a800bc772ea",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -21863,7 +21863,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "3a10608a-4fce-53c7-8063-6a800bc772ea",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -21984,7 +21984,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "3a10608a-4fce-53c7-8063-6a800bc772ea",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -21996,7 +21996,7 @@
     "pricing_model_config_id": "3a10608a-4fce-53c7-8063-6a800bc772ea",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -22116,8 +22116,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "3a10608a-4fce-53c7-8063-6a800bc772ea",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -22645,7 +22645,7 @@
     "pricing_model_config_id": "dd5310da-d34b-5f81-9d05-b35fb8f2951a",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -22909,7 +22909,7 @@
     "pricing_model_config_id": "dd5310da-d34b-5f81-9d05-b35fb8f2951a",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -23029,7 +23029,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "dd5310da-d34b-5f81-9d05-b35fb8f2951a",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -23150,7 +23150,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "dd5310da-d34b-5f81-9d05-b35fb8f2951a",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -23162,7 +23162,7 @@
     "pricing_model_config_id": "dd5310da-d34b-5f81-9d05-b35fb8f2951a",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -23282,8 +23282,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "dd5310da-d34b-5f81-9d05-b35fb8f2951a",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -23811,7 +23811,7 @@
     "pricing_model_config_id": "3abe2287-d130-5a93-9a7f-1bdad30ccc66",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -24075,7 +24075,7 @@
     "pricing_model_config_id": "3abe2287-d130-5a93-9a7f-1bdad30ccc66",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -24195,7 +24195,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "3abe2287-d130-5a93-9a7f-1bdad30ccc66",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -24316,7 +24316,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "3abe2287-d130-5a93-9a7f-1bdad30ccc66",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -24328,7 +24328,7 @@
     "pricing_model_config_id": "3abe2287-d130-5a93-9a7f-1bdad30ccc66",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -24448,8 +24448,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "3abe2287-d130-5a93-9a7f-1bdad30ccc66",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -24977,7 +24977,7 @@
     "pricing_model_config_id": "56b8f852-3d34-5b87-a4d3-bc44d03ad9fb",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -25241,7 +25241,7 @@
     "pricing_model_config_id": "56b8f852-3d34-5b87-a4d3-bc44d03ad9fb",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -25361,7 +25361,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "56b8f852-3d34-5b87-a4d3-bc44d03ad9fb",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -25482,7 +25482,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "56b8f852-3d34-5b87-a4d3-bc44d03ad9fb",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -25494,7 +25494,7 @@
     "pricing_model_config_id": "56b8f852-3d34-5b87-a4d3-bc44d03ad9fb",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -25614,8 +25614,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "56b8f852-3d34-5b87-a4d3-bc44d03ad9fb",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {
@@ -26143,7 +26143,7 @@
     "pricing_model_config_id": "5f0ee6c3-f9ef-541f-8955-5339daca4e7d",
     "pricing_engine_type_code": "CommodityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 44
   },
   {
@@ -26407,7 +26407,7 @@
     "pricing_model_config_id": "5f0ee6c3-f9ef-541f-8955-5339daca4e7d",
     "pricing_engine_type_code": "EquityVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 68
   },
   {
@@ -26527,7 +26527,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "5f0ee6c3-f9ef-541f-8955-5339daca4e7d",
     "pricing_engine_type_code": "FxBarrierOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "position": 79
   },
@@ -26648,7 +26648,7 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "5f0ee6c3-f9ef-541f-8955-5339daca4e7d",
     "pricing_engine_type_code": "FxTouchOption",
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "position": 90
   },
@@ -26660,7 +26660,7 @@
     "pricing_model_config_id": "5f0ee6c3-f9ef-541f-8955-5339daca4e7d",
     "pricing_engine_type_code": "FxVarianceSwap",
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "position": 91
   },
   {
@@ -26780,8 +26780,8 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "pricing_model_config_id": "5f0ee6c3-f9ef-541f-8955-5339daca4e7d",
     "pricing_engine_type_code": "ScriptedTrade",
-    "model": "ScriptedTrade",
-    "engine": "ScriptedTrade",
+    "model": "Generic",
+    "engine": "Generic",
     "position": 102
   },
   {

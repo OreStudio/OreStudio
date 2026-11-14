@@ -8437,9 +8437,16 @@
   "used_by": "EquityBarrierOption resp. FxBarrierOption.",
   "pairs": [
    {
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticBarrierEngine",
     "usual": true,
+    "note": "Prices the barrier analytically on the Garman-Kohlhagen process of the currency pair.",
+    "settings": []
+   },
+   {
+    "model": "BlackScholesMerton",
+    "engine": "AnalyticBarrierEngine",
+    "usual": false,
     "note": "Builds a AnalyticBarrierEngine.for equity. The configuration for fx is identical except the Model is set to GarmanKohlhagen.",
     "settings": [
      {
@@ -9107,9 +9114,16 @@
   "used_by": "EquityTouchOption, FxTouchOption.",
   "pairs": [
    {
-    "model": "BlackScholesMerton",
+    "model": "GarmanKohlhagen",
     "engine": "AnalyticDigitalAmericanEngine",
     "usual": true,
+    "note": "Prices the one-touch as a digital American option on the Garman-Kohlhagen process of the currency pair.",
+    "settings": []
+   },
+   {
+    "model": "BlackScholesMerton",
+    "engine": "AnalyticDigitalAmericanEngine",
+    "usual": false,
     "note": "(equity) reps. GarmanKohlhagen/AnalyticDigitalAmericanEngine (fx) builds a AnalyticDigitalAmericanEngine (one touch) or AnalyticDigitalAmericanKOEngine (no touch).for fx. The configuration for equity is the same except the Model ist set to BlackScholesMerton.",
     "settings": [
      {
@@ -9371,8 +9385,15 @@
   "pairs": [
    {
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "usual": true,
+    "note": "Replicates the variance swap from the options of its maturity. Every engine parameter has a default, so the pair prices without settings.",
+    "settings": []
+   },
+   {
+    "model": "BlackScholesMerton",
+    "engine": "EquityVarianceSwap",
+    "usual": false,
     "note": "(resp. Commodity, Fx) builds a GeneralisedReplicatingVarianceSwapEngine or VolatilityFromVarianceSwapEngine depending on MomentType Variance, Volatility.and. The example is for Equity, but holds equally for product types CommodityVarianceSwap, FxVarianceSwap.",
     "settings": [
      {
@@ -9393,8 +9414,15 @@
   "pairs": [
    {
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "usual": true,
+    "note": "Replicates the variance swap from the options of its maturity. Every engine parameter has a default, so the pair prices without settings.",
+    "settings": []
+   },
+   {
+    "model": "BlackScholesMerton",
+    "engine": "EquityVarianceSwap",
+    "usual": false,
     "note": "(resp. Commodity, Fx) builds a GeneralisedReplicatingVarianceSwapEngine or VolatilityFromVarianceSwapEngine depending on MomentType Variance, Volatility.and. The example is for Equity, but holds equally for product types CommodityVarianceSwap, FxVarianceSwap.",
     "settings": [
      {
@@ -9415,8 +9443,15 @@
   "pairs": [
    {
     "model": "BlackScholesMerton",
-    "engine": "EquityVarianceSwap",
+    "engine": "ReplicatingVarianceSwapEngine",
     "usual": true,
+    "note": "Replicates the variance swap from the options of its maturity. Every engine parameter has a default, so the pair prices without settings.",
+    "settings": []
+   },
+   {
+    "model": "BlackScholesMerton",
+    "engine": "EquityVarianceSwap",
+    "usual": false,
     "note": "(resp. Commodity, Fx) builds a GeneralisedReplicatingVarianceSwapEngine or VolatilityFromVarianceSwapEngine depending on MomentType Variance, Volatility.and. The example is for Equity, but holds equally for product types CommodityVarianceSwap, FxVarianceSwap.",
     "settings": [
      {
@@ -10825,9 +10860,16 @@
   "used_by": "ScriptedTrade (and trades wrapped as scripted trade).",
   "pairs": [
    {
+    "model": "Generic",
+    "engine": "Generic",
+    "usual": true,
+    "note": "Builds the pricing engine from the trade's own script, so the pair takes no model or engine parameters.",
+    "settings": []
+   },
+   {
     "model": "ScriptedTrade",
     "engine": "ScriptedTrade",
-    "usual": true,
+    "usual": false,
     "note": "Builds a ScriptedInstrumentPricingEngine (and variants). We refer to the scripted trade module documentation for a sample configuration and more details. subsectionGlobal Parameters In addition to product specific settings there is also a block with global parameters with the following meaning: beginitemize item ContinueOnCalibrationError: If set to true an exceedence of a prescribed model calibration tolerance (for e.g. the LGM model) will not cause the trade building to fail, instead a warning is logged and the trade is processed anyway. Optional, defaults to false. item AllowModelFallbacks: If set to true a missing market object during the build of a model will not cause the build to fail. Instead, a fallback will be used. For example, if a volatility surface is missing during the build of the LGM or CAM model, a zero volatility surface might be used as a fallback and the calculation continues. Optional, defaults to false. item Calibrate: If false, model calibration is disabled. This flag is usually not present in a user configuration, but only used internally for certain workflows within ORE which do not require a model calibration. Optional, defaults to true. item GenerateAdditionalResults: If false, the generation of additional results within pricing engines will be suppressed (for those pricing engines which support this). This flag is usually not present in a user configuration, but only used internally to improve the performance for processes which only rely on the NPV as a result from pricing engines, e.g. when repricing trades under sensitivity or stress scenarios. Optional, defaults to false. item RunType: Set automatically. One of NPV, SensitivityDelta, SensitivityDeltaGamma, Stress, Exposure, Capital, TradeDetails, PortfolioAnalyser, HistoricalPnL, BondSpreadImply, AbsMaturityUpdate depending on the context for which a portfolio was built. Might also be left empty. This is used by some pricing engines to adapt to certain run types. E.g. a first order sensitivity pnl expansion might be used for a SensitivityDelta run by an engine which is able to compute analytical or AAD first order sensitivities. item McType: Set automatically. One of Classic and American depending on the context for which the pricinge engines file is referenced. Might also be left empty. This is used by some trade constructions to adapt to certain monte carlo types. E.g. Pricer would not be attached to coupons which can be computed in AMC without a leg / coupon pricer item StrikeSpread: Defaults to 0.1. If set, overrides the default value used to calculate the strike spread for replication engines. item BondFutureAmericanAsEuropean: This parameter can be set to true or false or to a regex inclusion pattern. If set to false, the default, there is no effect. If set to true, all bond future option trades with American exercise are priced as if they had European exercise i.e. with a European bond future option engine. If set to a regex pattern, all bond future option trades where the underlying contract name matches the regex will be priced as if they had European exercise. Bond future option trades where the underlying contract name does not match the regex will not be impacted i.e. if they have American exercise, they will be priced as such. enditemize.",
     "settings": []
    }
@@ -10868,7 +10910,7 @@
    {
     "model": "LGM-FlexiSwap",
     "engine": "Grid",
-    "usual": false,
+    "usual": true,
     "note": "Prices the balance guaranteed swap by simulating its pre-payment option on an LGM grid. The values are the ones the ORE example configuration Products/Input/pricingengine.xml sets for this product.",
     "settings": [
      {

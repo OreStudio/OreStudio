@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] |
-| Now          | Not yet started.                       |
+| Now          | The six triples are mapped.            |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Extraction reads the triples from the code, so the next ORE release needs no curation pass. |
 | Last touched | 2026-11-14                               |
 
 * Acceptance

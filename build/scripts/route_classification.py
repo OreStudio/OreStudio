@@ -592,6 +592,13 @@ RULES = (
          BFF, RESOURCE, "market-data",
          "One currency pair's forward ladder at one as-of, one service read that stores"
          " nothing and names the missing input when it refuses."),
+    Rule("the four market-data desk reads",
+         ("regex", r"^POST /api/market/(instruments|rate-ladder|fx-montage"
+                   r"|curve-analytics)$"),
+         BFF, RESOURCE, "market-data",
+         "The four reads the desk screens ask: the session party's instrument catalogue,"
+         " one currency's rate ladder, one base currency's FX montage and one curve's"
+         " analytics, each a service read that stores nothing and names what it refused."),
     Rule("the published curves",
          ("prefix", "POST /api/curves/published"),
          BFF, RESOURCE, "market-data",

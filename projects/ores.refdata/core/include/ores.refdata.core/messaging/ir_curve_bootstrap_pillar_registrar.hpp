@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_CORE_MESSAGING_IR_CURVE_BOOTSTRAP_PILLAR_REGISTRAR_HPP
 #define ORES_REFDATA_CORE_MESSAGING_IR_CURVE_BOOTSTRAP_PILLAR_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"

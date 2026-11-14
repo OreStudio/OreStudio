@@ -25,7 +25,7 @@
 #ifndef ORES_ASSETS_CORE_MESSAGING_TAG_REGISTRAR_HPP
 #define ORES_ASSETS_CORE_MESSAGING_TAG_REGISTRAR_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"

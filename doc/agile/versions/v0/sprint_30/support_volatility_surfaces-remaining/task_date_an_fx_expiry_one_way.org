@@ -110,16 +110,33 @@ via its "Verifies task" field.
 
 * Review
 
+Two local reviews of the branch's diff, one for the documented standards and one for the spec
+(the task's own acceptance and the captures it answers to).
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The ladder adjusts its horizon with a hardcoded `following`, so a pair whose convention rolls back gets a spot date the rule would not give it | =fx_forward_ladder_plan.cpp= | Accepted | The rule now answers `horizon` and `spot_date`; the ladder asks for them, and `calendars()` and the two lambdas go with the change. |
+| 2 | The calibration turns a tenor into a year fraction by walking calendar days from the as-of while the generator annualises over the nominal grid: 1M is 30/365 in one and 1/12 in the other | =fx_vol_surface_calibration_plan.cpp= | Accepted | One definition, `fx_vol_tenor_years` in quant, read by the emitter and the calibration; the synthetic header's own copy is deleted and the plan's as-of parameter leaves with the walk. |
+| 3 | `fx_vol_expiry_markets`' refusal of a rule that names no calendar is untested | =fx_vol_surface_feed.cpp= | Accepted | One case asserts the refusal and that no market is written. |
+| 4 | The round trip's build input never sets the rule it relies on a local for | =feeds_fx_vol_surface_round_trip_tests.cpp= | Accepted | `round_trip_input()` carries the rule. |
+| 5 | The parameterised rule constructor has no doc comment | =fx_expiry_dates.hpp= | Accepted | Parameters documented. |
+| 6 | The plan's tests compare with `find() != npos` | =app_fx_vol_surface_calibration_plan_tests.cpp= | Accepted | All ten in the file now use `contains`. |
+| 7 | The plan pins only 1Y's year fraction, so a return of the day-count walk would pass | =app_fx_vol_surface_calibration_plan_tests.cpp= | Accepted | All three expiries are pinned; the 1M case is the one that bites. |
+| 8 | The weekend mask is spelled by hand in three fixtures | =feeds_fx_vol_surface_*_tests.cpp= | Accepted | `business_day_calendar_set::weekends_only()` states it once. |
+| 9 | `joint_calendar` repeats the shape of refdata's `build_calendar_set` | =pair_expiry_date_rule.cpp= | Declined | `build_calendar_set` is local to the tenor resolution service and takes one calendar's rows; moving it here would widen the change for a shape of ten lines. Recorded as a follow-up. |
+| 10 | `calendar_index` is always zero | =fx_expiry_dates.hpp= | Declined | It is the index into the calendar set the rule holds, which is what `business_day_calendar_set` requires; all callers pass zero because a pair joins its calendars into one set. Removing it would push the literal into the arithmetic calls. |
+| 11 | The new quant test file logs no test case | =service_fx_expiry_dates_tests.cpp= | Declined | None of the 61 test files in the component logs; adding logging to one file would be the only one that does. |
+| 12 | The synthetic fixture hand-builds refdata rows a generator provides | =feed_config_handler_tests.cpp= | Declined | The case needs a named pair, a named convention and real business days; a generator's random rows would be overwritten field by field, which is more code than the three rows it writes. |
 
 * Result
 
 The expiry date is dated one way. =fx_expiry_date_rule= is the only mechanism, =read_pair_expiry_date_rule= is its
 only reader, and three call sites use it: the forward ladder that publishes the date, the
 calibration that reads the published date and refuses a tenor the ladder does not carry, and the
-synthetic surface feed that strikes its quotes at it.
+synthetic surface feed that strikes its quotes at it. The rule also answers where a ladder starts
+when the as-of is not a business day and where the pair settles, so a pair's own roll reaches
+every published date, and the surface's time axis has one definition too (`fx_vol_tenor_years`),
+read by the emitter that annualises the total variance and by the calibration that reads it back.
 
 The 1W refusal that started this ("the row dated 2026-11-17 is before the spot date 2026-11-18")
 is gone: a fresh tenant provisions end to end and publishes 40 surfaces, all converged and
